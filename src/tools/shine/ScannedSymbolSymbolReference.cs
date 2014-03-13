@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     public class ScannedSymbolSymbolReference : IComparable
     {

@@ -6,11 +6,11 @@
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
 // <summary>
-// Microsoft.Deployment.WindowsInstaller.ValidationErrorInfo struct.
+// WixToolset.Dtf.WindowsInstaller.ValidationErrorInfo struct.
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     using System.Diagnostics.CodeAnalysis;
 

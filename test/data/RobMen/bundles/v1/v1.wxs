@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
      xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
 <Bundle Name="~Bundle v1 &amp; v2"
         Manufacturer="Microsoft Corporation"

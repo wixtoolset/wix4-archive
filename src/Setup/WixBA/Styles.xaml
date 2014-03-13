@@ -10,7 +10,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ux="clr-namespace:Microsoft.Tools.WindowsInstallerXml.UX">
+    xmlns:ux="clr-namespace:WixToolset.UX">
 
     <!-- Converters -->
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />

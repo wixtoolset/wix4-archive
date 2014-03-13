@@ -7,18 +7,19 @@
 // </copyright>
 // 
 // <summary>
-// The mutator for the Windows Installer XML Toolset Utility Extension.
+// The mutator for the WiX Toolset Utility Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// The template type.
@@ -42,7 +43,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
     }
 
     /// <summary>
-    /// The mutator for the Windows Installer XML Toolset Internet Information Services Extension.
+    /// The mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
     public sealed class UtilMutator : MutatorExtension
     {

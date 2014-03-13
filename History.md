@@ -1,49 +1,143 @@
-* BobArnson: WIXBUG:4301 - don't cross the HRESULTs and Win32 error codes; it would be bad.
+* RobMen: Merge recent changes through WiX v3.9.313.0
 
-* RobMen: WIXBUG:4228 - send TRUE to WM_ENDSESSION to correctly inform applications to close.
+* SeanHall: WIXBUG:3643 - Incorrect operation for detect-only package
 
-* RobMen: WIXBUG:4285 - Fix typo in documentation.
+* MikeGC: Add/tweak a few UDM manifests for settings engine
 
-* RobMen: WIXFEAT:4234 - Remove ClickThrough.
+* MikeGC: In Settings Browser, display times in local time (instead of GMT), and in a more UI friendly format than RFC 3339
 
-* SeanHall: WIXFEAT:4292 - Add ProductCode, UpgradeCode, and Version to BootstrapperApplicationData.xml.
+* MikeGC: Minor UI tweaks / bugfixes in settings browser (tray popup behavior, listview item selection, and refreshing value history listview when appropriate)
 
-* WIXBUG:3883 - Retry on IIS ERROR_TRANSACTIONAL_CONFLICT too
+* MikeGC: Display proper state of unreachable remote databases on startup of settings browser
 
-* SeanHall: WIXFEAT:4292 - Don't assume downgrade if already detected major upgrade.
+* MikeGC: Fix bug in settings engine where in extended retry periods autosync could accidentally give up on a sync attempt
 
-## WixBuild: Version 3.9.120.0
+* MikeGC: Fix bug in settings engine to make file writes more transactional to eliminate chance of losing (or deleting) any changes on the machine while syncing, and allow retry on sharing violation (if we try to write when an app is writing)
 
-* BobArnson: WIXBUG:4271 - Warn when using a RemotePayload package that isn't explicitly set @Compressed="no".
+* MikeGC: Improve settings engine behavior related to conflicts (completely eliminates a few unnecessary conflicts that can occur in certain situations)
 
-* BobArnson: WIXBUG:4263 - Add WixMsmqExtension.dll back to binaries .zip.
+* RobMen: Merge recent changes through WiX v3.9.202.0
 
-* BobArnson: WIXBUG:4272 - Omit custom (and therefore un-Google-able) HRESULT for failed launch conditions on the failed page of WixStdBA.
+* RobMen: WIXBUG:4222 - put DownloadUrls back in the bundle so installs work again.
 
-* BobArnson: WIXBUG:4077 - Add log entry for the bal:Condition message itself.
+* SeanHall: Add WixToolset.Data.dll and WixToolset.Extensibility.dll to Toolset.wxs.
 
-## WixBuild: Version 3.9.16.0
+## WixBuild: Version 4.0.1320.0
 
-* rjvdboon: WIXBUG:4089 - Remove SimpleTypes from help table of contents.
+* RobMen: Merge recent changes through WiX v3.9.120.0
 
-* jchoover: WIXFEAT:4194 - Move DownloadUrl functionality from engine to dutil.
+* MikeGC: Fix issue running MonUtil test via msbuild from Unit.testproj
 
-* jhennessey: WIXFEAT:3169 - Add support for upgrade code-based product search.
+## WixBuild: Version 4.0.1216.0
 
-* jchoover: WIXFEAT:4193 - Added searching for bundles via upgrade code and querying bundle properties via provider code.
+* MikeGC: Fix a race condition where, in network disconnect/reconnect situations, MonUtil could incorrectly send invalid handles to WaitForMultipleObjects (and shut down because of it)
 
-## WixBuild: Version 3.9.10.0
+* MikeGC: Fix a few bugs in Settings Browser (UI issue, and tolerate more remote database errors such as remote databases on USB drives being unplugged)
 
-* BMurri: WIXBUG:4225 - DTF: InstallPathMap didn't accept identifiers differing only by case.
+* RobMen: Merge recent changes through WiX v3.9.16.0
 
-## WixBuild: Version 3.9.02.0
+* MikeGC: Preserve scroll position on Settings Browser ListView refresh.
 
-* BMurri: WIXBUG:4174 - Prevent unneeded build errors when generating delta patches with long file ids.
+* MikeGC: Make value history listview in Settings Browser automatically refresh when syncs occur.
 
-* BMurri: WIXBUG:3326 - project harvester now unescapes linked files with spaces.
+* MikeGC: Allow exporting historical versions of files from Settings Browser.
 
-* BobArnson: Support building on VS2013 only. Make SQL CE optional.
+* MikeGC: Make Settings Browser automatically start on install, restart on repair, and close on uninstall.
 
-* RobMen: WiX v3.9
+* MikeGC: Fix bug in settings engine autosync that would cause it to inadvertently stop monitoring remote databases for changes after detecting a new product had been installed.
 
-## WixBuild: Version 3.9.0.0
+* RobMen: Merge recent changes through WiX v3.9.10.0
+
+## WixBuild: Version 4.0.1203.0
+
+* RobMen: Merge recent changes through WiX v3.9.2.0
+
+* MikeGC: Fix Settings Engine to behave better when remote database is not always available due to either USB drive unplugged or a network disconnection.
+
+* RobMen: Merge recent changes through WiX v3.8 RTM.
+
+* RobMen: WIXFEAT:4138 - simplify and improve extensibility model in WiX toolset.
+
+* MikeGC: Fix bug in Settings Engine auto sync related to pushing AND pulling information automatically when first adding a remote database.
+
+* MikeGC: Settings Engine now more reliably connects to remote databases on windows startup, even if it runs before the network has fully initialized.
+
+* RobMen: Merge recent changes through WiX v3.8.1021.0
+
+## WixBuild: Version 4.0.1015.0
+
+* RobMen: Merge recent changes through WiX v3.8.1014.0
+
+* MikeGC: Implement automatic synchronization of settings within Settings Engine / Settings Browser (using MonUtil).
+
+* MikeGC: Make Settings Browser automatically start upon login, start as a tray icon, and minimize back to tray.
+
+* MikeGC: Fix quite a few bugs in Settings Engine and Settings Browser.
+
+## WixBuild: Version 4.0.1007.0
+
+* RobMen: Merge recent changes through WiX v3.8.1007.0
+
+* RobMen: Merge source code reorganization.
+
+* RobMen: Merge recent changes through WiX v3.8.904.0
+
+* MikeGC: MonUtil: Add 32-bit and 64-bit awareness, add support for large numbers of monitors (>64), carefully differentiate between recursive and non-recursive waits, and fix several bugs.
+
+* MikeGC: SceUtil: Add interface to detect whether changes to the database have occurred during a session.
+
+* RobMen: Merge recent changes through WiX v3.8.826.0
+
+* MikeGC: Make Settings Browser window resizable, and enable AutoResize functionality in ThmUtil.
+
+* MikeGC: Introducing MonUtil, which allow easily monitoring directories and registry keys for changes.
+
+* RobMen: Merge recent changes through WiX v3.8.722.0
+
+## WixBuild: Version 4.0.701.0
+
+* RobMen: Merge recent changes through WiX v3.8.628.0.
+
+* RobMen: Merge recent changes through WiX v3.8.611.0.
+
+* MikeGC: Fix bug in settings browser "one instance" lock, switch from a mutex to a per-user lock, and fix some UI thread issues
+
+* MikeGC: Fix pdbs zip and create new udms zip for settings engine manifests
+
+* RobMen: Merge recent changes from WiX v3.8.
+
+* MikeGC: Introducing WiX Settings Engine.
+
+* RobMen: Merge recent changes from WiX v3.8.
+
+## WixBuild: Version 4.0.424.0
+
+* RobMen: Merge recent changes from WiX v3.8.
+
+* RobMen: Add version to schema namespaces.
+
+* RobMen: Move extension schema namespaces under "wxs" to align better with Simplified WiX.
+* RobMen: Update Simplified WiX namespaces to match changes "wxs" namespace.
+
+* RobMen: Fix bad old references to thmutil.xsd.
+
+* RobMen: More SxS'ification of folders, registry keys, etc.
+* RobMen: Fix Votive registration to correctly load in VS.
+* RobMen: Add Simplified WiX Toolset to binaries.zip
+
+* RobMen: Update WixCop to help with all namespace changes (including extensions).
+* RobMen: Update thmutil.xsd namespace to be consistent with other changes.
+
+## WixBuild: Version 4.0.4.0
+
+* RobMen: Introducing Simplified WiX Toolset.
+
+* RobMen: Rename "Windows Installer Xml Toolset" to "WiX Toolset".
+* RobMen: Improve support for building WiX Toolset with VS2012.
+* RobMen: Continue to fix namespace breaking changes.
+
+* RobMen: Change namespaces to prepare for breaking changes.
+
+* RobMen: WiX v4.0
+
+## WixBuild: Version 4.0.0.0

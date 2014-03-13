@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset Utility Extension.
+// The decompiler for the WiX Toolset Utility Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.IO;
@@ -20,19 +20,39 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
     using System.Diagnostics;
     using System.Globalization;
 
-    using Util = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Util;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using Util = WixToolset.Extensions.Serialize.Util;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset Utility Extension.
+    /// The decompiler for the WiX Toolset Utility Extension.
     /// </summary>
     public sealed class UtilDecompiler : DecompilerExtension
     {
         /// <summary>
+        /// Creates a decompiler for Utility Extension.
+        /// </summary>
+        public UtilDecompiler()
+        {
+            this.TableDefinitions = UtilExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return UtilExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
+        /// <summary>
         /// Called at the beginning of the decompilation of a database.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        public override void InitializeDecompile(TableCollection tables)
+        public override void Initialize(TableIndexedCollection tables)
         {
             this.CleanupSecureCustomProperties(tables);
             this.CleanupInternetShortcutRemoveFileTables(tables);
@@ -49,7 +69,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// new Property elements.
         /// </remarks>
         /// <param name="tables">The collection of all tables.</param>
-        private void CleanupSecureCustomProperties(TableCollection tables)
+        private void CleanupSecureCustomProperties(TableIndexedCollection tables)
         {
             Table propertyTable = tables["Property"];
 
@@ -91,7 +111,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Remove RemoveFile rows that the InternetShortcut compiler extension adds for us.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private void CleanupInternetShortcutRemoveFileTables(TableCollection tables)
+        private void CleanupInternetShortcutRemoveFileTables(TableIndexedCollection tables)
         {
             // index the WixInternetShortcut table
             Table wixInternetShortcutTable = tables["WixInternetShortcut"];
@@ -100,7 +120,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             {
                 foreach (Row row in wixInternetShortcutTable.Rows)
                 {
-                    wixInternetShortcuts.Add(row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), row);
+                    wixInternetShortcuts.Add(row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), row);
                 }
             }
 
@@ -184,7 +204,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Finalize decompilation.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        public override void FinalizeDecompile(TableCollection tables)
+        public override void Finish(TableIndexedCollection tables)
         {
             this.FinalizePerfmonTable(tables);
             this.FinalizePerfmonManifestTable(tables);
@@ -289,7 +309,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", componentId, "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", componentId, "Component"));
                 }
             }
         }
@@ -341,7 +361,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", componentId, "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", componentId, "Component"));
                     }
                 }
                 else
@@ -381,7 +401,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
                 this.Core.IndexElement(row, fileShare);
             }
@@ -399,7 +419,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
                 fileSharePermission.User = (string)row[1];
 
-                string[] specialPermissions = UtilExtension.FolderPermissions;
+                string[] specialPermissions = UtilConstants.FolderPermissions;
                 int permissions = (int)row[2];
                 for (int i = 0; i < 32; i++)
                 {
@@ -411,18 +431,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         {
                             name = specialPermissions[i];
                         }
-                        else if (28 > i && UtilExtension.StandardPermissions.Length > (i - 16))
+                        else if (28 > i && UtilConstants.StandardPermissions.Length > (i - 16))
                         {
-                            name = UtilExtension.StandardPermissions[i - 16];
+                            name = UtilConstants.StandardPermissions[i - 16];
                         }
-                        else if (0 <= (i - 28) && UtilExtension.GenericPermissions.Length > (i - 28))
+                        else if (0 <= (i - 28) && UtilConstants.GenericPermissions.Length > (i - 28))
                         {
-                            name = UtilExtension.GenericPermissions[i - 28];
+                            name = UtilConstants.GenericPermissions[i - 28];
                         }
 
                         if (null == name)
                         {
-                            this.Core.OnMessage(WixWarnings.UnknownPermission(row.SourceLineNumbers, row.Table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), i));
+                            this.Core.OnMessage(WixWarnings.UnknownPermission(row.SourceLineNumbers, row.Table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), i));
                         }
                         else
                         {
@@ -497,7 +517,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "FileShare_", (string)row[0], "FileShare"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "FileShare_", (string)row[0], "FileShare"));
                 }
             }
         }
@@ -562,7 +582,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
 
                 this.Core.IndexElement(row, internetShortcut);
@@ -628,16 +648,16 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 switch ((string)row[1])
                 {
                     case "CreateFolder":
-                        specialPermissions = UtilExtension.FolderPermissions;
+                        specialPermissions = UtilConstants.FolderPermissions;
                         break;
                     case "File":
-                        specialPermissions = UtilExtension.FilePermissions;
+                        specialPermissions = UtilConstants.FilePermissions;
                         break;
                     case "Registry":
-                        specialPermissions = UtilExtension.RegistryPermissions;
+                        specialPermissions = UtilConstants.RegistryPermissions;
                         break;
                     case "ServiceInstall":
-                        specialPermissions = UtilExtension.ServicePermissions;
+                        specialPermissions = UtilConstants.ServicePermissions;
                         break;
                     default:
                         this.Core.OnMessage(WixWarnings.IllegalColumnValue(row.SourceLineNumbers, row.Table.Name, row.Fields[1].Column.Name, row[1]));
@@ -655,18 +675,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         {
                             name = specialPermissions[i];
                         }
-                        else if (28 > i && UtilExtension.StandardPermissions.Length > (i - 16))
+                        else if (28 > i && UtilConstants.StandardPermissions.Length > (i - 16))
                         {
-                            name = UtilExtension.StandardPermissions[i - 16];
+                            name = UtilConstants.StandardPermissions[i - 16];
                         }
-                        else if (0 <= (i - 28) && UtilExtension.GenericPermissions.Length > (i - 28))
+                        else if (0 <= (i - 28) && UtilConstants.GenericPermissions.Length > (i - 28))
                         {
-                            name = UtilExtension.GenericPermissions[i - 28];
+                            name = UtilConstants.GenericPermissions[i - 28];
                         }
 
                         if (null == name)
                         {
-                            this.Core.OnMessage(WixWarnings.UnknownPermission(row.SourceLineNumbers, row.Table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), i));
+                            this.Core.OnMessage(WixWarnings.UnknownPermission(row.SourceLineNumbers, row.Table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), i));
                         }
                         else
                         {
@@ -969,7 +989,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                     }
                 }
                 else
@@ -1000,7 +1020,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Group_", (string)row[0], "Group"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Group_", (string)row[0], "Group"));
                 }
             }
         }
@@ -1094,7 +1114,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// refers to a file row - but doesn't have to), the nesting must
         /// be inferred during finalization.
         /// </remarks>
-        private void FinalizePerfmonTable(TableCollection tables)
+        private void FinalizePerfmonTable(TableIndexedCollection tables)
         {
             Table perfmonTable = tables["Perfmon"];
 
@@ -1118,7 +1138,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, perfmonTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File", formattedFile, "File"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, perfmonTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File", formattedFile, "File"));
                         }
                     }
                     else
@@ -1133,7 +1153,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Finalize the PerfmonManifest table.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private void FinalizePerfmonManifestTable(TableCollection tables)
+        private void FinalizePerfmonManifestTable(TableIndexedCollection tables)
         {
             Table perfmonManifestTable = tables["PerfmonManifest"];
 
@@ -1157,7 +1177,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, perfCounterManifest.ResourceFileDirectory, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File", formattedFile, "File"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, perfCounterManifest.ResourceFileDirectory, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File", formattedFile, "File"));
                         }
                     }
                     else
@@ -1176,7 +1196,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Nests the PermissionEx elements below their parent elements.  There are no declared foreign
         /// keys for the parents of the SecureObjects table.
         /// </remarks>
-        private void FinalizeSecureObjectsTable(TableCollection tables)
+        private void FinalizeSecureObjectsTable(TableIndexedCollection tables)
         {
             Table createFolderTable = tables["CreateFolder"];
             Table secureObjectsTable = tables["SecureObjects"];
@@ -1222,7 +1242,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "SecureObjects", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "LockObject", id, table));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "SecureObjects", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "LockObject", id, table));
                         }
                     }
                     else
@@ -1235,7 +1255,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "SecureObjects", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "LockObject", id, table));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "SecureObjects", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "LockObject", id, table));
                         }
                     }
                 }
@@ -1250,7 +1270,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Since there is no foreign key from the ServiceName column to the
         /// ServiceInstall table, this relationship must be handled late.
         /// </remarks>
-        private void FinalizeServiceConfigTable(TableCollection tables)
+        private void FinalizeServiceConfigTable(TableIndexedCollection tables)
         {
             Table serviceConfigTable = tables["ServiceConfig"];
             Table serviceInstallTable = tables["ServiceInstall"];
@@ -1295,7 +1315,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, serviceConfigTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, serviceConfigTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                         }
                     }
                     else
@@ -1311,7 +1331,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, serviceConfigTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ServiceName", (string)row[0], "ServiceInstall"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, serviceConfigTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ServiceName", (string)row[0], "ServiceInstall"));
                         }
                     }
                 }
@@ -1322,7 +1342,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Finalize the XmlConfig table.
         /// </summary>
         /// <param name="tables">Collection of all tables.</param>
-        private void FinalizeXmlConfigTable(TableCollection tables)
+        private void FinalizeXmlConfigTable(TableIndexedCollection tables)
         {
             Table xmlConfigTable = tables["XmlConfig"];
 
@@ -1342,7 +1362,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, xmlConfigTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ElementPath", (string)row[2], "XmlConfig"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, xmlConfigTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ElementPath", (string)row[2], "XmlConfig"));
                         }
                     }
                     else
@@ -1355,7 +1375,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, xmlConfigTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[7], "Component"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, xmlConfigTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[7], "Component"));
                         }
                     }
                 }
@@ -1371,7 +1391,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Some of the XmlFile table rows are compiler generated from util:EventManifest node
         /// These rows should not be appended to component.
         /// </remarks>
-        private void FinalizeXmlFileTable(TableCollection tables)
+        private void FinalizeXmlFileTable(TableIndexedCollection tables)
         {
             Table xmlFileTable = tables["XmlFile"];
             Table eventManifestTable = tables["EventManifest"];
@@ -1479,7 +1499,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, xmlFileTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[6], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, xmlFileTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[6], "Component"));
                     }
                 }
             }
@@ -1490,7 +1510,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// This function must be called after FinalizeXmlFileTable
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private void FinalizeEventManifestTable(TableCollection tables)
+        private void FinalizeEventManifestTable(TableIndexedCollection tables)
         {
             Table eventManifestTable = tables["EventManifest"];
 

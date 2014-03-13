@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset.Data
 {
     using System;
     using System.Collections;
@@ -20,8 +20,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Text;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
+    using WixToolset.Msi;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Values for the OptimizeCA MsiPatchMetdata property, which indicates whether custom actions can be skipped when applying the patch.
@@ -55,10 +58,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
     /// </summary>
     public class Patch
     {
-        private List<InspectorExtension> inspectorExtensions;
+        private List<IInspectorExtension> inspectorExtensions;
         private Output patch;
         private TableDefinitionCollection tableDefinitions;
-        public event MessageEventHandler Message;
 
         public Output PatchOutput
         {
@@ -67,25 +69,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
         public Patch()
         {
-            this.inspectorExtensions = new List<InspectorExtension>();
-            this.tableDefinitions = Installer.GetTableDefinitions();
+            this.inspectorExtensions = new List<IInspectorExtension>();
+            this.tableDefinitions = new TableDefinitionCollection(WindowsInstallerStandard.GetTableDefinitions());
         }
 
         /// <summary>
         /// Adds an extension.
         /// </summary>
         /// <param name="extension">The extension to add.</param>
-        public void AddExtension(WixExtension extension)
+        public void AddExtension(IInspectorExtension extension)
         {
-            if (null != extension.InspectorExtension)
-            {
-                this.inspectorExtensions.Add(extension.InspectorExtension);
-            }
+            this.inspectorExtensions.Add(extension);
         }
 
         public void Load(string patchPath)
         {
-            this.patch = Output.Load(patchPath, false, false);
+            this.patch = Output.Load(patchPath, false);
         }
 
         /// <summary>
@@ -93,9 +92,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="transforms">List of transforms to attach.</param>
         [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "System.InvalidOperationException.#ctor(System.String)")]
-        public void AttachTransforms(ArrayList transforms)
+        public void AttachTransforms(List<PatchTransform> transforms)
         {
-            InspectorCore inspectorCore = new InspectorCore(this.Message);
+            InspectorCore inspectorCore = new InspectorCore();
 
             // Track if at least one transform gets attached.
             bool attachedTransform = false;
@@ -344,7 +343,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                     }
                 }
-                
+
                 // Use the Media/@DiskId if greater for backward compatibility.
                 if (mediaRow.LastSequence < mediaRow.DiskId)
                 {
@@ -449,7 +448,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             foreach (InspectorExtension inspectorExtension in this.inspectorExtensions)
             {
                 inspectorExtension.Core = inspectorCore;
-                inspectorExtension.InspectPatch(this.patch);
+                inspectorExtension.InspectOutput(this.patch);
 
                 // reset
                 inspectorExtension.Core = null;
@@ -1156,8 +1155,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     throw new WixException(WixErrors.AdminImageRequired(productCode));
                 }
 
-                FileRowCollection mainFileRows = new FileRowCollection();
-                mainFileRows.AddRange(mainFileTable.Rows);
+                RowDictionary<FileRow> mainFileRows = new RowDictionary<FileRow>(mainFileTable);
 
                 Table pairedFileTable = pairedTransform.EnsureTable(mainFileTable.Definition);
                 foreach (WixFileRow mainWixFileRow in mainWixFileTable.Rows)
@@ -1291,16 +1289,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs mea)
         {
-            WixErrorEventArgs errorEventArgs = mea as WixErrorEventArgs;
-
-            if (null != this.Message)
-            {
-                this.Message(this, mea);
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(mea);
         }
     }
 }

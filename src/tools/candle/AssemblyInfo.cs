@@ -19,5 +19,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("WiX Toolset Compiler")]
 [assembly: AssemblyDescription("Compiler")]
 [assembly: AssemblyCulture("")]
-[assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

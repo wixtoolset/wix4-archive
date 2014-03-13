@@ -7,25 +7,44 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset .NET Framework Extension.
+// The decompiler for the WiX Toolset .NET Framework Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
-
-    using NetFx = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.NetFx;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using NetFx = WixToolset.Extensions.Serialize.NetFx;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset .NET Framework Extension.
+    /// The decompiler for the WiX Toolset .NET Framework Extension.
     /// </summary>
     public sealed class NetFxDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for NetFx Extension.
+        /// </summary>
+        public NetFxDecompiler()
+        {
+            this.TableDefinitions = NetFxExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return NetFxExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -121,7 +140,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File_", (string)row[1], "File"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File_", (string)row[1], "File"));
                 }
             }
         }

@@ -11,9 +11,10 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
+    using WixToolset.Data;
 
     /// <summary>
     /// Rollback boundary info for binding Bundles.
@@ -38,6 +39,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
         public bool Default { get; private set; }
         public string Id { get; private set; }
         public YesNoType Vital { get; private set; }
-        public SourceLineNumberCollection SourceLineNumbers { get; private set; }
+        public SourceLineNumber SourceLineNumbers { get; private set; }
     }
 }

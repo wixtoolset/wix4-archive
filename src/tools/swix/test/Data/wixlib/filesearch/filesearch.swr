@@ -1,0 +1,7 @@
+﻿use msi
+
+msi.fileSearch id=fsC component=c00d5a59-1bd1-4f6b-9b2b-27e0ae64020b
+
+msi.fileSearch id=fsRK registry=HKLM\Search\Registry\Key\
+
+msi.fileSearch id=fsRV registry=HKLM\Search\Registry\Key\Value

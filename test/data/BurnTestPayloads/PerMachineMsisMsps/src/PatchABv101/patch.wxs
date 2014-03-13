@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
     <Patch Id="*" AllowRemoval="yes" Classification="Security Rollup" ClientPatchId="PatchABv1011" Codepage="1252" Description="Prods A and B patch v 1.0.1.1" DisplayName="Prods A and B patch v 1.0.1.1" Manufacturer="My Company" MoreInfoURL="http://support.MyCompany.com/kb/1">
 
 		<PatchProperty Company="My Company" Name="Branch" Value="GDR" />

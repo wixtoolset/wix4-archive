@@ -356,7 +356,7 @@ extern "C" HRESULT DAPI StrAnsiAllocString(
 
         --cchDest; // subtract one because WideChageToMultiByte includes space for the NULL terminator that we track below
     }
-    else if (L'\0' == wzSource[cchSource]) // if the source already had a null terminator, don't count that in the character count because we track it below
+    else if (L'\0' == wzSource[cchSource - 1]) // if the source already had a null terminator, don't count that in the character count because we track it below
     {
         cchDest = cchSource - 1;
     }
@@ -436,7 +436,7 @@ extern "C" HRESULT DAPI StrAllocStringAnsi(
 
         --cchDest; //subtract one because MultiByteToWideChar includes space for the NULL terminator that we track below
     }
-    else if (L'\0' == szSource[cchSource]) // if the source already had a null terminator, don't count that in the character count because we track it below
+    else if (L'\0' == szSource[cchSource - 1]) // if the source already had a null terminator, don't count that in the character count because we track it below
     {
         cchDest = cchSource - 1;
     }

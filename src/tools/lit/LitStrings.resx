@@ -112,26 +112,25 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EXP_CannotLoadBinderFileManager" xml:space="preserve">
     <value>cannot load binder file manager: {0}.  lit can only load one binder file manager and has already loaded binder file manager: {1}.</value>
   </data>
   <data name="HelpMessage" xml:space="preserve">
-<value><![CDATA[ usage:  lit.exe [-?] [-nologo] [-out libraryFile] objectFile [objectFile ...] [@responseFile]
+    <value> usage:  lit.exe [-?] [-nologo] [-out libraryFile] objectFile [objectFile ...] [@responseFile]
 
-   -b <path>  binder path to locate all files (default: current directory)
+   -b &lt;path&gt;  binder path to locate all files (default: current directory)
               prefix the path with 'name=' where 'name' is the name of your
               named bindpath.
    -bf        bind files into the library file
-   -ext <extension>  extension assembly or "class, assembly"
-   -loc <loc.wxl>  bind localization strings from a wxl into the library file
+   -ext &lt;extension&gt;  extension assembly or "class, assembly"
+   -loc &lt;loc.wxl&gt;  bind localization strings from a wxl into the library file
    -nologo    skip printing lit logo information
    -o[ut]     specify output file (default: write to current directory)
-   -pedantic  show pedantic messages
    -ss        suppress schema validation of documents (performance boost)
    -sv        suppress intermediate file version mismatch checking
    -sw[N]     suppress all warnings or a specific message ID
@@ -141,6 +140,6 @@
    -wx[N]     treat all warnings or a specific message ID as an error
               (example: -wx1011 -wx1012)
    -wxall     treat all warnings as errors (deprecated)
-   -? | -help this help information]]></value>
+   -? | -help this help information</value>
   </data>
 </root>

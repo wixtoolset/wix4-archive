@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.WixBuild
+namespace WixToolset.WixBuild
 {
     using System;
     using System.ComponentModel;

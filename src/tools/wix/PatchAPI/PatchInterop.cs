@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.PatchAPI
+namespace WixToolset.PatchAPI
 {
     using System;
     using System.Collections.Generic;

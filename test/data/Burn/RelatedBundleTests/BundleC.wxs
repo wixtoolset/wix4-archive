@@ -16,7 +16,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Bundle Name="~$(var.TestName) - Bundle C" Version="$(var.Version)" UpgradeCode="C59E4174-78C0-47CA-8024-51A76C0492ED">
     <RelatedBundle Id="5161DC26-C1D4-4BDD-B562-CF57A58CB1F2" Action="Addon" />
     <Log Prefix="~$(var.TestName)_BundleC"/>

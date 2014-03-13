@@ -7,15 +7,15 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     using System;
     using System.IO;
     using System.Text;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Deployment.Compression;
-    using Microsoft.Deployment.Compression.Zip;
+    using WixToolset.Dtf.Compression;
+    using WixToolset.Dtf.Compression.Zip;
 
     [TestClass]
     public class ZipTest

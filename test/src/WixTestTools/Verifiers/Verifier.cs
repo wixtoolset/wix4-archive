@@ -23,10 +23,11 @@ namespace WixTest
     using System.Xml;
     using System.Xml.XPath;
 
-    using DTF = Microsoft.Deployment.WindowsInstaller;
-    using Microsoft.Tools.WindowsInstallerXml;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
+    using DTF = WixToolset.Dtf.WindowsInstaller;
+    using WixToolset;
+    using WixToolset.Msi;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using WixToolset.Data;
 
     /// <summary>
     /// Contains methods for test verification
@@ -269,7 +270,7 @@ namespace WixTest
             Assembly wix = Assembly.LoadFile(wixDllLocation);
 
             // Find the SummaryInformation type
-            string summaryInformationTypeName = "Microsoft.Tools.WindowsInstallerXml.Msi.SummaryInformation";
+            string summaryInformationTypeName = "WixToolset.Msi.SummaryInformation";
             Type summaryInformationType = wix.GetType(summaryInformationTypeName);
             if (null == summaryInformationType)
             {
@@ -420,8 +421,8 @@ namespace WixTest
             }
             else
             {
-                targetOutput = Output.Load(expectedResult, false, false);
-                updatedOutput = Output.Load(actualResult, false, false);
+                targetOutput = Output.Load(expectedResult, false);
+                updatedOutput = Output.Load(actualResult, false);
             }
             
             differences.AddRange(CompareOutput(targetOutput, updatedOutput, tables));
@@ -676,9 +677,9 @@ namespace WixTest
         public static XmlNodeList QueryWixLib(string wixLibPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("wix", "http://schemas.microsoft.com/wix/2006/objects");
-            xmlNamespaceManager.AddNamespace("lib", "http://schemas.microsoft.com/wix/2006/libraries");
-            xmlNamespaceManager.AddNamespace("loc", "http://schemas.microsoft.com/wix/2006/localization");
+            xmlNamespaceManager.AddNamespace("wix", "http://wixtoolset.org/schemas/wixobj");
+            xmlNamespaceManager.AddNamespace("lib", "http://wixtoolset.org/schemas/wixlib");
+            xmlNamespaceManager.AddNamespace("loc", "http://wixtoolset.org/schemas/wxl");
             XmlNodeList nodeList = Verifier.QueryXML(wixLibPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }
@@ -693,7 +694,7 @@ namespace WixTest
         public static XmlNodeList QueryWixobj(string wixobjPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("wix", "http://schemas.microsoft.com/wix/2006/objects");
+            xmlNamespaceManager.AddNamespace("wix", "http://wixtoolset.org/schemas/wixobj");
             XmlNodeList nodeList = Verifier.QueryXML(wixobjPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }
@@ -708,9 +709,9 @@ namespace WixTest
         public static XmlNodeList QueryWixout(string wixoutPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("obj", "http://schemas.microsoft.com/wix/2006/objects");
-            xmlNamespaceManager.AddNamespace("out", "http://schemas.microsoft.com/wix/2006/outputs");
-            xmlNamespaceManager.AddNamespace("tbl", "http://schemas.microsoft.com/wix/2006/tables");
+            xmlNamespaceManager.AddNamespace("obj", "http://wixtoolset.org/schemas/wixobj");
+            xmlNamespaceManager.AddNamespace("out", "http://wixtoolset.org/schemas/wixout");
+            xmlNamespaceManager.AddNamespace("tbl", "http://wixtoolset.org/schemas/wi/tables");
             XmlNodeList nodeList = Verifier.QueryXML(wixoutPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }

@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML Server Perfcounter and Event Manifest Register CustomActions.
+//    WiX Server Perfcounter and Event Manifest Register CustomActions.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

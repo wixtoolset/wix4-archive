@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Notepad">
+        <Data>
+            <RegistryKey Namespace="Reg" Root="HKCU" Key="Software\Microsoft\Notepad" />
+        </Data>
+
+        <Filter>
+          <Ignore Name="Reg:\iWindowPosDX" />
+          <Ignore Name="Reg:\iWindowPosDY" />
+          <Ignore Name="Reg:\iWindowPosX" />
+          <Ignore Name="Reg:\iWindowPosY" />
+        </Filter>
+
+        <DisplayName LCID="1033">Notepad</DisplayName>
+    </Product>
+</LegacySettings>

@@ -30,7 +30,7 @@ namespace WixBuild.Tools.DocFromXsd
     {
         private const string XHtmlNamespace = "http://www.w3.org/1999/xhtml";
         private const string XmlSchemaNamespace = "http://www.w3.org/2001/XMLSchema";
-        private const string XmlSchemaExtensionNamespace = "http://schemas.microsoft.com/wix/2005/XmlSchemaExtension";
+        private const string XmlSchemaExtensionNamespace = "http://wixtoolset.org/schemas/XmlSchemaExtension";
 
         private const string MainLayout = "documentation_xsd_main";
         private const string ExtensionLayout = "documentation_xsd_extension";

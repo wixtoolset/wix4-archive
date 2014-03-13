@@ -283,6 +283,54 @@ extern "C" HRESULT DAPI TimeSystemDateTime(
 }
 
 
+/****************************************************************************
+TimeSystemToDateTimeString - converts the provided system time struct to
+  string format representing date and time for the specified locale
+****************************************************************************/
+HRESULT DAPI TimeSystemToDateTimeString(
+    __deref_out_z LPWSTR* ppwz,
+    __in const SYSTEMTIME* pst,
+    __in LCID locale
+    )
+{
+    HRESULT hr = S_OK;
+    const WCHAR * DATE_FORMAT = L"MMM dd',' yyyy',' ";
+    const WCHAR * TIME_FORMAT = L"hh':'mm':'ss tt";
+    int iLenDate = 0;
+    int iLenTime = 0;
+
+    iLenDate = ::GetDateFormatW(locale, 0, pst, DATE_FORMAT, NULL, 0);
+    if (0 >= iLenDate)
+    {
+        ExitWithLastError(hr, "Failed to get date format with NULL");
+    }
+
+    iLenTime = ::GetTimeFormatW(locale, 0, pst, TIME_FORMAT, NULL, 0);
+    if (0 >= iLenTime)
+    {
+        ExitWithLastError(hr, "Failed to get time format with NULL");
+    }
+
+    // Between both lengths we account for 2 null terminators, and only need one, so we subtract one
+    hr = StrAlloc(ppwz, iLenDate + iLenTime - 1);
+    ExitOnFailure(hr, "Failed to allocate string");
+
+    if (!::GetDateFormatW(locale, 0, pst, DATE_FORMAT, *ppwz, iLenDate))
+    {
+        ExitWithLastError(hr, "Failed to get date format with buffer");
+    }
+    // Space to separate them
+    (*ppwz)[iLenDate - 1] = ' ';
+
+    if (!::GetTimeFormatW(locale, 0, pst, TIME_FORMAT, (*ppwz) + iLenDate - 1, iLenTime))
+    {
+        ExitWithLastError(hr, "Failed to get time format with buffer");
+    }
+
+LExit:
+    return hr;
+}
+
 /********************************************************************
  DayFromString - converts string to day
 
@@ -331,4 +379,3 @@ static HRESULT MonthFromString(
 
     return hr;
 }
-

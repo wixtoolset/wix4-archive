@@ -12,7 +12,7 @@
 		<AssemblyName>$safeprojectname$</AssemblyName>
 		<TargetFrameworkVersion>v$targetframeworkversion$</TargetFrameworkVersion>
 		<FileAlignment>512</FileAlignment>
-		<WixCATargetsPath Condition=" '$(WixCATargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.CA.targets</WixCATargetsPath>
+		<WixCATargetsPath Condition=" '$(WixCATargetsPath)' == '' ">$(MSBuildExtensionsPath)\WiX Toolset\v4\Wix.CA.targets</WixCATargetsPath>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
 		<DebugSymbols>true</DebugSymbols>
@@ -41,7 +41,7 @@
 		<Reference Include="Microsoft.CSharp" />
  		$endif$
 		<Reference Include="System.Xml"/>
-		<Reference Include="Microsoft.Deployment.WindowsInstaller"/>
+		<Reference Include="WixToolset.Dtf.WindowsInstaller"/>
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Include="CustomAction.cs" />

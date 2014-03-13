@@ -11,7 +11,7 @@
 // </summary>
 //--------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstaller.Tools
+namespace WixBuild.Tools.FlattenXml
 {
     using System;
     using System.Collections.Generic;

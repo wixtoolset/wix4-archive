@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi' xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns='http://wixtoolset.org/schemas/wxs' xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
     <Bundle Name='Burn Test Bundle' Version='0.1' UpgradeCode='0A190CA6-6D59-4F20-9BC3-B1021021F795'
             IconSourceFile='$(env.WIX_ROOT)\src\Votive\votive2010\Templates\Projects\WixProject\WixProject.ico'

@@ -5,27 +5,42 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// The decompiler for the Windows Installer XML Toolset Visual Studio Extension.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
-
-    using VS = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.VS;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using VS = WixToolset.Extensions.Serialize.VS;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset Visual Studio Extension.
+    /// The decompiler for the WiX Toolset Visual Studio Extension.
     /// </summary>
     public sealed class VSDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for VS Extension.
+        /// </summary>
+        public VSDecompiler()
+        {
+            this.TableDefinitions = VSExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return VSExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -109,7 +124,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File_HxS", (string)row[3], "File"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File_HxS", (string)row[3], "File"));
                 }
             }
         }
@@ -133,7 +148,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "HelpNamespace_", (string)row[1], "HelpNamespace"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "HelpNamespace_", (string)row[1], "HelpNamespace"));
                 }
             }
         }
@@ -185,7 +200,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "HelpNamespace_", (string)row[1], "HelpNamespace"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "HelpNamespace_", (string)row[1], "HelpNamespace"));
                 }
             }
         }
@@ -222,7 +237,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 else if (0 != String.Compare(helpCollection.Id, "MS_VSIPCC_v80", StringComparison.Ordinal) &&
                     0 != String.Compare(helpCollection.Id, "MS.VSIPCC.v90", StringComparison.Ordinal))
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File_Collection", (string)row[2], "File"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File_Collection", (string)row[2], "File"));
                 }
                 this.Core.IndexElement(row, helpCollection);
             }
@@ -270,7 +285,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "HelpNamespace_", (string)row[0], "HelpNamespace"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "HelpNamespace_", (string)row[0], "HelpNamespace"));
                 }
             }
         }

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Dominions_3">
+        <Detect>
+            <Arp DisplayName="Dominions 3 (remove only)" UninstallStringDir="InstallDir"/>
+            <Arp DisplayName="Dominions 3" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: Add dom3config file in some form if possible though it's a blob.
+                 It's excluded for now because it likely contains screen resolution -->
+            <!-- TODO: Include user-created maps and battlemaps? (have to carefully
+                 exclude built-ins in this case -->
+            <Directory Namespace="SavedGames" Location="InstallDir:\savedgames\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Dominions 3</DisplayName>
+    </Product>
+</LegacySettings>

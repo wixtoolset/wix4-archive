@@ -11,63 +11,27 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+namespace WixToolset.Tools
 {
     using System;
-    using System.Collections;
-    using System.Collections.Specialized;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.IO;
-    using System.Text;
-    using System.Reflection;
-    using System.Resources;
+    using System.Linq;
     using System.Runtime.InteropServices;
-    using System.Xml;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// The main entry point for candle.
     /// </summary>
     public sealed class Candle
     {
-        private StringCollection invalidArgs;
-        private StringCollection sourceFiles;
-        private Hashtable parameters;
-        private Platform platform;
-        private StringCollection includeSearchPaths;
-        private StringCollection extensionList;
-        private string outputFile;
-        private string outputDirectory;
-        private bool suppressFilesVitalByDefault;
-        private bool showLogo;
-        private bool showHelp;
-        private bool suppressSchema;
-        private bool showPedanticMessages;
-        private bool preprocessToStdout;
-        private String preprocessFile;
-        private ConsoleMessageHandler messageHandler;
-        private bool fipsCompliant;
-        private bool allowPerSourceOutputSpecification;
+        private CandleCommandLine commandLine;
 
-        private static readonly char[] sourceOutputSeparator = new char[] { ';' };
-
-        /// <summary>
-        /// Instantiate a new Candle class.
-        /// </summary>
-        private Candle()
-        {
-            this.invalidArgs = new StringCollection();
-            this.sourceFiles = new StringCollection();
-            this.parameters = new Hashtable();
-            this.platform = Platform.X86;
-            this.includeSearchPaths = new StringCollection();
-            this.extensionList = new StringCollection();
-            this.showLogo = true;
-            this.messageHandler = new ConsoleMessageHandler("CNDL", "candle.exe");
-            this.fipsCompliant = false;
-            this.allowPerSourceOutputSpecification = false;
-        }
+        private IEnumerable<IPreprocessorExtension> preprocessorExtensions;
+        private IEnumerable<ICompilerExtension> compilerExtensions;
+        private IEnumerable<IExtensionData> extensionData;
 
         /// <summary>
         /// The main entry point for candle.
@@ -78,496 +42,180 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("CNDL", "candle.exe").Display += Candle.DisplayMessage;
+
             Candle candle = new Candle();
-            return candle.Run(args);
+            return candle.Execute(args);
         }
 
         /// <summary>
-        /// Main running method for the application.
+        /// Handler for display message events.
         /// </summary>
-        /// <param name="args">Commandline arguments to the application.</param>
-        /// <returns>Returns the application error code.</returns>
-        private int Run(string[] args)
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        private static void DisplayMessage(object sender, DisplayEventArgs e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        private int Execute(string[] args)
         {
             try
             {
-                // parse the command line
-                this.ParseCommandLine(args);
+                string[] unparsed = this.ParseCommandLineAndLoadExtensions(args);
 
-                // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
-                if (this.messageHandler.EncounteredError)
+                if (!Messaging.Instance.EncounteredError)
                 {
-                    return this.messageHandler.LastErrorNumber;
-                }
-
-                if (!this.fipsCompliant)
-                {
-                    try
+                    if (this.commandLine.ShowLogo)
                     {
-                        System.Security.Cryptography.MD5.Create();
-                    }
-                    catch (TargetInvocationException)
-                    {
-                        this.messageHandler.Display(this, WixErrors.UseFipsArgument());
-                        return this.messageHandler.LastErrorNumber;
-                    }
-                }
-
-                if (0 == this.sourceFiles.Count)
-                {
-                    this.showHelp = true;
-                }
-                else if (1 < this.sourceFiles.Count && null != this.outputFile)
-                {
-                    throw new ArgumentException(CandleStrings.CannotSpecifyMoreThanOneSourceFileForSingleTargetFile, "-out");
-                }
-
-                if (this.showLogo)
-                {
-                    AppCommon.DisplayToolHeader();
-                }
-
-                if (this.showHelp)
-                {
-                    Console.WriteLine(CandleStrings.HelpMessage);
-                    AppCommon.DisplayToolFooter();
-                    return this.messageHandler.LastErrorNumber;
-                }
-
-                foreach (string parameter in this.invalidArgs)
-                {
-                    this.messageHandler.Display(this, WixWarnings.UnsupportedCommandLineArgument(parameter));
-                }
-                this.invalidArgs = null;
-
-                // create the preprocessor and compiler
-                Preprocessor preprocessor = new Preprocessor();
-                preprocessor.Message += new MessageEventHandler(this.messageHandler.Display);
-                for (int i = 0; i < this.includeSearchPaths.Count; ++i)
-                {
-                    preprocessor.IncludeSearchPaths.Add(this.includeSearchPaths[i]);
-                }
-                preprocessor.CurrentPlatform = this.platform;
-
-                Compiler compiler = new Compiler();
-                compiler.Message += new MessageEventHandler(this.messageHandler.Display);
-                compiler.SuppressFilesVitalByDefault = this.suppressFilesVitalByDefault;
-                compiler.ShowPedanticMessages = this.showPedanticMessages;
-                compiler.SuppressValidate = this.suppressSchema;
-                compiler.CurrentPlatform = this.platform;
-                compiler.FipsCompliant = this.fipsCompliant;
-
-                // load any extensions
-                foreach (string extension in this.extensionList)
-                {
-                    WixExtension wixExtension = WixExtension.Load(extension);
-
-                    preprocessor.AddExtension(wixExtension);
-                    compiler.AddExtension(wixExtension);
-                }
-
-                // preprocess then compile each source file
-                Dictionary<string, List<string>> sourcesForOutput = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-                foreach (string sourceFileOrig in this.sourceFiles)
-                {
-                    string sourceFile = sourceFileOrig;
-                    string targetFile = null;
-
-                    if (this.allowPerSourceOutputSpecification)
-                    {
-                        string[] parts = sourceFileOrig.Split(Candle.sourceOutputSeparator, 2);
-                        if (2 == parts.Length)
-                        {
-                            sourceFile = parts[0];
-                            targetFile = parts[1];
-                        }
+                        AppCommon.DisplayToolHeader();
                     }
 
-                    string sourceFilePath = Path.GetFullPath(sourceFile);
-                    string sourceFileName = Path.GetFileName(sourceFile);
-
-                    if (null == targetFile)
+                    if (this.commandLine.ShowHelp)
                     {
-                        if (null != this.outputFile)
-                        {
-                            targetFile = this.outputFile;
-                        }
-                        else if (null != this.outputDirectory)
-                        {
-                            targetFile = Path.Combine(this.outputDirectory, Path.ChangeExtension(sourceFileName, ".wixobj"));
-                        }
-                        else
-                        {
-                            targetFile = Path.ChangeExtension(sourceFileName, ".wixobj");
-                        }
+                        Console.WriteLine(CandleStrings.HelpMessage);
+                        AppCommon.DisplayToolFooter();
                     }
-                    else if (!Path.IsPathRooted(targetFile) && null != this.outputDirectory)
+                    else
                     {
-                        targetFile = Path.Combine(this.outputDirectory, targetFile);
-                    }
-
-                    // print friendly message saying what file is being compiled
-                    Console.WriteLine(sourceFileName);
-
-                    // preprocess the source
-                    XmlDocument sourceDocument;
-                    try
-                    {
-                        if (this.preprocessToStdout)
+                        foreach (string arg in unparsed)
                         {
-                            preprocessor.PreprocessOut = Console.Out;
-                        }
-                        else if (null != this.preprocessFile)
-                        {
-                            preprocessor.PreprocessOut = new StreamWriter(this.preprocessFile);
+                            Messaging.Instance.OnMessage(WixWarnings.UnsupportedCommandLineArgument(arg));
                         }
 
-                        sourceDocument = preprocessor.Process(sourceFilePath, this.parameters);
-                    }
-                    finally
-                    {
-                        if (null != preprocessor.PreprocessOut && Console.Out != preprocessor.PreprocessOut)
-                        {
-                            preprocessor.PreprocessOut.Close();
-                        }
-                    }
-
-                    // if we're not actually going to compile anything, move on to the next file
-                    if (null == sourceDocument || this.preprocessToStdout || null != this.preprocessFile)
-                    {
-                        continue;
-                    }
-
-                    // and now we do what we came here to do...
-                    Intermediate intermediate = compiler.Compile(sourceDocument);
-
-                    // save the intermediate to disk if no errors were found for this source file
-                    if (null != intermediate)
-                    {
-                        intermediate.Save(targetFile);
-                    }
-
-                    // Track which source files result in a given output file, to ensure we aren't
-                    // overwriting the output.
-                    List<string> sources = null;
-                    string targetPath = Path.GetFullPath(targetFile);
-                    if (!sourcesForOutput.TryGetValue(targetPath, out sources))
-                    {
-                        sources = new List<string>();
-                        sourcesForOutput.Add(targetPath, sources);
-                    }
-                    sources.Add(sourceFile);
-                }
-
-                // Show an error for every output file that had more than 1 source file.
-                foreach (KeyValuePair<string, List<string>> outputSources in sourcesForOutput)
-                {
-                    if (1 < outputSources.Value.Count)
-                    {
-                        string sourceFiles = CompilerCore.CreateValueList(ValueListKind.None, outputSources.Value);
-                        this.messageHandler.Display(this, WixErrors.DuplicateSourcesForOutput(sourceFiles, outputSources.Key));
+                        this.Run();
                     }
                 }
-
             }
             catch (WixException we)
             {
-                this.messageHandler.Display(this, we.Error);
+                Messaging.Instance.OnMessage(we.Error);
             }
             catch (Exception e)
             {
-                this.messageHandler.Display(this, WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                Messaging.Instance.OnMessage(WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;
                 }
             }
 
-            return this.messageHandler.LastErrorNumber;
+            return Messaging.Instance.LastErrorNumber;
         }
 
-        /// <summary>
-        /// Parse the commandline arguments.
-        /// </summary>
-        /// <param name="args">Commandline arguments.</param>
-        private void ParseCommandLine(string[] args)
+        private string[] ParseCommandLineAndLoadExtensions(string[] args)
         {
-            for (int i = 0; i < args.Length; ++i)
+            this.commandLine = new CandleCommandLine();
+            string[] unprocessed = commandLine.Parse(args);
+            if (Messaging.Instance.EncounteredError)
             {
-                string arg = args[i];
-                if (null == arg || 0 == arg.Length) // skip blank arguments
-                {
-                    continue;
-                }
-
-                if (1 == arg.Length) // treat '-' and '@' as filenames when by themselves.
-                {
-                    this.sourceFiles.AddRange(AppCommon.GetFiles(arg, "Source"));
-                    continue;
-                }
-
-                if ('-' == arg[0] || '/' == arg[0])
-                {
-                    string parameter = arg.Substring(1);
-                    if ("allowPerSourceOutputSpecification" == parameter)
-                    {
-                        // This is a *long* parameter name; but we want it to be painful because it's
-                        // non-standard and we don't really want to have it at all.
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("allowPerSourceOutputSpecification"));
-
-                        this.allowPerSourceOutputSpecification = true;
-                    }
-                    else if ('d' == parameter[0])
-                    {
-                        if (1 >= parameter.Length || '=' == parameter[1])
-                        {
-                            this.messageHandler.Display(this, WixErrors.InvalidVariableDefinition(arg));
-                            return;
-                        }
-
-                        parameter = arg.Substring(2);
-
-                        string[] value = parameter.Split("=".ToCharArray(), 2);
-
-                        if (this.parameters.ContainsKey(value[0]))
-                        {
-                            this.messageHandler.Display(this, WixErrors.DuplicateVariableDefinition(value[0], (1 == value.Length) ? String.Empty : value[1], (string)this.parameters[value[0]]));
-                            return;
-                        }
-
-                        if (1 == value.Length)
-                        {
-                            this.parameters.Add(value[0], String.Empty);
-                        }
-                        else
-                        {
-                            this.parameters.Add(value[0], value[1]);
-                        }
-                    }
-                    else if ("fips" == parameter)
-                    {
-                        this.fipsCompliant = true;
-                    }
-                    else if ('I' == parameter[0])
-                    {
-                        this.includeSearchPaths.Add(parameter.Substring(1));
-                    }
-                    else if ("ext" == parameter)
-                    {
-                        if (!CommandLine.IsValidArg(args, ++i))
-                        {
-                            this.messageHandler.Display(this, WixErrors.TypeSpecificationForExtensionRequired("-ext"));
-                            return;
-                        }
-                        else
-                        {
-                            this.extensionList.Add(args[i]);
-                        }
-                    }
-                    else if ("nologo" == parameter)
-                    {
-                        this.showLogo = false;
-                    }
-                    else if ("o" == parameter || "out" == parameter)
-                    {
-                        string path = CommandLine.GetFileOrDirectory(parameter, this.messageHandler, args, ++i);
-
-                        if (!String.IsNullOrEmpty(path))
-                        {
-                            if (path.EndsWith("\\", StringComparison.Ordinal) || path.EndsWith("/", StringComparison.Ordinal))
-                            {
-                                this.outputDirectory = path;
-                            }
-                            else
-                            {
-                                this.outputFile = path;
-                            }
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                    else if ("pedantic" == parameter)
-                    {
-                        this.showPedanticMessages = true;
-                    }
-                    else if ("platform" == parameter || "arch" == parameter)
-                    {
-                        if ("platform" == parameter)
-                        {
-                            this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("platform", "arch"));
-                        }
-
-                        if (!CommandLine.IsValidArg(args, ++i))
-                        {
-                            this.messageHandler.Display(this, WixErrors.InvalidPlatformParameter(parameter, String.Empty));
-                            return;
-                        }
-
-                        if (String.Equals(args[i], "intel", StringComparison.OrdinalIgnoreCase) || String.Equals(args[i], "x86", StringComparison.OrdinalIgnoreCase))
-                        {
-                            this.platform = Platform.X86;
-                        }
-                        else if (String.Equals(args[i], "x64", StringComparison.OrdinalIgnoreCase))
-                        {
-                            this.platform = Platform.X64;
-                        }
-                        else if (String.Equals(args[i], "intel64", StringComparison.OrdinalIgnoreCase) || String.Equals(args[i], "ia64", StringComparison.OrdinalIgnoreCase))
-                        {
-                            this.platform = Platform.IA64;
-                        }
-                        else if (String.Equals(args[i], "arm", StringComparison.OrdinalIgnoreCase))
-                        {
-                            this.platform = Platform.ARM;
-                        }
-                        else
-                        {
-                            this.messageHandler.Display(this, WixErrors.InvalidPlatformParameter(parameter, args[i]));
-                        }
-                    }
-                    else if ('p' == parameter[0])
-                    {
-                        String file = arg.Substring(2);
-                        this.preprocessFile = file;
-                        this.preprocessToStdout = (0 == file.Length);
-                    }
-                    else if ("sfdvital" == parameter)
-                    {
-                        this.suppressFilesVitalByDefault = true;
-                    }
-                    else if ("ss" == parameter)
-                    {
-                        this.suppressSchema = true;
-                    }
-                    else if ("swall" == parameter)
-                    {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
-                        this.messageHandler.SuppressAllWarnings = true;
-                    }
-                    else if (parameter.StartsWith("sw", StringComparison.Ordinal))
-                    {
-                        string paramArg = parameter.Substring(2);
-                        try
-                        {
-                            if (0 == paramArg.Length)
-                            {
-                                this.messageHandler.SuppressAllWarnings = true;
-                            }
-                            else
-                            {
-                                int suppressWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
-                                if (0 >= suppressWarning)
-                                {
-                                    this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
-                                }
-
-                                this.messageHandler.SuppressWarningMessage(suppressWarning);
-                            }
-                        }
-                        catch (FormatException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
-                        }
-                        catch (OverflowException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
-                        }
-                    }
-                    else if ("wxall" == parameter)
-                    {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("wxall", "wx"));
-                        this.messageHandler.WarningAsError = true;
-                    }
-                    else if (parameter.StartsWith("wx", StringComparison.Ordinal))
-                    {
-                        string paramArg = parameter.Substring(2);
-                        try
-                        {
-                            if (0 == paramArg.Length)
-                            {
-                                this.messageHandler.WarningAsError = true;
-                            }
-                            else
-                            {
-                                int elevateWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
-                                if (0 >= elevateWarning)
-                                {
-                                    this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
-                                }
-
-                                this.messageHandler.ElevateWarningMessage(elevateWarning);
-                            }
-                        }
-                        catch (FormatException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
-                        }
-                        catch (OverflowException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
-                        }
-                    }
-                    else if ("trace" == parameter)
-                    {
-                        this.messageHandler.SourceTrace = true;
-                    }
-                    else if ("v" == parameter)
-                    {
-                        this.messageHandler.ShowVerboseMessages = true;
-                    }
-                    else if ("?" == parameter || "help" == parameter)
-                    {
-                        this.showHelp = true;
-                        return;
-                    }
-                    else
-                    {
-                        this.invalidArgs.Add(parameter);
-                    }
-                }
-                else if ('@' == arg[0])
-                {
-                    this.ParseCommandLine(CommandLineResponseFile.Parse(arg.Substring(1)));
-                }
-                else
-                {
-                    string sourceArg = arg;
-                    string targetArg = null;
-
-                    if (this.allowPerSourceOutputSpecification)
-                    {
-                        string[] parts = arg.Split(Candle.sourceOutputSeparator, 2);
-                        if (2 == parts.Length)
-                        {
-                            sourceArg = parts[0];
-                            targetArg = parts[1];
-                        }
-                    }
-
-                    string[] files = AppCommon.GetFiles(sourceArg, "Source");
-
-                    if (this.allowPerSourceOutputSpecification && null != targetArg)
-                    {
-                        // files should contain only one item!
-                        if (1 < files.Length)
-                        {
-                            string sourceList = CompilerCore.CreateValueList(ValueListKind.None, files);
-                            this.messageHandler.Display(this, WixErrors.MultipleFilesMatchedWithOutputSpecification(arg, sourceList));
-                        }
-                        else
-                        {
-                            this.sourceFiles.Add(string.Concat(files[0], Candle.sourceOutputSeparator[0], targetArg));
-                        }
-                    }
-                    else
-                    {
-                        this.sourceFiles.AddRange(files);
-                    }
-                }
+                return unprocessed;
             }
 
-            return;
+            // Load extensions.
+            ExtensionManager extensionManager = new ExtensionManager();
+            foreach (string extension in this.commandLine.Extensions)
+            {
+                extensionManager.Load(extension);
+            }
+
+            // Preprocessor extension command line processing.
+            this.preprocessorExtensions = extensionManager.Create<IPreprocessorExtension>();
+            foreach (IExtensionCommandLine pce in this.preprocessorExtensions.Where(e => e is IExtensionCommandLine).Cast<IExtensionCommandLine>())
+            {
+                pce.MessageHandler = Messaging.Instance;
+                unprocessed = pce.ParseCommandLine(unprocessed);
+            }
+
+            // Compiler extension command line processing.
+            this.compilerExtensions = extensionManager.Create<ICompilerExtension>();
+            foreach (IExtensionCommandLine cce in this.compilerExtensions.Where(e => e is IExtensionCommandLine).Cast<IExtensionCommandLine>())
+            {
+                cce.MessageHandler = Messaging.Instance;
+                unprocessed = cce.ParseCommandLine(unprocessed);
+            }
+
+            // Extension data command line processing.
+            this.extensionData = extensionManager.Create<IExtensionData>();
+            foreach (IExtensionCommandLine dce in this.extensionData.Where(e => e is IExtensionCommandLine).Cast<IExtensionCommandLine>())
+            {
+                dce.MessageHandler = Messaging.Instance;
+                unprocessed = dce.ParseCommandLine(unprocessed);
+            }
+
+            return commandLine.ParsePostExtensions(unprocessed);
+        }
+
+        private void Run()
+        {
+            // Create the preprocessor and compiler
+            Preprocessor preprocessor = new Preprocessor();
+            preprocessor.CurrentPlatform = this.commandLine.Platform;
+
+            foreach (string includePath in this.commandLine.IncludeSearchPaths)
+            {
+                preprocessor.IncludeSearchPaths.Add(includePath);
+            }
+
+            foreach (IPreprocessorExtension pe in this.preprocessorExtensions)
+            {
+                preprocessor.AddExtension(pe);
+            }
+
+            Compiler compiler = new Compiler();
+            compiler.ShowPedanticMessages = this.commandLine.ShowPedanticMessages;
+            compiler.CurrentPlatform = this.commandLine.Platform;
+
+            foreach (IExtensionData ed in this.extensionData)
+            {
+                compiler.AddExtensionData(ed);
+            }
+
+            foreach (ICompilerExtension ce in this.compilerExtensions)
+            {
+                compiler.AddExtension(ce);
+            }
+
+            // Preprocess then compile each source file.
+            foreach (CompileFile file in this.commandLine.Files)
+            {
+                // print friendly message saying what file is being compiled
+                Console.WriteLine(file.SourcePath);
+
+                // preprocess the source
+                XDocument sourceDocument;
+                try
+                {
+                    if (!String.IsNullOrEmpty(this.commandLine.PreprocessFile))
+                    {
+                        preprocessor.PreprocessOut = this.commandLine.PreprocessFile.Equals("con:", StringComparison.OrdinalIgnoreCase) ? Console.Out : new StreamWriter(this.commandLine.PreprocessFile);
+                    }
+
+                    sourceDocument = preprocessor.Process(file.SourcePath, this.commandLine.PreprocessorVariables);
+                }
+                finally
+                {
+                    if (null != preprocessor.PreprocessOut && Console.Out != preprocessor.PreprocessOut)
+                    {
+                        preprocessor.PreprocessOut.Close();
+                    }
+                }
+
+                // If we're not actually going to compile anything, move on to the next file.
+                if (null == sourceDocument || !String.IsNullOrEmpty(this.commandLine.PreprocessFile))
+                {
+                    continue;
+                }
+
+                // and now we do what we came here to do...
+                Intermediate intermediate = compiler.Compile(sourceDocument);
+
+                // save the intermediate to disk if no errors were found for this source file
+                if (null != intermediate)
+                {
+                    intermediate.Save(file.OutputPath);
+                }
+            }
         }
     }
 }

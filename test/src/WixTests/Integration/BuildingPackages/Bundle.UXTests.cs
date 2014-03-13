@@ -16,7 +16,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
     using System.Collections.Generic;
     using System.IO;
     using System.Xml;
-    using Microsoft.Deployment.Compression.Cab;
+    using WixToolset.Dtf.Compression.Cab;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using WixTest;

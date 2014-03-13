@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Master_of_Orion_2_Battle_at_Antares">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both Master of Orion 1 & 2.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Master of Orion 1 and 2" InstallLocation="ComboInstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="ComboInstallDir:\Master of Orion 2\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\SAVE" Postfix=".GAM"/>
+            <Normal Name="Data:\MOX.SET"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Master of Orion II: Battle at Antares</DisplayName>
+    </Product>
+</LegacySettings>

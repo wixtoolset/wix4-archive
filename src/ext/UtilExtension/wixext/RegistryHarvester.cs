@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
@@ -20,9 +20,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
-
     using Microsoft.Win32;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring from the registry.

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
     <Product Id="7CD51CE1-EFD3-46CB-AF28-5B7356D9C7F8" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{833389DB-8EFE-4D62-AF81-C533266C63B4}">
         <Package Description="Test Web dir Product" Comments="Test Web dir Product" InstallerVersion="200" Compressed="no" />
 

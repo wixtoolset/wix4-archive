@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML MSMQ Scheduling CustomAction.
+//    WiX MSMQ Scheduling CustomAction.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 #include "precomp.h"

@@ -33,7 +33,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Net;
@@ -59,10 +59,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="value">The value.</param>
         /// <param name="backwardsCompatible">Flag to say to use MD5 instead of better SHA1.</param>
         /// <returns>The UUID for the given namespace and value.</returns>
-        public static Guid NewUuid(Guid namespaceGuid, string value, bool backwardsCompatible)
+        public static Guid NewUuid(Guid namespaceGuid, string value)
         {
             byte[] namespaceBytes = namespaceGuid.ToByteArray();
-            short uuidVersion = backwardsCompatible ? (short)0x3000 : (short)0x5000;
+            short uuidVersion = (short)0x5000;
 
             // get the fields of the guid which are in host byte ordering
             int timeLow = BitConverter.ToInt32(namespaceBytes, 0);
@@ -87,19 +87,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             // perform the appropriate hash of the namespace and value
             byte[] hash;
-            if (backwardsCompatible)
+            using (SHA1 sha1 = SHA1.Create())
             {
-                using (MD5 md5 = MD5.Create())
-                {
-                    hash = md5.ComputeHash(buffer);
-                }
-            }
-            else
-            {
-                using (SHA1 sha1 = SHA1.Create())
-                {
-                    hash = sha1.ComputeHash(buffer);
-                }
+                hash = sha1.ComputeHash(buffer);
             }
 
             // get the fields of the hash which are in network byte ordering

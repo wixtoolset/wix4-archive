@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML Server Performance Counter CustomActions.
+//    WiX Server Performance Counter CustomActions.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

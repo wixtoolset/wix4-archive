@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Windows Installer Xml toolset scanner tool.
+// WiX toolset scanner tool.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Shine
+namespace WixToolset.Shine
 {
     using System;
     using System.Xml.Linq;

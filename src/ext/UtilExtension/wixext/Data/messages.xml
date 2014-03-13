@@ -7,10 +7,10 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The messages for the Windows Installer XML Toolset Utility Extension.
+  The messages for the WiX Toolset Utility Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="UtilErrors" ContainerName="UtilErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="UtilErrors" ContainerName="UtilErrorEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="IllegalAttributeWithoutComponent" Number="5050">
             <Instance>
                 The {0}/@{1} attribute cannot be specified unless the element has a Component as an ancestor. A {0} that does not have a Component ancestor is not installed.
@@ -98,7 +98,7 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="UtilWarnings" ContainerName="UtilWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Class Name="UtilWarnings" ContainerName="UtilWarningEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="SelfRegHarvestFailed" Number="5150" SourceLineNumbers="no">
             <Instance>
                 Could not harvest data from a file that was expected to be a SelfReg DLL: {0}. If this file does not support SelfReg you can ignore this warning. Otherwise, this error detail may be helpful to diagnose the failure: {1}
@@ -152,7 +152,7 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="UtilVerboses" ContainerName="UtilVerboseEventArgs" BaseContainerName="WixVerboseEventArgs">
+    <Class Name="UtilVerboses" ContainerName="UtilVerboseEventArgs" BaseContainerName="MessageEventArgs">
       <Message Id="HarvestingAssembly" Number="5100" SourceLineNumbers="no">
         <Instance>
           Trying to harvest {0} as an assembly.

@@ -14,8 +14,8 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
-using Microsoft.Tools.WindowsInstallerXml.UX;
+using WixToolset.Bootstrapper;
+using WixToolset.UX;
 
 
 [assembly: AssemblyTitle("WixBA")]

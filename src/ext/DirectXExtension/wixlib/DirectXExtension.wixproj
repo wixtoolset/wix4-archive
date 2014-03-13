@@ -17,15 +17,6 @@
     <Cultures>en-us</Cultures>
   </PropertyGroup>
 
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
-
-  <PropertyGroup>
-    <DefineConstants>
-      $(DefineConstants);
-      directxcaDll=$(OutputPath)directx.dll;
-    </DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="DirectXExtension.wxs" />
   </ItemGroup>

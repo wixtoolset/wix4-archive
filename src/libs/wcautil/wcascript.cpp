@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML CustomAction utility library CaScript functions
+//    WiX CustomAction utility library CaScript functions
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

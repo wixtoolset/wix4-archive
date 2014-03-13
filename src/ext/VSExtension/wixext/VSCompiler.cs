@@ -7,49 +7,36 @@
 // </copyright>
 // 
 // <summary>
-// The compiler for the Windows Installer XML Toolset Visual Studio Extension.
+// The compiler for the WiX Toolset Visual Studio Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Reflection;
-    using System.Xml;
-    using System.Xml.Schema;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using System.Collections.Generic;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML Toolset Visual Studio Extension.
+    /// The compiler for the WiX Toolset Visual Studio Extension.
     /// </summary>
     public sealed class VSCompiler : CompilerExtension
     {
-        internal const int MsidbCustomActionTypeExe              = 0x00000002;  // Target = command line args
-        internal const int MsidbCustomActionTypeProperty         = 0x00000030;  // Source = full path to executable
-        internal const int MsidbCustomActionTypeContinue         = 0x00000040;  // ignore action return status; continue running
-        internal const int MsidbCustomActionTypeRollback         = 0x00000100;  // in conjunction with InScript: queue in Rollback script
-        internal const int MsidbCustomActionTypeInScript         = 0x00000400;  // queue for execution within script
-        internal const int MsidbCustomActionTypeNoImpersonate    = 0x00000800;  // queue for not impersonating
-
-        private XmlSchema schema;
+        internal const int MsidbCustomActionTypeExe = 0x00000002;  // Target = command line args
+        internal const int MsidbCustomActionTypeProperty = 0x00000030;  // Source = full path to executable
+        internal const int MsidbCustomActionTypeContinue = 0x00000040;  // ignore action return status; continue running
+        internal const int MsidbCustomActionTypeRollback = 0x00000100;  // in conjunction with InScript: queue in Rollback script
+        internal const int MsidbCustomActionTypeInScript = 0x00000400;  // queue for execution within script
+        internal const int MsidbCustomActionTypeNoImpersonate = 0x00000800;  // queue for not impersonating
 
         /// <summary>
         /// Instantiate a new HelpCompiler.
         /// </summary>
         public VSCompiler()
         {
-            this.schema = LoadXmlSchemaHelper(Assembly.GetExecutingAssembly(), "Microsoft.Tools.WindowsInstallerXml.Extensions.Xsd.vs.xsd");
-        }
-
-        /// <summary>
-        /// Gets the schema for this extension.
-        /// </summary>
-        /// <value>Schema for this extension.</value>
-        public override XmlSchema Schema
-        {
-            get { return this.schema; }
+            this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/vs";
         }
 
         /// <summary>
@@ -59,42 +46,42 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="element">Element to process.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseElement(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlElement element, params string[] contextValues)
+        public override void ParseElement(XElement parentElement, XElement element, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            switch (parentElement.Name.LocalName)
             {
                 case "Component":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "VsixPackage":
-                            this.ParseVsixPackageElement(element, contextValues[0], null);
+                            this.ParseVsixPackageElement(element, context["ComponentId"], null);
                             break;
                         default:
-                            base.ParseElement(sourceLineNumbers, parentElement, element, contextValues);
+                            this.Core.UnexpectedElement(parentElement, element);
                             break;
                     }
                     break;
                 case "File":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "HelpCollection":
-                            this.ParseHelpCollectionElement(element, contextValues[0]);
+                            this.ParseHelpCollectionElement(element, context["FileId"]);
                             break;
                         case "HelpFile":
-                            this.ParseHelpFileElement(element, contextValues[0]);
+                            this.ParseHelpFileElement(element, context["FileId"]);
                             break;
                         case "VsixPackage":
-                            this.ParseVsixPackageElement(element, contextValues[1], contextValues[0]);
+                            this.ParseVsixPackageElement(element, context["ComponentId"], context["FileId"]);
                             break;
                         default:
-                            base.ParseElement(sourceLineNumbers, parentElement, element, contextValues);
+                            this.Core.UnexpectedElement(parentElement, element);
                             break;
                     }
                     break;
                 case "Fragment":
                 case "Module":
                 case "Product":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "HelpCollectionRef":
                             this.ParseHelpCollectionRefElement(element);
@@ -103,12 +90,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             this.ParseHelpFilterElement(element);
                             break;
                         default:
-                            base.ParseElement(sourceLineNumbers, parentElement, element, contextValues);
+                            this.Core.UnexpectedElement(parentElement, element);
                             break;
                     }
                     break;
                 default:
-                    base.ParseElement(sourceLineNumbers, parentElement, element, contextValues);
+                    this.Core.UnexpectedElement(parentElement, element);
                     break;
             }
         }
@@ -117,57 +104,55 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a HelpCollectionRef element.
         /// </summary>
         /// <param name="node">Element to process.</param>
-        private void ParseHelpCollectionRefElement(XmlNode node)
+        private void ParseHelpCollectionRefElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "HelpNamespace", id);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "HelpNamespace", id);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.ParseExtensionAttribute(sourceLineNumbers, (XmlElement)node, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XElement child in node.Elements())
             {
-                if (XmlNodeType.Element == child.NodeType)
+                if (this.Namespace == child.Name.Namespace)
                 {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
+                    SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
+                    switch (child.Name.LocalName)
                     {
-                        switch (child.LocalName)
-                        {
-                            case "HelpFileRef":
-                                this.ParseHelpFileRefElement(child, id);
-                                break;
-                            default:
-                                this.Core.UnexpectedElement(node, child);
-                                break;
-                        }
+                        case "HelpFileRef":
+                            this.ParseHelpFileRefElement(child, id);
+                            break;
+                        default:
+                            this.Core.UnexpectedElement(node, child);
+                            break;
                     }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionElement(node, child);
                 }
             }
         }
@@ -177,19 +162,19 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to process.</param>
         /// <param name="fileId">Identifier of the parent File element.</param>
-        private void ParseHelpCollectionElement(XmlNode node, string fileId)
+        private void ParseHelpCollectionElement(XElement node, string fileId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             string description = null;
             string name = null;
             YesNoType suppressCAs = YesNoType.No;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
@@ -204,57 +189,54 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             suppressCAs = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == description)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Description"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Description"));
             }
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XElement child in node.Elements())
             {
-                if (XmlNodeType.Element == child.NodeType)
+                if (this.Namespace == child.Name.Namespace)
                 {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
+                    switch (child.Name.LocalName)
                     {
-                        switch (child.LocalName)
-                        {
-                            case "HelpFileRef":
-                                this.ParseHelpFileRefElement(child, id);
-                                break;
-                            case "HelpFilterRef":
-                                this.ParseHelpFilterRefElement(child, id);
-                                break;
-                            case "PlugCollectionInto":
-                                this.ParsePlugCollectionIntoElement(child, id);
-                                break;
-                            default:
-                                this.Core.UnexpectedElement(node, child);
-                                break;
-                        }
+                        case "HelpFileRef":
+                            this.ParseHelpFileRefElement(child, id);
+                            break;
+                        case "HelpFilterRef":
+                            this.ParseHelpFilterRefElement(child, id);
+                            break;
+                        case "PlugCollectionInto":
+                            this.ParsePlugCollectionIntoElement(child, id);
+                            break;
+                        default:
+                            this.Core.UnexpectedElement(node, child);
+                            break;
                     }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionElement(node, child);
                 }
             }
 
@@ -268,7 +250,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
                 if (YesNoType.No == suppressCAs)
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "CA_RegisterMicrosoftHelp.3643236F_FC70_11D3_A536_0090278A1BB8");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "CA_RegisterMicrosoftHelp.3643236F_FC70_11D3_A536_0090278A1BB8");
                 }
             }
         }
@@ -278,34 +260,34 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to process.</param>
         /// <param name="fileId">Identifier of the parent file element.</param>
-        private void ParseHelpFileElement(XmlNode node, string fileId)
+        private void ParseHelpFileElement(XElement node, string fileId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             string name = null;
-            int language = CompilerCore.IntegerNotSet;
+            int language = CompilerConstants.IntegerNotSet;
             string hxi = null;
             string hxq = null;
             string hxr = null;
             string samples = null;
             YesNoType suppressCAs = YesNoType.No;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
                             break;
                         case "AttributeIndex":
                             hxr = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", hxr);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "File", hxr);
                             break;
                         case "Index":
                             hxi = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", hxi);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "File", hxi);
                             break;
                         case "Language":
                             language = this.Core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 0, short.MaxValue);
@@ -315,57 +297,43 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             break;
                         case "SampleLocation":
                             samples = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", samples);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "File", samples);
                             break;
                         case "Search":
                             hxq = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", hxq);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "File", hxq);
                             break;
                         case "SuppressCustomActions":
                             suppressCAs = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
             //uninstall will always fail silently, leaving file registered, if Language is not set
-            if (CompilerCore.IntegerNotSet == language)
+            if (CompilerConstants.IntegerNotSet == language)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Language"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Language"));
             }
 
-            // find unexpected child elements
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
@@ -381,7 +349,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
                 if (YesNoType.No == suppressCAs)
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "CA_RegisterMicrosoftHelp.3643236F_FC70_11D3_A536_0090278A1BB8");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "CA_RegisterMicrosoftHelp.3643236F_FC70_11D3_A536_0090278A1BB8");
                 }
             }
         }
@@ -391,52 +359,38 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to process.</param>
         /// <param name="collectionId">Identifier of the parent help collection.</param>
-        private void ParseHelpFileRefElement(XmlNode node, string collectionId)
+        private void ParseHelpFileRefElement(XElement node, string collectionId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "HelpFile", id);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "HelpFile", id);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.ParseExtensionAttribute(sourceLineNumbers, (XmlElement)node, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
-            // find unexpected child elements
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
@@ -450,19 +404,19 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a HelpFilter element.
         /// </summary>
         /// <param name="node">Element to process.</param>
-        private void ParseHelpFilterElement(XmlNode node)
+        private void ParseHelpFilterElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             string filterDefinition = null;
             string name = null;
             YesNoType suppressCAs = YesNoType.No;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
@@ -477,41 +431,27 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             suppressCAs = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
-            // find unexpected child elements
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
@@ -522,7 +462,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
                 if (YesNoType.No == suppressCAs)
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "CA_RegisterMicrosoftHelp.3643236F_FC70_11D3_A536_0090278A1BB8");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "CA_RegisterMicrosoftHelp.3643236F_FC70_11D3_A536_0090278A1BB8");
                 }
             }
         }
@@ -532,52 +472,38 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to process.</param>
         /// <param name="collectionId">Identifier of the parent help collection.</param>
-        private void ParseHelpFilterRefElement(XmlNode node, string collectionId)
+        private void ParseHelpFilterRefElement(XElement node, string collectionId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "HelpFilter", id);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "HelpFilter", id);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.ParseExtensionAttribute(sourceLineNumbers, (XmlElement)node, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
-            // find unexpected child elements
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
@@ -592,9 +518,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to process.</param>
         /// <param name="parentId">Identifier of the parent help collection.</param>
-        private void ParsePlugCollectionIntoElement(XmlNode node, string parentId)
+        private void ParsePlugCollectionIntoElement(XElement node, string parentId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string hxa = null;
             string hxt = null;
             string hxtParent = null;
@@ -604,11 +530,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             bool pluginVS05 = false;
             bool pluginVS08 = false;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Attributes":
                             hxa = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
@@ -629,13 +555,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             suppressExternalNamespaces = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
@@ -644,29 +570,15 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
             if (null == namespaceParent)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "TargetCollection"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "TargetCollection"));
             }
 
             if (null == feature && (pluginVS05 || pluginVS08) && YesNoType.No == suppressExternalNamespaces)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "TargetFeature"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "TargetFeature"));
             }
 
-            // find unexpected child elements
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
@@ -685,7 +597,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         this.Core.CreateComplexReference(sourceLineNumbers, ComplexReferenceParentType.Feature, feature, String.Empty,
                             ComplexReferenceChildType.ComponentGroup, "Help2_VS2005_Namespace_Components", false);
                         // Reference CustomAction since nothing will happen without it
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction",
+                        this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction",
                             "CA_HxMerge_VSIPCC_VSCC");
                     }
                 }
@@ -697,14 +609,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         this.Core.CreateComplexReference(sourceLineNumbers, ComplexReferenceParentType.Feature, feature, String.Empty,
                             ComplexReferenceChildType.ComponentGroup, "Help2_VS2008_Namespace_Components", false);
                         // Reference CustomAction since nothing will happen without it
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction",
+                        this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction",
                             "CA_ScheduleExtHelpPlugin_VSCC_VSIPCC");
                     }
                 }
                 else
                 {
                     // Reference the parent namespace to enforce the foreign key relationship
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "HelpNamespace",
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "HelpNamespace",
                         namespaceParent);
                 }
             }
@@ -716,9 +628,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="node">Element to process.</param>
         /// <param name="componentId">Identifier of the parent Component element.</param>
         /// <param name="fileId">Identifier of the parent File element.</param>
-        private void ParseVsixPackageElement(XmlNode node, string componentId, string fileId)
+        private void ParseVsixPackageElement(XElement node, string componentId, string fileId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string propertyId = "VS_VSIX_INSTALLER_PATH";
             string packageId = null;
             YesNoType permanent = YesNoType.NotSet;
@@ -726,11 +638,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             string targetVersion = null;
             YesNoType vital = YesNoType.NotSet;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "File":
                             if (String.IsNullOrEmpty(fileId))
@@ -739,7 +651,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             }
                             else
                             {
-                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name, "File", "File"));
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name.LocalName, "File", "File"));
                             }
                             break;
                         case "PackageId":
@@ -752,35 +664,35 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             target = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             switch (target.ToLowerInvariant())
                             {
-                            case "integrated":
-                            case "integratedshell":
-                                target = "IntegratedShell";
-                                break;
-                            case "professional":
-                                target = "Pro";
-                                break;
-                            case "premium":
-                                target = "Premium";
-                                break;
-                            case "ultimate":
-                                target = "Ultimate";
-                                break;
-                            case "vbexpress":
-                                target = "VBExpress";
-                                break;
-                            case "vcexpress":
-                                target = "VCExpress";
-                                break;
-                            case "vcsexpress":
-                                target = "VCSExpress";
-                                break;
-                            case "vwdexpress":
-                                target = "VWDExpress";
-                                break;
+                                case "integrated":
+                                case "integratedshell":
+                                    target = "IntegratedShell";
+                                    break;
+                                case "professional":
+                                    target = "Pro";
+                                    break;
+                                case "premium":
+                                    target = "Premium";
+                                    break;
+                                case "ultimate":
+                                    target = "Ultimate";
+                                    break;
+                                case "vbexpress":
+                                    target = "VBExpress";
+                                    break;
+                                case "vcexpress":
+                                    target = "VCExpress";
+                                    break;
+                                case "vcsexpress":
+                                    target = "VCSExpress";
+                                    break;
+                                case "vwdexpress":
+                                    target = "VWDExpress";
+                                    break;
                             }
                             break;
                         case "TargetVersion":
-                            targetVersion = this.Core.GetAttributeVersionValue(sourceLineNumbers, attrib, true);
+                            targetVersion = this.Core.GetAttributeVersionValue(sourceLineNumbers, attrib);
                             break;
                         case "Vital":
                             vital = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
@@ -789,58 +701,44 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             propertyId = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.ParseExtensionAttribute(sourceLineNumbers, (XmlElement)node, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (String.IsNullOrEmpty(fileId))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "File"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "File"));
             }
 
             if (String.IsNullOrEmpty(packageId))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "PackageId"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "PackageId"));
             }
 
             if (!String.IsNullOrEmpty(target) && String.IsNullOrEmpty(targetVersion))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "TargetVersion", "Target"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "TargetVersion", "Target"));
             }
             else if (String.IsNullOrEmpty(target) && !String.IsNullOrEmpty(targetVersion))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Target", "TargetVersion"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Target", "TargetVersion"));
             }
 
-            // find unexpected child elements
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
                 // Ensure there is a reference to the AppSearch Property that will find the VsixInstaller.exe.
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "Property", propertyId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "Property", propertyId);
 
                 // Ensure there is a reference to the package file (even if we are a child under it).
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", fileId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "File", fileId);
 
                 string cmdlinePrefix = "/q ";
 
@@ -859,8 +757,8 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else // the package is vital so ensure there is a rollback action scheduled.
                 {
-                    string rollbackNamePerUser = this.Core.GenerateIdentifier("vru", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
-                    string rollbackNamePerMachine = this.Core.GenerateIdentifier("vrm", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
+                    Identifier rollbackNamePerUser = this.Core.CreateIdentifier("vru", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
+                    Identifier rollbackNamePerMachine = this.Core.CreateIdentifier("vrm", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
                     string rollbackCmdLinePerUser = String.Concat(cmdlinePrefix, " /u:", packageId);
                     string rollbackCmdLinePerMachine = String.Concat(rollbackCmdLinePerUser, " /admin");
                     int rollbackExtraBitsPerUser = VSCompiler.MsidbCustomActionTypeContinue | VSCompiler.MsidbCustomActionTypeRollback | VSCompiler.MsidbCustomActionTypeInScript;
@@ -869,26 +767,26 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     string rollbackConditionPerMachine = String.Format("ALLUSERS AND NOT Installed AND ${0}=2 AND ?{0}>2", componentId); // NOT Installed && Component being installed but not installed already.
 
                     this.SchedulePropertyExeAction(sourceLineNumbers, rollbackNamePerUser, propertyId, rollbackCmdLinePerUser, rollbackExtraBitsPerUser, rollbackConditionPerUser, null, installAfter);
-                    this.SchedulePropertyExeAction(sourceLineNumbers, rollbackNamePerMachine, propertyId, rollbackCmdLinePerMachine, rollbackExtraBitsPerMachine, rollbackConditionPerMachine, null, rollbackNamePerUser);
+                    this.SchedulePropertyExeAction(sourceLineNumbers, rollbackNamePerMachine, propertyId, rollbackCmdLinePerMachine, rollbackExtraBitsPerMachine, rollbackConditionPerMachine, null, rollbackNamePerUser.Id);
 
-                    installAfter = rollbackNamePerMachine;
+                    installAfter = rollbackNamePerMachine.Id;
                 }
 
-                string installNamePerUser = this.Core.GenerateIdentifier("viu", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
-                string installNamePerMachine = this.Core.GenerateIdentifier("vim", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
+                Identifier installNamePerUser = this.Core.CreateIdentifier("viu", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
+                Identifier installNamePerMachine = this.Core.CreateIdentifier("vim", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
                 string installCmdLinePerUser = String.Format("{0} \"[#{1}]\"", cmdlinePrefix, fileId);
                 string installCmdLinePerMachine = String.Concat(installCmdLinePerUser, " /admin");
                 string installConditionPerUser = String.Format("NOT ALLUSERS AND ${0}=3", componentId); // only execute if the Component being installed.
                 string installConditionPerMachine = String.Format("ALLUSERS AND ${0}=3", componentId); // only execute if the Component being installed.
 
                 this.SchedulePropertyExeAction(sourceLineNumbers, installNamePerUser, propertyId, installCmdLinePerUser, installExtraBits, installConditionPerUser, null, installAfter);
-                this.SchedulePropertyExeAction(sourceLineNumbers, installNamePerMachine, propertyId, installCmdLinePerMachine, installExtraBits | VSCompiler.MsidbCustomActionTypeNoImpersonate, installConditionPerMachine, null, installNamePerUser);
+                this.SchedulePropertyExeAction(sourceLineNumbers, installNamePerMachine, propertyId, installCmdLinePerMachine, installExtraBits | VSCompiler.MsidbCustomActionTypeNoImpersonate, installConditionPerMachine, null, installNamePerUser.Id);
 
                 // If not permanent, schedule the uninstall custom action.
                 if (permanent != YesNoType.Yes)
                 {
-                    string uninstallNamePerUser = this.Core.GenerateIdentifier("vuu", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
-                    string uninstallNamePerMachine = this.Core.GenerateIdentifier("vum", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
+                    Identifier uninstallNamePerUser = this.Core.CreateIdentifier("vuu", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
+                    Identifier uninstallNamePerMachine = this.Core.CreateIdentifier("vum", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
                     string uninstallCmdLinePerUser = String.Concat(cmdlinePrefix, " /u:", packageId);
                     string uninstallCmdLinePerMachine = String.Concat(uninstallCmdLinePerUser, " /admin");
                     int uninstallExtraBitsPerUser = VSCompiler.MsidbCustomActionTypeContinue | VSCompiler.MsidbCustomActionTypeInScript;
@@ -902,19 +800,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             }
         }
 
-        private void SchedulePropertyExeAction(SourceLineNumberCollection sourceLineNumbers, string name, string source, string cmdline, int extraBits, string condition, string beforeAction, string afterAction)
+        private void SchedulePropertyExeAction(SourceLineNumber sourceLineNumbers, Identifier name, string source, string cmdline, int extraBits, string condition, string beforeAction, string afterAction)
         {
             const string sequence = "InstallExecuteSequence";
 
-            Row actionRow = this.Core.CreateRow(sourceLineNumbers, "CustomAction");
-            actionRow[0] = name;
+            Row actionRow = this.Core.CreateRow(sourceLineNumbers, "CustomAction", name);
             actionRow[1] = VSCompiler.MsidbCustomActionTypeProperty | VSCompiler.MsidbCustomActionTypeExe | extraBits;
             actionRow[2] = source;
             actionRow[3] = cmdline;
 
             Row sequenceRow = this.Core.CreateRow(sourceLineNumbers, "WixAction");
             sequenceRow[0] = sequence;
-            sequenceRow[1] = name;
+            sequenceRow[1] = name.Id;
             sequenceRow[2] = condition;
             // no explicit sequence
             sequenceRow[4] = beforeAction;
@@ -923,25 +820,25 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
             if (null != beforeAction)
             {
-                if (Util.IsStandardAction(beforeAction))
+                if (WindowsInstallerStandard.IsStandardAction(beforeAction))
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "WixAction", sequence, beforeAction);
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "WixAction", sequence, beforeAction);
                 }
                 else
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", beforeAction);
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", beforeAction);
                 }
             }
 
             if (null != afterAction)
             {
-                if (Util.IsStandardAction(afterAction))
+                if (WindowsInstallerStandard.IsStandardAction(afterAction))
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "WixAction", sequence, afterAction);
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "WixAction", sequence, afterAction);
                 }
                 else
                 {
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", afterAction);
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", afterAction);
                 }
             }
         }

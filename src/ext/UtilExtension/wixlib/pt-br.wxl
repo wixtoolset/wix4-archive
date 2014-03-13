@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="pt-br" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="pt-br" xmlns="http://wixtoolset.org/schemas/v4/wxl">
     <String Id="msierrUSRFailedUserCreate" Overridable="yes">Falha ao criar usuário. ([2] [3] [4] [5])</String>
     <String Id="msierrUSRFailedUserCreatePswd" Overridable="yes">Falha ao criar usuário devido a senha inválida. ([2] [3] [4] [5])</String>
     <String Id="msierrUSRFailedUserGroupAdd" Overridable="yes">Falha ao adicionar o usuário ao grupo. ([2] [3] [4] [5])</String>

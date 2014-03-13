@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     using System;
     using System.Windows;

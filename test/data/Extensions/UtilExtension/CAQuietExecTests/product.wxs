@@ -9,7 +9,7 @@
 
   Product.MSI - example source code for Product from "Getting Started" in help
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="*" Name="Test WixShellExec" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{0DB5AF60-76D9-4355-8A69-1389A6C238B5}">
     <Package Description="WixShellExec" Comments="WixShellExec" InstallerVersion="200" Compressed="yes" />
 

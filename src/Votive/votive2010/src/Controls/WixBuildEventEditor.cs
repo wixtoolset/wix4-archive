@@ -11,13 +11,13 @@
 // </summary>
 //--------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
+namespace WixToolset.VisualStudio.Controls
 {
     using System;
     using System.ComponentModel;
     using System.Collections.Generic;
     using System.Windows.Forms;
-    using Microsoft.Tools.WindowsInstallerXml.VisualStudio.Forms;
+    using WixToolset.VisualStudio.Forms;
 
     /// <summary>
     /// Control for editing build event command lines.

@@ -12,7 +12,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+<Wix xmlns="http://wixtoolset.org/schemas/wxs"
      xmlns:dep='http://schemas.microsoft.com/wix/DependencyExtension'>
   <Bundle Name="~$(var.TestName) - Bundle C" Manufacturer="!(bind.packageManufacturer.PackageC)" Version="$(var.Version)" UpgradeCode="309AEEC8-8FCA-479D-A040-4CFE393A85AC"
           dep:ProviderKey='~$(var.TestName)_BundleC'>

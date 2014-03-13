@@ -1,0 +1,5 @@
+
+package name=Contoso.Charm.App version=15.0.0 image=images\Logo.png
+    displayName="Contoso Charm App" description="Contoso Charm AppX"
+    manufacturer="Contoso Corporation"
+    publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US"

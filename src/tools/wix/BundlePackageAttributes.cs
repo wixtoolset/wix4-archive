@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Bit flags for a bundle package in the Windows Installer Xml toolset.
+// Bit flags for a bundle package in the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
 

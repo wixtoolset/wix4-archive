@@ -15,83 +15,22 @@
     This file defines properties used in the post-build process for WiX/DTF managed custom action projects.
   </remarks>
 -->
-<Project
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003"
-  InitialTargets="_SetDefaultPathValues">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
 
   <Import Project="$(CustomBeforeWixCATargets)" Condition=" '$(CustomBeforeWixCATargets)' != '' and Exists('$(CustomBeforeWixCATargets)')" />
 
   <PropertyGroup>
-    <WixCATargetsPath Condition=" '$(WixCATargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\wix.ca.targets</WixCATargetsPath>
-    <WixTasksPath Condition=" '$(WixTasksPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\..\WiX Toolset v3.9\bin\WixTasks.dll</WixTasksPath>
-    <WixCATargetsPath Condition=" '$(WixCATargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\wix.ca.targets</WixCATargetsPath>
-    <WixTasksPath Condition=" '$(WixTasksPath)' == '' ">$(MSBuildExtensionsPath)\..\WiX Toolset v3.9\bin\WixTasks.dll</WixTasksPath>
     <TargetCAFileName Condition=" '$(TargetCAFileName)' == '' ">$(TargetName).CA$(TargetExt)</TargetCAFileName>
+
+    <WixSdkPath Condition=" '$(WixSdkPath)' == '' ">$(MSBuildThisFileDirectory)</WixSdkPath>
+    <WixSdkX86Path Condition=" '$(WixSdkX86Path)' == '' ">$(WixSdkPath)x86\</WixSdkX86Path>
+    <WixSdkX64Path Condition=" '$(WixSdkX64Path)' == '' ">$(WixSdkPath)x64\</WixSdkX64Path>
+
+    <MakeSfxCA Condition=" '$(MakeSfxCA)' == '' ">$(WixSdkPath)MakeSfxCA.exe</MakeSfxCA>
+    <SfxCADll Condition=" '$(SfxCADll)' == '' and '$(Platform)' == 'x64' ">$(WixSdkX64Path)SfxCA.dll</SfxCADll>
+    <SfxCADll Condition=" '$(SfxCADll)' == '' ">$(WixSdkX86Path)SfxCA.dll</SfxCADll>
   </PropertyGroup>
 
-  <UsingTask TaskName="ReadRegistry" AssemblyFile="$(WixTasksPath)"/>
-
-  <!--
-  ==================================================================================================
-  _SetDefaultPathValues
-
-    Gets the default values of some paths from the registry.
-
-    [OUT]
-    $(WixExtDir) - Default Wix Extension Directory
-    $(WixToolPath) - Default Wix Tool install folder
-  ==================================================================================================
-  -->
-  <PropertyGroup>
-    <WixInstallRegKey>SOFTWARE\Microsoft\Windows Installer XML\3.9</WixInstallRegKey>
-    <WixInstallRegKeyWow64>SOFTWARE\Wow6432Node\Microsoft\Windows Installer XML\3.9</WixInstallRegKeyWow64>
-  </PropertyGroup>
-  <Target
-    Name="_SetDefaultPathValues">
-
-    <ReadRegistry
-      Hive="LocalMachine"
-      Key="$(WixInstallRegKey)"
-      Name="InstallRoot"
-      FailIfMissing="false"
-      Condition=" '$(WixToolPath)' == '' ">
-
-      <Output TaskParameter="Value" PropertyName="WixToolPath" />
-    </ReadRegistry>
-
-    <!-- If we didn't find the first registry path, assume we're in a 64bit process. -->
-    <ReadRegistry
-      Hive="LocalMachine"
-      Key="$(WixInstallRegKeyWow64)"
-      Name="InstallRoot"
-      FailIfMissing="false"
-      Condition=" '$(WixToolPath)' == '' ">
-
-      <Output TaskParameter="Value" PropertyName="WixToolPath" />
-    </ReadRegistry>
-
-    <CreateProperty Value="$(WixToolPath)..\sdk\" Condition=" '$(WixSdkPath)' == '' ">
-      <Output TaskParameter="Value" PropertyName="WixSdkPath" />
-    </CreateProperty>
-    <CreateProperty Value="$(WixSdkPath)x86\" Condition=" '$(WixSdkX86Path)' == '' ">
-      <Output TaskParameter="Value" PropertyName="WixSdkX86Path" />
-    </CreateProperty>
-    <CreateProperty Value="$(WixSdkPath)x64\" Condition=" '$(WixSdkX64Path)' == '' ">
-      <Output TaskParameter="Value" PropertyName="WixSdkX64Path" />
-    </CreateProperty>
-
-    <CreateProperty Value="$(WixSdkPath)MakeSfxCA.exe" Condition=" '$(MakeSfxCA)' == '' ">
-      <Output TaskParameter="Value" PropertyName="MakeSfxCA" />
-    </CreateProperty>
-    <CreateProperty Value="$(WixSdkX86Path)SfxCA.dll" Condition=" '$(SfxCADll)' == '' and '$(Platform)' != 'x64'">
-      <Output TaskParameter="Value" PropertyName="SfxCADll" />
-    </CreateProperty>
-    <CreateProperty Value="$(WixSdkX64Path)SfxCA.dll" Condition=" '$(SfxCADll)' == '' and '$(Platform)' == 'x64'">
-      <Output TaskParameter="Value" PropertyName="SfxCADll" />
-    </CreateProperty>
-
-  </Target>
-  
   <!--
   ==================================================================================================
   PackCustomAction
@@ -109,43 +48,38 @@
   ==================================================================================================
   -->
   <Target Name="PackCustomAction"
-   Inputs="@(IntermediateAssembly);@(Content);$(CustomActionContents)"
-   Outputs="$(IntermediateOutputPath)$(TargetCAFileName)">
+          Inputs="@(IntermediateAssembly);@(Content);$(CustomActionContents)"
+          Outputs="$(IntermediateOutputPath)$(TargetCAFileName)">
 
     <!-- Find all referenced items marked CopyLocal, but exclude non-binary files. -->
-    <CreateItem
-     Include="@(ReferenceCopyLocalPaths)"
-     Condition=" '%(ReferenceCopyLocalPaths.extension)' == '.dll' or '%(ReferenceCopyLocalPaths.extension)' == '.exe' ">
-      <Output TaskParameter="Include" ItemName="CustomActionReferenceContents"/>
-    </CreateItem>
+    <ItemGroup>
+      <CustomActionReferenceContents Include="@(ReferenceCopyLocalPaths)"
+                                     Condition=" '%(Extension)'=='.dll' or '%(Extension)'=='.exe' " />
+    </ItemGroup>
 
     <!--
-  Items to include in the CA package:
-     - Reference assemblies marked CopyLocal
-     - Project items of type Content
-     - Additional items in the CustomActionContents property
-  -->
-    <CreateProperty Value="@(CustomActionReferenceContents);@(Content->'%(FullPath)');$(CustomActionContents)">
-      <Output TaskParameter="Value" PropertyName="CustomActionContents" />
-    </CreateProperty>
+      Items to include in the CA package:
+         - Reference assemblies marked CopyLocal
+         - Project items of type Content
+         - Additional items in the CustomActionContents property
+    -->
+    <PropertyGroup>
+      <CustomActionContents>@(CustomActionReferenceContents);@(Content->'%(FullPath)');$(CustomActionContents)</CustomActionContents>
+    </PropertyGroup>
 
-    <CreateItem Include="@(IntermediateAssembly->'%(FullPath)')">
-      <Output TaskParameter="Include" ItemName="IntermediateCAAssembly" />
-    </CreateItem>
-
-  <CreateItem Include="@(IntermediateAssembly->'%(RootDir)%(Directory)$(TargetCAFileName)')">
-      <Output TaskParameter="Include" ItemName="IntermediateCAPackage" />
-    </CreateItem>
+    <ItemGroup>
+      <IntermediateCAAssembly Include="@(IntermediateAssembly->'%(FullPath)')" />
+      <IntermediateCAPackage Include="@(IntermediateAssembly->'%(RootDir)%(Directory)$(TargetCAFileName)')" />
+    </ItemGroup>
 
     <!-- Run the MakeSfxCA.exe CA packaging tool. -->
     <Exec Command='"$(MakeSfxCA)" "@(IntermediateCAPackage)" "$(SfxCADll)" "@(IntermediateCAAssembly)" "$(CustomActionContents)"'
-     WorkingDirectory="$(ProjectDir)" />
+          WorkingDirectory="$(ProjectDir)" />
   
     <!-- Add modules to be copied to output dir. -->
-    <CreateItem Include="@(AddModules);@(IntermediateCAPackage)">
-    <Output TaskParameter="Include" ItemName="AddModules" />
-    </CreateItem>
-
+    <ItemGroup>
+      <AddModules Include="@(IntermediateCAPackage)" />
+    </ItemGroup>
   </Target>
 
   <!--
@@ -158,7 +92,7 @@
   -->
   <Target Name="CleanCustomAction">
     <Delete Files="$(IntermediateOutputPath)$(TargetCAFileName)"
-     TreatErrorsAsWarnings="true" />
+            TreatErrorsAsWarnings="true" />
   </Target>
 
   <!--
@@ -171,7 +105,7 @@
   ==================================================================================================
   -->
   <Target Name="AfterCompile"
-   DependsOnTargets="PackCustomAction" />
+          DependsOnTargets="PackCustomAction" />
 
   <!--
   ==================================================================================================
@@ -183,7 +117,7 @@
   ==================================================================================================
   -->
   <Target Name="BeforeClean"
-   DependsOnTargets="CleanCustomAction" />
+          DependsOnTargets="CleanCustomAction" />
 
   <Import Project="$(CustomAfterWixCATargets)" Condition=" '$(CustomAfterWixCATargets)' != '' and Exists('$(CustomAfterWixCATargets)')" />
 

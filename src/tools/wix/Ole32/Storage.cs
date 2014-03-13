@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Ole32
+namespace WixToolset.Ole32
 {
     using System;
     using System.Runtime.InteropServices;

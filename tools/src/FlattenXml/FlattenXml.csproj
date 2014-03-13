@@ -7,11 +7,11 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <ProjectGuid>{C67B9174-31EC-480D-9EE8-29ECAFD3A36B}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstaller.Tools</RootNamespace>
+    <RootNamespace>WixBuild.Tools.FlattenXml</RootNamespace>
     <AssemblyName>FlattenXml</AssemblyName>
     <FxCopEnabled>false</FxCopEnabled>
   </PropertyGroup>

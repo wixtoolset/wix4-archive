@@ -13,7 +13,7 @@
     Must be kept in sync with caSuffix.h.
   </summary>
 -->
-<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <?ifndef platform ?>
         <?error Required value "platform" not defined in include caSuffix.wxi ?>
     <?endif ?>

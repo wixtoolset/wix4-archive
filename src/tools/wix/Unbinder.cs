@@ -7,28 +7,32 @@
 // </copyright>
 // 
 // <summary>
-// Unbinder core of the Windows Installer Xml toolset.
+// Unbinder core of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.CodeDom.Compiler;
     using System.Collections;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.ComponentModel;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
-
-    using Microsoft.Tools.WindowsInstallerXml.Cab;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
-    using Microsoft.Tools.WindowsInstallerXml.Ole32;
+    using WixToolset.Cab;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
+    using WixToolset.Msi;
+    using WixToolset.Msi.Interop;
+    using WixToolset.Ole32;
 
     /// <summary>
-    /// Unbinder core of the Windows Installer Xml toolset.
+    /// Unbinder core of the WiX toolset.
     /// </summary>
     public sealed class Unbinder : IMessageHandler
     {
@@ -46,14 +50,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         public Unbinder()
         {
-            this.tableDefinitions = Installer.GetTableDefinitions();
+            this.tableDefinitions = new TableDefinitionCollection(WindowsInstallerStandard.GetTableDefinitions());
             this.unbinderExtensions = new ArrayList();
         }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
 
         /// <summary>
         /// Gets or sets whether the input msi is an admin image.
@@ -111,14 +110,14 @@ namespace Microsoft.Tools.WindowsInstallerXml
         }
 
         /// <summary>
-        /// Adds an extension.
+        /// Adds extension data.
         /// </summary>
-        /// <param name="extension">The extension to add.</param>
-        public void AddExtension(WixExtension extension)
+        /// <param name="data">The extension data to add.</param>
+        public void AddExtensionData(IExtensionData data)
         {
-            if (null != extension.TableDefinitions)
+            if (null != data.TableDefinitions)
             {
-                foreach (TableDefinition tableDefinition in extension.TableDefinitions)
+                foreach (TableDefinition tableDefinition in data.TableDefinitions)
                 {
                     if (!this.tableDefinitions.Contains(tableDefinition.Name))
                     {
@@ -126,15 +125,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        throw new WixException(WixErrors.DuplicateExtensionTable(extension.GetType().ToString(), tableDefinition.Name));
+                        Messaging.Instance.OnMessage(WixErrors.DuplicateExtensionTable(data.GetType().ToString(), tableDefinition.Name));
                     }
                 }
             }
+        }
 
-            if (null != extension.UnbinderExtension)
-            {
-                this.unbinderExtensions.Add(extension.UnbinderExtension);
-            }
+        /// <summary>
+        /// Adds an extension.
+        /// </summary>
+        /// <param name="extension">The extension to add.</param>
+        public void AddExtension(IUnbinderExtension extension)
+        {
+            this.unbinderExtensions.Add(extension);
         }
 
         /// <summary>
@@ -216,16 +219,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs e)
         {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != this.Message)
-            {
-                this.Message(this, e);
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(e);
         }
 
         /// <summary>
@@ -277,7 +271,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         private Output UnbindDatabase(string databaseFile, Database database, OutputType outputType, string exportBasePath, bool skipSummaryInfo)
         {
             string modularizationGuid = null;
-            Output output = new Output(SourceLineNumberCollection.FromFileName(databaseFile));
+            Output output = new Output(new SourceLineNumber(databaseFile));
             View validationView = null;
 
             // set the output type
@@ -347,25 +341,24 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                             using (View tableView = database.OpenExecuteView(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM `{0}`", tableName)))
                             {
-                                TableDefinition tableDefinition = new TableDefinition(tableName, false, false);
-                                Hashtable tablePrimaryKeys = new Hashtable();
-
+                                List<ColumnDefinition> columns;
                                 using (Record columnNameRecord = tableView.GetColumnInfo(MsiInterop.MSICOLINFONAMES),
                                               columnTypeRecord = tableView.GetColumnInfo(MsiInterop.MSICOLINFOTYPES))
                                 {
-                                    int columnCount = columnNameRecord.GetFieldCount();
-
                                     // index the primary keys
+                                    HashSet<string> tablePrimaryKeys = new HashSet<string>();
                                     using (Record primaryKeysRecord = database.PrimaryKeys(tableName))
                                     {
                                         int primaryKeysFieldCount = primaryKeysRecord.GetFieldCount();
 
                                         for (int i = 1; i <= primaryKeysFieldCount; i++)
                                         {
-                                            tablePrimaryKeys[primaryKeysRecord.GetString(i)] = null;
+                                            tablePrimaryKeys.Add(primaryKeysRecord.GetString(i));
                                         }
                                     }
 
+                                    int columnCount = columnNameRecord.GetFieldCount();
+                                    columns = new List<ColumnDefinition>(columnCount);
                                     for (int i = 1; i <= columnCount; i++)
                                     {
                                         string columnName = columnNameRecord.GetString(i);
@@ -487,15 +480,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                             columnModularizeType = ColumnModularizeType.Column;
                                         }
 
-                                        tableDefinition.Columns.Add(new ColumnDefinition(columnName, columnType, length, primary, nullable, columnModularizeType, (ColumnType.Localized == columnType), minValueSet, minValue, maxValueSet, maxValue, keyTable, keyColumnSet, keyColumn, columnCategory, set, description, true, true));
+                                        columns.Add(new ColumnDefinition(columnName, columnType, length, primary, nullable, columnModularizeType, (ColumnType.Localized == columnType), minValueSet, minValue, maxValueSet, maxValue, keyTable, keyColumnSet, keyColumn, columnCategory, set, description, true, true));
                                     }
                                 }
+
+                                TableDefinition tableDefinition = new TableDefinition(tableName, columns, false, false);
+
                                 // use our table definitions if core properties are the same; this allows us to take advantage
                                 // of wix concepts like localizable columns which current code assumes
                                 if (this.tableDefinitions.Contains(tableName) && 0 == tableDefinition.CompareTo(this.tableDefinitions[tableName]))
                                 {
                                     tableDefinition = this.tableDefinitions[tableName];
                                 }
+
                                 Table table = new Table(null, tableDefinition);
 
                                 while (true)
@@ -514,7 +511,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                         {
                                             if (rowRecord.IsNull(i + 1))
                                             {
-                                                if (!row.Fields[i].Column.IsNullable)
+                                                if (!row.Fields[i].Column.Nullable)
                                                 {
                                                     // TODO: display an error for a null value in a non-nullable field OR
                                                     // display a warning and put an empty string in the value to let the compiler handle it
@@ -760,7 +757,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // Now pass the output to each unbinder extension to allow them to analyze the output and determine thier proper section ids.
-            foreach (UnbinderExtension extension in this.unbinderExtensions)
+            foreach (IUnbinderExtension extension in this.unbinderExtensions)
             {
                 extension.GenerateSectionIds(output);
             }
@@ -889,7 +886,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             Table fileTable = output.Tables["File"];
-            Table wixFileTable = output.Tables.EnsureTable(null, this.tableDefinitions["WixFile"]);
+            Table wixFileTable = output.EnsureTable(this.tableDefinitions["WixFile"]);
             foreach (Row row in fileTable.Rows)
             {
                 WixFileRow wixFileRow = new WixFileRow(null, this.tableDefinitions["WixFile"]);
@@ -1100,13 +1097,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <returns>The unbound transform.</returns>
         private Output UnbindTransform(string transformFile, string exportBasePath)
         {
-            Output transform = new Output(SourceLineNumberCollection.FromFileName(transformFile));
+            Output transform = new Output(new SourceLineNumber(transformFile));
             transform.Type = OutputType.Transform;
 
             // get the summary information table
             using (SummaryInformation summaryInformation = new SummaryInformation(transformFile))
             {
-                Table table = transform.Tables.EnsureTable(null, this.tableDefinitions["_SummaryInformation"]);
+                Table table = transform.EnsureTable(this.tableDefinitions["_SummaryInformation"]);
 
                 for (int i = 1; 19 >= i; i++)
                 {
@@ -1127,7 +1124,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             foreach (TableDefinition tableDefinition in this.tableDefinitions)
             {
                 // skip unreal tables and the Patch table
-                if (!tableDefinition.IsUnreal && "Patch" != tableDefinition.Name)
+                if (!tableDefinition.Unreal && "Patch" != tableDefinition.Name)
                 {
                     schemaOutput.EnsureTable(tableDefinition);
                 }
@@ -1137,65 +1134,63 @@ namespace Microsoft.Tools.WindowsInstallerXml
             Table transformViewTable;
 
             // bind the schema msi
-            using (Binder binder = new Binder())
+            Binder binder = new Binder();
+            binder.SuppressAddingValidationRows = true;
+            binder.WixVariableResolver = new WixVariableResolver();
+            binder.GenerateDatabase(schemaOutput, msiDatabaseFile, true, false);
+
+            // apply the transform to the database and retrieve the modifications
+            using (Database msiDatabase = new Database(msiDatabaseFile, OpenDatabase.Transact))
             {
-                binder.SuppressAddingValidationRows = true;
-                binder.WixVariableResolver = new WixVariableResolver();
-                binder.GenerateDatabase(schemaOutput, msiDatabaseFile, true, false);
+                // apply the transform with the ViewTransform option to collect all the modifications
+                msiDatabase.ApplyTransform(transformFile, TransformErrorConditions.All | TransformErrorConditions.ViewTransform);
 
-                // apply the transform to the database and retrieve the modifications
-                using (Database msiDatabase = new Database(msiDatabaseFile, OpenDatabase.Transact))
+                // unbind the database
+                Output transformViewOutput = this.UnbindDatabase(msiDatabaseFile, msiDatabase, OutputType.Product, exportBasePath, true);
+
+                // index the added and possibly modified rows (added rows may also appears as modified rows)
+                transformViewTable = transformViewOutput.Tables["_TransformView"];
+                Hashtable modifiedRows = new Hashtable();
+                foreach (Row row in transformViewTable.Rows)
                 {
-                    // apply the transform with the ViewTransform option to collect all the modifications
-                    msiDatabase.ApplyTransform(transformFile, TransformErrorConditions.All | TransformErrorConditions.ViewTransform);
+                    string tableName = (string) row[0];
+                    string columnName = (string) row[1];
+                    string primaryKeys = (string) row[2];
 
-                    // unbind the database
-                    Output transformViewOutput = this.UnbindDatabase(msiDatabaseFile, msiDatabase, OutputType.Product, exportBasePath, true);
-
-                    // index the added and possibly modified rows (added rows may also appears as modified rows)
-                    transformViewTable = transformViewOutput.Tables["_TransformView"];
-                    Hashtable modifiedRows = new Hashtable();
-                    foreach (Row row in transformViewTable.Rows)
+                    if ("INSERT" == columnName)
                     {
-                        string tableName = (string) row[0];
-                        string columnName = (string) row[1];
-                        string primaryKeys = (string) row[2];
-
-                        if ("INSERT" == columnName)
-                        {
-                            string index = String.Concat(tableName, ':', primaryKeys);
-
-                            addedRows.Add(index, null);
-                        }
-                        else if ("CREATE" != columnName && "DELETE" != columnName && "DROP" != columnName && null != primaryKeys) // modified row
-                        {
-                            string index = String.Concat(tableName, ':', primaryKeys);
-
-                            modifiedRows[index] = row;
-                        }
-                    }
-
-                    // create placeholder rows for modified rows to make the transform insert the updated values when its applied
-                    foreach (Row row in modifiedRows.Values)
-                    {
-                        string tableName = (string) row[0];
-                        string columnName = (string) row[1];
-                        string primaryKeys = (string) row[2];
-
                         string index = String.Concat(tableName, ':', primaryKeys);
 
-                        // ignore information for added rows
-                        if (!addedRows.Contains(index))
-                        {
-                            Table table = schemaOutput.Tables[tableName];
-                            this.CreateRow(table, primaryKeys, true);
-                        }
+                        addedRows.Add(index, null);
+                    }
+                    else if ("CREATE" != columnName && "DELETE" != columnName && "DROP" != columnName && null != primaryKeys) // modified row
+                    {
+                        string index = String.Concat(tableName, ':', primaryKeys);
+
+                        modifiedRows[index] = row;
                     }
                 }
 
-                // re-bind the schema output with the placeholder rows
-                binder.GenerateDatabase(schemaOutput, msiDatabaseFile, true, false);
+                // create placeholder rows for modified rows to make the transform insert the updated values when its applied
+                foreach (Row row in modifiedRows.Values)
+                {
+                    string tableName = (string) row[0];
+                    string columnName = (string) row[1];
+                    string primaryKeys = (string) row[2];
+
+                    string index = String.Concat(tableName, ':', primaryKeys);
+
+                    // ignore information for added rows
+                    if (!addedRows.Contains(index))
+                    {
+                        Table table = schemaOutput.Tables[tableName];
+                        this.CreateRow(table, primaryKeys, true);
+                    }
+                }
             }
+
+            // re-bind the schema output with the placeholder rows
+            binder.GenerateDatabase(schemaOutput, msiDatabaseFile, true, false);
 
             // apply the transform to the database and retrieve the modifications
             using (Database msiDatabase = new Database(msiDatabaseFile, OpenDatabase.Transact))
@@ -1239,7 +1234,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     string columnName = (string)row[1];
                     string primaryKeys = (string)row[2];
 
-                    Table table = transform.Tables.EnsureTable(null, this.tableDefinitions[tableName]);
+                    Table table = transform.EnsureTable(this.tableDefinitions[tableName]);
 
                     if ("CREATE" == columnName) // added table
                     {
@@ -1272,7 +1267,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             Row modifiedRow = (Row)rows[index];
 
                             // mark the field as modified
-                            int indexOfModifiedValue = modifiedRow.TableDefinition.Columns.IndexOf(columnName);
+                            int indexOfModifiedValue = -1;
+                            for (int i = 0; i < modifiedRow.TableDefinition.Columns.Count; ++i)
+                            {
+                                if (columnName.Equals(modifiedRow.TableDefinition.Columns[i].Name, StringComparison.Ordinal))
+                                {
+                                    indexOfModifiedValue = i;
+                                    break;
+                                }
+                            }
                             modifiedRow.Fields[indexOfModifiedValue].Modified = true;
 
                             // move the modified row into the transform the first time its encountered
@@ -1285,7 +1288,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else // added column
                     {
-                        table.Definition.Columns[columnName].Added = true;
+                        ColumnDefinition column = table.Definition.Columns.Single(c => c.Name.Equals(columnName, StringComparison.Ordinal));
+                        column.Added = true;
                     }
                 }
             }
@@ -1331,7 +1335,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 ColumnDefinition columnDefinition = table.Definition.Columns[i];
 
-                if (columnDefinition.IsPrimaryKey)
+                if (columnDefinition.PrimaryKey)
                 {
                     if (ColumnType.Number == columnDefinition.Type && !columnDefinition.IsLocalizable)
                     {
@@ -1480,7 +1484,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         catch (FileNotFoundException)
                         {
-                            throw new WixException(WixErrors.FileNotFound(SourceLineNumberCollection.FromFileName(databaseFile), cabinetFile));
+                            throw new WixException(WixErrors.FileNotFound(new SourceLineNumber(databaseFile), cabinetFile));
                         }
                     }
                 }

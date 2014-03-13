@@ -1,0 +1,10 @@
+﻿<?xml version="1.0"?>
+<Swix xmlns="http://wixtoolset.org/schemas/v4/swx">
+    <File Name="contoso.exe" Ngen.Execute="immediate" />
+
+    <File Name="foo.dll" Ngen.Execute="idle" Ngen.Application="contoso.exe" />
+
+    <Folder Name="bin">
+        <File Name="bar.dll" Ngen.Folder="ApplicationFolder:\" Ngen.Execute="asynchronous" />
+    </Folder>
+</Swix>

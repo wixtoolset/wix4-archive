@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
+namespace WixToolset.VisualStudio.PropertyPages
 {
     partial class WixToolsSettingsPropertyPagePanel
     {
@@ -38,13 +38,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WixToolsSettingsPropertyPagePanel));
-            this.iceValidationGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
+            this.iceValidationGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
             this.suppressIceCheckbox = new System.Windows.Forms.CheckBox();
             this.iceValidationTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.suppressSpecificIceLabel = new System.Windows.Forms.Label();
             this.specificIceTextBox = new System.Windows.Forms.TextBox();
             this.specificIceExampleLabel = new System.Windows.Forms.Label();
-            this.additionalParamsGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
+            this.additionalParamsGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
             this.compilerLabel = new System.Windows.Forms.Label();
             this.linkerTextBox = new System.Windows.Forms.TextBox();
             this.librarianTextBox = new System.Windows.Forms.TextBox();
@@ -151,12 +151,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
 
         #endregion
 
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox iceValidationGroupBox;
+        private WixToolset.VisualStudio.Controls.WixGroupBox iceValidationGroupBox;
         private System.Windows.Forms.CheckBox suppressIceCheckbox;
         private System.Windows.Forms.Label specificIceExampleLabel;
         private System.Windows.Forms.TextBox specificIceTextBox;
         private System.Windows.Forms.Label suppressSpecificIceLabel;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox additionalParamsGroupBox;
+        private WixToolset.VisualStudio.Controls.WixGroupBox additionalParamsGroupBox;
         private System.Windows.Forms.Label compilerLabel;
         private System.Windows.Forms.Label linkerLibrarianLabel;
         private System.Windows.Forms.TextBox linkerTextBox;

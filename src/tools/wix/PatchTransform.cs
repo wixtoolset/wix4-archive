@@ -7,13 +7,15 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
     using System.Globalization;
     using System.Text;
     using System.Text.RegularExpressions;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     public class PatchTransform : IMessageHandler
     {
@@ -32,7 +34,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 if (null == this.transform)
                 {
-                    this.transform = Output.Load(this.transformPath, false, false); ;
+                    this.transform = Output.Load(this.transformPath, false); ;
                 }
 
                 return this.transform;
@@ -49,11 +51,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
             this.transformPath = transformPath;
             this.baseline = baseline;
         }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
 
         /// <summary>
         /// Validates that the differences in the transform are valid for patch transforms.
@@ -278,16 +275,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs e)
         {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != this.Message)
-            {
-                this.Message(this, e);
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(e);
         }
     }
 }

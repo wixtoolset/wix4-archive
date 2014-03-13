@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="pt-br" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="pt-br" xmlns="http://wixtoolset.org/schemas/v4/wxl">
     <String Id="msierrIISCannotConnect" Overridable="yes">Não foi possível conectar no Internet Information Server.  ([2]   [3]   [4]   [5])</String>
     <String Id="msierrIISFailedReadWebSite" Overridable="yes">Erro ao processar WebSites.   ([2]   [3]   [4]   [5])</String>
     <String Id="msierrIISFailedReadWebDirs" Overridable="yes">Erro ao processar WebDirs.  ([2]   [3]   [4]   [5])</String>

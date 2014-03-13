@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Tools.MakeSfxCA
+namespace WixToolset.Dtf.Tools.MakeSfxCA
 {
     using System;
     using System.IO;
@@ -18,10 +18,10 @@ namespace Microsoft.Deployment.Tools.MakeSfxCA
     using System.Security;
     using System.Text;
     using System.Reflection;
-    using Microsoft.Deployment.Compression;
-    using Microsoft.Deployment.Compression.Cab;
-    using Microsoft.Deployment.Resources;
-    using ResourceCollection = Microsoft.Deployment.Resources.ResourceCollection;
+    using WixToolset.Dtf.Compression;
+    using WixToolset.Dtf.Compression.Cab;
+    using WixToolset.Dtf.Resources;
+    using ResourceCollection = WixToolset.Dtf.Resources.ResourceCollection;
 
     /// <summary>
     /// Command-line tool for building self-extracting custom action packages.
@@ -30,7 +30,7 @@ namespace Microsoft.Deployment.Tools.MakeSfxCA
     /// </summary>
     public class MakeSfxCA
     {
-        private const string RequiredWIAssembly = "Microsoft.Deployment.WindowsInstaller.dll";
+        private const string RequiredWIAssembly = "WixToolset.Dtf.WindowsInstaller.dll";
 
         private static TextWriter log;
 
@@ -76,17 +76,17 @@ namespace Microsoft.Deployment.Tools.MakeSfxCA
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine("Error: Invalid argument: " + ex.Message);
                 return 1;
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+                Console.WriteLine("Error: Cannot find file: " + ex.Message);
                 return 1;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex);
+                Console.WriteLine("Error: Unexpected error: " + ex);
                 return 1;
             }
         }
@@ -346,7 +346,7 @@ namespace Microsoft.Deployment.Tools.MakeSfxCA
                 {
                     foreach (Type interfaceType in type.GetInterfaces())
                     {
-                        if (interfaceType.FullName == "Microsoft.Deployment.WindowsInstaller.IEmbeddedUI")
+                        if (interfaceType.FullName == "WixToolset.Dtf.WindowsInstaller.IEmbeddedUI")
                         {
                             if (uiClass == null)
                             {
@@ -422,7 +422,7 @@ namespace Microsoft.Deployment.Tools.MakeSfxCA
             foreach (CustomAttributeData attribute in attributes)
             {
                 if (attribute.ToString().StartsWith(
-                    "[Microsoft.Deployment.WindowsInstaller.CustomActionAttribute(",
+                    "[WixToolset.Dtf.WindowsInstaller.CustomActionAttribute(",
                     StringComparison.Ordinal))
                 {
                     string entryPointName = null;

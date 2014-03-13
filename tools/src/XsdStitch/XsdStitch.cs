@@ -12,7 +12,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstaller.Tools
+namespace WixBuild.Tools.XsdStich
 {
     using System;
     using System.Collections;
@@ -28,7 +28,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
     /// </summary>
     public sealed class XsdStitch
     {
-        private const string XmlSchemaExtensionNamespace = "http://schemas.microsoft.com/wix/2005/XmlSchemaExtension";
+        private const string XmlSchemaExtensionNamespace = "http://wixtoolset.org/schemas/XmlSchemaExtension";
 
         private StringCollection extensionSchemaFiles;
         private string mainSchemaFile;

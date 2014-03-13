@@ -7,9 +7,9 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The messages for the Windows Installer XML Toolset PowerShell Extension.
+  The messages for the WiX Toolset PowerShell Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
     <Class Name="PSErrors" ContainerName="PSErrorEventArgs" BaseContainerName="WixErrorEventArgs">
     <Message Id="NeitherIdSpecified" Number="5301">
         <Instance>Either the {0}/@FileId attribute must be specified if nested under a SnapIn element, or the {0}/@SnapIn attribute must be specified if nested under under a File element.

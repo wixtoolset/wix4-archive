@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using Microsoft.Deployment.WindowsInstaller;
-using View = Microsoft.Deployment.WindowsInstaller.View;
+using WixToolset.Dtf.WindowsInstaller;
+using View = WixToolset.Dtf.WindowsInstaller.View;
 
-namespace Microsoft.Deployment.Samples.Inventory
+namespace WixToolset.Dtf.Samples.Inventory
 {
 	/// <summary>
 	/// Provides inventory data about components of products installed on the system.

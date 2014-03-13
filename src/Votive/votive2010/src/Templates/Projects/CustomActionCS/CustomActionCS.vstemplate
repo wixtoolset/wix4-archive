@@ -5,7 +5,7 @@
     <Description _locID="TSDATA_DUT_Description">A project for creating an MSI custom action</Description>
     <Icon Package="{FAE04EC1-301F-11d3-BF4B-00C04F79EFBC}" ID="4547" />
     <ProjectType>WiX</ProjectType>
-    <TemplateID>Microsoft.Deployment.WindowsInstaller.CustomActionCS</TemplateID>
+    <TemplateID>WixToolset.Dtf.WindowsInstaller.CustomActionCS</TemplateID>
     <RequiredFrameworkVersion>2.0</RequiredFrameworkVersion>
     <SortOrder>60</SortOrder>
     <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>

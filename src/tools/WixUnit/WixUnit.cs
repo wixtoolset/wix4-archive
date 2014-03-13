@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML unit test runner.
+// The WiX unit test runner.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -27,14 +27,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Xml.Schema;
     using System.Xml.Serialization;
 
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset;
 
     /// <summary>
-    /// The Windows Installer XML unit test runner.
+    /// The WiX unit test runner.
     /// </summary>
     public sealed class WixUnit : ICommandArgs
     {
-        private const string XmlNamespace = "http://schemas.microsoft.com/wix/2006/WixUnit";
+        private const string XmlNamespace = "http://wixtoolset.org/schemas/v4/wixunit";
         private readonly string failedTestsFile = Path.Combine(Path.GetTempPath(), "WixUnitFailedTests.xml");
 
         private object lockObject = new object();
@@ -166,7 +166,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
                 {
                     schemas = new XmlSchemaCollection();
 
-                    schemaReader = new XmlTextReader(wixUnitAssembly.GetManifestResourceStream("Microsoft.Tools.WindowsInstallerXml.Unit.unitTests.xsd"));
+                    schemaReader = new XmlTextReader(wixUnitAssembly.GetManifestResourceStream("WixToolset.Unit.unitTests.xsd"));
                     XmlSchema schema = XmlSchema.Read(schemaReader, null);
                     schemas.Add(schema);
                 }

@@ -435,11 +435,12 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.dll" />
-    <Reference Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Package.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Data.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Package.dll" />
     <Reference Include="$(OutputPath)wix.dll" />
-    <Reference Include="$(OutputPath)Microsoft.Deployment.Compression.dll" />
-    <Reference Include="$(OutputPath)Microsoft.Deployment.Compression.Cab.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.Compression.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.Compression.Cab.dll" />
     <Reference Include="$(OutputPath)BootstrapperCore.dll" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />

@@ -7,40 +7,25 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset harvester core.
+// The WiX Toolset harvester core.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The Windows Installer XML Toolset harvester core.
+    /// The WiX Toolset harvester core.
     /// </summary>
-    public sealed class HarvesterCore
+    public sealed class HarvesterCore : IHarvesterCore
     {
-        private bool encounteredError;
         private string extensionArgument;
         private string rootDirectory;
-
-        /// <summary>
-        /// Instantiate a new HarvesterCore.
-        /// </summary>
-        /// <param name="messageHandler">The message handler.</param>
-        public HarvesterCore(MessageEventHandler messageHandler)
-        {
-            this.MessageHandler = messageHandler;
-        }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        private event MessageEventHandler MessageHandler;
 
         /// <summary>
         /// Gets whether the harvester core encountered an error while processing.
@@ -48,7 +33,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <value>Flag if core encountered an error during processing.</value>
         public bool EncounteredError
         {
-            get { return this.encounteredError; }
+            get { return Messaging.Instance.EncounteredError; }
         }
 
         /// <summary>
@@ -72,13 +57,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
         }
 
         /// <summary>
-        /// Return an identifier based on passed file/directory name
+        /// Create an identifier based on passed file name
         /// </summary>
-        /// <param name="name">File/directory name to generate identifer from</param>
-        /// <returns>A version of the name that is a legal identifier.</returns>
-        public static string GetIdentifierFromName(string name)
+        /// <param name="name">File name to generate identifer from</param>
+        /// <returns></returns>
+        public string CreateIdentifierFromFilename(string filename)
         {
-            return Common.GetIdentifierFromName(name);
+            return Common.GetIdentifierFromName(filename);
         }
 
         /// <summary>
@@ -90,7 +75,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "System.InvalidOperationException.#ctor(System.String)")]
         public string GenerateIdentifier(string prefix, params string[] args)
         {
-            return Common.GenerateIdentifier(prefix, false, args);
+            return Common.GenerateIdentifier(prefix, args);
         }
 
         /// <summary>
@@ -99,25 +84,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs mea)
         {
-            WixErrorEventArgs errorEventArgs = mea as WixErrorEventArgs;
-
-            if (null != errorEventArgs)
-            {
-                this.encounteredError = true;
-            }
-
-            if (null != this.MessageHandler)
-            {
-                this.MessageHandler(this, mea);
-                if (MessageLevel.Error == mea.Level)
-                {
-                    this.encounteredError = true;
-                }
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(mea);
         }
 
         /// <summary>

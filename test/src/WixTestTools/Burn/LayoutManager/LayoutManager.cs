@@ -180,7 +180,7 @@ namespace WixTest.Burn.LayoutManager
         public void CreateAndInitializeWixBundleManifestWithMinimumDefaults()
         {
             Wix = new OM.WixAuthoringOM.WixElement();
-            Wix.Xmlns = "http://schemas.microsoft.com/wix/2006/wi";
+            Wix.Xmlns = "http://wixtoolset.org/schemas/wxs";
             Wix.Bundle = new OM.WixAuthoringOM.Bundle.BundleElement();
             Wix.Bundle.Compressed = "yes";
             Wix.Bundle.Version = "1.0.0.0";

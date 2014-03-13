@@ -11,7 +11,7 @@
   <PropertyGroup>
     <ProjectGuid>{EB323B05-8822-4645-A0E6-ACF401ED92F7}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.WixBuild</RootNamespace>
+    <RootNamespace>WixToolset.WixBuild</RootNamespace>
     <AssemblyName>WixBuild</AssemblyName>
   </PropertyGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Product Id="00000000-0000-0000-0005-000000000011" Name="XmlFile" Language="1033" Version="1.0.0.0" UpgradeCode="{D3C08DD4-A77E-43e8-8969-DB3D6CB0BEC2}" Manufacturer="Microsoft Corporation">
     <Package Description="Test from: XmlFile" Comments="Test from: XmlFile" InstallerVersion="200" Compressed="yes" />
 

@@ -7,12 +7,12 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <ProjectGuid>{1B70F0D0-25F2-4F7E-8B2C-452F862C4C5A}</ProjectGuid>
     <AssemblyName>XsdStitch</AssemblyName>
     <OutputType>Exe</OutputType>
-    <RootNamespace>XsdStitch</RootNamespace>
+    <RootNamespace>WixBuild.Tools.XsdStich</RootNamespace>
     <NoWarn>618</NoWarn>
     <FxCopEnabled>false</FxCopEnabled>
   </PropertyGroup>

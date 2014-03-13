@@ -7,10 +7,10 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Window x:Class="Microsoft.Tools.WindowsInstallerXml.UX.RootView"
+<Window x:Class="WixToolset.UX.RootView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ux="clr-namespace:Microsoft.Tools.WindowsInstallerXml.UX"
+    xmlns:ux="clr-namespace:WixToolset.UX"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None"
     AllowsTransparency="True"

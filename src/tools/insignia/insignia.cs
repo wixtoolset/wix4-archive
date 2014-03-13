@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+namespace WixToolset.Tools
 {
     using System;
     using System.CodeDom.Compiler;
@@ -23,6 +23,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
+    using WixToolset.Data;
 
     /// <summary>
     /// The main entry point for Insignia.
@@ -32,7 +33,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         private string bundlePath;
         private string bundleWithAttachedContainerPath;
         private StringCollection invalidArgs;
-        private ConsoleMessageHandler messageHandler;
         private string msiPath;
         private string outputPath;
         private bool showHelp;
@@ -45,7 +45,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         private Insignia()
         {
             this.invalidArgs = new StringCollection();
-            this.messageHandler = new ConsoleMessageHandler("INSG", "Insignia.exe");
             this.showLogo = true;
             this.tidy = true;
         }
@@ -59,8 +58,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Insignia Insignia = new Insignia();
-            return Insignia.Run(args);
+            Messaging.Instance.InitializeAppName("INSG", "Insignia.exe").Display += Insignia.DisplayMessage;
+
+            Insignia insignia = new Insignia();
+            return insignia.Run(args);
+        }
+
+        /// <summary>
+        /// Handler for display message events.
+        /// </summary>
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        private static void DisplayMessage(object sender, DisplayEventArgs e)
+        {
+            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -79,9 +90,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 this.ParseCommandLine(args);
 
                 // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
-                if (this.messageHandler.EncounteredError)
+                if (Messaging.Instance.EncounteredError)
                 {
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 if (String.IsNullOrEmpty(this.msiPath) && String.IsNullOrEmpty(this.bundlePath))
@@ -98,12 +109,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 {
                     Console.WriteLine(InsigniaStrings.HelpMessage);
                     AppCommon.DisplayToolFooter();
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 foreach (string parameter in this.invalidArgs)
                 {
-                    this.messageHandler.Display(this, WixWarnings.UnsupportedCommandLineArgument(parameter));
+                    Messaging.Instance.OnMessage(WixWarnings.UnsupportedCommandLineArgument(parameter));
                 }
                 this.invalidArgs = null;
 
@@ -119,7 +130,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 }
 
                 inscriber = new Inscriber();
-                inscriber.MessageHandler += new MessageEventHandler(this.messageHandler.Display);
 
                 // Set the temp directory - if it's null, we'll default appropriately
                 inscriber.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
@@ -132,7 +142,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     catch (UnauthorizedAccessException)
                     {
-                        this.messageHandler.Display(this, WixErrors.UnauthorizedAccess(inputPath));
+                        Messaging.Instance.OnMessage(WixErrors.UnauthorizedAccess(inputPath));
                     }
                 }
                 else if (!String.IsNullOrEmpty(this.bundleWithAttachedContainerPath))
@@ -151,11 +161,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
             }
             catch (WixException we)
             {
-                this.messageHandler.Display(this, we.Error);
+                Messaging.Instance.OnMessage(we.Error);
             }
             catch (Exception e)
             {
-                this.messageHandler.Display(this, WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                Messaging.Instance.OnMessage(WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;
@@ -164,7 +174,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
 
             // On success but nothing inscribed then return -1. Otherwise, return whatever last error number
             // was (which could be zero if successfully inscribed).
-            return (0 == this.messageHandler.LastErrorNumber && !inscribed) ? -1 : this.messageHandler.LastErrorNumber;
+            return (0 == Messaging.Instance.LastErrorNumber && !inscribed) ? -1 : Messaging.Instance.LastErrorNumber;
         }
 
         /// <summary>
@@ -194,16 +204,16 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("ab" == parameter) // attach container to bundle
                     {
-                        this.bundlePath = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
-                        this.bundleWithAttachedContainerPath = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
+                        this.bundlePath = CommandLine.GetFile(parameter, args, ++i);
+                        this.bundleWithAttachedContainerPath = CommandLine.GetFile(parameter, args, ++i);
                     }
                     else if ("ib" == parameter) // inscribe bundle
                     {
-                        this.bundlePath = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
+                        this.bundlePath = CommandLine.GetFile(parameter, args, ++i);
                     }
                     else if ("im" == parameter) // inscribe msi
                     {
-                        this.msiPath = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
+                        this.msiPath = CommandLine.GetFile(parameter, args, ++i);
                     }
                     else if ("nologo" == parameter)
                     {
@@ -215,12 +225,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("o" == parameter || "out" == parameter)
                     {
-                        this.outputPath = CommandLine.GetFileOrDirectory(parameter, this.messageHandler, args, ++i);
+                        this.outputPath = CommandLine.GetFileOrDirectory(parameter, args, ++i);
                     }
                     else if ("swall" == parameter)
                     {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
-                        this.messageHandler.SuppressAllWarnings = true;
+                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
+                        Messaging.Instance.SuppressAllWarnings = true;
                     }
                     else if (parameter.StartsWith("sw", StringComparison.Ordinal))
                     {
@@ -229,36 +239,31 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         {
                             if (0 == paramArg.Length)
                             {
-                                this.messageHandler.SuppressAllWarnings = true;
+                                Messaging.Instance.SuppressAllWarnings = true;
                             }
                             else
                             {
                                 int suppressWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
                                 if (0 >= suppressWarning)
                                 {
-                                    this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
+                                    Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                                 }
 
-                                this.messageHandler.SuppressWarningMessage(suppressWarning);
+                                Messaging.Instance.SuppressWarningMessage(suppressWarning);
                             }
                         }
                         catch (FormatException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                         }
                         catch (OverflowException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                         }
                     }
                     else if ("v" == parameter)
                     {
-                        this.messageHandler.ShowVerboseMessages = true;
-                    }
-                    else if ("wxall" == parameter)
-                    {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("wxall", "wx"));
-                        this.messageHandler.WarningAsError = true;
+                        Messaging.Instance.ShowVerboseMessages = true;
                     }
                     else if (parameter.StartsWith("wx", StringComparison.Ordinal))
                     {
@@ -267,26 +272,26 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         {
                             if (0 == paramArg.Length)
                             {
-                                this.messageHandler.WarningAsError = true;
+                                Messaging.Instance.WarningsAsError = true;
                             }
                             else
                             {
                                 int elevateWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
                                 if (0 >= elevateWarning)
                                 {
-                                    this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
+                                    Messaging.Instance.OnMessage(WixErrors.IllegalWarningIdAsError(paramArg));
                                 }
 
-                                this.messageHandler.ElevateWarningMessage(elevateWarning);
+                                Messaging.Instance.ElevateWarningMessage(elevateWarning);
                             }
                         }
                         catch (FormatException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalWarningIdAsError(paramArg));
                         }
                         catch (OverflowException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalWarningIdAsError(paramArg));
                         }
                     }
                     else

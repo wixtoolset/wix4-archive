@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Faster_Than_Light">
+        <Detect>
+            <Arp DisplayName="FTL: Faster Than Light"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyGamesFolder:\FasterThanLight"/>
+        </Data>
+
+        <DisplayName LCID="1033">FTL: Faster Than Light</DisplayName>
+    </Product>
+</LegacySettings>

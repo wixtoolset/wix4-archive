@@ -11,12 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Msi
+namespace WixToolset.Msi
 {
     using System;
     using System.ComponentModel;
     using System.Globalization;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Enumeration of different modify modes.

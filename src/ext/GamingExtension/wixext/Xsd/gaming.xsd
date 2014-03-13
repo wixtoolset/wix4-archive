@@ -8,17 +8,17 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
+          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
-    targetNamespace="http://schemas.microsoft.com/wix/GamingExtension"
-              xmlns="http://schemas.microsoft.com/wix/GamingExtension">
+    targetNamespace="http://wixtoolset.org/schemas/v4/wxs/gaming"
+              xmlns="http://wixtoolset.org/schemas/v4/wxs/gaming">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset Gaming Extension.
+            The source code schema for the WiX Toolset Gaming Extension.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+    <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
     <xs:attribute name="IsRichSavedGame">
         <xs:annotation>
@@ -28,7 +28,7 @@
                 property handler on Windows Vista and later.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Extension" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Extension" />
             </xs:appinfo>
         </xs:annotation>
     </xs:attribute>
@@ -45,7 +45,7 @@
                 later upgrades to Windows Vista register the game in Game Explorer.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>

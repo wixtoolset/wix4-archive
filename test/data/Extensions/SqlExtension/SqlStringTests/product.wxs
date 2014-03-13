@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
   <Product Id="*" Name="TestSqlStringProduct1" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{B1A7F5A6-5708-44DB-B301-60816A4F1D3E}">
     <Package Description="Test SqlString in a Product" Comments="Test from: wix\examples\test\sqlstring\product.wxs" InstallerVersion="200" Compressed="yes" />
 

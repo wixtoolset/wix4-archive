@@ -8,13 +8,13 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
+          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
-    targetNamespace="http://schemas.microsoft.com/wix/NetFxExtension"
-              xmlns="http://schemas.microsoft.com/wix/NetFxExtension">
+    targetNamespace="http://wixtoolset.org/schemas/v4/wxs/netfx"
+              xmlns="http://wixtoolset.org/schemas/v4/wxs/netfx">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset .NET Framework Extension.
+            The source code schema for the WiX Toolset .NET Framework Extension.
         </xs:documentation>
     </xs:annotation>
 
@@ -26,7 +26,7 @@
                 it runs <html:a href="http://msdn.microsoft.com/en-us/library/6t9t5wcf.aspx">NGen</html:a>.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
                 <xse:remarks>
                     <html:p>
                         Native images are files containing compiled processor-specific machine code, which

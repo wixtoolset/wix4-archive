@@ -21,4 +21,3 @@ using System.Security.Permissions;
 [assembly: AssemblyDescription("WiX Toolset TildeToRelative")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, Execution = true)]

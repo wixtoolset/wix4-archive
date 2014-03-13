@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="E195185C-68FB-4ebd-AC69-E58770EBC734" Name="TestAdvancedUI" Language="1033" Version="0.0.0.0" UpgradeCode="{955D321E-A24D-47aa-9652-ADACCB955EDB}" Manufacturer="Microsoft Corporation">
     <Package Description="TestAdvancedUI" Comments="Test from: AdvancedUI" InstallerVersion="200" Compressed="yes" />
 

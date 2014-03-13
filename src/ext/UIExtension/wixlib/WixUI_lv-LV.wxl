@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="lv-lv" Codepage="1257" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="lv-lv" Codepage="1257" xmlns="http://wixtoolset.org/schemas/v4/wxl">
     <String Id="WixUIBack" Overridable="yes">&amp;Atpakaļ</String>
     <String Id="WixUINext" Overridable="yes">&amp;Tālāk</String>
     <String Id="WixUICancel" Overridable="yes">Atcelt</String>

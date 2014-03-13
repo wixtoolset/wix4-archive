@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
-using Microsoft.Deployment.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller;
 
 
-namespace Microsoft.Deployment.Samples.Inventory
+namespace WixToolset.Dtf.Samples.Inventory
 {
 	public class MsiUtils
 	{

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="{3AEEA070-FC68-46e1-8F98-776C11974A4B}" Name="Wix Test Product" Language="1033" Manufacturer="Microsoft Corporation" UpgradeCode="{4A899439-8022-46ad-8798-C778089D4A71}">
 
     <Media Id="1" />

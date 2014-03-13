@@ -8,17 +8,17 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
+          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
-    targetNamespace="http://schemas.microsoft.com/wix/FirewallExtension"
-              xmlns="http://schemas.microsoft.com/wix/FirewallExtension">
+    targetNamespace="http://wixtoolset.org/schemas/v4/wxs/firewall"
+              xmlns="http://wixtoolset.org/schemas/v4/wxs/firewall">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset Firewall Extension.
+            The source code schema for the WiX Toolset Firewall Extension.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+    <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
     <xs:element name="FirewallException">
         <xs:annotation>
@@ -29,8 +29,8 @@
                 About Windows Firewall API</html:a>.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
             </xs:appinfo>
         </xs:annotation>
 

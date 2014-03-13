@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <?include caerr.wxi ?>
 
     <!-- Server Custom Action Definitions -->
@@ -45,7 +45,7 @@
 
     <!-- Server Custom Action DLL Definitions -->
     <Fragment>
-        <Binary Id="ScaSchedule2" SourceFile="$(var.scaschedDll)" />
-        <Binary Id="ScaExecute2" SourceFile="$(var.scaexecDll)" />
+        <Binary Id="ScaSchedule2" SourceFile="scasched.dll" />
+        <Binary Id="ScaExecute2" SourceFile="scaexec.dll" />
     </Fragment>
 </Wix>

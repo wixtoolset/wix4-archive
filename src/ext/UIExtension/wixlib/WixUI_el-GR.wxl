@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="el-gr" Codepage="1253" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="el-gr" Codepage="1253" xmlns="http://wixtoolset.org/schemas/v4/wxl">
     <String Id="WixUIBack" Overridable="yes">&amp;Πίσω</String>
     <String Id="WixUINext" Overridable="yes">Ε&amp;πόμενο</String>
     <String Id="WixUICancel" Overridable="yes">Άκυρο</String>

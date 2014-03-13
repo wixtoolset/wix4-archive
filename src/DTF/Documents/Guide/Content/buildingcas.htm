@@ -27,12 +27,12 @@
 			proxy-wrapper and dll-export requirements. Here's an overview:</p>
 			<ol>
 				<li>
-					<p>Compile your CA assembly, which references Microsoft.Deployment.WindowsInstaller.dll and 
+					<p>Compile your CA assembly, which references WixToolset.Dtf.WindowsInstaller.dll and 
 						marks exported custom actions with a CustomActionAttribute.</p>
 				<li>
-					<p>Package the CA assembly, CustomAction.config, Microsoft.Deployment.WindowsInstaller.dll, 
+					<p>Package the CA assembly, CustomAction.config, WixToolset.Dtf.WindowsInstaller.dll, 
 						and any other dependencies using <b>MakeSfxCA.exe</b>. The filenames of CustomAction.config
-						and Microsoft.Deployment.WindowsInstaller.dll must not be changed, since
+						and WixToolset.Dtf.WindowsInstaller.dll must not be changed, since
 						the custom action proxy specifically looks for those files.</p>
 			</ol>
 			<p><br>
@@ -41,7 +41,7 @@
 			<pre><font face="Consolas, Courier New">
     csc.exe
         /target:library
-        /r:$(DTFbin)\Microsoft.Deployment.WindowsInstaller.dll
+        /r:$(DTFbin)\WixToolset.Dtf.WindowsInstaller.dll
         /out:SampleCAs.dll
         *.cs
             </font></pre>
@@ -51,7 +51,7 @@
         $(DTFbin)\SfxCA.dll
         SampleCAs.dll
         CustomAction.config
-        $(DTFbin)\Microsoft.Deployment.WindowsInstaller.dll
+        $(DTFbin)\WixToolset.Dtf.WindowsInstaller.dll
             </font></pre>
             </p>
 			<p>Now the resulting package, SampleCAsPackage.dll, is ready to be inserted

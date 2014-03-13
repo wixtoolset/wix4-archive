@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Compression
+namespace WixToolset.Dtf.Compression
 {
     using System;
     using System.Security;

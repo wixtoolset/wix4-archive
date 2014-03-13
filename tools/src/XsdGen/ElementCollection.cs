@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Serialize
+namespace WixToolset.Serialize
 {
     using System;
     using System.Collections;

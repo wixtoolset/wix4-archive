@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Id="A105E099-6ED5-42e3-B45D-3AE3CD7A8D2A" Name="TestWebServiceExtension" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{52A1BA73-3778-458b-B2BA-14060D9BE602}">
     <Package Description="Test IIS WebServiceExtension" Comments="Test IIS WebServiceExtension" InstallerVersion="200" Compressed="yes" />
 

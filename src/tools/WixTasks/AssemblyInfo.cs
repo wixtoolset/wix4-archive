@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Windows Installer XML Tasks for MSBuild")]
+[assembly: AssemblyTitle("WiX Tasks for MSBuild")]
 [assembly: AssemblyDescription("WiX Build Tasks")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(true)]

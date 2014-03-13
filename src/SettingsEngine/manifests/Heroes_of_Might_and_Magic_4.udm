@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Heroes_of_Might_and_Magic_4">
+        <Detect>
+            <Arp DisplayName="Heroes of Might and Magic 4 Complete" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Games" Location="InstallDir:\Games\"/>
+            <File Name="high_scores.dat" Location="InstallDir:\Data\high_scores.dat"/>
+        </Data>
+
+        <DisplayName LCID="1033">Heroes of Might and Magic IV</DisplayName>
+    </Product>
+</LegacySettings>

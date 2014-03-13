@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     using System;
     using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.UX
     using Threading = System.Windows.Threading;
     using WinForms = System.Windows.Forms;
 
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
 
     /// <summary>
     /// The WiX toolset user experience.

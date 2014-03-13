@@ -6,12 +6,12 @@
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
 // <summary>
-// Microsoft.Deployment.WindowsInstaller.ExternalUIHandler and related delegates,
+// WixToolset.Dtf.WindowsInstaller.ExternalUIHandler and related delegates,
 // with related parts of Installer class.
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     using System;
     using System.Collections;

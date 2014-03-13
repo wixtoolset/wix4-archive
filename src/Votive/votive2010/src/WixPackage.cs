@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.Diagnostics;
@@ -23,23 +23,23 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
 
-    using Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages;
+    using WixToolset.VisualStudio.PropertyPages;
 
     /// <summary>
     /// Implements and/or provides all of the required interfaces and services to allow the
-    /// Windows Installer XML (WiX) project to be integrated into the Visual Studio
+    /// WiX project to be integrated into the Visual Studio
     /// environment.
     /// </summary>
     [DefaultRegistryRoot(@"Software\\Microsoft\\VisualStudio\\8.0Exp")]
-    [InstalledProductRegistration("WiX", null, null)]
-    [Guid("E0EE8E7D-F498-459e-9E90-2B3D73124AD5")]
+    [InstalledProductRegistration("WiX Toolset", null, null)]
+    [Guid("F6DA3055-95AC-4CC6-8B24-748198CAC4DF")]
     [PackageRegistration(RegisterUsing = RegistrationMethod.CodeBase, UseManagedResourcesOnly = true)]
-    [ProvideLoadKey("Standard", "3.0", "Votive", "Microsoft", WixPackage.PackageLoadKeyResourceId)]
+    [ProvideLoadKey("Standard", "4.x", "Votive", "WiX Toolset", WixPackage.PackageLoadKeyResourceId)]
     [ProvideObject(typeof(WixInstallerPropertyPage), RegisterUsing = RegistrationMethod.CodeBase)]
     [ProvideObject(typeof(WixBuildEventsPropertyPage), RegisterUsing = RegistrationMethod.CodeBase)]
     [ProvideObject(typeof(WixBuildPropertyPage), RegisterUsing = RegistrationMethod.CodeBase)]
     [ProvideObject(typeof(WixPathsPropertyPage), RegisterUsing = RegistrationMethod.CodeBase)]
-    [ProvideProjectFactory(typeof(WixProjectFactory), WixProjectNode.ProjectTypeName, "#100", "wixproj", "wixproj", "", LanguageVsTemplate = "WiX")]
+    [ProvideProjectFactory(typeof(WixProjectFactory), WixProjectNode.ProjectTypeName, "#100", "wixproj", "wixproj", "", LanguageVsTemplate = "WiX Toolset")]
     [CLSCompliant(false)]
     public sealed class WixPackage : ProjectPackage, IVsInstalledProduct
     {

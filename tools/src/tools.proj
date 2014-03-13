@@ -13,6 +13,7 @@
     <ProjectReference Include="DocFromXsd\DocFromXsd.csproj" />
     <ProjectReference Include="FlattenXml\FlattenXml.csproj" />
     <ProjectReference Include="GenerateWixInclude\GenerateWixInclude.csproj" />
+    <ProjectReference Include="Md2html\Md2html.csproj" />
     <ProjectReference Include="MdCompiler\MdCompiler.csproj" />
     <ProjectReference Include="MsgGen\MsgGen.csproj" />
     <ProjectReference Include="TildeToRelative\TildeToRelative.csproj" />

@@ -7,47 +7,57 @@
 // </copyright>
 // 
 // <summary>
-// Preprocessor of the Windows Installer Xml toolset.
+// Preprocessor of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
-    using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// Preprocessor object
     /// </summary>
     public sealed class Preprocessor
     {
-        private static readonly Regex defineRegex = new Regex(@"^\s*(?<varName>.+?)\s*(=\s*(?<varValue>.+?)\s*)?$", RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
-        private static readonly Regex pragmaRegex = new Regex(@"^\s*(?<pragmaName>.+?)(?<pragmaValue>[\s\(].+?)?$", RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
+        private readonly Regex defineRegex = new Regex(@"^\s*(?<varName>.+?)\s*(=\s*(?<varValue>.+?)\s*)?$", RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
+        private readonly Regex pragmaRegex = new Regex(@"^\s*(?<pragmaName>.+?)(?<pragmaValue>[\s\(].+?)?$", RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
 
-        private StringCollection includeSearchPaths;
+        private readonly XmlReaderSettings DocumentXmlReaderSettings = new XmlReaderSettings()
+        {
+            ValidationFlags = System.Xml.Schema.XmlSchemaValidationFlags.None,
+            XmlResolver = null,
+        };
+        private readonly XmlReaderSettings FragmentXmlReaderSettings = new XmlReaderSettings()
+        {
+            ConformanceLevel = System.Xml.ConformanceLevel.Fragment,
+            ValidationFlags = System.Xml.Schema.XmlSchemaValidationFlags.None,
+            XmlResolver = null,
+        };
 
-        private ArrayList extensions;
-        private Hashtable extensionsByPrefix;
+        private List<IPreprocessorExtension> extensions;
+        private Dictionary<string, IPreprocessorExtension> extensionsByPrefix;
         private List<InspectorExtension> inspectorExtensions;
 
-        private bool currentLineNumberWritten;
         private SourceLineNumber currentLineNumber;
-        private Stack sourceStack;
+        private Stack<SourceLineNumber> sourceStack;
 
         private PreprocessorCore core;
         private TextWriter preprocessOut;
 
-        private Stack includeNextStack;
-        private Stack currentFileStack;
+        private Stack<bool> includeNextStack;
+        private Stack<string> currentFileStack;
 
         private Platform currentPlatform;
 
@@ -56,16 +66,16 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         public Preprocessor()
         {
-            this.includeSearchPaths = new StringCollection();
+            this.IncludeSearchPaths = new List<string>();
 
-            this.extensions = new ArrayList();
-            this.extensionsByPrefix = new Hashtable();
+            this.extensions = new List<IPreprocessorExtension>();
+            this.extensionsByPrefix = new Dictionary<string,IPreprocessorExtension>();
             this.inspectorExtensions = new List<InspectorExtension>();
 
-            this.sourceStack = new Stack();
+            this.sourceStack = new Stack<SourceLineNumber>();
 
-            this.includeNextStack = new Stack();
-            this.currentFileStack = new Stack();
+            this.includeNextStack = new Stack<bool>();
+            this.currentFileStack = new Stack<string>();
 
             this.currentPlatform = Platform.X86;
         }
@@ -79,11 +89,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Event for included files.
         /// </summary>
         public event IncludedFileEventHandler IncludedFile;
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
 
         /// <summary>
         /// Event for preprocessed stream.
@@ -121,22 +126,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
         }
 
         /// <summary>
-        /// The line number info processing instruction name.
-        /// </summary>
-        /// <value>String for line number info processing instruction name.</value>
-        public static string LineNumberElementName
-        {
-            get { return "ln"; }
-        }
-
-        /// <summary>
         /// Ordered list of search paths that the precompiler uses to find included files.
         /// </summary>
-        /// <value>ArrayList of ordered search paths to use during precompiling.</value>
-        public StringCollection IncludeSearchPaths
-        {
-            get { return this.includeSearchPaths; }
-        }
+        /// <value>List of ordered search paths to use during precompiling.</value>
+        public IList<string> IncludeSearchPaths { get; private set; }
 
         /// <summary>
         /// Specifies the text stream to display the postprocessed data to.
@@ -158,60 +151,87 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="node">Element to get source line information for.</param>
         /// <returns>Returns the stack of imports used to author the element being processed.</returns>
         [SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes")]
-        public static SourceLineNumberCollection GetSourceLineNumbers(XmlNode node)
+        public static SourceLineNumber GetSourceLineNumbers(XmlNode node)
         {
-            if (XmlNodeType.Element != node.NodeType)   // only elements can have line numbers, sorry
-            {
-                return null;
-            }
+            return null;
+        }
 
-            SourceLineNumberCollection sourceLineNumbers = null;
-            XmlNode prev = node.PreviousSibling;
-
-            if (null != prev && XmlNodeType.ProcessingInstruction == prev.NodeType && Preprocessor.LineNumberElementName == prev.LocalName)
-            {
-                sourceLineNumbers = new SourceLineNumberCollection(prev.Value);
-            }
-
-            if (null == sourceLineNumbers)
-            {
-                sourceLineNumbers = SourceLineNumberCollection.FromUri(node.BaseURI);
-            }
-
-            return sourceLineNumbers;
+        /// <summary>
+        /// Get the source line information for the current element.  The precompiler will insert
+        /// special source line number information for each element that it encounters.
+        /// </summary>
+        /// <param name="node">Element to get source line information for.</param>
+        /// <returns>
+        /// The source line number used to author the element being processed or
+        /// null if the preprocessor did not process the element or the node is
+        /// not an element.
+        /// </returns>
+        public static SourceLineNumber GetSourceLineNumbers(XObject node)
+        {
+            return SourceLineNumber.GetFromXAnnotation(node);
         }
 
         /// <summary>
         /// Adds an extension.
         /// </summary>
         /// <param name="extension">The extension to add.</param>
-        public void AddExtension(WixExtension extension)
+        public void AddExtension(IPreprocessorExtension extension)
         {
-            if (null != extension.PreprocessorExtension)
+            this.extensions.Add(extension);
+
+            if (null != extension.Prefixes)
             {
-                this.extensions.Add(extension.PreprocessorExtension);
-
-                if (null != extension.PreprocessorExtension.Prefixes)
+                foreach (string prefix in extension.Prefixes)
                 {
-                    foreach (string prefix in extension.PreprocessorExtension.Prefixes)
+                    IPreprocessorExtension collidingExtension;
+                    if (!this.extensionsByPrefix.TryGetValue(prefix, out collidingExtension))
                     {
-                        PreprocessorExtension collidingExtension = (PreprocessorExtension)this.extensionsByPrefix[prefix];
-
-                        if (null == collidingExtension)
-                        {
-                            this.extensionsByPrefix.Add(prefix, extension.PreprocessorExtension);
-                        }
-                        else
-                        {
-                            throw new WixException(WixErrors.DuplicateExtensionPreprocessorType(extension.GetType().ToString(), prefix, collidingExtension.GetType().ToString()));
-                        }
+                        this.extensionsByPrefix.Add(prefix, extension);
+                    }
+                    else
+                    {
+                        Messaging.Instance.OnMessage(WixErrors.DuplicateExtensionPreprocessorType(extension.GetType().ToString(), prefix, collidingExtension.GetType().ToString()));
                     }
                 }
             }
 
-            if (null != extension.InspectorExtension)
+            //if (null != extension.InspectorExtension)
+            //{
+            //    this.inspectorExtensions.Add(extension.InspectorExtension);
+            //}
+        }
+
+        /// <summary>
+        /// Preprocesses a file.
+        /// </summary>
+        /// <param name="sourceFile">The file to preprocess.</param>
+        /// <param name="variables">The variables defined prior to preprocessing.</param>
+        /// <returns>XDocument with the postprocessed data.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes")]
+        public XDocument Process(string sourceFile, IDictionary<string, string> variables)
+        {
+            using (Stream sourceStream = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                this.inspectorExtensions.Add(extension.InspectorExtension);
+                InspectorCore inspectorCore = new InspectorCore();
+                foreach (InspectorExtension inspectorExtension in this.inspectorExtensions)
+                {
+                    inspectorExtension.Core = inspectorCore;
+                    inspectorExtension.InspectSource(sourceStream);
+
+                    // reset
+                    inspectorExtension.Core = null;
+                    sourceStream.Position = 0;
+                }
+
+                if (inspectorCore.EncounteredError)
+                {
+                    return null;
+                }
+
+                using (XmlReader reader = XmlReader.Create(sourceFile, DocumentXmlReaderSettings))
+                {
+                    return Process(reader, variables, sourceFile);
+                }
             }
         }
 
@@ -220,108 +240,56 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="sourceFile">The file to preprocess.</param>
         /// <param name="variables">The variables defined prior to preprocessing.</param>
-        /// <returns>XmlDocument with the postprocessed data validated by any schemas set in the preprocessor.</returns>
+        /// <returns>XDocument with the postprocessed data.</returns>
         [SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes")]
-        public XmlDocument Process(string sourceFile, Hashtable variables)
+        public XDocument Process(XmlReader reader, IDictionary<string, string> variables, string sourceFile = null)
         {
-            Stream processed = new MemoryStream();
-            XmlDocument sourceDocument = new XmlDocument();
+            if (String.IsNullOrEmpty(sourceFile) && !String.IsNullOrEmpty(reader.BaseURI))
+            {
+                Uri uri = new Uri(reader.BaseURI);
+                sourceFile = uri.AbsolutePath;
+            }
 
+            this.core = new PreprocessorCore(this.extensionsByPrefix, sourceFile, variables);
+            this.core.ResolvedVariableHandler = this.ResolvedVariable;
+            this.core.CurrentPlatform = this.currentPlatform;
+            this.currentLineNumber = new SourceLineNumber(sourceFile);
+            this.currentFileStack.Clear();
+            this.currentFileStack.Push(this.core.GetVariableValue(this.currentLineNumber, "sys", "SOURCEFILEDIR"));
+
+            // Process the reader into the output.
+            XDocument output = new XDocument();
             try
             {
-                this.core = new PreprocessorCore(this.extensionsByPrefix, this.Message, sourceFile, variables);
-                this.core.ResolvedVariableHandler = this.ResolvedVariable;
-                this.core.CurrentPlatform = this.currentPlatform;
-                this.currentLineNumberWritten = false;
-                this.currentLineNumber = new SourceLineNumber(sourceFile);
-                this.currentFileStack.Clear();
-                this.currentFileStack.Push(this.core.GetVariableValue(this.GetCurrentSourceLineNumbers(), "sys", "SOURCEFILEDIR"));
-
-                // open the source file for processing
-                using (Stream sourceStream = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    // inspect the raw source
-                    InspectorCore inspectorCore = new InspectorCore(this.Message);
-                    foreach (InspectorExtension inspectorExtension in this.inspectorExtensions)
-                    {
-                        inspectorExtension.Core = inspectorCore;
-                        inspectorExtension.InspectSource(sourceStream);
-
-                        // reset
-                        inspectorExtension.Core = null;
-                        sourceStream.Position = 0;
-                    }
-
-                    if (inspectorCore.EncounteredError)
-                    {
-                        return null;
-                    }
-
-                    XmlReader reader = new XmlTextReader(sourceStream);
-                    XmlTextWriter writer = new XmlTextWriter(processed, Encoding.UTF8);
-
-                    // process the reader into the writer
-                    try
-                    {
-                        foreach (PreprocessorExtension extension in this.extensions)
-                        {
-                            extension.Core = this.core;
-                            extension.InitializePreprocess();
-                        }
-                        this.PreprocessReader(false, reader, writer, 0);
-                    }
-                    catch (XmlException e)
-                    {
-                        this.UpdateInformation(reader, 0);
-                        throw new WixException(WixErrors.InvalidXml(this.GetCurrentSourceLineNumbers(), "source", e.Message));
-                    }
-
-                    writer.Flush();
-                }
-
-                // fire event with processed stream
-                ProcessedStreamEventArgs args = new ProcessedStreamEventArgs(sourceFile, processed);
-                this.OnProcessedStream(args);
-
-                // create an XML Document from the post-processed memory stream
-                XmlTextReader xmlReader = null;
-
-                try
-                {
-                    // create an XmlReader with the path to the original file
-                    // to properly set the BaseURI property of the XmlDocument
-                    processed.Position = 0;
-                    xmlReader = new XmlTextReader(new Uri(Path.GetFullPath(sourceFile)).AbsoluteUri, processed);
-                    sourceDocument.Load(xmlReader);
-
-                }
-                catch (XmlException e)
-                {
-                    this.UpdateInformation(xmlReader, 0);
-                    throw new WixException(WixErrors.InvalidXml(this.GetCurrentSourceLineNumbers(), "source", e.Message));
-                }
-                finally
-                {
-                    if (null != xmlReader)
-                    {
-                        xmlReader.Close();
-                    }
-                }
-
-                // preprocess the generated XML Document
                 foreach (PreprocessorExtension extension in this.extensions)
                 {
-                    extension.PreprocessDocument(sourceDocument);
+                    extension.Core = this.core;
+                    extension.Initialize();
                 }
+
+                this.PreprocessReader(false, reader, output, 0);
             }
-            finally
+            catch (XmlException e)
             {
-                // finalize the preprocessing
-                foreach (PreprocessorExtension extension in this.extensions)
-                {
-                    extension.FinalizePreprocess();
-                    extension.Core = null;
-                }
+                this.UpdateCurrentLineNumber(reader, 0);
+                throw new WixException(WixErrors.InvalidXml(this.currentLineNumber, "source", e.Message));
+            }
+
+            // Fire event with post-processed document.
+            ProcessedStreamEventArgs args = new ProcessedStreamEventArgs(sourceFile, output);
+            this.OnProcessedStream(args);
+
+            // preprocess the generated XML Document
+            foreach (PreprocessorExtension extension in this.extensions)
+            {
+                extension.PreprocessDocument(output);
+            }
+
+            // finalize the preprocessing
+            foreach (PreprocessorExtension extension in this.extensions)
+            {
+                extension.Finish();
+                extension.Core = null;
             }
 
             if (this.core.EncounteredError)
@@ -332,11 +300,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 if (null != this.preprocessOut)
                 {
-                    sourceDocument.Save(this.preprocessOut);
+                    output.Save(this.preprocessOut);
                     this.preprocessOut.Flush();
                 }
 
-                return sourceDocument;
+                return output;
             }
         }
 
@@ -478,20 +446,23 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="include">Specifies if reader is from an included file.</param>
         /// <param name="reader">Reader for the source document.</param>
-        /// <param name="writer">Writer where postprocessed data is written.</param>
+        /// <param name="container">Node where content should be added.</param>
         /// <param name="offset">Original offset for the line numbers being processed.</param>
-        private void PreprocessReader(bool include, XmlReader reader, XmlWriter writer, int offset)
+        private void PreprocessReader(bool include, XmlReader reader, XContainer container, int offset)
         {
-            Stack stack = new Stack(5);
-            IfContext context = new IfContext(true, true, IfState.Unknown); // start by assuming we want to keep the nodes in the source code
+            XContainer currentContainer = container;
+            Stack<XContainer> containerStack = new Stack<XContainer>();
+
+            IfContext ifContext = new IfContext(true, true, IfState.Unknown); // start by assuming we want to keep the nodes in the source code
+            Stack<IfContext> ifStack = new Stack<IfContext>();
 
             // process the reader into the writer
             while (reader.Read())
             {
                 // update information here in case an error occurs before the next read
-                this.UpdateInformation(reader, offset);
+                this.UpdateCurrentLineNumber(reader, offset);
 
-                SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+                SourceLineNumber sourceLineNumbers = this.currentLineNumber;
 
                 // check for changes in conditional processing
                 if (XmlNodeType.ProcessingInstruction == reader.NodeType)
@@ -502,89 +473,94 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     switch (reader.LocalName)
                     {
                         case "if":
-                            stack.Push(context);
-                            if (context.IsTrue)
+                            ifStack.Push(ifContext);
+                            if (ifContext.IsTrue)
                             {
-                                context = new IfContext(context.IsTrue & context.Active, this.EvaluateExpression(reader.Value), IfState.If);
+                                ifContext = new IfContext(ifContext.IsTrue & ifContext.Active, this.EvaluateExpression(reader.Value), IfState.If);
                             }
                             else // Use a default IfContext object so we don't try to evaluate the expression if the context isn't true
                             {
-                                context = new IfContext();
+                                ifContext = new IfContext();
                             }
                             ignore = true;
                             break;
+
                         case "ifdef":
-                            stack.Push(context);
+                            ifStack.Push(ifContext);
                             name = reader.Value.Trim();
-                            if (context.IsTrue)
+                            if (ifContext.IsTrue)
                             {
-                                context = new IfContext(context.IsTrue & context.Active, (null != this.core.GetVariableValue(sourceLineNumbers, name, true)), IfState.If);
+                                ifContext = new IfContext(ifContext.IsTrue & ifContext.Active, (null != this.core.GetVariableValue(sourceLineNumbers, name, true)), IfState.If);
                             }
                             else // Use a default IfContext object so we don't try to evaluate the expression if the context isn't true
                             {
-                                context = new IfContext();
+                                ifContext = new IfContext();
                             }
                             ignore = true;
-                            OnIfDef(new IfDefEventArgs(sourceLineNumbers, true, context.IsTrue, name));
+                            OnIfDef(new IfDefEventArgs(sourceLineNumbers, true, ifContext.IsTrue, name));
                             break;
+
                         case "ifndef":
-                            stack.Push(context);
+                            ifStack.Push(ifContext);
                             name = reader.Value.Trim();
-                            if (context.IsTrue)
+                            if (ifContext.IsTrue)
                             {
-                                context = new IfContext(context.IsTrue & context.Active, (null == this.core.GetVariableValue(sourceLineNumbers, name, true)), IfState.If);
+                                ifContext = new IfContext(ifContext.IsTrue & ifContext.Active, (null == this.core.GetVariableValue(sourceLineNumbers, name, true)), IfState.If);
                             }
                             else // Use a default IfContext object so we don't try to evaluate the expression if the context isn't true
                             {
-                                context = new IfContext();
+                                ifContext = new IfContext();
                             }
                             ignore = true;
-                            OnIfDef(new IfDefEventArgs(sourceLineNumbers, false, !context.IsTrue, name));
+                            OnIfDef(new IfDefEventArgs(sourceLineNumbers, false, !ifContext.IsTrue, name));
                             break;
+
                         case "elseif":
-                            if (0 == stack.Count)
+                            if (0 == ifStack.Count)
                             {
-                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "if", "elseif"));
+                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.currentLineNumber, "if", "elseif"));
                             }
 
-                            if (IfState.If != context.IfState && IfState.ElseIf != context.IfState)
+                            if (IfState.If != ifContext.IfState && IfState.ElseIf != ifContext.IfState)
                             {
-                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "if", "elseif"));
+                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.currentLineNumber, "if", "elseif"));
                             }
 
-                            context.IfState = IfState.ElseIf;   // we're now in an elseif
-                            if (!context.WasEverTrue)   // if we've never evaluated the if context to true, then we can try this test
+                            ifContext.IfState = IfState.ElseIf;   // we're now in an elseif
+                            if (!ifContext.WasEverTrue)   // if we've never evaluated the if context to true, then we can try this test
                             {
-                                context.IsTrue = this.EvaluateExpression(reader.Value);
+                                ifContext.IsTrue = this.EvaluateExpression(reader.Value);
                             }
-                            else if (context.IsTrue)
+                            else if (ifContext.IsTrue)
                             {
-                                context.IsTrue = false;
+                                ifContext.IsTrue = false;
                             }
                             ignore = true;
                             break;
+
                         case "else":
-                            if (0 == stack.Count)
+                            if (0 == ifStack.Count)
                             {
-                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "if", "else"));
+                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.currentLineNumber, "if", "else"));
                             }
 
-                            if (IfState.If != context.IfState && IfState.ElseIf != context.IfState)
+                            if (IfState.If != ifContext.IfState && IfState.ElseIf != ifContext.IfState)
                             {
-                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "if", "else"));
+                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.currentLineNumber, "if", "else"));
                             }
 
-                            context.IfState = IfState.Else;   // we're now in an else
-                            context.IsTrue = !context.WasEverTrue;   // if we were never true, we can be true now
+                            ifContext.IfState = IfState.Else;   // we're now in an else
+                            ifContext.IsTrue = !ifContext.WasEverTrue;   // if we were never true, we can be true now
                             ignore = true;
                             break;
+
                         case "endif":
-                            if (0 == stack.Count)
+                            if (0 == ifStack.Count)
                             {
-                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "if", "endif"));
+                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.currentLineNumber, "if", "endif"));
                             }
 
-                            context = (IfContext)stack.Pop();
+                            ifContext = (IfContext)ifStack.Pop();
                             ignore = true;
                             break;
                     }
@@ -595,53 +571,90 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                 }
 
-                if (!context.Active || !context.IsTrue)   // if our context is not true then skip the rest of the processing and just read the next thing
+                if (!ifContext.Active || !ifContext.IsTrue)   // if our context is not true then skip the rest of the processing and just read the next thing
                 {
                     continue;
                 }
 
                 switch (reader.NodeType)
                 {
+                    case XmlNodeType.XmlDeclaration:
+                        XDocument document = currentContainer as XDocument;
+                        if (null != document)
+                        {
+                            document.Declaration = new XDeclaration(null, null, null);
+                            while (reader.MoveToNextAttribute())
+                            {
+                                switch (reader.LocalName)
+                                {
+                                    case "version":
+                                        document.Declaration.Version = reader.Value;
+                                        break;
+
+                                    case "encoding":
+                                        document.Declaration.Encoding = reader.Value;
+                                        break;
+
+                                    case "standalone":
+                                        document.Declaration.Standalone = reader.Value;
+                                        break;
+                                }
+                            }
+
+                        }
+                        //else
+                        //{
+                        //    display an error? Can this happen?
+                        //}
+                        break;
+
                     case XmlNodeType.ProcessingInstruction:
                         switch (reader.LocalName)
                         {
                             case "define":
                                 this.PreprocessDefine(reader.Value);
                                 break;
+
                             case "error":
                                 this.PreprocessError(reader.Value);
                                 break;
+
                             case "warning":
                                 this.PreprocessWarning(reader.Value);
                                 break;
+
                             case "undef":
                                 this.PreprocessUndef(reader.Value);
                                 break;
+
                             case "include":
-                                this.UpdateInformation(reader, offset);
-                                this.PreprocessInclude(reader.Value, writer);
+                                this.UpdateCurrentLineNumber(reader, offset);
+                                this.PreprocessInclude(reader.Value, currentContainer);
                                 break;
+
                             case "foreach":
-                                this.PreprocessForeach(reader, writer, offset);
+                                this.PreprocessForeach(reader, currentContainer, offset);
                                 break;
+
                             case "endforeach": // endforeach is handled in PreprocessForeach, so seeing it here is an error
-                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "foreach", "endforeach"));
+                                throw new WixException(WixErrors.UnmatchedPreprocessorInstruction(this.currentLineNumber, "foreach", "endforeach"));
+
                             case "pragma":
-                                this.PreprocessPragma(reader.Value, writer);
+                                this.PreprocessPragma(reader.Value, currentContainer);
                                 break;
+
                             default:
                                 // unknown processing instructions are currently ignored
                                 break;
                         }
                         break;
-                    case XmlNodeType.Element:
-                        bool empty = reader.IsEmptyElement;
 
-                        if (0 < this.includeNextStack.Count && (bool)this.includeNextStack.Peek())
+                    case XmlNodeType.Element:
+                        if (0 < this.includeNextStack.Count && this.includeNextStack.Peek())
                         {
                             if ("Include" != reader.LocalName)
                             {
-                                this.core.OnMessage(WixErrors.InvalidDocumentElement(this.GetCurrentSourceLineNumbers(), reader.Name, "include", "Include"));
+                                this.core.OnMessage(WixErrors.InvalidDocumentElement(this.currentLineNumber, reader.Name, "include", "Include"));
                             }
 
                             this.includeNextStack.Pop();
@@ -649,43 +662,60 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             break;
                         }
 
-                        // output any necessary preprocessor processing instructions then write the start of the element
-                        this.WriteProcessingInstruction(reader, writer, offset);
-                        writer.WriteStartElement(reader.Name);
+                        bool empty = reader.IsEmptyElement;
+                        XNamespace ns = XNamespace.Get(reader.NamespaceURI);
+                        XElement element = new XElement(ns + reader.LocalName);
+                        currentContainer.Add(element);
+
+                        this.UpdateCurrentLineNumber(reader, offset);
+                        element.AddAnnotation(this.currentLineNumber);
 
                         while (reader.MoveToNextAttribute())
                         {
-                            string value = this.core.PreprocessString(this.GetCurrentSourceLineNumbers(), reader.Value);
-                            writer.WriteAttributeString(reader.Name, value);
+                            string value = this.core.PreprocessString(this.currentLineNumber, reader.Value);
+                            XNamespace attribNamespace = XNamespace.Get(reader.NamespaceURI);
+                            attribNamespace = XNamespace.Xmlns == attribNamespace && reader.LocalName.Equals("xmlns") ? XNamespace.None : attribNamespace;
+                            element.Add(new XAttribute(attribNamespace + reader.LocalName, value));
                         }
 
-                        if (empty)
+                        if (!empty)
                         {
-                            writer.WriteEndElement();
+                            containerStack.Push(currentContainer);
+                            currentContainer = element;
                         }
                         break;
+
                     case XmlNodeType.EndElement:
                         if (0 < reader.Depth || !include)
                         {
-                            writer.WriteEndElement();
+                            currentContainer = containerStack.Pop();
                         }
                         break;
+
                     case XmlNodeType.Text:
-                        string postprocessedText = this.core.PreprocessString(this.GetCurrentSourceLineNumbers(), reader.Value);
-                        writer.WriteString(postprocessedText);
+                        string postprocessedText = this.core.PreprocessString(this.currentLineNumber, reader.Value);
+                        currentContainer.Add(postprocessedText);
                         break;
+
                     case XmlNodeType.CDATA:
-                        string postprocessedValue = this.core.PreprocessString(this.GetCurrentSourceLineNumbers(), reader.Value);
-                        writer.WriteCData(postprocessedValue);
+                        string postprocessedValue = this.core.PreprocessString(this.currentLineNumber, reader.Value);
+                        currentContainer.Add(new XCData(postprocessedValue));
                         break;
+
                     default:
                         break;
                 }
             }
 
-            if (0 != stack.Count)
+            if (0 != ifStack.Count)
             {
-                throw new WixException(WixErrors.NonterminatedPreprocessorInstruction(this.GetCurrentSourceLineNumbers(), "if", "endif"));
+                throw new WixException(WixErrors.NonterminatedPreprocessorInstruction(this.currentLineNumber, "if", "endif"));
+            }
+
+            // TODO: can this actually happen?
+            if (0 != containerStack.Count)
+            {
+                throw new WixException(WixErrors.NonterminatedPreprocessorInstruction(this.currentLineNumber, "nodes", "nodes"));
             }
         }
 
@@ -695,7 +725,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="errorMessage">Text from source.</param>
         private void PreprocessError(string errorMessage)
         {
-            SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+            SourceLineNumber sourceLineNumbers = this.currentLineNumber;
 
             // resolve other variables in the error message
             errorMessage = this.core.PreprocessString(sourceLineNumbers, errorMessage);
@@ -709,7 +739,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="warningMessage">Text from source.</param>
         private void PreprocessWarning(string warningMessage)
         {
-            SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+            SourceLineNumber sourceLineNumbers = this.currentLineNumber;
 
             // resolve other variables in the warning message
             warningMessage = this.core.PreprocessString(sourceLineNumbers, warningMessage);
@@ -724,7 +754,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         private void PreprocessDefine(string originalDefine)
         {
             Match match = defineRegex.Match(originalDefine);
-            SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+            SourceLineNumber sourceLineNumbers = this.currentLineNumber;
 
             if (!match.Success)
             {
@@ -761,7 +791,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="originalDefine">Text from source.</param>
         private void PreprocessUndef(string originalDefine)
         {
-            SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+            SourceLineNumber sourceLineNumbers = this.currentLineNumber;
             string name = this.core.PreprocessString(sourceLineNumbers, originalDefine.Trim());
 
             if (name.StartsWith("var.", StringComparison.Ordinal))
@@ -778,39 +808,37 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Processes an included file.
         /// </summary>
         /// <param name="includePath">Path to included file.</param>
-        /// <param name="writer">Writer to output postprocessed data to.</param>
-        private void PreprocessInclude(string includePath, XmlWriter writer)
+        /// <param name="parent">Parent container for included content.</param>
+        private void PreprocessInclude(string includePath, XContainer parent)
         {
-            SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+            SourceLineNumber sourceLineNumbers = this.currentLineNumber;
 
             // preprocess variables in the path
             includePath = this.core.PreprocessString(sourceLineNumbers, includePath);
 
-            FileInfo includeFile = this.GetIncludeFile(includePath);
+            string includeFile = this.GetIncludeFile(includePath);
 
             if (null == includeFile)
             {
                 throw new WixException(WixErrors.FileNotFound(sourceLineNumbers, includePath, "include"));
             }
 
-            using (Stream includeStream = new FileStream(includeFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (XmlReader reader = XmlReader.Create(includeFile, DocumentXmlReaderSettings))
             {
-                XmlReader reader = new XmlTextReader(includeStream);
-
-                this.PushInclude(includeFile.FullName);
+                this.PushInclude(includeFile);
 
                 // process the included reader into the writer
                 try
                 {
-                    this.PreprocessReader(true, reader, writer, 0);
+                    this.PreprocessReader(true, reader, parent, 0);
                 }
                 catch (XmlException e)
                 {
-                    this.UpdateInformation(reader, 0);
+                    this.UpdateCurrentLineNumber(reader, 0);
                     throw new WixException(WixErrors.InvalidXml(sourceLineNumbers, "source", e.Message));
                 }
 
-                this.OnIncludedFile(new IncludedFileEventArgs(sourceLineNumbers, includeFile.FullName));
+                this.OnIncludedFile(new IncludedFileEventArgs(sourceLineNumbers, includeFile));
 
                 this.PopInclude();
             }
@@ -820,15 +848,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Preprocess a foreach processing instruction.
         /// </summary>
         /// <param name="reader">The xml reader.</param>
-        /// <param name="writer">The xml writer.</param>
+        /// <param name="container">The container where to output processed data.</param>
         /// <param name="offset">Offset for the line numbers.</param>
-        private void PreprocessForeach(XmlReader reader, XmlWriter writer, int offset)
+        private void PreprocessForeach(XmlReader reader, XContainer container, int offset)
         {
             // find the "in" token
             int indexOfInToken = reader.Value.IndexOf(" in ", StringComparison.Ordinal);
             if (0 > indexOfInToken)
             {
-                throw new WixException(WixErrors.IllegalForeach(this.GetCurrentSourceLineNumbers(), reader.Value));
+                throw new WixException(WixErrors.IllegalForeach(this.currentLineNumber, reader.Value));
             }
 
             // parse out the variable name
@@ -836,7 +864,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             string varValuesString = reader.Value.Substring(indexOfInToken + 4).Trim();
 
             // preprocess the variable values string because it might be a variable itself
-            varValuesString = this.core.PreprocessString(this.GetCurrentSourceLineNumbers(), varValuesString);
+            varValuesString = this.core.PreprocessString(this.currentLineNumber, varValuesString);
 
             string[] varValues = varValuesString.Split(';');
 
@@ -859,7 +887,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 textReader.WhitespaceHandling = WhitespaceHandling.All;
             }
 
-            string fragment = null;
             StringBuilder fragmentBuilder = new StringBuilder();
             int nestedForeachCount = 1;
             while (nestedForeachCount != 0)
@@ -869,17 +896,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     switch (reader.LocalName)
                     {
                         case "foreach":
-                            nestedForeachCount++;
+                            ++nestedForeachCount;
                             // Output the foreach statement
                             fragmentBuilder.AppendFormat("<?foreach {0}?>", reader.Value);
                             break;
+
                         case "endforeach":
-                            nestedForeachCount--;
+                            --nestedForeachCount;
                             if (0 != nestedForeachCount)
                             {
                                 fragmentBuilder.Append("<?endforeach ?>");
                             }
                             break;
+
                         default:
                             fragmentBuilder.AppendFormat("<?{0} {1}?>", reader.LocalName, reader.Value);
                             break;
@@ -897,31 +926,32 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else if (reader.NodeType == XmlNodeType.None)
                 {
-                    throw new WixException(WixErrors.ExpectedEndforeach(this.GetCurrentSourceLineNumbers()));
+                    throw new WixException(WixErrors.ExpectedEndforeach(this.currentLineNumber));
                 }
 
                 reader.Read();
             }
 
-            fragment = fragmentBuilder.ToString();
-
-            // process each iteration, updating the variable's value each time
-            foreach (string varValue in varValues)
+            using (MemoryStream fragmentStream = new MemoryStream(Encoding.UTF8.GetBytes(fragmentBuilder.ToString())))
+            using (XmlReader loopReader = XmlReader.Create(fragmentStream, FragmentXmlReaderSettings))
             {
-                // Always overwrite foreach variables.
-                this.core.AddVariable(this.GetCurrentSourceLineNumbers(), varName, varValue, false);
-
-                XmlTextReader loopReader;
-                loopReader = new XmlTextReader(fragment, XmlNodeType.Element, new XmlParserContext(null, null, null, XmlSpace.Default));
-
-                try
+                // process each iteration, updating the variable's value each time
+                foreach (string varValue in varValues)
                 {
-                    this.PreprocessReader(false, loopReader, writer, offset);
-                }
-                catch (XmlException e)
-                {
-                    this.UpdateInformation(loopReader, offset);
-                    throw new WixException(WixErrors.InvalidXml(this.GetCurrentSourceLineNumbers(), "source", e.Message));
+                    // Always overwrite foreach variables.
+                    this.core.AddVariable(this.currentLineNumber, varName, varValue, false);
+
+                    try
+                    {
+                        this.PreprocessReader(false, loopReader, container, offset);
+                    }
+                    catch (XmlException e)
+                    {
+                        this.UpdateCurrentLineNumber(loopReader, offset);
+                        throw new WixException(WixErrors.InvalidXml(this.currentLineNumber, "source", e.Message));
+                    }
+
+                    fragmentStream.Position = 0; // seek back to the beginning for the next loop.
                 }
             }
         }
@@ -930,10 +960,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Processes a pragma processing instruction
         /// </summary>
         /// <param name="pragmaText">Text from source.</param>
-        private void PreprocessPragma(string pragmaText, XmlWriter writer)
+        private void PreprocessPragma(string pragmaText, XContainer parent)
         {
             Match match = pragmaRegex.Match(pragmaText);
-            SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
+            SourceLineNumber sourceLineNumbers = this.currentLineNumber;
 
             if (!match.Success)
             {
@@ -945,7 +975,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             try
             {
-                this.core.PreprocessPragma(sourceLineNumbers, match.Groups["pragmaName"].Value.Trim(), pragmaArgs, writer);
+                this.core.PreprocessPragma(sourceLineNumbers, match.Groups["pragmaName"].Value.Trim(), pragmaArgs, parent);
             }
             catch (Exception e)
             {
@@ -976,11 +1006,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 int endingQuotes = expression.IndexOf('\"', 1);
                 if (-1 == endingQuotes)
                 {
-                    throw new WixException(WixErrors.UnmatchedQuotesInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                    throw new WixException(WixErrors.UnmatchedQuotesInExpression(this.currentLineNumber, originalExpression));
                 }
 
                 // cut the quotes off the string
-                token = this.core.PreprocessString(this.GetCurrentSourceLineNumbers(), expression.Substring(1, endingQuotes - 1));  
+                token = this.core.PreprocessString(this.currentLineNumber, expression.Substring(1, endingQuotes - 1));
 
                 // advance past this string
                 expression = expression.Substring(endingQuotes + 1).Trim();
@@ -990,7 +1020,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 // Find the ending paren of the expression
                 int endingParen = -1;
                 int openedCount = 1;
-                for (int i = 2; i < expression.Length; i++ )
+                for (int i = 2; i < expression.Length; i++)
                 {
                     if ('(' == expression[i])
                     {
@@ -1010,25 +1040,25 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 if (-1 == endingParen)
                 {
-                    throw new WixException(WixErrors.UnmatchedParenthesisInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                    throw new WixException(WixErrors.UnmatchedParenthesisInExpression(this.currentLineNumber, originalExpression));
                 }
-                token = expression.Substring(0, endingParen + 1);  
+                token = expression.Substring(0, endingParen + 1);
 
                 // Advance past this variable
                 expression = expression.Substring(endingParen + 1).Trim();
             }
-            else 
+            else
             {
                 // Cut the token off at the next equal, space, inequality operator,
                 // or end of string, whichever comes first
-                int space             = expression.IndexOf(" ", StringComparison.Ordinal);
-                int equals            = expression.IndexOf("=", StringComparison.Ordinal);
-                int lessThan          = expression.IndexOf("<", StringComparison.Ordinal);
-                int lessThanEquals    = expression.IndexOf("<=", StringComparison.Ordinal);
-                int greaterThan       = expression.IndexOf(">", StringComparison.Ordinal);
+                int space = expression.IndexOf(" ", StringComparison.Ordinal);
+                int equals = expression.IndexOf("=", StringComparison.Ordinal);
+                int lessThan = expression.IndexOf("<", StringComparison.Ordinal);
+                int lessThanEquals = expression.IndexOf("<=", StringComparison.Ordinal);
+                int greaterThan = expression.IndexOf(">", StringComparison.Ordinal);
                 int greaterThanEquals = expression.IndexOf(">=", StringComparison.Ordinal);
-                int notEquals         = expression.IndexOf("!=", StringComparison.Ordinal);
-                int equalsNoCase      = expression.IndexOf("~=", StringComparison.Ordinal);
+                int notEquals = expression.IndexOf("!=", StringComparison.Ordinal);
+                int equalsNoCase = expression.IndexOf("~=", StringComparison.Ordinal);
                 int closingIndex;
 
                 if (space == -1)
@@ -1116,7 +1146,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 try
                 {
-                    varValue = this.core.PreprocessString(this.GetCurrentSourceLineNumbers(), variable);
+                    varValue = this.core.PreprocessString(this.currentLineNumber, variable);
                 }
                 catch (ArgumentNullException)
                 {
@@ -1127,12 +1157,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
             else if (variable.IndexOf("(", StringComparison.Ordinal) != -1 || variable.IndexOf(")", StringComparison.Ordinal) != -1)
             {
                 // make sure it doesn't contain parenthesis
-                throw new WixException(WixErrors.UnmatchedParenthesisInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                throw new WixException(WixErrors.UnmatchedParenthesisInExpression(this.currentLineNumber, originalExpression));
             }
             else if (variable.IndexOf("\"", StringComparison.Ordinal) != -1)
             {
                 // shouldn't contain quotes
-                throw new WixException(WixErrors.UnmatchedQuotesInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                throw new WixException(WixErrors.UnmatchedQuotesInExpression(this.currentLineNumber, originalExpression));
             }
 
             return varValue;
@@ -1163,7 +1193,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 if (stringLiteral)
                 {
-                    throw new WixException(WixErrors.UnmatchedQuotesInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                    throw new WixException(WixErrors.UnmatchedQuotesInExpression(this.currentLineNumber, originalExpression));
                 }
 
                 rightValue = this.GetNextToken(originalExpression, ref expression, out stringLiteral);
@@ -1178,7 +1208,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 // Prepend the token back on the expression since it wasn't an operator
                 // and put the quotes back on the literal if necessary
-                
+
                 if (stringLiteral)
                 {
                     operation = "\"" + operation + "\"";
@@ -1214,7 +1244,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 if (operation.Length > 0)
                 {
-                    throw new WixException(WixErrors.ExpectedVariable(this.GetCurrentSourceLineNumbers(), originalExpression));
+                    throw new WixException(WixErrors.ExpectedVariable(this.currentLineNumber, originalExpression));
                 }
 
                 // false expression
@@ -1229,7 +1259,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    throw new WixException(WixErrors.UnexpectedLiteral(this.GetCurrentSourceLineNumbers(), originalExpression));
+                    throw new WixException(WixErrors.UnexpectedLiteral(this.currentLineNumber, originalExpression));
                 }
             }
             else
@@ -1257,7 +1287,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         expressionValue = true;
                     }
                 }
-                else 
+                else
                 {
                     // Convert the numbers from strings
                     int rightInt;
@@ -1269,11 +1299,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     catch (FormatException)
                     {
-                        throw new WixException(WixErrors.IllegalIntegerInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                        throw new WixException(WixErrors.IllegalIntegerInExpression(this.currentLineNumber, originalExpression));
                     }
                     catch (OverflowException)
                     {
-                        throw new WixException(WixErrors.IllegalIntegerInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                        throw new WixException(WixErrors.IllegalIntegerInExpression(this.currentLineNumber, originalExpression));
                     }
 
                     // Compare the numbers
@@ -1315,7 +1345,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 closeParenIndex = expression.IndexOf(')', closeParenIndex);
                 if (closeParenIndex == -1)
                 {
-                    throw new WixException(WixErrors.UnmatchedParenthesisInExpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                    throw new WixException(WixErrors.UnmatchedParenthesisInExpression(this.currentLineNumber, originalExpression));
                 }
 
                 if (InsideQuotes(expression, closeParenIndex))
@@ -1364,7 +1394,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     currentValue = !currentValue;
                     break;
                 default:
-                    throw new WixException(WixErrors.UnexpectedPreprocessorOperator(this.GetCurrentSourceLineNumbers(), operation.ToString()));
+                    throw new WixException(WixErrors.UnexpectedPreprocessorOperator(this.currentLineNumber, operation.ToString()));
             }
         }
 
@@ -1407,13 +1437,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="prevResultOperation">The operation to apply to this result</param>
         /// <param name="prevResult">The previous result to apply to this result</param>
         /// <returns>Boolean to indicate if the expression is true or false</returns>
-        private bool EvaluateExpressionRecurse(string originalExpression,  ref string expression,  PreprocessorOperation prevResultOperation,  bool prevResult)
+        private bool EvaluateExpressionRecurse(string originalExpression, ref string expression, PreprocessorOperation prevResultOperation, bool prevResult)
         {
             bool expressionValue = false;
             expression = expression.Trim();
             if (expression.Length == 0)
             {
-                throw new WixException(WixErrors.UnexpectedEmptySubexpression(this.GetCurrentSourceLineNumbers(), originalExpression));
+                throw new WixException(WixErrors.UnexpectedEmptySubexpression(this.currentLineNumber, originalExpression));
             }
 
             // If the expression starts with parenthesis, evaluate it
@@ -1434,7 +1464,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     expression = expression.Substring(3).Trim();
                     if (expression.Length == 0)
                     {
-                        throw new WixException(WixErrors.ExpectedExpressionAfterNot(this.GetCurrentSourceLineNumbers(), originalExpression));
+                        throw new WixException(WixErrors.ExpectedExpressionAfterNot(this.currentLineNumber, originalExpression));
                     }
 
                     expressionValue = this.EvaluateExpressionRecurse(originalExpression, ref expression, PreprocessorOperation.Not, true);
@@ -1463,7 +1493,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    throw new WixException(WixErrors.InvalidSubExpression(this.GetCurrentSourceLineNumbers(), expression, originalExpression));
+                    throw new WixException(WixErrors.InvalidSubExpression(this.currentLineNumber, expression, originalExpression));
                 }
             }
 
@@ -1475,42 +1505,21 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="reader">The xml reader for the preprocessor.</param>
         /// <param name="offset">This is the artificial offset of the line numbers from the reader.  Used for the foreach processing.</param>
-        private void UpdateInformation(XmlReader reader, int offset)
+        private void UpdateCurrentLineNumber(XmlReader reader, int offset)
         {
             IXmlLineInfo lineInfoReader = reader as IXmlLineInfo;
             if (null != lineInfoReader)
             {
-                int lineNumber = lineInfoReader.LineNumber + offset;
+                int newLine = lineInfoReader.LineNumber + offset;
 
-                if (this.currentLineNumber.LineNumber != lineNumber)
+                if (this.currentLineNumber.LineNumber != newLine)
                 {
-                    this.currentLineNumber.LineNumber = lineNumber;
-                    this.currentLineNumberWritten = false;
+                    this.currentLineNumber = new SourceLineNumber(this.currentLineNumber.FileName, newLine);
                 }
             }
         }
 
         /// <summary>
-        /// Write out the processing instruction that contains the line number information.
-        /// </summary>
-        /// <param name="reader">The xml reader.</param>
-        /// <param name="writer">The xml writer.</param>
-        /// <param name="offset">The artificial offset to use when writing the current line number.  Used for the foreach processing.</param>
-        private void WriteProcessingInstruction(XmlReader reader, XmlWriter writer, int offset)
-        {
-            this.UpdateInformation(reader, offset);
-
-            if (!this.currentLineNumberWritten)
-            {
-                SourceLineNumberCollection sourceLineNumbers = this.GetCurrentSourceLineNumbers();
-
-                // write the encoded source line numbers as a string into the "ln" processing instruction
-                writer.WriteProcessingInstruction(Preprocessor.LineNumberElementName, sourceLineNumbers.EncodedSourceLineNumbers);
-            }
-        }
-
-        /// <summary>
-
         /// Pushes a file name on the stack of included files.
         /// </summary>
         /// <param name="fileName">Name to push on to the stack of included files.</param>
@@ -1527,7 +1536,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         private void PopInclude()
         {
-            this.currentLineNumber = (SourceLineNumber)this.sourceStack.Pop();
+            this.currentLineNumber = this.sourceStack.Pop();
 
             this.currentFileStack.Pop();
             this.includeNextStack.Pop();
@@ -1541,10 +1550,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="includePath">User-specified path to the included file (usually just the file name).</param>
         /// <returns>Returns a FileInfo for the found include file, or null if the file cannot be found.</returns>
-        private FileInfo GetIncludeFile(string includePath)
+        private string GetIncludeFile(string includePath)
         {
             string finalIncludePath = null;
-            FileInfo includeFile = null;
 
             includePath = includePath.Trim();
 
@@ -1566,7 +1574,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
             else // relative path
             {
                 // build a string to test the directory containing the source file first
-                string includeTestPath = String.Concat(Path.GetDirectoryName((string)this.currentFileStack.Peek()), Path.DirectorySeparatorChar, includePath);
+                string currentFolder = this.currentFileStack.Peek();
+                string includeTestPath = Path.Combine(Path.GetDirectoryName(currentFolder) ?? String.Empty, includePath);
 
                 // test the source file directory
                 if (File.Exists(includeTestPath))
@@ -1575,22 +1584,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else // test all search paths in the order specified on the command line
                 {
-                    foreach (string includeSearchPath in this.includeSearchPaths)
+                    foreach (string includeSearchPath in this.IncludeSearchPaths)
                     {
-                        StringBuilder pathBuilder = new StringBuilder(includeSearchPath);
-
-                        // put the slash at the end of the path if its missing
-                        if (!includeSearchPath.EndsWith("/", StringComparison.Ordinal) && !includeSearchPath.EndsWith("\\", StringComparison.Ordinal))
-                        {
-                            pathBuilder.Append('\\');
-                        }
-
-                        // append the relative path to the included file
-                        pathBuilder.Append(includePath);
-
-                        includeTestPath = pathBuilder.ToString();
-
                         // if the path exists, we have found the final string
+                        includeTestPath = Path.Combine(includeSearchPath, includePath);
                         if (File.Exists(includeTestPath))
                         {
                             finalIncludePath = includeTestPath;
@@ -1600,31 +1597,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
             }
 
-            // create the FileInfo if the path exists
-            if (null != finalIncludePath)
-            {
-                includeFile = new FileInfo(finalIncludePath);
-            }
-
-            return includeFile;
-        }
-
-        /// <summary>
-        /// Get the current source line numbers array for use in exceptions and processing instructions.
-        /// </summary>
-        /// <returns>Returns an array of SourceLineNumber objects.</returns>
-        private SourceLineNumberCollection GetCurrentSourceLineNumbers()
-        {
-            int i = 0;
-            SourceLineNumberCollection sourceLineNumbers = new SourceLineNumberCollection(new SourceLineNumber[1 + this.sourceStack.Count]);   // create an array of source line numbers to encode
-
-            sourceLineNumbers[i++] = this.currentLineNumber;
-            foreach (SourceLineNumber sourceLineNumber in this.sourceStack)
-            {
-                sourceLineNumbers[i++] = sourceLineNumber;
-            }
-
-            return sourceLineNumbers;
+            return finalIncludePath;
         }
     }
 }

@@ -7,14 +7,14 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The messages for the Windows Installer XML Toolset Dependency Extension.
+  The messages for the WiX Toolset Dependency Extension.
 
   Errors start at 5400.
   Warnings start at 5430.
   Verboses start at 5460.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="DependencyErrors" ContainerName="DependencyErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="DependencyErrors" ContainerName="DependencyErrorEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="IllegalCharactersInProvider" Number="5400">
             <Instance>
                 The provider key authored into the {0} attribute contains an illegal character, '{1}'. Please author the provider key without any of the following characters: {2}
@@ -32,7 +32,7 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="DependencyWarnings" ContainerName="DependencyWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Class Name="DependencyWarnings" ContainerName="DependencyWarningEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="ProvidesKeyNotFound" Number="5431">
             <Instance>
                 The provider key with identifier {0} was not found in the WixDependencyProvider table. Related registry rows will not be removed from authoring.
@@ -67,5 +67,5 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="DependencyVerboses" ContainerName="DependencyVerboseEventArgs" BaseContainerName="WixVerboseEventArgs" />
+    <Class Name="DependencyVerboses" ContainerName="DependencyVerboseEventArgs" BaseContainerName="MessageEventArgs" />
 </Messages>

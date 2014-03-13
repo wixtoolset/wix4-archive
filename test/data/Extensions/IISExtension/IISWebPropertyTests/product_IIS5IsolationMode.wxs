@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Id="64D5FE9E-9094-431d-A90D-C686CADF4A03" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{2CC50D99-A630-4040-AEBA-F86B5BFC9C0B}">
     <Package Description="Test for: IIs5IsolationMode" Comments="Test for: IIs5IsolationMode" InstallerVersion="200" Compressed="yes" />
 

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Deployment.Samples.DDiff
+namespace WixToolset.Dtf.Samples.DDiff
 {
 	public class FileDiffEngine : IDiffEngine
 	{

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux {
+namespace WixToolset.Lux {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Tools.WindowsInstallerXml.Lux.LuxStrings", typeof(LuxStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WixToolset.Lux.LuxStrings", typeof(LuxStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

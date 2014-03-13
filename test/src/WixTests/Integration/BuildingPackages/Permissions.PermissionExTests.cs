@@ -17,7 +17,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Permissions
     using System.IO;
     using System.Text;
 
-    using DTF = Microsoft.Deployment.WindowsInstaller;
+    using DTF = WixToolset.Dtf.WindowsInstaller;
     using WixTest;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

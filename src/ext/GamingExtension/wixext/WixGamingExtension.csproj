@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="WixGamingExtension.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -9,17 +9,16 @@
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
-    <ProjectGuid>{696EB455-0EF3-47C0-8A02-86FF5D8CC791}</ProjectGuid>
+    <ProjectGuid>{5188C6FB-FE2D-4973-8310-DA05D34040F9}</ProjectGuid>
     <AssemblyName>WixGamingExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="GamingCompiler.cs" />
     <Compile Include="GamingDecompiler.cs" />
-    <Compile Include="GamingExtension.cs" />
+    <Compile Include="GamingExtensionData.cs" />
     <MsgGenSource Include="Data\messages.xml">
       <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
     </MsgGenSource>
@@ -31,8 +30,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\gaming.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Gaming</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.Gaming</Namespace>
     </XsdGenSource>
     <EmbeddedResource Include="$(OutputPath)\gaming.wixlib">
       <Link>Data\gaming.wixlib</Link>
@@ -42,8 +41,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\..\UtilExtension\wixext\WixUtilExtension.csproj" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\GamingExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

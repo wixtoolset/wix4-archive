@@ -100,10 +100,10 @@ LExit:
 }
 
 
-HRESULT DAPI MemInsertIntoArray(
-    __deref_out_bcount((cExistingArray + cNumInsertItems) * cbArrayType) LPVOID* ppvArray,
+extern "C" HRESULT DAPI MemInsertIntoArray(
+    __deref_out_bcount((cExistingArray + cInsertItems) * cbArrayType) LPVOID* ppvArray,
     __in DWORD dwInsertIndex,
-    __in DWORD cNumInsertItems,
+    __in DWORD cInsertItems,
     __in DWORD cExistingArray,
     __in SIZE_T cbArrayType,
     __in DWORD dwGrowthCount
@@ -113,25 +113,95 @@ HRESULT DAPI MemInsertIntoArray(
     DWORD i;
     BYTE *pbArray = NULL;
 
-    if (0 == cNumInsertItems)
+    if (0 == cInsertItems)
     {
         ExitFunction1(hr = S_OK);
     }
 
-    hr = MemEnsureArraySize(ppvArray, cExistingArray + cNumInsertItems, cbArrayType, dwGrowthCount);
+    hr = MemEnsureArraySize(ppvArray, cExistingArray + cInsertItems, cbArrayType, dwGrowthCount);
     ExitOnFailure(hr, "Failed to resize array while inserting items");
 
     pbArray = reinterpret_cast<BYTE *>(*ppvArray);
-    for (i = cExistingArray + cNumInsertItems - 1; i > dwInsertIndex; --i)
+    for (i = cExistingArray + cInsertItems - 1; i > dwInsertIndex; --i)
     {
         memcpy_s(pbArray + i * cbArrayType, cbArrayType, pbArray + (i - 1) * cbArrayType, cbArrayType);
     }
 
     // Zero out the newly-inserted items
-    memset(pbArray + dwInsertIndex * cbArrayType, 0, cNumInsertItems * cbArrayType);
+    memset(pbArray + dwInsertIndex * cbArrayType, 0, cInsertItems * cbArrayType);
 
 LExit:
     return hr;
+}
+
+extern "C" void DAPI MemRemoveFromArray(
+    __inout_bcount((cExistingArray + cInsertItems) * cbArrayType) LPVOID pvArray,
+    __in DWORD dwRemoveIndex,
+    __in DWORD cRemoveItems,
+    __in DWORD cExistingArray,
+    __in SIZE_T cbArrayType,
+    __in BOOL fPreserveOrder
+    )
+{
+    BYTE *pbArray = static_cast<BYTE *>(pvArray);
+    DWORD cItemsLeftAfterRemoveIndex = (cExistingArray - cRemoveItems - dwRemoveIndex);
+
+    if (fPreserveOrder)
+    {
+        memmove(pbArray + dwRemoveIndex * cbArrayType, pbArray + (dwRemoveIndex + cRemoveItems) * cbArrayType, cItemsLeftAfterRemoveIndex * cbArrayType);
+    }
+    else
+    {
+        DWORD cItemsToMove = (cRemoveItems > cItemsLeftAfterRemoveIndex ? cItemsLeftAfterRemoveIndex : cRemoveItems);
+        memmove(pbArray + dwRemoveIndex * cbArrayType, pbArray + (cExistingArray - cItemsToMove) * cbArrayType, cItemsToMove * cbArrayType);
+    }
+
+    ZeroMemory(pbArray + (cExistingArray - cRemoveItems) * cbArrayType, cRemoveItems * cbArrayType);
+}
+
+extern "C" void DAPI MemArraySwapItems(
+    __inout_bcount((cExistingArray) * cbArrayType) LPVOID pvArray,
+    __in DWORD dwIndex1,
+    __in DWORD dwIndex2,
+    __in SIZE_T cbArrayType
+    )
+{
+    BYTE *pbArrayItem1 = static_cast<BYTE *>(pvArray) + dwIndex1 * cbArrayType;
+    BYTE *pbArrayItem2 = static_cast<BYTE *>(pvArray) + dwIndex2 * cbArrayType;
+    DWORD dwByteIndex = 0;
+
+    if (dwIndex1 == dwIndex2)
+    {
+        return;
+    }
+
+    // Use XOR swapping to avoid the need for a temporary item
+    while (dwByteIndex < cbArrayType)
+    {
+        // Try to do many bytes at a time in most cases
+        if (cbArrayType - dwByteIndex > sizeof(DWORD64))
+        {
+            // x: X xor Y
+            *(reinterpret_cast<DWORD64 *>(pbArrayItem1 + dwByteIndex)) ^= *(reinterpret_cast<DWORD64 *>(pbArrayItem2 + dwByteIndex));
+            // y: X xor Y
+            *(reinterpret_cast<DWORD64 *>(pbArrayItem2 + dwByteIndex)) = *(reinterpret_cast<DWORD64 *>(pbArrayItem1 + dwByteIndex)) ^ *(reinterpret_cast<DWORD64 *>(pbArrayItem2 + dwByteIndex));
+            // x: X xor Y
+            *(reinterpret_cast<DWORD64 *>(pbArrayItem1 + dwByteIndex)) ^= *(reinterpret_cast<DWORD64 *>(pbArrayItem2 + dwByteIndex));
+
+            dwByteIndex += sizeof(DWORD64);
+        }
+        else
+        {
+            // x: X xor Y
+            *(reinterpret_cast<unsigned char *>(pbArrayItem1 + dwByteIndex)) ^= *(reinterpret_cast<unsigned char *>(pbArrayItem2 + dwByteIndex));
+            // y: X xor Y
+            *(reinterpret_cast<unsigned char *>(pbArrayItem2 + dwByteIndex)) = *(reinterpret_cast<unsigned char *>(pbArrayItem1 + dwByteIndex)) ^ *(reinterpret_cast<unsigned char *>(pbArrayItem2 + dwByteIndex));
+            // x: X xor Y
+            *(reinterpret_cast<unsigned char *>(pbArrayItem1 + dwByteIndex)) ^= *(reinterpret_cast<unsigned char *>(pbArrayItem2 + dwByteIndex));
+
+            dwByteIndex += sizeof(unsigned char);
+        }
+    }
 }
 
 extern "C" HRESULT DAPI MemFree(

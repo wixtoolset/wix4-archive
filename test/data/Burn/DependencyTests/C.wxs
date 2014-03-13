@@ -16,7 +16,7 @@
 <?define TestName = Test?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
   <Product Id="*" Name="~$(var.TestName) - B" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="F840B646-4F22-4F22-B832-E640BB1084FE">
     <Package Compressed="yes" InstallerVersion="300" InstallScope="perMachine"/>
 

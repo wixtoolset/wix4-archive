@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     public enum ScannedProjectType
     {

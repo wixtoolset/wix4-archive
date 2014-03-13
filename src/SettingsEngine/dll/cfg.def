@@ -1,0 +1,22 @@
+; cfg.def : declares the module parameters for cfgdll.dll
+
+LIBRARY      "cfgdll"
+
+EXPORTS
+	CfgInitialize
+	CfgUninitialize
+	CfgSetProduct
+	CfgSetDword
+	CfgGetDword
+	CfgSetString
+	CfgGetString
+	CfgDeleteValue
+	CfgEnumerateValues
+	CfgEnumerateProducts
+	CfgReleaseEnumeration
+	CfgAdminInitialize
+	CfgAdminUninitialize
+	CfgAdminRegisterProduct
+	CfgAdminUnregisterProduct
+	CfgAdminIsProductRegistered
+	CfgAdminEnumerateProducts

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="7_Grand_Steps_Step_1_What_Ancients_Begat">
+        <Detect>
+            <Arp DisplayName="7 Grand Steps, Step 1: What Ancients Begat"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: Should serialNo.dat be filtered out? It's a blob, but it plainly specifies the last family chosen (which is important to capture),
+                 fullscreen / windows preference (which is not preferable to capture but not horrible), and its filename suggests it specifies some kind
+                 of serial number, which is bad to capture. Leaving in to capture last family chosen, for now -->
+            <Directory Namespace="Data" Location="CommonAppDataFolder:\Mousechief\7GS\Step_1"/>
+        </Data>
+
+        <DisplayName LCID="1033">7 Grand Steps, Step 1: What Ancients Begat</DisplayName>
+    </Product>
+</LegacySettings>

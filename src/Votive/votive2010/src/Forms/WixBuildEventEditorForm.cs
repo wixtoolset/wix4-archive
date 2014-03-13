@@ -11,7 +11,7 @@
 // </summary>
 //--------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Forms
+namespace WixToolset.VisualStudio.Forms
 {
     using System;
     using System.Collections.Generic;

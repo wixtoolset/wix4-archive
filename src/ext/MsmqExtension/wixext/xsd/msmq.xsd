@@ -8,24 +8,24 @@
   </copyright>
 -->
 <xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
-            xmlns:wix="http://schemas.microsoft.com/wix/2006/wi"
+            xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
              xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
-      targetNamespace="http://schemas.microsoft.com/wix/MsmqExtension"
-                xmlns="http://schemas.microsoft.com/wix/MsmqExtension">
+            xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+      targetNamespace="http://wixtoolset.org/schemas/v4/wxs/msmq"
+                xmlns="http://wixtoolset.org/schemas/v4/wxs/msmq">
   <xs:annotation>
     <xs:documentation>
-      The source code schema for the Windows Installer XML Toolset MSMQ Extension.
+      The source code schema for the WiX Toolset MSMQ Extension.
     </xs:documentation>
   </xs:annotation>
 
-  <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+  <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
   <xs:element name="MessageQueue">
     <xs:annotation><xs:documentation>
     </xs:documentation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>
@@ -74,7 +74,7 @@
     <xs:annotation><xs:documentation>
     </xs:documentation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>

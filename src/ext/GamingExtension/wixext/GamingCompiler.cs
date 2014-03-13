@@ -7,37 +7,25 @@
 // </copyright>
 // 
 // <summary>
-// The compiler for the Windows Installer XML Toolset Gaming Extension.
+// The compiler for the WiX Toolset Gaming Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Globalization;
-    using System.IO;
     using System.Reflection;
-    using System.Xml;
-    using System.Xml.Schema;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML Toolset Gaming Extension.
+    /// The compiler for the WiX Toolset Gaming Extension.
     /// </summary>
     public sealed class GamingCompiler : CompilerExtension
     {
-        private XmlSchema schema;
-
-        /// <summary>
-        /// Instantiate a new GamingCompiler.
-        /// </summary>
-        public GamingCompiler()
-        {
-            this.schema = LoadXmlSchemaHelper(Assembly.GetExecutingAssembly(), "Microsoft.Tools.WindowsInstallerXml.Extensions.Xsd.gaming.xsd");
-        }
-
         /// <summary>
         /// All Game Explorer tasks are either play tasks or support tasks. For more information, see http://msdn2.microsoft.com/en-us/library/bb173450(VS.85).aspx.
         /// </summary>
@@ -55,12 +43,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         }
 
         /// <summary>
-        /// Gets the schema for this extension.
+        /// Instantiate a new GamingCompiler.
         /// </summary>
-        /// <value>Schema for this extension.</value>
-        public override XmlSchema Schema
+        public GamingCompiler()
         {
-            get { return this.schema; }
+            this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/gaming";
         }
 
         /// <summary>
@@ -69,33 +56,34 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="sourceLineNumbers">Source line number for the parent element.</param>
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="attribute">Attribute to process.</param>
-        /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseAttribute(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlAttribute attribute, Dictionary<string, string> contextValues)
+        /// <param name="context">Extra information about the context in which this element is being parsed.</param>
+        public override void ParseAttribute(XElement parentElement, XAttribute attribute, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(parentElement);
+            switch (parentElement.Name.LocalName)
             {
                 case "Extension":
                     // at the time the IsRichSavedGame extension attribute is parsed, the compiler
                     // might not yet have parsed the Id attribute, so we need to get it directly
                     // from the parent element and put it into the contextValues dictionary.
-                    string extensionId = parentElement.GetAttribute("Id");
-                    if (String.IsNullOrEmpty(extensionId))
+                    XAttribute idAttribute = parentElement.Attribute("Id");
+                    if (null == idAttribute)
                     {
                         this.Core.OnMessage(WixErrors.ExpectedParentWithAttribute(sourceLineNumbers, "Extension", "IsRichSavedGame", "Id"));
                     }
                     else
                     {
-                        contextValues["ExtensionId"] = extensionId;
-                        switch (attribute.LocalName)
+                        context["ExtensionId"] = idAttribute.Value;
+                        switch (attribute.Name.LocalName)
                         {
                             case "IsRichSavedGame":
                                 if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
                                 {
-                                    this.ProcessIsRichSavedGameAttribute(sourceLineNumbers, contextValues);
+                                    this.ProcessIsRichSavedGameAttribute(sourceLineNumbers, context);
                                 }
                                 break;
                             default:
-                                this.Core.UnexpectedAttribute(sourceLineNumbers, attribute);
+                                this.Core.UnexpectedAttribute(parentElement, attribute);
                                 break;
                         }
                     }
@@ -113,16 +101,16 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="element">Element to process.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseElement(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlElement element, params string[] contextValues)
+        public override void ParseElement(XElement parentElement, XElement element, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            switch (parentElement.Name.LocalName)
             {
                 case "File":
-                    string fileId = contextValues[0];
-                    string componentId = contextValues[1];
-                    string componentDirectoryId = contextValues[3];
+                    string fileId = context["FileId"];
+                    string componentId = context["ComponentId"];
+                    string componentDirectoryId = context["DirectoryId"];
 
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "Game":
                             this.ParseGameElement(element, fileId, componentId, componentDirectoryId);
@@ -143,14 +131,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="sourceLineNumbers">Source line number for the parent element.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        private void ProcessIsRichSavedGameAttribute(SourceLineNumberCollection sourceLineNumbers, Dictionary<string, string> contextValues)
+        private void ProcessIsRichSavedGameAttribute(SourceLineNumber sourceLineNumbers, IDictionary<string, string> context)
         {
             const int MsidbRegistryRootClassesRoot = 0;
             const int MsidbRegistryRootLocalMachine = 2;
 
-            string progId = contextValues["ProgId"];
-            string componentId = contextValues["ComponentId"];
-            string extensionId = contextValues["ExtensionId"];
+            string progId = context["ProgId"];
+            string componentId = context["ComponentId"];
+            string extensionId = context["ExtensionId"];
             
             if (null == extensionId || null == progId || null == componentId)
             {
@@ -173,20 +161,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="node">The element to parse.</param>
         /// <param name="fileId">The file identifier of the parent element.</param>
         /// <param name="componentId">The component identifier of the game executable.</param>
-        private void ParseGameElement(XmlNode node, string fileId, string componentId, string componentDirectoryId)
+        private void ParseGameElement(XElement node, string fileId, string componentId, string componentDirectoryId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             string gdfResourceFileId = fileId;
             string executableFileId = fileId;
             int playTaskOrder = 0;
             int supportTaskOrder = 0;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeGuidValue(sourceLineNumbers, attrib, false);
@@ -198,24 +186,22 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             executableFileId = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XElement child in node.Elements())
             {
-                if (XmlNodeType.Element == child.NodeType)
+                if (this.Namespace == child.Name.Namespace)
                 {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
+                    switch (child.Name.LocalName)
                     {
-                        switch (child.LocalName)
-                        {
                             case "PlayTask":
                                 if (0 == playTaskOrder && 0 == supportTaskOrder)
                                 {
@@ -232,31 +218,30 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                                 this.ParseSupportTaskElement(child, id, componentId, supportTaskOrder);
                                 ++supportTaskOrder;
                                 break;
-                            default:
-                                this.Core.UnexpectedElement(node, child);
-                                break;
-                        }
+                        default:
+                            this.Core.UnexpectedElement(node, child);
+                            break;
                     }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionElement(node, child);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (0 != String.Compare(fileId, gdfResourceFileId, StringComparison.Ordinal))
             {
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", gdfResourceFileId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "File", gdfResourceFileId);
             }
 
             if (0 != String.Compare(fileId, executableFileId, StringComparison.Ordinal))
             {
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", executableFileId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "File", executableFileId);
             }
 
             if (!this.Core.EncounteredError)
@@ -264,7 +249,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 Row row = this.Core.CreateRow(sourceLineNumbers, "WixGameExplorer");
                 row[0] = id;
                 row[1] = gdfResourceFileId;
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "WixSchedGameExplorer");
+                this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedGameExplorer");
             }
         }
 
@@ -276,53 +261,40 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="fileId">The file identifier of the game executable.</param>
         /// <param name="componentId">The component identifier of the game executable.</param>
         /// <param name="taskOrder">The order this play task should appear in Game Explorer.</param>
-        private void ParsePlayTaskElement(XmlNode node, string gameId, string fileId, string componentId, int taskOrder, string componentDirectoryId)
+        private void ParsePlayTaskElement(XElement node, string gameId, string fileId, string componentId, int taskOrder, string componentDirectoryId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string arguments = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Name":
-                            name = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            name = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "Arguments":
-                            arguments = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            arguments = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
             if (!this.Core.EncounteredError)
@@ -332,7 +304,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 Row row = this.Core.CreateRow(sourceLineNumbers, "Shortcut");
                 row[0] = directoryId; // just need something unique-and-stable
                 row[1] = directoryId;
-                row[2] = CompilerCore.IsValidShortFilename(name, false) ? name : String.Concat(this.Core.GenerateShortName(name, true, false, directoryId, name), "|", name);
+                row[2] = this.Core.IsValidShortFilename(name, false) ? name : String.Concat(this.Core.CreateShortName(name, true, false, directoryId, name), "|", name);
                 row[3] = componentId;
                 row[4] = String.Format(CultureInfo.InvariantCulture, "[#{0}]", fileId);
                 row[5] = arguments;
@@ -348,58 +320,45 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="gameId">The game's instance identifier.</param>
         /// <param name="componentId">The component identifier of the game executable.</param>
         /// <param name="taskOrder">The order this support task should appear in Game Explorer.</param>
-        private void ParseSupportTaskElement(XmlNode node, string gameId, string componentId, int taskOrder)
+        private void ParseSupportTaskElement(XElement node, string gameId, string componentId, int taskOrder)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string address = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Name":
-                            name = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            name = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "Address":
-                            address = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            address = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
             if (null == address)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Address"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Address"));
             }
 
             if (!this.Core.EncounteredError)
@@ -408,7 +367,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 // use the directory ID as the shortcut ID because Game Explorer wants one
                 // shortcut per directory, so that makes the directory ID unique
                 string directoryId = this.CreateTaskDirectoryRow(sourceLineNumbers, componentId, TaskType.Support, taskOrder);
-                Extensions.UtilCompiler.CreateWixInternetShortcut(this.Core, sourceLineNumbers, componentId, directoryId, directoryId, name, address, Extensions.UtilCompiler.InternetShortcutType.Link);
+                UtilCompiler.CreateWixInternetShortcut(this.Core, sourceLineNumbers, componentId, directoryId, directoryId, name, address, UtilCompiler.InternetShortcutType.Link);
             }
         }
 
@@ -418,7 +377,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="sourceLineNumbers">Source line number for the parent element.</param>
         /// <param name="gameId">The game's instance identifier.</param>
         /// <param name="componentId">The component identifier of the game executable.</param>
-        private void CreateTaskRootDirectoryCustomActions(SourceLineNumberCollection sourceLineNumbers, string gameId, string componentId)
+        private void CreateTaskRootDirectoryCustomActions(SourceLineNumber sourceLineNumbers, string gameId, string componentId)
         {
             string playTasksDirectoryId = this.GetTaskDirectoryId(sourceLineNumbers, "WixPlayTasksRoot", componentId);
             string supportTasksDirectoryId = this.GetTaskDirectoryId(sourceLineNumbers, "WixSupportTasksRoot", componentId);
@@ -480,7 +439,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="taskType">The type of this task (because play tasks and support tasks go into different directories).</param>
         /// <param name="taskOrder">The order this support task should appear in Game Explorer.</param>
         /// <returns>The generated Directory table identifier.</returns>
-        private string CreateTaskDirectoryRow(SourceLineNumberCollection sourceLineNumbers, string componentId, TaskType taskType, int taskOrder)
+        private string CreateTaskDirectoryRow(SourceLineNumber sourceLineNumbers, string componentId, TaskType taskType, int taskOrder)
         {
             string parentDirectoryId = this.GetTaskDirectoryId(sourceLineNumbers, TaskType.Play == taskType ? "WixPlayTasksRoot" : "WixSupportTasksRoot", componentId);
             string taskOrderString = taskOrder.ToString(CultureInfo.InvariantCulture.NumberFormat);
@@ -503,11 +462,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="prefix">A prefix that "uniquifies" the generated identifier.</param>
         /// <param name="componentId">The owning component's identifier.</param>
         /// <returns>The generated Directory table identifier.</returns>
-        private string GetTaskDirectoryId(SourceLineNumberCollection sourceLineNumbers, string prefix, string componentId)
+        private string GetTaskDirectoryId(SourceLineNumber sourceLineNumbers, string prefix, string componentId)
         {
             string id = String.Concat(prefix, "_", componentId);
             
-            if (72 < id.Length || !CompilerCore.IsIdentifier(id))
+            if (72 < id.Length || !this.Core.IsValidIdentifier(id))
             {
                 this.Core.OnMessage(GamingErrors.IllegalGameTaskDirectoryIdentifier(sourceLineNumbers, id));
             }

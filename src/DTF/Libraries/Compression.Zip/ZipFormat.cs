@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Compression.Zip
+namespace WixToolset.Dtf.Compression.Zip
 {
     using System;
     using System.Globalization;

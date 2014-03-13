@@ -8,7 +8,7 @@
   </copyright>
 -->
 <!--Defines a feature that is shared across several tests-->
-<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Include xmlns="http://wixtoolset.org/schemas/wxs">
 
   <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\component1.wxi?>
 

@@ -12,8 +12,8 @@
     <ProjectGuid>{15895FD1-DD68-407B-8717-08F6DD14F02C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Compression.Cab</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Compression.Cab</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.Compression.Cab</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Compression.Cab</AssemblyName>
     <CreateDocumentationFile>true</CreateDocumentationFile>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FxCopEnabled>false</FxCopEnabled>

@@ -12,7 +12,7 @@
     <ProjectGuid>{EAFD5281-D9AE-4680-AEB5-90AAAF4DBD9D}</ProjectGuid>
     <AssemblyName>WixUnit</AssemblyName>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Unit</RootNamespace>
+    <RootNamespace>WixToolset.Unit</RootNamespace>
     <NoWarn>618</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
     <FxCopEnabled>false</FxCopEnabled>

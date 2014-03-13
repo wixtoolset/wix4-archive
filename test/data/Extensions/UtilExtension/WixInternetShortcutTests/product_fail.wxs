@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Product Id="*" Name="WiX Util Internet Shortcuts Example Product" Language="1033" Version="1.0.0" Manufacturer="Dynamo Corporation" UpgradeCode="3A7130B4-AC93-4F34-86B6-114068C556F1">
     <Package InstallScope="perMachine" Description="Package with Internet shortcuts." Comments="This Product does not install any executables" InstallerVersion="200" Compressed="yes" Platform="x86" />
     <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />

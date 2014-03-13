@@ -7,10 +7,10 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The messages for the Windows Installer XML Toolset Internet Information Services Extension.
+  The messages for the WiX Toolset Internet Information Services Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="IIsErrors" ContainerName="IIsErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="IIsErrors" ContainerName="IIsErrorEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="MimeMapExtensionMissingPeriod" Number="5150">
             <Instance>The {0}/@{1} attribute's value, '{2}', is not a valid mime map extension.  It must begin with a period.
                 <Parameter Type="System.String" Name="elementName" />
@@ -85,7 +85,7 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="IIsWarnings" ContainerName="IIsWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Class Name="IIsWarnings" ContainerName="IIsWarningEventArgs" BaseContainerName="MessageEventArgs">
       <Message Id="EncounteredNullDirectoryForWebSite" Number="5400" SourceLineNumbers="no">
         <Instance>
           Could not harvest website directory: {0}.  Please update the output with the appropriate directory ID before using.
@@ -93,6 +93,6 @@
         </Instance>
       </Message>
     </Class>
-    <Class Name="IIsVerboses" ContainerName="IIsVerboseEventArgs" BaseContainerName="WixVerboseEventArgs">
+    <Class Name="IIsVerboses" ContainerName="IIsVerboseEventArgs" BaseContainerName="MessageEventArgs">
     </Class>
 </Messages>

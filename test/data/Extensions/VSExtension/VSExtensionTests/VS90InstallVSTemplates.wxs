@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="*" Name="TestInstallVSTemplate" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{0E500764-ACBE-46F5-A614-95B1B7D50A50}">
     <Package Description="InstallVSTemplate" Comments="Test InstallVSTemplate" InstallerVersion="200" Compressed="yes" />
 

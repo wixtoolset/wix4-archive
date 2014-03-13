@@ -11,36 +11,17 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Cab
+namespace WixToolset.Cab
 {
     using System;
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
-    using Microsoft.Tools.WindowsInstallerXml.Cab.Interop;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
-
-    /// <summary>
-    /// Compression level to use when creating cabinet.
-    /// </summary>
-    public enum CompressionLevel
-    {
-        /// <summary>Use no compression.</summary>
-        None,
-
-        /// <summary>Use low compression.</summary>
-        Low,
-
-        /// <summary>Use medium compression.</summary>
-        Medium,
-
-        /// <summary>Use high compression.</summary>
-        High,
-
-        /// <summary>Use ms-zip compression.</summary>
-        Mszip
-    }
+    using WixToolset.Cab.Interop;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Msi;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Wrapper class around interop with wixcab.dll to compress files into a cabinet.
@@ -118,15 +99,15 @@ namespace Microsoft.Tools.WindowsInstallerXml.Cab
             switch (compressionLevel.ToLower(CultureInfo.InvariantCulture))
             {
                 case "low":
-                    return Cab.CompressionLevel.Low;
+                    return CompressionLevel.Low;
                 case "medium":
-                    return Cab.CompressionLevel.Medium;
+                    return CompressionLevel.Medium;
                 case "high":
-                    return Cab.CompressionLevel.High;
+                    return CompressionLevel.High;
                 case "none":
-                    return Cab.CompressionLevel.None;
+                    return CompressionLevel.None;
                 case "mszip":
-                    return Cab.CompressionLevel.Mszip;
+                    return CompressionLevel.Mszip;
                 default:
                     throw new WixException(WixErrors.IllegalCompressionLevel(compressionLevel));
             }

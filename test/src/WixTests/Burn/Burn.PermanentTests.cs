@@ -15,7 +15,7 @@ namespace WixTest.Tests.Burn
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
     using WixTest.Utilities;
     using WixTest.Verifiers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -82,8 +82,8 @@ namespace WixTest.Tests.Burn
             Assert.IsTrue(MsiVerifier.IsPackageInstalled(packageB));
 
             // Force Uninstall Bundle A.
-            this.SetPackageRequestedState("PackageA", Microsoft.Tools.WindowsInstallerXml.Bootstrapper.RequestState.ForceAbsent);
-            this.SetPackageRequestedState("PackageB", Microsoft.Tools.WindowsInstallerXml.Bootstrapper.RequestState.ForceAbsent);
+            this.SetPackageRequestedState("PackageA", WixToolset.Bootstrapper.RequestState.ForceAbsent);
+            this.SetPackageRequestedState("PackageB", WixToolset.Bootstrapper.RequestState.ForceAbsent);
             installerA.Uninstall();
 
             Assert.IsFalse(MsiVerifier.IsPackageInstalled(packageA));
@@ -123,8 +123,8 @@ namespace WixTest.Tests.Burn
             Assert.IsFalse(MsiVerifier.IsPackageInstalled(packageB));
 
             // Force Uninstall Bundle A.
-            this.SetPackageRequestedState("PackageA", Microsoft.Tools.WindowsInstallerXml.Bootstrapper.RequestState.ForceAbsent);
-            this.SetPackageRequestedState("PackageB", Microsoft.Tools.WindowsInstallerXml.Bootstrapper.RequestState.ForceAbsent);
+            this.SetPackageRequestedState("PackageA", WixToolset.Bootstrapper.RequestState.ForceAbsent);
+            this.SetPackageRequestedState("PackageB", WixToolset.Bootstrapper.RequestState.ForceAbsent);
             installerA.Uninstall();
 
             Assert.IsFalse(MsiVerifier.IsPackageInstalled(packageA));

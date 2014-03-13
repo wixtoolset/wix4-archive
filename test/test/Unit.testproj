@@ -10,7 +10,9 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
+    <ProjectReference Include="..\src\UnitTests\Burn\BurnUnitTest.vcxproj" />
     <ProjectReference Include="..\src\UnitTests\dutil\DUtilUnitTest.vcxproj" />
+    <ProjectReference Include="..\src\UnitTests\Wix\WixUnitTest.csproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />

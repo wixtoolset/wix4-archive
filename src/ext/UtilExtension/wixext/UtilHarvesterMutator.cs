@@ -7,22 +7,22 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset harvester mutator.
+// The WiX Toolset harvester mutator.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The Windows Installer XML Toolset harvester mutator.
+    /// The WiX Toolset harvester mutator.
     /// </summary>
     public sealed class UtilHarvesterMutator : MutatorExtension
     {

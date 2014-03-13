@@ -4,8 +4,8 @@
     <ProjectGuid>{864B8C50-7895-4485-AC89-900D86FD8C0D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Samples.EmbeddedUI</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Samples.EmbeddedUI</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.Samples.EmbeddedUI</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Samples.EmbeddedUI</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -48,7 +48,7 @@
 
 <!--
   <PropertyGroup>
-    <PostBuildEvent>"$(TargetDir)..\x86\MakeSfxCA.exe" "$(TargetPath)" "$(TargetDir)SfxCA.dll" "$(IntermediateOutputPath)$(TargetFileName)" "$(TargetDir)Microsoft.Deployment.WindowsInstaller.dll"</PostBuildEvent>
+    <PostBuildEvent>"$(TargetDir)..\x86\MakeSfxCA.exe" "$(TargetPath)" "$(TargetDir)SfxCA.dll" "$(IntermediateOutputPath)$(TargetFileName)" "$(TargetDir)WixToolset.Dtf.WindowsInstaller.dll"</PostBuildEvent>
   </PropertyGroup>
 -->
 </Project>

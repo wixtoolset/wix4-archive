@@ -1,0 +1,67 @@
+Brain Dump/TODO:
+(features with * are recommended soon):
+
+-----General features:
+Explore ways for a user to easily remove all local data for an app once the app has been uninstalled, but only once all the app data has been backed up to a remote database
+    - This first requres us to keep track of latest sync state (we could simply record last sync with each known database we've seen, and which products had conflicts)
+*Multi-database-syncing: No matter how many databases you have, you should only ever have to hit the "sync" button once.
+    - Have CfgSync() report whether any data was pulled down or pushed up
+    - For Browser app, Whenever syncing a database pulls down data, all databases need to be sync'ed again after that, so the new data can be pushed up to them
+If we ever support elevated scenarios, keep in mind that CONFLICT_PRODUCT can't really be trusted (could be forged) - on resolve, we need to verify all the information in it is still accurate, perhaps by doing a special sync that only looks for conflicts, and doesn't pipe over anything that's subsumed
+Implement icon support in cfg API, legacy API, and browser App (probably at product registration time)
+Web / cloud support
+    - First version could be basic - just raw connection to a remote database in the cloud
+    - Future versions must support a real service running on the remote server.
+        - This will be important to mitigate some security concerns (one machine gets virus, and drops all tables in both cloud database and local database, requiring you to manually revert to an earlier snapshot)
+        - This situation is still pretty recoverable, as long as you have at least one machine not affected by the virus.
+        - It's also recoverable if your cloud supports server snapshots, and as long as those server snapshots aren't deletable by the virus-laden app via the cloud API (assuming you know how to revert to an earlier snapshot)
+Automatically update legacy manifests
+Save space by adding other types of stream compression (7zip?) and adding stream deltas
+Support something like burn's "plan" - instead of syncing values / files directly, we come up with a list of proposed changes
+    - These are passed back to the caller, who gets to view the proposed changes, and possibly proceed to actually apply the changes
+Add progress support for syncing
+Optimize remote syncing by keeping track of last change to a product in the product index table, so we don't have to enumerate values and files for every product we see on the remote database.
+Add HKLM & elevation-required places support (yes, there are some apps that do this, stupidly)
+
+-----Legacy Schema-altering features:
+Instead of hardcoded modifications to strings found in ARP like removing version or "remove only", these things should be specified in legacy manifest authoring
+
+-----Remote Schema+User Schema-altering features:
+On database creation and on syncing, differentiate between remote databases that want to keep all app data (backup), and databases that just want certain app's data (transfer)
+Allow exporting some or all settings for an app to a single file, for example so that people can share save games or sets of preferences with other users.
+Allow opening remote databases read-only (to pull settings), or write-only (to push settings)
+Allow people to write some personal notes about an individual product
+    - Maybe someday they can write text about individual values and files too?
+Implement support for rolling back settings to the way they were at a certain time (with choices for granularity, e.g. all apps, or for an individual app, or for only certain values / files, etc.), and also seeing changes within a certain time period
+Lists (and structs?) in core Cfg API (and eventually legacy products too - for REG_MULTI_SZ, delimited REG_SZ, and some INI settings)
+Per-app policies for settings
+    - There will be a default policy (an XML file), set at install-time
+    - User can override portions of the policy with their own preferences (user-customizable-policy is split into portions that sync across different machines, and portions that don't)
+    - This will allow Transaction-grouped objects in Cfg API - groups of items that must all be resolved together.
+    - This will also allow things like enumeration value type in core Cfg API (and legacy products too - REG_DWORDs are sometimes really an enum, which someone could describe in a product's XML manifest)
+
+-----Browser App-specific features:
+We want users to be able to leave the app open all the time, so we shouldn't lock external databases during the entire session. Explore automatically disconnecting from databases (unless there are conflicts to resolve, and the user isn't idle)?
+Should close to a system tray icon
+Add status bar for failures (instead of messagebox)
+Move importing legacy manifests to its own screen, so the errors can be displayed without a messagebox
+    - Provide an API for browser app to actually display the detailed error that occurred parsing the manifest
+Make thmutil controls work well with resizable windows, and make browser app resizable.
+Make thmutil controls look good with windows theming (or just eliminate the tabs in the current UI?)
+SetPreviousScreen() should be split into separate function for each tab, and take as a parameter the screen you expect to currently be on.
+    - This way if the user clicks "cancel" right after hitting "OK" or something of the sort, the UI will behave better
+Create a managed browser app that looks pretty!
+
+
+-----Do way later, but don't forget
+It's not completely possible to guarantee that the database and things on disk are in sync (in case of crash/power failure), since we can't make them part of the same transaction
+    - Put any legacy file / registry writes into an NTFS or registry transaction, and commit them before committing legacy database updates. This works because on the next legacy sync, we first take what's on the local machine and overwrite whatever's in legacy database based on it, so the writes will happen on next sync anyway!
+    - In case of writing a stream to disk, write the stream first, then write to the database to know about it
+        - This eventually requires functionality that can look for orphaned streams and delete them, and will automatically do so occasionally
+
+-----Continual, incremental improvements can be made in these areas:
+*Create more manifests
+
+
+-----Solve Bugs-----
+Be tolerant of some products failing to sync (and show in the UI which products failed)

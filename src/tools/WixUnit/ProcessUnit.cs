@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Runs a process as part of a Windows Installer XML WixUnit test.
+// Runs a process as part of a WiX WixUnit test.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -19,10 +19,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Text;
     using System.Xml;
 
-    using Microsoft.Tools.WindowsInstallerXml.Unit;
+    using WixToolset.Unit;
 
     /// <summary>
-    /// Runs a process as a Windows Installer XML WixUnit test.
+    /// Runs a process as a WiX WixUnit test.
     /// </summary>
     internal class ProcessUnit
     {

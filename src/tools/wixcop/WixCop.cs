@@ -22,7 +22,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
     using System.Reflection;
     using System.Xml;
 
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset;
 
     /// <summary>
     /// The WiXCop application class.
@@ -154,7 +154,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
                     Assembly wixcopAssembly = this.GetType().Assembly;
                     FileVersionInfo fv = FileVersionInfo.GetVersionInfo(wixcopAssembly.Location);
 
-                    Console.WriteLine("Windows Installer Xml Cop version {0}", fv.FileVersion);
+                    Console.WriteLine("WiX Cop version {0}", fv.FileVersion);
                     Console.WriteLine("Copyright (C) Outercurve Foundation. All rights reserved.");
                     Console.WriteLine();
                 }

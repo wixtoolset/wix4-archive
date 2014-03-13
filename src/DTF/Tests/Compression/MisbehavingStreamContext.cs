@@ -10,9 +10,9 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.Deployment.Compression;
+using WixToolset.Dtf.Compression;
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     public class MisbehavingStreamContext : ArchiveFileStreamContext
     {

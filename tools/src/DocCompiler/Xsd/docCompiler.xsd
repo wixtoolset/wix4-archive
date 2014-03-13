@@ -8,8 +8,8 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://schemas.microsoft.com/wix/2005/DocCompiler"
-              xmlns="http://schemas.microsoft.com/wix/2005/DocCompiler">
+    targetNamespace="http://wixtoolset.org/schemas/DocCompiler"
+              xmlns="http://wixtoolset.org/schemas/DocCompiler">
     <xs:annotation>
         <xs:documentation>
             Schema for the documentation compiler.

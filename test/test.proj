@@ -20,6 +20,7 @@
     <ProjectReference Include="src\UnitTests\Burn\BurnUnitTest.vcxproj" />
     <ProjectReference Include="src\UnitTests\dutil\DUtilUnitTest.vcxproj" />
     <ProjectReference Include="src\IntegrationTests\Burn\BurnIntegrationTests.csproj" />
+    <ProjectReference Include="src\SettingsEngineTests\SettingsEngineTest.vcxproj" Condition=" Exists('$(SqlCESdkIncludePath)') " />
     <ProjectReference Include="src\WixTests\WixTests.csproj" />
     <ProjectReference Include="src\WixTestTools\WixTestTools.csproj" />
   </ItemGroup>

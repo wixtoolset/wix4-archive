@@ -140,20 +140,13 @@
    -pdbout <output.wixpdb>  save the WixPdb to a specific file
               (default: same name as output with wixpdb extension)
    -reusecab  reuse cabinets from cabinet cache
-   -sa        suppress assemblies: do not get assembly name information
-              for assemblies
-   -sf        suppress files: do not get any file information
-              (equivalent to -sa and -sh)
-   -sh        suppress file info: do not get hash, version, language, etc
    -spdb      suppress outputting the WixPdb
    -sw[N]     suppress all warnings or a specific message ID
               (example: -sw1011 -sw1012)
-   -swall     suppress all warnings (deprecated)
    -t baseline  transform  one or more wix transforms and its baseline
    -v         verbose output
    -wx[N]     treat all warnings or a specific message ID as an error
               (example: -wx1011 -wx1012)
-   -wxall     treat all warnings as errors (deprecated)
    -? | -help this help information
 
 Environment variables:

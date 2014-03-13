@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     using System;
     using System.IO;
@@ -17,8 +17,8 @@ namespace Microsoft.Deployment.Test
     using System.Runtime.Serialization;
     using System.Runtime.Serialization.Formatters.Binary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Deployment.Compression;
-    using Microsoft.Deployment.Compression.Cab;
+    using WixToolset.Dtf.Compression;
+    using WixToolset.Dtf.Compression.Cab;
 
     [TestClass]
     public class CabTest

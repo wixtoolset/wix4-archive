@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Sconce - Windows Installer XML")]
+[assembly: AssemblyTitle("Sconce - WiX")]
 [assembly: AssemblyDescription("Visual Studio Package Classes")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(false)]

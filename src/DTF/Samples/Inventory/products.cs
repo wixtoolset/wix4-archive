@@ -3,9 +3,9 @@ using System.Data;
 using System.Globalization;
 using System.Collections;
 using System.Windows.Forms;
-using Microsoft.Deployment.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller;
 
-namespace Microsoft.Deployment.Samples.Inventory
+namespace WixToolset.Dtf.Samples.Inventory
 {
 	/// <summary>
 	/// Provides inventory data about products installed or advertised on the system.

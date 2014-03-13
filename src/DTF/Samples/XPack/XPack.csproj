@@ -3,7 +3,7 @@
     <ProjectGuid>{03E55D95-DABE-4571-9CDA-92A44F92A465}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Samples.XPack</RootNamespace>
+    <RootNamespace>WixToolset.Dtf.Samples.XPack</RootNamespace>
     <AssemblyName>XPack</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>

@@ -1,0 +1,25 @@
+﻿use msi
+
+#file contoso.exe
+#    ngen execute=immediate
+
+#file foo.dll
+#    ngen execute=idle application=contoso.exe folder=ApplicationFolder:\
+
+#folder bin
+#    file bar.dll
+#        ngen folder=ApplicationFolder:\ execute=asynchronous
+
+#---
+
+file contoso.exe msi.ngen.execute=immediate
+
+file foo.dll msi.ngen.execute=idle msi.ngen.application=contoso.exe
+
+folder bin
+    file bar.dll msi.ngen.folder=ApplicationFolder:\ msi.ngen.execute=asynchronous
+
+
+msi.property id=SOME_FILE_SEARCH external=true
+
+file example.dll msi.ngen.execute=idle msi.ngen.application=SOME_FILE_SEARCH

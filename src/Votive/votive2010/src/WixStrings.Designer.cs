@@ -15,7 +15,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio {
+namespace WixToolset.VisualStudio {
     using System;
     
     
@@ -46,7 +46,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Tools.WindowsInstallerXml.VisualStudio.WixStrings", typeof(WixStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WixToolset.VisualStudio.WixStrings", typeof(WixStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -86,7 +86,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Installer XML.
+        ///   Looks up a localized string similar to WiX.
         /// </summary>
         internal static string _120 {
             get {
@@ -321,7 +321,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Installer XML Toolset 3.9.
+        ///   Looks up a localized string similar to WiX Toolset 4.0.
         /// </summary>
         internal static string OfficialName {
             get {
@@ -393,7 +393,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Installer XML Toolset {0} {1}
+        ///   Looks up a localized string similar to WiX Toolset {0} {1}
         ///   Copyright (c) Xxx
         /// </summary>
         internal static string ProductDetails {

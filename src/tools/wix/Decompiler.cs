@@ -11,21 +11,24 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.CodeDom.Compiler;
     using System.Collections;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
-
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
+    using WixToolset.Msi;
+    using WixToolset.Msi.Interop;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Decompiles an msi database into WiX source.
@@ -39,11 +42,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
         private bool shortNames;
         private DecompilerCore core;
         private string exportFilePath;
-        private ArrayList extensions;
-        private Hashtable extensionsByTableName;
+        private List<IDecompilerExtension> extensions;
+        private Dictionary<string, IDecompilerExtension> extensionsByTableName;
         private string modularizationGuid;
         private OutputType outputType;
-        private Hashtable patchTargetFiles;        
+        private Hashtable patchTargetFiles;
         private Hashtable sequenceElements;
         private bool showPedanticMessages;
         private WixActionRowCollection standardActions;
@@ -60,20 +63,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         public Decompiler()
         {
-            this.standardActions = Installer.GetStandardActions();
+            this.standardActions = WindowsInstallerStandard.GetStandardActions();
 
-            this.extensions = new ArrayList();
-            this.extensionsByTableName = new Hashtable();
+            this.extensions = new List<IDecompilerExtension>();
+            this.extensionsByTableName = new Dictionary<string,IDecompilerExtension>();
             this.patchTargetFiles = new Hashtable();
             this.sequenceElements = new Hashtable();
             this.tableDefinitions = new TableDefinitionCollection();
             this.exportFilePath = "SourceDir";
         }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
 
         /// <summary>
         /// Gets or sets the base source file path.
@@ -194,7 +192,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // add any missing standard and wix-specific table definitions
-            foreach (TableDefinition tableDefinition in Installer.GetTableDefinitions())
+            foreach (TableDefinition tableDefinition in WindowsInstallerStandard.GetTableDefinitions())
             {
                 if (!this.tableDefinitions.Contains(tableDefinition.Name))
                 {
@@ -203,7 +201,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // add any missing extension table definitions
-            foreach (WixExtension extension in this.extensions)
+            foreach (IDecompilerExtension extension in this.extensions)
             {
                 if (null != extension.TableDefinitions)
                 {
@@ -247,7 +245,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             // try to decompile the database file
             try
             {
-                this.core = new DecompilerCore(rootElement, this.Message);
+                this.core = new DecompilerCore(rootElement);
                 this.core.ShowPedanticMessages = this.showPedanticMessages;
 
                 // stop processing if an error previously occurred
@@ -257,13 +255,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
 
                 // initialize the decompiler and its extensions
-                foreach (WixExtension extension in this.extensions)
+                foreach (IDecompilerExtension extension in this.extensions)
                 {
-                    if (null != extension.DecompilerExtension)
-                    {
-                        extension.DecompilerExtension.Core = this.core;
-                        extension.DecompilerExtension.InitializeDecompile(output.Tables);
-                    }
+                    extension.Core = this.core;
+                    extension.Initialize(output.Tables);
                 }
                 this.InitializeDecompile(output.Tables);
 
@@ -278,12 +273,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 // finalize the decompiler and its extensions
                 this.FinalizeDecompile(output.Tables);
-                foreach (WixExtension extension in this.extensions)
+                foreach (IDecompilerExtension extension in this.extensions)
                 {
-                    if (null != extension.DecompilerExtension)
-                    {
-                        extension.DecompilerExtension.FinalizeDecompile(output.Tables);
-                    }
+                    extension.Finish(output.Tables);
                 }
             }
             finally
@@ -291,12 +283,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 encounteredError = this.core.EncounteredError;
 
                 this.core = null;
-                foreach (WixExtension extension in this.extensions)
+                foreach (IDecompilerExtension extension in this.extensions)
                 {
-                    if (null != extension.DecompilerExtension)
-                    {
-                        extension.DecompilerExtension.Core = null;
-                    }
+                    extension.Core = null;
                 }
             }
 
@@ -308,24 +297,21 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Adds an extension.
         /// </summary>
         /// <param name="extension">The extension to add.</param>
-        public void AddExtension(WixExtension extension)
+        public void AddExtension(IDecompilerExtension extension)
         {
             this.extensions.Add(extension);
 
-            if (null != extension.DecompilerExtension)
+            if (null != extension.TableDefinitions)
             {
-                if (null != extension.TableDefinitions)
+                foreach (TableDefinition tableDefinition in extension.TableDefinitions)
                 {
-                    foreach (TableDefinition tableDefinition in extension.TableDefinitions)
+                    if (!this.extensionsByTableName.ContainsKey(tableDefinition.Name))
                     {
-                        if (!this.extensionsByTableName.Contains(tableDefinition.Name))
-                        {
-                            this.extensionsByTableName.Add(tableDefinition.Name, extension.DecompilerExtension);
-                        }
-                        else
-                        {
-                            throw new WixException(WixErrors.DuplicateExtensionTable(extension.GetType().ToString(), tableDefinition.Name));
-                        }
+                        this.extensionsByTableName.Add(tableDefinition.Name, extension);
+                    }
+                    else
+                    {
+                        Messaging.Instance.OnMessage(WixErrors.DuplicateExtensionTable(extension.GetType().ToString(), tableDefinition.Name));
                     }
                 }
             }
@@ -908,7 +894,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Finalize decompilation.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private void FinalizeDecompile(TableCollection tables)
+        private void FinalizeDecompile(TableIndexedCollection tables)
         {
             if (OutputType.PatchCreation == this.outputType)
             {
@@ -944,7 +930,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// a value in the Property column.  This is then possibly matched up with a CheckBox row
         /// to retrieve a CheckBoxValue.  There is no foreign key from the Control to CheckBox table.
         /// </remarks>
-        private void FinalizeCheckBoxTable(TableCollection tables)
+        private void FinalizeCheckBoxTable(TableIndexedCollection tables)
         {
             // if the user has requested to suppress the UI elements, we have nothing to do
             if (this.suppressUI)
@@ -963,8 +949,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 foreach (Row row in checkBoxTable.Rows)
                 {
-                    checkBoxes.Add(row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), row);
-                    checkBoxProperties.Add(row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), false);
+                    checkBoxes.Add(row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), row);
+                    checkBoxProperties.Add(row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), false);
                 }
             }
 
@@ -981,7 +967,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                         if (null == checkBoxRow)
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Control", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Property", Convert.ToString(row[8]), "CheckBox"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Control", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Property", Convert.ToString(row[8]), "CheckBox"));
                         }
                         else 
                         {
@@ -1013,7 +999,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <remarks>
         /// Set the keypaths for each component.
         /// </remarks>
-        private void FinalizeComponentTable(TableCollection tables)
+        private void FinalizeComponentTable(TableIndexedCollection tables)
         {
             Table componentTable = tables["Component"];
             Table fileTable = tables["File"];
@@ -1052,7 +1038,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Component", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "KeyPath", Convert.ToString(row[5]), "Registry"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Component", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "KeyPath", Convert.ToString(row[5]), "Registry"));
                         }
                     }
                     else if (MsiInterop.MsidbComponentAttributesODBCDataSource == (attributes & MsiInterop.MsidbComponentAttributesODBCDataSource))
@@ -1065,7 +1051,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Component", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "KeyPath", Convert.ToString(row[5]), "ODBCDataSource"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Component", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "KeyPath", Convert.ToString(row[5]), "ODBCDataSource"));
                         }
                     }
                     else
@@ -1078,7 +1064,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Component", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "KeyPath", Convert.ToString(row[5]), "File"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Component", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "KeyPath", Convert.ToString(row[5]), "File"));
                         }
                     }
                 }
@@ -1098,7 +1084,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(fileRow.SourceLineNumbers, "File", fileRow.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", fileRow.Component, "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(fileRow.SourceLineNumbers, "File", fileRow.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", fileRow.Component, "Component"));
                     }
                 }
             }
@@ -1117,7 +1103,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "ODBCDataSource", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "ODBCDataSource", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                     }
                 }
             }
@@ -1136,7 +1122,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Registry", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[5]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Registry", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[5]), "Component"));
                     }
                 }
             }
@@ -1150,7 +1136,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Sets the first, default, and cancel control for each dialog and adds all child control
         /// elements to the dialog.
         /// </remarks>
-        private void FinalizeDialogTable(TableCollection tables)
+        private void FinalizeDialogTable(TableIndexedCollection tables)
         {
             // if the user has requested to suppress the UI elements, we have nothing to do
             if (this.suppressUI)
@@ -1169,7 +1155,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 foreach (Row row in controlTable.Rows)
                 {
-                    controlRows.Add(row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), row);
+                    controlRows.Add(row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), row);
                 }
             }
 
@@ -1183,13 +1169,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     Wix.Control control = (Wix.Control)this.core.GetIndexedElement("Control", dialogId, Convert.ToString(row[7]));
                     if (null == control)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Dialog", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog", dialogId, "Control_First", Convert.ToString(row[7]), "Control"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Dialog", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog", dialogId, "Control_First", Convert.ToString(row[7]), "Control"));
                     }
 
                     // add tabbable controls
                     while (null != control)
                     {
-                        Row controlRow = (Row)controlRows[String.Concat(dialogId, DecompilerCore.PrimaryKeyDelimiter, control.Id)];
+                        Row controlRow = (Row)controlRows[String.Concat(dialogId, DecompilerConstants.PrimaryKeyDelimiter, control.Id)];
 
                         control.TabSkip = Wix.YesNoType.no;
                         dialog.AddChild(control);
@@ -1208,7 +1194,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             }
                             else
                             {
-                                this.core.OnMessage(WixWarnings.ExpectedForeignRow(controlRow.SourceLineNumbers, "Control", controlRow.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog_", dialogId, "Control_Next", Convert.ToString(controlRow[10]), "Control"));
+                                this.core.OnMessage(WixWarnings.ExpectedForeignRow(controlRow.SourceLineNumbers, "Control", controlRow.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog_", dialogId, "Control_Next", Convert.ToString(controlRow[10]), "Control"));
                             }
                         }
                         else
@@ -1228,7 +1214,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Dialog", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog", dialogId, "Control_Default", Convert.ToString(row[8]), "Control"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Dialog", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog", dialogId, "Control_Default", Convert.ToString(row[8]), "Control"));
                         }
                     }
 
@@ -1243,7 +1229,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Dialog", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog", dialogId, "Control_Cancel", Convert.ToString(row[9]), "Control"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Dialog", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog", dialogId, "Control_Cancel", Convert.ToString(row[9]), "Control"));
                         }
                     }
                 }
@@ -1259,7 +1245,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                     if (null == dialog)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Control", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Dialog"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Control", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Dialog"));
                         continue;
                     }
 
@@ -1280,7 +1266,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Sets the source/destination property/directory for each DuplicateFile or
         /// MoveFile row.
         /// </remarks>
-        private void FinalizeDuplicateMoveFileTables(TableCollection tables)
+        private void FinalizeDuplicateMoveFileTables(TableIndexedCollection tables)
         {
             Table duplicateFileTable = tables["DuplicateFile"];
             Table moveFileTable = tables["MoveFile"];
@@ -1339,7 +1325,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Finalize the FamilyFileRanges table.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private void FinalizeFamilyFileRangesTable(TableCollection tables)
+        private void FinalizeFamilyFileRangesTable(TableIndexedCollection tables)
         {
             Table externalFilesTable = tables["ExternalFiles"];
             Table familyFileRangesTable = tables["FamilyFileRanges"];
@@ -1438,19 +1424,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 foreach (Row row in targetFiles_OptionalDataTable.Rows)
                 {
-                    Wix.TargetFile targetFile = (Wix.TargetFile)this.patchTargetFiles[row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter)];
+                    Wix.TargetFile targetFile = (Wix.TargetFile)this.patchTargetFiles[row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter)];
 
                     Row targetImageRow = (Row)targetImageRows[row[0]];
                     if (null == targetImageRow)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, targetFiles_OptionalDataTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Target", Convert.ToString(row[0]), "TargetImages"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, targetFiles_OptionalDataTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Target", Convert.ToString(row[0]), "TargetImages"));
                         continue;
                     }
 
                     Row upgradedImagesRow = (Row)upgradedImagesRows[targetImageRow[3]];
                     if (null == upgradedImagesRow)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(targetImageRow.SourceLineNumbers, targetImageRow.Table.Name, targetImageRow.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[3]), "UpgradedImages"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(targetImageRow.SourceLineNumbers, targetImageRow.Table.Name, targetImageRow.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[3]), "UpgradedImages"));
                         continue;
                     }
 
@@ -1484,7 +1470,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, familyFileRangesTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Family", Convert.ToString(row[0]), "ImageFamilies"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, familyFileRangesTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Family", Convert.ToString(row[0]), "ImageFamilies"));
                         }
                     }
                 }
@@ -1500,7 +1486,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// the Feature and Component table separately, but not the FeatureComponents table specifically,
         /// the FeatureComponents table and primary features must be decompiled during finalization.
         /// </remarks>
-        private void FinalizeFeatureComponentsTable(TableCollection tables)
+        private void FinalizeFeatureComponentsTable(TableIndexedCollection tables)
         {
             Table classTable = tables["Class"];
             Table extensionTable = tables["Extension"];
@@ -1570,20 +1556,18 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <remarks>
         /// Sets the source, diskId, and assembly information for each file.
         /// </remarks>
-        private void FinalizeFileTable(TableCollection tables)
+        private void FinalizeFileTable(TableIndexedCollection tables)
         {
             Table fileTable = tables["File"];
             Table mediaTable = tables["Media"];
             Table msiAssemblyTable = tables["MsiAssembly"];
             Table typeLibTable = tables["TypeLib"];
 
-            MediaRowCollection mediaRows;
-
             // index the media table by media id
+            RowDictionary<MediaRow> mediaRows;
             if (null != mediaTable)
             {
-                mediaRows = new MediaRowCollection();
-                mediaRows.AddRange(mediaTable.Rows);
+                mediaRows = new RowDictionary<MediaRow>(mediaTable);
             }
 
             // set the disk identifiers and sources for files
@@ -1651,7 +1635,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                     if (null == component)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MsiAssembly", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[0]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MsiAssembly", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[0]), "Component"));
                     }
                     else
                     {
@@ -1715,7 +1699,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// tables so either one would be valid to be decompiled first, so
         /// the only safe way to nest the MIME elements is to do it during finalize.
         /// </remarks>
-        private void FinalizeMIMETable(TableCollection tables)
+        private void FinalizeMIMETable(TableIndexedCollection tables)
         {
             Table extensionTable = tables["Extension"];
             Table mimeTable = tables["MIME"];
@@ -1746,7 +1730,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Extension", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "MIME_", Convert.ToString(row[3]), "MIME"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Extension", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "MIME_", Convert.ToString(row[3]), "MIME"));
                         }
                     }
                 }
@@ -1769,7 +1753,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MIME", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Extension_", Convert.ToString(row[1]), "Extension"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MIME", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Extension_", Convert.ToString(row[1]), "Extension"));
                     }
                 }
             }
@@ -1785,7 +1769,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// remaining ProgIds for each Class.  This happens during finalize because there is
         /// a circular dependency between the Class and ProgId tables.
         /// </remarks>
-        private void FinalizeProgIdTable(TableCollection tables)
+        private void FinalizeProgIdTable(TableIndexedCollection tables)
         {
             Table classTable = tables["Class"];
             Table progIdTable = tables["ProgId"];
@@ -1821,7 +1805,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Class", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ProgId_Default", Convert.ToString(row[3]), "ProgId"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Class", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ProgId_Default", Convert.ToString(row[3]), "ProgId"));
                         }
                     }
 
@@ -1855,7 +1839,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "ProgId", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Class_", Convert.ToString(row[2]), "Class"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "ProgId", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Class_", Convert.ToString(row[2]), "Class"));
                         }
                     }
                 }
@@ -1903,7 +1887,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Extension", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "Extension", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                         }
                     }
                 }
@@ -1917,7 +1901,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <remarks>
         /// Removes properties that are generated from other entries.
         /// </remarks>
-        private void FinalizePropertyTable(TableCollection tables)
+        private void FinalizePropertyTable(TableIndexedCollection tables)
         {
             Table propertyTable = tables["Property"];
             Table customActionTable = tables["CustomAction"];
@@ -1949,7 +1933,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <remarks>
         /// Sets the directory/property for each RemoveFile row.
         /// </remarks>
-        private void FinalizeRemoveFileTable(TableCollection tables)
+        private void FinalizeRemoveFileTable(TableIndexedCollection tables)
         {
             Table removeFileTable = tables["RemoveFile"];
 
@@ -2005,7 +1989,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Nests the Permission elements below their parent elements.  There are no declared foreign
         /// keys for the parents of the LockPermissions table.
         /// </remarks>
-        private void FinalizeLockPermissionsTable(TableCollection tables)
+        private void FinalizeLockPermissionsTable(TableIndexedCollection tables)
         {
             Table createFolderTable = tables["CreateFolder"];
             Table lockPermissionsTable = tables["LockPermissions"];
@@ -2051,7 +2035,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "LockPermissions", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "LockObject", id, table));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "LockPermissions", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "LockObject", id, table));
                         }
                     }
                     else
@@ -2064,7 +2048,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "LockPermissions", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "LockObject", id, table));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "LockPermissions", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "LockObject", id, table));
                         }
                     }
                 }
@@ -2079,7 +2063,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Nests the PermissionEx elements below their parent elements.  There are no declared foreign
         /// keys for the parents of the MsiLockPermissionsEx table.
         /// </remarks>
-        private void FinalizeMsiLockPermissionsExTable(TableCollection tables)
+        private void FinalizeMsiLockPermissionsExTable(TableIndexedCollection tables)
         {
             Table createFolderTable = tables["CreateFolder"];
             Table msiLockPermissionsExTable = tables["MsiLockPermissionsEx"];
@@ -2125,7 +2109,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MsiLockPermissionsEx", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "LockObject", id, table));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MsiLockPermissionsEx", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "LockObject", id, table));
                         }
                     }
                     else
@@ -2138,7 +2122,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MsiLockPermissionsEx", row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "LockObject", id, table));
+                            this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, "MsiLockPermissionsEx", row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "LockObject", id, table));
                         }
                     }
                 }
@@ -2150,7 +2134,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
         /// <remarks>Does all the complex linking required for the search tables.</remarks>
-        private void FinalizeSearchTables(TableCollection tables)
+        private void FinalizeSearchTables(TableIndexedCollection tables)
         {
             Table appSearchTable = tables["AppSearch"];
             Table ccpSearchTable = tables["CCPSearch"];
@@ -2590,7 +2574,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Creates the sequence elements.  Occurs during finalization because its
         /// not known if sequences refer to custom actions or dialogs during decompilation.
         /// </remarks>
-        private void FinalizeSequenceTables(TableCollection tables)
+        private void FinalizeSequenceTables(TableIndexedCollection tables)
         {
             // finalize the normal sequence tables
             if (OutputType.Product == this.outputType && !this.treatProductAsModule)
@@ -2798,7 +2782,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Decompile the rows from the Upgrade and LaunchCondition tables
         /// created by the MajorUpgrade element.
         /// </remarks>
-        private void FinalizeUpgradeTable(TableCollection tables)
+        private void FinalizeUpgradeTable(TableIndexedCollection tables)
         {
             Table launchConditionTable = tables["LaunchCondition"];
             Table upgradeTable = tables["Upgrade"];
@@ -2891,7 +2875,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// foreign key is only part of the primary key of the Extension table,
         /// so it needs special logic to be nested properly.
         /// </remarks>
-        private void FinalizeVerbTable(TableCollection tables)
+        private void FinalizeVerbTable(TableIndexedCollection tables)
         {
             Table extensionTable = tables["Extension"];
             Table verbTable = tables["Verb"];
@@ -2929,7 +2913,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, verbTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Extension_", Convert.ToString(row[0]), "Extension"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, verbTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Extension_", Convert.ToString(row[0]), "Extension"));
                     }
                 }
             }
@@ -3057,7 +3041,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Initialize decompilation.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private void InitializeDecompile(TableCollection tables)
+        private void InitializeDecompile(TableIndexedCollection tables)
         {
             // reset all the state information
             this.compressed = false;
@@ -3083,18 +3067,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // index the rows from the extension libraries
-            Hashtable indexedExtensionTables = new Hashtable();
-            foreach (WixExtension extension in this.extensions)
+            Dictionary<string, HashSet<string>> indexedExtensionTables = new Dictionary<string, HashSet<string>>();
+            foreach (IDecompilerExtension extension in this.extensions)
             {
-                // determine if the extension would like its library rows to be removed
-                // if there is no decompiler extension, assume rows should not be removed
-                if (null == extension.DecompilerExtension || !extension.DecompilerExtension.RemoveLibraryRows)
-                {
-                    continue;
-                }
-
-                Library library = extension.GetLibrary(this.tableDefinitions);
-
+                // Get the optional library from the extension with the rows to be removed.
+                Library library = extension.GetLibraryToRemove(this.tableDefinitions);
                 if (null != library)
                 {
                     foreach (Section section in library.Sections)
@@ -3122,19 +3099,20 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                 }
                                 else
                                 {
-                                    primaryKey = row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter);
+                                    primaryKey = row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter);
                                     tableName = table.Name;
                                 }
 
                                 if (null != primaryKey)
                                 {
-                                    if (!indexedExtensionTables.Contains(tableName))
+                                    HashSet<string> indexedExtensionRows;
+                                    if (!indexedExtensionTables.TryGetValue(tableName, out indexedExtensionRows))
                                     {
-                                        indexedExtensionTables.Add(tableName, new Hashtable());
+                                        indexedExtensionRows = new HashSet<string>();
+                                        indexedExtensionTables.Add(tableName, indexedExtensionRows);
                                     }
-                                    Hashtable indexedExtensionRows = (Hashtable)indexedExtensionTables[tableName];
 
-                                    indexedExtensionRows[primaryKey] = null;
+                                    indexedExtensionRows.Add(primaryKey);
                                 }
                             }
                         }
@@ -3143,21 +3121,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // remove the rows from the extension libraries (to allow full round-tripping)
-            foreach (string tableName in indexedExtensionTables.Keys)
+            foreach (var kvp in indexedExtensionTables)
             {
-                Table table = tables[tableName];
-                Hashtable indexedExtensionRows = (Hashtable)indexedExtensionTables[tableName];
+                string tableName = kvp.Key;
+                HashSet<string> indexedExtensionRows = kvp.Value;
 
+                Table table = tables[tableName];
                 if (null != table)
                 {
-                    RowCollection originalRows = table.Rows.Clone();
+                    RowDictionary<Row> originalRows = new RowDictionary<Row>(table);
 
                     // remove the original rows so that they can be added back if they should remain
                     table.Rows.Clear();
 
-                    foreach (Row row in originalRows)
+                    foreach (Row row in originalRows.Values)
                     {
-                        if (!indexedExtensionRows.Contains(row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter)))
+                        if (!indexedExtensionRows.Contains(row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter)))
                         {
                             table.Rows.Add(row);
                         }
@@ -3670,13 +3649,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                     switch (template[0])
                                     {
                                         case "Intel":
-                                            package.Platform = Microsoft.Tools.WindowsInstallerXml.Serialize.Package.PlatformType.x86;
+                                            package.Platform = WixToolset.Data.Serialize.Package.PlatformType.x86;
                                             break;
                                         case "Intel64":
-                                            package.Platform = Microsoft.Tools.WindowsInstallerXml.Serialize.Package.PlatformType.ia64;
+                                            package.Platform = WixToolset.Data.Serialize.Package.PlatformType.ia64;
                                             break;
                                         case "x64":
-                                            package.Platform = Microsoft.Tools.WindowsInstallerXml.Serialize.Package.PlatformType.x64;
+                                            package.Platform = WixToolset.Data.Serialize.Package.PlatformType.x64;
                                             break;
                                     }
                                 }
@@ -3935,7 +3914,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(bbControlRow.SourceLineNumbers, table.Name, bbControlRow.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Billboard_", bbControlRow.Billboard, "Billboard"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(bbControlRow.SourceLineNumbers, table.Name, bbControlRow.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Billboard_", bbControlRow.Billboard, "Billboard"));
                 }
             }
         }
@@ -4014,7 +3993,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File_", Convert.ToString(row[0]), "File"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File_", Convert.ToString(row[0]), "File"));
                 }
             }
         }
@@ -4141,7 +4120,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[2]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[2]), "Component"));
                 }
 
                 this.core.IndexElement(row, wixClass);
@@ -4475,7 +4454,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Control_", Convert.ToString(row[1]), "Control"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Control_", Convert.ToString(row[1]), "Control"));
                 }
             }
         }
@@ -4529,7 +4508,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Control_", Convert.ToString(row[1]), "Control"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Control_", Convert.ToString(row[1]), "Control"));
                 }
             }
         }
@@ -4695,12 +4674,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                     }
 
-                    if (columnDefinition.IsNullable)
+                    if (columnDefinition.Nullable)
                     {
                         column.Nullable = Wix.YesNoType.yes;
                     }
 
-                    if (columnDefinition.IsPrimaryKey)
+                    if (columnDefinition.PrimaryKey)
                     {
                         column.PrimaryKey = Wix.YesNoType.yes;
                     }
@@ -4779,7 +4758,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
                 this.core.IndexElement(row, createFolder);
             }
@@ -5003,7 +4982,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[0]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[0]), "Component"));
                     }
                 }
             }
@@ -5090,7 +5069,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Directory_", Convert.ToString(row[2]), "Directory"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Directory_", Convert.ToString(row[2]), "Directory"));
                 }
                 this.core.IndexElement(row, component);
             }
@@ -5120,7 +5099,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Feature_", Convert.ToString(row[0]), "Feature"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Feature_", Convert.ToString(row[0]), "Feature"));
                 }
             }
         }
@@ -5289,7 +5268,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                     if (null == parentDirectory)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Directory_Parent", Convert.ToString(row[1]), "Directory"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Directory_Parent", Convert.ToString(row[1]), "Directory"));
                     }
                     else if (parentDirectory == directory) // another way to specify a root directory
                     {
@@ -5366,7 +5345,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
                 this.core.IndexElement(row, copyFile);
             }
@@ -5455,7 +5434,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[3]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[3]), "Component"));
                 }
             }
         }
@@ -5499,7 +5478,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Control_", Convert.ToString(row[1]), "Control"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Dialog_", Convert.ToString(row[0]), "Control_", Convert.ToString(row[1]), "Control"));
                 }
             }
         }
@@ -5528,7 +5507,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "MIME_", Convert.ToString(row[3]), "MIME"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "MIME_", Convert.ToString(row[3]), "MIME"));
                     }
                 }
 
@@ -5542,7 +5521,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ProgId_", Convert.ToString(row[2]), "ProgId"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ProgId_", Convert.ToString(row[2]), "ProgId"));
                     }
                 }
                 else
@@ -5555,7 +5534,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                     }
                 }
 
@@ -5647,7 +5626,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Family", Convert.ToString(row[0]), "ImageFamilies"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Family", Convert.ToString(row[0]), "ImageFamilies"));
                 }
                 this.core.IndexElement(row, externalFile);
             }
@@ -5763,7 +5742,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                     if (null == parentFeature)
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Feature_Parent", Convert.ToString(row[1]), "Feature"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Feature_Parent", Convert.ToString(row[1]), "Feature"));
                     }
                     else if (parentFeature == feature)
                     {
@@ -5796,7 +5775,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Feature_", Convert.ToString(row[0]), "Feature"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Feature_", Convert.ToString(row[0]), "Feature"));
                 }
                 this.core.IndexElement(row, componentRef);
             }
@@ -5895,7 +5874,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "SFPCatalog_", Convert.ToString(row[1]), "SFPCatalog"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "SFPCatalog_", Convert.ToString(row[1]), "SFPCatalog"));
                 }
             }
         }
@@ -5923,7 +5902,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File_", Convert.ToString(row[0]), "File"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File_", Convert.ToString(row[0]), "File"));
                 }
             }
         }
@@ -6053,7 +6032,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[7]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[7]), "Component"));
                 }
             }
         }
@@ -6137,7 +6116,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
             }
         }
@@ -6301,7 +6280,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                         if (null == name)
                         {
-                            this.core.OnMessage(WixWarnings.UnknownPermission(row.SourceLineNumbers, row.Table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), i));
+                            this.core.OnMessage(WixWarnings.UnknownPermission(row.SourceLineNumbers, row.Table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), i));
                         }
                         else
                         {
@@ -6740,7 +6719,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
                 this.core.IndexElement(row, copyFile);
             }
@@ -6786,7 +6765,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "DigitalCertificate_", Convert.ToString(row[2]), "MsiDigitalCertificate"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "DigitalCertificate_", Convert.ToString(row[2]), "MsiDigitalCertificate"));
                 }
 
                 Wix.IParentElement parentElement = (Wix.IParentElement)this.core.GetIndexedElement(Convert.ToString(row[0]), Convert.ToString(row[1]));
@@ -6796,7 +6775,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "SignObject", Convert.ToString(row[1]), Convert.ToString(row[0])));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "SignObject", Convert.ToString(row[1]), Convert.ToString(row[0])));
                 }
             }
         }
@@ -7066,7 +7045,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "DigitalCertificate_", Convert.ToString(row[1]), "MsiDigitalCertificate"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "DigitalCertificate_", Convert.ToString(row[1]), "MsiDigitalCertificate"));
                 }
             }
         }
@@ -7091,7 +7070,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Shortcut_", Convert.ToString(row[1]), "Shortcut"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Shortcut_", Convert.ToString(row[1]), "Shortcut"));
                 }
             }
         }
@@ -7120,7 +7099,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Driver_", Convert.ToString(row[0]), "ODBCDriver"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Driver_", Convert.ToString(row[0]), "ODBCDriver"));
                 }
             }
         }
@@ -7186,7 +7165,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
                 this.core.IndexElement(row, odbcDriver);
             }
@@ -7216,7 +7195,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "DataSource_", Convert.ToString(row[0]), "ODBCDataSource"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "DataSource_", Convert.ToString(row[0]), "ODBCDataSource"));
                 }
             }
         }
@@ -7249,7 +7228,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
             }
         }
@@ -7461,7 +7440,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ProgId_Parent", Convert.ToString(row[1]), "ProgId"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ProgId_Parent", Convert.ToString(row[1]), "ProgId"));
                     }
                 }
                 else if (null != row[2])
@@ -7702,7 +7681,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[2]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[2]), "Component"));
                 }
             }
         }
@@ -8023,7 +8002,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                     }
                     this.core.IndexElement(row, removeFolder);
                 }
@@ -8069,7 +8048,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                     }
                     this.core.IndexElement(row, removeFile);
                 }
@@ -8133,7 +8112,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[7]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[7]), "Component"));
                 }
             }
         }
@@ -8169,7 +8148,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[4]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[4]), "Component"));
                     }
                 }
                 else
@@ -8198,7 +8177,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[4]), "Component"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[4]), "Component"));
                     }
                 }
             }
@@ -8232,7 +8211,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[1]), "Component"));
                 }
             }
         }
@@ -8260,7 +8239,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "File_", Convert.ToString(row[0]), "File"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "File_", Convert.ToString(row[0]), "File"));
                 }
             }
         }
@@ -8355,7 +8334,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[5]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[5]), "Component"));
                 }
             }
         }
@@ -8493,7 +8472,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[11]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[11]), "Component"));
                 }
                 this.core.IndexElement(row, serviceInstall);
             }
@@ -8661,7 +8640,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[3]), "Component"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", Convert.ToString(row[3]), "Component"));
                 }
 
                 this.core.IndexElement(row, shortcut);
@@ -8684,7 +8663,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 if (null != names[0])
                 {
                     // it is permissable to just have a long name
-                    if (!CompilerCore.IsValidShortFilename(names[0], false) && null == names[1])
+                    if (!this.core.IsValidShortFilename(names[0], false) && null == names[1])
                     {
                         fileSearch.Name = names[0];
                     }
@@ -8721,12 +8700,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 if (null != row[6])
                 {
-                    fileSearch.MinDate = DecompilerCore.ConvertIntegerToDateTime(Convert.ToInt32(row[6]));
+                    fileSearch.MinDate = this.core.ConvertIntegerToDateTime(Convert.ToInt32(row[6]));
                 }
 
                 if (null != row[7])
                 {
-                    fileSearch.MaxDate = DecompilerCore.ConvertIntegerToDateTime(Convert.ToInt32(row[7]));
+                    fileSearch.MaxDate = this.core.ConvertIntegerToDateTime(Convert.ToInt32(row[7]));
                 }
 
                 if (null != row[8])
@@ -8760,9 +8739,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Target", Convert.ToString(row[0]), "TargetImages"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Target", Convert.ToString(row[0]), "TargetImages"));
                     }
-                    this.patchTargetFiles.Add(row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), targetFile);
+                    this.patchTargetFiles.Add(row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), targetFile);
                 }
 
                 if (null != row[2])
@@ -8872,7 +8851,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[3]), "UpgradedImages"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[3]), "UpgradedImages"));
                 }
                 this.core.IndexElement(row, targetImage);
             }
@@ -9114,7 +9093,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[0]), "UpgradedImages"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[0]), "UpgradedImages"));
                 }
             }
         }
@@ -9142,7 +9121,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else
                     {
-                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[0]), "UpgradedImages"));
+                        this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Upgraded", Convert.ToString(row[0]), "UpgradedImages"));
                     }
                 }
                 else
@@ -9192,7 +9171,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Family", Convert.ToString(row[4]), "ImageFamilies"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Family", Convert.ToString(row[4]), "ImageFamilies"));
                 }
                 this.core.IndexElement(row, upgradeImage);
             }
@@ -9255,7 +9234,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="field">The field containing the root value.</param>
         /// <param name="registryRootType">The strongly-typed representation of the root.</param>
         /// <returns>true if the value could be converted; false otherwise.</returns>
-        private bool GetRegistryRootType(SourceLineNumberCollection sourceLineNumbers, string tableName, Field field, out Wix.RegistryRootType registryRootType)
+        private bool GetRegistryRootType(SourceLineNumber sourceLineNumbers, string tableName, Field field, out Wix.RegistryRootType registryRootType)
         {
             switch (Convert.ToInt32(field.Data))
             {
@@ -9303,7 +9282,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
                 else
                 {
-                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, row.TableDefinition.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), featureField.Column.Name, Convert.ToString(featureField.Data), componentField.Column.Name, Convert.ToString(componentField.Data), "FeatureComponents"));
+                    this.core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, row.TableDefinition.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), featureField.Column.Name, Convert.ToString(featureField.Data), componentField.Column.Name, Convert.ToString(componentField.Data), "FeatureComponents"));
                 }
             }
         }
@@ -9312,7 +9291,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Checks the InstallExecuteSequence table to determine where RemoveExistingProducts is scheduled and removes it.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        private static Wix.MajorUpgrade.ScheduleType DetermineMajorUpgradeScheduling(TableCollection tables)
+        private static Wix.MajorUpgrade.ScheduleType DetermineMajorUpgradeScheduling(TableIndexedCollection tables)
         {
             int sequenceRemoveExistingProducts = 0;
             int sequenceInstallValidate = 0;

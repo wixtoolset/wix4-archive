@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.MsgGen
+namespace WixBuild.Tools.MsgGen
 {
     using Microsoft.CSharp;
     using System;
@@ -116,7 +116,7 @@ namespace Microsoft.Tools.MsgGen
                 XmlSchemaCollection schemaCollection = null;
                 try
                 {
-                    reader = new XmlTextReader(msgGenAssembly.GetManifestResourceStream("Microsoft.Tools.MsgGen.Xsd.messages.xsd"));
+                    reader = new XmlTextReader(msgGenAssembly.GetManifestResourceStream("WixBuild.Tools.MsgGen.Xsd.messages.xsd"));
                     schemaCollection = new XmlSchemaCollection();
                     schemaCollection.Add("http://schemas.microsoft.com/genmsgs/2004/07/messages", reader);
                 }

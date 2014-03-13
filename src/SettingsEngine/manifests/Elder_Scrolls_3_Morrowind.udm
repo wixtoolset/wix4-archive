@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Elder_Scrolls_3_Morrowind">
+        <Detect>
+            <Arp DisplayName="The Elder Scrolls III: Morrowind" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Saves" Location="InstallDir:\Saves\" />
+        </Data>
+
+        <DisplayName LCID="1033">The Elder Scrolls III: Morrowind</DisplayName>
+    </Product>
+</LegacySettings>

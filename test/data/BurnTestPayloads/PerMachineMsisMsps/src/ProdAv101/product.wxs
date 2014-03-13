@@ -8,7 +8,7 @@
   </copyright>
 -->
 <!-- ProdAv101 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
     <Product Id="6EA3AE83-A14F-4B8B-8A86-BB977A9E7833" Name="Burn Test Package A" Language="1033" Version="1.0.1.0" Manufacturer="My Company" UpgradeCode="77AE8779-8689-4DC9-BB1B-64B500078104">
 
         <Package Description="A Test product that can be patched" Comments="A Test product that can be patched" InstallerVersion="300" Compressed="yes" />

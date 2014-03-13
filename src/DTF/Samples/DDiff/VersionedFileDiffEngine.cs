@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Microsoft.Deployment.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller;
 
-namespace Microsoft.Deployment.Samples.DDiff
+namespace WixToolset.Dtf.Samples.DDiff
 {
 	public class VersionedFileDiffEngine : IDiffEngine
 	{

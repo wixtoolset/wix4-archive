@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Master_of_Orion">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both Master of Orion 1 & 2.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Master of Orion 1 and 2" InstallLocation="ComboInstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="ComboInstallDir:\Master of Orion\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\SAVE" Postfix=".GAM"/>
+            <Normal Name="Data:\CONFIG.MOO"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Master of Orion</DisplayName>
+    </Product>
+</LegacySettings>

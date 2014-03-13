@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
+namespace WixToolset.VisualStudio.Controls
 {
     partial class WixBuildEventEditor
     {
@@ -79,7 +79,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
 
         #endregion
 
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixBuildEventTextBox contentTextBox;
+        private WixToolset.VisualStudio.Controls.WixBuildEventTextBox contentTextBox;
         private System.Windows.Forms.Button editButton;
         private System.Windows.Forms.Panel bottomButtonPanel;
     }

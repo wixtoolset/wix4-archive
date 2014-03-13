@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="CfgTest" Manufacturer="CfgTestManufacturer" >
+        <Data>
+            <RegistryKey Namespace="Main" Root="HKCU" Key="Software\CfgRegTest"/>
+            <Directory Namespace="File" Location="MyDocumentsFolder:\CfgFileTest\" />
+        </Data>
+
+        <DisplayName LCID="1033">Cfg Test</DisplayName>
+    </Product>
+</LegacySettings>

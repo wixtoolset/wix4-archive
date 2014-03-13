@@ -19,5 +19,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("WiX Toolset Library Tool")]
 [assembly: AssemblyDescription("Library Tool")]
 [assembly: AssemblyCulture("")]
-[assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Net;
     using System.Reflection;
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
 
     /// <summary>
     /// The model.

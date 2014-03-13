@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
     <Patch Id="64FB5082-6D59-461C-BC62-98B34D535369" AllowRemoval="yes" MinorUpdateTargetRTM="yes" Classification="Update" ClientPatchId="PatchBv101" Codepage="1252" Description="Prod B patch v 1.0.1.0" DisplayName="Prod B patch v 1.0.1.0" Manufacturer="My Company" MoreInfoURL="http://support.MyCompany.com/kb/999999">
 
 		<PatchProperty Company="My Company" Name="Branch" Value="LDRBase" />

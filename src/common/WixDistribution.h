@@ -18,6 +18,6 @@
 
 #define VER_COMPANY_NAME    "Outercurve Foundation"
 #define VER_LEGAL_COPYRIGHT "Copyright (c) Outercurve Foundation.\240 All rights reserved."
-#define VER_PRODUCT_NAME    "Windows Installer XML Toolset"
+#define VER_PRODUCT_NAME    "WiX Toolset"
 
 #endif // __WIXDISTRIBUTION_FILE_H_

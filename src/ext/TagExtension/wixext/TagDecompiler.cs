@@ -7,21 +7,41 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset Software Id Tag Extension.
+// The decompiler for the WiX Toolset Software Id Tag Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using Microsoft.Tools.WindowsInstallerXml;
-    using Tag = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Tag;
+    using WixToolset;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Tag = WixToolset.Extensions.Serialize.Tag;
 
     /// <summary>
-    /// The Binder for the Windows Installer XML Toolset Software Id Tag Extension.
+    /// The Binder for the WiX Toolset Software Id Tag Extension.
     /// </summary>
     public sealed class TagDecompiler : DecompilerExtension
     {
+       /// <summary>
+        /// Creates a decompiler for Tag Extension.
+        /// </summary>
+        public TagDecompiler()
+        {
+            this.TableDefinitions = TagExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return TagExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>

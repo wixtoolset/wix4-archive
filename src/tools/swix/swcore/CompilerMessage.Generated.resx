@@ -1,0 +1,358 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<!--
+  <copyright file="swc.csproj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CompilerMessage.InternalError" xml:space="preserve">
+    <value>{0}</value>
+    <comment>params: [String]message</comment>
+  </data>
+  <data name="CompilerMessage.DanglingAssignmentNoMember" xml:space="preserve">
+    <value>Dangling assignment operator. You must provide a member to assign the value to.</value>
+  </data>
+  <data name="CompilerMessage.DanglingAssignmentNoValue" xml:space="preserve">
+    <value>Dangling assignment. There must be a value to assign to the member.</value>
+  </data>
+  <data name="CompilerMessage.DoubledAssignment" xml:space="preserve">
+    <value>Doubled assignment operator. You should only use a single '='.</value>
+  </data>
+  <data name="CompilerMessage.MustAssignToMember" xml:space="preserve">
+    <value>Must assign to a member.</value>
+  </data>
+  <data name="CompilerMessage.ValueHasEmbeddedQuote" xml:space="preserve">
+    <value>Values cannot contain embedded quote characters. If the quote is required, quote the entire value and escape the embedded quote using \".</value>
+  </data>
+  <data name="CompilerMessage.UnclosedQuotedValue" xml:space="preserve">
+    <value>String literal must be closed.</value>
+  </data>
+  <data name="CompilerMessage.InfiniteLoopInSubsitution" xml:space="preserve">
+    <value>Infinite loop detected while processing substitution: '{0}'.</value>
+    <comment>params: [String]value</comment>
+  </data>
+  <data name="CompilerMessage.UnknownSubstitution" xml:space="preserve">
+    <value>Unknown known substitution: '{0}'.</value>
+    <comment>params: [String]name</comment>
+  </data>
+  <data name="CompilerMessage.GroupMissingId" xml:space="preserve">
+    <value>Group does not have an Id. That's more than kinda' silly. You need to add a Group/@Id attribute.</value>
+  </data>
+  <data name="CompilerMessage.FileMissingNameAndSource" xml:space="preserve">
+    <value>Must specify File/@Name or File/@Source. Specify one or both attributes.</value>
+  </data>
+  <data name="CompilerMessage.InvalidIdResolution" xml:space="preserve">
+    <value>Expected the property {0}='{1}' to resolve to a {2} instead of {3}. Ensure the property references the correct item.</value>
+    <comment>params: [String]targetPropertyName, [String]lookup, [String]targetTypeName, [String]actualTypeName</comment>
+  </data>
+  <data name="CompilerMessage.UnknownIdResolution" xml:space="preserve">
+    <value>Could not find an object {2}/@Id='{1}' for property {0}. Ensure the property references an existing item.</value>
+    <comment>params: [String]targetPropertyName, [String]lookup, [String]targetTypeName</comment>
+  </data>
+  <data name="CompilerMessage.UnknownFileSystemResolution" xml:space="preserve">
+    <value>Could not resolve property {0}='{1}' to a {2}. Ensure the property references an existing item with the correct type.</value>
+    <comment>params: [String]targetPropertyName, [String]lookup, [String]targetTypeName</comment>
+  </data>
+  <data name="CompilerMessage.OverwritingImplicitProperty" xml:space="preserve">
+    <value>Overriding implicit value for property: '{0}' with result from reference: '{1}'.</value>
+    <comment>params: [String]targetPropertyName, [String]lookup</comment>
+  </data>
+  <data name="CompilerMessage.ApplicationNameRequired" xml:space="preserve">
+    <value>The Application/@Name is required.</value>
+  </data>
+  <data name="CompilerMessage.FileNotFound" xml:space="preserve">
+    <value>Could not find file at path: {0}.</value>
+    <comment>params: [String]path</comment>
+  </data>
+  <data name="CompilerMessage.InvalidFileName" xml:space="preserve">
+    <value>Invalid file name: {0}</value>
+    <comment>params: [String]filename</comment>
+  </data>
+  <data name="CompilerMessage.PathTooLong" xml:space="preserve">
+    <value>Path exceeds maximum number of characters allowed by the operating system. Use a shorter path for: {0}</value>
+    <comment>params: [String]path</comment>
+  </data>
+  <data name="CompilerMessage.CannotTransferFile" xml:space="preserve">
+    <value>Failed to transfer file from: '{0}' to: '{1}'. Verify the source file is accessible and the target file can be created.</value>
+    <comment>params: [String]sourcePath, [String]destinationPath</comment>
+  </data>
+  <data name="CompilerMessage.CopyFile" xml:space="preserve">
+    <value>Copying file from: '{0}' to: '{1}'.</value>
+    <comment>params: [String]sourcePath, [String]destinationPath</comment>
+  </data>
+  <data name="CompilerMessage.MoveFile" xml:space="preserve">
+    <value>Moving file from: '{0}' to: '{1}'.</value>
+    <comment>params: [String]sourcePath, [String]destinationPath</comment>
+  </data>
+  <data name="CompilerMessage.RemovingDestinationFile" xml:space="preserve">
+    <value>Removing file: '{0}'.</value>
+    <comment>params: [String]file</comment>
+  </data>
+  <data name="CompilerMessage.CompressFile" xml:space="preserve">
+    <value>Compressing file: '{0}'.</value>
+    <comment>params: [String]file</comment>
+  </data>
+  <data name="CompilerMessage.UnexpectedValidationError" xml:space="preserve">
+    <value>An unexpected internal validation error occurred. The compiler should have caught the error in your source file before hitting this error. Please send email to swix@microsoft.com with this error message and the source files necessary to reproduce the problem. Detail: {0}</value>
+    <comment>params: [String]detail</comment>
+  </data>
+  <data name="CompilerMessage.DeprecatedItem_0" xml:space="preserve">
+    <value>The '{0}' element has been deprecated. The compiler ignored the element.</value>
+    <comment>params: [String]deprecatedElement</comment>
+  </data>
+  <data name="CompilerMessage.DeprecatedItem_1" xml:space="preserve">
+    <value>The '{0}' element has been deprecated. Use the '{1}' element instead. The compiler automatically translated for you.</value>
+    <comment>params: [String]deprecatedElement, [String]replacementElement</comment>
+  </data>
+  <data name="CompilerMessage.RequiredAttribute" xml:space="preserve">
+    <value>The '{0}' element requires attribute '{1}'.</value>
+    <comment>params: [String]element, [String]attribute</comment>
+  </data>
+  <data name="CompilerMessage.DeprecatedPackageFrameworkAttribute" xml:space="preserve">
+    <value>The 'Framework' attribute is now a native attribute on the 'Package' element. Use that instead of the 'appx.package.framework' attribute.</value>
+  </data>
+  <data name="CompilerMessage.DeprecatedAttribute_0" xml:space="preserve">
+    <value>The '{1}' attribute on the '{0}' element has been deprecated. The compiler ignored the attribute.</value>
+    <comment>params: [String]element, [String]deprecatedAttribute</comment>
+  </data>
+  <data name="CompilerMessage.DeprecatedAttribute_1" xml:space="preserve">
+    <value>The '{1}' attribute on the '{0}' element has been deprecated. Use the '{3}' attribute on the '{2}' element instead.</value>
+    <comment>params: [String]element, [String]deprecatedAttribute, [String]replacementElement, [String]replacementAttribute</comment>
+  </data>
+  <data name="CompilerMessage.DeprecatedAttributeValue_0" xml:space="preserve">
+    <value>The '{1}' attribute on the '{0}' element with value '{2}' has been deprecated. The compiler ignored the attribute.</value>
+    <comment>params: [String]element, [String]attribute, [Object]deprecatedValue</comment>
+  </data>
+  <data name="CompilerMessage.DeprecatedAttributeValue_1" xml:space="preserve">
+    <value>The '{1}' attribute on the '{0}' element with value '{2}' has been deprecated. Use the '{3}' value instead.</value>
+    <comment>params: [String]element, [String]attribute, [Object]deprecatedValue, [String]replacementValue</comment>
+  </data>
+  <data name="CompilerMessage.HighlanderElement_0" xml:space="preserve">
+    <value>The '{0}' element can exist only once.</value>
+    <comment>params: [String]element</comment>
+  </data>
+  <data name="CompilerMessage.HighlanderElement_1" xml:space="preserve">
+    <value>The '{1}' element can exist only once as a child of the '{0}' element.</value>
+    <comment>params: [String]parentElement, [String]childElement</comment>
+  </data>
+  <data name="CompilerMessage.HighlanderElementWithAttributeValue" xml:space="preserve">
+    <value>The '{0}' element with attribute '{1}' value '{2}' can exist only once.</value>
+    <comment>params: [String]element, [String]attribute, [String]value</comment>
+  </data>
+  <data name="CompilerMessage.RequiredElement_0" xml:space="preserve">
+    <value>The '{0}' element is required.</value>
+    <comment>params: [String]requiredElement</comment>
+  </data>
+  <data name="CompilerMessage.RequiredElement_1" xml:space="preserve">
+    <value>The '{1}' element is required as a child of the '{0}' element. Add a '{1}' element.</value>
+    <comment>params: [String]parentElement, [String]requiredChildElement</comment>
+  </data>
+  <data name="CompilerMessage.InvalidAttributeValue" xml:space="preserve">
+    <value>The value '{2}' is not valid for '{1}' attribute on the '{0}' element.</value>
+    <comment>params: [String]element, [String]attribute, [String]invalidValue</comment>
+  </data>
+  <data name="CompilerMessage.SavedManifest" xml:space="preserve">
+    <value>Saved invalid manifest to path: {0}</value>
+    <comment>params: [String]path</comment>
+  </data>
+  <data name="CompilerMessage.XamlParseError" xml:space="preserve">
+    <value>Error while parsing: {0}</value>
+    <comment>params: [String]message</comment>
+  </data>
+  <data name="CompilerMessage.XamlWriteError" xml:space="preserve">
+    <value>Error while writing: {0}</value>
+    <comment>params: [String]message</comment>
+  </data>
+  <data name="CompilerMessage.InvalidExtension" xml:space="preserve">
+    <value>The extension '{0}' could not be loaded due to the following reason: {1}</value>
+    <comment>params: [String]extension, [String]message</comment>
+  </data>
+  <data name="CompilerMessage.InvalidExtensionType" xml:space="preserve">
+    <value>The extension '{0}' is the wrong type: '{1}'.  The expected type was '{2}'.</value>
+    <comment>params: [String]extension, [Type]actualType, [Type]expectedType</comment>
+  </data>
+  <data name="CompilerMessage.InvalidExtensionClassName" xml:space="preserve">
+    <value>The extension '{0}' with class name '{1}' could not be loaded due to the following reason: {2}</value>
+    <comment>params: [String]extension, [String]className, [String]message</comment>
+  </data>
+  <data name="CompilerMessage.ExpectedDefaultCompilerExtensionAttribute" xml:space="preserve">
+    <value>Could not find the default compiler extension attribute in the extension '{0}'. Either specify the '{1}' attribute in the extension or provide an explicit class name to load from the extension.</value>
+    <comment>params: [String]extension, [Type]attribute</comment>
+  </data>
+  <data name="CompilerMessage.WebAppDoesNotAllowAttribute" xml:space="preserve">
+    <value>A web application or extension to a web application cannot have attribute '{0}'. Remove the attribute or change the 'File' attribute to point to an executable (file name ends with '.exe').</value>
+    <comment>params: [String]attribute</comment>
+  </data>
+  <data name="CompilerMessage.AttributeRequiresAttribute" xml:space="preserve">
+    <value>The attribute '{0}' also requires the attribute '{1}' to be specified. Either remove the '{0}' attribute or add the '{1}' attribute.</value>
+    <comment>params: [String]attribute, [String]otherAttribute</comment>
+  </data>
+  <data name="CompilerMessage.AttributeIgnoringDuplicateValue" xml:space="preserve">
+    <value>The attribute '{1}' on element '{0}' with value '{2}' was duplicated. Ignoring the duplicate and continuing.</value>
+    <comment>params: [String]element, [String]attribute, [Object]value</comment>
+  </data>
+  <data name="CompilerMessage.InvalidFolderReference" xml:space="preserve">
+    <value>The id '{0}' resolved to a '{1}' instead of a 'Folder'.</value>
+    <comment>params: [String]id, [String]type</comment>
+  </data>
+  <data name="CompilerMessage.UnknownNamespacePrefix" xml:space="preserve">
+    <value>The namespace prefix '{0}' is unknown.</value>
+    <comment>params: [String]prefix</comment>
+  </data>
+  <data name="CompilerMessage.ExpectedToken" xml:space="preserve">
+    <value>Expected to find '{0}' instead of '{1}'.</value>
+    <comment>params: [String]token, [String]value</comment>
+  </data>
+  <data name="CompilerMessage.UnknownItem" xml:space="preserve">
+    <value>Unknown item '{1}' in namespace '{0}'.</value>
+    <comment>params: [String]typenamespace, [String]item</comment>
+  </data>
+  <data name="CompilerMessage.AttachedPropertyRequiresNamespace" xml:space="preserve">
+    <value>Attached property '{0}' requires a namespace specification.</value>
+    <comment>params: [String]name</comment>
+  </data>
+  <data name="CompilerMessage.UnknownAttachedProperty" xml:space="preserve">
+    <value>Unknown attached property type '{0}'.'{1}'.</value>
+    <comment>params: [String]typenamespace, [String]property</comment>
+  </data>
+  <data name="CompilerMessage.UnknownAttachedPropertyValue" xml:space="preserve">
+    <value>Unknown attached property '{2}' on attached property type '{0}'.'{1}'.</value>
+    <comment>params: [String]typenamespace, [String]property, [String]name</comment>
+  </data>
+  <data name="CompilerMessage.CannotAssignAttachedPropertyVale" xml:space="preserve">
+    <value>Cannot assign value '{3}' to attached property '{0}'.'{1}'.'{2}'.</value>
+    <comment>params: [String]typenamespace, [String]property, [String]name, [String]value</comment>
+  </data>
+  <data name="CompilerMessage.PropertyCannotSpecifyNamespace" xml:space="preserve">
+    <value>Item property '{0}' cannot provide a namespace specification. Remove the namespace '{1}' from the property.</value>
+    <comment>params: [String]property, [String]typenamespace</comment>
+  </data>
+  <data name="CompilerMessage.UnknownProperty" xml:space="preserve">
+    <value>Unknown item property '{0}'.</value>
+    <comment>params: [String]property</comment>
+  </data>
+  <data name="CompilerMessage.CannotAssignPropertyValue" xml:space="preserve">
+    <value>Cannot assign value '{1}' to item property '{0}'.</value>
+    <comment>params: [String]property, [String]value</comment>
+  </data>
+</root>

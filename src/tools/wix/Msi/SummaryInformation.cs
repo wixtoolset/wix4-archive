@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Msi
+namespace WixToolset.Msi
 {
     using System;
     using System.ComponentModel;
@@ -19,7 +19,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
     using System.Globalization;
     using System.Text;
     using System.Runtime.InteropServices;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Summary information for the MSI files.

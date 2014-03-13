@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Dragon_Age_Origins">
+        <Detect>
+            <Arp DisplayName="Dragon Age: Origins"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\BioWare\Dragon Age\">
+                <CfgFile Namespace="KeyBindings.ini" Location="Settings\KeyBindings.ini" Encoding="UTF8NoBOM">
+                    <SectionOpenTag Prefix="[" Postfix="]" />
+
+                    <Value Separator="="/>
+
+                    <Comment Prefix=";" />
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\Settings\"/>
+            <Ignore Prefix="Data:\temp\"/>
+            <Ignore Prefix="Data:\packages\"/>
+            <Ignore Prefix="Data:\offers\"/>
+            <Ignore Prefix="Data:\Logs\"/>
+            <Ignore Prefix="Data:\AddIns\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Dragon Age: Origins</DisplayName>
+    </Product>
+</LegacySettings>

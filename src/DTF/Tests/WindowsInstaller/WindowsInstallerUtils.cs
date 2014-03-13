@@ -7,12 +7,12 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     using System;
     using System.Collections.Generic;
     using System.Text;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
 
     public class WindowsInstallerUtils
     {

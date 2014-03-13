@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="WixUtilExtension.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -12,7 +12,7 @@
     <ProjectGuid>{3E74F4F0-7DC9-4837-9443-D5BE061C892C}</ProjectGuid>
     <AssemblyName>WixUtilExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
     <NoWarn>618</NoWarn>
   </PropertyGroup>
 
@@ -28,8 +28,9 @@
     <Compile Include="TypeLibraryHarvester.cs" />
     <Compile Include="UtilBinder.cs" />
     <Compile Include="UtilCompiler.cs" />
+    <Compile Include="UtilConstants.cs" />
     <Compile Include="UtilDecompiler.cs" />
-    <Compile Include="UtilExtension.cs" />
+    <Compile Include="UtilExtensionData.cs" />
     <Compile Include="UtilFinalizeHarvesterMutator.cs" />
     <Compile Include="UtilHeatExtension.cs" />
     <Compile Include="DllHarvester.cs" />
@@ -50,8 +51,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\util.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Util</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.Util</Namespace>
     </XsdGenSource>
     <EmbeddedResource Include="$(OutputPath)\util.wixlib">
       <Link>Data\util.wixlib</Link>
@@ -61,7 +62,10 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\UtilExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

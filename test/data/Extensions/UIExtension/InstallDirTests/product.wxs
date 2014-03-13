@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="B858BC76-AD11-45c3-A300-D1C6B73DFF56" Name="TestInstallDir" Language="1033" Version="0.0.0.0" UpgradeCode="{FA34F953-F659-4633-B8D2-893BF7A63642}" Manufacturer="Microsoft Corporation">
     <Package Description="Test WIXUI_INSTALLDIR" Comments="TestWIXUI_INSTALLDIR" InstallerVersion="200" Compressed="yes" />
 

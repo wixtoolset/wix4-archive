@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.Deployment.WindowsInstaller;
-using Microsoft.Deployment.WindowsInstaller.Package;
+using WixToolset.Dtf.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller.Package;
 
 [assembly: AssemblyDescription("Windows Installer package file extraction and update tool")]
 

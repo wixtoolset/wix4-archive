@@ -5,26 +5,31 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// The decompiler for the Windows Installer XML Toolset Driver Install Frameworks for Applications Extension.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Globalization;
-
-    using DifxApp = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.DifxApp;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using DifxApp = WixToolset.Extensions.Serialize.DifxApp;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset Driver Install Frameworks for Applications Extension.
+    /// The decompiler for the WiX Toolset Driver Install Frameworks for Applications Extension.
     /// </summary>
     public sealed class DifxAppDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for Gaming Extension.
+        /// </summary>
+        public DifxAppDecompiler()
+        {
+            this.TableDefinitions = DifxAppExtensionData.GetExtensionTableDefinitions();
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -90,7 +95,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component", (string)row[0], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component", (string)row[0], "Component"));
                 }
             }
         }

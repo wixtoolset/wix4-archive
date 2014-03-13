@@ -19,5 +19,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("WiX Toolset Unit Test Runner")]
 [assembly: AssemblyDescription("Unit Test Runner")]
 [assembly: AssemblyCulture("")]
-[assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

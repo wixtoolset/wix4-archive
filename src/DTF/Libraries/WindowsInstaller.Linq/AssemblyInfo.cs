@@ -19,5 +19,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: ComVisible(false)]
 [assembly: CLSCompliant(true)]
 
-[assembly: SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Scope = "member", Target = "Microsoft.Deployment.WindowsInstaller.Linq.QTable`1.System.Linq.IQueryable<TRecord>.CreateQuery(System.Linq.Expressions.Expression):System.Linq.IQueryable`1<TElement>")]
-[assembly: SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Scope = "member", Target = "Microsoft.Deployment.WindowsInstaller.Linq.QTable`1.System.Linq.IQueryable<TRecord>.Execute(System.Linq.Expressions.Expression):TResult")]
+[assembly: SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Scope = "member", Target = "WixToolset.Dtf.WindowsInstaller.Linq.QTable`1.System.Linq.IQueryable<TRecord>.CreateQuery(System.Linq.Expressions.Expression):System.Linq.IQueryable`1<TElement>")]
+[assembly: SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Scope = "member", Target = "WixToolset.Dtf.WindowsInstaller.Linq.QTable`1.System.Linq.IQueryable<TRecord>.Execute(System.Linq.Expressions.Expression):TResult")]

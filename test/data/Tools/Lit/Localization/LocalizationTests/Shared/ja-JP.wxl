@@ -7,6 +7,6 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="ja-jp" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="ja-jp" xmlns="http://wixtoolset.org/schemas/wxl">
   <String Id="String1">String1(ja-jp)</String>
 </WixLocalization>

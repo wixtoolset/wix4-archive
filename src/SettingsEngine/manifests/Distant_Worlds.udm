@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Distant_Worlds">
+        <Detect>
+            <Arp DisplayName="Distant Worlds"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\Code Force Limited\Distant Worlds"/>
+        </Data>
+
+        <Filter>
+            <!-- It's a little less clear if this is pure user settings or not -->
+            <Ignore Prefix="Data:\" Postfix="automationPrefs"/>
+            <!-- This definitely has some local paths in here, and thus is machine-specific -->
+            <Ignore Prefix="Data:\" Postfix="defaultOptions"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Distant Worlds</DisplayName>
+    </Product>
+</LegacySettings>

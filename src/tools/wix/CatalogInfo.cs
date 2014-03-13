@@ -11,10 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.IO;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
 
     /// <summary>
     /// Catalog information for binding Bundles.

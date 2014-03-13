@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Magicka">
+        <Detect>
+            <Arp DisplayName="Magicka" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: There appear to be a bunch of built-in, useless save files, possibly related to DLC (like ch_vietnam.sav, etc.)
+                we should investigate removing them if they are in fact never goin to be actual user data. -->
+            <Directory Namespace="SaveData" Location="InstallDir:\SaveData\" />
+        </Data>
+
+        <DisplayName LCID="1033">Magicka</DisplayName>
+    </Product>
+</LegacySettings>

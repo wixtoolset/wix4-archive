@@ -32,4 +32,4 @@ using System.Diagnostics.CodeAnalysis;
 // with absolutely no file I/O permission.
 [assembly: AllowPartiallyTrustedCallers]
 
-[assembly: SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "Microsoft.Deployment.Compression.Zip")]
+[assembly: SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "WixToolset.Dtf.Compression.Zip")]

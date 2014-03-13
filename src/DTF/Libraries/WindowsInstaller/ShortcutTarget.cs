@@ -6,11 +6,11 @@
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
 // <summary>
-// Microsoft.Deployment.WindowsInstaller.ShortcutTarget structure.
+// WixToolset.Dtf.WindowsInstaller.ShortcutTarget structure.
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     /// <summary>
     /// Holds information about the target of a shortcut file.

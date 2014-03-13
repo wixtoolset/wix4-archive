@@ -7,17 +7,17 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset Inspector Example Extension.
+// The WiX Toolset Inspector Example Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset;
 
     /// <summary>
-    /// The Windows Installer XML Toolset Example InspectorExtension.
+    /// The WiX Toolset Example InspectorExtension.
     /// </summary>
     public sealed class ExampleInspectorExtension : InspectorExtension
     {

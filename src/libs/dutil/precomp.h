@@ -22,6 +22,7 @@
 
 #define JET_VERSION 0x0501
 
+#include <WinSock2.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <intsafe.h>
@@ -47,6 +48,7 @@
 #include <wtsapi32.h>
 #include <wuapi.h>
 #include <commctrl.h>
+#include <dbt.h>
 
 #include "dutil.h"
 #include "aclutil.h"
@@ -70,6 +72,7 @@
 #include "logutil.h"
 #include "memutil.h"  // NOTE: almost everying is inlined so there is a small .cpp file
 //#include "metautil.h" - see metautil.cpp why this *must* be commented out
+#include "monutil.h"
 #include "osutil.h"
 #include "pathutil.h"
 #include "perfutil.h"
@@ -88,6 +91,7 @@
 #include "timeutil.h"
 #include "timeutil.h"
 #include "thmutil.h"
+#include "uncutil.h"
 #include "uriutil.h"
 #include "userutil.h"
 #include <comutil.h>  // This header is needed for msxml2.h to compile correctly

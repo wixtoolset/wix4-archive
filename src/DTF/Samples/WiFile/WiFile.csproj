@@ -3,7 +3,7 @@
     <ProjectGuid>{AE562F7F-EE33-41D6-A962-DA488FEFBD08}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Samples.WiFile</RootNamespace>
+    <RootNamespace>WixToolset.Dtf.Samples.WiFile</RootNamespace>
     <AssemblyName>WiFile</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>

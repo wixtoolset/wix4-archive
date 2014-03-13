@@ -14,7 +14,7 @@
     <ProjectGuid>{ADED15A0-D661-43CD-BDE9-B2F1AAF22250}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Test.Frost</RootNamespace>
+    <RootNamespace>WixToolset.Test.Frost</RootNamespace>
     <AssemblyName>frost</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <OldToolsVersion>2.0</OldToolsVersion>

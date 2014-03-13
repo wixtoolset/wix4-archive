@@ -15,10 +15,8 @@ using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Permissions;
 
 [assembly: AssemblyTitle("WiX Toolset FlattenXml")]
 [assembly: AssemblyDescription("Windows Installer XML Toolset FlattenXml")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, Execution = true)]

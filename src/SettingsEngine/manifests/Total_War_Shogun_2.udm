@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Total_War_Shogun_2">
+        <Detect>
+            <Arp DisplayName="Total War: SHOGUN 2"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\The Creative Assembly\Shogun2\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\save_games\"/>
+            <Normal Prefix="Data:\replays\"/>
+            <Normal Prefix="Data:\screenshots\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Total War: Shogun 2</DisplayName>
+    </Product>
+</LegacySettings>

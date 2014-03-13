@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Diagnostics;
@@ -19,6 +19,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Collections.Specialized;
     using System.Globalization;
     using System.Xml;
+    using WixToolset.Data;
 
     /// <summary>
     /// Object that connects things (components/modules) to features.

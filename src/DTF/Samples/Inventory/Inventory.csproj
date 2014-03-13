@@ -3,7 +3,7 @@
     <ProjectGuid>{51480F8E-B80F-42DC-91E7-3542C1F12F8C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Samples.Inventory</RootNamespace>
+    <RootNamespace>WixToolset.Dtf.Samples.Inventory</RootNamespace>
     <AssemblyName>Inventory</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <ApplicationIcon>Inventory.ico</ApplicationIcon>

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="SpaceChem">
+        <Detect>
+            <Arp DisplayName="SpaceChem"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="LocalAppDataFolder:\Zachtronics Industries\SpaceChem"/>
+        </Data>
+
+        <Filter>
+            <!-- TODO: suppport some settings from this INI file, like "enableReporting" and "disableFBOs" -->
+            <Ignore Name="Data:\Config.ini"/>
+            <Ignore Postfix=".zicrash"/>
+        </Filter>
+
+        <DisplayName LCID="1033">SpaceChem</DisplayName>
+    </Product>
+</LegacySettings>

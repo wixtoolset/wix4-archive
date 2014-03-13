@@ -10,7 +10,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     public enum ScannedSymbolType
     {

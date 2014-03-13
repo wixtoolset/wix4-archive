@@ -93,15 +93,15 @@ UINT __stdcall InitializeEmbeddedUI(MSIHANDLE hSession, LPCWSTR szResourcePath, 
 
 	wchar_t szWIAssembly[MAX_PATH + 50];
 	StringCchCopy(szWIAssembly, MAX_PATH + 50, g_szWorkingDir);
-	StringCchCat(szWIAssembly, MAX_PATH + 50, L"\\Microsoft.Deployment.WindowsInstaller.dll");
+	StringCchCat(szWIAssembly, MAX_PATH + 50, L"\\WixToolset.Dtf.WindowsInstaller.dll");
 
 	if (LoadCLR(hSession, NULL, szConfigFile, szWIAssembly, &g_pClrHost))
 	{
 		if (CreateAppDomain(hSession, g_pClrHost, L"EmbeddedUI", g_szWorkingDir,
 			szConfigFile, &g_pAppDomain))
 		{
-			const wchar_t* szMsiAssemblyName  = L"Microsoft.Deployment.WindowsInstaller";
-			const wchar_t* szProxyClass = L"Microsoft.Deployment.WindowsInstaller.EmbeddedUIProxy";
+			const wchar_t* szMsiAssemblyName  = L"WixToolset.Dtf.WindowsInstaller";
+			const wchar_t* szProxyClass = L"WixToolset.Dtf.WindowsInstaller.EmbeddedUIProxy";
 			const wchar_t* szInitMethod = L"Initialize";
 			const wchar_t* szProcessMessageMethod = L"ProcessMessage";
 			const wchar_t* szShutdownMethod = L"Shutdown";

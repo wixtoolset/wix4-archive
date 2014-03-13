@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Id="1A86A430-0D10-4f28-AF2B-D94DA8E426BB" Name="IISCertificate Test Product" Language="1033" Version="1.0.0.0" UpgradeCode="{955D321E-A24D-47aa-9652-ADACCB955EDB}" Manufacturer="Microsoft Corporation">
     <Package  Description="IISCertificate " Comments="IISCertificate0" InstallerVersion="200" Compressed="yes" />
 

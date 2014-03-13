@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Windows Installer Xml toolset scanner result.
+// WiX toolset scanner result.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections.Generic;

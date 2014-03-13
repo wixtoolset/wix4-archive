@@ -27,14 +27,14 @@ using System.Data;
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, UnmanagedCode=true)]
 
 
-namespace Microsoft.Deployment.Samples.Inventory
+namespace WixToolset.Dtf.Samples.Inventory
 {
 	public class Inventory : System.Windows.Forms.Form
 	{
 		[STAThread]
         public static void Main()
         {
-            if (Microsoft.Deployment.WindowsInstaller.Installer.Version < new Version(3, 0))
+            if (WixToolset.Dtf.WindowsInstaller.Installer.Version < new Version(3, 0))
             {
                 MessageBox.Show("This application requires Windows Installer version 3.0 or later.",
                     "Inventory", MessageBoxButtons.OK, MessageBoxIcon.Error);

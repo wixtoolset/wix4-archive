@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Lords_of_Magic">
+        <Detect>
+            <Arp DisplayName="Lords of Magic Special Edition" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Savegame" Location="InstallDir:\savegame\"/>
+        </Data>
+
+        <Filter>
+            <!-- Are saves all there is? There is also a HISTORY.DAT file written during each run. Not sure what that is. -->
+            <Ignore Prefix="Savegame:\"/>
+            <Normal Prefix="Savegame:\" Postfix=".sav"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Lords of Magic</DisplayName>
+    </Product>
+</LegacySettings>

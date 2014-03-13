@@ -12,7 +12,7 @@
     <ProjectGuid>{90DB54A5-279B-4A55-A5C3-4B20EC74A85B}</ProjectGuid>
     <AssemblyName>WixValidatorExampleExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +28,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
     <ProjectReference Include="..\..\..\Wix\Wix.csproj" />
   </ItemGroup>
 

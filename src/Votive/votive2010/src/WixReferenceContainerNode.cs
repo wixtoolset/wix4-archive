@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -85,7 +85,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
         /// </summary>
         /// <param name="selectorData">The data coming from the Add Reference dialog.</param>
         /// <returns>A new <see cref="WixLibraryReferenceNode"/>.</returns>
-        [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "Microsoft.Tools.WindowsInstallerXml.VisualStudio.WixHelperMethods.ShipAssert(System.Boolean,System.String,System.Object[])")]
+        [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "WixToolset.VisualStudio.WixHelperMethods.ShipAssert(System.Boolean,System.String,System.Object[])")]
         protected override ReferenceNode CreateFileComponent(VSCOMPONENTSELECTORDATA selectorData)
         {
             if (!File.Exists(selectorData.bstrFile))

@@ -5,46 +5,28 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// The compiler for the Windows Installer XML Toolset Firewall Extension.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Globalization;
-    using System.IO;
-    using System.Reflection;
-    using System.Xml;
-    using System.Xml.Schema;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML Toolset Firewall Extension.
+    /// The compiler for the WiX Toolset Firewall Extension.
     /// </summary>
     public sealed class FirewallCompiler : CompilerExtension
     {
-        private XmlSchema schema;
-
         /// <summary>
         /// Instantiate a new FirewallCompiler.
         /// </summary>
         public FirewallCompiler()
         {
-            this.schema = LoadXmlSchemaHelper(Assembly.GetExecutingAssembly(), "Microsoft.Tools.WindowsInstallerXml.Extensions.Xsd.firewall.xsd");
-        }
-
-        /// <summary>
-        /// Gets the schema for this extension.
-        /// </summary>
-        /// <value>Schema for this extension.</value>
-        public override XmlSchema Schema
-        {
-            get { return this.schema; }
+            this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/firewall";
         }
 
         /// <summary>
@@ -54,15 +36,15 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="element">Element to process.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseElement(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlElement element, params string[] contextValues)
+        public override void ParseElement(XElement parentElement, XElement element, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            switch (parentElement.Name.LocalName)
             {
                 case "File":
-                    string fileId = contextValues[0];
-                    string fileComponentId = contextValues[1];
+                    string fileId = context["FileId"];
+                    string fileComponentId = context["ComponentId"];
 
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "FirewallException":
                             this.ParseFirewallExceptionElement(element, fileComponentId, fileId);
@@ -73,9 +55,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     break;
                 case "Component":
-                    string componentId = contextValues[0];
+                    string componentId = context["ComponentId"];
 
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "FirewallException":
                             this.ParseFirewallExceptionElement(element, componentId, null);
@@ -97,9 +79,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="node">The element to parse.</param>
         /// <param name="componentId">Identifier of the component that owns this firewall exception.</param>
         /// <param name="fileId">The file identifier of the parent element (null if nested under Component).</param>
-        private void ParseFirewallExceptionElement(XmlNode node, string componentId, string fileId)
+        private void ParseFirewallExceptionElement(XElement node, string componentId, string fileId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             string name = null;
             int attributes = 0;
@@ -107,18 +89,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             string program = null;
             string port = null;
             string protocolValue = null;
-            int protocol = CompilerCore.IntegerNotSet;
+            int protocol = CompilerConstants.IntegerNotSet;
             string profileValue = null;
-            int profile = CompilerCore.IntegerNotSet;
+            int profile = CompilerConstants.IntegerNotSet;
             string scope = null;
             string remoteAddresses = null;
             string description = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
@@ -129,7 +111,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "File":
                             if (null != fileId)
                             {
-                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.LocalName, "File", "File"));
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name.LocalName, "File", "File"));
                             }
                             else
                             {
@@ -145,7 +127,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "Program":
                             if (null != fileId)
                             {
-                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.LocalName, "Program", "File"));
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name.LocalName, "Program", "File"));
                             }
                             else
                             {
@@ -166,7 +148,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                                     protocol = FirewallConstants.NET_FW_IP_PROTOCOL_UDP;
                                     break;
                                 default:
-                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.LocalName, "Protocol", protocolValue, "tcp", "udp"));
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, "Protocol", protocolValue, "tcp", "udp"));
                                     break;
                             }
                             break;
@@ -181,7 +163,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                                     remoteAddresses = "LocalSubnet";
                                     break;
                                 default:
-                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.LocalName, "Scope", scope, "any", "localSubnet"));
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, "Scope", scope, "any", "localSubnet"));
                                     break;
                             }
                             break;
@@ -202,7 +184,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                                     profile = FirewallConstants.NET_FW_PROFILE2_ALL;
                                     break;
                                 default:
-                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.LocalName, "Profile", profileValue, "domain", "private", "public", "all"));
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, "Profile", profileValue, "domain", "private", "public", "all"));
                                     break;
                             }
                             break;
@@ -210,68 +192,66 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             description = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             // parse RemoteAddress children
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XElement child in node.Elements())
             {
-                if (XmlNodeType.Element == child.NodeType)
+                if (this.Namespace == child.Name.Namespace)
                 {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
+                    SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
+                    switch (child.Name.LocalName)
                     {
-                        switch (child.LocalName)
-                        {
-                            case "RemoteAddress":
-                                if (null != scope)
-                                {
-                                    this.Core.OnMessage(FirewallErrors.IllegalRemoteAddressWithScopeAttribute(sourceLineNumbers));
-                                }
-                                else
-                                {
-                                    this.ParseRemoteAddressElement(child, ref remoteAddresses);
-                                }
-                                break;
-                            default:
-                                this.Core.UnexpectedElement(node, child);
-                                break;
-                        }
+                        case "RemoteAddress":
+                            if (null != scope)
+                            {
+                                this.Core.OnMessage(FirewallErrors.IllegalRemoteAddressWithScopeAttribute(sourceLineNumbers));
+                            }
+                            else
+                            {
+                                this.ParseRemoteAddressElement(child, ref remoteAddresses);
+                            }
+                            break;
+                        default:
+                            this.Core.UnexpectedElement(node, child);
+                            break;
                     }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionElement(node, child);
                 }
             }
 
             // Id and Name are required
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
             // Scope or child RemoteAddress(es) are required
             if (null == remoteAddresses)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttributeOrElement(sourceLineNumbers, node.Name, "Scope", "RemoteAddress"));
+                this.Core.OnMessage(WixErrors.ExpectedAttributeOrElement(sourceLineNumbers, node.Name.LocalName, "Scope", "RemoteAddress"));
             }
 
             // can't have both Program and File
             if (null != program && null != file)
             {
-                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.LocalName, "File", "Program"));
+                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, "File", "Program"));
             }
 
             // must be nested under File, have File or Program attributes, or have Port attribute
@@ -296,36 +276,36 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 if (!String.IsNullOrEmpty(port))
                 {
                     row[3] = port;
-                    
-                    if (CompilerCore.IntegerNotSet == protocol)
+
+                    if (CompilerConstants.IntegerNotSet == protocol)
                     {
                         // default protocol is "TCP"
                         protocol = FirewallConstants.NET_FW_IP_PROTOCOL_TCP;
                     }
                 }
 
-                if (CompilerCore.IntegerNotSet != protocol)
+                if (CompilerConstants.IntegerNotSet != protocol)
                 {
-                    row[4] =  protocol;
+                    row[4] = protocol;
                 }
 
                 if (!String.IsNullOrEmpty(fileId))
                 {
                     row[5] = String.Format(CultureInfo.InvariantCulture, "[#{0}]", fileId);
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", fileId);
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "File", fileId);
                 }
                 else if (!String.IsNullOrEmpty(program))
                 {
                     row[5] = program;
                 }
 
-                if (CompilerCore.IntegerNotSet != attributes)
+                if (CompilerConstants.IntegerNotSet != attributes)
                 {
                     row[6] = attributes;
                 }
 
                 // Default is "all"
-                row[7] = CompilerCore.IntegerNotSet == profile ? FirewallConstants.NET_FW_PROFILE2_ALL : profile;
+                row[7] = CompilerConstants.IntegerNotSet == profile ? FirewallConstants.NET_FW_PROFILE2_ALL : profile;
 
                 row[8] = componentId;
 
@@ -334,14 +314,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 if (this.Core.CurrentPlatform == Platform.ARM)
                 {
                     // Ensure ARM version of the CA is referenced
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsInstall_ARM");
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsUninstall_ARM");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsInstall_ARM");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsUninstall_ARM");
                 }
                 else
                 {
                     // All other supported platforms use x86
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsInstall");
-                    this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsUninstall");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsInstall");
+                    this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFirewallExceptionsUninstall");
                 }
             }
         }
@@ -350,40 +330,26 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a RemoteAddress element
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseRemoteAddressElement(XmlNode node, ref string remoteAddresses)
+        private void ParseRemoteAddressElement(XElement node, ref string remoteAddresses)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
 
             // no attributes
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                    this.Core.UnexpectedAttribute(node, attrib);
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            // no children
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
-            string address = CompilerCore.GetTrimmedInnerText(node);
+            string address = this.Core.GetTrimmedInnerText(node);
             if (String.IsNullOrEmpty(address))
             {
                 this.Core.OnMessage(FirewallErrors.IllegalEmptyRemoteAddress(sourceLineNumbers));
@@ -400,6 +366,5 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
             }
         }
-
     }
 }

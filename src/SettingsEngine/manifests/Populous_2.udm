@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Populous_2">
+        <Detect>
+            <Arp DisplayName="Populous 2" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- Appears to be one file, PLAYER.GOD, but since it's in its own directory let's grab the whole directory
+                 just in case -->
+            <Directory Namespace="PopSave" Location="InstallDir:\POPSAVE"/>
+        </Data>
+
+        <DisplayName LCID="1033">Populous 2</DisplayName>
+    </Product>
+</LegacySettings>

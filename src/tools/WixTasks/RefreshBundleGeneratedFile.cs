@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using System.Collections;
@@ -92,7 +92,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
             doc.AppendChild(head);
 
             XmlElement rootElement = doc.CreateElement("Wix");
-            rootElement.SetAttribute("xmlns", "http://schemas.microsoft.com/wix/2006/wi");
+            rootElement.SetAttribute("xmlns", "http://wixtoolset.org/schemas/v4/wxs");
             doc.AppendChild(rootElement);
 
             XmlElement fragment = doc.CreateElement("Fragment");

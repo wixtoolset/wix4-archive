@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Cab.Interop
+namespace WixToolset.Cab.Interop
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Text;
     using System.Runtime.InteropServices;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Msi;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// The native methods.

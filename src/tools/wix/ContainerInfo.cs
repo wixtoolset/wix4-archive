@@ -11,11 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.IO;
     using System.Collections.Generic;
+    using WixToolset.Data;
 
     /// <summary>
     /// Container info for binding Bundles.
@@ -24,25 +25,25 @@ namespace Microsoft.Tools.WindowsInstallerXml
     {
         private List<PayloadInfoRow> payloads = new List<PayloadInfoRow>();
 
-        public ContainerInfo(Row row, BinderFileManager fileManager)
-            : this((string)row[0], (string)row[1], (string)row[2], (string)row[3], fileManager)
+        public ContainerInfo(Row row, string tempPath/* BinderFileManager fileManager*/)
+            : this((string)row[0], (string)row[1], (string)row[2], (string)row[3], tempPath /*fileManager*/)
         {
             this.SourceLineNumbers = row.SourceLineNumbers;
         }
 
-        public ContainerInfo(string id, string name, string type, string downloadUrl, BinderFileManager fileManager)
+        public ContainerInfo(string id, string name, string type, string downloadUrl, string tempPath/* BinderFileManager fileManager*/)
         {
             this.Id = id;
             this.Name = name;
             this.Type = type;
             this.DownloadUrl = downloadUrl;
-            this.FileManager = fileManager;
-            this.TempPath = Path.Combine(fileManager.TempFilesLocation, name);
+            //this.FileManager = fileManager;
+            this.TempPath = Path.Combine(tempPath/*fileManager.TempFilesLocation*/, name);
             this.FileInfo = new FileInfo(this.TempPath);
         }
 
-        public SourceLineNumberCollection SourceLineNumbers { get; private set; }
-        public BinderFileManager FileManager { get; private set; }
+        public SourceLineNumber SourceLineNumbers { get; private set; }
+        //public BinderFileManager FileManager { get; private set; }
         public string DownloadUrl { get; private set; }
         public string Id { get; private set; }
         public string Name { get; private set; }

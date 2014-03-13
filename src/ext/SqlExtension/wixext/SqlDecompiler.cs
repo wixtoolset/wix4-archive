@@ -5,27 +5,39 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// The decompiler for the Windows Installer XML Toolset SQL Server Extension.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
-    using System;
     using System.Collections;
-    using System.Diagnostics;
-    using System.Globalization;
-
-    using Sql = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Sql;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Sql = WixToolset.Extensions.Serialize.Sql;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset SQL Server Extension.
+    /// The decompiler for the WiX Toolset SQL Server Extension.
     /// </summary>
     public sealed class SqlDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for SQL Extension.
+        /// </summary>
+        public SqlDecompiler()
+        {
+            this.TableDefinitions = SqlExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return SqlExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -56,7 +68,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Finalize decompilation.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        public override void FinalizeDecompile(TableCollection tables)
+        public override void Finish(TableIndexedCollection tables)
         {
             this.FinalizeSqlFileSpecTable(tables);
             this.FinalizeSqlScriptAndSqlStringTables(tables);
@@ -148,7 +160,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[4], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[4], "Component"));
                     }
                 }
                 else
@@ -303,7 +315,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// which they are used in the SqlDatabase table, decompilation of this
         /// table must occur after the SqlDatbase parents are decompiled.
         /// </remarks>
-        private void FinalizeSqlFileSpecTable(TableCollection tables)
+        private void FinalizeSqlFileSpecTable(TableIndexedCollection tables)
         {
             Table sqlDatabaseTable = tables["SqlDatabase"];
             Table sqlFileSpecTable = tables["SqlFileSpec"];
@@ -359,7 +371,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlDatabaseTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "FileSpec_", (string)row[6], "SqlFileSpec"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlDatabaseTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "FileSpec_", (string)row[6], "SqlFileSpec"));
                         }
                     }
 
@@ -399,7 +411,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlDatabaseTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "FileSpec_Log", (string)row[7], "SqlFileSpec"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlDatabaseTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "FileSpec_Log", (string)row[7], "SqlFileSpec"));
                         }
                     }
                 }
@@ -416,7 +428,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// element, the SqlScript and SqlString elements are nested under either the
         /// SqlDatabase or the Component element.
         /// </remarks>
-        private void FinalizeSqlScriptAndSqlStringTables(TableCollection tables)
+        private void FinalizeSqlScriptAndSqlStringTables(TableIndexedCollection tables)
         {
             Table sqlDatabaseTable = tables["SqlDatabase"];
             Table sqlScriptTable = tables["SqlScript"];
@@ -462,7 +474,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlScriptTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlScriptTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                         }
                     }
                 }
@@ -497,7 +509,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlStringTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, sqlStringTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                         }
                     }
                 }

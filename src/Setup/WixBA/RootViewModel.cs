@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     using System;
     using System.Diagnostics;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Input;
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
 
     /// <summary>
     /// The errors returned from the engine

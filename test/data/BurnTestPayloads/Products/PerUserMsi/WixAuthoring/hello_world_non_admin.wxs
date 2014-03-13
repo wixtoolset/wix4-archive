@@ -14,7 +14,7 @@
 <?define Property_ProductCode = "{408CC7AD-5373-4D25-B8A5-F9FD30B20838}" ?>
 <?define Property_UpgradeCode = "0797993a-a784-41d1-ad27-fbbfadb6af45" ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="$(var.Property_ProductCode)"
            UpgradeCode="$(var.Property_UpgradeCode)"
            Name="!(loc.Property_ProductName)"

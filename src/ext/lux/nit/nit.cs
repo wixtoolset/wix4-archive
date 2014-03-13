@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux
+namespace WixToolset.Lux
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.IO;
     using System.Runtime.InteropServices;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset.Data;
 
     /// <summary>
     /// The main entry point for Nit
@@ -29,7 +29,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         private List<string> invalidArgs = new List<string>();
         private bool showLogo = true;
         private bool showHelp;
-        private ConsoleMessageHandler messageHandler = new ConsoleMessageHandler("NIT", "nit.exe");
 
         /// <summary>
         /// Prevents a default instance of the Nit class from being created.
@@ -47,8 +46,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("NIT", "nit.exe").Display += Nit.DisplayMessage;
+
             Nit nit = new Nit();
             return nit.Run(args);
+        }
+
+        /// <summary>
+        /// Handler for display message events.
+        /// </summary>
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        private static void DisplayMessage(object sender, DisplayEventArgs e)
+        {
+            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -62,12 +73,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
             {
                 // parse the command line
                 this.ParseCommandLine(args);
-                this.messageHandler.ShowVerboseMessages = true; // always verbose, to show passed tests
+
+                Messaging.Instance.ShowVerboseMessages = true; // always verbose, to show passed tests
 
                 // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
-                if (this.messageHandler.EncounteredError)
+                if (Messaging.Instance.EncounteredError)
                 {
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 if (this.showLogo)
@@ -79,12 +91,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
                 {
                     Console.WriteLine(NitStrings.HelpMessage);
                     AppCommon.DisplayToolFooter();
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 foreach (string parameter in this.invalidArgs)
                 {
-                    this.messageHandler.Display(this, WixWarnings.UnsupportedCommandLineArgument(parameter));
+                    Messaging.Instance.OnMessage(WixWarnings.UnsupportedCommandLineArgument(parameter));
                 }
 
                 this.invalidArgs = null;
@@ -93,14 +105,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
                 if (0 == this.inputFiles.Count)
                 {
                     Console.WriteLine(NitStrings.HelpMessage);
-                    this.messageHandler.Display(this, NitErrors.MalfunctionNeedInput());
-                    return this.messageHandler.LastErrorNumber;
+                    Messaging.Instance.OnMessage(NitErrors.MalfunctionNeedInput());
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 // run tests and report results
                 TestRunner runner = new TestRunner();
                 runner.InputFiles = this.inputFiles;
-                runner.Message += this.messageHandler.Display;
 
                 int failures = 0;
                 int passes = 0;
@@ -108,28 +119,28 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
 
                 if (0 < failures)
                 {
-                    this.messageHandler.Display(this, NitErrors.TotalTestFailures(failures, passes));
-                    return this.messageHandler.LastErrorNumber;
+                    Messaging.Instance.OnMessage(NitErrors.TotalTestFailures(failures, passes));
+                    return Messaging.Instance.LastErrorNumber;
                 }
                 else
                 {
-                    this.messageHandler.Display(this, NitVerboses.OneHundredPercent(passes));
+                    Messaging.Instance.OnMessage(NitVerboses.OneHundredPercent(passes));
                 }
             }
             catch (WixException we)
             {
-                this.messageHandler.Display(this, we.Error);
+                Messaging.Instance.OnMessage(we.Error);
             }
             catch (Exception e)
             {
-                this.messageHandler.Display(this, WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                Messaging.Instance.OnMessage(WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;
                 }
             }
 
-            return this.messageHandler.LastErrorNumber;
+            return Messaging.Instance.LastErrorNumber;
         }
 
         /// <summary>
@@ -150,7 +161,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
                 if (1 == arg.Length)
                 {
                     // treat '-' and '@' as filenames when by themselves.
-                    this.inputFiles.AddRange(AppCommon.GetFiles(arg, "Source"));
+                    this.inputFiles.AddRange(CommandLine.GetFiles(arg, "Source"));
                     continue;
                 }
 
@@ -177,7 +188,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
                 }
                 else
                 {
-                    this.inputFiles.AddRange(AppCommon.GetFiles(arg, "Source"));
+                    this.inputFiles.AddRange(CommandLine.GetFiles(arg, "Source"));
                 }
             }
 

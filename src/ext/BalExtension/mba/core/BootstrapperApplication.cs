@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Bootstrapper
+namespace WixToolset.Bootstrapper
 {
     using System;
     using System.Reflection;

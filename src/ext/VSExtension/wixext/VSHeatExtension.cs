@@ -7,18 +7,19 @@
 // </copyright>
 // 
 // <summary>
-// VS-related extensions for the Windows Installer XML Toolset Harvester application.
+// VS-related extensions for the WiX Toolset Harvester application.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Globalization;
-    using Microsoft.Tools.WindowsInstallerXml.Tools;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using WixToolset.Tools;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Defines generated element types.
@@ -42,7 +43,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
     }
 
     /// <summary>
-    /// VS-related extensions for the Windows Installer XML Toolset Harvester application.
+    /// VS-related extensions for the WiX Toolset Harvester application.
     /// </summary>
     public sealed class VSHeatExtension : HeatExtension
     {
@@ -167,7 +168,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else if (args[i].StartsWith("-pog:", StringComparison.Ordinal))
                     {
-                        this.MessageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("pog:", "pog"));
+                        this.Core.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("pog:", "pog"));
 
                         string pogName = args[i].Substring(5);
                         bool found = false;

@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
+namespace WixToolset.VisualStudio.PropertyPages
 {
     using System;
     using System.Globalization;

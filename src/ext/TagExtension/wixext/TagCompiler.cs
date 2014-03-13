@@ -7,40 +7,30 @@
 // </copyright>
 // 
 // <summary>
-// The compiler for the Windows Installer XML Toolset Software Id Tag Extension.
+// The compiler for the WiX Toolset Software Id Tag Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using System.Reflection;
-    using System.Xml;
-    using System.Xml.Schema;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using System.Collections.Generic;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML Toolset Software Id Tag Extension.
+    /// The compiler for the WiX Toolset Software Id Tag Extension.
     /// </summary>
     public sealed class TagCompiler : CompilerExtension
     {
-        private XmlSchema schema;
-
         /// <summary>
         /// Instantiate a new GamingCompiler.
         /// </summary>
         public TagCompiler()
         {
-            this.schema = LoadXmlSchemaHelper(Assembly.GetExecutingAssembly(), "Microsoft.Tools.WindowsInstallerXml.Extensions.Xsd.tag.xsd");
-        }
-
-        /// <summary>
-        /// Gets the schema for this extension.
-        /// </summary>
-        /// <value>Schema for this extension.</value>
-        public override XmlSchema Schema
-        {
-            get { return this.schema; }
+            this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/tag";
         }
 
         /// <summary>
@@ -50,12 +40,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="element">Element to process.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseElement(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlElement element, params string[] contextValues)
+        public override void ParseElement(XElement parentElement, XElement element, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            switch (parentElement.Name.LocalName)
             {
                 case "Bundle":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "Tag":
                             this.ParseBundleTagElement(element);
@@ -66,7 +56,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     break;
                 case "Product":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "Tag":
                             this.ParseProductTagElement(element);
@@ -77,7 +67,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     break;
                 case "PatchFamily":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "TagRef":
                             this.ParseTagRefElement(element);
@@ -97,19 +87,19 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a Tag element for Software Id Tag registration under a Bundle element.
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseBundleTagElement(XmlNode node)
+        private void ParseBundleTagElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string regid = null;
             YesNoType licensed = YesNoType.NotSet;
             string type = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Name":
                             name = this.Core.GetAttributeLongFilename(sourceLineNumbers, attrib, false);
@@ -124,52 +114,39 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             type = this.ParseTagTypeAttribute(sourceLineNumbers, node, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (String.IsNullOrEmpty(name))
             {
-                XmlAttribute productNameAttribute = node.ParentNode.Attributes["Name"];
+                XAttribute productNameAttribute = node.Parent.Attribute("Name");
                 if (null != productNameAttribute)
                 {
                     name = productNameAttribute.Value;
                 }
                 else
                 {
-                    this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                    this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
                 }
             }
 
-            if (!String.IsNullOrEmpty(name) && !CompilerCore.IsValidLongFilename(name, false))
+            if (!String.IsNullOrEmpty(name) && !this.Core.IsValidLongFilename(name, false))
             {
-                this.Core.OnMessage(TagErrors.IllegalName(sourceLineNumbers, node.ParentNode.LocalName, name));
+                this.Core.OnMessage(TagErrors.IllegalName(sourceLineNumbers, node.Parent.Name.LocalName, name));
             }
 
             if (String.IsNullOrEmpty(regid))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Regid"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Regid"));
             }
 
             if (!this.Core.EncounteredError)
@@ -193,20 +170,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a Tag element for Software Id Tag registration under a Product element.
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseProductTagElement(XmlNode node)
+        private void ParseProductTagElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string regid = null;
             string feature = "WixSwidTag";
             YesNoType licensed = YesNoType.NotSet;
             string type = null; ;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Name":
                             name = this.Core.GetAttributeLongFilename(sourceLineNumbers, attrib, false);
@@ -224,89 +201,74 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             type = this.ParseTagTypeAttribute(sourceLineNumbers, node, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (String.IsNullOrEmpty(name))
             {
-                XmlAttribute productNameAttribute = node.ParentNode.Attributes["Name"];
+                XAttribute productNameAttribute = node.Parent.Attribute("Name");
                 if (null != productNameAttribute)
                 {
                     name = productNameAttribute.Value;
                 }
                 else
                 {
-                    this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                    this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
                 }
             }
 
-            if (!String.IsNullOrEmpty(name) && !CompilerCore.IsValidLongFilename(name, false))
+            if (!String.IsNullOrEmpty(name) && !this.Core.IsValidLongFilename(name, false))
             {
-                this.Core.OnMessage(TagErrors.IllegalName(sourceLineNumbers, node.ParentNode.LocalName, name));
+                this.Core.OnMessage(TagErrors.IllegalName(sourceLineNumbers, node.Parent.Name.LocalName, name));
             }
 
             if (String.IsNullOrEmpty(regid))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Regid"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Regid"));
             }
 
             if (!this.Core.EncounteredError)
             {
                 string directoryId = "WixTagRegidFolder";
-                string fileId = this.Core.GenerateIdentifier("tag", regid, ".product.tag");
+                Identifier fileId = this.Core.CreateIdentifier("tag", regid, ".product.tag");
                 string fileName = String.Concat(regid, " ", name, ".swidtag");
-                string shortName = this.Core.GenerateShortName(fileName, false, false);
+                string shortName = this.Core.CreateShortName(fileName, false, false);
 
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "Directory", directoryId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "Directory", directoryId);
 
-                ComponentRow componentRow = (ComponentRow)this.Core.CreateRow(sourceLineNumbers, "Component");
-                componentRow.Component = fileId;
+                ComponentRow componentRow = (ComponentRow)this.Core.CreateRow(sourceLineNumbers, "Component", fileId);
                 componentRow.Guid = "*";
                 componentRow[3] = 0;
                 componentRow.Directory = directoryId;
                 componentRow.IsLocalOnly = true;
-                componentRow.KeyPath = fileId;
+                componentRow.KeyPath = fileId.Id;
 
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "Feature", feature);
-                this.Core.CreateComplexReference(sourceLineNumbers, ComplexReferenceParentType.Feature, feature, null, ComplexReferenceChildType.Component, fileId, true);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "Feature", feature);
+                this.Core.CreateComplexReference(sourceLineNumbers, ComplexReferenceParentType.Feature, feature, null, ComplexReferenceChildType.Component, fileId.Id, true);
 
-                FileRow fileRow = (FileRow)this.Core.CreateRow(sourceLineNumbers, "File");
-                fileRow.File = fileId;
-                fileRow.Component = fileId;
+                FileRow fileRow = (FileRow)this.Core.CreateRow(sourceLineNumbers, "File", fileId);
+                fileRow.Component = fileId.Id;
                 fileRow.FileName = String.Concat(shortName, "|", fileName);
 
                 WixFileRow wixFileRow = (WixFileRow)this.Core.CreateRow(sourceLineNumbers, "WixFile");
                 wixFileRow.Directory = directoryId;
-                wixFileRow.File = fileId;
+                wixFileRow.File = fileId.Id;
                 wixFileRow.DiskId = 1;
                 wixFileRow.Attributes = 1;
                 wixFileRow.Source = String.Concat("%TEMP%\\", fileName);
 
                 this.Core.EnsureTable(sourceLineNumbers, "SoftwareIdentificationTag");
                 Row row = this.Core.CreateRow(sourceLineNumbers, "WixProductTag");
-                row[0] = fileId;
+                row[0] = fileId.Id;
                 row[1] = regid;
                 row[2] = name;
                 if (YesNoType.Yes == licensed)
@@ -315,7 +277,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 row[4] = type;
 
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "File", fileId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "File", fileId.Id);
             }
         }
 
@@ -323,59 +285,46 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a TagRef element for Software Id Tag registration under a PatchFamily element.
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseTagRefElement(XmlNode node)
+        private void ParseTagRefElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string regid = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Regid":
                             regid = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.Schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (String.IsNullOrEmpty(regid))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Regid"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Regid"));
             }
 
             if (!this.Core.EncounteredError)
             {
-                string[] id = new string[] { this.Core.GenerateIdentifier("tag", regid, ".product.tag") };
-                this.Core.AddPatchFamilyChildReference(sourceLineNumbers, "Component", id);
+                Identifier id = this.Core.CreateIdentifier("tag", regid, ".product.tag");
+                this.Core.CreatePatchFamilyChildReference(sourceLineNumbers, "Component", id.Id);
             }
         }
 
-        private string ParseTagTypeAttribute(SourceLineNumberCollection sourceLineNumbers, XmlNode node, XmlAttribute attrib)
+        private string ParseTagTypeAttribute(SourceLineNumber sourceLineNumbers, XElement node, XAttribute attrib)
         {
             string typeValue = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
             switch (typeValue)
@@ -396,7 +345,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     typeValue = "Patch";
                     break;
                 default:
-                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name, attrib.LocalName, typeValue, "application", "component", "feature", "group", "patch"));
+                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, typeValue, "application", "component", "feature", "group", "patch"));
                     break;
             }
 

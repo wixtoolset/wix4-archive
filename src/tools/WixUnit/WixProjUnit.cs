@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Wixproj unit tester (MSBuild targets).
+// The WiX Wixproj unit tester (MSBuild targets).
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -22,7 +22,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Xml;
 
     /// <summary>
-    /// The Windows Installer XML Wixproj unit tester (MSBuild targets).
+    /// The WiX Wixproj unit tester (MSBuild targets).
     /// </summary>
     internal sealed class WixProjUnit
     {

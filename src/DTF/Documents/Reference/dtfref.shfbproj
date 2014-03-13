@@ -32,31 +32,31 @@
   <PropertyGroup>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="False" xmlns="" />
-      <NamespaceSummaryItem name="Microsoft.Deployment.Compression" isDocumented="True" xmlns="">Framework for archive packing and unpacking.</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Microsoft.Deployment.Compression.Cab" isDocumented="True" xmlns="">Implements cabinet archive packing and unpacking.</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Microsoft.Deployment.Compression.Zip" isDocumented="True" xmlns="">Implements zip archive packing and unpacking.</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Microsoft.Deployment.Resources" isDocumented="True" xmlns="">Classes for reading and writing resource data in executable files.</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Microsoft.Deployment.WindowsInstaller" isDocumented="True" xmlns="">Complete class library for the Windows Installer APIs.</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Microsoft.Deployment.WindowsInstaller.Linq" isDocumented="True" xmlns="">LINQ extensions for querying Windows Installer databases (experimental).</NamespaceSummaryItem>
-      <NamespaceSummaryItem name="Microsoft.Deployment.WindowsInstaller.Linq.Entities" isDocumented="False" xmlns="" />
-      <NamespaceSummaryItem name="Microsoft.Deployment.WindowsInstaller.Package" isDocumented="True" xmlns="">Extended classes for working with Windows Installer installation and patch packages.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.Compression" isDocumented="True" xmlns="">Framework for archive packing and unpacking.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.Compression.Cab" isDocumented="True" xmlns="">Implements cabinet archive packing and unpacking.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.Compression.Zip" isDocumented="True" xmlns="">Implements zip archive packing and unpacking.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.Resources" isDocumented="True" xmlns="">Classes for reading and writing resource data in executable files.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.WindowsInstaller" isDocumented="True" xmlns="">Complete class library for the Windows Installer APIs.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.WindowsInstaller.Linq" isDocumented="True" xmlns="">LINQ extensions for querying Windows Installer databases (experimental).</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="WixToolset.Dtf.WindowsInstaller.Linq.Entities" isDocumented="False" xmlns="" />
+      <NamespaceSummaryItem name="WixToolset.Dtf.WindowsInstaller.Package" isDocumented="True" xmlns="">Extended classes for working with Windows Installer installation and patch packages.</NamespaceSummaryItem>
     </NamespaceSummaries>
 
     <DocumentationSources>
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Compression.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Compression.xml" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Compression.Cab.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Compression.Cab.xml" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Compression.Zip.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Compression.Zip.xml" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Resources.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.Resources.xml" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.WindowsInstaller.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.WindowsInstaller.xml" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.WindowsInstaller.Package.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.WindowsInstaller.Package.xml" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.WindowsInstaller.Linq.dll" xmlns="" />
-      <DocumentationSource sourceFile="$(DirTargetWix)\Microsoft.Deployment.WindowsInstaller.Linq.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Compression.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Compression.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Compression.Cab.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Compression.Cab.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Compression.Zip.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Compression.Zip.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Resources.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.Resources.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.WindowsInstaller.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.WindowsInstaller.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.WindowsInstaller.Package.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.WindowsInstaller.Package.xml" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.WindowsInstaller.Linq.dll" xmlns="" />
+      <DocumentationSource sourceFile="$(DirTargetWix)\WixToolset.Dtf.WindowsInstaller.Linq.xml" xmlns="" />
     </DocumentationSources>
   </PropertyGroup>
 

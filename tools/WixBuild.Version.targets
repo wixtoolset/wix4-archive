@@ -9,9 +9,9 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <MajorBuildNumber>3</MajorBuildNumber>
-        <MinorBuildNumber>9</MinorBuildNumber>
-        <StartBuildYear>2014</StartBuildYear>
+        <MajorBuildNumber>4</MajorBuildNumber>
+        <MinorBuildNumber>0</MinorBuildNumber>
+        <StartBuildYear>2013</StartBuildYear>
 
         <MajorMinorVersionString>$(MajorBuildNumber)$(MinorBuildNumber)</MajorMinorVersionString>
         <MajorMinorVersionDottedString>$(MajorBuildNumber).$(MinorBuildNumber)</MajorMinorVersionDottedString>

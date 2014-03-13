@@ -11,7 +11,7 @@
 // </summary>
 //--------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.ComponentModel;

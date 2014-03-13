@@ -8,7 +8,7 @@
   </copyright>
 -->
 <!--Defines a component that is shared across several tests-->
-<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Include xmlns="http://wixtoolset.org/schemas/wxs">
   <DirectoryRef Id="TARGETDIR">
     <Component Id="FailureCustomActionComponent" Guid="12345678-9ABC-DEF0-1234-567890000000" DiskId="1" KeyPath="yes">
       <CreateFolder />

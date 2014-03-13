@@ -7,21 +7,21 @@
 // </copyright>
 // 
 // <summary>
-// The finalize harvester mutator for the Windows Installer XML Toolset Internet Information Services Extension.
+// The finalize harvester mutator for the WiX Toolset Internet Information Services Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Collections.Specialized;
-
-    using IIs = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.IIs;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Extensibility;
+    using IIs = WixToolset.Extensions.Serialize.IIs;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The finalize harvester mutator for the Windows Installer XML Toolset Internet Information Services Extension.
+    /// The finalize harvester mutator for the WiX Toolset Internet Information Services Extension.
     /// </summary>
     public sealed class IIsFinalizeHarvesterMutator : MutatorExtension
     {

@@ -151,7 +151,7 @@
     <value>referencePathsFoldersSelector</value>
   </data>
   <data name="&gt;&gt;referencePathsFoldersSelector.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FoldersSelector, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.FoldersSelector, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;referencePathsFoldersSelector.Parent" xml:space="preserve">
     <value>referencePathsGroupBox</value>
@@ -187,7 +187,7 @@
     <value>referencePathsGroupBox</value>
   </data>
   <data name="&gt;&gt;referencePathsGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;referencePathsGroupBox.Parent" xml:space="preserve">
     <value>mainTableLayoutPanel</value>
@@ -232,7 +232,7 @@
     <value>includePathsFolderSelector</value>
   </data>
   <data name="&gt;&gt;includePathsFolderSelector.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FoldersSelector, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.FoldersSelector, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;includePathsFolderSelector.Parent" xml:space="preserve">
     <value>includePathsGroupBox</value>
@@ -262,7 +262,7 @@
     <value>includePathsGroupBox</value>
   </data>
   <data name="&gt;&gt;includePathsGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;includePathsGroupBox.Parent" xml:space="preserve">
     <value>mainTableLayoutPanel</value>
@@ -313,6 +313,6 @@
     <value>WixPathsPropertyPagePanel</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.4025.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
 </root>

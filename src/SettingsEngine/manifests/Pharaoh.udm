@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Pharaoh">
+        <Detect>
+            <Arp DisplayName="Pharaoh Gold Bundle" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Pharaoh Gold" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\Save\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Pharaoh</DisplayName>
+    </Product>
+</LegacySettings>

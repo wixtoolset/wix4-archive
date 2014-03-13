@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
+namespace WixToolset.VisualStudio.PropertyPages
 {
     partial class WixPathsPropertyPagePanel
     {
@@ -38,10 +38,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WixPathsPropertyPagePanel));
-            this.referencePathsFoldersSelector = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FoldersSelector();
-            this.referencePathsGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
-            this.includePathsGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
-            this.includePathsFolderSelector = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FoldersSelector();
+            this.referencePathsFoldersSelector = new WixToolset.VisualStudio.Controls.FoldersSelector();
+            this.referencePathsGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
+            this.includePathsGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
+            this.includePathsFolderSelector = new WixToolset.VisualStudio.Controls.FoldersSelector();
             this.mainTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.referencePathsGroupBox.SuspendLayout();
             this.includePathsGroupBox.SuspendLayout();
@@ -100,10 +100,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
 
         #endregion
 
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FoldersSelector referencePathsFoldersSelector;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox referencePathsGroupBox;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox includePathsGroupBox;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FoldersSelector includePathsFolderSelector;
+        private WixToolset.VisualStudio.Controls.FoldersSelector referencePathsFoldersSelector;
+        private WixToolset.VisualStudio.Controls.WixGroupBox referencePathsGroupBox;
+        private WixToolset.VisualStudio.Controls.WixGroupBox includePathsGroupBox;
+        private WixToolset.VisualStudio.Controls.FoldersSelector includePathsFolderSelector;
         private System.Windows.Forms.TableLayoutPanel mainTableLayoutPanel;
     }
 }

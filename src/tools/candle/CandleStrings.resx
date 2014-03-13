@@ -135,7 +135,6 @@
    -pedantic  show pedantic messages
    -platform  (deprecated alias for -arch)
    -sfdvital  suppress marking files as Vital by default
-   -ss        suppress schema validation of documents (performance boost)
    -sw[N]     suppress all warnings or a specific message ID
               (example: -sw1009 -sw1103)
    -swall     suppress all warnings (deprecated)

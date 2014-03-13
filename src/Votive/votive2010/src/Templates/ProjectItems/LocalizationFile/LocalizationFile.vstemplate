@@ -1,7 +1,7 @@
 <VSTemplate Version="2.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
   <TemplateData>
     <Name _locID="TSDATA_DUT_Name">Localization File</Name>
-    <Description _locID="TSDATA_DUT_Description">An empty Windows Installer XML localization file (.wxl)</Description>
+    <Description _locID="TSDATA_DUT_Description">An empty WiX localization file (.wxl)</Description>
     <Icon>LocalizationFile.ico</Icon>
     <ProjectType>WiX</ProjectType>
     <SortOrder>40</SortOrder>

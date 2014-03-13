@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML COM+ Scheduling CustomAction.
+//    WiX COM+ Scheduling CustomAction.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 #include "precomp.h"

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
     <Product Id="*" Name="TestSqlScriptsProduct" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{833389DB-8EFE-4D62-AF81-C533266C63B4}">
       <Package Description="Test SqlDatabase" Comments="Test SqlDatabase" InstallerVersion="200" Compressed="yes" />
  

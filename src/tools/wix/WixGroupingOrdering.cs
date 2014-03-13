@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Gropuing and Ordering class of the Windows Installer Xml toolset.
+// Gropuing and Ordering class of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
@@ -20,9 +20,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Diagnostics;
     using System.Globalization;
     using System.Text;
+    using WixToolset.Extensibility;
+    using WixToolset.Data;
 
     /// <summary>
-    /// Grouping and Ordering class of the Windows Installer Xml toolset.
+    /// Grouping and Ordering class of the WiX toolset.
     /// </summary>
     public sealed class WixGroupingOrdering : IMessageHandler
     {

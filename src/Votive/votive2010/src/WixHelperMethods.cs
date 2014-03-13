@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
     using System.Xml;
     using System.Xml.Schema;
     using Microsoft.Build.BuildEngine;
-    using Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls;
+    using WixToolset.VisualStudio.Controls;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Package;
     using Microsoft.VisualStudio.Shell;

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Disciples_Sacred_Lands">
+        <Detect>
+            <Arp DisplayName="Disciples Gold" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Savegame" Location="InstallDir:\Savegame\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Disciples: Sacred Lands</DisplayName>
+    </Product>
+</LegacySettings>

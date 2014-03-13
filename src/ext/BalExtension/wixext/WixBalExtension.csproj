@@ -12,13 +12,12 @@
     <ProjectGuid>{BF720A63-9D7B-456E-B60C-8122852D9FED}</ProjectGuid>
     <AssemblyName>WixBalExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BalCompiler.cs" />
-    <Compile Include="BalExtension.cs" />
+    <Compile Include="BalExtensionData.cs" />
     <MsgGenSource Include="Data\messages.xml">
       <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
     </MsgGenSource>
@@ -30,22 +29,23 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\bal.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Bal</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.Bal</Namespace>
     </XsdGenSource>
     <EmbeddedResource Include="$(OutputPath)\bal.wixlib">
       <Link>Data\bal.wixlib</Link>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\BalExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

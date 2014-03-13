@@ -11,7 +11,7 @@
     Wix error/verbose/warning messages.
   </summary>
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+<Messages Namespace="WixToolset" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
     <Class Name="WixErrors" ContainerName="WixErrorEventArgs" BaseContainerName="MessageEventArgs" Level="Error">
         <Message Id="UnexpectedException" Number="1" SourceLineNumbers="no">
             <Instance>
@@ -146,21 +146,28 @@
         </Message>
         <Message Id="IllegalIdentifier" Number="14">
             <Instance>
-                The {0}/@{1} attribute's value, '{2}', is not a legal identifier.  Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.).  Every identifier must begin with either a letter or an underscore.
+                The {0} element's value, '{1}', is not a legal identifier. Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.). Every identifier must begin with either a letter or an underscore.
                 <Parameter Type="System.String" Name="elementName" />
-                <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="value" />
             </Instance>
             <Instance>
-                The {0}/@{1} attribute's value is not a legal identifier.  Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.).  Every identifier must begin with either a letter or an underscore.
+                The {0}/@{1} attribute's value is not a legal identifier. Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.). Every identifier must begin with either a letter or an underscore.
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.Int32" Name="disambiguator" />
             </Instance>
             <Instance>
-                The {0} element's value, '{1}', is not a legal identifier.  Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.).  Every identifier must begin with either a letter or an underscore.
+                The {0}/@{1} attribute's value, '{2}', is not a legal identifier. Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.). Every identifier must begin with either a letter or an underscore.
                 <Parameter Type="System.String" Name="elementName" />
+                <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="value" />
+            </Instance>
+            <Instance>
+                The {0}/@{1} attribute's value '{2}' contains an illegal identifier '{3}'. Identifiers may contain ASCII characters A-Z, a-z, digits, underscores (_), or periods (.). Every identifier must begin with either a letter or an underscore.
+                <Parameter Type="System.String" Name="elementName" />
+                <Parameter Type="System.String" Name="attributeName" />
+                <Parameter Type="System.String" Name="value" />
+                <Parameter Type="System.String" Name="identifier" />
             </Instance>
         </Message>
         <Message Id="IllegalYesNoValue" Number="15">
@@ -388,10 +395,17 @@
         </Message>
         <Message Id="IllegalLongFilename" Number="27">
             <Instance>
-                The {0}/@{1} attribute's value, '{2}', is not a valid long name because it contains illegal characters.  Legal long names contain no more than 260 characters and must contain at least one non-period character.  Any character except for the follow may be used: \ ? | &gt; &lt; : / * ".
+                The {0}/@{1} attribute's value, '{2}', is not a valid filename because it contains illegal characters. Legal filenames contain no more than 260 characters and must contain at least one non-period character. Any character except for the follow may be used: \ ? | &gt; &lt; : / * ".
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="value" />
+            </Instance>
+            <Instance>
+                The {0}/@{1} attribute's value '{2}' contains a invalid filename '{3}'. Legal filenames contain no more than 260 characters and must contain at least one non-period character. Any character except for the follow may be used: \ ? | &gt; &lt; : / * ".
+                <Parameter Type="System.String" Name="elementName" />
+                <Parameter Type="System.String" Name="attributeName" />
+                <Parameter Type="System.String" Name="value" />
+                <Parameter Type="System.String" Name="filename" />
             </Instance>
         </Message>
         <Message Id="TableNameTooLong" Number="28">
@@ -697,7 +711,7 @@
         </Message>
         <Message Id="InvalidDocumentElement" Number="48">
             <Instance>
-                The document element name '{0}' is invalid.  A Windows Installer XML {1} file must use '{2}' as the document element name.
+                The document element name '{0}' is invalid.  A WiX {1} file must use '{2}' as the document element name.
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="fileType" />
                 <Parameter Type="System.String" Name="expectedElementName" />
@@ -871,12 +885,6 @@
                 <Parameter Type="System.String" Name="propertyName" />
             </Instance>
         </Message>
-        <Message Id="CannotSpecifySequenceAndOnExit" Number="71">
-            <Instance>
-                The sequence number for a {0} element can be specified at most once, with either a 'Sequence' or 'OnExit' attribute, but not both.
-                <Parameter Type="System.String" Name="elementName" />
-            </Instance>
-        </Message>
         <Message Id="NeedSequenceBeforeOrAfter" Number="72">
             <Instance>
                 A {0} element must have a Before attribute, After attribute, or a Sequence attribute.
@@ -998,8 +1006,13 @@
         </Message>
         <Message Id="DuplicateSymbol" Number="91">
             <Instance>
-                Duplicate symbol '{0}' found. This typically means that an Id is duplicated. Check to make sure all your identifiers of a given type (File, Component, Feature) are unique.
+                Duplicate symbol '{0}' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.
                 <Parameter Type="System.String" Name="symbolName" />
+            </Instance>
+            <Instance>
+                Duplicate symbol '{0}' referenced by {1}. This typically means that an Id is duplicated. Ensure all your identifiers of a given type (File, Component, Feature) are unique or use an access modifier to scope the identfier.
+                <Parameter Type="System.String" Name="symbolName" />
+                <Parameter Type="System.String" Name="referencingSourceLineNumber" />
             </Instance>
         </Message>
         <Message Id="DuplicateSymbol2" Number="92">
@@ -1013,10 +1026,13 @@
         </Message>
         <Message Id="UnresolvedReference" Number="94">
             <Instance>
-                Unresolved reference to symbol '{2}' in section '{0}:{1}'.
-                <Parameter Type="System.String" Name="sectionType" />
-                <Parameter Type="System.String" Name="sectionId" />
-                <Parameter Type="System.String" Name="referencedSymbol" />
+                The identifier '{0}' could not be found. Ensure you have typed the reference correctly and that all the necessary inputs are provided to the linker.
+                <Parameter Type="System.String" Name="symbolName" />
+            </Instance>
+            <Instance>
+                The identifier '{0}' is inaccessible due to its protection level.
+                <Parameter Type="System.String" Name="symbolName" />
+                <Parameter Type="WixToolset.Data.AccessModifier" Name="accessModifier" />
             </Instance>
         </Message>
         <Message Id="MultiplePrimaryReferences" Number="95">
@@ -1045,7 +1061,7 @@
         </Message>
         <Message Id="DuplicateModuleCaseInsensitiveFileIdentifier" Number="98">
             <Instance>
-                The merge module '{0}' contains 2 or more file identifiers that only differ by case: '{1}' and '{2}'.  The Windows Installer XML toolset extracts merge module files to the file system using these identifiers.  Since most file systems are not case-sensitive a collision is likely.  Please contact the owner of the merge module for a fix.
+                The merge module '{0}' contains 2 or more file identifiers that only differ by case: '{1}' and '{2}'.  The WiX toolset extracts merge module files to the file system using these identifiers.  Since most file systems are not case-sensitive a collision is likely.  Please contact the owner of the merge module for a fix.
                 <Parameter Type="System.String" Name="moduleId" />
                 <Parameter Type="System.String" Name="fileId1" />
                 <Parameter Type="System.String" Name="fileId2" />
@@ -1230,7 +1246,7 @@
         </Message>
         <Message Id="DuplicateExtensionTable" Number="126" SourceLineNumbers="no">
             <Instance>
-                The extension '{0}' contains a defintion for table '{1}' that collides with a previously loaded table definition.  Please remove one of the conflicting extensions or rename one of the tables to avoid the collision.
+                The extension '{0}' contains a definition for table '{1}' that collides with a previously loaded table definition.  Please remove one of the conflicting extensions or rename one of the tables to avoid the collision.
                 <Parameter Type="System.String" Name="extension" />
                 <Parameter Type="System.String" Name="tableName" />
             </Instance>
@@ -1689,25 +1705,25 @@
         </Message>
         <Message Id="WixVariableCollision" Number="195">
             <Instance>
-                The Windows Installer XML variable '{0}' is declared in more than one location.  Please remove one of the declarations.
+                The WiX variable '{0}' is declared in more than one location.  Please remove one of the declarations.
                 <Parameter Type="System.String" Name="variableId" />
             </Instance>
         </Message>
         <Message Id="ExpectedWixVariableValue" Number="196" SourceLineNumbers="no">
             <Instance>
-                The Windows Installer XML variable '{0}' was declared without a value.  Please specify a value for the variable.
+                The WiX variable '{0}' was declared without a value.  Please specify a value for the variable.
                 <Parameter Type="System.String" Name="variableId" />
             </Instance>
         </Message>
         <Message Id="WixVariableUnknown" Number="197">
             <Instance>
-                The Windows Installer XML variable !(wix.{0}) is unknown.  Please ensure the variable is declared on the command line for light.exe, via a WixVariable element, or inline using the syntax !(wix.{0}=some value which doesn't contain parenthesis).
+                The WiX variable !(wix.{0}) is unknown.  Please ensure the variable is declared on the command line for light.exe, via a WixVariable element, or inline using the syntax !(wix.{0}=some value which doesn't contain parenthesis).
                 <Parameter Type="System.String" Name="variableId" />
             </Instance>
         </Message>
         <Message Id="IllegalWixVariablePrefix" Number="198">
             <Instance>
-                The Windows Installer XML variable $(wix.{0}) uses an illegal prefix '$'.  Please use the '!' prefix instead.
+                The WiX variable $(wix.{0}) uses an illegal prefix '$'.  Please use the '!' prefix instead.
                 <Parameter Type="System.String" Name="variableId" />
             </Instance>
         </Message>
@@ -1803,7 +1819,7 @@
         </Message>
         <Message Id="IllegalInlineLocVariable" Number="213">
             <Instance>
-                The localization variable '{0}' specifies an illegal inline default value of '{1}'.  Localization variables cannot specify default values inline, instead the value should be specified in a Windows Installer XML localization (.wxl) file.
+                The localization variable '{0}' specifies an illegal inline default value of '{1}'.  Localization variables cannot specify default values inline, instead the value should be specified in a WiX localization (.wxl) file.
                 <Parameter Type="System.String" Name="variableName" />
                 <Parameter Type="System.String" Name="variableValue" />
             </Instance>
@@ -1984,7 +2000,7 @@
         </Message>
         <Message Id="InvalidWixTransform" Number="239" SourceLineNumbers="no">
             <Instance>
-                The file '{0}' is not a valid Windows Installer XML Transform.
+                The file '{0}' is not a valid WiX Transform.
                 <Parameter Type="System.String" Name="fileName" />
             </Instance>
         </Message>
@@ -2110,7 +2126,7 @@
         </Message>
         <Message Id="ExpectedClientPatchIdInWixMsp" Number="259" SourceLineNumbers="no">
             <Instance>
-                The WixMsp is missing the client patch ID. Recompile the patch source files with the latest Windows Installer XML toolset.
+                The WixMsp is missing the client patch ID. Recompile the patch source files with the latest WiX toolset.
             </Instance>
         </Message>
         <Message Id="NewRowAddedInTable" Number="260">
@@ -2733,7 +2749,7 @@
         </Message>
       <Message Id="BundleTooNew" Number="355" SourceLineNumbers="no">
         <Instance>
-          Unable to read bundle executable '{0}', because this bundle was created with a newer version of WiX (bundle version '{1}'). You must use a newer version of Windows Installer XML in order to read this bundle.
+          Unable to read bundle executable '{0}', because this bundle was created with a newer version of WiX (bundle version '{1}'). You must use a newer version of WiX in order to read this bundle.
           <Parameter Type="System.String" Name="bundleExecutable" />
           <!-- we use a 64-bit field here because the field is really a 32-bit UInt, 
               but UInt gives a non-CLS-compliant warning.
@@ -2930,6 +2946,15 @@
           The RemotePayload element can only be used for ExePackages.
         </Instance>
       </Message>
+      <Message Id="InlineDirectorySyntaxRequiresPath" Number="384">
+        <Instance>
+          The {0}/@{1} attribute's value '{2}' only specifies a directory reference. The inline directory syntax requires that at least one directory be specified in addition to the value. For example, use '{3}:\foo\' to add a 'foo' directory.
+          <Parameter Type="System.String" Name="elementName" />
+          <Parameter Type="System.String" Name="attributeName" />
+          <Parameter Type="System.String" Name="value" />
+          <Parameter Type="System.String" Name="identifier" />
+        </Instance>
+      </Message>
     </Class>
 
     <Class Name="WixWarnings" ContainerName="WixWarningEventArgs" BaseContainerName="MessageEventArgs" Level="Warning">
@@ -2962,7 +2987,7 @@
         </Message>
         <Message Id="NestedInstall" Number="1004">
             <Instance>
-                The {0}.{1} column's value, '{2}', indicates a nested install.  Nested installations are not supported by the Windows Installer XML team.  This action will be left out of the decompiled output.
+                The {0}.{1} column's value, '{2}', indicates a nested install.  Nested installations are not supported by the WiX team.  This action will be left out of the decompiled output.
                 <Parameter Type="System.String" Name="tableName" />
                 <Parameter Type="System.String" Name="columnName" />
                 <Parameter Type="System.Object" Name="value" />
@@ -3086,23 +3111,6 @@
                 <Parameter Type="System.String" Name="value" />
             </Instance>
         </Message>
-        <Message Id="IdenticalRowWarning" Number="1045">
-            <Instance>
-                The row with symbol: '{0}' is defined identically in another section.  See the next message for the identical row.
-                <Parameter Type="System.String" Name="symbolName" />
-            </Instance>
-        </Message>
-        <Message Id="IdenticalRowWarning2" Number="1046">
-            <Instance>Location of row related to previous error.</Instance>
-        </Message>
-        <Message Id="UnresolvedReferenceWarning" Number="1047">
-            <Instance>
-                Unresolved reference to symbol '{2}' in section '{0}:{1}'.
-                <Parameter Type="System.String" Name="sectionType" />
-                <Parameter Type="System.String" Name="sectionId" />
-                <Parameter Type="System.String" Name="referencedSymbol" />
-            </Instance>
-        </Message>
         <Message Id="PossiblyIncorrectTypelibVersion" Number="1048">
             <Instance>
                 The Typelib table entry with Id '{0}' could have an incorrect version of '256.0'.  InstallShield has a bug relating to the Typelib Version column: it will incorrectly set the value '65536' in to represent version '1.0'.  However, this number actually corresponds to version '256.0'.  This bug will not affect the typelib version that is registered during installation, however, it will prevent the Windows Installer from correctly identifying whether a typelib is already installed and lead to unnecessary reinstallations of the typelib.
@@ -3174,7 +3182,7 @@
         </Message>
         <Message Id="DecompiledStandardActionRelativelyScheduledInModule" Number="1057">
             <Instance>
-                The {0} table contains a standard action '{1}' that does not have a sequence number specified.  A value in the Sequence column is required for standard actions in a merge module.  Remove the action from the decompiled authoring to have Windows Installer XML automatically sequence it.
+                The {0} table contains a standard action '{1}' that does not have a sequence number specified.  A value in the Sequence column is required for standard actions in a merge module.  Remove the action from the decompiled authoring to have WiX automatically sequence it.
                 <Parameter Type="System.String" Name="sequenceTableName" />
                 <Parameter Type="System.String" Name="actionName" />
             </Instance>
@@ -3220,19 +3228,19 @@
         </Message>
         <Message Id="SkippingMergeModuleTable" Number="1062">
             <Instance>
-                The {0} table can only be represented in Windows Installer XML for merge modules.  The information in this table will be left out of the decompiled output.
+                The {0} table can only be represented in WiX for merge modules.  The information in this table will be left out of the decompiled output.
                 <Parameter Type="System.String" Name="tableName" />
             </Instance>
         </Message>
         <Message Id="SkippingPatchCreationTable" Number="1063">
             <Instance>
-                The {0} table can only be represented in Windows Installer XML for patch creation files.  The information in this table will be left out of the decompiled output.
+                The {0} table can only be represented in WiX for patch creation files.  The information in this table will be left out of the decompiled output.
                 <Parameter Type="System.String" Name="tableName" />
             </Instance>
         </Message>
         <Message Id="UnrepresentableColumnValue" Number="1064">
             <Instance>
-                The {0}.{1} column's value, '{2}', cannot currently be represented in the Windows Installer XML schema.
+                The {0}.{1} column's value, '{2}', cannot currently be represented in the WiX schema.
                 <Parameter Type="System.String" Name="tableName" />
                 <Parameter Type="System.String" Name="columnName" />
                 <Parameter Type="System.Object" Name="value" />
@@ -3240,7 +3248,7 @@
         </Message>
         <Message Id="DeprecatedTable" Number="1065" SourceLineNumbers="no">
             <Instance>
-                The {0} table is not supported by the Windows Installer XML toolset because it has been deprecated by the Windows Installer team.  Any information in this table will be left out of the decompiled output.
+                The {0} table is not supported by the WiX toolset because it has been deprecated by the Windows Installer team.  Any information in this table will be left out of the decompiled output.
                 <Parameter Type="System.String" Name="tableName" />
             </Instance>
         </Message>
@@ -3260,7 +3268,7 @@
         </Message>
         <Message Id="DeprecatedLongNameAttribute" Number="1069">
             <Instance>
-                The {0}/@{1} attribute has been deprecated.  Since Windows Installer XML now has the ability to generate short file/directory names, the desired name should be specified in the {2} attribute instead.  If the name specified in the {2} attribute is a short name, then Windows Installer XML will not generate a short name.  If the name specified in the {2} attribute is a long name and you want to manually specify the short name, please set the short name value in the {3} attribute.
+                The {0}/@{1} attribute has been deprecated.  Since WiX now has the ability to generate short file/directory names, the desired name should be specified in the {2} attribute instead.  If the name specified in the {2} attribute is a short name, then WiX will not generate a short name.  If the name specified in the {2} attribute is a long name and you want to manually specify the short name, please set the short name value in the {3} attribute.
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="longNameAttributeName" />
                 <Parameter Type="System.String" Name="nameAttributeName" />
@@ -3738,9 +3746,17 @@
                 All changes between the baseline and upgraded packages will be included in the patch except for any change to the ProductCode. The 'All' element is supported primarily for testing purposes and negates the benefits of patch families.
             </Instance>
         </Message>
+        <Message Id="BackslashTerminateInlineDirectorySyntax" Number="1146">
+            <Instance>
+                Backslash terminate the {0}/@{1} attribute's inline directory value '{2}'. A backslash ensures a directory name will not be mistaken for a directory reference.
+                <Parameter Type="System.String" Name="elementName" />
+                <Parameter Type="System.String" Name="attributeName" />
+                <Parameter Type="System.String" Name="value" />
+            </Instance>
+        </Message>
     </Class>
 
-    <Class Name="WixVerboses" ContainerName="WixVerboseEventArgs" BaseContainerName="MessageEventArgs" Level="Information">
+    <Class Name="WixVerboses" ContainerName="WixVerboseEventArgs" BaseContainerName="MessageEventArgs" Level="Verbose">
         <Message Id="ImportBinaryStream" Number="9000" SourceLineNumbers="no">
             <Instance>
                 Importing binary stream from '{0}'.

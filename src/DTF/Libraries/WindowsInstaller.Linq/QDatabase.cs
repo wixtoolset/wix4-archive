@@ -10,11 +10,11 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller.Linq
+namespace WixToolset.Dtf.WindowsInstaller.Linq
 {
     using System;
     using System.IO;
-    using Microsoft.Deployment.WindowsInstaller.Linq.Entities;
+    using WixToolset.Dtf.WindowsInstaller.Linq.Entities;
 
     /// <summary>
     /// Allows any Database instance to be converted into a queryable database.

@@ -10,7 +10,7 @@
 // Contains the ReplaceString class.
 // </summary>
 //-------------------------------------------------------------------------------------------------
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using Microsoft.Build.Framework;

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment>
     <Binary Id="WixLuxCA" SourceFile="LuxCustomActions.CA.dll" />
     <CustomAction Id="WixRunImmediateUnitTests" BinaryKey="WixLuxCA" DllEntry="WixRunImmediateUnitTests" />
@@ -43,7 +43,7 @@
     <DirectoryRef Id="TARGETDIR">
       <Directory Id="DesktopFolder">
         <Component Id="LuxComponent" Guid="{A3EB8550-43FC-42EC-A61E-AE4AFDC4B5AD}">
-          <RegistryKey Root="HKCU" Key="SOFTWARE\Microsoft\Windows Installer XML\Lux">
+          <RegistryKey Root="HKCU" Key="SOFTWARE\Microsoft\WiX Toolset\Lux">
             <RegistryValue Name="Test" Value="1" Type="integer" KeyPath="yes" />
           </RegistryKey>
         </Component>

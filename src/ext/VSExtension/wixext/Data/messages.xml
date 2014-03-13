@@ -7,10 +7,10 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The messages for the Windows Installer XML Toolset Utility Extension.
+  The messages for the WiX Toolset Utility Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="VSErrors" ContainerName="VSErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="VSErrors" ContainerName="VSErrorEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="InvalidOutputGroup" Number="5301" SourceLineNumbers="no">
             <Instance>
                 Invalid project output group: {0}.
@@ -91,7 +91,7 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="VSWarnings" ContainerName="VSWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Class Name="VSWarnings" ContainerName="VSWarningEventArgs" BaseContainerName="MessageEventArgs">
       <Message Id="NoLogger" Number="5399" SourceLineNumbers="no">
         <Instance>
           Failed to set loggers: {0}
@@ -105,7 +105,7 @@
         </Instance>
       </Message>
     </Class>
-    <Class Name="VSVerboses" ContainerName="VSVerboseEventArgs" BaseContainerName="WixVerboseEventArgs">
+    <Class Name="VSVerboses" ContainerName="VSVerboseEventArgs" BaseContainerName="MessageEventArgs">
       <Message Id="FoundToolsVersion" Number="5379" SourceLineNumbers="no">
         <Instance>
           Found ToolsVersion {0} inside project file.

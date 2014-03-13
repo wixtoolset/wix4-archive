@@ -1,7 +1,7 @@
 <VSTemplate Version="2.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
   <TemplateData>
     <Name _locID="TSDATA_DUT_Name">Setup Project</Name>
-    <Description _locID="TSDATA_DUT_Description">A project for creating a Windows Installer XML based MSI file</Description>
+    <Description _locID="TSDATA_DUT_Description">A project for creating a WiX based MSI file</Description>
     <Icon>WixProject.ico</Icon>
     <ProjectType>WiX</ProjectType>
     <SortOrder>20</SortOrder>

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="{93A7F85E-C231-44f9-AF3A-C27309EF0BCC}" Name="Wix Test: DuplicateShortcutPropertyIds" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{E7D9C899-6AB6-44ab-B467-0F3276EF77F1}">
     <Package InstallerVersion="500" />
     <Media Id="1" />

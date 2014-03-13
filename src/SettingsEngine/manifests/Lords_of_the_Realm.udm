@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Lords_of_the_Realm">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both Lords of the Realm 1 & 2.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Lords of the Realm - Royal Edition" InstallLocation="RoyalInstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Sav" Location="RoyalInstallDir:\Lords of the Realm I\"/>
+            <Directory Namespace="Svg" Location="RoyalInstallDir:\Lords of the Realm I (CD)\"/>
+        </Data>
+
+        <Filter>
+            <!-- Are saves all there is? There is also a HISTORY.DAT file written during each run for both directories. Not sure what that is. -->
+            <Ignore Prefix="Sav:\"/>
+            <Normal Prefix="Sav:\" Postfix=".sav"/>
+            <Ignore Prefix="Svg:\"/>
+            <Normal Prefix="Svg:\" Postfix=".svg"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Lords of the Realm</DisplayName>
+    </Product>
+</LegacySettings>

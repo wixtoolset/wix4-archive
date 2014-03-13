@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Resources
+namespace WixToolset.Dtf.Resources
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

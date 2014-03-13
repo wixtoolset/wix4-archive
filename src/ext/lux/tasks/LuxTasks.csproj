@@ -12,7 +12,7 @@
     <ProjectGuid>{43BD7580-2DAC-4C80-AA9A-C10603917572}</ProjectGuid>
     <AssemblyName>LuxTasks</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Lux</RootNamespace>
+    <RootNamespace>WixToolset.Lux</RootNamespace>
     <CreateDocumentationFile>true</CreateDocumentationFile>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
@@ -37,6 +37,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
     <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\..\..\tools\WixTasks\WixTasks.csproj" />
     <ProjectReference Include="..\wixext\WixLuxExtension.csproj" />

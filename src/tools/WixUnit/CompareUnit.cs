@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Compares to results files as part of a Windows Installer XML WixUnit test.
+// Compares to results files as part of a WiX WixUnit test.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -21,10 +21,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Threading;
     using System.Xml;
 
-    using Microsoft.Tools.WindowsInstallerXml.Unit;
+    using WixToolset.Unit;
 
     /// <summary>
-    /// Compares to results files as part of a Windows Installer XML WixUnit test.
+    /// Compares to results files as part of a WiX WixUnit test.
     /// </summary>
     internal class CompareUnit
     {

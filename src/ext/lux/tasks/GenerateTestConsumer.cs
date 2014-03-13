@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux
+namespace WixToolset.Lux
 {
     using System;
     using System.Collections.Generic;
@@ -20,6 +20,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
 
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
+    using WixToolset.Data;
 
     /// <summary>
     /// An MSBuild task to class to scan object files for unit tests.
@@ -90,11 +91,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         {
             List<string> generatorExtensions = new List<string>();
 
+            Messaging.Instance.InitializeAppName("LXT", "LuxTasks.dll").Display += this.DisplayMessage;
+
             Generator generator = new Generator();
             generator.Extensions = GenerateTestConsumer.ToStringCollection(this.extensions);
             generator.InputFiles = GenerateTestConsumer.ToListOfString(this.inputFiles);
             generator.OutputFile = null != this.outputFile ? this.outputFile.ItemSpec : null;
-            generator.Message += new MessageEventHandler(this.MessageHandler);
 
             bool success = generator.Generate();
             this.inputFragments = GenerateTestConsumer.ToITaskItemArray(generator.InputFragments);
@@ -166,12 +168,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         /// Display a test-generator message to the user via the MSBuild logger.
         /// </summary>
         /// <param name="sender">The sender of the message.</param>
-        /// <param name="mea">Arguments for the message event.</param>
-        private void MessageHandler(object sender, MessageEventArgs mea)
+        /// <param name="e">Arguments for the message event.</param>
+        private void DisplayMessage(object sender, DisplayEventArgs e)
         {
-            MessageImportance importance = (MessageLevel.Error == mea.Level || MessageLevel.Warning == mea.Level) ? MessageImportance.High : MessageImportance.Normal;
-            string msg = String.Format(CultureInfo.InvariantCulture, mea.ResourceManager.GetString(mea.ResourceName), mea.MessageArgs);
-            this.Log.LogMessage(importance, msg);
+            MessageImportance importance = (MessageLevel.Error == e.Level || MessageLevel.Warning == e.Level) ? MessageImportance.High : MessageImportance.Normal;
+            this.Log.LogMessage(importance, e.Message);
         }
     }
 }

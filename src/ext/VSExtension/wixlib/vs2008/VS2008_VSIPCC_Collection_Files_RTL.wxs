@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment Id="VS2008_Namespace">
     <Binary Id="BIN_435439_x86_enu" SourceFile="$(sys.SOURCEFILEDIR)\Redist\BIN_435439_x86_enu" />
     <CustomAction Id="CA_ScheduleExtHelpPlugin_VSCC_VSIPCC" BinaryKey="BIN_435439_x86_enu" DllEntry="ScheduleExtHelpPlugin" Return="ignore" />

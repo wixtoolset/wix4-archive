@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Reflection;
     using System.Reflection.Emit;
     using System.Runtime.InteropServices;
 
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring from a native DLL file.

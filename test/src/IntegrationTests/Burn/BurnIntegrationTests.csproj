@@ -35,8 +35,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="$(OutputPath)BootstrapperCore.dll" />
-    <Reference Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.dll" />
-    <Reference Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Package.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Package.dll" />
     <ProjectReference Include="..\..\WixTestTools\WixTestTools.csproj">
       <Project>{55CB1042-647B-4347-9876-3EA607AF8DCE}</Project>
       <Name>WixTestTools</Name>
@@ -55,6 +55,9 @@
     <Content Include="BasicTests\BundleB.wxs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

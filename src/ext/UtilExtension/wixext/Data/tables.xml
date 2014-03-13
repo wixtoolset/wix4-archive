@@ -7,9 +7,9 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The table definitions for the Windows Installer XML Toolset Utility Extension.
+  The table definitions for the WiX Toolset Utility Extension.
 -->
-<tableDefinitions xmlns="http://schemas.microsoft.com/wix/2006/tables">
+<tableDefinitions xmlns="http://wixtoolset.org/schemas/v4/wi/tables">
     <tableDefinition name="WixCloseApplication">
         <columnDefinition name="WixCloseApplication" type="string" length="72" primaryKey="yes" modularize="column"
                 category="identifier" description="Primary key, non-localized token in table."/>

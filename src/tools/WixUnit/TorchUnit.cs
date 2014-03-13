@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Torch unit tester.
+// The WiX Torch unit tester.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -19,10 +19,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Text;
     using System.Xml;
 
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
+    using WixToolset.Msi;
 
     /// <summary>
-    /// The Windows Installer XML Torch unit tester.
+    /// The WiX Torch unit tester.
     /// </summary>
     internal class TorchUnit
     {

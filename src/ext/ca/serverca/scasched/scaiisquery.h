@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML Server Scheduling CustomAction.
+//    WiX Server Scheduling CustomAction.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

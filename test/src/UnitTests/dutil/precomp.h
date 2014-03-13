@@ -28,6 +28,8 @@
 #include <memutil.h>
 #include <pathutil.h>
 #include <strutil.h>
+#include <monutil.h>
+#include <regutil.h>
 
 #pragma managed
 #include <vcclr.h>

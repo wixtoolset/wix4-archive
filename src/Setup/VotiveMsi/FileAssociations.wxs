@@ -8,10 +8,12 @@
   </copyright>
 -->
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<?include WixVer.wxi ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <!-- Referenced by project registration. -->
-        <DirectoryRef Id="MSBuildMSWix3xFolder" />
+        <DirectoryRef Id="MSBuildWixVersionedFolder" />
 
         <PropertyRef Id="LATEST_DEVENV_EXE_COMMAND" />
 
@@ -28,7 +30,7 @@
                 <!-- Icons to use for WiX file types -->
                 <File Source="Votive\Icons\ProjectFile.ico" />
 
-                <ProgId Id="WindowsInstallerXml.wixprojfile.3.9" Description="WiX Project File" Icon="ProjectFile.ico">
+                <ProgId Id="WindowsInstallerXml.wixprojfile.$(var.WixMajorMinor)" Description="WiX Project File" Icon="ProjectFile.ico">
                     <Extension Id="wixproj" ContentType="text/plain">
                         <Verb Id="Open" Command="[LATEST_DEVENV_EXE_COMMAND]" TargetProperty="LATEST_DEVENV_EXE" Argument="&quot;%1&quot;" />
                     </Extension>
@@ -38,7 +40,7 @@
             <Component>
                 <File Source="Votive\Icons\ProductFile.ico" />
 
-                <ProgId Id="WindowsInstallerXml.wxsfile.3.9" Description="WiX Source File" Icon="ProductFile.ico">
+                <ProgId Id="WindowsInstallerXml.wxsfile.$(var.WixMajorMinor)" Description="WiX Source File" Icon="ProductFile.ico">
                     <Extension Id="wxs" ContentType="text/xml">
                         <Verb Id="Open" Command="[LATEST_DEVENV_EXE_COMMAND]" TargetProperty="LATEST_DEVENV_EXE" Argument="&quot;%1&quot;" />
                     </Extension>
@@ -48,7 +50,7 @@
             <Component>
                 <File Source="Votive\Icons\IncludeFile.ico" />
 
-                <ProgId Id="WindowsInstallerXml.wxifile.3.9" Description="WiX Include File" Icon="IncludeFile.ico">
+                <ProgId Id="WindowsInstallerXml.wxifile.$(var.WixMajorMinor)" Description="WiX Include File" Icon="IncludeFile.ico">
                     <Extension Id="wxi" ContentType="text/xml">
                         <Verb Id="Open" Command="[LATEST_DEVENV_EXE_COMMAND]" TargetProperty="LATEST_DEVENV_EXE" Argument="&quot;%1&quot;" />
                     </Extension>
@@ -58,7 +60,7 @@
             <Component>
                 <File Source="Votive\Icons\LocalizationFile.ico" />
 
-                <ProgId Id="WindowsInstallerXml.wxlfile.3.9" Description="WiX Localization File" Icon="LocalizationFile.ico">
+                <ProgId Id="WindowsInstallerXml.wxlfile.$(var.WixMajorMinor)" Description="WiX Localization File" Icon="LocalizationFile.ico">
                     <Extension Id="wxl" ContentType="text/xml">
                         <Verb Id="Open" Command="[LATEST_DEVENV_EXE_COMMAND]" TargetProperty="LATEST_DEVENV_EXE" Argument="&quot;%1&quot;" />
                     </Extension>
@@ -68,7 +70,7 @@
             <Component>
                 <File Source="Votive\Icons\WixLibraryFile.ico" />
 
-                <ProgId Id="WindowsInstallerXml.wixlibfile.3.9" Description="WiX Library File" Icon="WixLibraryFile.ico">
+                <ProgId Id="WindowsInstallerXml.wixlibfile.$(var.WixMajorMinor)" Description="WiX Library File" Icon="WixLibraryFile.ico">
                     <Extension Id="wixlib" ContentType="text/xml" />
                 </ProgId>
             </Component>

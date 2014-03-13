@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="WixSqlExtension.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -12,14 +12,13 @@
     <ProjectGuid>{E917D8E0-4883-4AA6-AE1F-57839165E188}</ProjectGuid>
     <AssemblyName>WixSqlExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="SqlCompiler.cs" />
     <Compile Include="SqlDecompiler.cs" />
-    <Compile Include="SqlExtension.cs" />
+    <Compile Include="SqlExtensionData.cs" />
     <MsgGenSource Include="Data\messages.xml">
       <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
     </MsgGenSource>
@@ -31,22 +30,23 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\sql.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Sql</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.Sql</Namespace>
     </XsdGenSource>
     <EmbeddedResource Include="$(OutputPath)\sql.wixlib">
       <Link>Data\sql.wixlib</Link>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\SqlExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

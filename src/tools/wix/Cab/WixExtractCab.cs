@@ -11,11 +11,11 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Cab
+namespace WixToolset.Cab
 {
     using System;
     using System.Runtime.InteropServices;
-    using Microsoft.Tools.WindowsInstallerXml.Cab.Interop;
+    using WixToolset.Cab.Interop;
 
     /// <summary>
     /// Wrapper class around interop with wixcab.dll to extract files from a cabinet.

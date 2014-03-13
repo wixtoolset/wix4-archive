@@ -1,7 +1,7 @@
 <VSTemplate Version="2.0.0" Type="Item" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
   <TemplateData>
     <Name _locID="TSDATA_DUT_Name">Include File</Name>
-    <Description _locID="TSDATA_DUT_Description">An empty Windows Installer XML include file (.wxi)</Description>
+    <Description _locID="TSDATA_DUT_Description">An empty WiX include file (.wxi)</Description>
     <Icon>IncludeFile.ico</Icon>
     <ProjectType>WiX</ProjectType>
     <SortOrder>30</SortOrder>

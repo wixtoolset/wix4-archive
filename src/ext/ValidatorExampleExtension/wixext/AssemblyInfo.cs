@@ -16,11 +16,11 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using Microsoft.Tools.WindowsInstallerXml;
-using Microsoft.Tools.WindowsInstallerXml.Extensions;
+using WixToolset;
+using WixToolset.Extensions;
 
 [assembly: AssemblyTitle("WiX Toolset Validator Example Extension")]
-[assembly: AssemblyDescription("Windows Installer XML Toolset Validator Example Extension")]
+[assembly: AssemblyDescription("WiX Toolset Validator Example Extension")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Build task to execute the compiler of the Windows Installer Xml toolset.
+// Build task to execute the compiler of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using System.Collections.Generic;
@@ -160,7 +160,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
 
         public static string GetProjectPath(ITaskItem[] projectReferencePaths, int i)
         {
-            return projectReferencePaths[i].GetMetadata("MSBuildSourceProjectFileFullPath");
+            return projectReferencePaths[i].GetMetadata("MSBuildSourceProjectFile");
         }
 
         public static string GetReferenceName(ITaskItem item, string projectName)

@@ -118,14 +118,29 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CommandLineArguments" xml:space="preserve">
-    <value>   -ai        allow identical rows, identical rows will be treated as a warning
-   -au        (experimental) allow unresolved references
-              (will not create a valid output)
-   -b &lt;path&gt;  specify a binder path to locate all files
+    <value>   -b &lt;path&gt;  specify a binder path to locate all files
               (default: current directory)
               prefix the path with 'name=' where 'name' is the name of your
               named bindpath.
-   -bf        bind files into a wixout (only valid with -xo option)
+   -cc &lt;path&gt; path to cache built cabinets (will not be deleted after linking)
+   -ct &lt;N&gt;    number of threads to use when creating cabinets
+              (default: %NUMBER_OF_PROCESSORS%)
+   -cub &lt;file.cub&gt; additional .cub file containing ICEs to run
+   -dcl:level set default cabinet compression level
+              (low, medium, high, none, mszip; mszip default)
+   -eav       exact assembly versions (breaks .NET 1.1 RTM compatibility)
+   -fv        add a 'fileVersion' entry to the MsiAssemblyName table
+              (rarely needed)
+   -ice:&lt;ICE&gt;   run a specific internal consistency evaluator (ICE)
+   -pdbout &lt;output.wixpdb&gt;  save the WixPdb to a specific file
+              (default: same name as output with wixpdb extension)
+   -reusecab  reuse cabinets from cabinet cache
+   -sacl      suppress resetting ACLs
+              (useful when laying out image to a network share)
+   -sice:&lt;ICE&gt;  suppress an internal consistency evaluator (ICE)
+   -sl        suppress layout
+   -spdb      suppress outputting the WixPdb
+   -sval      suppress MSI/MSM validation
    -binder &lt;classname&gt;  specify a specific custom binder to use provided by
                         an extension
    -cultures:&lt;cultures&gt;  semicolon or comma delimited list of localized
@@ -139,22 +154,14 @@
    -notidy    do not delete temporary files (useful for debugging)
    -o[ut]     specify output file (default: write to current directory)
    -pedantic  show pedantic messages
-   -sadmin    suppress default admin sequence actions
-   -sadv      suppress default adv sequence actions
    -sloc      suppress localization
-   -sma       suppress processing the data in MsiAssembly table
-   -ss        suppress schema validation of documents (performance boost)
-   -sts       suppress tagging sectionId attribute on rows
-   -sui       suppress default UI sequence actions
    -sv        suppress intermediate file version mismatch checking
    -sw[N]     suppress all warnings or a specific message ID
               (example: -sw1009 -sw1103)
-   -swall     suppress all warnings (deprecated)
    -usf &lt;output.xml&gt;  unreferenced symbols file
    -v         verbose output
    -wx[N]     treat all warnings or a specific message ID as an error
               (example: -wx1009 -wx1103)
-   -wxall     treat all warnings as errors (deprecated)
    -xo        output wixout format instead of MSI format
    -? | -help this help information</value>
   </data>
@@ -169,11 +176,8 @@
 
 {0}
 
-Binder arguments:
-{1}
-
 Environment variables:
    WIX_TEMP   overrides the temporary directory used for cab creation, msm exploding, ...</value>
-    <comment>{0} is replaced by a list of light's arguments. {1} is replaced by the binder's arguments.</comment>
+    <comment>{0} is replaced by a list of light's arguments.</comment>
   </data>
 </root>

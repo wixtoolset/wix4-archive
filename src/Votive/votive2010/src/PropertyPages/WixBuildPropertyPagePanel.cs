@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
+namespace WixToolset.VisualStudio.PropertyPages
 {
     using System;
     using System.Diagnostics;
     using System.Text;
     using System.Windows.Forms;
 
-    using Microsoft.Tools.WindowsInstallerXml.VisualStudio.Forms;
+    using WixToolset.VisualStudio.Forms;
     using System.ComponentModel;
     using System.Collections.Generic;
 

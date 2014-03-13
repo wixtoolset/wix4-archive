@@ -10,9 +10,10 @@
 
 <?include WixVer.wxi ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
     <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Visual Studio Integration" Language="1033" Manufacturer="!(loc.Company)"
-             Version="$(var.WixVersion)" UpgradeCode="B6D64CBC-7075-4A94-AD48-DB084C0E70B1">
+             Version="$(var.WixVersion)" UpgradeCode="FCF6A16A-DB35-431B-A5DC-69C3DB16D7E0">
+
         <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
         <swid:Tag Regid="regid.2008-09.org.wixtoolset" Type="component" />
 
@@ -22,7 +23,7 @@
 
         <Property Id="ARPSYSTEMCOMPONENT" Value="1" />
 
-        <Feature Id="VotiveFeature" Title="Votive 200x" Level="1">
+        <Feature Id="VotiveFeature" Title="Votive 201x" Level="1">
             <?if $(var.BuildVotive2010)=true ?>
             <Feature Id="Intellisense2010" Title="IntelliSense 2010" Description="Schema files for IntelliSense in the Visual Studio 2010 editor" AllowAdvertise="no" Display="expand" InstallDefault="local" Level="0" TypicalDefault="install">
                 <Condition Level="1">VS2010DEVENV OR VS2010_ROOT_FOLDER OR REMOVE</Condition>

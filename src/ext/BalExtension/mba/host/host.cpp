@@ -451,7 +451,7 @@ static HRESULT CreateManagedBootstrapperApplicationFactory(
     bstrAssemblyName = ::SysAllocString(MUX_ASSEMBLY_FULL_NAME);
     ExitOnNull(bstrAssemblyName, hr, E_OUTOFMEMORY, "Failed to allocate the full assembly name for the bootstrapper application factory.");
 
-    bstrTypeName = ::SysAllocString(L"Microsoft.Tools.WindowsInstallerXml.Bootstrapper.BootstrapperApplicationFactory");
+    bstrTypeName = ::SysAllocString(L"WixToolset.Bootstrapper.BootstrapperApplicationFactory");
     ExitOnNull(bstrTypeName, hr, E_OUTOFMEMORY, "Failed to allocate the full type name for the BA factory.");
 
     hr = pAppDomain->CreateInstance(bstrAssemblyName, bstrTypeName, &pObj);

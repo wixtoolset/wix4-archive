@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
+  <Identity Name="Contoso.Charm.App" Publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US" Version="15.0.0.0" />
+  <Properties>
+    <DisplayName>Contoso Charm App</DisplayName>
+    <PublisherDisplayName>Contoso Corporation</PublisherDisplayName>
+    <Description>Contoso Charm AppX</Description>
+    <Logo>images\Logo.png</Logo>
+  </Properties>
+  <Resources>
+    <Resource Language="en-US" />
+  </Resources>
+  <Prerequisites>
+    <OSMinVersion>6.2.1</OSMinVersion>
+    <OSMaxVersionTested>6.2.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Applications>
+    <Application EntryPoint="Executable" Executable="contoso.exe" Id="Contoso.App">
+      <VisualElements BackgroundColor="#9756B0" Description="Description of Contoso Application." DisplayName="Contoso Application" ForegroundText="light" Logo="images\Logo.png" SmallLogo="images\SmallLogo.png">
+        <DefaultTile ShortName="Contoso" WideLogo="images\WideLogo.png" />
+        <SplashScreen BackgroundColor="#9756B0" Image="images\WideLogo.png" />
+      </VisualElements>
+      <Extensions>
+        <Extension Category="windows.contactPicker" EntryPoint="MyActivateableClassId.baz" />
+        <Extension Category="windows.fileOpenPicker" EntryPoint="MyActivateableClassId.baz">
+          <FileOpenPicker>
+            <SupportedFileTypes>
+              <SupportsAnyFileType />
+            </SupportedFileTypes>
+          </FileOpenPicker>
+        </Extension>
+        <Extension Category="windows.fileSavePicker" EntryPoint="MyActivateableClassId.baz">
+          <FileSavePicker>
+            <SupportedFileTypes>
+              <SupportsAnyFileType />
+            </SupportedFileTypes>
+          </FileSavePicker>
+        </Extension>
+        <Extension Category="windows.protocol">
+          <Protocol Name="appdata" />
+        </Extension>
+        <Extension Category="windows.search" EntryPoint="MyActivateableClassId.baz" />
+        <Extension Category="windows.shareTarget" EntryPoint="MyActivateableClassId.baz">
+          <ShareTarget>
+            <DataFormat>foo</DataFormat>
+          </ShareTarget>
+        </Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>

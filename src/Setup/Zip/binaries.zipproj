@@ -31,11 +31,11 @@
     <Stage Include="$(OutputPath)lit.exe.config" />
     <Stage Include="$(OutputPath)melt.exe" />
     <Stage Include="$(OutputPath)melt.exe.config" />
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.dll" />
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.Cab.dll" />
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Resources.dll" />
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.dll" />
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Package.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.Cab.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Resources.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Package.dll" />
     <Stage Include="$(OutputPath)pyro.exe" />
     <Stage Include="$(OutputPath)pyro.exe.config" />
     <Stage Include="$(OutputPath)retina.exe" />
@@ -51,8 +51,8 @@
     <Stage Include="$(OutputPath)winterop.dll" />
     <Stage Include="$(OutputPath)wix.dll" />
     <Stage Include="$(OutputPath)wix.targets" />
-    <Stage Include="$(OutputPath)wix200x.targets" />
-    <Stage Include="$(OutputPath)wix2010.targets" />
+    <Stage Include="$(OutputPath)wix.harvest.targets" />
+    <Stage Include="$(OutputPath)wix.signing.targets" />
     <Stage Include="$(OutputPath)WixCop.exe" />
     <Stage Include="$(OutputPath)WixTasks.dll" />
     <!--<Stage Include="$(OutputPath)wui.dll" />-->
@@ -65,6 +65,11 @@
     <Stage Include="$(OutputPath)mergemod.cub" />
     <Stage Include="$(OutputPath)mergemod.dll" />
     <Stage Include="$(OutputPath)mspatchc.dll" />
+
+    <!-- Simplified WiX toolset -->
+    <Stage Include="$(OutputPath)swc.exe" />
+    <Stage Include="$(OutputPath)swcore.dll" />
+    <Stage Include="$(OutputPath)WixToolset.BlockDeflateStream.dll" />
 
     <!-- extensions -->
     <Stage Include="$(OutputPath)WixBalExtension.dll" />
@@ -122,11 +127,11 @@
       <StageSubDirectory>doc</StageSubDirectory>
       <Hardlink>false</Hardlink>
     </Stage>
-    <Stage Include="$(WixRoot)src\tools\wix\xsd\wix.xsd">
+    <Stage Include="$(WixRoot)src\libs\WixToolset.Data\xsd\wix.xsd">
       <StageSubDirectory>doc</StageSubDirectory>
       <Hardlink>false</Hardlink>
     </Stage>
-    <Stage Include="$(WixRoot)src\tools\wix\xsd\wixloc.xsd">
+    <Stage Include="$(WixRoot)src\libs\WixToolset.Data\xsd\wixloc.xsd">
       <StageSubDirectory>doc</StageSubDirectory>
       <Hardlink>false</Hardlink>
     </Stage>
@@ -159,46 +164,46 @@
     <Stage Include="$(OutputPath)wix.ca.targets">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.Cab.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.Cab.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.Cab.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.Cab.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.Zip.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.Zip.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Compression.Zip.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Compression.Zip.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Resources.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Resources.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.Resources.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.Resources.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Linq.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Linq.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Linq.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Linq.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Package.dll">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Package.dll">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
-    <Stage Include="$(OutputPath)Microsoft.Deployment.WindowsInstaller.Package.xml">
+    <Stage Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Package.xml">
       <StageSubDirectory>sdk</StageSubDirectory>
     </Stage>
     <Stage Include="$(OutputPath)MakeSfxCA.exe">

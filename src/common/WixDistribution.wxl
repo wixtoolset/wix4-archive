@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl">
     <String Id="Company" Overridable="yes">Outercurve Foundation</String>
     <String Id="Copyright" Overridable="yes">Copyright (c) Outercurve Foundation. All rights reserved.</String>
     <String Id="Product" Overridable="yes">Windows Installer XML Toolset</String>

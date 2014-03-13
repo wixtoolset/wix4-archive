@@ -135,6 +135,6 @@
     <value>WixPropertyPagePanel</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixColorUserControl, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>WixToolset.VisualStudio.Controls.WixColorUserControl, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

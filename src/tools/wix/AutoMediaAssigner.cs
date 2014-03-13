@@ -11,57 +11,55 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
-    using System.Reflection;
-    using System.IO;
-    using System.Globalization;
     using System.Collections.Generic;
-    using System.Runtime.InteropServices;
+    using System.Globalization;
+    using System.IO;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// AutoMediaAssigner assigns files to cabs depending on Media or MediaTemplate.
     /// </summary>
     public class AutoMediaAssigner
     {
-        private BinderCore core;
+        private IBinderCore core;
         private bool filesCompressed;
         private string cabinetNameTemplate;
 
-        private Hashtable cabinets;
-        private MediaRowCollection mediaRows;
-        private FileRowCollection uncompressedFileRows;
+        private Dictionary<MediaRow, List<FileRow>> cabinets;
+        private RowDictionary<MediaRow> mediaRows;
+        private RowDictionary<FileRow> uncompressedFileRows;
 
         private Output output;
 
         /// <summary>
         /// Gets cabinets 
         /// </summary>
-        public virtual Hashtable Cabinets
+        public Dictionary<MediaRow, List<FileRow>> Cabinets
         {
-            get { return cabinets; }
+            get { return this.cabinets; }
         }
 
         /// <summary>
-        /// Get media rows
+        /// Get media rows.
         /// </summary>
-        /// <value>MediaRowCollection</value>
-        public virtual MediaRowCollection MediaRows
+        public RowDictionary<MediaRow> MediaRows
         {
-            get { return mediaRows; }
+            get { return this.mediaRows; }
         }
 
         /// <summary>
         /// Get uncompressed file rows. This will contain file rows of File elements that are marked with compression=no.
         /// This contains all the files when Package element is marked with compression=no
         /// </summary>
-        /// <value>FileRowCollection</value>
-        public FileRowCollection UncompressedFileRows
+        public RowDictionary<FileRow> UncompressedFileRows
         {
-            get { return uncompressedFileRows; }
-            set { uncompressedFileRows = value; }
+            get { return this.uncompressedFileRows; }
         }
 
         /// <summary>
@@ -70,23 +68,23 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="output">Output</param>
         /// <param name="core">Binder core.</param>
         /// <param name="filesCompressed">True if files are compressed by default. </param>
-        public AutoMediaAssigner(Output output, BinderCore core, bool filesCompressed)
+        public AutoMediaAssigner(Output output, IBinderCore core, bool filesCompressed)
         {
             this.output = output;
             this.core = core;
             this.filesCompressed = filesCompressed;
             this.cabinetNameTemplate = "Cab{0}.cab";
 
-            uncompressedFileRows = new FileRowCollection();
-            mediaRows = new MediaRowCollection();
-            cabinets = new Hashtable();
+            uncompressedFileRows = new RowDictionary<FileRow>();
+            mediaRows = new RowDictionary<MediaRow>();
+            cabinets = new Dictionary<MediaRow, List<FileRow>>();
         }
 
         /// <summary>
         /// Assigns the file rows to media rows based on Media or MediaTemplate authoring. Updates uncompressed files collection.
         /// </summary>
         /// <param name="fileRows">FileRowCollection</param>
-        public void AssignFiles(FileRowCollection fileRows)
+        public void AssignFiles(IEnumerable<FileRow> fileRows)
         {
             bool autoAssign = false;
             MediaRow mergeModuleMediaRow = null;
@@ -108,7 +106,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 mergeModuleMediaRow = (MediaRow)mergeModuleMediaTable.CreateRow(null);
                 mergeModuleMediaRow.Cabinet = "#MergeModule.CABinet";
 
-                this.cabinets.Add(mergeModuleMediaRow, new FileRowCollection());
+                this.cabinets.Add(mergeModuleMediaRow, new List<FileRow>());
             }
 
             if (autoAssign)
@@ -125,7 +123,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Assign files to cabinets based on MediaTemplate authoring.
         /// </summary>
         /// <param name="fileRows">FileRowCollection</param>
-        private void AutoAssignFiles(Table mediaTable, FileRowCollection fileRows)
+        private void AutoAssignFiles(Table mediaTable, IEnumerable<FileRow> fileRows)
         {
             const int MaxCabIndex = 999;
 
@@ -217,9 +215,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 if (currentCabIndex == MaxCabIndex)
                 {
                     // Associate current file with last cab (irrespective of the size) and cab index is not incremented anymore.
-                    FileRowCollection cabinetFileRow = (FileRowCollection)this.cabinets[currentMediaRow];
+                    List<FileRow> cabinetFileRows = this.cabinets[currentMediaRow];
                     fileRow.DiskId = currentCabIndex;
-                    cabinetFileRow.Add(fileRow);
+                    cabinetFileRows.Add(fileRow);
                     continue;
                 }
 
@@ -231,9 +229,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     // Overflow due to current file
                     currentMediaRow = this.AddMediaRow(mediaTable, ++currentCabIndex, mediaTemplateRow.CompressionLevel);
 
-                    FileRowCollection cabinetFileRow = (FileRowCollection)this.cabinets[currentMediaRow];
+                    List<FileRow> cabinetFileRows = this.cabinets[currentMediaRow];
                     fileRow.DiskId = currentCabIndex;
-                    cabinetFileRow.Add(fileRow);
+                    cabinetFileRows.Add(fileRow);
                     // Now files larger than MaxUncompressedMediaSize will be the only file in its cabinet so as to respect MaxUncompressedMediaSize
                     currentPreCabSize = (ulong)fileRow.FileSize;
                 }
@@ -247,9 +245,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
 
                     // Associate current file with current cab.
-                    FileRowCollection cabinetFileRow = (FileRowCollection)this.cabinets[currentMediaRow];
+                    List<FileRow> cabinetFileRows = this.cabinets[currentMediaRow];
                     fileRow.DiskId = currentCabIndex;
-                    cabinetFileRow.Add(fileRow);
+                    cabinetFileRows.Add(fileRow);
                 }
             }
 
@@ -268,7 +266,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mediaTable"></param>
         /// <param name="mergeModuleMediaRow"></param>
         /// <param name="fileRows"></param>
-        private void ManuallyAssignFiles(Table mediaTable, MediaRow mergeModuleMediaRow, FileRowCollection fileRows)
+        private void ManuallyAssignFiles(Table mediaTable, MediaRow mergeModuleMediaRow, IEnumerable<FileRow> fileRows)
         {
             if (OutputType.Module != this.output.Type)
             {
@@ -296,11 +294,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                 }
 
-                foreach (MediaRow mediaRow in this.mediaRows)
+                foreach (MediaRow mediaRow in this.mediaRows.Values)
                 {
                     if (null != mediaRow.Cabinet)
                     {
-                        this.cabinets.Add(mediaRow, new FileRowCollection());
+                        this.cabinets.Add(mediaRow, new List<FileRow>());
                     }
                 }
             }
@@ -309,13 +307,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 if (OutputType.Module == output.Type)
                 {
-                    ((FileRowCollection)this.cabinets[mergeModuleMediaRow]).Add(fileRow);
+                    this.cabinets[mergeModuleMediaRow].Add(fileRow);
                 }
                 else
                 {
-                    MediaRow mediaRow = this.mediaRows[fileRow.DiskId];
-
-                    if (null == mediaRow)
+                    MediaRow mediaRow;
+                    if (!this.mediaRows.TryGetValue(fileRow.DiskId.ToString(), out mediaRow))
                     {
                         this.core.OnMessage(WixErrors.MissingMedia(fileRow.SourceLineNumbers, fileRow.DiskId));
                         continue;
@@ -331,11 +328,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                     else // file in a Module or marked compressed
                     {
-                        FileRowCollection cabinetFileRow = (FileRowCollection)this.cabinets[mediaRow];
-
-                        if (null != cabinetFileRow)
+                        List<FileRow> cabinetFileRows;
+                        if (this.cabinets.TryGetValue(mediaRow, out cabinetFileRows))
                         {
-                            cabinetFileRow.Add(fileRow);
+                            cabinetFileRows.Add(fileRow);
                         }
                         else
                         {
@@ -358,7 +354,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             currentMediaRow.DiskId = cabIndex;
             currentMediaRow.Cabinet = String.Format(this.cabinetNameTemplate, cabIndex);
             this.mediaRows.Add(currentMediaRow);
-            this.cabinets.Add(currentMediaRow, new FileRowCollection());
+            this.cabinets.Add(currentMediaRow, new List<FileRow>());
 
             Table wixMediaTable = this.output.EnsureTable(this.core.TableDefinitions["WixMedia"]);
             Row row = wixMediaTable.CreateRow(null);

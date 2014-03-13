@@ -7,9 +7,9 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-    The messages for the Windows Installer XML Toolset MSMQ Extension.
+    The messages for the WiX Toolset MSMQ Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
     <Class Name="MsmqErrors" ContainerName="MsmqErrorEventArgs" BaseContainerName="WixErrorEventArgs">
       <Message Id="IllegalAttributeWithoutComponent" Number="6000">
         <Instance>

@@ -12,8 +12,8 @@
     <ProjectGuid>{24121677-0ED0-41B5-833F-1B9A18E87BF4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.WindowsInstaller</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.WindowsInstaller</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.WindowsInstaller</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.WindowsInstaller</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <CreateDocumentationFile>true</CreateDocumentationFile>
   </PropertyGroup>

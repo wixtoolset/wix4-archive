@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="WixIIsExtension.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -12,14 +12,13 @@
     <ProjectGuid>{CC3521F5-D0A8-4CBA-99E2-092FCD04125D}</ProjectGuid>
     <AssemblyName>WixIIsExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="IIsCompiler.cs" />
     <Compile Include="IIsDecompiler.cs" />
-    <Compile Include="IIsExtension.cs" />
+    <Compile Include="IIsExtensionData.cs" />
     <Compile Include="IIsFinalizeHarvesterMutator.cs" />
     <Compile Include="IIsHarvesterMutator.cs" />
     <Compile Include="IIsWebSiteHarvester.cs" />
@@ -35,24 +34,28 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\iis.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.IIs</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.IIs</Namespace>
     </XsdGenSource>
     <EmbeddedResource Include="$(OutputPath)\iis.wixlib">
       <Link>Data\iis.wixlib</Link>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\UtilExtension\wixext\WixUtilExtension.csproj" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
+    <ProjectReference Include="..\..\UtilExtension\wixext\WixUtilExtension.csproj">
+      <Project>{3E74F4F0-7DC9-4837-9443-D5BE061C892C}</Project>
+      <Name>WixUtilExtension</Name>
+    </ProjectReference>
     <ProjectReference Include="..\wixlib\IIsExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

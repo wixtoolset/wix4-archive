@@ -48,6 +48,10 @@ HRESULT DAPI IniSetValueStyle(
     __in_z_opt LPCWSTR wzValuePrefix,
     __in_z_opt LPCWSTR wzValueSeparator
     );
+HRESULT DAPI IniSetValueSeparatorException(
+    __inout_bcount(INI_HANDLE_BYTES) INI_HANDLE piHandle,
+    __in_z LPCWSTR wzValueNamePrefix
+    );
 HRESULT DAPI IniSetCommentStyle(
     __inout_bcount(INI_HANDLE_BYTES) INI_HANDLE piHandle,
     __in_z_opt LPCWSTR wzLinePrefix
@@ -57,6 +61,8 @@ HRESULT DAPI IniParse(
     __in LPCWSTR wzPath,
     __out_opt FILE_ENCODING *pfeEncodingFound
     );
+// Gets the full value array, this includes values that may have been deleted
+// (their value will be NULL)
 HRESULT DAPI IniGetValueList(
     __in_bcount(INI_HANDLE_BYTES) INI_HANDLE piHandle,
     __deref_out_ecount_opt(pcValues) INI_VALUE** prgivValues,

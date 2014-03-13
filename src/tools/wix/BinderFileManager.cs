@@ -12,7 +12,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
@@ -20,239 +20,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Collections.Specialized;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
+    using System.Linq;
     using System.IO;
     using System.Runtime.InteropServices;
-
-    /// <summary>
-    /// Options for building the cabinet.
-    /// </summary>
-    public enum CabinetBuildOption
-    {
-        /// <summary>
-        /// Build the cabinet and move it to the target location.
-        /// </summary>
-        BuildAndMove,
-
-        /// <summary>
-        /// Build the cabinet and copy it to the target location.
-        /// </summary>
-        BuildAndCopy,
-
-        /// <summary>
-        /// Just copy the cabinet to the target location.
-        /// </summary>
-        Copy
-    }
-
-    /// <summary>
-    /// Bind stage of a file.. The reason we need this is to change the ResolveFile behavior based on if
-    /// dynamic bindpath plugin is desirable. We cannot change the signature of ResolveFile since it might
-    /// break existing implementers which derived from BinderFileManager
-    /// </summary>
-    public enum BindStage
-    {
-        /// <summary>
-        /// Normal binding
-        /// </summary>
-        Normal,
-
-        /// <summary>
-        /// Bind the file path of the target build file
-        /// </summary>
-        Target,
-
-        /// <summary>
-        /// Bind the file path of the updated build file
-        /// </summary>
-        Updated,
-    }
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// Base class for creating a binder file manager.
     /// </summary>
-    public class BinderFileManager
+    public class BinderFileManager : IBinderFileManager
     {
-        private IMessageHandler messageHandler;
-
-        private string cabCachePath;
-        private Output output;
-        private bool reuseCabinets;
-        private SubStorage activeSubstorage;
-        private bool deltaBinaryPatch;
-        private string tempFilesLocation;
-        private Dictionary<BindStage, StringCollection> sourcePaths;
-        private Dictionary<BindStage, StringCollection> bindPaths;
-        private Dictionary<BindStage, NameValueCollection> namedBindPaths;
-
         /// <summary>
-        /// Instantiate a new BinderFileManager.
+        /// Gets or sets the file manager core.
         /// </summary>
-        public BinderFileManager()
-        {
-            this.sourcePaths = new Dictionary<BindStage, StringCollection>();
-            this.bindPaths = new Dictionary<BindStage, StringCollection>();
-            this.namedBindPaths = new Dictionary<BindStage, NameValueCollection>();
-
-            this.sourcePaths.Add(BindStage.Normal, new StringCollection());
-            this.sourcePaths.Add(BindStage.Target, new StringCollection());
-            this.sourcePaths.Add(BindStage.Updated, new StringCollection());
-
-            this.bindPaths.Add(BindStage.Normal, new StringCollection());
-
-            this.namedBindPaths.Add(BindStage.Normal, new NameValueCollection());
-            this.namedBindPaths.Add(BindStage.Target, new NameValueCollection());
-            this.namedBindPaths.Add(BindStage.Updated, new NameValueCollection());
-        }
-
-        /// <summary>
-        /// Gets the bind paths to locate files.
-        /// </summary>
-        /// <value>The bind paths to locate files.</value>
-        public StringCollection BindPaths
-        {
-            get { return this.bindPaths[BindStage.Normal]; }
-        }
-
-        /// <summary>
-        /// Gets the named paths to locate files.
-        /// </summary>
-        /// <value>The named bind paths to locate files.</value>
-        public NameValueCollection NamedBindPaths
-        {
-            get { return this.namedBindPaths[BindStage.Normal]; }
-        }
-
-        /// <summary>
-        /// Gets or sets the path to cabinet cache.
-        /// </summary>
-        /// <value>The path to cabinet cache.</value>
-        public string CabCachePath
-        {
-            get { return this.cabCachePath; }
-            set { this.cabCachePath = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the message handler used for file resolution.
-        /// </summary>
-        public IMessageHandler MessageHandler
-        {
-            get { return this.messageHandler; }
-            set { this.messageHandler = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the output object used for binding.
-        /// </summary>
-        /// <value>The output object.</value>
-        public Output Output
-        {
-            get { return this.output; }
-            set { this.output = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the option to reuse cabinets in the cache.
-        /// </summary>
-        /// <value>The option to reuse cabinets in the cache.</value>
-        public bool ReuseCabinets
-        {
-            get { return this.reuseCabinets; }
-            set { this.reuseCabinets = value; }
-        }
-
-        /// <summary>
-        /// Gets the collection of all source paths to intermediate files.
-        /// </summary>
-        /// <value>The collection of all source paths to intermediate files.</value>
-        public StringCollection SourcePaths
-        {
-            get { return this.sourcePaths[BindStage.Normal]; }
-        }
-
-        /// <summary>
-        /// Gets or sets the active subStorage used for binding.
-        /// </summary>
-        /// <value>The subStorage object.</value>
-        public SubStorage ActiveSubStorage
-        {
-            get { return this.activeSubstorage; }
-            set { this.activeSubstorage = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the option to enable building binary delta patches.
-        /// </summary>
-        /// <value>The option to enable building binary delta patches.</value>
-        public bool DeltaBinaryPatch
-        {
-            get { return this.deltaBinaryPatch; }
-            set { this.deltaBinaryPatch = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the path to the temp files location.
-        /// </summary>
-        /// <value>The path to the temp files location.</value>
-        public string TempFilesLocation
-        {
-            get { return this.tempFilesLocation; }
-            set { this.tempFilesLocation = value; }
-        }
-
-        /// <summary>
-        /// Gets the collection of paths to locate files during ResolveFile when BindStage is Target
-        /// </summary>
-        /// <value>The named bind paths to locate files.</value>
-        public StringCollection TargetSourcePaths
-        {
-            get { return this.sourcePaths[BindStage.Target]; }
-        }
-
-        /// <summary>
-        /// Gets the collection of paths to locate files during ResolveFile when BindStage is Updated
-        /// </summary>
-        /// <value>The named bind paths to locate files.</value>
-        public StringCollection UpdatedSourcePaths
-        {
-            get { return this.sourcePaths[BindStage.Updated]; }
-        }
-
-        /// <summary>
-        /// Gets the named bind paths to locate files during ResolveFile when the BindStage is Target
-        /// </summary>
-        /// <value>The named bind paths to locate files.</value>
-        public NameValueCollection TargetNamedBindPaths
-        {
-            get { return this.namedBindPaths[BindStage.Target]; }
-        }
-
-        /// <summary>
-        /// Gets the named bind paths to locate files during ResolveFile when the BindStage is Updated
-        /// </summary>
-        /// <value>The named bind paths to locate files.</value>
-        public NameValueCollection UpdatedNamedBindPaths
-        {
-            get { return this.namedBindPaths[BindStage.Updated]; }
-        }
-
-        /// <summary>
-        /// Gets the property if re-basing target is true or false
-        /// </summary>
-        /// <value>It returns true if target bind path is to be replaced, otherwise false.</value>
-        public bool ReBaseTarget
-        {
-            get { return (0 != this.namedBindPaths[BindStage.Target].Count || 0 != this.sourcePaths[BindStage.Target].Count); }
-        }
-
-        /// <summary>
-        /// Gets the property if re-basing updated build is true or false
-        /// </summary>
-        /// <value>It returns true if updated bind path is to be replaced, otherwise false.</value>
-        public bool ReBaseUpdated
-        {
-            get { return (0 != this.namedBindPaths[BindStage.Updated].Count || 0 != this.sourcePaths[BindStage.Updated].Count); }
-        }
+        public IBinderFileManagerCore Core { get; set; }
 
         /// <summary>
         /// Compares two files to determine if they are equivalent.
@@ -260,7 +43,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="targetFile">The target file.</param>
         /// <param name="updatedFile">The updated file.</param>
         /// <returns>true if the files are equal; false otherwise.</returns>
-        public virtual bool CompareFiles(string targetFile, string updatedFile)
+        public virtual bool? CompareFiles(string targetFile, string updatedFile)
         {
             FileInfo targetFileInfo = new FileInfo(targetFile);
             FileInfo updatedFileInfo = new FileInfo(updatedFile);
@@ -314,138 +97,71 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Resolves the source path of a file.
         /// </summary>
         /// <param name="source">Original source value.</param>
-        /// <returns>Should return a valid path for the stream to be imported.</returns>
-        public virtual string ResolveFile(string source)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Resolves the source path of a file.
-        /// </summary>
-        /// <param name="source">Original source value.</param>
-        /// <param name="type">Optional type of source file being resolved.</param>
-        /// <param name="sourceLineNumbers">Optional source line of source file being resolved.</param>
-        /// <returns>Should return a valid path for the stream to be imported.</returns>
-        public virtual string ResolveFile(string source, string type, SourceLineNumberCollection sourceLineNumber)
-        {
-            return ResolveFile(source);
-        }
-
-        /// <summary>
-        /// Resolves the source path of a file.
-        /// </summary>
-        /// <param name="source">Original source value.</param>
         /// <param name="type">Optional type of source file being resolved.</param>
         /// <param name="sourceLineNumbers">Optional source line of source file being resolved.</param>
         /// <param name="bindStage">The binding stage used to determine what collection of bind paths will be used</param>
         /// <returns>Should return a valid path for the stream to be imported.</returns>
-        public virtual string ResolveFile(string source, string type, SourceLineNumberCollection sourceLineNumbers, BindStage bindStage)
+        public virtual string ResolveFile(string source, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage)
         {
-            // the following new local variables are used for bind path and protect the changes to object field.
-            StringCollection currentBindPaths = null;
-            NameValueCollection currentNamedBindPaths = null;
-            StringCollection currentSourcePaths = null;
-
             if (String.IsNullOrEmpty(source))
             {
                 throw new ArgumentNullException("source");
             }
 
-            // Call the original override function first. If it returns an answer then return that,
-            // otherwise using the default resolving logic
-            string filePath = this.ResolveFile(source, type, sourceLineNumbers);
-            if (!String.IsNullOrEmpty(filePath))
+            if (BinderFileManager.CheckFileExists(source)) // if the file exists, we're good to go.
             {
-                return filePath;
+                return source;
             }
-
-            // Assign the correct bind path to file manager
-            currentSourcePaths = this.sourcePaths[bindStage];
-            currentNamedBindPaths = this.namedBindPaths[bindStage];
-            if (BindStage.Target != bindStage && BindStage.Updated != bindStage)
+            else if (Path.IsPathRooted(source)) // path is rooted so bindpaths won't help, bail since the file apparently doesn't exist.
             {
-                currentBindPaths = this.bindPaths[bindStage];
-            }
-            else
-            {
-                currentBindPaths = this.sourcePaths[bindStage];
-            }
-
-            // If the path is rooted, it better exist or we're not going to find it.
-            if (Path.IsPathRooted(source))
-            {
-                if (BinderFileManager.CheckFileExists(source))
-                {
-                    return source;
-                }
+                return null;
             }
             else // not a rooted path so let's try applying all the different source resolution options.
             {
                 const string bindPathOpenString = "!(bindpath.";
 
-                if (source.StartsWith(bindPathOpenString, StringComparison.Ordinal) && source.IndexOf(')') != -1)
+                string bindName = String.Empty;
+                string path = source;
+                string pathWithoutSourceDir = null;
+
+                if (source.StartsWith(bindPathOpenString, StringComparison.Ordinal))
                 {
-                    int bindpathSignatureLength = bindPathOpenString.Length;
-                    string name = source.Substring(bindpathSignatureLength, source.IndexOf(')') - bindpathSignatureLength);
-                    string[] values = currentNamedBindPaths.GetValues(name);
-
-                    if (null != values)
+                    int closeParen = source.IndexOf(')', bindPathOpenString.Length);
+                    if (-1 != closeParen)
                     {
-                        foreach (string bindPath in values)
-                        {
-                            // Parse out '\\' chars that separate the "bindpath" variable and the next part of the path, 
-                            // because Path.Combine() thinks that rooted second paths don't need the first path.
-                            string nameSection = string.Empty;
-                            int nameStart = bindpathSignatureLength + 1 + name.Length;  // +1 for the closing bracket.
-
-                            nameSection = source.Substring(nameStart).TrimStart('\\');
-                            filePath = Path.Combine(bindPath, nameSection);
-
-                            if (BinderFileManager.CheckFileExists(filePath))
-                            {
-                                return filePath;
-                            }
-                        }
+                        bindName = source.Substring(bindPathOpenString.Length, closeParen - bindPathOpenString.Length);
+                        path = source.Substring(bindPathOpenString.Length + bindName.Length + 1); // +1 for the closing brace.
+                        path = path.TrimStart('\\'); // remove starting '\\' char so the path doesn't look rooted.
                     }
                 }
                 else if (source.StartsWith("SourceDir\\", StringComparison.Ordinal) || source.StartsWith("SourceDir/", StringComparison.Ordinal))
                 {
-                    foreach (string bindPath in currentBindPaths)
+                    pathWithoutSourceDir = path.Substring(10);
+                }
+
+                var bindPaths = this.Core.GetBindPaths(bindStage, bindName);
+                foreach (string bindPath in bindPaths)
+                {
+                    string filePath;
+                    if (!String.IsNullOrEmpty(pathWithoutSourceDir))
                     {
-                        filePath = Path.Combine(bindPath, source.Substring(10));
+                        filePath = Path.Combine(bindPath, pathWithoutSourceDir);
                         if (BinderFileManager.CheckFileExists(filePath))
                         {
                             return filePath;
                         }
                     }
-                }
-                else if (BinderFileManager.CheckFileExists(source))
-                {
-                    return source;
-                }
 
-                foreach (string path in currentSourcePaths)
-                {
-                    filePath = Path.Combine(path, source);
+                    filePath = Path.Combine(bindPath, path);
                     if (BinderFileManager.CheckFileExists(filePath))
                     {
                         return filePath;
-                    }
-
-                    if (source.StartsWith("SourceDir\\", StringComparison.Ordinal) || source.StartsWith("SourceDir/", StringComparison.Ordinal))
-                    {
-                        filePath = Path.Combine(path, source.Substring(10));
-                        if (BinderFileManager.CheckFileExists(filePath))
-                        {
-                            return filePath;
-                        }
                     }
                 }
             }
 
             // Didn't find the file.
-            throw new WixFileNotFoundException(sourceLineNumbers, source, type);
+            return null;
         }
 
         /// <summary>
@@ -457,7 +173,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="sourceLineNumbers">Optional source line of source file being resolved.</param>
         /// <param name="bindStage">The binding stage used to determine what collection of bind paths will be used</param>
         /// <returns>Should return a valid path for the stream to be imported.</returns>
-        public virtual string ResolveRelatedFile(string source, string relatedSource, string type, SourceLineNumberCollection sourceLineNumbers, BindStage bindStage)
+        public virtual string ResolveRelatedFile(string source, string relatedSource, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage)
         {
             string resolvedSource = this.ResolveFile(source, type, sourceLineNumbers, bindStage);
             return Path.Combine(Path.GetDirectoryName(resolvedSource), relatedSource);
@@ -466,37 +182,40 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <summary>
         /// Resolves the source path of a cabinet file.
         /// </summary>
+        /// <param name="cabinetPath">Default path to cabinet to generate.</param>
         /// <param name="fileRows">Collection of files in this cabinet.</param>
-        /// <param name="cabinetPath">Path to cabinet to generate.  Path may be modified by delegate.</param>
-        /// <returns>The CabinetBuildOption.  By default the cabinet is built and moved to its target location.</returns>
+        /// <returns>The CabinetBuildOption and path to build the .  By default the cabinet is built and moved to its target location.</returns>
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference")]
-        public virtual CabinetBuildOption ResolveCabinet(FileRowCollection fileRows, ref string cabinetPath)
+        public virtual ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<FileRow> fileRows)
         {
-            if (fileRows == null)
+            if (null == fileRows)
             {
                 throw new ArgumentNullException("fileRows");
             }
 
-            // no special behavior specified, use the default
-            if (null == this.cabCachePath && !this.reuseCabinets)
+            // By default cabinet should be built and moved to the suggested location.
+            ResolvedCabinet resolved = new ResolvedCabinet() { BuildOption = CabinetBuildOption.BuildAndMove, Path = cabinetPath };
+
+            // No special behavior specified, use the default.
+            if (null == this.Core.CabCachePath && !this.Core.ReuseCabinets)
             {
-                return CabinetBuildOption.BuildAndMove;
+                return resolved;
             }
 
-            // if a cabinet cache path was provided, change the location for the cabinet
-            // to be built to
-            if (null != this.cabCachePath)
+            // If a cabinet cache path was provided, change the location for the cabinet
+            // to be built to.
+            if (null != this.Core.CabCachePath)
             {
                 string cabinetName = Path.GetFileName(cabinetPath);
-                cabinetPath = Path.Combine(this.cabCachePath, cabinetName);
+                resolved.Path = Path.Combine(this.Core.CabCachePath, cabinetName);
             }
 
-            // if we still think we're going to reuse the cabinet check to see if the cabinet exists first
-            if (this.reuseCabinets)
+            // If we still think we're going to reuse the cabinet check to see if the cabinet exists first.
+            if (this.Core.ReuseCabinets)
             {
                 bool cabinetValid = false;
 
-                if (BinderFileManager.CheckFileExists(cabinetPath))
+                if (BinderFileManager.CheckFileExists(resolved.Path))
                 {
                     // check to see if
                     // 1. any files are added or removed
@@ -508,9 +227,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     // associated with it is closed before it is reused.
                     using (Cab.WixEnumerateCab wixEnumerateCab = new Cab.WixEnumerateCab())
                     {
-                        ArrayList fileList = wixEnumerateCab.Enumerate(cabinetPath);
+                        ArrayList fileList = wixEnumerateCab.Enumerate(resolved.Path);
 
-                        if (fileRows.Count != fileList.Count)
+                        if (fileRows.Count() != fileList.Count)
                         {
                             cabinetValid = false;
                         }
@@ -545,12 +264,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                 }
 
-                return (cabinetValid ? CabinetBuildOption.Copy : CabinetBuildOption.BuildAndCopy);
+                resolved.BuildOption = cabinetValid ? CabinetBuildOption.Copy : CabinetBuildOption.BuildAndCopy;
             }
-            else // by default move the built cabinet
-            {
-                return CabinetBuildOption.BuildAndMove;
-            }
+
+            return resolved;
         }
 
         /// <summary>
@@ -626,7 +343,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="source">The file to copy.</param>
         /// <param name="destination">The destination file.</param>
         /// <param name="overwrite">true if the destination file can be overwritten; otherwise, false.</param>
-        public virtual void CopyFile(string source, string destination, bool overwrite)
+        public virtual bool CopyFile(string source, string destination, bool overwrite)
         {
             if (overwrite)
             {
@@ -641,6 +358,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 File.Copy(source, destination, overwrite);
             }
+
+            return true;
         }
 
         /// <summary>
@@ -648,9 +367,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="source">The file to move.</param>
         /// <param name="destination">The destination file.</param>
-        public virtual void MoveFile(string source, string destination)
+        public virtual bool MoveFile(string source, string destination, bool overwrite)
         {
+            if (overwrite)
+            {
+                File.Delete(destination);
+            }
+
             File.Move(source, destination);
+            return true;
         }
 
         /// <summary>
@@ -667,17 +392,17 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             retainRangeWarning = false;
-            if (this.deltaBinaryPatch && RowOperation.Modify == fileRow.Operation)
+            if (this.Core.DeltaBinaryPatch && RowOperation.Modify == fileRow.Operation)
             {
                 if (0 != (PatchAttributeType.IncludeWholeFile | fileRow.PatchAttributes))
                 {
-                    string deltaBase = Common.GenerateIdentifier("dlt", true, Common.GenerateGuid());
-                    string deltaFile = Path.Combine(this.tempFilesLocation, String.Concat(deltaBase, ".dpf"));
-                    string headerFile = Path.Combine(this.tempFilesLocation, String.Concat(deltaBase, ".phd"));
+                    string deltaBase = Common.GenerateIdentifier("dlt", Common.GenerateGuid());
+                    string deltaFile = Path.Combine(this.Core.TempFilesLocation, String.Concat(deltaBase, ".dpf"));
+                    string headerFile = Path.Combine(this.Core.TempFilesLocation, String.Concat(deltaBase, ".phd"));
                     PatchAPI.PatchInterop.PatchSymbolFlagsType apiPatchingSymbolFlags = 0;
                     bool optimizePatchSizeForLargeFiles = false;
 
-                    Table wixPatchIdTable = this.output.Tables["WixPatchId"];
+                    Table wixPatchIdTable = this.Core.Output.Tables["WixPatchId"];
                     if (null != wixPatchIdTable)
                     {
                         Row row = wixPatchIdTable.Rows[0];

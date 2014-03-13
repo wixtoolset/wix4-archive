@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+namespace WixToolset.Tools
 {
     using System;
     using System.Collections.Specialized;
@@ -21,8 +21,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
     using System.Globalization;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
-    //using Microsoft.Tools.WindowsInstallerXml;
-    using Microsoft.Tools.WindowsInstallerXml.Cab;
+
+    using WixToolset.Cab;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// Entry point for the library rebuilder
@@ -31,7 +33,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
     {
         private StringCollection invalidArgs;
         private string inputFile;
-        private ConsoleMessageHandler messageHandler;
         private string outputFile;
         private bool showHelp;
         private bool showLogo;
@@ -42,7 +43,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         private Retina()
         {
             this.invalidArgs = new StringCollection();
-            this.messageHandler = new ConsoleMessageHandler("RETI", "retina.exe");
             this.showLogo = true;
         }
 
@@ -54,8 +54,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("RETI", "retina.exe").Display += Retina.DisplayMessage;
+
             Retina retina = new Retina();
             return retina.Run(args);
+        }
+
+        /// <summary>
+        /// Handler for display message events.
+        /// </summary>
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        private static void DisplayMessage(object sender, DisplayEventArgs e)
+        {
+            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -71,9 +83,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 this.ParseCommandLine(args);
 
                 // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
-                if (this.messageHandler.EncounteredError)
+                if (Messaging.Instance.EncounteredError)
                 {
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 if (!(String.IsNullOrEmpty(this.inputFile) ^ String.IsNullOrEmpty(this.outputFile)))
@@ -90,12 +102,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 {
                     Console.WriteLine(RetinaStrings.HelpMessage);
                     AppCommon.DisplayToolFooter();
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 foreach (string parameter in this.invalidArgs)
                 {
-                    this.messageHandler.Display(this, WixWarnings.UnsupportedCommandLineArgument(parameter));
+                    Messaging.Instance.OnMessage(WixWarnings.UnsupportedCommandLineArgument(parameter));
                 }
                 this.invalidArgs = null;
 
@@ -110,18 +122,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
             }
             catch (WixException we)
             {
-                this.messageHandler.Display(this, we.Error);
+                Messaging.Instance.OnMessage(we.Error);
             }
             catch (Exception e)
             {
-                this.messageHandler.Display(this, WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                Messaging.Instance.OnMessage(WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;
                 }
             }
 
-            return this.messageHandler.LastErrorNumber;
+            return Messaging.Instance.LastErrorNumber;
         }
 
         /// <summary>
@@ -129,10 +141,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// </summary>
         public void ExtractBinaryWixlibFiles()
         {
-            Dictionary<string, string> mapCabinetFileIdToFileName = Retina.GetCabinetFileIdToFileNameMap(this.inputFile);
+            Dictionary<int, string> mapCabinetFileIdToFileName = Retina.GetCabinetFileIdToFileNameMap(this.inputFile);
             if (0 == mapCabinetFileIdToFileName.Count)
             {
-                this.messageHandler.Display(this, WixWarnings.NotABinaryWixlib(this.inputFile));
+                Messaging.Instance.OnMessage(WixWarnings.NotABinaryWixlib(this.inputFile));
                 return;
             }
 
@@ -146,9 +158,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
             Dictionary<string, bool> uniqueFiles = new Dictionary<string, bool>();
 
             // rename those files to what was authored
-            foreach (KeyValuePair<string, string> kvp in mapCabinetFileIdToFileName)
+            foreach (KeyValuePair<int, string> kvp in mapCabinetFileIdToFileName)
             {
-                string cabinetFileId = Path.Combine(Path.GetDirectoryName(this.inputFile), kvp.Key);
+                string cabinetFileId = Path.Combine(Path.GetDirectoryName(this.inputFile), kvp.Key.ToString());
                 string fileName = Path.Combine(Path.GetDirectoryName(this.inputFile), kvp.Value);
 
                 uniqueFiles[fileName] = true;
@@ -173,18 +185,16 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// </summary>
         private void RebuildWixlib()
         {
-            Librarian librarian = new Librarian();
-            WixVariableResolver wixVariableResolver = new WixVariableResolver();
-            BlastBinderFileManager binderFileManager = new BlastBinderFileManager(this.outputFile);
-
             if (0 == Retina.GetCabinetFileIdToFileNameMap(this.outputFile).Count)
             {
-                this.messageHandler.Display(this, WixWarnings.NotABinaryWixlib(this.outputFile));
+                Messaging.Instance.OnMessage(WixWarnings.NotABinaryWixlib(this.outputFile));
                 return;
             }
 
-            Library library = Library.Load(this.outputFile, librarian.TableDefinitions, false, false);
-            library.Save(this.outputFile, binderFileManager, wixVariableResolver);
+            Librarian librarian = new Librarian();
+            Library library = Library.Load(this.outputFile, librarian.TableDefinitions, false);
+            LibraryBinaryFileResolver resolver = new LibraryBinaryFileResolver() { FileManager = new BlastBinderFileManager(this.outputFile) };
+            library.Save(this.outputFile, resolver);
         }
 
         /// <summary>
@@ -192,12 +202,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// </summary>
         /// <param name="path">Path to Wixlib.</param>
         /// <returns>Returns the map.</returns>
-        private static Dictionary<string, string> GetCabinetFileIdToFileNameMap(string path)
+        private static Dictionary<int, string> GetCabinetFileIdToFileNameMap(string path)
         {
-            Dictionary<string, string> mapCabinetFileIdToFileName = new Dictionary<string, string>();
+            Dictionary<int, string> mapCabinetFileIdToFileName = new Dictionary<int, string>();
             BlastBinderFileManager binderFileManager = new BlastBinderFileManager(path);
             Librarian librarian = new Librarian();
-            Library library = Library.Load(path, librarian.TableDefinitions, false, false);
+            Library library = Library.Load(path, librarian.TableDefinitions, false);
 
             foreach (Section section in library.Sections)
             {
@@ -212,7 +222,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                             if (null != objectField && null != objectField.Data)
                             {
                                 string filePath = binderFileManager.ResolveFile(objectField.Data as string, "source", row.SourceLineNumbers, BindStage.Normal);
-                                mapCabinetFileIdToFileName[objectField.CabinetFileId] = filePath;
+                                mapCabinetFileIdToFileName[objectField.EmbeddedFileIndex.Value] = filePath;
                             }
                         }
                     }
@@ -246,7 +256,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("i" == parameter || "in" == parameter)
                     {
-                        this.inputFile = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
+                        this.inputFile = CommandLine.GetFile(parameter, args, ++i);
 
                         if (String.IsNullOrEmpty(this.inputFile))
                         {
@@ -255,7 +265,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("o" == parameter || "out" == parameter)
                     {
-                        this.outputFile = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
+                        this.outputFile = CommandLine.GetFile(parameter, args, ++i);
 
                         if (String.IsNullOrEmpty(this.outputFile))
                         {
@@ -264,7 +274,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("v" == parameter)
                     {
-                        this.messageHandler.ShowVerboseMessages = true;
+                        Messaging.Instance.ShowVerboseMessages = true;
                     }
                     else if ("?" == parameter || "help" == parameter)
                     {
@@ -303,7 +313,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
             /// <param name="sourceLineNumbers">Optional source line of source file being resolved.</param>
             /// <param name="bindStage">The binding stage used to determine what collection of bind paths will be used</param>
             /// <returns>Should return a valid path for the stream to be imported.</returns>
-            public override string ResolveFile(string source, string type, SourceLineNumberCollection sourceLineNumbers, BindStage bindStage)
+            public override string ResolveFile(string source, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage)
             {
                 Match match = BlastBinderFileManager.WixVariableRegex.Match(source);
                 if (match.Success)
@@ -333,6 +343,16 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 }
 
                 return Path.Combine(this.basePath, source);
+            }
+        }
+
+        private class LibraryBinaryFileResolver : ILibraryBinaryFileResolver
+        {
+            public BinderFileManager FileManager { get; set; }
+
+            public string Resolve(SourceLineNumber sourceLineNumber, string table, string path)
+            {
+                return this.FileManager.ResolveFile(path, table, sourceLineNumber, BindStage.Normal);
             }
         }
     }

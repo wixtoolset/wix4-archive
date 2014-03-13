@@ -8,7 +8,7 @@
 // <summary>Defines a Frost exception</summary>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost.Core
+namespace WixToolset.Test.Frost.Core
 {
     using System;
 

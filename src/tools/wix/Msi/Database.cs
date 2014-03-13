@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Msi
+namespace WixToolset.Msi
 {
     using System;
     using System.ComponentModel;
@@ -19,7 +19,8 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
     using System.IO;
     using System.Text;
     using System.Threading;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Data;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Enum of predefined persist modes used when opening a database.
@@ -291,17 +292,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
         /// <summary>
         /// Imports an installer text archive table (idt file) into an open database.
         /// </summary>
-        /// <param name="folderPath">Specifies the path to the folder containing archive files.</param>
-        /// <param name="fileName">Specifies the name of the file to import.</param>
+        /// <param name="idtPath">Specifies the path to the file to import.</param>
         /// <exception cref="WixInvalidIdtException">Attempted to import an IDT file with an invalid format or unsupported data.</exception>
         /// <exception cref="MsiException">Another error occured while importing the IDT file.</exception>
-        public void Import(string folderPath, string fileName)
+        public void Import(string idtPath)
         {
+            string folderPath = Path.GetDirectoryName(idtPath);
+            string fileName = Path.GetFileName(idtPath);
+
             int error = MsiInterop.MsiDatabaseImport(this.Handle, folderPath, fileName);
             if (1627 == error) // ERROR_FUNCTION_FAILED
             {
-                string path = Path.Combine(folderPath, fileName);
-                throw new WixInvalidIdtException(path);
+                throw new WixInvalidIdtException(idtPath);
             }
             else if (0 != error)
             {
@@ -419,61 +421,49 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
         /// Imports a table into the database.
         /// </summary>
         /// <param name="codepage">Codepage of the database to import table to.</param>
-        /// <param name="messageHandler">Message handler.</param>
         /// <param name="table">Table to import into database.</param>
         /// <param name="baseDirectory">The base directory where intermediate files are created.</param>
         /// <param name="keepAddedColumns">Whether to keep columns added in a transform.</param>
-        public void ImportTable(int codepage, IMessageHandler messageHandler, Table table, string baseDirectory, bool keepAddedColumns)
+        public void ImportTable(int codepage, Table table, string baseDirectory, bool keepAddedColumns)
         {
             // write out the table to an IDT file
             string idtPath = Path.Combine(baseDirectory, String.Concat(table.Name, ".idt"));
-            StreamWriter idtWriter = null;
+            Encoding encoding;
 
-            try
+            // If UTF8 encoding, use the UTF8-specific constructor to avoid writing
+            // the byte order mark at the beginning of the file
+            if (Encoding.UTF8.CodePage == codepage)
             {
-                Encoding encoding;
-
-                // If UTF8 encoding, use the UTF8-specific constructor to avoid writing
-                // the byte order mark at the beginning of the file
-                if (Encoding.UTF8.CodePage == codepage)
-                {
-                    encoding = new UTF8Encoding(false, true);
-                }
-                else
-                {
-                    if (0 == codepage)
-                    {
-                        codepage = Encoding.ASCII.CodePage;
-                    }
-
-                    encoding = Encoding.GetEncoding(codepage, new EncoderExceptionFallback(), new DecoderExceptionFallback());
-                }
-
-                idtWriter = new StreamWriter(idtPath, false, encoding);
-
-                table.ToIdtDefinition(idtWriter, messageHandler, keepAddedColumns);
+                encoding = new UTF8Encoding(false, true);
             }
-            finally
+            else
             {
-                if (null != idtWriter)
+                if (0 == codepage)
                 {
-                    idtWriter.Close();
+                    codepage = Encoding.ASCII.CodePage;
                 }
+
+                encoding = Encoding.GetEncoding(codepage, new EncoderExceptionFallback(), new DecoderExceptionFallback());
+            }
+
+            using (StreamWriter idtWriter = new StreamWriter(idtPath, false, encoding))
+            {
+                table.ToIdtDefinition(idtWriter, keepAddedColumns);
             }
 
             // try to import the table into the MSI
             try
             {
-                this.Import(Path.GetDirectoryName(idtPath), Path.GetFileName(idtPath));
+                this.Import(idtPath);
             }
             catch (WixInvalidIdtException)
             {
                 table.ValidateRows();
 
-                // if ValidateRows finds anything it doesn't like, it throws
-                // otherwise throw WixInvalidIdtException (which is caught in light and turns tidy mode off)
+                // If ValidateRows finds anything it doesn't like, it throws. Otherwise, we'll
+                // throw WixInvalidIdtException here which is caught in light and turns off tidy.
                 throw new WixInvalidIdtException(idtPath, table.Name);
             }
         }
-     }
+    }
 }

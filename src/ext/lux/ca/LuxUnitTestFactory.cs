@@ -12,14 +12,14 @@
 //-------------------------------------------------------------------------------------------------
 
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux.CustomActions
+namespace WixToolset.Lux.CustomActions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using Microsoft.Deployment.WindowsInstaller;
-    using Microsoft.Tools.WindowsInstallerXml.Lux;
+    using WixToolset.Dtf.WindowsInstaller;
+    using WixToolset.Lux;
 
     /// <summary>
     /// Factory class for Lux unit tests. Returns a LuxUnitTest of the appropriate type.

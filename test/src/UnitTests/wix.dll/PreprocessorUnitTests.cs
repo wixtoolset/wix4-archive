@@ -14,7 +14,7 @@ namespace WixTest.Tests.UnitTests
     using System.Collections;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset;
     using System.Security.Cryptography;
     using System.Text;
 

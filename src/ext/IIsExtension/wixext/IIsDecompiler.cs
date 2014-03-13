@@ -7,24 +7,43 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset Internet Information Services Extension.
+// The decompiler for the WiX Toolset Internet Information Services Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Globalization;
-
-    using IIs = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.IIs;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using IIs = WixToolset.Extensions.Serialize.IIs;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset Internet Information Services Extension.
+    /// The decompiler for the WiX Toolset Internet Information Services Extension.
     /// </summary>
     public sealed class IIsDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for IIs Extension.
+        /// </summary>
+        public IIsDecompiler()
+        {
+            this.TableDefinitions = IIsExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return IIsExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -92,7 +111,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Finalize decompilation.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        public override void FinalizeDecompile(TableCollection tables)
+        public override void Finish(TableIndexedCollection tables)
         {
             this.FinalizeIIsMimeMapTable(tables);
             this.FinalizeIIsHttpHeaderTable(tables);
@@ -197,7 +216,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
             }
         }
@@ -348,7 +367,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                     }
                 }
                 else
@@ -401,7 +420,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
             }
         }
@@ -914,7 +933,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Web_", (string)row[4], "IIsWebSite"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Web_", (string)row[4], "IIsWebSite"));
                     }
                 }
                 else // Component parent
@@ -927,7 +946,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                     }
                 }
             }
@@ -1018,7 +1037,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
             }
         }
@@ -1116,7 +1135,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                     }
                 }
                 else
@@ -1180,7 +1199,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// The IIsHttpHeader table supports multiple parent types so no foreign key
         /// is declared and thus nesting must be done late.
         /// </remarks>
-        private void FinalizeIIsHttpHeaderTable(TableCollection tables)
+        private void FinalizeIIsHttpHeaderTable(TableIndexedCollection tables)
         {
             Table iisHttpHeaderTable = tables["IIsHttpHeader"];
 
@@ -1199,7 +1218,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisHttpHeaderTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ParentValue", (string)row[2], "IIsWebVirtualDir"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisHttpHeaderTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ParentValue", (string)row[2], "IIsWebVirtualDir"));
                         }
                     }
                     else if (2 == (int)row[1])
@@ -1211,7 +1230,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisHttpHeaderTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ParentValue", (string)row[2], "IIsWebSite"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisHttpHeaderTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ParentValue", (string)row[2], "IIsWebSite"));
                         }
                     }
                 }
@@ -1226,7 +1245,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// The IIsMimeMap table supports multiple parent types so no foreign key
         /// is declared and thus nesting must be done late.
         /// </remarks>
-        private void FinalizeIIsMimeMapTable(TableCollection tables)
+        private void FinalizeIIsMimeMapTable(TableIndexedCollection tables)
         {
             Table iisMimeMapTable = tables["IIsMimeMap"];
 
@@ -1253,7 +1272,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisMimeMapTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ParentValue", (string)row[2], "IIsWebVirtualDir"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisMimeMapTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ParentValue", (string)row[2], "IIsWebVirtualDir"));
                     }
                 }
             }
@@ -1267,7 +1286,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Since WebApplication elements may nest under a specific WebSite or
         /// WebVirtualDir (or just the root element), the nesting must be done late.
         /// </remarks>
-        private void FinalizeIIsWebApplicationTable(TableCollection tables)
+        private void FinalizeIIsWebApplicationTable(TableIndexedCollection tables)
         {
             Table iisWebApplicationTable = tables["IIsWebApplication"];
             Table iisWebSiteTable = tables["IIsWebSite"];
@@ -1291,7 +1310,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebSiteTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Application_", (string)row[9], "IIsWebApplication"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebSiteTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Application_", (string)row[9], "IIsWebApplication"));
                         }
                     }
                 }
@@ -1313,7 +1332,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebVirtualDirTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Application_", (string)row[6], "IIsWebApplication"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebVirtualDirTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Application_", (string)row[6], "IIsWebApplication"));
                         }
                     }
                 }
@@ -1341,7 +1360,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Since there is no foreign key relationship declared for this table
         /// (because it takes various parent types), it must be nested late.
         /// </remarks>
-        private void FinalizeIIsWebErrorTable(TableCollection tables)
+        private void FinalizeIIsWebErrorTable(TableIndexedCollection tables)
         {
             Table iisWebErrorTable = tables["IIsWebError"];
 
@@ -1361,7 +1380,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebErrorTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ParentValue", (string)row[3], "IIsWebVirtualDir"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebErrorTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ParentValue", (string)row[3], "IIsWebVirtualDir"));
                         }
                     }
                     else if (2 == (int)row[2]) // WebSite parent
@@ -1374,7 +1393,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebErrorTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ParentValue", (string)row[3], "IIsWebSite"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebErrorTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ParentValue", (string)row[3], "IIsWebSite"));
                         }
                     }
                     else
@@ -1394,7 +1413,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// depending upon whether the component in the IIsWebVirtualDir row
         /// is the same as the one in the parent IIsWebSite row.
         /// </remarks>
-        private void FinalizeIIsWebVirtualDirTable(TableCollection tables)
+        private void FinalizeIIsWebVirtualDirTable(TableIndexedCollection tables)
         {
             Table iisWebSiteTable = tables["IIsWebSite"];
             Table iisWebVirtualDirTable = tables["IIsWebVirtualDir"];
@@ -1436,13 +1455,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             }
                             else
                             {
-                                this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebVirtualDirTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                                this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebVirtualDirTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                             }
                         }
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebVirtualDirTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Web_", (string)row[2], "IIsWebSite"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebVirtualDirTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Web_", (string)row[2], "IIsWebSite"));
                     }
                 }
             }
@@ -1456,7 +1475,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// This table creates CertificateRef elements which nest under WebSite
         /// elements.
         /// </remarks>
-        private void FinalizeIIsWebSiteCertificatesTable(TableCollection tables)
+        private void FinalizeIIsWebSiteCertificatesTable(TableIndexedCollection tables)
         {
             Table IIsWebSiteCertificatesTable = tables["IIsWebSiteCertificates"];
 
@@ -1473,7 +1492,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, IIsWebSiteCertificatesTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Web_", (string)row[0], "IIsWebSite"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, IIsWebSiteCertificatesTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Web_", (string)row[0], "IIsWebSite"));
                     }
                 }
             }
@@ -1487,7 +1506,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// There is a circular dependency between the WebAddress and WebSite
         /// tables, so nesting must be handled here.
         /// </remarks>
-        private void FinalizeWebAddressTable(TableCollection tables)
+        private void FinalizeWebAddressTable(TableIndexedCollection tables)
         {
             Table iisWebAddressTable = tables["IIsWebAddress"];
             Table iisWebSiteTable = tables["IIsWebSite"];
@@ -1508,7 +1527,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebSiteTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "KeyAddress_", (string)row[7], "IIsWebAddress"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebSiteTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "KeyAddress_", (string)row[7], "IIsWebAddress"));
                     }
                 }
             }
@@ -1529,7 +1548,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         }
                         else
                         {
-                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebAddressTable.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Web_", (string)row[1], "IIsWebSite"));
+                            this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, iisWebAddressTable.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Web_", (string)row[1], "IIsWebSite"));
                         }
                     }
                 }

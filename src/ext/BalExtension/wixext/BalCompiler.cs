@@ -7,29 +7,25 @@
 // </copyright>
 // 
 // <summary>
-// The compiler for the Windows Installer XML Toolset Bal Extension.
+// The compiler for the WiX Toolset Bal Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.IO;
-    using System.Reflection;
-    using System.Xml;
-    using System.Xml.Schema;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML Toolset Bal Extension.
+    /// The compiler for the WiX Toolset Bal Extension.
     /// </summary>
     public sealed class BalCompiler : CompilerExtension
     {
-        private SourceLineNumberCollection addedConditionLineNumber;
-        private XmlSchema schema;
+        private SourceLineNumber addedConditionLineNumber;
 
         /// <summary>
         /// Instantiate a new BalCompiler.
@@ -37,32 +33,22 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         public BalCompiler()
         {
             this.addedConditionLineNumber = null;
-            this.schema = LoadXmlSchemaHelper(Assembly.GetExecutingAssembly(), "Microsoft.Tools.WindowsInstallerXml.Extensions.Xsd.bal.xsd");
-        }
-
-        /// <summary>
-        /// Gets the schema for this extension.
-        /// </summary>
-        /// <value>Schema for this extension.</value>
-        public override XmlSchema Schema
-        {
-            get { return this.schema; }
+            this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/bal";
         }
 
         /// <summary>
         /// Processes an element for the Compiler.
         /// </summary>
-        /// <param name="sourceLineNumbers">Source line number for the parent element.</param>
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="element">Element to process.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseElement(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlElement element, params string[] contextValues)
+        public override void ParseElement(XElement parentElement, XElement element, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            switch (parentElement.Name.LocalName)
             {
                 case "Bundle":
                 case "Fragment":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "Condition":
                             this.ParseConditionElement(element);
@@ -73,7 +59,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     break;
                 case "BootstrapperApplicationRef":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "WixStandardBootstrapperApplication":
                             this.ParseWixStandardBootstrapperApplicationElement(element);
@@ -98,22 +84,24 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="sourceLineNumbers">Source line number for the parent element.</param>
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="attribute">Attribute to process.</param>
-        /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseAttribute(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlAttribute attribute, Dictionary<string, string> contextValues)
+        /// <param name="context">Extra information about the context in which this element is being parsed.</param>
+        public override void ParseAttribute(XElement parentElement, XAttribute attribute, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(parentElement);
+
+            switch (parentElement.Name.LocalName)
             {
                 case "Variable":
                     // at the time the extension attribute is parsed, the compiler might not yet have
                     // parsed the Name attribute, so we need to get it directly from the parent element.
-                    string variableName = parentElement.GetAttribute("Name");
-                    if (String.IsNullOrEmpty(variableName))
+                    XAttribute variableName = parentElement.Attribute("Name");
+                    if (null == variableName)
                     {
                         this.Core.OnMessage(WixErrors.ExpectedParentWithAttribute(sourceLineNumbers, "Variable", "Overridable", "Name"));
                     }
                     else
                     {
-                        switch (attribute.LocalName)
+                        switch (attribute.Name.LocalName)
                         {
                             case "Overridable":
                                 if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
@@ -123,13 +111,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                                 }
                                 break;
                             default:
-                                this.Core.UnexpectedAttribute(sourceLineNumbers, attribute);
+                                this.Core.UnexpectedAttribute(parentElement, attribute);
                                 break;
                         }
                     }
-                    break;
-                default:
-                    this.Core.UnexpectedAttribute(sourceLineNumbers, attribute);
                     break;
             }
         }
@@ -138,56 +123,43 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a Condition element for Bundles.
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseConditionElement(XmlNode node)
+        private void ParseConditionElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
-            string condition = CompilerCore.GetConditionInnerText(node); // condition is the inner text of the element.
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string condition = this.Core.GetConditionInnerText(node); // condition is the inner text of the element.
             string message = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Message":
-                            message = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            message = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             // Error check the values.
             if (String.IsNullOrEmpty(condition))
             {
-                this.Core.OnMessage(WixErrors.ConditionExpected(sourceLineNumbers, node.Name));
+                this.Core.OnMessage(WixErrors.ConditionExpected(sourceLineNumbers, node.Name.LocalName));
             }
 
             if (null == message)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Message"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Message"));
             }
 
             if (!this.Core.EncounteredError)
@@ -207,9 +179,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a WixStandardBootstrapperApplication element for Bundles.
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseWixStandardBootstrapperApplicationElement(XmlNode node)
+        private void ParseWixStandardBootstrapperApplicationElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string launchTarget = null;
             string licenseFile = null;
             string licenseUrl = null;
@@ -222,32 +194,32 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             YesNoType suppressRepair = YesNoType.NotSet;
             YesNoType showVersion = YesNoType.NotSet;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "LaunchTarget":
-                            launchTarget = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            launchTarget = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseFile":
-                            licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseUrl":
-                            licenseUrl = this.Core.GetAttributeValue(sourceLineNumbers, attrib, true);
+                            licenseUrl = this.Core.GetAttributeValue(sourceLineNumbers, attrib, EmptyRule.CanBeEmpty);
                             break;
                         case "LogoFile":
-                            logoFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            logoFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LogoSideFile":
-                            logoSideFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            logoSideFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "ThemeFile":
-                            themeFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            themeFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LocalizationFile":
-                            localizationFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            localizationFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "SuppressOptionsUI":
                             suppressOptionsUI = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
@@ -262,71 +234,73 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             showVersion = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (String.IsNullOrEmpty(licenseFile) && null == licenseUrl)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "LicenseFile", "LicenseUrl", true));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "LicenseFile", "LicenseUrl", true));
             }
 
             if (!this.Core.EncounteredError)
             {
                 if (!String.IsNullOrEmpty(launchTarget))
                 {
-                    this.Core.CreateVariableRow(sourceLineNumbers, "LaunchTarget", launchTarget, "string", false, false);
+                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    row.Id = "LaunchTarget";
+                    row.Value = launchTarget;
+                    row.Type = "string";
                 }
 
                 if (!String.IsNullOrEmpty(licenseFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixStdbaLicenseRtf", licenseFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixStdbaLicenseRtf";
+                    wixVariableRow.Value = licenseFile;
                 }
 
                 if (null != licenseUrl)
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixStdbaLicenseUrl", licenseUrl, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixStdbaLicenseUrl";
+                    wixVariableRow.Value = licenseUrl;
                 }
 
                 if (!String.IsNullOrEmpty(logoFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixStdbaLogo", logoFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixStdbaLogo";
+                    wixVariableRow.Value = logoFile;
                 }
 
                 if (!String.IsNullOrEmpty(logoSideFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixStdbaLogoSide", logoSideFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixStdbaLogoSide";
+                    wixVariableRow.Value = logoSideFile;
                 }
 
                 if (!String.IsNullOrEmpty(themeFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixStdbaThemeXml", themeFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixStdbaThemeXml";
+                    wixVariableRow.Value = themeFile;
                 }
 
                 if (!String.IsNullOrEmpty(localizationFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixStdbaThemeWxl", localizationFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixStdbaThemeWxl";
+                    wixVariableRow.Value = localizationFile;
                 }
 
                 if (YesNoType.Yes == suppressOptionsUI || YesNoType.Yes == suppressDowngradeFailure || YesNoType.Yes == suppressRepair || YesNoType.Yes == showVersion)
@@ -359,9 +333,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// Parses a WixManagedBootstrapperApplicationHost element for Bundles.
         /// </summary>
         /// <param name="node">The element to parse.</param>
-        private void ParseWixManagedBootstrapperApplicationHostElement(XmlNode node)
+        private void ParseWixManagedBootstrapperApplicationHostElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string licenseFile = null;
             string licenseUrl = null;
             string logoFile = null;
@@ -369,91 +343,90 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             string localizationFile = null;
             string netFxPackageId = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "LicenseFile":
-                            licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseUrl":
-                            licenseUrl = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            licenseUrl = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LogoFile":
-                            logoFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            logoFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "ThemeFile":
-                            themeFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            themeFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LocalizationFile":
-                            localizationFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            localizationFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "NetFxPackageId":
-                            netFxPackageId = this.Core.GetAttributeValue(sourceLineNumbers, attrib, false);
+                            netFxPackageId = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (String.IsNullOrEmpty(licenseFile) == String.IsNullOrEmpty(licenseUrl))
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "LicenseFile", "LicenseUrl", true));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "LicenseFile", "LicenseUrl", true));
             }
 
             if (!this.Core.EncounteredError)
             {
                 if (!String.IsNullOrEmpty(licenseFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixMbaPrereqLicenseRtf", licenseFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixMbaPrereqLicenseRtf";
+                    wixVariableRow.Value = licenseFile;
                 }
 
                 if (!String.IsNullOrEmpty(licenseUrl))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixMbaPrereqLicenseUrl", licenseUrl, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixMbaPrereqLicenseUrl";
+                    wixVariableRow.Value = licenseUrl;
                 }
 
                 if (!String.IsNullOrEmpty(logoFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "PreqbaLogo", logoFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "PreqbaLogo";
+                    wixVariableRow.Value = logoFile;
                 }
 
                 if (!String.IsNullOrEmpty(themeFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "PreqbaThemeXml", themeFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "PreqbaThemeXml";
+                    wixVariableRow.Value = themeFile;
                 }
 
                 if (!String.IsNullOrEmpty(localizationFile))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "PreqbaThemeWxl", localizationFile, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "PreqbaThemeWxl";
+                    wixVariableRow.Value = localizationFile;
                 }
 
                 if (!String.IsNullOrEmpty(netFxPackageId))
                 {
-                    this.Core.CreateWixVariableRow(sourceLineNumbers, "WixMbaPrereqPackageId", netFxPackageId, false);
+                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
+                    wixVariableRow.Id = "WixMbaPrereqPackageId";
+                    wixVariableRow.Value = netFxPackageId;
                 }
             }
         }

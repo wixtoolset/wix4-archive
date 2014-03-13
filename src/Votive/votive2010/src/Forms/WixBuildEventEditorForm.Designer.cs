@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Forms
+namespace WixToolset.VisualStudio.Forms
 {
     partial class WixBuildEventEditorForm
     {
@@ -46,7 +46,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Forms
             this.insertButton = new System.Windows.Forms.Button();
             this.centerPanel = new System.Windows.Forms.Panel();
             this.contentTextBoxPanel = new System.Windows.Forms.Panel();
-            this.contentTextBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixBuildEventTextBox();
+            this.contentTextBox = new WixToolset.VisualStudio.Controls.WixBuildEventTextBox();
             this.bottomButtonTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             nameColumnHeader = new System.Windows.Forms.ColumnHeader();
             valueColumnHeader = new System.Windows.Forms.ColumnHeader();
@@ -155,7 +155,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Forms
 
         #endregion
 
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixBuildEventTextBox contentTextBox;
+        private WixToolset.VisualStudio.Controls.WixBuildEventTextBox contentTextBox;
         private System.Windows.Forms.ListView macrosListView;
         private System.Windows.Forms.Button insertButton;
         private System.Windows.Forms.Panel centerPanel;

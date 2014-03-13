@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.Diagnostics;
@@ -20,8 +20,8 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Security;
-    using Microsoft.Tools.WindowsInstallerXml;
-    using Microsoft.Tools.WindowsInstallerXml.Build.Tasks;
+    using WixToolset;
+    using WixToolset.Build.Tasks;
     using Microsoft.VisualStudio.Package;
     using Utilities = Microsoft.VisualStudio.Package.Utilities;
     using Microsoft.VisualStudio.Shell;

@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using System.Collections;
@@ -19,7 +19,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
     using System.Xml;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
     using Microsoft.Win32;
 
     /// <summary>

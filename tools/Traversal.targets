@@ -9,7 +9,6 @@
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <Import Project="WixBuild.props" />
-  <Import Project="WixBuild.Tools.targets"/>
 
   <PropertyGroup>
     <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
@@ -41,5 +40,8 @@
       <_ParallelProjects Include="@(ProjectReference)" Condition=" '%(BuildInParallel)'=='true' " />
     </ItemGroup>
   </Target>
+
+  <!-- This target exists solely to make Microsoft.Common.targets happy -->
+  <Target Name="GetCopyToOutputDirectoryItems" />
 
 </Project>

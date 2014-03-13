@@ -7,23 +7,22 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset mutator.
+// The WiX Toolset mutator.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The Windows Installer XML Toolset mutator.
+    /// The WiX Toolset mutator.
     /// </summary>
     public sealed class Mutator
     {
-        private HarvesterCore core;
         private SortedList extensions;
         private string extensionArgument;
 
@@ -39,11 +38,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Gets or sets the harvester core for the extension.
         /// </summary>
         /// <value>The harvester core for the extension.</value>
-        public HarvesterCore Core
-        {
-            get { return this.core; }
-            set { this.core = value; }
-        }
+        public IHarvesterCore Core { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the extension argument passed to heat.
@@ -79,7 +74,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 {
                     if (null == mutatorExtension.Core)
                     {
-                        mutatorExtension.Core = this.core;
+                        mutatorExtension.Core = this.Core;
                     }
 
                     mutatorExtension.Mutate(wix);
@@ -87,7 +82,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
             finally
             {
-                encounteredError = this.core.EncounteredError;
+                encounteredError = this.Core.EncounteredError;
             }
 
             // return the Wix document element only if mutation completed successfully
@@ -109,12 +104,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 {
                     if (null == mutatorExtension.Core)
                     {
-                        mutatorExtension.Core = this.core;
+                        mutatorExtension.Core = this.Core;
                     }
 
                     wixString = mutatorExtension.Mutate(wixString);
 
-                    if (String.IsNullOrEmpty(wixString) || this.core.EncounteredError)
+                    if (String.IsNullOrEmpty(wixString) || this.Core.EncounteredError)
                     {
                         break;
                     }
@@ -122,7 +117,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
             finally
             {
-                encounteredError = this.core.EncounteredError;
+                encounteredError = this.Core.EncounteredError;
             }
 
             return encounteredError ? null : wixString;

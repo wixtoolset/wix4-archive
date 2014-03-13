@@ -24,6 +24,9 @@
     <ProjectReference Include="..\src\setup\zip\debug.zipproj">
       <Properties>Configuration=$(Configuration)</Properties>
     </ProjectReference>
+    <ProjectReference Include="..\src\SettingsEngine\setup\Zip\udms.zipproj">
+      <Properties>Configuration=$(Configuration)</Properties>
+    </ProjectReference>
   </ItemGroup>
 
   <!--
@@ -56,6 +59,16 @@
 
       <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString)-debug.zip">
         <Title>WiX v$(MajorMinorVersionDottedString) source and symbols for debugging purposes.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)WixSettingsBrowser$(MajorMinorVersionString).exe">
+        <Title>WiX v$(MajorMinorVersionDottedString) Toolset settings engine plus browser.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString)-udms.zip">
+        <Title>WiX v$(MajorMinorVersionDottedString) settings definitions.</Title>
         <Protected>true</Protected>
       </ReleaseFile>
     </ItemGroup>

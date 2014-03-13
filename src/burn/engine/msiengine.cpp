@@ -93,6 +93,13 @@ extern "C" HRESULT MsiEngineParsePackageFromXml(
     hr = XmlGetYesNoAttribute(pixnMsiPackage, L"DisplayInternalUI", &pPackage->Msi.fDisplayInternalUI);
     ExitOnFailure(hr, "Failed to get @DisplayInternalUI.");
 
+    // @UpgradeCode
+    hr = XmlGetAttributeEx(pixnMsiPackage, L"UpgradeCode", &pPackage->Msi.sczUpgradeCode);
+    if (E_NOTFOUND != hr)
+    {
+        ExitOnFailure(hr, "Failed to get @UpgradeCode.");
+    }
+
     // select feature nodes
     hr = XmlSelectNodes(pixnMsiPackage, L"MsiFeature", &pixnNodes);
     ExitOnFailure(hr, "Failed to select feature nodes.");
@@ -319,6 +326,7 @@ extern "C" void MsiEnginePackageUninitialize(
     )
 {
     ReleaseStr(pPackage->Msi.sczProductCode);
+    ReleaseStr(pPackage->Msi.sczUpgradeCode);
 
     // free features
     if (pPackage->Msi.rgFeatures)
@@ -554,7 +562,9 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 {
                     relatedMsiOperation = BOOTSTRAPPER_RELATED_OPERATION_NONE;
                 }
-                else if (BOOTSTRAPPER_PACKAGE_STATE_ABSENT == pPackage->currentState)
+                // It can't be a downgrade if the upgrade codes aren't the same.
+                else if (BOOTSTRAPPER_PACKAGE_STATE_ABSENT == pPackage->currentState &&
+                         pPackage->Msi.sczUpgradeCode && CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pPackage->Msi.sczUpgradeCode, -1, pRelatedMsi->sczUpgradeCode, -1))
                 {
                     relatedMsiOperation = BOOTSTRAPPER_RELATED_OPERATION_DOWNGRADE;
                     operation = BOOTSTRAPPER_RELATED_OPERATION_DOWNGRADE;
@@ -997,7 +1007,7 @@ extern "C" HRESULT MsiEngineExecutePackage(
     // add feature action properties
     hr = ConcatFeatureActionProperties(pExecuteAction->msiPackage.pPackage, pExecuteAction->msiPackage.rgFeatures, &sczProperties);
     ExitOnFailure(hr, "Failed to add feature action properties to argument string.");
-    
+
     hr = ConcatFeatureActionProperties(pExecuteAction->msiPackage.pPackage, pExecuteAction->msiPackage.rgFeatures, &sczObfuscatedProperties);
     ExitOnFailure(hr, "Failed to add feature action properties to obfuscated argument string.");
 

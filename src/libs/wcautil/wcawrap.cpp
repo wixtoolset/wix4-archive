@@ -7,7 +7,7 @@
 // </copyright>
 //
 // <summary>
-//    Windows Installer XML CustomAction utility library wrappers for MSI API
+//    WiX CustomAction utility library wrappers for MSI API
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

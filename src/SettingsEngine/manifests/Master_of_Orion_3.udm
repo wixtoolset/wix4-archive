@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Master_of_Orion_3">
+        <Detect>
+            <Arp DisplayName="Master of Orion 3" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="SaveGameFiles" Location="InstallDir:\SaveGameFiles\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Master of Orion III</DisplayName>
+    </Product>
+</LegacySettings>

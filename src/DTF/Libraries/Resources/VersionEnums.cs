@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Resources
+namespace WixToolset.Dtf.Resources
 {
     // Silence warnings about doc-comments
     #pragma warning disable 1591

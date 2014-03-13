@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux
+namespace WixToolset.Lux
 {
     using System;
     using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
 
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using Microsoft.Tools.WindowsInstallerXml.Build.Tasks;
+    using WixToolset.Build.Tasks;
 
     /// <summary>
     /// An MSBuild task to run the Nit test runner.

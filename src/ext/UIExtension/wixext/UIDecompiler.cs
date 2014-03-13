@@ -5,42 +5,40 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// The decompiler for the Windows Installer XML Toolset UI Extension.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset UI Extension.
+    /// The decompiler for the WiX Toolset UI Extension.
     /// </summary>
     public sealed class UIDecompiler : DecompilerExtension
     {
         private bool removeLibraryRows;
 
         /// <summary>
-        /// Gets the option to remove the rows from this extension's library.
+        /// Get the extensions library to be removed.
         /// </summary>
-        /// <value>The option to remove the rows from this extension's library.</value>
-        public override bool RemoveLibraryRows
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
         {
-            get { return this.removeLibraryRows; }
+            return removeLibraryRows ? UIExtensionData.GetExtensionLibrary(tableDefinitions) : null;
         }
 
         /// <summary>
         /// Called at the beginning of the decompilation of a database.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        public override void InitializeDecompile(TableCollection tables)
+        public override void Initialize(TableIndexedCollection tables)
         {
             Table propertyTable = tables["Property"];
 

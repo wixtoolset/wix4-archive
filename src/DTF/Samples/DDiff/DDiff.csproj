@@ -3,7 +3,7 @@
     <ProjectGuid>{1CDF4242-4C00-4744-BBCD-085128978FF3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Samples.DDiff</RootNamespace>
+    <RootNamespace>WixToolset.Dtf.Samples.DDiff</RootNamespace>
     <AssemblyName>DDiff</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>

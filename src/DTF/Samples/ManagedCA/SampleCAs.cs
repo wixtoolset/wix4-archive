@@ -1,9 +1,9 @@
-﻿namespace Microsoft.Deployment.Samples.ManagedCA
+﻿namespace WixToolset.Dtf.Samples.ManagedCA
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
 
     public class SampleCAs
     {

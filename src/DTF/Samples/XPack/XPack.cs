@@ -1,11 +1,11 @@
 ﻿
-namespace Microsoft.Deployment.Samples.XPack
+namespace WixToolset.Dtf.Samples.XPack
 {
     using System;
     using System.IO;
     using System.Collections.Generic;
     using System.Text;
-    using Microsoft.Deployment.Compression;
+    using WixToolset.Dtf.Compression;
 
     public class XPack
     {
@@ -64,11 +64,11 @@ namespace Microsoft.Deployment.Samples.XPack
             string extension = Path.GetExtension(name).ToUpperInvariant();
             if (extension == ".CAB")
             {
-                return new Microsoft.Deployment.Compression.Cab.CabInfo(name);
+                return new WixToolset.Dtf.Compression.Cab.CabInfo(name);
             }
             else if (extension == ".ZIP")
             {
-                return new Microsoft.Deployment.Compression.Zip.ZipInfo(name);
+                return new WixToolset.Dtf.Compression.Zip.ZipInfo(name);
             }
             else
             {

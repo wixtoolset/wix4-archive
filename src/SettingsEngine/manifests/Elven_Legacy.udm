@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Elven_Legacy">
+        <Detect>
+            <Arp DisplayName="Elven Legacy"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: this appears to include a per-profile blob "_profile.txml", which seems to put everything in one place.
+                  We cannot currently separate resolution and other per-machine settings -->
+            <Directory Namespace="Profiles" Location="MyDocumentsFolder:\Elven Legacy Profiles\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Profiles:\Logs"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Elven Legacy</DisplayName>
+    </Product>
+</LegacySettings>

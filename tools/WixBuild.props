@@ -37,13 +37,11 @@
   <Import Project="Nuget.targets"/>
 
   <!-- Converts the VS-standard Debug and Release to the wix-standard debug and ship -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' or '$(Configuration)' == '' or '$(WixFlavor)' == 'debug' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' or '$(Configuration)' == '' ">
     <WixFlavor>debug</WixFlavor>
-    <Configuration>Debug</Configuration>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' or '$(WixFlavor)' == 'ship' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <WixFlavor>ship</WixFlavor>
-    <Configuration>Release</Configuration>
   </PropertyGroup>
 
   <!-- Directories derived from the current platform and flavor -->
@@ -210,7 +208,7 @@
 
   <!-- Global setting to control when the bundle is compressed. -->
   <PropertyGroup>
-    <WixBundleCompressed>yes</WixBundleCompressed>
+    <WixBundleCompressed>no</WixBundleCompressed>
   </PropertyGroup>
 
   <!--

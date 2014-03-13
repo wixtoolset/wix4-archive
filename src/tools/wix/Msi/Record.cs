@@ -11,12 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Msi
+namespace WixToolset.Msi
 {
     using System;
     using System.ComponentModel;
     using System.Text;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Wrapper class around msi.dll interop for a record.

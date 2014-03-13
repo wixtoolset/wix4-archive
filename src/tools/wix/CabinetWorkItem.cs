@@ -11,9 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
+    using System.Collections.Generic;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
 
     /// <summary>
     /// A cabinet builder work item.
@@ -21,9 +24,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
     internal sealed class CabinetWorkItem
     {
         private string cabinetFile;
-        private Cab.CompressionLevel compressionLevel;
-        private FileRowCollection fileRows;
-        private BinderFileManager binderFileManager;
+        private CompressionLevel compressionLevel;
+        //private BinderFileManager binderFileManager;
         private int maxThreshold;
 
         /// <summary>
@@ -34,12 +36,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="maxThreshold">Maximum threshold for each cabinet.</param>
         /// <param name="compressionLevel">The compression level of the cabinet.</param>
         /// <param name="binderFileManager">The binder file manager.</param>
-        public CabinetWorkItem(FileRowCollection fileRows, string cabinetFile, int maxThreshold, Cab.CompressionLevel compressionLevel, BinderFileManager binderFileManager)
+        public CabinetWorkItem(List<FileRow> fileRows, string cabinetFile, int maxThreshold, CompressionLevel compressionLevel /*, BinderFileManager binderFileManager*/)
         {
             this.cabinetFile = cabinetFile;
             this.compressionLevel = compressionLevel;
-            this.fileRows = fileRows;
-            this.binderFileManager = binderFileManager;
+            this.FileRows = fileRows;
+            //this.binderFileManager = binderFileManager;
             this.maxThreshold = maxThreshold;
         }
 
@@ -56,7 +58,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Gets the compression level of the cabinet.
         /// </summary>
         /// <value>The compression level of the cabinet.</value>
-        public Cab.CompressionLevel CompressionLevel
+        public CompressionLevel CompressionLevel
         {
             get { return this.compressionLevel; }
         }
@@ -65,19 +67,16 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Gets the collection of files in this cabinet.
         /// </summary>
         /// <value>The collection of files in this cabinet.</value>
-        public FileRowCollection FileRows
-        {
-            get { return this.fileRows; }
-        }
+        public List<FileRow> FileRows { get; private set; }
 
         /// <summary>
         /// Gets the binder file manager.
         /// </summary>
         /// <value>The binder file manager.</value>
-        public BinderFileManager BinderFileManager
-        {
-            get { return this.binderFileManager; }
-        }
+        //public BinderFileManager BinderFileManager
+        //{
+        //    get { return this.binderFileManager; }
+        //}
 
         /// <summary>
         /// Gets the max threshold.

@@ -12,7 +12,7 @@
 		<TargetFrameworkVersion>v$targetframeworkversion$</TargetFrameworkVersion>
 		<FileAlignment>512</FileAlignment>
 		<MyType>Windows</MyType>
-		<WixCATargetsPath Condition=" '$(WixCATargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.CA.targets</WixCATargetsPath>
+		<WixCATargetsPath Condition=" '$(WixCATargetsPath)' == '' ">$(MSBuildExtensionsPath)\WiX Toolset\v4\Wix.CA.targets</WixCATargetsPath>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
 		<DebugSymbols>true</DebugSymbols>
@@ -37,7 +37,7 @@ $if$ ($targetframeworkversion$ >= 3.5)
 		<Reference Include="System.Xml.Linq"/>
 $endif$
 		<Reference Include="System.Xml" />
-		<Reference Include="Microsoft.Deployment.WindowsInstaller"/>
+		<Reference Include="WixToolset.Dtf.WindowsInstaller"/>
 	</ItemGroup>
 	<ItemGroup>
 		<Import Include="Microsoft.VisualBasic" />
@@ -49,7 +49,7 @@ $endif$
 		<Import Include="System.Linq" />
 		<Import Include="System.Xml.Linq" />
 		$endif$
-		<Import Include="Microsoft.Deployment.WindowsInstaller" />
+		<Import Include="WixToolset.Dtf.WindowsInstaller" />
 	</ItemGroup>
 	<ItemGroup>
 		<Compile Include="CustomAction.vb"/>

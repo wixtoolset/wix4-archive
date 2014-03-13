@@ -16,7 +16,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="$(var.ProductCode)" Name="~$(var.TestName) - B" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation"
            UpgradeCode="83D40FEF-34C0-46C8-B2A7-CB501E36B83A">
     <Package Compressed="yes" InstallerVersion="300" InstallScope="perMachine"/>

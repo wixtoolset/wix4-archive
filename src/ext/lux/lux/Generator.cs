@@ -11,17 +11,17 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux
+namespace WixToolset.Lux
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.IO;
     using System.Xml;
-    using Microsoft.Tools.WindowsInstallerXml;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
-    using WixLux = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Lux;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
+    using WixLux = WixToolset.Extensions.Serialize.Lux;
 
     /// <summary>
     /// Helper class to scan objects for unit tests.
@@ -32,11 +32,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         private List<string> inputFiles = new List<string>();
         private List<string> inputFragments;
         private string outputFile;
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
 
         /// <summary>
         /// Sets the list of WiX extensions used by the input files.
@@ -93,16 +88,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         /// <param name="extensions">The WiX extensions used by the input files.</param>
         /// <param name="inputFiles">The WiX object and library files to scan for unit tests.</param>
         /// <param name="outputFile">The optional generated test package source file.</param>
-        /// <param name="message">Message handler.</param>
         /// <param name="inputFragments">The subset of InputFiles that are fragments (i.e., are not entry sections like Product) and should be included in a test package.</param>
         /// <returns>True if successful or False if there were no unit tests in the input files or a test package couldn't be created.</returns>
-        public static bool Generate(StringCollection extensions, List<string> inputFiles, string outputFile, MessageEventHandler message, out List<string> inputFragments)
+        public static bool Generate(StringCollection extensions, List<string> inputFiles, string outputFile, out List<string> inputFragments)
         {
             Generator generator = new Generator();
             generator.Extensions = extensions;
             generator.InputFiles = inputFiles;
             generator.OutputFile = outputFile;
-            generator.Message += message;
 
             bool success = generator.Generate();
             inputFragments = generator.InputFragments;
@@ -138,16 +131,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs mea)
         {
-            WixErrorEventArgs errorEventArgs = mea as WixErrorEventArgs;
-
-            if (null != this.Message)
-            {
-                this.Message(this, mea);
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(mea);
         }
 
         /// <summary>
@@ -240,14 +224,18 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
         {
             // we need a Linker and the extensions for their table definitions
             Linker linker = new Linker();
-            linker.Message += new MessageEventHandler(this.Message);
 
             if (null != this.extensionList)
             {
+                ExtensionManager extensionManager = new ExtensionManager();
                 foreach (string extension in this.extensionList)
                 {
-                    WixExtension wixExtension = WixExtension.Load(extension);
-                    linker.AddExtension(wixExtension);
+                    extensionManager.Load(extension);
+                }
+
+                foreach (IExtensionData data in extensionManager.Create<IExtensionData>())
+                {
+                    linker.AddExtensionData(data);
                 }
             }
 
@@ -261,36 +249,43 @@ namespace Microsoft.Tools.WindowsInstallerXml.Lux
                     string inputFileFullPath = Path.GetFullPath(inputFile);
                     if (File.Exists(inputFileFullPath))
                     {
+                        FileFormat format = FileStructure.GuessFileFormatFromExtension(Path.GetExtension(inputFileFullPath));
+                        bool retry;
+                        do
+                        {
+                            retry = false;
 
-                        // try loading as an object file
-                        try
-                        {
-                            Intermediate intermediate = Intermediate.Load(inputFileFullPath, linker.TableDefinitions, false, false);
-                            foreach (Section section in intermediate.Sections)
+                            try
                             {
-                                sectionFiles[section] = inputFile;
-                            }
-                            continue; // next file
-                        }
-                        catch (WixNotIntermediateException)
-                        {
-                            // try another format
-                        }
+                                switch (format)
+                                {
+                                    case FileFormat.Wixobj:
+                                        Intermediate intermediate = Intermediate.Load(inputFile, linker.TableDefinitions, false);
+                                        foreach (Section section in intermediate.Sections)
+                                        {
+                                            sectionFiles[section] = inputFile;
+                                        }
+                                        break;
 
-                        // try loading as a library file
-                        try
-                        {
-                            Library library = Library.Load(inputFileFullPath, linker.TableDefinitions, false, false);
-                            foreach (Section section in library.Sections)
-                            {
-                                sectionFiles[section] = inputFile;
+                                    default:
+                                        Library library = Library.Load(inputFile, linker.TableDefinitions, false);
+                                        foreach (Section section in library.Sections)
+                                        {
+                                            sectionFiles[section] = inputFile;
+                                        }
+                                        break;
+                                }
                             }
-                            continue; // next file
-                        }
-                        catch (WixNotLibraryException)
-                        {
-                            this.OnMessage(LuxBuildErrors.CouldntLoadInput(inputFile));
-                        }
+                            catch (WixUnexpectedFileFormatException e)
+                            {
+                                format = e.FileFormat;
+                                retry = (FileFormat.Wixobj != format && FileFormat.Wixlib != format); // .wixobj and .wixout are supported by lux.
+                                if (!retry)
+                                {
+                                    this.OnMessage(LuxBuildErrors.CouldntLoadInput(inputFile));
+                                }
+                            }
+                        } while (retry);
                     }
                 }
             }

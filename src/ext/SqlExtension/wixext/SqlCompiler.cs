@@ -7,21 +7,20 @@
 // </copyright>
 // 
 // <summary>
-// The compiler for the Windows Installer XML Toolset SQL Server Extension.
+// The compiler for the WiX Toolset SQL Server Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using System.Collections;
-    using System.Globalization;
-    using System.Reflection;
-    using System.Xml;
-    using System.Xml.Schema;
+    using System.Collections.Generic;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML Toolset SQL Server Extension.
+    /// The compiler for the WiX Toolset SQL Server Extension.
     /// </summary>
     public sealed class SqlCompiler : CompilerExtension
     {
@@ -42,23 +41,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         internal const int SqlRollback = 0x00000008;
         internal const int SqlExecuteOnReinstall = 0x00000010;
 
-        private XmlSchema schema;
-
         /// <summary>
         /// Instantiate a new SqlCompiler.
         /// </summary>
         public SqlCompiler()
         {
-            this.schema = LoadXmlSchemaHelper(Assembly.GetExecutingAssembly(), "Microsoft.Tools.WindowsInstallerXml.Extensions.Xsd.sql.xsd");
-        }
-
-        /// <summary>
-        /// Gets the schema for this extension.
-        /// </summary>
-        /// <value>Schema for this extension.</value>
-        public override XmlSchema Schema
-        {
-            get { return this.schema; }
+            this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/sql";
         }
 
         /// <summary>
@@ -68,15 +56,15 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="parentElement">Parent element of element to process.</param>
         /// <param name="element">Element to process.</param>
         /// <param name="contextValues">Extra information about the context in which this element is being parsed.</param>
-        public override void ParseElement(SourceLineNumberCollection sourceLineNumbers, XmlElement parentElement, XmlElement element, params string[] contextValues)
+        public override void ParseElement(XElement parentElement, XElement element, IDictionary<string, string> context)
         {
-            switch (parentElement.LocalName)
+            switch (parentElement.Name.LocalName)
             {
                 case "Component":
-                    string componentId = contextValues[0];
-                    string directoryId = contextValues[1];
+                    string componentId = context["ComponentId"];
+                    string directoryId = context["DirectoryId"];
 
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "SqlDatabase":
                             this.ParseSqlDatabaseElement(element, componentId);
@@ -95,7 +83,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 case "Fragment":
                 case "Module":
                 case "Product":
-                    switch (element.LocalName)
+                    switch (element.Name.LocalName)
                     {
                         case "SqlDatabase":
                             this.ParseSqlDatabaseElement(element, null);
@@ -116,9 +104,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to parse.</param>
         /// <param name="componentId">Identifier for parent component.</param>
-        private void ParseSqlDatabaseElement(XmlNode node, string componentId)
+        private void ParseSqlDatabaseElement(XElement node, string componentId)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             int attributes = 0;
             string database = null;
@@ -128,11 +116,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             string server = null;
             string user = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
@@ -140,7 +128,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "ConfirmOverwrite":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -151,7 +139,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "ContinueOnError":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -162,7 +150,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "CreateOnInstall":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -173,7 +161,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "CreateOnReinstall":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -184,7 +172,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "CreateOnUninstall":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -198,7 +186,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "DropOnInstall":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -209,7 +197,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "DropOnReinstall":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -221,7 +209,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         case "DropOnUninstall":
                             if (null == componentId)
                             {
-                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name, attrib.Name));
+                                this.Core.OnMessage(SqlErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
                             }
 
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
@@ -237,114 +225,110 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             break;
                         case "User":
                             user = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            if (!CompilerCore.ContainsProperty(user))
+                            if (!this.Core.ContainsProperty(user))
                             {
                                 user = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "User", user);
+                                this.Core.CreateSimpleReference(sourceLineNumbers, "User", user);
                             }
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == database)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Database"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Database"));
             }
             else if (128 < database.Length)
             {
-                this.Core.OnMessage(WixErrors.IdentifierTooLongError(sourceLineNumbers, node.Name, "Database", database, 128));
+                this.Core.OnMessage(WixErrors.IdentifierTooLongError(sourceLineNumbers, node.Name.LocalName, "Database", database, 128));
             }
 
             if (null == server)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Server"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Server"));
             }
 
             if (0 == attributes && null != componentId)
             {
-                this.Core.OnMessage(SqlErrors.OneOfAttributesRequiredUnderComponent(sourceLineNumbers, node.Name, "CreateOnInstall", "CreateOnUninstall", "DropOnInstall", "DropOnUninstall"));
+                this.Core.OnMessage(SqlErrors.OneOfAttributesRequiredUnderComponent(sourceLineNumbers, node.Name.LocalName, "CreateOnInstall", "CreateOnUninstall", "DropOnInstall", "DropOnUninstall"));
             }
 
-            foreach (XmlNode child in node.ChildNodes)
+            foreach (XElement child in node.Elements())
             {
-                if (XmlNodeType.Element == child.NodeType)
+                if (this.Namespace == child.Name.Namespace)
                 {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
+                    SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
+                    switch (child.Name.LocalName)
                     {
-                        SourceLineNumberCollection childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
+                        case "SqlScript":
+                            if (null == componentId)
+                            {
+                                this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name.LocalName));
+                            }
 
-                        switch (child.LocalName)
-                        {
-                            case "SqlScript":
-                                if (null == componentId)
-                                {
-                                    this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name));
-                                }
+                            this.ParseSqlScriptElement(child, componentId, id);
+                            break;
+                        case "SqlString":
+                            if (null == componentId)
+                            {
+                                this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name.LocalName));
+                            }
 
-                                this.ParseSqlScriptElement(child, componentId, id);
-                                break;
-                            case "SqlString":
-                                if (null == componentId)
-                                {
-                                    this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name));
-                                }
+                            this.ParseSqlStringElement(child, componentId, id);
+                            break;
+                        case "SqlFileSpec":
+                            if (null == componentId)
+                            {
+                                this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name.LocalName));
+                            }
+                            else if (null != fileSpec)
+                            {
+                                this.Core.OnMessage(WixErrors.TooManyElements(sourceLineNumbers, node.Name.LocalName, child.Name.LocalName, 1));
+                            }
 
-                                this.ParseSqlStringElement(child, componentId, id);
-                                break;
-                            case "SqlFileSpec":
-                                if (null == componentId)
-                                {
-                                    this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name));
-                                }
-                                else if (null != fileSpec)
-                                {
-                                    this.Core.OnMessage(WixErrors.TooManyElements(sourceLineNumbers, node.Name, child.Name, 1));
-                                }
+                            fileSpec = this.ParseSqlFileSpecElement(child);
+                            break;
+                        case "SqlLogFileSpec":
+                            if (null == componentId)
+                            {
+                                this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name.LocalName));
+                            }
+                            else if (null != logFileSpec)
+                            {
+                                this.Core.OnMessage(WixErrors.TooManyElements(sourceLineNumbers, node.Name.LocalName, child.Name.LocalName, 1));
+                            }
 
-                                fileSpec = this.ParseSqlFileSpecElement(child);
-                                break;
-                            case "SqlLogFileSpec":
-                                if (null == componentId)
-                                {
-                                    this.Core.OnMessage(SqlErrors.IllegalElementWithoutComponent(childSourceLineNumbers, child.Name));
-                                }
-                                else if (null != logFileSpec)
-                                {
-                                    this.Core.OnMessage(WixErrors.TooManyElements(sourceLineNumbers, node.Name, child.Name, 1));
-                                }
-
-                                logFileSpec = this.ParseSqlFileSpecElement(child);
-                                break;
-                            default:
-                                this.Core.UnexpectedElement(node, child);
-                                break;
-                        }
+                            logFileSpec = this.ParseSqlFileSpecElement(child);
+                            break;
+                        default:
+                            this.Core.UnexpectedElement(node, child);
+                            break;
                     }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionElement(node, child);
                 }
             }
 
             if (null != componentId)
             {
                 // Reference InstallSqlData and UninstallSqlData since nothing will happen without it
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "InstallSqlData");
-                this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "UninstallSqlData");
+                this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "InstallSqlData");
+                this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "UninstallSqlData");
             }
 
             if (!this.Core.EncounteredError)
@@ -370,9 +354,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// </summary>
         /// <param name="node">Element to parse.</param>
         /// <returns>Identifier of sql file specification.</returns>
-        private string ParseSqlFileSpecElement(XmlNode node)
+        private string ParseSqlFileSpecElement(XElement node)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             string fileName = null;
             string growthSize = null;
@@ -380,11 +364,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             string name = null;
             string size = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                    switch (attrib.LocalName)
+                    switch (attrib.Name.LocalName)
                     {
                         case "Id":
                             id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
@@ -405,45 +389,32 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             growthSize = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
-                            this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            this.Core.UnexpectedAttribute(node, attrib);
                             break;
                     }
                 }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == name)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Name"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Name"));
             }
 
             if (null == fileName)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Filename"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Filename"));
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             if (!this.Core.EncounteredError)
             {
@@ -476,185 +447,164 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="node">Element to parse.</param>
         /// <param name="componentId">Identifier for parent component.</param>
         /// <param name="sqlDb">Optional database to execute script against.</param>
-        private void ParseSqlScriptElement(XmlNode node, string componentId, string sqlDb)
+        private void ParseSqlScriptElement(XElement node, string componentId, string sqlDb)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             int attributes = 0;
             bool rollbackAttribute = false;
             bool nonRollbackAttribute = false;
             string binary = null;
-            int sequence = CompilerCore.IntegerNotSet;
+            int sequence = CompilerConstants.IntegerNotSet;
             string user = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                switch (attrib.LocalName)
-                {
-                    case "Id":
-                        id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                        break;
-                    case "BinaryKey":
-                        binary = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "Binary", binary);
-                        break;
-                    case "Sequence":
-                        sequence = this.Core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 1, short.MaxValue);
-                        break;
-                    case "SqlDb":
-                        if (null != sqlDb)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name, attrib.Name, node.ParentNode.Name));
-                        }
-                        sqlDb = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "SqlDatabase", sqlDb);
-                        break;
-                    case "User":
-                        user = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "User", user);
-                        break;
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "Id":
+                            id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            break;
+                        case "BinaryKey":
+                            binary = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "Binary", binary);
+                            break;
+                        case "Sequence":
+                            sequence = this.Core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 1, short.MaxValue);
+                            break;
+                        case "SqlDb":
+                            if (null != sqlDb)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, node.Parent.Name.LocalName));
+                            }
+                            sqlDb = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "SqlDatabase", sqlDb);
+                            break;
+                        case "User":
+                            user = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "User", user);
+                            break;
 
-                    // Flag-setting attributes
-                    case "ContinueOnError":
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlContinueOnError;
-                        }
-                        break;
-                    case "ExecuteOnInstall":
-                        if (rollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
-                        }
-                        nonRollbackAttribute = true;
+                        // Flag-setting attributes
+                        case "ContinueOnError":
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlContinueOnError;
+                            }
+                            break;
+                        case "ExecuteOnInstall":
+                            if (rollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                            }
+                            nonRollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnInstall;
-                        }
-                        break;
-                    case "ExecuteOnReinstall":
-                        if (rollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
-                        }
-                        nonRollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnInstall;
+                            }
+                            break;
+                        case "ExecuteOnReinstall":
+                            if (rollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                            }
+                            nonRollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnReinstall;
-                        }
-                        break;
-                    case "ExecuteOnUninstall":
-                        if (rollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
-                        }
-                        nonRollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnReinstall;
+                            }
+                            break;
+                        case "ExecuteOnUninstall":
+                            if (rollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                            }
+                            nonRollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnUninstall;
-                        }
-                        break;
-                    case "RollbackOnInstall":
-                        if (nonRollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
-                        }
-                        rollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnUninstall;
+                            }
+                            break;
+                        case "RollbackOnInstall":
+                            if (nonRollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
+                            }
+                            rollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnInstall;
-                            attributes |= SqlRollback;
-                        }
-                        break;
-                    case "RollbackOnReinstall":
-                        if (nonRollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
-                        }
-                        rollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnInstall;
+                                attributes |= SqlRollback;
+                            }
+                            break;
+                        case "RollbackOnReinstall":
+                            if (nonRollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
+                            }
+                            rollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnReinstall;
-                            attributes |= SqlRollback;
-                        }
-                        break;
-                    case "RollbackOnUninstall":
-                        if (nonRollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
-                        }
-                        rollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnReinstall;
+                                attributes |= SqlRollback;
+                            }
+                            break;
+                        case "RollbackOnUninstall":
+                            if (nonRollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
+                            }
+                            rollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnUninstall;
-                            attributes |= SqlRollback;
-                        }
-                        break;
-                    default:
-                        this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
-                        break;
-                }
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnUninstall;
+                                attributes |= SqlRollback;
+                            }
+                            break;
+                        default:
+                            this.Core.UnexpectedAttribute(node, attrib);
+                            break;
                     }
+                }
                 else
                 {
-                    this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                    this.Core.ParseExtensionAttribute(node, attrib);
                 }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == binary)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "BinaryKey"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "BinaryKey"));
             }
 
             if (null == sqlDb)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "SqlDb"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "SqlDb"));
             }
 
             if (0 == attributes)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttributes(sourceLineNumbers, node.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall", "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                this.Core.OnMessage(WixErrors.ExpectedAttributes(sourceLineNumbers, node.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall", "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        switch (child.LocalName)
-                        {
-                            case "Binary":
-                                this.Core.OnMessage(SqlErrors.DeprecatedBinaryChildElement(sourceLineNumbers, node.Name));
-                                break;
-                            default:
-                                this.Core.UnsupportedExtensionElement(node, child);
-                                break;
-                        }
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             // Reference InstallSqlData and UninstallSqlData since nothing will happen without it
-            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "InstallSqlData");
-            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "UninstallSqlData");
+            this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "InstallSqlData");
+            this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "UninstallSqlData");
 
             if (!this.Core.EncounteredError)
             {
@@ -665,7 +615,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 row[3] = binary;
                 row[4] = user;
                 row[5] = attributes;
-                if (CompilerCore.IntegerNotSet != sequence)
+                if (CompilerConstants.IntegerNotSet != sequence)
                 {
                     row[6] = sequence;
                 }
@@ -678,175 +628,162 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <param name="node">Element to parse.</param>
         /// <param name="componentId">Identifier for parent component.</param>
         /// <param name="sqlDb">Optional database to execute string against.</param>
-        private void ParseSqlStringElement(XmlNode node, string componentId, string sqlDb)
+        private void ParseSqlStringElement(XElement node, string componentId, string sqlDb)
         {
-            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string id = null;
             int attributes = 0;
             bool rollbackAttribute = false;
             bool nonRollbackAttribute = false;
-            int sequence = CompilerCore.IntegerNotSet;
+            int sequence = CompilerConstants.IntegerNotSet;
             string sql = null;
             string user = null;
 
-            foreach (XmlAttribute attrib in node.Attributes)
+            foreach (XAttribute attrib in node.Attributes())
             {
-                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
                 {
-                switch (attrib.LocalName)
-                {
-                    case "Id":
-                        id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                        break;
-                    case "ContinueOnError":
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlContinueOnError;
-                        }
-                        break;
-                    case "ExecuteOnInstall":
-                        if (rollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
-                        }
-                        nonRollbackAttribute = true;
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "Id":
+                            id = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            break;
+                        case "ContinueOnError":
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlContinueOnError;
+                            }
+                            break;
+                        case "ExecuteOnInstall":
+                            if (rollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                            }
+                            nonRollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnInstall;
-                        }
-                        break;
-                    case "ExecuteOnReinstall":
-                        if (rollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
-                        }
-                        nonRollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnInstall;
+                            }
+                            break;
+                        case "ExecuteOnReinstall":
+                            if (rollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                            }
+                            nonRollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnReinstall;
-                        }
-                        break;
-                    case "ExecuteOnUninstall":
-                        if (rollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
-                        }
-                        nonRollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnReinstall;
+                            }
+                            break;
+                        case "ExecuteOnUninstall":
+                            if (rollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                            }
+                            nonRollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnUninstall;
-                        }
-                        break;
-                    case "RollbackOnInstall":
-                        if (nonRollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
-                        }
-                        rollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnUninstall;
+                            }
+                            break;
+                        case "RollbackOnInstall":
+                            if (nonRollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
+                            }
+                            rollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnInstall;
-                            attributes |= SqlRollback;
-                        }
-                        break;
-                    case "RollbackOnReinstall":
-                        if (nonRollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
-                        }
-                        rollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnInstall;
+                                attributes |= SqlRollback;
+                            }
+                            break;
+                        case "RollbackOnReinstall":
+                            if (nonRollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
+                            }
+                            rollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnReinstall;
-                            attributes |= SqlRollback;
-                        }
-                        break;
-                    case "RollbackOnUninstall":
-                        if (nonRollbackAttribute)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name, attrib.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
-                        }
-                        rollbackAttribute = true;
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnReinstall;
+                                attributes |= SqlRollback;
+                            }
+                            break;
+                        case "RollbackOnUninstall":
+                            if (nonRollbackAttribute)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttributes(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall"));
+                            }
+                            rollbackAttribute = true;
 
-                        if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                        {
-                            attributes |= SqlExecuteOnUninstall;
-                            attributes |= SqlRollback;
-                        }
-                        break;
-                    case "Sequence":
-                        sequence = this.Core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 1, short.MaxValue);
-                        break;
-                    case "SQL":
-                        sql = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                        break;
-                    case "SqlDb":
-                        if (null != sqlDb)
-                        {
-                            this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name, "SqlDb", "SqlDatabase"));
-                        }
+                            if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= SqlExecuteOnUninstall;
+                                attributes |= SqlRollback;
+                            }
+                            break;
+                        case "Sequence":
+                            sequence = this.Core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 1, short.MaxValue);
+                            break;
+                        case "SQL":
+                            sql = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "SqlDb":
+                            if (null != sqlDb)
+                            {
+                                this.Core.OnMessage(WixErrors.IllegalAttributeWhenNested(sourceLineNumbers, node.Name.LocalName, "SqlDb", "SqlDatabase"));
+                            }
 
-                        sqlDb = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "SqlDatabase", sqlDb);
-                        break;
-                    case "User":
-                        user = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                        this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "User", user);
-                        break;
-                    default:
-                        this.Core.UnexpectedAttribute(sourceLineNumbers, attrib);
-                        break;
+                            sqlDb = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "SqlDatabase", sqlDb);
+                            break;
+                        case "User":
+                            user = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            this.Core.CreateSimpleReference(sourceLineNumbers, "User", user);
+                            break;
+                        default:
+                            this.Core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
                 }
-            }
-            else
-            {
-                this.Core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
-            }
+                else
+                {
+                    this.Core.ParseExtensionAttribute(node, attrib);
+                }
             }
 
             if (null == id)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Id"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
             }
 
             if (null == sql)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "SQL"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "SQL"));
             }
 
             if (null == sqlDb)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "SqlDb"));
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "SqlDb"));
             }
 
             if (0 == attributes)
             {
-                this.Core.OnMessage(WixErrors.ExpectedAttributes(sourceLineNumbers, node.Name, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall", "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
+                this.Core.OnMessage(WixErrors.ExpectedAttributes(sourceLineNumbers, node.Name.LocalName, "ExecuteOnInstall", "ExecuteOnReinstall", "ExecuteOnUninstall", "RollbackOnInstall", "RollbackOnReinstall", "RollbackOnUninstall"));
             }
 
-            foreach (XmlNode child in node.ChildNodes)
-            {
-                if (XmlNodeType.Element == child.NodeType)
-                {
-                    if (child.NamespaceURI == this.schema.TargetNamespace)
-                    {
-                        this.Core.UnexpectedElement(node, child);
-                    }
-                    else
-                    {
-                        this.Core.UnsupportedExtensionElement(node, child);
-                    }
-                }
-            }
+            this.Core.ParseForExtensionElements(node);
 
             // Reference InstallSqlData and UninstallSqlData since nothing will happen without it
-            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "InstallSqlData");
-            this.Core.CreateWixSimpleReferenceRow(sourceLineNumbers, "CustomAction", "UninstallSqlData");
+            this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "InstallSqlData");
+            this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "UninstallSqlData");
 
             if (!this.Core.EncounteredError)
             {
@@ -857,7 +794,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 row[3] = sql;
                 row[4] = user;
                 row[5] = attributes;
-                if (CompilerCore.IntegerNotSet != sequence)
+                if (CompilerConstants.IntegerNotSet != sequence)
                 {
                     row[6] = sequence;
                 }

@@ -7,11 +7,11 @@
 // </copyright>
 //
 // <summary>
-// Binder core of the Windows Installer Xml toolset.
+// Binder core of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
@@ -23,6 +23,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Security.Cryptography;
@@ -31,13 +32,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Threading;
     using System.Xml;
     using System.Xml.XPath;
-    using Microsoft.Tools.WindowsInstallerXml.Cab;
-    using Microsoft.Tools.WindowsInstallerXml.CLR.Interop;
-    using Microsoft.Tools.WindowsInstallerXml.MergeMod;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Cab;
+    using WixToolset.CLR.Interop;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
+    using WixToolset.MergeMod;
+    using WixToolset.Msi;
+    using WixToolset.Msi.Interop;
+    using Wix = WixToolset.Data.Serialize;
 
     // TODO: (4.0) Refactor so that these don't need to be copied.
     // Copied verbatim from ext\UtilExtension\wixext\UtilCompiler.cs
@@ -77,18 +80,17 @@ namespace Microsoft.Tools.WindowsInstallerXml
     [Flags]
     internal enum WixProductSearchAttributes
     {
-        Version = 0x01,
-        Language = 0x02,
-        State = 0x04,
-        Assignment = 0x08,
+        Version = 0x1,
+        Language = 0x2,
+        State = 0x4,
+        Assignment = 0x8,
         UpgradeCode = 0x10,
     }
 
-
     /// <summary>
-    /// Binder core of the Windows Installer Xml toolset.
+    /// Binder core of the WiX toolset.
     /// </summary>
-    public sealed class Binder : WixBinder, IDisposable
+    public sealed class Binder
     {
         // as outlined in RFC 4122, this is our namespace for generating name-based (version 3) UUIDs
         private static readonly Guid WixComponentGuidNamespace = new Guid("{3064E5C6-FB63-4FE9-AC49-E446A792EFA5}");
@@ -100,34 +102,16 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
         private string emptyFile;
 
-        private bool backwardsCompatibleGuidGen;
-        private int cabbingThreadCount;
-        private string cabCachePath;
-        private Cab.CompressionLevel defaultCompressionLevel;
-        private bool exactAssemblyVersions;
-        private bool setMsiAssemblyNameFileVersion;
-        private string pdbFile;
-        private bool reuseCabinets;
-        private bool suppressAssemblies;
-        private bool suppressAclReset;
-        private bool suppressFileHashAndInfo;
-        private StringCollection suppressICEs;
-        private bool suppressLayout;
-        private bool suppressWixPdb;
-        private bool suppressValidation;
+        private BinderCore core;
+        private BinderFileManagerCore fileManagerCore;
+        private List<IBinderExtension> extensions;
+        private List<IBinderFileManager> fileManagers;
+        private List<InspectorExtension> inspectorExtensions;
 
-        private StringCollection ices;
-        private StringCollection invalidArgs;
-        private bool suppressAddingValidationRows;
         private Validator validator;
 
-        private string contentsFile;
-        private string outputsFile;
-        private string builtOutputsFile;
-        private string wixprojectFile;
-
         // Following object handles are needed by the NewCabNamesCallBack callback
-        private ArrayList fileTransfers; // File Transfers for BindDatabase Only and not the one for BindBundle
+        private List<FileTransfer> fileTransfers; // File Transfers for BindDatabase Only and not the one for BindBundle
         private Output output;
         internal FileSplitCabNamesCallback newCabNamesCallBack;
         private Dictionary<string, string> lastCabinetAddedToMediaTable; // Key is First Cabinet Name, Value is Last Cabinet Added in the Split Sequence
@@ -137,384 +121,183 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         public Binder()
         {
-            this.defaultCompressionLevel = Cab.CompressionLevel.Mszip;
-            this.suppressICEs = new StringCollection();
+            this.DefaultCompressionLevel = CompressionLevel.Mszip;
 
-            this.ices = new StringCollection();
-            this.invalidArgs = new StringCollection();
+            this.BindPaths = new List<BindPath>();
+            this.TargetBindPaths = new List<BindPath>();
+            this.UpdatedBindPaths = new List<BindPath>();
+
+            this.extensions = new List<IBinderExtension>();
+            this.fileManagers = new List<IBinderFileManager>();
+            this.inspectorExtensions = new List<InspectorExtension>();
+
+            this.Ices = new List<string>();
+            this.SuppressIces = new List<string>();
+
             this.validator = new Validator();
 
             // Need fileTransfers handle for NewCabNamesCallBack callback
-            this.fileTransfers = new ArrayList();
+            this.fileTransfers = new List<FileTransfer>();
             this.newCabNamesCallBack = NewCabNamesCallBack;
             this.lastCabinetAddedToMediaTable = new Dictionary<string, string>();
         }
 
+        public string ContentsFile { get; set; }
+        public string OutputsFile { get; set; }
+        public string BuiltOutputsFile { get; set; }
+        public string WixprojectFile { get; set; }
+
         /// <summary>
-        /// Gets or sets whether the GUID generation should use a backwards
-        /// compatible version (i.e. MD5).
+        /// Gets the list of bindpaths.
         /// </summary>
-        public bool BackwardsCompatibleGuidGen
-        {
-            get { return this.backwardsCompatibleGuidGen; }
-            set { this.backwardsCompatibleGuidGen = value; }
-        }
+        public List<BindPath> BindPaths { get; set; }
+
+        /// <summary>
+        /// Gets the list of target bindpaths.
+        /// </summary>
+        public List<BindPath> TargetBindPaths { get; set; }
+
+        /// <summary>
+        /// Gets the list of updated bindpaths.
+        /// </summary>
+        public List<BindPath> UpdatedBindPaths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cabinet cache location.
+        /// </summary>
+        public string CabCachePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to attempt to use cabinets from the cabinet cache location.
+        /// </summary>
+        public bool ReuseCabinets { get; set; }
 
         /// <summary>
         /// Gets or sets the number of threads to use for cabinet creation.
         /// </summary>
         /// <value>The number of threads to use for cabinet creation.</value>
-        public int CabbingThreadCount
-        {
-            get { return this.cabbingThreadCount; }
-            set { this.cabbingThreadCount = value; }
-        }
+        public int CabbingThreadCount { get; set; }
 
         /// <summary>
         /// Gets or sets the default compression level to use for cabinets
         /// that don't have their compression level explicitly set.
         /// </summary>
-        public Cab.CompressionLevel DefaultCompressionLevel
-        {
-            get { return this.defaultCompressionLevel; }
-            set { this.defaultCompressionLevel = value; }
-        }
+        public CompressionLevel DefaultCompressionLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the exact assembly versions flag (see docs).
         /// </summary>
-        public bool ExactAssemblyVersions
-        {
-            get { return this.exactAssemblyVersions; }
-            set { this.exactAssemblyVersions = value; }
-        }
+        public bool ExactAssemblyVersions { get; set; }
 
         /// <summary>
         /// Gets and sets the location to save the WixPdb.
         /// </summary>
         /// <value>The location in which to save the WixPdb. Null if the the WixPdb should not be output.</value>
-        public string PdbFile
-        {
-            get { return this.pdbFile; }
-            set { this.pdbFile = value; }
-        }
+        public string PdbFile { get; set; }
+
+        public List<string> Ices { get; set; }
+
+        public List<string> SuppressIces { get; set; }
 
         /// <summary>
         /// Gets and sets the option to set the file version in the MsiAssemblyName table.
         /// </summary>
         /// <value>The option to set the file version in the MsiAssemblyName table.</value>
-        public bool SetMsiAssemblyNameFileVersion
-        {
-            get { return this.setMsiAssemblyNameFileVersion; }
-            set { this.setMsiAssemblyNameFileVersion = value; }
-        }
+        public bool SetMsiAssemblyNameFileVersion { get; set; }
 
         /// <summary>
         /// Gets and sets the option to suppress resetting ACLs by the binder.
         /// </summary>
         /// <value>The option to suppress resetting ACLs by the binder.</value>
-        public bool SuppressAclReset
-        {
-            get { return this.suppressAclReset; }
-            set { this.suppressAclReset = value; }
-        }
-
-        /// <summary>
-        /// Gets and sets the option to suppress adding _Validation rows.
-        /// </summary>
-        /// <value>The option to suppress adding _Validation rows.</value>
-        public bool SuppressAddingValidationRows
-        {
-            get { return this.suppressAddingValidationRows; }
-            set { this.suppressAddingValidationRows = value; }
-        }
-
-        /// <summary>
-        /// Gets and sets the option to suppress grabbing assembly name information from assemblies.
-        /// </summary>
-        /// <value>The option to suppress grabbing assembly name information from assemblies.</value>
-        public bool SuppressAssemblies
-        {
-            get { return this.suppressAssemblies; }
-            set { this.suppressAssemblies = value; }
-        }
-
-        /// <summary>
-        /// Gets and sets the option to suppress grabbing the file hash, version and language at link time.
-        /// </summary>
-        /// <value>The option to suppress grabbing the file hash, version and language.</value>
-        public bool SuppressFileHashAndInfo
-        {
-            get { return this.suppressFileHashAndInfo; }
-            set { this.suppressFileHashAndInfo = value; }
-        }
+        public bool SuppressAclReset { get; set; }
 
         /// <summary>
         /// Gets and sets the option to suppress creating an image for MSI/MSM.
         /// </summary>
         /// <value>The option to suppress creating an image for MSI/MSM.</value>
-        public bool SuppressLayout
-        {
-            get { return this.suppressLayout; }
-            set { this.suppressLayout = value; }
-        }
+        public bool SuppressLayout { get; set; }
 
         /// <summary>
         /// Gets and sets the option to suppress MSI/MSM validation.
         /// </summary>
         /// <value>The option to suppress MSI/MSM validation.</value>
         /// <remarks>This must be set before calling Bind.</remarks>
-        public bool SuppressValidation
+        public bool SuppressValidation { get; set; }
+
+        /// <summary>
+        /// Gets and sets the option to suppress adding _Validation table rows.
+        /// </summary>
+        public bool SuppressAddingValidationRows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the localizer.
+        /// </summary>
+        /// <value>The localizer.</value>
+        public Localizer Localizer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the temporary path for the Binder.  If left null, the binder
+        /// will use %TEMP% environment variable.
+        /// </summary>
+        /// <value>Path to temp files.</value>
+        public string TempFilesLocation
         {
-            get
-            {
-                return this.suppressValidation;
-            }
+            get;
+            //{
+            //    // if we don't have the temporary files object yet, get one
+            //    if (null == this.tempFiles)
+            //    {
+            //        this.tempFiles = new TempFileCollection();
 
-            set
-            {
-                // make a new validator if validation has been turned off and is now being turned back on
-                if (!value && null == this.validator)
-                {
-                    this.validator = new Validator();
-                }
+            //        // ensure the base path exists
+            //        Directory.CreateDirectory(this.tempFiles.BasePath);
+            //        this.fileManager.TempFilesLocation = this.tempFiles.BasePath;
+            //    }
 
-                this.suppressValidation = value;
-            }
+            //    return this.tempFiles.BasePath;
+            //}
+
+            set;
+            //{
+            //    this.DeleteTempFiles();
+
+            //    if (null == value)
+            //    {
+            //        this.tempFiles = new TempFileCollection();
+            //    }
+            //    else
+            //    {
+            //        this.tempFiles = new TempFileCollection(value);
+            //    }
+
+            //    // ensure the base path exists
+            //    Directory.CreateDirectory(this.tempFiles.BasePath);
+            //    this.fileManager.TempFilesLocation = this.tempFiles.BasePath;
+            //}
         }
 
         /// <summary>
-        /// Gets help for all the command line arguments for this binder.
+        /// Gets or sets the Wix variable resolver.
         /// </summary>
-        /// <returns>A string to be added to light's help string.</returns>
-        public override string GetCommandLineArgumentsHelpString()
+        /// <value>The Wix variable resolver.</value>
+        public WixVariableResolver WixVariableResolver { get; set; }
+
+        /// <summary>
+        /// Add a binder extension.
+        /// </summary>
+        /// <param name="extension">New extension.</param>
+        public void AddExtension(IBinderExtension extension)
         {
-            return WixStrings.BinderArguments;
+            this.extensions.Add(extension);
         }
 
         /// <summary>
-        /// Parse the commandline arguments.
+        /// Add a file manager extension.
         /// </summary>
-        /// <param name="args">Commandline arguments.</param>
-        /// <param name="consoleMessageHandler">The console message handler.</param>
-        [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "These strings are not round tripped, and have no security impact")]
-        public override StringCollection ParseCommandLine(string[] args, ConsoleMessageHandler consoleMessageHandler)
+        /// <param name="extension">New file manager.</param>
+        public void AddExtension(IBinderFileManager extension)
         {
-            for (int i = 0; i < args.Length; ++i)
-            {
-                string arg = args[i];
-                if (null == arg || 0 == arg.Length) // skip blank arguments
-                {
-                    continue;
-                }
-
-                if ('-' == arg[0] || '/' == arg[0])
-                {
-                    string parameter = arg.Substring(1);
-                    if (parameter.Equals("bcgg", StringComparison.Ordinal))
-                    {
-                        this.backwardsCompatibleGuidGen = true;
-                    }
-                    else if (parameter.Equals("cc", StringComparison.Ordinal))
-                    {
-                        this.cabCachePath = CommandLine.GetDirectory(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.cabCachePath))
-                        {
-                            return this.invalidArgs;
-                        }
-                    }
-                    else if (parameter.Equals("ct", StringComparison.Ordinal))
-                    {
-                        if (!CommandLine.IsValidArg(args, ++i))
-                        {
-                            consoleMessageHandler.Display(this, WixErrors.IllegalCabbingThreadCount(String.Empty));
-                            return this.invalidArgs;
-                        }
-
-                        try
-                        {
-                            this.cabbingThreadCount = Convert.ToInt32(args[i], CultureInfo.InvariantCulture.NumberFormat);
-
-                            if (0 >= this.cabbingThreadCount)
-                            {
-                                consoleMessageHandler.Display(this, WixErrors.IllegalCabbingThreadCount(args[i]));
-                            }
-
-                            consoleMessageHandler.Display(this, WixVerboses.SetCabbingThreadCount(this.cabbingThreadCount.ToString()));
-                        }
-                        catch (FormatException)
-                        {
-                            consoleMessageHandler.Display(this, WixErrors.IllegalCabbingThreadCount(args[i]));
-                        }
-                        catch (OverflowException)
-                        {
-                            consoleMessageHandler.Display(this, WixErrors.IllegalCabbingThreadCount(args[i]));
-                        }
-                    }
-                    else if (parameter.Equals("cub", StringComparison.Ordinal))
-                    {
-                        string cubeFile = CommandLine.GetFile(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(cubeFile))
-                        {
-                            return this.invalidArgs;
-                        }
-
-                        this.validator.AddCubeFile(cubeFile);
-                    }
-                    else if (parameter.StartsWith("dcl:", StringComparison.Ordinal))
-                    {
-                        string defaultCompressionLevel = arg.Substring(5);
-
-                        if (String.IsNullOrEmpty(defaultCompressionLevel))
-                        {
-                            return this.invalidArgs;
-                        }
-
-                        this.defaultCompressionLevel = WixCreateCab.CompressionLevelFromString(defaultCompressionLevel);
-                    }
-                    else if (parameter.Equals("eav", StringComparison.Ordinal))
-                    {
-                        this.exactAssemblyVersions = true;
-                    }
-                    else if (parameter.Equals("fv", StringComparison.Ordinal))
-                    {
-                        this.setMsiAssemblyNameFileVersion = true;
-                    }
-                    else if (parameter.StartsWith("ice:", StringComparison.Ordinal))
-                    {
-                        this.ices.Add(parameter.Substring(4));
-                    }
-                    else if (parameter.Equals("contentsfile", StringComparison.Ordinal))
-                    {
-                        this.contentsFile = CommandLine.GetFile(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.contentsFile))
-                        {
-                            return this.invalidArgs;
-                        }
-                    }
-                    else if (parameter.Equals("outputsfile", StringComparison.Ordinal))
-                    {
-                        this.outputsFile = CommandLine.GetFile(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.outputsFile))
-                        {
-                            return this.invalidArgs;
-                        }
-                    }
-                    else if (parameter.Equals("builtoutputsfile", StringComparison.Ordinal))
-                    {
-                        this.builtOutputsFile = CommandLine.GetFile(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.builtOutputsFile))
-                        {
-                            return this.invalidArgs;
-                        }
-                    }
-                    else if (parameter.Equals("wixprojectfile", StringComparison.Ordinal))
-                    {
-                        this.wixprojectFile = CommandLine.GetFile(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.wixprojectFile))
-                        {
-                            return this.invalidArgs;
-                        }
-                    }
-                    else if (parameter.Equals("O1", StringComparison.Ordinal))
-                    {
-                        consoleMessageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("O1"));
-                    }
-                    else if (parameter.Equals("O2", StringComparison.Ordinal))
-                    {
-                        consoleMessageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("O2"));
-                    }
-                    else if (parameter.Equals("pdbout", StringComparison.Ordinal))
-                    {
-                        this.pdbFile = CommandLine.GetFile(parameter, consoleMessageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.pdbFile))
-                        {
-                            return this.invalidArgs;
-                        }
-                    }
-                    else if (parameter.Equals("reusecab", StringComparison.Ordinal))
-                    {
-                        this.reuseCabinets = true;
-                    }
-                    else if (parameter.Equals("sa", StringComparison.Ordinal))
-                    {
-                        this.suppressAssemblies = true;
-                    }
-                    else if (parameter.Equals("sacl", StringComparison.Ordinal))
-                    {
-                        this.suppressAclReset = true;
-                    }
-                    else if (parameter.Equals("sbuildinfo", StringComparison.Ordinal))
-                    {
-                        consoleMessageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch(parameter));
-                    }
-                    else if (parameter.Equals("sf", StringComparison.Ordinal))
-                    {
-                        this.suppressAssemblies = true;
-                        this.suppressFileHashAndInfo = true;
-                    }
-                    else if (parameter.Equals("sh", StringComparison.Ordinal))
-                    {
-                        this.suppressFileHashAndInfo = true;
-                    }
-                    else if (parameter.StartsWith("sice:", StringComparison.Ordinal))
-                    {
-                        this.suppressICEs.Add(parameter.Substring(5));
-                    }
-                    else if (parameter.Equals("sl", StringComparison.Ordinal))
-                    {
-                        this.suppressLayout = true;
-                    }
-                    else if (parameter.Equals("spdb", StringComparison.Ordinal))
-                    {
-                        this.suppressWixPdb = true;
-                    }
-                    else if (parameter.Equals("sval", StringComparison.Ordinal))
-                    {
-                        this.suppressValidation = true;
-                    }
-                    else
-                    {
-                        this.invalidArgs.Add(arg);
-                    }
-                }
-                else
-                {
-                    this.invalidArgs.Add(arg);
-                }
-            }
-
-            this.pdbFile = this.suppressWixPdb ? null : this.pdbFile;
-
-            return this.invalidArgs;
-        }
-
-        /// <summary>
-        /// Do any setting up needed after all command line parsing.
-        /// </summary>
-        public override void PostParseCommandLine()
-        {
-            if (!this.suppressWixPdb && null == this.pdbFile && null != this.OutputFile)
-            {
-                this.pdbFile = Path.ChangeExtension(this.OutputFile, ".wixpdb");
-            }
-        }
-
-        /// <summary>
-        /// Adds an event handler.
-        /// </summary>
-        /// <param name="newHandler">The event handler to add.</param>
-        public override void AddMessageEventHandler(MessageEventHandler newHandler)
-        {
-            base.AddMessageEventHandler(newHandler);
-            validator.Extension.Message += newHandler;
+            this.fileManagers.Add(extension);
         }
 
         /// <summary>
@@ -524,19 +307,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="file">The Windows Installer file to create.</param>
         /// <remarks>The Binder.DeleteTempFiles method should be called after calling this method.</remarks>
         /// <returns>true if binding completed successfully; false otherwise</returns>
-        public override bool Bind(Output output, string file)
+        public bool Bind(Output output, string file)
         {
             // Need output object handle for NewCabNamesCallBack callback
             this.output = output;
 
-            // ensure the cabinet cache path exists if we are going to use it
-            if (null != this.cabCachePath && !Directory.Exists(this.cabCachePath))
+            // Ensure the cabinet cache path exists if we are going to use it.
+            if (!String.IsNullOrEmpty(this.CabCachePath))
             {
-                Directory.CreateDirectory(this.cabCachePath);
+                Directory.CreateDirectory(this.CabCachePath);
             }
 
             // tell the binder about the validator if validation isn't suppressed
-            if (!this.suppressValidation && (OutputType.Module == output.Type || OutputType.Product == output.Type))
+            if (!this.SuppressValidation && (OutputType.Module == output.Type || OutputType.Product == output.Type))
             {
                 if (String.IsNullOrEmpty(this.validator.TempFilesLocation))
                 {
@@ -544,31 +327,23 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
 
                 // set the default cube file
-                Assembly lightAssembly = Assembly.GetExecutingAssembly();
-                string lightDirectory = Path.GetDirectoryName(lightAssembly.Location);
-                if (OutputType.Module == output.Type)
-                {
-                    this.validator.AddCubeFile(Path.Combine(lightDirectory, "mergemod.cub"));
-                }
-                else // product
-                {
-                    this.validator.AddCubeFile(Path.Combine(lightDirectory, "darice.cub"));
-                }
+                string lightDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string cubePath = (OutputType.Module == output.Type) ? Path.Combine(lightDirectory, "mergemod.cub") : Path.Combine(lightDirectory, "darice.cub");
+                this.validator.AddCubeFile(cubePath);
 
                 // by default, disable ICEs that have equivalent-or-better checks in WiX
-                this.suppressICEs.Add("ICE08");
-                this.suppressICEs.Add("ICE33");
-                this.suppressICEs.Add("ICE47");
-                this.suppressICEs.Add("ICE66");
+                this.SuppressIces.Add("ICE08");
+                this.SuppressIces.Add("ICE33");
+                this.SuppressIces.Add("ICE47");
+                this.SuppressIces.Add("ICE66");
 
                 // set the ICEs
-                string[] iceArray = new string[this.ices.Count];
-                this.ices.CopyTo(iceArray, 0);
+                string[] iceArray = new string[this.Ices.Count];
+                this.Ices.CopyTo(iceArray, 0);
                 this.validator.ICEs = iceArray;
 
                 // set the suppressed ICEs
-                string[] suppressICEArray = new string[this.suppressICEs.Count];
-                this.suppressICEs.CopyTo(suppressICEArray, 0);
+                string[] suppressICEArray = this.SuppressIces.ToArray();
                 this.validator.SuppressedICEs = suppressICEArray;
             }
             else
@@ -576,37 +351,51 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 this.validator = null;
             }
 
-            this.core = new BinderCore(this.MessageHandler);
-            this.FileManager.MessageHandler = this.core;
+            this.fileManagerCore = new BinderFileManagerCore();
+            this.fileManagerCore.CabCachePath = this.CabCachePath;
+            this.fileManagerCore.ReuseCabinets = this.ReuseCabinets;
+            this.fileManagerCore.Output = output;
+            this.fileManagerCore.TempFilesLocation = this.TempFilesLocation;
+            this.fileManagerCore.AddBindPaths(this.BindPaths, BindStage.Normal);
+            this.fileManagerCore.AddBindPaths(this.TargetBindPaths, BindStage.Target);
+            this.fileManagerCore.AddBindPaths(this.UpdatedBindPaths, BindStage.Updated);
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                fileManager.Core = this.fileManagerCore;
+            }
 
-            foreach (BinderExtension extension in this.extensions)
+            this.core = new BinderCore();
+            this.core.FileManagerCore = this.fileManagerCore;
+            foreach (IBinderExtension extension in this.extensions)
             {
                 extension.Core = this.core;
             }
 
-            if (null == output)
-            {
-                throw new ArgumentNullException("output");
-            }
-
-            this.core.EncounteredError = false;
-
             switch (output.Type)
             {
                 case OutputType.Bundle:
-                    return this.BindBundle(output, file);
+                    this.BindBundle(output, file);
+                    break;
+
                 case OutputType.Transform:
-                    return this.BindTransform(output, file);
+                    this.BindTransform(output, file);
+                    break;
+
                 default:
-                    return this.BindDatabase(output, file);
+                    this.BindDatabase(output, file);
+                    break;
             }
+
+            this.core = null;
+
+            return Messaging.Instance.EncounteredError;
         }
 
         /// <summary>
         /// Does any housekeeping after Bind.
         /// </summary>
         /// <param name="tidy">Whether or not any actual tidying should be done.</param>
-        public override void Cleanup(bool tidy)
+        public void Cleanup(bool tidy)
         {
             // If Bind hasn't been called yet, core will be null. There will be
             // nothing to cleanup.
@@ -647,54 +436,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Cleans up the temp files used by the Binder.
         /// </summary>
         /// <returns>True if all files were deleted, false otherwise.</returns>
-        public override bool DeleteTempFiles()
+        public bool DeleteTempFiles()
         {
-            bool deleted = base.DeleteTempFiles();
+            bool deleted = Common.DeleteTempFiles(this.TempFilesLocation, this.core);
             if (deleted)
             {
                 this.emptyFile = null;
             }
 
             return deleted;
-        }
-
-        /// <summary>
-        /// Process a list of loaded extensions.
-        /// </summary>
-        /// <param name="loadedExtensionList">The list of loaded extensions.</param>
-        public override void ProcessExtensions(WixExtension[] loadedExtensionList)
-        {
-            bool binderFileManagerLoaded = false;
-            bool validatorExtensionLoaded = false;
-
-            foreach (WixExtension wixExtension in loadedExtensionList)
-            {
-                if (null != wixExtension.BinderFileManager)
-                {
-                    if (binderFileManagerLoaded)
-                    {
-                        core.OnMessage(WixErrors.CannotLoadBinderFileManager(wixExtension.BinderFileManager.GetType().ToString(), this.FileManager.ToString()));
-                    }
-
-                    this.FileManager = wixExtension.BinderFileManager;
-                    binderFileManagerLoaded = true;
-                }
-
-                ValidatorExtension validatorExtension = wixExtension.ValidatorExtension;
-                if (null != validatorExtension)
-                {
-                    if (validatorExtensionLoaded)
-                    {
-                        core.OnMessage(WixErrors.CannotLoadLinkerExtension(validatorExtension.GetType().ToString(), this.validator.Extension.ToString()));
-                    }
-
-                    this.validator.Extension = validatorExtension;
-                    validatorExtensionLoaded = true;
-                }
-            }
-
-            this.FileManager.CabCachePath = this.cabCachePath;
-            this.FileManager.ReuseCabinets = this.reuseCabinets;
         }
 
         /// <summary>
@@ -707,13 +457,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
         internal void GenerateDatabase(Output output, string databaseFile, bool keepAddedColumns, bool useSubdirectory)
         {
             // add the _Validation rows
-            if (!this.suppressAddingValidationRows)
+            if (!this.SuppressAddingValidationRows)
             {
                 Table validationTable = output.EnsureTable(this.core.TableDefinitions["_Validation"]);
 
                 foreach (Table table in output.Tables)
                 {
-                    if (!table.Definition.IsUnreal)
+                    if (!table.Definition.Unreal)
                     {
                         // add the validation rows for this table
                         table.Definition.AddValidationRows(validationTable);
@@ -765,7 +515,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         bool hasBinaryColumn = false;
 
                         // skip all unreal tables other than _Streams
-                        if (table.Definition.IsUnreal && "_Streams" != table.Name)
+                        if (table.Definition.Unreal && "_Streams" != table.Name)
                         {
                             continue;
                         }
@@ -794,7 +544,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         {
                             try
                             {
-                                db.ImportTable(output.Codepage, this.core, importTable, baseDirectory, keepAddedColumns);
+                                db.ImportTable(output.Codepage, importTable, baseDirectory, keepAddedColumns);
                             }
                             catch (WixInvalidIdtException)
                             {
@@ -849,7 +599,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                                 case ColumnType.Localized:
                                                 case ColumnType.Preserved:
                                                 case ColumnType.String:
-                                                    if (columnDefinition.IsPrimaryKey)
+                                                    if (columnDefinition.PrimaryKey)
                                                     {
                                                         if (0 < streamName.Length)
                                                         {
@@ -919,8 +669,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             {
                                 string transformFile = Path.Combine(this.TempFilesLocation, String.Concat(subStorage.Name, ".mst"));
 
-                                // bind the transform
-                                if (this.BindTransform(subStorage.Data, transformFile))
+                                // Bind the transform.
+                                this.BindTransform(subStorage.Data, transformFile);
+                                if (!Messaging.Instance.EncounteredError)
                                 {
                                     // add the storage
                                     using (Record record = new Record(2))
@@ -941,7 +692,158 @@ namespace Microsoft.Tools.WindowsInstallerXml
             catch (IOException)
             {
                 // TODO: this error message doesn't seem specific enough
-                throw new WixFileNotFoundException(SourceLineNumberCollection.FromFileName(databaseFile), databaseFile);
+                throw new WixFileNotFoundException(new SourceLineNumber(databaseFile), databaseFile);
+            }
+        }
+
+        /// <summary>
+        /// Final step in binding that transfers (moves/copies) all files generated into the appropriate
+        /// location in the source image
+        /// </summary>
+        /// <param name="fileTransfers">List of files to transfer.</param>
+        private void LayoutMedia(List<FileTransfer> fileTransfers)
+        {
+            if (this.core.EncounteredError)
+            {
+                return;
+            }
+
+            List<string> destinationFiles = new List<string>();
+
+            for (int i = 0; i < fileTransfers.Count; ++i)
+            {
+                FileTransfer fileTransfer = fileTransfers[i];
+                string fileSource = this.ResolveFile(fileTransfer.Source, fileTransfer.Type, fileTransfer.SourceLineNumbers, BindStage.Normal);
+
+                // If the source and destination are identical, then there's nothing to do here
+                if (0 == String.Compare(fileSource, fileTransfer.Destination, StringComparison.OrdinalIgnoreCase))
+                {
+                    fileTransfer.Redundant = true;
+                    continue;
+                }
+
+                bool retry = false;
+                do
+                {
+                    try
+                    {
+                        if (fileTransfer.Move)
+                        {
+                            this.core.OnMessage(WixVerboses.MoveFile(fileSource, fileTransfer.Destination));
+                            this.TransferFile(true, fileSource, fileTransfer.Destination);
+                        }
+                        else
+                        {
+                            this.core.OnMessage(WixVerboses.CopyFile(fileSource, fileTransfer.Destination));
+                            this.TransferFile(false, fileSource, fileTransfer.Destination);
+                        }
+
+                        retry = false;
+                        destinationFiles.Add(fileTransfer.Destination);
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        throw new WixFileNotFoundException(e.FileName);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        // if we already retried, give up
+                        if (retry)
+                        {
+                            throw;
+                        }
+
+                        string directory = Path.GetDirectoryName(fileTransfer.Destination);
+                        this.core.OnMessage(WixVerboses.CreateDirectory(directory));
+                        Directory.CreateDirectory(directory);
+                        retry = true;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // if we already retried, give up
+                        if (retry)
+                        {
+                            throw;
+                        }
+
+                        if (File.Exists(fileTransfer.Destination))
+                        {
+                            this.core.OnMessage(WixVerboses.RemoveDestinationFile(fileTransfer.Destination));
+
+                            // try to ensure the file is not read-only
+                            FileAttributes attributes = File.GetAttributes(fileTransfer.Destination);
+                            try
+                            {
+                                File.SetAttributes(fileTransfer.Destination, attributes & ~FileAttributes.ReadOnly);
+                            }
+                            catch (ArgumentException) // thrown for unauthorized access errors
+                            {
+                                throw new WixException(WixErrors.UnauthorizedAccess(fileTransfer.Destination));
+                            }
+
+                            // try to delete the file
+                            try
+                            {
+                                File.Delete(fileTransfer.Destination);
+                            }
+                            catch (IOException)
+                            {
+                                throw new WixException(WixErrors.FileInUse(null, fileTransfer.Destination));
+                            }
+
+                            retry = true;
+                        }
+                        else // no idea what just happened, bail
+                        {
+                            throw;
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        // if we already retried, give up
+                        if (retry)
+                        {
+                            throw;
+                        }
+
+                        if (File.Exists(fileTransfer.Destination))
+                        {
+                            this.core.OnMessage(WixVerboses.RemoveDestinationFile(fileTransfer.Destination));
+
+                            // ensure the file is not read-only, then delete it
+                            FileAttributes attributes = File.GetAttributes(fileTransfer.Destination);
+                            File.SetAttributes(fileTransfer.Destination, attributes & ~FileAttributes.ReadOnly);
+                            try
+                            {
+                                File.Delete(fileTransfer.Destination);
+                            }
+                            catch (IOException)
+                            {
+                                throw new WixException(WixErrors.FileInUse(null, fileTransfer.Destination));
+                            }
+
+                            retry = true;
+                        }
+                        else // no idea what just happened, bail
+                        {
+                            throw;
+                        }
+                    }
+                } while (retry);
+            }
+
+            // Finally, if there were any files remove the ACL that may have been added to
+            // during the file transfer process.
+            if (0 < destinationFiles.Count && !this.SuppressAclReset)
+            {
+                try
+                {
+                    WixToolset.Cab.Interop.NativeMethods.ResetAcls(destinationFiles.ToArray(), (uint)destinationFiles.Count);
+                }
+                catch
+                {
+                    this.core.OnMessage(WixWarnings.UnableToResetAcls());
+                }
             }
         }
 
@@ -970,7 +872,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 {
                     resolvedDirectory.Path = (string)componentIdGenSeeds[directory];
                 }
-                else if (canonicalize && Util.IsStandardDirectory(directory))
+                else if (canonicalize && WindowsInstallerStandard.IsStandardDirectory(directory))
                 {
                     // when canonicalization is on, standard directories are treated equally
                     resolvedDirectory.Path = directory;
@@ -1057,7 +959,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         private void SetMsiAssemblyName(Output output, Table assemblyNameTable, FileRow fileRow, string name, string value, IDictionary<string, string> infoCache, string modularizationGuid)
         {
             // check for null value (this can occur when grabbing the file version from an assembly without one)
-            if (null == value || 0 == value.Length)
+            if (String.IsNullOrEmpty(value))
             {
                 this.core.OnMessage(WixWarnings.NullMsiAssemblyNameValue(fileRow.SourceLineNumbers, fileRow.Component, name));
             }
@@ -1093,7 +995,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                     if (null == fileRow.AssemblyNameRows)
                     {
-                        fileRow.AssemblyNameRows = new RowCollection();
+                        fileRow.AssemblyNameRows = new List<Row>();
                     }
                     fileRow.AssemblyNameRows.Add(assemblyNameRow);
                 }
@@ -1104,7 +1006,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 if (infoCache != null)
                 {
-                    string key = String.Format(CultureInfo.InvariantCulture, "assembly{0}.{1}", name, Demodularize(output, modularizationGuid, fileRow.File)).ToLower(CultureInfo.InvariantCulture);
+                    string key = String.Format(CultureInfo.InvariantCulture, "assembly{0}.{1}", name, Demodularize(output, modularizationGuid, fileRow.File)).ToLowerInvariant();
                     infoCache[key] = (string)assemblyNameRow[2];
                 }
             }
@@ -1145,54 +1047,89 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Merge data from the unreal tables into the real tables.
         /// </summary>
         /// <param name="tables">Collection of all tables.</param>
-        private void MergeUnrealTables(TableCollection tables)
+        private void MergeUnrealTables(TableIndexedCollection tables)
         {
-            // merge data from the WixBBControl rows into the BBControl rows
+            // Merge data from the WixBBControl rows into the BBControl rows.
             Table wixBBControlTable = tables["WixBBControl"];
-            Table bbControlTable = tables["BBControl"];
-            if (null != wixBBControlTable && null != bbControlTable)
+            if (null != wixBBControlTable)
             {
-                // index all the BBControl rows by their identifier
-                Hashtable indexedBBControlRows = new Hashtable(bbControlTable.Rows.Count);
-                foreach (BBControlRow bbControlRow in bbControlTable.Rows)
-                {
-                    indexedBBControlRows.Add(bbControlRow.GetPrimaryKey('/'), bbControlRow);
-                }
-
+                RowDictionary<BBControlRow> indexedBBControlRows = new RowDictionary<BBControlRow>(tables["BBControl"]);
                 foreach (Row row in wixBBControlTable.Rows)
                 {
-                    BBControlRow bbControlRow = (BBControlRow)indexedBBControlRows[row.GetPrimaryKey('/')];
-
+                    BBControlRow bbControlRow = indexedBBControlRows.Get(row.GetPrimaryKey());
                     bbControlRow.SourceFile = (string)row[2];
                 }
             }
 
-            // merge data from the WixControl rows into the Control rows
+            // Merge data from the WixControl rows into the Control rows.
             Table wixControlTable = tables["WixControl"];
-            Table controlTable = tables["Control"];
-            if (null != wixControlTable && null != controlTable)
+            if (null != wixControlTable)
             {
-                // index all the Control rows by their identifier
-                Hashtable indexedControlRows = new Hashtable(controlTable.Rows.Count);
-                foreach (ControlRow controlRow in controlTable.Rows)
-                {
-                    indexedControlRows.Add(controlRow.GetPrimaryKey('/'), controlRow);
-                }
-
+                RowDictionary<ControlRow> indexedControlRows = new RowDictionary<ControlRow>(tables["Control"]);
                 foreach (Row row in wixControlTable.Rows)
                 {
-                    ControlRow controlRow = (ControlRow)indexedControlRows[row.GetPrimaryKey('/')];
-
+                    ControlRow controlRow = indexedControlRows.Get(row.GetPrimaryKey());
                     controlRow.SourceFile = (string)row[2];
                 }
             }
 
-            // merge data from the WixFile rows into the File rows
+            // Create the special properties.
+            Table wixPropertyTable = output.Tables["WixProperty"];
+            if (null != wixPropertyTable)
+            {
+                // Create lists of the properties that contribute to the special lists of properties.
+                SortedSet<string> adminProperties = new SortedSet<string>();
+                SortedSet<string> secureProperties = new SortedSet<string>();
+                SortedSet<string> hiddenProperties = new SortedSet<string>();
+
+                foreach (WixPropertyRow wixPropertyRow in wixPropertyTable.Rows)
+                {
+                    if (wixPropertyRow.Admin)
+                    {
+                        adminProperties.Add(wixPropertyRow.Id);
+                    }
+
+                    if (wixPropertyRow.Hidden)
+                    {
+                        hiddenProperties.Add(wixPropertyRow.Id);
+                    }
+
+                    if (wixPropertyRow.Secure)
+                    {
+                        secureProperties.Add(wixPropertyRow.Id);
+                    }
+                }
+
+                Table propertyTable = output.Tables["Property"];
+                if (0 < adminProperties.Count)
+                {
+
+                    PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
+                    row.Property = "AdminProperties";
+                    row.Value = String.Join(";", adminProperties);
+                }
+
+                if (0 < secureProperties.Count)
+                {
+                    PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
+                    row.Property = "SecureCustomProperties";
+                    row.Value = String.Join(";", secureProperties);
+                }
+
+                if (0 < hiddenProperties.Count)
+                {
+                    PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
+                    row.Property = "MsiHiddenProperties";
+                    row.Value = String.Join(";", hiddenProperties);
+                }
+            }
+
+            // Merge data from the WixFile rows into the File rows.
             Table wixFileTable = tables["WixFile"];
-            Table fileTable = tables["File"];
-            if (null != wixFileTable && null != fileTable)
+            if (null != wixFileTable)
             {
                 // index all the File rows by their identifier
+                Table fileTable = tables["File"];
                 Hashtable indexedFileRows = new Hashtable(fileTable.Rows.Count, StringComparer.OrdinalIgnoreCase);
 
                 foreach (FileRow fileRow in fileTable.Rows)
@@ -1246,13 +1183,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             // merge data from the WixPatchSymbolPaths rows into the File rows
             Table wixPatchSymbolPathsTable = tables["WixPatchSymbolPaths"];
-            Table mediaTable = tables["Media"];
-            Table directoryTable = tables["Directory"];
-            Table componentTable = tables["Component"];
             if (null != wixPatchSymbolPathsTable)
             {
+                Table fileTable = tables["File"];
+                Table mediaTable = tables["Media"];
+                Table directoryTable = tables["Directory"];
+                Table componentTable = tables["Component"];
+
                 int fileRowNum = (null != fileTable) ? fileTable.Rows.Count : 0;
-                int componentRowNum = (null != fileTable) ? componentTable.Rows.Count : 0;
+                int componentRowNum = (null != componentTable) ? componentTable.Rows.Count : 0;
                 int directoryRowNum = (null != directoryTable) ? directoryTable.Rows.Count : 0;
                 int mediaRowNum = (null != mediaTable) ? mediaTable.Rows.Count : 0;
 
@@ -1294,9 +1233,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                 }
 
-                wixPatchSymbolPathsTable.Rows.Sort(new WixPatchSymbolPathsComparer());
-
-                foreach (Row row in wixPatchSymbolPathsTable.Rows)
+                foreach (Row row in wixPatchSymbolPathsTable.Rows.OrderBy(r => r, new WixPatchSymbolPathsComparer()))
                 {
                     switch ((string)row[0])
                     {
@@ -1354,8 +1291,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             // copy data from the WixMedia rows into the Media rows
             Table wixMediaTable = tables["WixMedia"];
-            if (null != wixMediaTable && null != mediaTable)
+            if (null != wixMediaTable)
             {
+                Table mediaTable = tables["Media"];
+
                 // index all the Media rows by their identifier
                 Hashtable indexedMediaRows = new Hashtable(mediaTable.Rows.Count);
                 foreach (MediaRow mediaRow in mediaTable.Rows)
@@ -1564,16 +1503,16 @@ namespace Microsoft.Tools.WindowsInstallerXml
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(executingAssembly.Location);
             buildInfoRow[0] = fileVersion.FileVersion;
-            buildInfoRow[1] = this.OutputFile ?? outputFile;
+            buildInfoRow[1] = outputFile;
 
-            if (!String.IsNullOrEmpty(this.wixprojectFile))
+            if (!String.IsNullOrEmpty(this.WixprojectFile))
             {
-                buildInfoRow[2] = this.wixprojectFile;
+                buildInfoRow[2] = this.WixprojectFile;
             }
 
-            if (!String.IsNullOrEmpty(this.pdbFile))
+            if (!String.IsNullOrEmpty(this.PdbFile))
             {
-                buildInfoRow[3] = this.pdbFile;
+                buildInfoRow[3] = this.PdbFile;
             }
         }
 
@@ -1589,15 +1528,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
         {
             foreach (BinderExtension extension in this.extensions)
             {
-                extension.DatabaseInitialize(output);
+                extension.Initialize(output);
             }
 
             bool compressed = false;
-            FileRowCollection fileRows = new FileRowCollection(OutputType.Patch == output.Type);
+            //FileRowCollection fileRows = new FileRowCollection(OutputType.Patch == output.Type);
             bool longNames = false;
-            MediaRowCollection mediaRows = new MediaRowCollection();
-            Hashtable suppressModularizationIdentifiers = null;
-            StringCollection suppressedTableNames = new StringCollection();
+            HashSet<string> suppressedTableNames = new HashSet<string>();
             Table propertyTable = output.Tables["Property"];
 
             this.WriteBuildInfoTable(output, databaseFile);
@@ -1612,22 +1549,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
             }
 
-            // gather all the suppress modularization identifiers
-            Table wixSuppressModularizationTable = output.Tables["WixSuppressModularization"];
-            if (null != wixSuppressModularizationTable)
-            {
-                suppressModularizationIdentifiers = new Hashtable(wixSuppressModularizationTable.Rows.Count);
-
-                foreach (Row row in wixSuppressModularizationTable.Rows)
-                {
-                    suppressModularizationIdentifiers[row[0]] = null;
-                }
-            }
-
             // localize fields, resolve wix variables, and resolve file paths
-            Hashtable cabinets = new Hashtable();
-            ArrayList delayedFields = new ArrayList();
-            this.ResolveFields(output.Tables, cabinets, delayedFields);
+            ExtractEmbeddedFiles filesWithEmbeddedFiles = new ExtractEmbeddedFiles();
+            List<DelayedField> delayedFields = new List<DelayedField>();
+            this.ResolveFields(output.Tables, filesWithEmbeddedFiles, delayedFields);
 
             // if there are any fields to resolve later, create the cache to populate during bind
             IDictionary<string, string> variableCache = null;
@@ -1650,65 +1575,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
             // modularize identifiers and add tables with real streams to the import tables
             if (OutputType.Module == output.Type)
             {
+                // Gather all the suppress modularization identifiers
+                HashSet<string> suppressModularizationIdentifiers = null;
+                Table wixSuppressModularizationTable = output.Tables["WixSuppressModularization"];
+                if (null != wixSuppressModularizationTable)
+                {
+                    suppressModularizationIdentifiers = new HashSet<string>(wixSuppressModularizationTable.Rows.Select(row => (string)row[0]));
+                }
+
                 foreach (Table table in output.Tables)
                 {
                     table.Modularize(modularizationGuid, suppressModularizationIdentifiers);
                 }
-
-                // Reset the special property lists after modularization. The linker creates these properties before modularization
-                // so we have to reconstruct them for merge modules after modularization in the binder.
-                Table wixPropertyTable = output.Tables["WixProperty"];
-                if (null != wixPropertyTable)
-                {
-                    // Create lists of the properties that contribute to the special lists of properties.
-                    SortedList adminProperties = new SortedList();
-                    SortedList secureProperties = new SortedList();
-                    SortedList hiddenProperties = new SortedList();
-
-                    foreach (WixPropertyRow wixPropertyRow in wixPropertyTable.Rows)
-                    {
-                        if (wixPropertyRow.Admin)
-                        {
-                            adminProperties[wixPropertyRow.Id] = null;
-                        }
-
-                        if (wixPropertyRow.Hidden)
-                        {
-                            hiddenProperties[wixPropertyRow.Id] = null;
-                        }
-
-                        if (wixPropertyRow.Secure)
-                        {
-                            secureProperties[wixPropertyRow.Id] = null;
-                        }
-                    }
-
-                    if (0 < adminProperties.Count || 0 < hiddenProperties.Count || 0 < secureProperties.Count)
-                    {
-                        Table table = output.Tables["Property"];
-                        foreach (Row propertyRow in table.Rows)
-                        {
-                            if ("AdminProperties" == (string)propertyRow[0])
-                            {
-                                propertyRow[1] = GetPropertyListString(adminProperties);
-                            }
-
-                            if ("MsiHiddenProperties" == (string)propertyRow[0])
-                            {
-                                propertyRow[1] = GetPropertyListString(hiddenProperties);
-                            }
-
-                            if ("SecureCustomProperties" == (string)propertyRow[0])
-                            {
-                                propertyRow[1] = GetPropertyListString(secureProperties);
-                            }
-                        }
-                    }
-                }
             }
 
-            // merge unreal table data into the real tables
-            // this must occur after all variables and source paths have been resolved
+            // Merge unreal table data into the real tables
+            // This must occur after all variables and source paths have been resolved and after modularization.
             this.MergeUnrealTables(output.Tables);
 
             if (this.core.EncounteredError)
@@ -1721,23 +1603,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 foreach (SubStorage substorage in output.SubStorages)
                 {
                     Output transform = (Output)substorage.Data;
-                    this.ResolveFields(transform.Tables, cabinets, null);
+                    this.ResolveFields(transform.Tables, filesWithEmbeddedFiles, null);
                     this.MergeUnrealTables(transform.Tables);
                 }
-            }
-
-            // stop processing if an error previously occurred
-            if (this.core.EncounteredError)
-            {
-                return false;
-            }
-
-            // index the File table for quicker access later
-            // this must occur after the unreal data has been merged in
-            Table fileTable = output.Tables["File"];
-            if (null != fileTable)
-            {
-                fileRows.AddRange(fileTable.Rows);
             }
 
             // stop processing if an error previously occurred
@@ -1750,19 +1618,17 @@ namespace Microsoft.Tools.WindowsInstallerXml
             propertyTable = output.Tables["Property"];
             if (null != propertyTable)
             {
-                foreach (Row propertyRow in propertyTable.Rows)
+                foreach (PropertyRow propertyRow in propertyTable.Rows)
                 {
-                    string property = propertyRow[0].ToString();
-
-                    // set the ProductCode if its generated
-                    if (OutputType.Product == output.Type && "ProductCode" == property && "*" == propertyRow[1].ToString())
+                    // Set the ProductCode if it is to be generated.
+                    if (OutputType.Product == output.Type && "ProductCode".Equals(propertyRow.Property, StringComparison.Ordinal) && "*".Equals(propertyRow.Value, StringComparison.Ordinal))
                     {
-                        propertyRow[1] = Common.GenerateGuid();
+                        propertyRow.Value = Common.GenerateGuid();
 
-                        // Update the target ProductCode in any instance transforms
+                        // Update the target ProductCode in any instance transforms.
                         foreach (SubStorage subStorage in output.SubStorages)
                         {
-                            Output subStorageOutput = (Output)subStorage.Data;
+                            Output subStorageOutput = subStorage.Data;
                             if (OutputType.Transform != subStorageOutput.Type)
                             {
                                 continue;
@@ -1773,33 +1639,40 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             {
                                 if ((int)SummaryInformation.Transform.ProductCodes == (int)row[0])
                                 {
-                                    row[1] = ((string)row[1]).Replace("*", (string)propertyRow[1]);
+                                    row[1] = ((string)row[1]).Replace("*", propertyRow.Value);
                                     break;
                                 }
                             }
                         }
                     }
 
-                    // add the property name and value to the variableCache
-                    if (0 != delayedFields.Count)
+                    // Add the property name and value to the variableCache.
+                    if (null != variableCache)
                     {
-                        string key = String.Concat("property.", Demodularize(output, modularizationGuid, property));
-                        variableCache[key] = (string)propertyRow[1];
+                        string key = String.Concat("property.", Demodularize(output, modularizationGuid, propertyRow.Property));
+                        variableCache[key] = propertyRow.Value;
                     }
                 }
             }
 
             // extract files that come from cabinet files (this does not extract files from merge modules)
-            this.ExtractCabinets(cabinets);
+            this.ExtractEmbeddedFiles(filesWithEmbeddedFiles);
 
-            // retrieve files and their information from merge modules
+            // Start with a collection of all files from the File table. The list of all files that need
+            // to be processed may grow if we add things like Merge Modules or patches with multiple
+            // transforms.
+            // Collecting these files must occur AFTER the unreal data has been merged in.
+            Table fileTable = output.Tables["File"];
+            List<FileRow> fileRows = fileTable.Rows.Cast<FileRow>().ToList();
+
             if (OutputType.Product == output.Type)
             {
+                // Retrieve files and their information from merge modules.
                 this.ProcessMergeModules(output, fileRows);
             }
             else if (OutputType.Patch == output.Type)
             {
-                // merge transform data into the output object
+                // Merge transform data into the output object.
                 this.CopyTransformData(output, fileRows);
             }
 
@@ -1813,9 +1686,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
             AutoMediaAssigner autoMediaAssigner = new AutoMediaAssigner(output, this.core, compressed);
             autoMediaAssigner.AssignFiles(fileRows);
 
-            // update file version, hash, assembly, etc.. information
+            // Update file sequence.
             this.core.OnMessage(WixVerboses.UpdatingFileInformation());
-            Hashtable indexedFileRows = this.UpdateFileInformation(output, fileRows, autoMediaAssigner.MediaRows, variableCache, modularizationGuid);
+            this.UpdateMediaSequences(output, fileRows, autoMediaAssigner.MediaRows);
+
+            // Gather information about files that did not come from merge modules (i.e. rows with a reference to the File table).
+            foreach (FileRow row in fileRows.Where(r => null != r.Table))
+            {
+                this.UpdateFileRow(output, variableCache, modularizationGuid, fileRows, row, false);
+            }
 
             // set generated component guids
             this.SetComponentGuids(output);
@@ -1841,12 +1720,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
             // Extended binder extensions can be called now that fields are resolved.
             foreach (BinderExtension extension in this.extensions)
             {
-                BinderExtensionEx extensionEx = extension as BinderExtensionEx;
-                if (null != extensionEx)
-                {
-                    output.EnsureTable(this.core.TableDefinitions["WixBindUpdatedFiles"]);
-                    extensionEx.DatabaseAfterResolvedFields(output);
-                }
+                output.EnsureTable(this.core.TableDefinitions["WixBindUpdatedFiles"]);
+                extension.AfterResolvedFields(output);
             }
 
             Table updatedFiles = output.Tables["WixBindUpdatedFiles"];
@@ -1854,8 +1729,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 foreach (Row updatedFile in updatedFiles.Rows)
                 {
-                    FileRow updatedFileRow = (FileRow)indexedFileRows[updatedFile[0]];
-                    this.UpdateFileRow(output, null, modularizationGuid, indexedFileRows, updatedFileRow, true);
+                    // TODO: Is this too slow? It's basically NxM. Okay'ish, if updatedFiles is small count.
+                    FileRow updatedFileRow = fileRows.Single(r => r.File.Equals((string)updatedFile[0], StringComparison.Ordinal));
+                    this.UpdateFileRow(output, null, modularizationGuid, fileRows, updatedFileRow, true);
                 }
             }
 
@@ -1867,11 +1743,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             // create cabinet files and process uncompressed files
             string layoutDirectory = Path.GetDirectoryName(databaseFile);
-            FileRowCollection uncompressedFileRows = null;
-            if (!this.suppressLayout || OutputType.Module == output.Type)
+            RowDictionary<FileRow> uncompressedFileRows = null;
+            if (!this.SuppressLayout || OutputType.Module == output.Type)
             {
                 this.core.OnMessage(WixVerboses.CreatingCabinetFiles());
-                uncompressedFileRows = this.CreateCabinetFiles(output, fileRows, this.fileTransfers, autoMediaAssigner.MediaRows, layoutDirectory, compressed, autoMediaAssigner);
+                uncompressedFileRows = this.CreateCabinetFiles(output, this.fileTransfers, layoutDirectory, compressed, autoMediaAssigner);
             }
 
             if (OutputType.Patch == output.Type)
@@ -1913,7 +1789,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             foreach (BinderExtension extension in this.extensions)
             {
-                extension.DatabaseFinalize(output);
+                extension.Finish(output);
             }
 
             // generate database file
@@ -1935,11 +1811,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // Output the output to a file
-            if (null != this.pdbFile)
+            Pdb pdb = new Pdb();
+            pdb.Output = output;
+            if (!String.IsNullOrEmpty(this.PdbFile))
             {
-                Pdb pdb = new Pdb(null);
-                pdb.Output = output;
-                pdb.Save(this.pdbFile, null, this.WixVariableResolver, this.TempFilesLocation);
+                pdb.Save(this.PdbFile);
             }
 
             // merge modules
@@ -1956,11 +1832,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // inspect the MSI prior to running ICEs
-            InspectorCore inspectorCore = new InspectorCore(this.MessageHandler);
+            InspectorCore inspectorCore = new InspectorCore();
             foreach (InspectorExtension inspectorExtension in this.inspectorExtensions)
             {
                 inspectorExtension.Core = inspectorCore;
-                inspectorExtension.InspectDatabase(tempDatabaseFile, output);
+                inspectorExtension.InspectDatabase(tempDatabaseFile, pdb);
 
                 // reset
                 inspectorExtension.Core = null;
@@ -1978,42 +1854,42 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 this.validator.Output = output;
 
                 this.core.OnMessage(WixVerboses.ValidatingDatabase());
-                this.core.EncounteredError = !this.validator.Validate(tempDatabaseFile);
+                this.validator.Validate(tempDatabaseFile);
 
-                // stop processing if an error previously occurred
-                if (this.core.EncounteredError)
+                // Stop processing if an error occurred.
+                if (Messaging.Instance.EncounteredError)
                 {
                     return false;
                 }
             }
 
             // process uncompressed files
-            if (!this.suppressLayout)
+            if (!this.SuppressLayout)
             {
-                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows, this.fileTransfers, autoMediaAssigner.MediaRows, layoutDirectory, compressed, longNames);
+                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows.Values, this.fileTransfers, autoMediaAssigner.MediaRows, layoutDirectory, compressed, longNames);
             }
 
             // layout media
             try
             {
                 this.core.OnMessage(WixVerboses.LayingOutMedia());
-                this.LayoutMedia(this.fileTransfers, this.suppressAclReset);
+                this.LayoutMedia(this.fileTransfers);
             }
             finally
             {
-                if (!String.IsNullOrEmpty(this.contentsFile))
+                if (!String.IsNullOrEmpty(this.ContentsFile))
                 {
-                    this.CreateContentsFile(this.contentsFile, fileRows);
+                    this.CreateContentsFile(this.ContentsFile, fileRows);
                 }
 
-                if (!String.IsNullOrEmpty(this.outputsFile))
+                if (!String.IsNullOrEmpty(this.OutputsFile))
                 {
-                    this.CreateOutputsFile(this.outputsFile, this.fileTransfers, this.pdbFile);
+                    this.CreateOutputsFile(this.OutputsFile, this.fileTransfers, this.PdbFile);
                 }
 
-                if (!String.IsNullOrEmpty(this.builtOutputsFile))
+                if (!String.IsNullOrEmpty(this.BuiltOutputsFile))
                 {
-                    this.CreateBuiltOutputsFile(this.builtOutputsFile, this.fileTransfers, this.pdbFile);
+                    this.CreateBuiltOutputsFile(this.BuiltOutputsFile, this.fileTransfers, this.PdbFile);
                 }
             }
 
@@ -2050,7 +1926,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Localize dialogs and controls.
         /// </summary>
         /// <param name="tables">The tables to localize.</param>
-        private void LocalizeUI(TableCollection tables)
+        private void LocalizeUI(TableIndexedCollection tables)
         {
             Table dialogTable = tables["Dialog"];
             if (null != dialogTable)
@@ -2061,22 +1937,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     LocalizedControl localizedControl = this.Localizer.GetLocalizedControl(dialog, null);
                     if (null != localizedControl)
                     {
-                        if (CompilerCore.IntegerNotSet != localizedControl.X)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.X)
                         {
                             row[1] = localizedControl.X;
                         }
 
-                        if (CompilerCore.IntegerNotSet != localizedControl.Y)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.Y)
                         {
                             row[2] = localizedControl.Y;
                         }
 
-                        if (CompilerCore.IntegerNotSet != localizedControl.Width)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.Width)
                         {
                             row[3] = localizedControl.Width;
                         }
 
-                        if (CompilerCore.IntegerNotSet != localizedControl.Height)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.Height)
                         {
                             row[4] = localizedControl.Height;
                         }
@@ -2101,22 +1977,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     LocalizedControl localizedControl = this.Localizer.GetLocalizedControl(dialog, control);
                     if (null != localizedControl)
                     {
-                        if (CompilerCore.IntegerNotSet != localizedControl.X)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.X)
                         {
                             row[3] = localizedControl.X.ToString();
                         }
 
-                        if (CompilerCore.IntegerNotSet != localizedControl.Y)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.Y)
                         {
                             row[4] = localizedControl.Y.ToString();
                         }
 
-                        if (CompilerCore.IntegerNotSet != localizedControl.Width)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.Width)
                         {
                             row[5] = localizedControl.Width.ToString();
                         }
 
-                        if (CompilerCore.IntegerNotSet != localizedControl.Height)
+                        if (CompilerConstants.IntegerNotSet != localizedControl.Height)
                         {
                             row[6] = localizedControl.Height.ToString();
                         }
@@ -2136,9 +2012,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Resolve source fields in the tables included in the output
         /// </summary>
         /// <param name="tables">The tables to resolve.</param>
-        /// <param name="cabinets">Cabinets containing files that need to be patched.</param>
+        /// <param name="filesWithEmbeddedFiles">Cabinets containing files that need to be patched.</param>
         /// <param name="delayedFields">The collection of delayed fields. Null if resolution of delayed fields is not allowed</param>
-        private void ResolveFields(TableCollection tables, Hashtable cabinets, ArrayList delayedFields)
+        private void ResolveFields(TableIndexedCollection tables, ExtractEmbeddedFiles filesWithEmbeddedFiles, IList<DelayedField> delayedFields)
         {
             foreach (Table table in tables)
             {
@@ -2163,8 +2039,14 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             }
                         }
 
-                        // resolve file paths
-                        if (!this.WixVariableResolver.EncounteredError && ColumnType.Object == field.Column.Type)
+                        // Move to next row if we've hit an error resolving variables.
+                        if (Messaging.Instance.EncounteredError) // TODO: make this error handling more specific to just the failure to resolve variables in this field.
+                        {
+                            continue;
+                        }
+
+                        // Resolve file paths
+                        if (ColumnType.Object == field.Column.Type)
                         {
                             ObjectField objectField = (ObjectField)field;
 
@@ -2174,34 +2056,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                 continue;
                             }
 
-                            // file is compressed in a cabinet (and not modified above)
-                            if (null != objectField.CabinetFileId && isDefault)
+                            // File is embedded and path to it was not modified above.
+                            if (objectField.EmbeddedFileIndex.HasValue && isDefault)
                             {
-                                // index cabinets that have not been previously encountered
-                                if (!cabinets.ContainsKey(objectField.BaseUri))
-                                {
-                                    Uri baseUri = new Uri(objectField.BaseUri);
-                                    string localFileNameWithoutExtension = Path.GetFileNameWithoutExtension(baseUri.LocalPath);
-                                    string extractedDirectoryName = String.Format(CultureInfo.InvariantCulture, "cab_{0}_{1}", cabinets.Count, localFileNameWithoutExtension);
+                                string extractPath = filesWithEmbeddedFiles.AddEmbeddedFileIndex(objectField.BaseUri, objectField.EmbeddedFileIndex.Value, this.TempFilesLocation);
 
-                                    // index the cabinet file's base URI (source location) and extracted directory
-                                    cabinets.Add(objectField.BaseUri, Path.Combine(this.TempFilesLocation, extractedDirectoryName));
-                                }
-
-                                // set the path to the file once its extracted from the cabinet
-                                objectField.Data = Path.Combine((string)cabinets[objectField.BaseUri], objectField.CabinetFileId);
+                                // Set the path to the embedded file once where it will be extracted.
+                                objectField.Data = extractPath;
                             }
                             else if (null != objectField.Data) // non-compressed file (or localized value)
                             {
-                                // when SuppressFileHasAndInfo is true do not resolve file paths
-                                if (this.suppressFileHashAndInfo && table.Name == "WixFile")
-                                {
-                                    continue;
-                                }
-
                                 try
                                 {
-                                    if (OutputType.Patch != this.FileManager.Output.Type) // Normal binding for non-Patch scenario such as link (light.exe)
+                                    if (OutputType.Patch != this.fileManagerCore.Output.Type) // Normal binding for non-Patch scenario such as link (light.exe)
                                     {
                                         // keep a copy of the un-resolved data for future replay. This will be saved into wixpdb file
                                         if (null == objectField.UnresolvedData)
@@ -2210,12 +2077,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                         }
 
                                         // resolve the path to the file
-                                        objectField.Data = this.FileManager.ResolveFile((string)objectField.Data, table.Name, row.SourceLineNumbers, BindStage.Normal);
+                                        objectField.Data = this.ResolveFile((string)objectField.Data, table.Name, row.SourceLineNumbers, BindStage.Normal);
                                     }
-                                    else if (!(this.FileManager.ReBaseTarget || this.FileManager.ReBaseUpdated)) // Normal binding for Patch Scenario (normal patch, no re-basing logic)
+                                    else if (!(this.fileManagerCore.RebaseTarget || this.fileManagerCore.RebaseUpdated)) // Normal binding for Patch Scenario (normal patch, no re-basing logic)
                                     {
                                         // resolve the path to the file
-                                        objectField.Data = this.FileManager.ResolveFile((string)objectField.Data, table.Name, row.SourceLineNumbers, BindStage.Normal);
+                                        objectField.Data = this.ResolveFile((string)objectField.Data, table.Name, row.SourceLineNumbers, BindStage.Normal);
                                     }
                                     else // Re-base binding path scenario caused by pyro.exe -bt -bu
                                     {
@@ -2224,7 +2091,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                                         // if -bu is used in pyro command, this condition holds true and the tool
                                         // will use pre-resolved source for new wixpdb file
-                                        if (this.FileManager.ReBaseUpdated)
+                                        if (this.fileManagerCore.RebaseUpdated)
                                         {
                                             // try to use the unResolved Source if it exists.
                                             // New version of wixpdb file keeps a copy of pre-resolved Source. i.e. !(bindpath.test)\foo.dll
@@ -2235,7 +2102,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                             }
                                         }
 
-                                        objectField.Data = this.FileManager.ResolveFile(filePathToResolve, table.Name, row.SourceLineNumbers, BindStage.Updated);
+                                        objectField.Data = this.ResolveFile(filePathToResolve, table.Name, row.SourceLineNumbers, BindStage.Updated);
                                     }
                                 }
                                 catch (WixFileNotFoundException)
@@ -2249,10 +2116,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             if (null != objectField.PreviousData)
                             {
                                 objectField.PreviousData = this.WixVariableResolver.ResolveVariables(row.SourceLineNumbers, objectField.PreviousData, false, ref isDefault);
-                                if (!this.WixVariableResolver.EncounteredError)
+                                if (!Messaging.Instance.EncounteredError) // TODO: make this error handling more specific to just the failure to resolve variables in this field.
                                 {
                                     // file is compressed in a cabinet (and not modified above)
-                                    if (null != objectField.PreviousCabinetFileId && isDefault)
+                                    if (objectField.PreviousEmbeddedFileIndex.HasValue && isDefault)
                                     {
                                         // when loading transforms from disk, PreviousBaseUri may not have been set
                                         if (null == objectField.PreviousBaseUri)
@@ -2260,38 +2127,23 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                             objectField.PreviousBaseUri = objectField.BaseUri;
                                         }
 
-                                        // index cabinets that have not been previously encountered
-                                        if (!cabinets.ContainsKey(objectField.PreviousBaseUri))
-                                        {
-                                            Uri baseUri = new Uri(objectField.PreviousBaseUri);
-                                            string localFileNameWithoutExtension = Path.GetFileNameWithoutExtension(baseUri.LocalPath);
-                                            string extractedDirectoryName = String.Format(CultureInfo.InvariantCulture, "cab_{0}_{1}", cabinets.Count, localFileNameWithoutExtension);
-
-                                            // index the cabinet file's base URI (source location) and extracted directory
-                                            cabinets.Add(objectField.PreviousBaseUri, Path.Combine(this.TempFilesLocation, extractedDirectoryName));
-                                        }
+                                        string extractPath = filesWithEmbeddedFiles.AddEmbeddedFileIndex(objectField.PreviousBaseUri, objectField.PreviousEmbeddedFileIndex.Value, this.TempFilesLocation);
 
                                         // set the path to the file once its extracted from the cabinet
-                                        objectField.PreviousData = Path.Combine((string)cabinets[objectField.PreviousBaseUri], objectField.PreviousCabinetFileId);
+                                        objectField.PreviousData = extractPath;
                                     }
                                     else if (null != objectField.PreviousData) // non-compressed file (or localized value)
                                     {
-                                        // when SuppressFileHasAndInfo is true do not resolve file paths
-                                        if (this.suppressFileHashAndInfo && table.Name == "WixFile")
-                                        {
-                                            continue;
-                                        }
-
                                         try
                                         {
-                                            if (!this.FileManager.ReBaseTarget && !this.FileManager.ReBaseUpdated)
+                                            if (!this.fileManagerCore.RebaseTarget && !this.fileManagerCore.RebaseUpdated)
                                             {
                                                 // resolve the path to the file
-                                                objectField.PreviousData = this.FileManager.ResolveFile((string)objectField.PreviousData, table.Name, row.SourceLineNumbers, BindStage.Normal);
+                                                objectField.PreviousData = this.ResolveFile((string)objectField.PreviousData, table.Name, row.SourceLineNumbers, BindStage.Normal);
                                             }
                                             else
                                             {
-                                                if (this.FileManager.ReBaseTarget)
+                                                if (this.fileManagerCore.RebaseTarget)
                                                 {
                                                     // if -bt is used, it come here
                                                     // Try to use the original unresolved source from either target build or update build
@@ -2305,7 +2157,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                                 }
 
                                                 // resolve the path to the file
-                                                objectField.PreviousData = this.FileManager.ResolveFile((string)objectField.PreviousData, table.Name, row.SourceLineNumbers, BindStage.Target);
+                                                objectField.PreviousData = this.ResolveFile((string)objectField.PreviousData, table.Name, row.SourceLineNumbers, BindStage.Target);
 
                                             }
                                         }
@@ -2321,58 +2173,48 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                 }
             }
-
-            // remember if the variable resolver found an error
-            if (this.WixVariableResolver.EncounteredError)
-            {
-                this.core.EncounteredError = true;
-            }
         }
 
         /// <summary>
-        /// Extracts embedded cabinets for resolved data.
+        /// Extract embedded files for resolved data.
         /// </summary>
-        /// <param name="cabinets">Collection of cabinets containing resolved data.</param>
-        private void ExtractCabinets(Hashtable cabinets)
+        /// <param name="filesWithEmbeddedFiles">Collection of files containing embedded files to be extracted.</param>
+        private void ExtractEmbeddedFiles(ExtractEmbeddedFiles filesWithEmbeddedFiles)
         {
-            foreach (DictionaryEntry cabinet in cabinets)
+            foreach (var baseUri in filesWithEmbeddedFiles.Uris)
             {
-                Uri baseUri = new Uri((string)cabinet.Key);
-                string localPath;
-
-                if ("embeddedresource" == baseUri.Scheme)
+                Stream stream = null;
+                try
                 {
-                    int bytesRead;
-                    byte[] buffer = new byte[512];
-
-                    string originalLocalPath = Path.GetFullPath(baseUri.LocalPath.Substring(1));
-                    string resourceName = baseUri.Fragment.Substring(1);
-                    Assembly assembly = Assembly.LoadFile(originalLocalPath);
-
-                    localPath = String.Concat(cabinet.Value, ".cab");
-
-                    using (FileStream fs = File.OpenWrite(localPath))
+                    // If the embedded files are stored in an assembly resource stream (usually
+                    // a .wixlib embedded in a WixExtension).
+                    if ("embeddedresource" == baseUri.Scheme)
                     {
-                        using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
+                        string assemblyPath = Path.GetFullPath(baseUri.LocalPath);
+                        string resourceName = baseUri.Fragment.TrimStart('#');
+
+                        Assembly assembly = Assembly.LoadFile(assemblyPath);
+                        stream = assembly.GetManifestResourceStream(resourceName);
+                    }
+                    else // normal file (usually a binary .wixlib on disk).
+                    {
+                        stream = File.OpenRead(baseUri.LocalPath);
+                    }
+
+                    using (FileStructure fs = FileStructure.Read(stream))
+                    {
+                        foreach (var embeddedFile in filesWithEmbeddedFiles.GetExtractFilesForUri(baseUri))
                         {
-                            while (0 < (bytesRead = resourceStream.Read(buffer, 0, buffer.Length)))
-                            {
-                                fs.Write(buffer, 0, bytesRead);
-                            }
+                            fs.ExtractEmbeddedFile(embeddedFile.EmbeddedFileIndex, embeddedFile.OutputPath);
                         }
                     }
                 }
-                else // normal file
+                finally
                 {
-                    localPath = baseUri.LocalPath;
-                }
-
-                // extract the cabinet's files into a temporary directory
-                Directory.CreateDirectory((string)cabinet.Value);
-
-                using (WixExtractCab extractCab = new WixExtractCab())
-                {
-                    extractCab.Extract(localPath, (string)cabinet.Value);
+                    if (null != stream)
+                    {
+                        stream.Close();
+                    }
                 }
             }
         }
@@ -2385,7 +2227,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="delayedFields">The fields which had resolution delayed.</param>
         /// <param name="variableCache">The file information to use when resolving variables.</param>
         /// <param name="modularizationGuid">The modularization guid (used in case of a merge module).</param>
-        private void ResolveDelayedFields(Output output, ArrayList delayedFields, IDictionary<string, string> variableCache, string modularizationGuid)
+        private void ResolveDelayedFields(Output output, List<DelayedField> delayedFields, IDictionary<string, string> variableCache, string modularizationGuid)
         {
             List<DelayedField> deferredFields = new List<DelayedField>();
 
@@ -2476,6 +2318,118 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
         }
 
+        private bool CompareFiles(string targetFile, string updatedFile)
+        {
+            bool? compared = null;
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                compared = fileManager.CompareFiles(targetFile, updatedFile);
+                if (compared.HasValue)
+                {
+                    break;
+                }
+            }
+
+            if (!compared.HasValue)
+            {
+                throw new InvalidOperationException(); // TODO: something needs to be said here that none of the binder file managers returned a result.
+            }
+
+            return compared.Value;
+        }
+
+        private void TransferFile(bool move, string source, string destination)
+        {
+            bool complete = false;
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                if (move)
+                {
+                    complete = fileManager.MoveFile(source, destination, true);
+                }
+                else
+                {
+                    complete = fileManager.CopyFile(source, destination, true);
+                }
+
+                if (complete)
+                {
+                    break;
+                }
+            }
+
+            if (!complete)
+            {
+                throw new InvalidOperationException(); // TODO: something needs to be said here that none of the binder file managers returned a result.
+            }
+        }
+
+        private ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<FileRow> fileRows)
+        {
+            ResolvedCabinet resolved = null;
+
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                resolved = fileManager.ResolveCabinet(cabinetPath, fileRows);
+                if (null != resolved)
+                {
+                    break;
+                }
+            }
+
+            return resolved;
+        }
+
+        private string ResolveFile(string source, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage = BindStage.Normal)
+        {
+            string path = null;
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                path = fileManager.ResolveFile(source, type, sourceLineNumbers, bindStage);
+                if (null != path)
+                {
+                    break;
+                }
+            }
+
+            if (null == path)
+            {
+                throw new WixFileNotFoundException(sourceLineNumbers, source, type);
+            }
+
+            return path;
+        }
+
+        private string ResolveMedia(MediaRow mediaRow, string layoutDirectory)
+        {
+            string layout = null;
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                layout = fileManager.ResolveMedia(mediaRow, layoutDirectory);
+                if (!String.IsNullOrEmpty(layout))
+                {
+                    break;
+                }
+            }
+
+            return layout;
+        }
+
+        private string ResolveUrl(string url, string fallbackUrl, string packageId, string payloadId, string fileName)
+        {
+            string resolved = null;
+            foreach (IBinderFileManager fileManager in this.fileManagers)
+            {
+                resolved = fileManager.ResolveUrl(url, fallbackUrl, packageId, payloadId, fileName);
+                if (!String.IsNullOrEmpty(resolved))
+                {
+                    break;
+                }
+            }
+
+            return resolved;
+        }
+
         /// <summary>
         /// Tests sequence table for PatchFiles and associated actions
         /// </summary>
@@ -2539,7 +2493,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     iesTable.Operation = TableOperation.Add;
                 }
                 Row patchAction = iesTable.CreateRow(null);
-                WixActionRow wixPatchAction = Installer.GetStandardActions()[table, "PatchFiles"];
+                WixActionRow wixPatchAction = WindowsInstallerStandard.GetStandardActions()[table, "PatchFiles"];
                 int sequence = wixPatchAction.Sequence;
                 // Test for default sequence value's appropriateness
                 if (seqInstallFiles >= sequence || (0 != seqDuplicateFiles && seqDuplicateFiles <= sequence))
@@ -2577,17 +2531,18 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="output">The output to bind.</param>
         /// <param name="allFileRows">True if copying from transform to patch, false the other way.</param>
         /// <returns>true if binding completed successfully; false otherwise</returns>
-        private bool CopyTransformData(Output output, FileRowCollection allFileRows)
+        private bool CopyTransformData(Output output, ICollection<FileRow> allFileRows)
         {
-            bool copyToPatch = (allFileRows != null);
-            bool copyFromPatch = !copyToPatch;
             if (OutputType.Patch != output.Type)
             {
                 return true;
             }
 
-            Hashtable patchMediaRows = new Hashtable();
-            Hashtable patchMediaFileRows = new Hashtable();
+            bool copyToPatch = (allFileRows != null);
+            bool copyFromPatch = !copyToPatch;
+
+            RowDictionary<MediaRow> patchMediaRows = new RowDictionary<MediaRow>();
+            Dictionary<int, RowDictionary<FileRow>> patchMediaFileRows = new Dictionary<int, RowDictionary<FileRow>>();
             Table patchFileTable = output.EnsureTable(this.core.TableDefinitions["File"]);
             if (copyFromPatch)
             {
@@ -2595,28 +2550,27 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 foreach (FileRow patchFileRow in patchFileTable.Rows)
                 {
                     int diskId = patchFileRow.DiskId;
-                    if (!patchMediaFileRows.Contains(diskId))
+                    RowDictionary<FileRow> mediaFileRows;
+                    if (!patchMediaFileRows.TryGetValue(diskId, out mediaFileRows))
                     {
-                        patchMediaFileRows[diskId] = new FileRowCollection();
+                        mediaFileRows = new RowDictionary<FileRow>();
+                        patchMediaFileRows.Add(diskId, mediaFileRows);
                     }
-                    FileRowCollection mediaFileRows = (FileRowCollection)patchMediaFileRows[diskId];
+
                     mediaFileRows.Add(patchFileRow);
                 }
 
                 Table patchMediaTable = output.EnsureTable(this.core.TableDefinitions["Media"]);
-                foreach (MediaRow patchMediaRow in patchMediaTable.Rows)
-                {
-                    patchMediaRows[patchMediaRow.DiskId] = patchMediaRow;
-                }
+                patchMediaRows = new RowDictionary<MediaRow>(patchMediaTable);
             }
 
             // index paired transforms
-            Hashtable pairedTransforms = new Hashtable();
+            Dictionary<string, Output> pairedTransforms = new Dictionary<string,Output>();
             foreach (SubStorage substorage in output.SubStorages)
             {
-                if ("#" == substorage.Name.Substring(0, 1))
+                if (substorage.Name.StartsWith("#"))
                 {
-                    pairedTransforms[substorage.Name.Substring(1)] = substorage.Data;
+                    pairedTransforms.Add(substorage.Name.Substring(1), substorage.Data);
                 }
             }
 
@@ -2625,7 +2579,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 // copy File bind data into substorages
                 foreach (SubStorage substorage in output.SubStorages)
                 {
-                    if ("#" == substorage.Name.Substring(0, 1))
+                    if (substorage.Name.StartsWith("#"))
                     {
                         // no changes necessary for paired transforms
                         continue;
@@ -2635,23 +2589,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     Table mainWixFileTable = mainTransform.Tables["WixFile"];
                     Table mainMsiFileHashTable = mainTransform.Tables["MsiFileHash"];
 
-                    int numWixFileRows = (null != mainWixFileTable) ? mainWixFileTable.Rows.Count : 0;
-                    int numMsiFileHashRows = (null != mainMsiFileHashTable) ? mainMsiFileHashTable.Rows.Count : 0;
+                    this.fileManagerCore.ActiveSubStorage = substorage;
+                    RowDictionary<WixFileRow> wixFiles = new RowDictionary<WixFileRow>(mainWixFileTable);
+                    RowDictionary<Row> mainMsiFileHashIndex = new RowDictionary<Row>();
 
-                    this.FileManager.ActiveSubStorage = substorage;
-                    Hashtable wixFiles = new Hashtable(numWixFileRows);
-                    Hashtable mainMsiFileHashIndex = new Hashtable(numMsiFileHashRows);
                     Table mainFileTable = mainTransform.Tables["File"];
                     Output pairedTransform = (Output)pairedTransforms[substorage.Name];
-
-                    if (null != mainWixFileTable)
-                    {
-                        // Index the WixFile table for later use.
-                        foreach (WixFileRow row in mainWixFileTable.Rows)
-                        {
-                            wixFiles.Add(row.Fields[0].Data.ToString(), row);
-                        }
-                    }
 
                     // copy Media.LastSequence and index the MsiFileHash table if it exists.
                     if (copyFromPatch)
@@ -2659,30 +2602,22 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         Table pairedMediaTable = pairedTransform.Tables["Media"];
                         foreach (MediaRow pairedMediaRow in pairedMediaTable.Rows)
                         {
-                            MediaRow patchMediaRow = (MediaRow)patchMediaRows[pairedMediaRow.DiskId];
+                            MediaRow patchMediaRow = patchMediaRows.Get(pairedMediaRow.DiskId);
                             pairedMediaRow.Fields[1] = patchMediaRow.Fields[1];
                         }
 
                         if (null != mainMsiFileHashTable)
                         {
-                            // Index the MsiFileHash table for later use.
-                            foreach (Row row in mainMsiFileHashTable.Rows)
-                            {
-                                mainMsiFileHashIndex.Add(row[0], row);
-                            }
+                            mainMsiFileHashIndex = new RowDictionary<Row>(mainMsiFileHashTable);
                         }
 
                         // Validate file row changes for keypath-related issues
                         this.ValidateFileRowChanges(mainTransform);
                     }
 
-                    // index File table of pairedTransform
-                    FileRowCollection pairedFileRows = new FileRowCollection();
+                    // Index File table of pairedTransform
                     Table pairedFileTable = pairedTransform.Tables["File"];
-                    if (null != pairedFileTable)
-                    {
-                        pairedFileRows.AddRange(pairedFileTable.Rows);
-                    }
+                    RowDictionary<FileRow> pairedFileRows = new RowDictionary<FileRow>(pairedFileTable);
 
                     if (null != mainFileTable)
                     {
@@ -2703,12 +2638,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             {
                                 continue;
                             }
-                            // When copying to the patch, we need compare the underlying files and include all file changes.
-                            else if (copyToPatch)
+                            else if (copyToPatch) // when copying to the patch, we need compare the underlying files and include all file changes.
                             {
-                                WixFileRow wixFileRow = (WixFileRow)wixFiles[mainFileRow.Fields[0].Data.ToString()];
+                                WixFileRow wixFileRow = wixFiles.Get((string)mainFileRow[0]);
                                 ObjectField objectField = (ObjectField)wixFileRow.Fields[6];
-                                FileRow pairedFileRow = pairedFileRows[mainFileRow.Fields[0].Data.ToString()];
+                                FileRow pairedFileRow = pairedFileRows.Get((string)mainFileRow[0]);
 
                                 // If the file is new, we always need to add it to the patch.
                                 if (mainFileRow.Operation != RowOperation.Add)
@@ -2725,7 +2659,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                     {
                                         // TODO: should this entire condition be placed in the binder file manager?
                                         if ((0 == (PatchAttributeType.Ignore & wixFileRow.PatchAttributes)) &&
-                                            !this.FileManager.CompareFiles(objectField.PreviousData.ToString(), objectField.Data.ToString()))
+                                            !this.CompareFiles(objectField.PreviousData.ToString(), objectField.Data.ToString()))
                                         {
                                             // If the file is different, we need to mark the mainFileRow and pairedFileRow as modified.
                                             mainFileRow.Operation = RowOperation.Modify;
@@ -2769,14 +2703,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                             // index patch files by diskId+fileId
                             int diskId = mainFileRow.DiskId;
-                            if (!patchMediaFileRows.Contains(diskId))
+                            RowDictionary<FileRow> mediaFileRows;
+                            if (!patchMediaFileRows.TryGetValue(diskId, out mediaFileRows))
                             {
-                                patchMediaFileRows[diskId] = new FileRowCollection();
+                                mediaFileRows = new RowDictionary<FileRow>();
+                                patchMediaFileRows.Add(diskId, mediaFileRows);
                             }
-                            FileRowCollection mediaFileRows = (FileRowCollection)patchMediaFileRows[diskId];
 
                             string fileId = mainFileRow.File;
-                            FileRow patchFileRow = mediaFileRows[fileId];
+                            FileRow patchFileRow = mediaFileRows.Get(fileId);
                             if (copyToPatch)
                             {
                                 if (null == patchFileRow)
@@ -2804,7 +2739,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                 // copy data from the patch back to the transform
                                 if (null != patchFileRow)
                                 {
-                                    FileRow pairedFileRow = (FileRow)pairedFileRows[fileId];
+                                    FileRow pairedFileRow = (FileRow)pairedFileRows.Get(fileId);
                                     for (int i = 0; i < patchFileRow.Fields.Length; i++)
                                     {
                                         string patchValue = patchFileRow[i] == null ? "" : patchFileRow[i].ToString();
@@ -2854,11 +2789,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                                     // copy MsiFileHash row for this File
                                     Row patchHashRow;
-                                    if (mainMsiFileHashIndex.ContainsKey(patchFileRow.File))
-                                    {
-                                        patchHashRow = (Row)mainMsiFileHashIndex[patchFileRow.File];
-                                    }
-                                    else
+                                    if (!mainMsiFileHashIndex.TryGetValue(patchFileRow.File, out patchHashRow))
                                     {
                                         patchHashRow = patchFileRow.HashRow;
                                     }
@@ -2882,7 +2813,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                     }
 
                                     // copy MsiAssemblyName rows for this File
-                                    RowCollection patchAssemblyNameRows = patchFileRow.AssemblyNameRows;
+                                    List<Row> patchAssemblyNameRows = patchFileRow.AssemblyNameRows;
                                     if (null != patchAssemblyNameRows)
                                     {
                                         Table mainAssemblyNameTable = mainTransform.EnsureTable(this.core.TableDefinitions["MsiAssemblyName"]);
@@ -2927,12 +2858,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                         {
                                             patchTable.Operation = TableOperation.Add;
                                         }
+
                                         Row patchRow = patchTable.CreateRow(mainFileRow.SourceLineNumbers);
                                         patchRow[0] = patchFileRow.File;
                                         patchRow[1] = patchFileRow.Sequence;
+
                                         FileInfo patchFile = new FileInfo(patchFileRow.Source);
                                         patchRow[2] = (int)patchFile.Length;
                                         patchRow[3] = 0 == (PatchAttributeType.AllowIgnoreOnError & patchFileRow.PatchAttributes) ? 0 : 1;
+
                                         string streamName = patchTable.Name + "." + patchRow[0] + "." + patchRow[1];
                                         if (MsiInterop.MsiMaxStreamNameLength < streamName.Length)
                                         {
@@ -2974,7 +2908,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
             finally
             {
-                this.FileManager.ActiveSubStorage = null;
+                this.fileManagerCore.ActiveSubStorage = null;
             }
 
             return true;
@@ -3021,8 +2955,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="bundle">The bundle to bind.</param>
         /// <param name="bundleFile">The bundle to create.</param>
-        /// <returns>true if binding completed successfully; false otherwise</returns>
-        private bool BindBundle(Output bundle, string bundleFile)
+        private void BindBundle(Output bundle, string bundleFile)
         {
             // First look for data we expect to find... Chain, WixGroups, etc.
             Table chainPackageTable = bundle.Tables["ChainPackage"];
@@ -3063,12 +2996,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             foreach (BinderExtension extension in this.extensions)
             {
-                extension.BundleInitialize(bundle);
+                extension.Initialize(bundle);
             }
 
             if (this.core.EncounteredError)
             {
-                return false;
+                return;
             }
 
             this.WriteBuildInfoTable(bundle, bundleFile);
@@ -3083,11 +3016,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
             }
 
-            Hashtable cabinets = new Hashtable();
-            ArrayList delayedFields = new ArrayList();
+            ExtractEmbeddedFiles filesWithEmbeddedFiles = new ExtractEmbeddedFiles();
+            List<DelayedField> delayedFields = new List<DelayedField>();
 
             // localize fields, resolve wix variables, and resolve file paths
-            this.ResolveFields(bundle.Tables, cabinets, delayedFields);
+            this.ResolveFields(bundle.Tables, filesWithEmbeddedFiles, delayedFields);
 
             // if there are any fields to resolve later, create the cache to populate during bind
             IDictionary<string, string> variableCache = null;
@@ -3098,7 +3031,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             if (this.core.EncounteredError)
             {
-                return false;
+                return;
             }
 
             Table relatedBundleTable = bundle.Tables["RelatedBundle"];
@@ -3202,7 +3135,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // extract files that come from cabinet files (this does not extract files from merge modules)
-            this.ExtractCabinets(cabinets);
+            this.ExtractEmbeddedFiles(filesWithEmbeddedFiles);
 
             WixBundleRow bundleInfo = (WixBundleRow)bundleTable.Rows[0];
             bundleInfo.PerMachine = true; // default to per-machine but the first-per user package would flip it.
@@ -3253,7 +3186,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 // Check if there is an override row for the display name or description.
                 Row payloadDisplayInformationRow;
-                if (payloadDisplayInformationRows.TryGet(id, out payloadDisplayInformationRow))
+                if (payloadDisplayInformationRows.TryGetValue(id, out payloadDisplayInformationRow))
                 {
                     if (!String.IsNullOrEmpty(payloadDisplayInformationRow[1] as string))
                     {
@@ -3281,13 +3214,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 foreach (Row row in containerTable.Rows)
                 {
-                    ContainerInfo container = new ContainerInfo(row, this.FileManager);
+                    ContainerInfo container = new ContainerInfo(row, this.fileManagerCore.TempFilesLocation);
                     containers.Add(container.Id, container);
                 }
             }
 
             // Create the default attached container for payloads that need to be attached but don't have an explicit container.
-            ContainerInfo defaultAttachedContainer = new ContainerInfo("WixAttachedContainer", "bundle-attached.cab", "attached", null, this.FileManager);
+            ContainerInfo defaultAttachedContainer = new ContainerInfo("WixAttachedContainer", "bundle-attached.cab", "attached", null, this.fileManagerCore.TempFilesLocation);
             containers.Add(defaultAttachedContainer.Id, defaultAttachedContainer);
 
             // Create lists of which payloads go in each container or are layout only.
@@ -3335,8 +3268,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 foreach (WixCatalogRow catalogRow in catalogTable.Rows)
                 {
                     // Each catalog is also a payload
-                    string payloadId = Common.GenerateIdentifier("pay", true, catalogRow.SourceFile);
-                    string catalogFile = this.FileManager.ResolveFile(catalogRow.SourceFile, "Catalog", catalogRow.SourceLineNumbers, BindStage.Normal);
+                    string payloadId = Common.GenerateIdentifier("pay", catalogRow.SourceFile);
+                    string catalogFile = this.ResolveFile(catalogRow.SourceFile, "Catalog", catalogRow.SourceLineNumbers, BindStage.Normal);
                     PayloadInfoRow payloadInfo = PayloadInfoRow.Create(catalogRow.SourceLineNumbers, bundle, payloadId, Path.GetFileName(catalogFile), catalogFile, true, false, null, burnUXContainer.Id, PackagingType.Embedded);
 
                     // Add the payload to the UX container
@@ -3365,7 +3298,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 {
                     Table chainPackageInfoTable = bundle.EnsureTable(this.core.TableDefinitions["ChainPackageInfo"]);
 
-                    ChainPackageInfo packageInfo = new ChainPackageInfo(row, wixGroupTable, allPayloads, containers, this.FileManager, this.core, bundle);
+                    ChainPackageInfo packageInfo = new ChainPackageInfo(row, wixGroupTable, allPayloads, containers, this.fileManagers.First(), this.core, bundle); // TODO: fix these info objects to not take the file managers or any of this and make them just rows.
                     allPackages.Add(packageInfo.Id, packageInfo);
 
                     chainPackageInfoTable.Rows.Add(packageInfo);
@@ -3383,7 +3316,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             // NOTE: All payloads should be generated before here with the exception of specific engine and ux data files.
 
-            ArrayList fileTransfers = new ArrayList();
+            List<FileTransfer> fileTransfers = new List<FileTransfer>();
             string layoutDirectory = Path.GetDirectoryName(bundleFile);
 
             // Handle any payloads not explicitly in a container.
@@ -3429,7 +3362,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             if (this.core.EncounteredError)
             {
-                return false;
+                return;
             }
 
             // If catalog files exist, non-UX payloads should validate with the catalog
@@ -3446,7 +3379,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             if (this.core.EncounteredError)
             {
-                return false;
+                return;
             }
 
             // Process the chain of packages to add them in the correct order
@@ -3653,7 +3586,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             foreach (BinderExtension extension in this.extensions)
             {
-                extension.BundleFinalize(bundle);
+                extension.Finish(bundle);
             }
 
             // Start creating the bundle.
@@ -3692,7 +3625,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             this.CreateBootstrapperApplicationManifest(bundle, baManifestPath, uxPayloads);
 
             // Add the bootstrapper application manifest to the set of UX payloads.
-            PayloadInfoRow baManifestPayload = PayloadInfoRow.Create(null /*TODO*/, bundle, Common.GenerateIdentifier("ux", true, "BootstrapperApplicationData.xml"),
+            PayloadInfoRow baManifestPayload = PayloadInfoRow.Create(null /*TODO*/, bundle, Common.GenerateIdentifier("ux", "BootstrapperApplicationData.xml"),
                 "BootstrapperApplicationData.xml", baManifestPath, false, true, null, burnUXContainer.Id, PackagingType.Embedded);
             baManifestPayload.EmbeddedId = string.Format(CultureInfo.InvariantCulture, BurnCommon.BurnUXContainerEmbeddedIdFormat, uxPayloads.Count);
             uxPayloads.Add(baManifestPayload);
@@ -3736,11 +3669,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // Output the bundle to a file
-            if (null != this.pdbFile)
+            if (null != this.PdbFile)
             {
-                Pdb pdb = new Pdb(null);
+                Pdb pdb = new Pdb();
                 pdb.Output = bundle;
-                pdb.Save(this.pdbFile, null, this.WixVariableResolver, this.TempFilesLocation);
+                pdb.Save(this.PdbFile);
             }
 
             // Add detached containers to the list of file transfers.
@@ -3761,27 +3694,25 @@ namespace Microsoft.Tools.WindowsInstallerXml
             try
             {
                 this.core.OnMessage(WixVerboses.LayingOutMedia());
-                this.LayoutMedia(fileTransfers, this.suppressAclReset);
+                this.LayoutMedia(fileTransfers);
             }
             finally
             {
-                if (!String.IsNullOrEmpty(this.contentsFile))
+                if (!String.IsNullOrEmpty(this.ContentsFile))
                 {
-                    this.CreateContentsFile(this.contentsFile, allPayloads.Values);
+                    this.CreateContentsFile(this.ContentsFile, allPayloads.Values);
                 }
 
-                if (!String.IsNullOrEmpty(this.outputsFile))
+                if (!String.IsNullOrEmpty(this.OutputsFile))
                 {
-                    this.CreateOutputsFile(this.outputsFile, fileTransfers, this.pdbFile);
+                    this.CreateOutputsFile(this.OutputsFile, fileTransfers, this.PdbFile);
                 }
 
-                if (!String.IsNullOrEmpty(this.builtOutputsFile))
+                if (!String.IsNullOrEmpty(this.BuiltOutputsFile))
                 {
-                    this.CreateBuiltOutputsFile(this.builtOutputsFile, fileTransfers, this.pdbFile);
+                    this.CreateBuiltOutputsFile(this.BuiltOutputsFile, fileTransfers, this.PdbFile);
                 }
             }
-
-            return !this.core.EncounteredError;
         }
 
         private void GenerateBAManifestPackageTables(Output bundle, List<ChainPackageInfo> chainPackages)
@@ -3920,7 +3851,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             Table slipstreamMspTable = bundle.EnsureTable(this.core.TableDefinitions["SlipstreamMsp"]);
-            RowDictionary<Row> slipstreamMspRows = new RowDictionary<Row>(slipstreamMspTable);
+            RowIndexedList<Row> slipstreamMspRows = new RowIndexedList<Row>(slipstreamMspTable);
 
             // Loop through the MSI and slipstream patches targeting it.
             foreach (ChainPackageInfo msi in msiPackages)
@@ -4041,7 +3972,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 ++payloadCount;
             }
 
-            using (WixCreateCab cab = new WixCreateCab(Path.GetFileName(container.TempPath), Path.GetDirectoryName(container.TempPath), payloadCount, 0, 0, this.defaultCompressionLevel))
+            using (WixCreateCab cab = new WixCreateCab(Path.GetFileName(container.TempPath), Path.GetDirectoryName(container.TempPath), payloadCount, 0, 0, this.DefaultCompressionLevel))
             {
                 // If a manifest was provided always add it as "payload 0" to the container.
                 if (!String.IsNullOrEmpty(manifestFile))
@@ -4066,20 +3997,20 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 writer.Formatting = Formatting.Indented;
                 writer.WriteStartDocument();
-                writer.WriteStartElement("BootstrapperApplicationData", "http://schemas.microsoft.com/wix/2010/BootstrapperApplicationData");
+                writer.WriteStartElement("BootstrapperApplicationData", "http://wixtoolset.org/schemas/v4/2010/BootstrapperApplicationData");
 
                 foreach (Table table in bundle.Tables)
                 {
-                    if (table.Definition.IsBootstrapperApplicationData && null != table.Rows && 0 < table.Rows.Count)
+                    if (table.Definition.BootstrapperApplicationData && null != table.Rows && 0 < table.Rows.Count)
                     {
                         // We simply assert that the table (and field) name is valid, because
                         // this is up to the extension developer to get right. An author will
                         // only affect the attribute value, and that will get properly escaped.
 #if DEBUG
-                        Debug.Assert(CompilerCore.IsIdentifier(table.Name));
+                        Debug.Assert(Common.IsIdentifier(table.Name));
                         foreach (ColumnDefinition column in table.Definition.Columns)
                         {
-                            Debug.Assert(CompilerCore.IsIdentifier(column.Name));
+                            Debug.Assert(Common.IsIdentifier(column.Name));
                         }
 #endif // DEBUG
 
@@ -4171,7 +4102,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 foreach (PayloadInfoRow payload in uxPayloads)
                 {
                     writer.WriteStartElement("Payload");
-                    WriteBurnManifestPayloadAttributes(writer, payload, true, this.FileManager, allPayloads);
+                    WriteBurnManifestPayloadAttributes(writer, payload, true, allPayloads);
                     writer.WriteEndElement();
                 }
 
@@ -4195,7 +4126,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     if (Compiler.BurnUXContainerId != container.Id && 0 < container.Payloads.Count)
                     {
                         writer.WriteStartElement("Container");
-                        WriteBurnManifestContainerAttributes(writer, executableName, container, attachedContainerIndex, this.FileManager);
+                        WriteBurnManifestContainerAttributes(writer, executableName, container, attachedContainerIndex);
                         writer.WriteEndElement();
                         if ("attached" == container.Type)
                         {
@@ -4209,13 +4140,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     if (PackagingType.Embedded == payload.Packaging && Compiler.BurnUXContainerId != payload.Container)
                     {
                         writer.WriteStartElement("Payload");
-                        WriteBurnManifestPayloadAttributes(writer, payload, true, this.FileManager, allPayloads);
+                        WriteBurnManifestPayloadAttributes(writer, payload, true, allPayloads);
                         writer.WriteEndElement();
                     }
                     else if (PackagingType.External == payload.Packaging)
                     {
                         writer.WriteStartElement("Payload");
-                        WriteBurnManifestPayloadAttributes(writer, payload, false, this.FileManager, allPayloads);
+                        WriteBurnManifestPayloadAttributes(writer, payload, false, allPayloads);
                         writer.WriteEndElement();
                     }
                 }
@@ -4398,6 +4329,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         writer.WriteAttributeString("Language", package.Language);
                         writer.WriteAttributeString("Version", package.Version);
                         writer.WriteAttributeString("DisplayInternalUI", package.DisplayInternalUI ? "yes" : "no");
+                        if (!String.IsNullOrEmpty(package.UpgradeCode))
+                        {
+                            writer.WriteAttributeString("UpgradeCode", package.UpgradeCode);
+                        }
                     }
                     else if (Compiler.ChainPackageType.Msp == package.ChainPackageType)
                     {
@@ -4526,8 +4461,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
         private void UpdateBurnResources(string bundleTempPath, string outputPath, WixBundleRow bundleInfo)
         {
-            Microsoft.Deployment.Resources.ResourceCollection resources = new Microsoft.Deployment.Resources.ResourceCollection();
-            Microsoft.Deployment.Resources.VersionResource version = new Microsoft.Deployment.Resources.VersionResource("#1", 1033);
+            WixToolset.Dtf.Resources.ResourceCollection resources = new WixToolset.Dtf.Resources.ResourceCollection();
+            WixToolset.Dtf.Resources.VersionResource version = new WixToolset.Dtf.Resources.VersionResource("#1", 1033);
 
             version.Load(bundleTempPath);
             resources.Add(version);
@@ -4548,7 +4483,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             version.FileVersion = fourPartVersion;
             version.ProductVersion = fourPartVersion;
 
-            Microsoft.Deployment.Resources.VersionStringTable strings = version[1033];
+            WixToolset.Dtf.Resources.VersionStringTable strings = version[1033];
             strings["LegalCopyright"] = bundleInfo.Copyright;
             strings["OriginalFilename"] = Path.GetFileName(outputPath);
             strings["FileVersion"] = bundleInfo.Version;    // string versions do not have to be four parts.
@@ -4571,11 +4506,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             if (!String.IsNullOrEmpty(bundleInfo.IconPath))
             {
-                Deployment.Resources.GroupIconResource iconGroup = new Deployment.Resources.GroupIconResource("#1", 1033);
+                Dtf.Resources.GroupIconResource iconGroup = new Dtf.Resources.GroupIconResource("#1", 1033);
                 iconGroup.ReadFromFile(bundleInfo.IconPath);
                 resources.Add(iconGroup);
 
-                foreach (Deployment.Resources.Resource icon in iconGroup.Icons)
+                foreach (Dtf.Resources.Resource icon in iconGroup.Icons)
                 {
                     resources.Add(icon);
                 }
@@ -4583,7 +4518,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             if (!String.IsNullOrEmpty(bundleInfo.SplashScreenBitmapPath))
             {
-                Deployment.Resources.BitmapResource bitmap = new Deployment.Resources.BitmapResource("#1", 1033);
+                Dtf.Resources.BitmapResource bitmap = new Dtf.Resources.BitmapResource("#1", 1033);
                 bitmap.ReadFromFile(bundleInfo.SplashScreenBitmapPath);
                 resources.Add(bitmap);
             }
@@ -4591,14 +4526,14 @@ namespace Microsoft.Tools.WindowsInstallerXml
             resources.Save(bundleTempPath);
         }
 
-        private void WriteBurnManifestContainerAttributes(XmlTextWriter writer, string executableName, ContainerInfo container, int containerIndex, BinderFileManager fileManager)
+        private void WriteBurnManifestContainerAttributes(XmlTextWriter writer, string executableName, ContainerInfo container, int containerIndex)
         {
             writer.WriteAttributeString("Id", container.Id);
             writer.WriteAttributeString("FileSize", container.FileInfo.Length.ToString(CultureInfo.InvariantCulture));
             writer.WriteAttributeString("Hash", Common.GetFileHash(container.FileInfo));
             if (container.Type == "detached")
             {
-                string resolvedUrl = fileManager.ResolveUrl(container.DownloadUrl, null, null, container.Id, container.Name);
+                string resolvedUrl = this.ResolveUrl(container.DownloadUrl, null, null, container.Id, container.Name);
                 if (!String.IsNullOrEmpty(resolvedUrl))
                 {
                     writer.WriteAttributeString("DownloadUrl", resolvedUrl);
@@ -4624,7 +4559,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
         }
 
-        private void WriteBurnManifestPayloadAttributes(XmlTextWriter writer, PayloadInfoRow payload, bool embeddedOnly, BinderFileManager fileManager, Dictionary<string, PayloadInfoRow> allPayloads)
+        private void WriteBurnManifestPayloadAttributes(XmlTextWriter writer, PayloadInfoRow payload, bool embeddedOnly, Dictionary<string, PayloadInfoRow> allPayloads)
         {
             Debug.Assert(!embeddedOnly || PackagingType.Embedded == payload.Packaging);
 
@@ -4668,7 +4603,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 case PackagingType.External:
                     string packageId = payload.ParentPackagePayload;
                     string parentUrl = payload.ParentPackagePayload == null ? null : allPayloads[payload.ParentPackagePayload].DownloadUrl;
-                    string resolvedUrl = fileManager.ResolveUrl(payload.DownloadUrl, parentUrl, packageId, payload.Id, payload.Name);
+                    string resolvedUrl = this.ResolveUrl(payload.DownloadUrl, parentUrl, packageId, payload.Id, payload.Name);
                     if (!String.IsNullOrEmpty(resolvedUrl))
                     {
                         writer.WriteAttributeString("DownloadUrl", resolvedUrl);
@@ -4801,11 +4736,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="transform">The transform to bind.</param>
         /// <param name="transformFile">The transform to create.</param>
         /// <returns>true if binding completed successfully; false otherwise</returns>
-        private bool BindTransform(Output transform, string transformFile)
+        private void BindTransform(Output transform, string transformFile)
         {
             foreach (BinderExtension extension in this.extensions)
             {
-                extension.TransformInitialize(transform);
+                extension.Initialize(transform);
             }
 
             int transformFlags = 0;
@@ -4987,7 +4922,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 // Ignore unreal tables when building transforms except the _Stream table.
                 // These tables are ignored when generating the database so there is no reason
                 // to process them here.
-                if (table.Definition.IsUnreal && "_Streams" != table.Name)
+                if (table.Definition.Unreal && "_Streams" != table.Name)
                 {
                     continue;
                 }
@@ -5023,7 +4958,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             // fill-in non-primary key values
                             foreach (Field field in row.Fields)
                             {
-                                if (!field.Column.IsPrimaryKey)
+                                if (!field.Column.PrimaryKey)
                                 {
                                     if (ColumnType.Number == field.Column.Type && !field.Column.IsLocalizable)
                                     {
@@ -5033,7 +4968,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                     {
                                         if (null == this.emptyFile)
                                         {
-                                            this.emptyFile = this.tempFiles.AddExtension("empty");
+                                            this.emptyFile = Path.Combine(this.fileManagerCore.TempFilesLocation, "empty");
                                             using (FileStream fileStream = File.Create(this.emptyFile))
                                             {
                                             }
@@ -5093,15 +5028,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             }
                             else if (ColumnType.Object == updatedField.Column.Type)
                             {
-                                if (null == emptyFile)
+                                if (null == this.emptyFile)
                                 {
-                                    emptyFile = this.tempFiles.AddExtension("empty");
+                                    this.emptyFile = Path.Combine(this.fileManagerCore.TempFilesLocation, "empty");
                                     using (FileStream fileStream = File.Create(emptyFile))
                                     {
                                     }
                                 }
 
-                                targetRow[i] = emptyFile;
+                                targetRow[i] = this.emptyFile;
                             }
                             else
                             {
@@ -5124,9 +5059,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             // create an empty file for comparing against
                             if (null == objectField.PreviousData)
                             {
-                                if (null == emptyFile)
+                                if (null == this.emptyFile)
                                 {
-                                    emptyFile = this.tempFiles.AddExtension("empty");
+                                    this.emptyFile = Path.Combine(this.fileManagerCore.TempFilesLocation, "empty");
                                     using (FileStream fileStream = File.Create(emptyFile))
                                     {
                                     }
@@ -5135,7 +5070,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                 targetRow[i] = emptyFile;
                                 modifiedRow = true;
                             }
-                            else if (!this.FileManager.CompareFiles(objectField.PreviousData, (string)objectField.Data))
+                            else if (!this.CompareFiles(objectField.PreviousData, (string)objectField.Data))
                             {
                                 targetRow[i] = objectField.PreviousData;
                                 modifiedRow = true;
@@ -5169,20 +5104,20 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
             foreach (BinderExtension extension in this.extensions)
             {
-                extension.TransformFinalize(transform);
+                extension.Finish(transform);
             }
 
             // Any errors encountered up to this point can cause errors during generation.
             if (this.core.EncounteredError)
             {
-                return false;
+                return;
             }
 
             string transformFileName = Path.GetFileNameWithoutExtension(transformFile);
             string targetDatabaseFile = Path.Combine(this.TempFilesLocation, String.Concat(transformFileName, "_target.msi"));
             string updatedDatabaseFile = Path.Combine(this.TempFilesLocation, String.Concat(transformFileName, "_updated.msi"));
 
-            this.suppressAddingValidationRows = true;
+            this.SuppressAddingValidationRows = true;
             this.GenerateDatabase(targetOutput, targetDatabaseFile, false, true);
             this.GenerateDatabase(updatedOutput, updatedDatabaseFile, true, true);
 
@@ -5202,8 +5137,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     updatedDatabase.CreateTransformSummaryInfo(targetDatabase, transformFile, (TransformErrorConditions)(transformFlags & 0xFFFF), (TransformValidations)((transformFlags >> 16) & 0xFFFF));
                 }
             }
-
-            return !this.core.EncounteredError;
         }
 
         /// <summary>
@@ -5211,7 +5144,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="output">Internal representation of the msi database to operate upon.</param>
         /// <param name="fileRows">The indexed file rows.</param>
-        private void ProcessMergeModules(Output output, FileRowCollection fileRows)
+        private void ProcessMergeModules(Output output, ICollection<FileRow> fileRows)
         {
             Table wixMergeTable = output.Tables["WixMerge"];
             if (null != wixMergeTable)
@@ -5233,6 +5166,15 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
                 }
 
+                // Index all of the file rows to be able to detect collisions with files in the Merge Modules.
+                // It may seem a bit expensive to build up this index solely for the purpose of checking collisions
+                // and you may be thinking, "Surely, we must need the file rows indexed elsewhere." It turns out
+                // there are other cases where we need all the file rows indexed, however they are not common cases.
+                // Now since Merge Modules are already slow and generally less desirable than .wixlibs we'll let
+                // this case be slightly more expensive because the cost of maintaining an indexed file row collection
+                // is a lot more costly for the common cases.
+                Dictionary<string, FileRow> indexedFileRows = fileRows.ToDictionary(r => r.File, StringComparer.Ordinal);
+
                 foreach (Row row in wixMergeTable.Rows)
                 {
                     bool containsFiles = false;
@@ -5245,7 +5187,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         {
                             if (db.TableExists("File") && db.TableExists("Component"))
                             {
-                                Hashtable uniqueModuleFileIdentifiers = System.Collections.Specialized.CollectionsUtil.CreateCaseInsensitiveHashtable();
+                                Dictionary<string, FileRow> uniqueModuleFileIdentifiers = new Dictionary<string, FileRow>(StringComparer.OrdinalIgnoreCase);
 
                                 using (View view = db.OpenExecuteView("SELECT `File`, `Directory_` FROM `File`, `Component` WHERE `Component_`=`Component`"))
                                 {
@@ -5261,7 +5203,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                                             // NOTE: this is very tricky - the merge module file rows are not added to the
                                             // file table because they should not be created via idt import.  Instead, these
-                                            // rows are created by merging in the actual modules
+                                            // rows are created by merging in the actual modules.
                                             FileRow fileRow = new FileRow(null, this.core.TableDefinitions["File"]);
                                             fileRow.File = record[1];
                                             fileRow.Compressed = wixMergeRow.FileCompression;
@@ -5271,29 +5213,24 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                             fileRow.PatchGroup = -1;
                                             fileRow.Source = String.Concat(this.TempFilesLocation, Path.DirectorySeparatorChar, "MergeId.", wixMergeRow.Number.ToString(CultureInfo.InvariantCulture.NumberFormat), Path.DirectorySeparatorChar, record[1]);
 
-                                            FileRow collidingFileRow = fileRows[fileRow.File];
-                                            FileRow collidingModuleFileRow = (FileRow)uniqueModuleFileIdentifiers[fileRow.File];
+                                            FileRow collidingFileRow;
 
-                                            if (null == collidingFileRow && null == collidingModuleFileRow)
+                                            // If case-sensitive collision with another merge module or a user-authored file identifier.
+                                            if (indexedFileRows.TryGetValue(fileRow.File, out collidingFileRow))
+                                            {
+                                                this.core.OnMessage(WixErrors.DuplicateModuleFileIdentifier(wixMergeRow.SourceLineNumbers, wixMergeRow.Id, collidingFileRow.File));
+                                            }
+                                            else if (uniqueModuleFileIdentifiers.TryGetValue(fileRow.File, out collidingFileRow)) // case-insensitive collision with another file identifier in the same merge module
+                                            {
+                                                this.core.OnMessage(WixErrors.DuplicateModuleCaseInsensitiveFileIdentifier(wixMergeRow.SourceLineNumbers, wixMergeRow.Id, fileRow.File, collidingFileRow.File));
+                                            }
+                                            else // no collision
                                             {
                                                 fileRows.Add(fileRow);
 
-                                                // keep track of file identifiers in this merge module
+                                                // Keep updating the indexes as new rows are added.
+                                                indexedFileRows.Add(fileRow.File, fileRow);
                                                 uniqueModuleFileIdentifiers.Add(fileRow.File, fileRow);
-                                            }
-                                            else // collision(s) detected
-                                            {
-                                                // case-sensitive collision with another merge module or a user-authored file identifier
-                                                if (null != collidingFileRow)
-                                                {
-                                                    this.core.OnMessage(WixErrors.DuplicateModuleFileIdentifier(wixMergeRow.SourceLineNumbers, wixMergeRow.Id, collidingFileRow.File));
-                                                }
-
-                                                // case-insensitive collision with another file identifier in the same merge module
-                                                if (null != collidingModuleFileRow)
-                                                {
-                                                    this.core.OnMessage(WixErrors.DuplicateModuleCaseInsensitiveFileIdentifier(wixMergeRow.SourceLineNumbers, wixMergeRow.Id, fileRow.File, collidingModuleFileRow.File));
-                                                }
                                             }
 
                                             containsFiles = true;
@@ -5332,7 +5269,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     }
 
                     // if the module has files and creating layout
-                    if (containsFiles && !this.suppressLayout)
+                    if (containsFiles && !this.SuppressLayout)
                     {
                         bool moduleOpen = false;
                         short mergeLanguage;
@@ -5436,16 +5373,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                             Row foundRow = registryKeyRows[componentRow.KeyPath] as Row;
 
-                            string bitness = String.Empty;
-                            if (!this.backwardsCompatibleGuidGen && componentRow.Is64Bit)
-                            {
-                                bitness = "64";
-                            }
-
+                            string bitness = componentRow.Is64Bit ? "64" : String.Empty;
                             if (null != foundRow)
                             {
                                 string regkey = String.Concat(bitness, foundRow[1], "\\", foundRow[2], "\\", foundRow[3]);
-                                componentRow.Guid = Uuid.NewUuid(Binder.WixComponentGuidNamespace, regkey.ToLower(CultureInfo.InvariantCulture), this.backwardsCompatibleGuidGen).ToString("B").ToUpper(CultureInfo.InvariantCulture);
+                                componentRow.Guid = Uuid.NewUuid(Binder.WixComponentGuidNamespace, regkey.ToLower(CultureInfo.InvariantCulture)).ToString("B").ToUpper(CultureInfo.InvariantCulture);
                             }
                         }
                         else // must be a File KeyPath
@@ -5570,7 +5502,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             // if the rules were followed, reward with a generated guid
                             if (!this.core.EncounteredError)
                             {
-                                componentRow.Guid = Uuid.NewUuid(Binder.WixComponentGuidNamespace, path, this.backwardsCompatibleGuidGen).ToString("B").ToUpper(CultureInfo.InvariantCulture);
+                                componentRow.Guid = Uuid.NewUuid(Binder.WixComponentGuidNamespace, path).ToString("B").ToUpper(CultureInfo.InvariantCulture);
                             }
                         }
                     }
@@ -5756,7 +5688,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                 instanceComponentRow.Operation = RowOperation.Modify;
                                 instanceComponentRow.Fields[1].Modified = true;
                                 instanceComponentRow[0] = targetComponentRow[0];
-                                instanceComponentRow[1] = Uuid.NewUuid(Binder.WixComponentGuidNamespace, String.Concat(guid, instanceId), this.backwardsCompatibleGuidGen).ToString("B").ToUpper(CultureInfo.InvariantCulture);
+                                instanceComponentRow[1] = Uuid.NewUuid(Binder.WixComponentGuidNamespace, String.Concat(guid, instanceId)).ToString("B").ToUpper(CultureInfo.InvariantCulture);
                                 instanceComponentRow[2] = targetComponentRow[2];
                                 instanceComponentRow[3] = targetComponentRow[3];
                                 instanceComponentRow[4] = targetComponentRow[4];
@@ -5856,35 +5788,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
         }
 
-        /// <summary>
-        /// Update several msi tables with data contained in files references in the File table.
-        /// </summary>
-        /// <remarks>
-        /// For versioned files, update the file version and language in the File table.  For
-        /// unversioned files, add a row to the MsiFileHash table for the file.  For assembly
-        /// files, add a row to the MsiAssembly table and add AssemblyName information by adding
-        /// MsiAssemblyName rows.
-        /// </remarks>
-        /// <param name="output">Internal representation of the msi database to operate upon.</param>
-        /// <param name="fileRows">The indexed file rows.</param>
-        /// <param name="mediaRows">The indexed media rows.</param>
-        /// <param name="infoCache">A hashtable to populate with the file information (optional).</param>
-        /// <param name="modularizationGuid">The modularization guid (used in case of a merge module).</param>
-        private Hashtable UpdateFileInformation(Output output, FileRowCollection fileRows, MediaRowCollection mediaRows, IDictionary<string, string> infoCache, string modularizationGuid)
+        private void UpdateMediaSequences(Output output, IEnumerable<FileRow> fileRows, RowDictionary<MediaRow> mediaRows)
         {
             // Index for all the fileId's
             // NOTE: When dealing with patches, there is a file table for each transform. In most cases, the data in these rows will be the same, however users of this index need to be aware of this.
-            Hashtable fileRowIndex = new Hashtable(fileRows.Count);
             Table mediaTable = output.Tables["Media"];
 
             // calculate sequence numbers and media disk id layout for all file media information objects
             if (OutputType.Module == output.Type)
             {
                 int lastSequence = 0;
-                foreach (FileRow fileRow in fileRows)
+                foreach (FileRow fileRow in fileRows) // TODO: Sort these rows directory path and component id and maybe file size or file extension and other creative ideas to get optimal install speed out of MSI.
                 {
                     fileRow.Sequence = ++lastSequence;
-                    fileRowIndex[fileRow.File] = fileRow;
                 }
             }
             else if (null != mediaTable)
@@ -5894,12 +5810,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 SortedList patchGroups = new SortedList();
 
                 // sequence the non-patch-added files
-                foreach (FileRow fileRow in fileRows)
+                foreach (FileRow fileRow in fileRows) // TODO: Sort these rows directory path and component id and maybe file size or file extension and other creative ideas to get optimal install speed out of MSI.
                 {
-                    fileRowIndex[fileRow.File] = fileRow;
                     if (null == mediaRow)
                     {
-                        mediaRow = mediaRows[fileRow.DiskId];
+                        mediaRow = mediaRows.Get(fileRow.DiskId);
                         if (OutputType.Patch == output.Type)
                         {
                             // patch Media cannot start at zero
@@ -5909,7 +5824,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     else if (mediaRow.DiskId != fileRow.DiskId)
                     {
                         mediaRow.LastSequence = lastSequence;
-                        mediaRow = mediaRows[fileRow.DiskId];
+                        mediaRow = mediaRows.Get(fileRow.DiskId);
                     }
 
                     if (0 < fileRow.PatchGroup)
@@ -5943,12 +5858,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     {
                         if (null == mediaRow)
                         {
-                            mediaRow = mediaRows[fileRow.DiskId];
+                            mediaRow = mediaRows.Get(fileRow.DiskId);
                         }
                         else if (mediaRow.DiskId != fileRow.DiskId)
                         {
                             mediaRow.LastSequence = lastSequence;
-                            mediaRow = mediaRows[fileRow.DiskId];
+                            mediaRow = mediaRows.Get(fileRow.DiskId);
                         }
 
                         fileRow.Sequence = ++lastSequence;
@@ -5960,79 +5875,112 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     mediaRow.LastSequence = lastSequence;
                 }
             }
-            else
-            {
-                foreach (FileRow fileRow in fileRows)
-                {
-                    fileRowIndex[fileRow.File] = fileRow;
-                }
-            }
-
-            // no more work to do here if there are no file rows in the file table
-            // note that this does not mean there are no files - the files from
-            // merge modules are never put in the output's file table
-            Table fileTable = output.Tables["File"];
-            if (null == fileTable)
-            {
-                return fileRowIndex;
-            }
-
-            // gather information about files that did not come from merge modules
-            foreach (FileRow row in fileTable.Rows)
-            {
-                UpdateFileRow(output, infoCache, modularizationGuid, fileRowIndex, row, false);
-            }
-
-            return fileRowIndex;
         }
 
-        private void UpdateFileRow(Output output, IDictionary<string, string> infoCache, string modularizationGuid, Hashtable fileRowIndex, FileRow fileRow, bool overwriteHash)
+        /// <summary>
+        /// Update several msi tables with data contained in files references in the File table.
+        /// </summary>
+        /// <remarks>
+        /// For versioned files, update the file version and language in the File table.  For
+        /// unversioned files, add a row to the MsiFileHash table for the file.  For assembly
+        /// files, add a row to the MsiAssembly table and add AssemblyName information by adding
+        /// MsiAssemblyName rows.
+        /// </remarks>
+        /// <param name="output">Internal representation of the msi database to operate upon.</param>
+        /// <param name="allfileRows">Collection of all the file rows processed to this point.</param>
+        /// <param name="fileRows">The indexed file rows.</param>
+        /// <param name="mediaRows">The indexed media rows.</param>
+        /// <param name="infoCache">A hashtable to populate with the file information (optional).</param>
+        /// <param name="modularizationGuid">The modularization guid (used in case of a merge module).</param>
+        private void UpdateFileRow(Output output, IDictionary<string, string> infoCache, string modularizationGuid, IEnumerable<FileRow> allfileRows, FileRow fileRow, bool overwriteHash)
         {
             FileInfo fileInfo = null;
-
-            if (!this.suppressFileHashAndInfo || (!this.suppressAssemblies && FileAssemblyType.NotAnAssembly != fileRow.AssemblyType))
+            try
             {
-                try
+                fileInfo = new FileInfo(fileRow.Source);
+            }
+            catch (ArgumentException)
+            {
+                this.core.OnMessage(WixErrors.InvalidFileName(fileRow.SourceLineNumbers, fileRow.Source));
+                return;
+            }
+            catch (PathTooLongException)
+            {
+                this.core.OnMessage(WixErrors.InvalidFileName(fileRow.SourceLineNumbers, fileRow.Source));
+                return;
+            }
+            catch (NotSupportedException)
+            {
+                this.core.OnMessage(WixErrors.InvalidFileName(fileRow.SourceLineNumbers, fileRow.Source));
+                return;
+            }
+
+            if (!fileInfo.Exists)
+            {
+                this.core.OnMessage(WixErrors.CannotFindFile(fileRow.SourceLineNumbers, fileRow.File, fileRow.FileName, fileRow.Source));
+                return;
+            }
+
+            using (FileStream fileStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                if (Int32.MaxValue < fileStream.Length)
                 {
-                    fileInfo = new FileInfo(fileRow.Source);
+                    throw new WixException(WixErrors.FileTooLarge(fileRow.SourceLineNumbers, fileRow.Source));
                 }
-                catch (ArgumentException)
+
+                fileRow.FileSize = Convert.ToInt32(fileStream.Length, CultureInfo.InvariantCulture);
+            }
+
+            string version;
+            string language;
+            try
+            {
+                Installer.GetFileVersion(fileInfo.FullName, out version, out language);
+            }
+            catch (Win32Exception e)
+            {
+                if (0x2 == e.NativeErrorCode) // ERROR_FILE_NOT_FOUND
                 {
-                    this.core.OnMessage(WixErrors.InvalidFileName(fileRow.SourceLineNumbers, fileRow.Source));
-                    return;
+                    throw new WixException(WixErrors.FileNotFound(fileRow.SourceLineNumbers, fileInfo.FullName));
                 }
-                catch (PathTooLongException)
+                else
                 {
-                    this.core.OnMessage(WixErrors.InvalidFileName(fileRow.SourceLineNumbers, fileRow.Source));
-                    return;
-                }
-                catch (NotSupportedException)
-                {
-                    this.core.OnMessage(WixErrors.InvalidFileName(fileRow.SourceLineNumbers, fileRow.Source));
-                    return;
+                    throw new WixException(WixErrors.Win32Exception(e.NativeErrorCode, e.Message));
                 }
             }
 
-            if (!this.suppressFileHashAndInfo)
+            // If there is no version, it is assumed there is no language because it won't matter in the versioning of the install.
+            if (String.IsNullOrEmpty(version)) // unversioned files have their hashes added to the MsiFileHash table
             {
-                if (fileInfo.Exists)
+                if (!overwriteHash)
                 {
-                    string version;
-                    string language;
-
-                    using (FileStream fileStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    // not overwriting hash, so don't do the rest of these options.
+                }
+                else if (null != fileRow.Version)
+                {
+                    // Search all of the file rows available to see if the specified version is actually a companion file. Yes, this looks
+                    // very expensive and you're probably thinking it would be better to create an index of some sort to do an O(1) look up.
+                    // That's a reasonable thought but companion file usage is usually pretty rare so we'd be doing something expensive (indexing
+                    // all the file rows) for a relatively uncommon situation. Let's not do that.
+                    //
+                    // Also, if we do not find a matching file identifier then the user provided a default version and is providing a version
+                    // for unversioned file. That's allowed but generally a dangerous thing to do so let's point that out to the user.
+                    if (!allfileRows.Any(r => fileRow.Version.Equals(r.File, StringComparison.Ordinal)))
                     {
-                        if (Int32.MaxValue < fileStream.Length)
-                        {
-                            throw new WixException(WixErrors.FileTooLarge(fileRow.SourceLineNumbers, fileRow.Source));
-                        }
-
-                        fileRow.FileSize = Convert.ToInt32(fileStream.Length, CultureInfo.InvariantCulture);
+                        this.core.OnMessage(WixWarnings.DefaultVersionUsedForUnversionedFile(fileRow.SourceLineNumbers, fileRow.Version, fileRow.File));
+                    }
+                }
+                else
+                {
+                    if (null != fileRow.Language)
+                    {
+                        this.core.OnMessage(WixWarnings.DefaultLanguageUsedForUnversionedFile(fileRow.SourceLineNumbers, fileRow.Language, fileRow.File));
                     }
 
+                    int[] hash;
                     try
                     {
-                        Installer.GetFileVersion(fileInfo.FullName, out version, out language);
+                        Installer.GetFileHash(fileInfo.FullName, 0, out hash);
                     }
                     catch (Win32Exception e)
                     {
@@ -6042,356 +5990,325 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         }
                         else
                         {
-                            throw new WixException(WixErrors.Win32Exception(e.NativeErrorCode, e.Message));
+                            throw new WixException(WixErrors.Win32Exception(e.NativeErrorCode, fileInfo.FullName, e.Message));
                         }
                     }
 
-                    // If there is no version, it is assumed there is no language because it won't matter in the versioning of the install.
-                    if (0 == version.Length)   // unversioned files have their hashes added to the MsiFileHash table
+                    if (null == fileRow.HashRow)
                     {
-                        if (null != fileRow.Version)
-                        {
-                            // Check if this is a companion file. If its not, it is a default version.
-                            if (!fileRowIndex.ContainsKey(fileRow.Version))
-                            {
-                                this.core.OnMessage(WixWarnings.DefaultVersionUsedForUnversionedFile(fileRow.SourceLineNumbers, fileRow.Version, fileRow.File));
-                            }
-                        }
-                        else
-                        {
-                            if (null != fileRow.Language)
-                            {
-                                this.core.OnMessage(WixWarnings.DefaultLanguageUsedForUnversionedFile(fileRow.SourceLineNumbers, fileRow.Language, fileRow.File));
-                            }
-
-                            int[] hash;
-                            try
-                            {
-                                Installer.GetFileHash(fileInfo.FullName, 0, out hash);
-                            }
-                            catch (Win32Exception e)
-                            {
-                                if (0x2 == e.NativeErrorCode) // ERROR_FILE_NOT_FOUND
-                                {
-                                    throw new WixException(WixErrors.FileNotFound(fileRow.SourceLineNumbers, fileInfo.FullName));
-                                }
-                                else
-                                {
-                                    throw new WixException(WixErrors.Win32Exception(e.NativeErrorCode, fileInfo.FullName, e.Message));
-                                }
-                            }
-
-                            if (null == fileRow.HashRow)
-                            {
-                                Table msiFileHashTable = output.EnsureTable(this.core.TableDefinitions["MsiFileHash"]);
-                                fileRow.HashRow = msiFileHashTable.CreateRow(fileRow.SourceLineNumbers);
-                            }
-
-                            fileRow.HashRow[0] = fileRow.File;
-                            fileRow.HashRow[1] = 0;
-                            fileRow.HashRow[2] = hash[0];
-                            fileRow.HashRow[3] = hash[1];
-                            fileRow.HashRow[4] = hash[2];
-                            fileRow.HashRow[5] = hash[3];
-                        }
+                        Table msiFileHashTable = output.EnsureTable(this.core.TableDefinitions["MsiFileHash"]);
+                        fileRow.HashRow = msiFileHashTable.CreateRow(fileRow.SourceLineNumbers);
                     }
-                    else // update the file row with the version and language information
+
+                    fileRow.HashRow[0] = fileRow.File;
+                    fileRow.HashRow[1] = 0;
+                    fileRow.HashRow[2] = hash[0];
+                    fileRow.HashRow[3] = hash[1];
+                    fileRow.HashRow[4] = hash[2];
+                    fileRow.HashRow[5] = hash[3];
+                }
+            }
+            else // update the file row with the version and language information.
+            {
+                // If no version was provided by the user, use the version from the file itself.
+                // This is the most common case.
+                if (String.IsNullOrEmpty(fileRow.Version))
+                {
+                    fileRow.Version = version;
+                }
+                else if (!allfileRows.Any(r => fileRow.Version.Equals(r.File, StringComparison.Ordinal))) // this looks expensive, but see explanation below.
+                {
+                    // The user provided a default version for the file row so we looked for a companion file (a file row with Id matching
+                    // the version value). We didn't find it so, we will override the default version they provided with the actual
+                    // version from the file itself. Now, I know it looks expensive to search through all the file rows trying to match
+                    // on the Id. However, the alternative is to build a big index of all file rows to do look ups. Since this case
+                    // where the file version is already present is rare (companion files are pretty uncommon), we'll do the more
+                    // CPU intensive search to save on the memory intensive index that wouldn't be used much.
+                    //
+                    // Also note this case can occur when the file is being updated using the WixBindUpdatedFiles extension mechanism.
+                    // That's typically even more rare than companion files so again, no index, just search.
+                    fileRow.Version = version;
+                }
+
+                if (!String.IsNullOrEmpty(fileRow.Language) && String.IsNullOrEmpty(language))
+                {
+                    this.core.OnMessage(WixWarnings.DefaultLanguageUsedForVersionedFile(fileRow.SourceLineNumbers, fileRow.Language, fileRow.File));
+                }
+                else // override the default provided by the user (usually nothing) with the actual language from the file itself.
+                {
+                    fileRow.Language = language;
+                }
+
+                // Populate the binder variables for this file information if requested.
+                if (null != infoCache)
+                {
+                    if (!String.IsNullOrEmpty(fileRow.Version))
                     {
-                        // Check if the version field references a fileId because this would mean it has a companion file and the version should not be overwritten.
-                        if (null == fileRow.Version || !fileRowIndex.ContainsKey(fileRow.Version))
-                        {
-                            fileRow.Version = version;
-                        }
+                        string key = String.Format(CultureInfo.InvariantCulture, "fileversion.{0}", Demodularize(output, modularizationGuid, fileRow.File));
+                        infoCache[key] = fileRow.Version;
+                    }
 
-                        if (null != fileRow.Language && 0 == language.Length)
-                        {
-                            this.core.OnMessage(WixWarnings.DefaultLanguageUsedForVersionedFile(fileRow.SourceLineNumbers, fileRow.Language, fileRow.File));
-                        }
-                        else
-                        {
-                            fileRow.Language = language;
-                        }
+                    if (!String.IsNullOrEmpty(fileRow.Language))
+                    {
+                        string key = String.Format(CultureInfo.InvariantCulture, "filelanguage.{0}", Demodularize(output, modularizationGuid, fileRow.File));
+                        infoCache[key] = fileRow.Language;
+                    }
+                }
+            }
 
-                        // Populate the binder variables for this file information if requested.
-                        if (null != infoCache)
-                        {
-                            if (!String.IsNullOrEmpty(fileRow.Version))
-                            {
-                                string key = String.Format(CultureInfo.InvariantCulture, "fileversion.{0}", Demodularize(output, modularizationGuid, fileRow.File));
-                                infoCache[key] = fileRow.Version;
-                            }
+            // If this is a CLR assembly, load the assembly and get the assembly name information
+            if (FileAssemblyType.DotNetAssembly == fileRow.AssemblyType)
+            {
+                StringDictionary assemblyNameValues = new StringDictionary();
 
-                            if (!String.IsNullOrEmpty(fileRow.Language))
-                            {
-                                string key = String.Format(CultureInfo.InvariantCulture, "filelanguage.{0}", Demodularize(output, modularizationGuid, fileRow.File));
-                                infoCache[key] = fileRow.Language;
-                            }
-                        }
+                CLRInterop.IReferenceIdentity referenceIdentity = null;
+                Guid referenceIdentityGuid = CLRInterop.ReferenceIdentityGuid;
+                uint result = CLRInterop.GetAssemblyIdentityFromFile(fileInfo.FullName, ref referenceIdentityGuid, out referenceIdentity);
+                if (0 == result && null != referenceIdentity)
+                {
+                    string culture = referenceIdentity.GetAttribute(null, "Culture");
+                    if (null != culture)
+                    {
+                        assemblyNameValues.Add("Culture", culture);
+                    }
+                    else
+                    {
+                        assemblyNameValues.Add("Culture", "neutral");
+                    }
+
+                    string name = referenceIdentity.GetAttribute(null, "Name");
+                    if (null != name)
+                    {
+                        assemblyNameValues.Add("Name", name);
+                    }
+
+                    string processorArchitecture = referenceIdentity.GetAttribute(null, "ProcessorArchitecture");
+                    if (null != processorArchitecture)
+                    {
+                        assemblyNameValues.Add("ProcessorArchitecture", processorArchitecture);
+                    }
+
+                    string publicKeyToken = referenceIdentity.GetAttribute(null, "PublicKeyToken");
+                    if (null != publicKeyToken)
+                    {
+                        bool publicKeyIsNeutral = (String.Equals(publicKeyToken, "neutral", StringComparison.OrdinalIgnoreCase));
+
+                        // Managed code expects "null" instead of "neutral", and
+                        // this won't be installed to the GAC since it's not signed anyway.
+                        assemblyNameValues.Add("publicKeyToken", publicKeyIsNeutral ? "null" : publicKeyToken.ToUpperInvariant());
+                        assemblyNameValues.Add("publicKeyTokenPreservedCase", publicKeyIsNeutral ? "null" : publicKeyToken);
+                    }
+                    else if (fileRow.AssemblyApplication == null)
+                    {
+                        throw new WixException(WixErrors.GacAssemblyNoStrongName(fileRow.SourceLineNumbers, fileInfo.FullName, fileRow.Component));
+                    }
+
+                    string assemblyVersion = referenceIdentity.GetAttribute(null, "Version");
+                    if (null != version)
+                    {
+                        assemblyNameValues.Add("Version", assemblyVersion);
                     }
                 }
                 else
                 {
-                    this.core.OnMessage(WixErrors.CannotFindFile(fileRow.SourceLineNumbers, fileRow.File, fileRow.FileName, fileRow.Source));
+                    this.core.OnMessage(WixErrors.InvalidAssemblyFile(fileRow.SourceLineNumbers, fileInfo.FullName, String.Format(CultureInfo.InvariantCulture, "HRESULT: 0x{0:x8}", result)));
+                    return;
                 }
-            }
 
-            // if we're not suppressing automagically grabbing assembly information and this is a
-            // CLR assembly, load the assembly and get the assembly name information
-            if (!this.suppressAssemblies)
-            {
-                if (FileAssemblyType.DotNetAssembly == fileRow.AssemblyType)
+                Table assemblyNameTable = output.EnsureTable(this.core.TableDefinitions["MsiAssemblyName"]);
+                if (assemblyNameValues.ContainsKey("name"))
                 {
-                    StringDictionary assemblyNameValues = new StringDictionary();
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "name", assemblyNameValues["name"], infoCache, modularizationGuid);
+                }
 
-                    CLRInterop.IReferenceIdentity referenceIdentity = null;
-                    Guid referenceIdentityGuid = CLRInterop.ReferenceIdentityGuid;
-                    uint result = CLRInterop.GetAssemblyIdentityFromFile(fileInfo.FullName, ref referenceIdentityGuid, out referenceIdentity);
-                    if (0 == result && null != referenceIdentity)
+                string fileVersion = null;
+                if (this.SetMsiAssemblyNameFileVersion)
+                {
+                    string ignored;
+
+                    Installer.GetFileVersion(fileInfo.FullName, out fileVersion, out ignored);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "fileVersion", fileVersion, infoCache, modularizationGuid);
+                }
+
+                if (assemblyNameValues.ContainsKey("version"))
+                {
+                    string assemblyVersion = assemblyNameValues["version"];
+
+                    if (!this.ExactAssemblyVersions)
                     {
-                        string culture = referenceIdentity.GetAttribute(null, "Culture");
-                        if (null != culture)
+                        // there is a bug in fusion that requires the assembly's "version" attribute
+                        // to be equal to or longer than the "fileVersion" in length when its present;
+                        // the workaround is to prepend zeroes to the last version number in the assembly version
+                        if (this.SetMsiAssemblyNameFileVersion && null != fileVersion && fileVersion.Length > assemblyVersion.Length)
                         {
-                            assemblyNameValues.Add("Culture", culture);
-                        }
-                        else
-                        {
-                            assemblyNameValues.Add("Culture", "neutral");
-                        }
+                            string padding = new string('0', fileVersion.Length - assemblyVersion.Length);
+                            string[] assemblyVersionNumbers = assemblyVersion.Split('.');
 
-                        string name = referenceIdentity.GetAttribute(null, "Name");
-                        if (null != name)
-                        {
-                            assemblyNameValues.Add("Name", name);
-                        }
-
-                        string processorArchitecture = referenceIdentity.GetAttribute(null, "ProcessorArchitecture");
-                        if (null != processorArchitecture)
-                        {
-                            assemblyNameValues.Add("ProcessorArchitecture", processorArchitecture);
-                        }
-
-                        string publicKeyToken = referenceIdentity.GetAttribute(null, "PublicKeyToken");
-                        if (null != publicKeyToken)
-                        {
-                            bool publicKeyIsNeutral = (String.Equals(publicKeyToken, "neutral", StringComparison.OrdinalIgnoreCase));
-
-                            // Managed code expects "null" instead of "neutral", and
-                            // this won't be installed to the GAC since it's not signed anyway.
-                            assemblyNameValues.Add("publicKeyToken", publicKeyIsNeutral ? "null" : publicKeyToken.ToUpperInvariant());
-                            assemblyNameValues.Add("publicKeyTokenPreservedCase", publicKeyIsNeutral ? "null" : publicKeyToken);
-                        }
-                        else if (fileRow.AssemblyApplication == null)
-                        {
-                            throw new WixException(WixErrors.GacAssemblyNoStrongName(fileRow.SourceLineNumbers, fileInfo.FullName, fileRow.Component));
-                        }
-
-                        string version = referenceIdentity.GetAttribute(null, "Version");
-                        if (null != version)
-                        {
-                            assemblyNameValues.Add("Version", version);
-                        }
-                    }
-                    else
-                    {
-                        this.core.OnMessage(WixErrors.InvalidAssemblyFile(fileRow.SourceLineNumbers, fileInfo.FullName, String.Format(CultureInfo.InvariantCulture, "HRESULT: 0x{0:x8}", result)));
-                        return;
-                    }
-
-                    Table assemblyNameTable = output.EnsureTable(this.core.TableDefinitions["MsiAssemblyName"]);
-                    if (assemblyNameValues.ContainsKey("name"))
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "name", assemblyNameValues["name"], infoCache, modularizationGuid);
-                    }
-
-                    string fileVersion = null;
-                    if (this.setMsiAssemblyNameFileVersion)
-                    {
-                        string language;
-
-                        Installer.GetFileVersion(fileInfo.FullName, out fileVersion, out language);
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "fileVersion", fileVersion, infoCache, modularizationGuid);
-                    }
-
-                    if (assemblyNameValues.ContainsKey("version"))
-                    {
-                        string assemblyVersion = assemblyNameValues["version"];
-
-                        if (!this.exactAssemblyVersions)
-                        {
-                            // there is a bug in fusion that requires the assembly's "version" attribute
-                            // to be equal to or longer than the "fileVersion" in length when its present;
-                            // the workaround is to prepend zeroes to the last version number in the assembly version
-                            if (this.setMsiAssemblyNameFileVersion && null != fileVersion && fileVersion.Length > assemblyVersion.Length)
+                            if (assemblyVersionNumbers.Length > 0)
                             {
-                                string padding = new string('0', fileVersion.Length - assemblyVersion.Length);
-                                string[] assemblyVersionNumbers = assemblyVersion.Split('.');
-
-                                if (assemblyVersionNumbers.Length > 0)
-                                {
-                                    assemblyVersionNumbers[assemblyVersionNumbers.Length - 1] = String.Concat(padding, assemblyVersionNumbers[assemblyVersionNumbers.Length - 1]);
-                                    assemblyVersion = String.Join(".", assemblyVersionNumbers);
-                                }
+                                assemblyVersionNumbers[assemblyVersionNumbers.Length - 1] = String.Concat(padding, assemblyVersionNumbers[assemblyVersionNumbers.Length - 1]);
+                                assemblyVersion = String.Join(".", assemblyVersionNumbers);
                             }
                         }
-
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "version", assemblyVersion, infoCache, modularizationGuid);
                     }
 
-                    if (assemblyNameValues.ContainsKey("culture"))
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "culture", assemblyNameValues["culture"], infoCache, modularizationGuid);
-                    }
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "version", assemblyVersion, infoCache, modularizationGuid);
+                }
 
-                    if (assemblyNameValues.ContainsKey("publicKeyToken"))
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "publicKeyToken", assemblyNameValues["publicKeyToken"], infoCache, modularizationGuid);
-                    }
+                if (assemblyNameValues.ContainsKey("culture"))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "culture", assemblyNameValues["culture"], infoCache, modularizationGuid);
+                }
 
-                    if (null != fileRow.ProcessorArchitecture && 0 < fileRow.ProcessorArchitecture.Length)
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", fileRow.ProcessorArchitecture, infoCache, modularizationGuid);
-                    }
+                if (assemblyNameValues.ContainsKey("publicKeyToken"))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "publicKeyToken", assemblyNameValues["publicKeyToken"], infoCache, modularizationGuid);
+                }
 
+                if (null != fileRow.ProcessorArchitecture && 0 < fileRow.ProcessorArchitecture.Length)
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", fileRow.ProcessorArchitecture, infoCache, modularizationGuid);
+                }
+
+                if (assemblyNameValues.ContainsKey("processorArchitecture"))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", assemblyNameValues["processorArchitecture"], infoCache, modularizationGuid);
+                }
+
+                // add the assembly name to the information cache
+                if (null != infoCache)
+                {
+                    string fileId = Demodularize(output, modularizationGuid, fileRow.File);
+                    string key = String.Concat("assemblyfullname.", fileId);
+                    string assemblyName = String.Concat(assemblyNameValues["name"], ", version=", assemblyNameValues["version"], ", culture=", assemblyNameValues["culture"], ", publicKeyToken=", String.IsNullOrEmpty(assemblyNameValues["publicKeyToken"]) ? "null" : assemblyNameValues["publicKeyToken"]);
                     if (assemblyNameValues.ContainsKey("processorArchitecture"))
                     {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", assemblyNameValues["processorArchitecture"], infoCache, modularizationGuid);
+                        assemblyName = String.Concat(assemblyName, ", processorArchitecture=", assemblyNameValues["processorArchitecture"]);
                     }
 
-                    // add the assembly name to the information cache
-                    if (null != infoCache)
+                    infoCache[key] = assemblyName;
+
+                    // Add entries with the preserved case publicKeyToken
+                    string pcAssemblyNameKey = String.Concat("assemblyfullnamepreservedcase.", fileId);
+                    infoCache[pcAssemblyNameKey] = (assemblyNameValues["publicKeyToken"] == assemblyNameValues["publicKeyTokenPreservedCase"]) ? assemblyName : assemblyName.Replace(assemblyNameValues["publicKeyToken"], assemblyNameValues["publicKeyTokenPreservedCase"]);
+
+                    string pcPublicKeyTokenKey = String.Concat("assemblypublickeytokenpreservedcase.", fileId);
+                    infoCache[pcPublicKeyTokenKey] = assemblyNameValues["publicKeyTokenPreservedCase"];
+                }
+            }
+            else if (FileAssemblyType.Win32Assembly == fileRow.AssemblyType)
+            {
+                // TODO: Consider passing in the allFileRows as an indexed collection instead of searching through all files like this. Even those this is a rare case
+                // it looks like we might be able to index the file earlier.
+                FileRow fileManifestRow = allfileRows.SingleOrDefault(r => r.File.Equals(fileRow.AssemblyManifest, StringComparison.Ordinal));
+                if (null == fileManifestRow)
+                {
+                    this.core.OnMessage(WixErrors.MissingManifestForWin32Assembly(fileRow.SourceLineNumbers, fileRow.File, fileRow.AssemblyManifest));
+                }
+
+                string win32Type = null;
+                string win32Name = null;
+                string win32Version = null;
+                string win32ProcessorArchitecture = null;
+                string win32PublicKeyToken = null;
+
+                // loading the dom is expensive we want more performant APIs than the DOM
+                // Navigator is cheaper than dom.  Perhaps there is a cheaper API still.
+                try
+                {
+                    XPathDocument doc = new XPathDocument(fileManifestRow.Source);
+                    XPathNavigator nav = doc.CreateNavigator();
+                    nav.MoveToRoot();
+
+                    // this assumes a particular schema for a win32 manifest and does not
+                    // provide error checking if the file does not conform to schema.
+                    // The fallback case here is that nothing is added to the MsiAssemblyName
+                    // table for an out of tolerance Win32 manifest.  Perhaps warnings needed.
+                    if (nav.MoveToFirstChild())
                     {
-                        string fileId = Demodularize(output, modularizationGuid, fileRow.File);
-                        string key = String.Concat("assemblyfullname.", fileId);
-                        string assemblyName = String.Concat(assemblyNameValues["name"], ", version=", assemblyNameValues["version"], ", culture=", assemblyNameValues["culture"], ", publicKeyToken=", String.IsNullOrEmpty(assemblyNameValues["publicKeyToken"]) ? "null" : assemblyNameValues["publicKeyToken"]);
-                        if (assemblyNameValues.ContainsKey("processorArchitecture"))
+                        while (nav.NodeType != XPathNodeType.Element || nav.Name != "assembly")
                         {
-                            assemblyName = String.Concat(assemblyName, ", processorArchitecture=", assemblyNameValues["processorArchitecture"]);
+                            nav.MoveToNext();
                         }
 
-                        infoCache[key] = assemblyName;
-
-                        // Add entries with the preserved case publicKeyToken
-                        string pcAssemblyNameKey = String.Concat("assemblyfullnamepreservedcase.", fileId);
-                        infoCache[pcAssemblyNameKey] = (assemblyNameValues["publicKeyToken"] == assemblyNameValues["publicKeyTokenPreservedCase"]) ? assemblyName : assemblyName.Replace(assemblyNameValues["publicKeyToken"], assemblyNameValues["publicKeyTokenPreservedCase"]);
-
-                        string pcPublicKeyTokenKey = String.Concat("assemblypublickeytokenpreservedcase.", fileId);
-                        infoCache[pcPublicKeyTokenKey] = assemblyNameValues["publicKeyTokenPreservedCase"];
-                    }
-                }
-                else if (FileAssemblyType.Win32Assembly == fileRow.AssemblyType)
-                {
-                    // Able to use the index because only the Source field is used and it is used only for more complete error messages.
-                    FileRow fileManifestRow = (FileRow)fileRowIndex[fileRow.AssemblyManifest];
-
-                    if (null == fileManifestRow)
-                    {
-                        this.core.OnMessage(WixErrors.MissingManifestForWin32Assembly(fileRow.SourceLineNumbers, fileRow.File, fileRow.AssemblyManifest));
-                    }
-
-                    string type = null;
-                    string name = null;
-                    string version = null;
-                    string processorArchitecture = null;
-                    string publicKeyToken = null;
-
-                    // loading the dom is expensive we want more performant APIs than the DOM
-                    // Navigator is cheaper than dom.  Perhaps there is a cheaper API still.
-                    try
-                    {
-                        XPathDocument doc = new XPathDocument(fileManifestRow.Source);
-                        XPathNavigator nav = doc.CreateNavigator();
-                        nav.MoveToRoot();
-
-                        // this assumes a particular schema for a win32 manifest and does not
-                        // provide error checking if the file does not conform to schema.
-                        // The fallback case here is that nothing is added to the MsiAssemblyName
-                        // table for an out of tolerance Win32 manifest.  Perhaps warnings needed.
                         if (nav.MoveToFirstChild())
                         {
-                            while (nav.NodeType != XPathNodeType.Element || nav.Name != "assembly")
+                            bool hasNextSibling = true;
+                            while (nav.NodeType != XPathNodeType.Element || nav.Name != "assemblyIdentity" && hasNextSibling)
                             {
-                                nav.MoveToNext();
+                                hasNextSibling = nav.MoveToNext();
+                            }
+                            if (!hasNextSibling)
+                            {
+                                this.core.OnMessage(WixErrors.InvalidManifestContent(fileRow.SourceLineNumbers, fileManifestRow.Source));
+                                return;
                             }
 
-                            if (nav.MoveToFirstChild())
+                            if (nav.MoveToAttribute("type", String.Empty))
                             {
-                                bool hasNextSibling = true;
-                                while (nav.NodeType != XPathNodeType.Element || nav.Name != "assemblyIdentity" && hasNextSibling)
-                                {
-                                    hasNextSibling = nav.MoveToNext();
-                                }
-                                if (!hasNextSibling)
-                                {
-                                    this.core.OnMessage(WixErrors.InvalidManifestContent(fileRow.SourceLineNumbers, fileManifestRow.Source));
-                                    return;
-                                }
+                                win32Type = nav.Value;
+                                nav.MoveToParent();
+                            }
 
-                                if (nav.MoveToAttribute("type", String.Empty))
-                                {
-                                    type = nav.Value;
-                                    nav.MoveToParent();
-                                }
+                            if (nav.MoveToAttribute("name", String.Empty))
+                            {
+                                win32Name = nav.Value;
+                                nav.MoveToParent();
+                            }
 
-                                if (nav.MoveToAttribute("name", String.Empty))
-                                {
-                                    name = nav.Value;
-                                    nav.MoveToParent();
-                                }
+                            if (nav.MoveToAttribute("version", String.Empty))
+                            {
+                                win32Version = nav.Value;
+                                nav.MoveToParent();
+                            }
 
-                                if (nav.MoveToAttribute("version", String.Empty))
-                                {
-                                    version = nav.Value;
-                                    nav.MoveToParent();
-                                }
+                            if (nav.MoveToAttribute("processorArchitecture", String.Empty))
+                            {
+                                win32ProcessorArchitecture = nav.Value;
+                                nav.MoveToParent();
+                            }
 
-                                if (nav.MoveToAttribute("processorArchitecture", String.Empty))
-                                {
-                                    processorArchitecture = nav.Value;
-                                    nav.MoveToParent();
-                                }
-
-                                if (nav.MoveToAttribute("publicKeyToken", String.Empty))
-                                {
-                                    publicKeyToken = nav.Value;
-                                    nav.MoveToParent();
-                                }
+                            if (nav.MoveToAttribute("publicKeyToken", String.Empty))
+                            {
+                                win32PublicKeyToken = nav.Value;
+                                nav.MoveToParent();
                             }
                         }
                     }
-                    catch (FileNotFoundException fe)
-                    {
-                        this.core.OnMessage(WixErrors.FileNotFound(SourceLineNumberCollection.FromFileName(fileManifestRow.Source), fe.FileName, "AssemblyManifest"));
-                    }
-                    catch (XmlException xe)
-                    {
-                        this.core.OnMessage(WixErrors.InvalidXml(SourceLineNumberCollection.FromFileName(fileManifestRow.Source), "manifest", xe.Message));
-                    }
+                }
+                catch (FileNotFoundException fe)
+                {
+                    this.core.OnMessage(WixErrors.FileNotFound(new SourceLineNumber(fileManifestRow.Source), fe.FileName, "AssemblyManifest"));
+                }
+                catch (XmlException xe)
+                {
+                    this.core.OnMessage(WixErrors.InvalidXml(new SourceLineNumber(fileManifestRow.Source), "manifest", xe.Message));
+                }
 
-                    Table assemblyNameTable = output.EnsureTable(this.core.TableDefinitions["MsiAssemblyName"]);
-                    if (null != name && 0 < name.Length)
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "name", name, infoCache, modularizationGuid);
-                    }
+                Table assemblyNameTable = output.EnsureTable(this.core.TableDefinitions["MsiAssemblyName"]);
+                if (!String.IsNullOrEmpty(win32Name))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "name", win32Name, infoCache, modularizationGuid);
+                }
 
-                    if (null != version && 0 < version.Length)
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "version", version, infoCache, modularizationGuid);
-                    }
+                if (!String.IsNullOrEmpty(win32Version))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "version", win32Version, infoCache, modularizationGuid);
+                }
 
-                    if (null != type && 0 < type.Length)
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "type", type, infoCache, modularizationGuid);
-                    }
+                if (!String.IsNullOrEmpty(win32Type))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "type", win32Type, infoCache, modularizationGuid);
+                }
 
-                    if (null != processorArchitecture && 0 < processorArchitecture.Length)
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", processorArchitecture, infoCache, modularizationGuid);
-                    }
+                if (!String.IsNullOrEmpty(win32ProcessorArchitecture))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", win32ProcessorArchitecture, infoCache, modularizationGuid);
+                }
 
-                    if (null != publicKeyToken && 0 < publicKeyToken.Length)
-                    {
-                        SetMsiAssemblyName(output, assemblyNameTable, fileRow, "publicKeyToken", publicKeyToken, infoCache, modularizationGuid);
-                    }
+                if (!String.IsNullOrEmpty(win32PublicKeyToken))
+                {
+                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "publicKeyToken", win32PublicKeyToken, infoCache, modularizationGuid);
                 }
             }
         }
@@ -6435,7 +6352,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="sourceLineNumbers">Source line numbers for row from source.</param>
         /// <param name="source">Source path to file to read.</param>
         /// <returns>Text string read from file.</returns>
-        private string ReadTextFile(SourceLineNumberCollection sourceLineNumbers, string source)
+        private string ReadTextFile(SourceLineNumber sourceLineNumbers, string source)
         {
             string text = null;
 
@@ -6474,7 +6391,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="fileRows">The indexed file rows.</param>
         /// <param name="suppressedTableNames">The names of tables that are suppressed.</param>
         /// <remarks>Expects that output's database has already been generated.</remarks>
-        private void MergeModules(string tempDatabaseFile, Output output, FileRowCollection fileRows, StringCollection suppressedTableNames)
+        private void MergeModules(string tempDatabaseFile, Output output, IEnumerable<FileRow> fileRows, HashSet<string> suppressedTableNames)
         {
             Debug.Assert(OutputType.Product == output.Type);
 
@@ -6788,18 +6705,16 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Creates cabinet files.
         /// </summary>
         /// <param name="output">Output to generate image for.</param>
-        /// <param name="fileRows">The indexed file rows.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
-        /// <param name="mediaRows">The indexed media rows.</param>
         /// <param name="layoutDirectory">The directory in which the image should be layed out.</param>
         /// <param name="compressed">Flag if source image should be compressed.</param>
         /// <returns>The uncompressed file rows.</returns>
-        private FileRowCollection CreateCabinetFiles(Output output, FileRowCollection fileRows, ArrayList fileTransfers, MediaRowCollection mediaRows, string layoutDirectory, bool compressed, AutoMediaAssigner autoMediaAssigner)
+        private RowDictionary<FileRow> CreateCabinetFiles(Output output, List<FileTransfer> fileTransfers, string layoutDirectory, bool compressed, AutoMediaAssigner autoMediaAssigner)
         {
             this.SetCabbingThreadCount();
 
             // Send Binder object to Facilitate NewCabNamesCallBack Callback
-            CabinetBuilder cabinetBuilder = new CabinetBuilder(this.cabbingThreadCount, Marshal.GetFunctionPointerForDelegate(this.newCabNamesCallBack));
+            CabinetBuilder cabinetBuilder = new CabinetBuilder(this.CabbingThreadCount, Marshal.GetFunctionPointerForDelegate(this.newCabNamesCallBack));
 
             // Supply Compile MediaTemplate Attributes to Cabinet Builder
             int MaximumCabinetSizeForLargeFileSplitting;
@@ -6808,17 +6723,12 @@ namespace Microsoft.Tools.WindowsInstallerXml
             cabinetBuilder.MaximumCabinetSizeForLargeFileSplitting = MaximumCabinetSizeForLargeFileSplitting;
             cabinetBuilder.MaximumUncompressedMediaSize = MaximumUncompressedMediaSize;
 
-            if (null != this.MessageHandler)
+            foreach (var entry in autoMediaAssigner.Cabinets)
             {
-                cabinetBuilder.Message += new MessageEventHandler(this.MessageHandler);
-            }
+                MediaRow mediaRow = entry.Key;
+                List<FileRow> files = entry.Value;
 
-            foreach (DictionaryEntry entry in autoMediaAssigner.Cabinets)
-            {
-                MediaRow mediaRow = (MediaRow)entry.Key;
-                FileRowCollection files = (FileRowCollection)entry.Value;
-
-                string cabinetDir = this.FileManager.ResolveMedia(mediaRow, layoutDirectory);
+                string cabinetDir = this.ResolveMedia(mediaRow, layoutDirectory);
 
                 CabinetWorkItem cabinetWorkItem = this.CreateCabinetWorkItem(output, cabinetDir, mediaRow, files, fileTransfers);
                 if (null != cabinetWorkItem)
@@ -6834,10 +6744,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // create queued cabinets with multiple threads
-            int cabError = cabinetBuilder.CreateQueuedCabinets();
-            if (0 != cabError)
+            cabinetBuilder.CreateQueuedCabinets();
+            if (this.core.EncounteredError)
             {
-                this.core.EncounteredError = true;
                 return null;
             }
 
@@ -6864,7 +6773,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             // try to import the table into the MSI
             try
             {
-                db.Import(Path.GetDirectoryName(idtPath), Path.GetFileName(idtPath));
+                db.Import(idtPath);
             }
             catch (WixInvalidIdtException)
             {
@@ -6882,10 +6791,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="fileRows">Collection of files in this cabinet.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
         /// <returns>created CabinetWorkItem object</returns>
-        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, FileRowCollection fileRows, ArrayList fileTransfers)
+        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, List<FileRow> fileRows, List<FileTransfer> fileTransfers)
         {
             CabinetWorkItem cabinetWorkItem = null;
-            string tempCabinetFile = Path.Combine(this.TempFilesLocation, mediaRow.Cabinet);
+            string tempCabinetFileX = Path.Combine(this.TempFilesLocation, mediaRow.Cabinet);
 
             // check for an empty cabinet
             if (0 == fileRows.Count)
@@ -6909,24 +6818,24 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 }
             }
 
-            CabinetBuildOption cabinetBuildOption = this.FileManager.ResolveCabinet(fileRows, ref tempCabinetFile);
+            ResolvedCabinet resolvedCabinet = this.ResolveCabinet(tempCabinetFileX, fileRows);
 
             // create a cabinet work item if it's not being skipped
-            if (CabinetBuildOption.BuildAndCopy == cabinetBuildOption || CabinetBuildOption.BuildAndMove == cabinetBuildOption)
+            if (CabinetBuildOption.BuildAndCopy == resolvedCabinet.BuildOption || CabinetBuildOption.BuildAndMove == resolvedCabinet.BuildOption)
             {
                 int maxThreshold = 0; // default to the threshold for best smartcabbing (makes smallest cabinet).
-                Cab.CompressionLevel compressionLevel = this.defaultCompressionLevel;
+                CompressionLevel compressionLevel = this.DefaultCompressionLevel;
 
                 if (mediaRow.HasExplicitCompressionLevel)
                 {
                     compressionLevel = mediaRow.CompressionLevel;
                 }
 
-                cabinetWorkItem = new CabinetWorkItem(fileRows, tempCabinetFile, maxThreshold, compressionLevel, this.FileManager);
+                cabinetWorkItem = new CabinetWorkItem(fileRows, resolvedCabinet.Path, maxThreshold, compressionLevel/*, this.FileManager*/);
             }
             else // reuse the cabinet from the cabinet cache.
             {
-                this.core.OnMessage(WixVerboses.ReusingCabCache(mediaRow.SourceLineNumbers, mediaRow.Cabinet, tempCabinetFile));
+                this.core.OnMessage(WixVerboses.ReusingCabCache(mediaRow.SourceLineNumbers, mediaRow.Cabinet, resolvedCabinet.Path));
 
                 try
                 {
@@ -6936,11 +6845,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     // the cache. Now the file (an input) has a newer timestamp than the reused cabient (an output)
                     // causing the project to look like it perpetually needs a rebuild until all of the reused
                     // cabinets get newer timestamps.
-                    File.SetLastWriteTime(tempCabinetFile, DateTime.Now);
+                    File.SetLastWriteTime(resolvedCabinet.Path, DateTime.Now);
                 }
                 catch (Exception e)
                 {
-                    this.core.OnMessage(WixWarnings.CannotUpdateCabCache(mediaRow.SourceLineNumbers, tempCabinetFile, e.Message));
+                    this.core.OnMessage(WixWarnings.CannotUpdateCabCache(mediaRow.SourceLineNumbers, resolvedCabinet.Path, e.Message));
                 }
             }
 
@@ -6950,13 +6859,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 Row streamRow = streamsTable.CreateRow(null);
                 streamRow[0] = mediaRow.Cabinet.Substring(1);
-                streamRow[1] = tempCabinetFile;
+                streamRow[1] = resolvedCabinet.Path;
             }
             else
             {
                 string destinationPath = Path.Combine(cabinetDir, mediaRow.Cabinet);
                 FileTransfer transfer;
-                if (FileTransfer.TryCreate(tempCabinetFile, destinationPath, CabinetBuildOption.BuildAndMove == cabinetBuildOption, "Cabinet", mediaRow.SourceLineNumbers, out transfer))
+                if (FileTransfer.TryCreate(resolvedCabinet.Path, destinationPath, CabinetBuildOption.BuildAndMove == resolvedCabinet.BuildOption, "Cabinet", mediaRow.SourceLineNumbers, out transfer))
                 {
                     transfer.Built = true;
                     fileTransfers.Add(transfer);
@@ -6976,9 +6885,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="layoutDirectory">The directory in which the image should be layed out.</param>
         /// <param name="compressed">Flag if source image should be compressed.</param>
         /// <param name="longNamesInImage">Flag if long names should be used.</param>
-        private void ProcessUncompressedFiles(string tempDatabaseFile, FileRowCollection fileRows, ArrayList fileTransfers, MediaRowCollection mediaRows, string layoutDirectory, bool compressed, bool longNamesInImage)
+        private void ProcessUncompressedFiles(string tempDatabaseFile, IEnumerable<FileRow> fileRows, List<FileTransfer> fileTransfers, RowDictionary<MediaRow> mediaRows, string layoutDirectory, bool compressed, bool longNamesInImage)
         {
-            if (0 == fileRows.Count || this.core.EncounteredError)
+            if (this.core.EncounteredError || !fileRows.Any())
             {
                 return;
             }
@@ -7013,7 +6922,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         {
                             string relativeFileLayoutPath = null;
 
-                            string mediaLayoutDirectory = this.FileManager.ResolveMedia(mediaRows[fileRow.DiskId], layoutDirectory);
+                            string mediaLayoutDirectory = this.ResolveMedia(mediaRows.Get(fileRow.DiskId), layoutDirectory);
 
                             // setup up the query record and find the appropriate file in the
                             // previously executed file view
@@ -7050,7 +6959,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         private void SetCabbingThreadCount()
         {
             // default the number of cabbing threads to the number of processors if it wasn't specified
-            if (0 == this.cabbingThreadCount)
+            if (0 == this.CabbingThreadCount)
             {
                 string numberOfProcessors = System.Environment.GetEnvironmentVariable("NUMBER_OF_PROCESSORS");
 
@@ -7058,19 +6967,19 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 {
                     if (null != numberOfProcessors)
                     {
-                        this.cabbingThreadCount = Convert.ToInt32(numberOfProcessors, CultureInfo.InvariantCulture.NumberFormat);
+                        this.CabbingThreadCount = Convert.ToInt32(numberOfProcessors, CultureInfo.InvariantCulture.NumberFormat);
 
-                        if (0 >= this.cabbingThreadCount)
+                        if (0 >= this.CabbingThreadCount)
                         {
                             throw new WixException(WixErrors.IllegalEnvironmentVariable("NUMBER_OF_PROCESSORS", numberOfProcessors));
                         }
                     }
                     else // default to 1 if the environment variable is not set
                     {
-                        this.cabbingThreadCount = 1;
+                        this.CabbingThreadCount = 1;
                     }
 
-                    this.core.OnMessage(WixVerboses.SetCabbingThreadCount(this.cabbingThreadCount.ToString()));
+                    this.core.OnMessage(WixVerboses.SetCabbingThreadCount(this.CabbingThreadCount.ToString()));
                 }
                 catch (ArgumentException)
                 {
@@ -7088,7 +6997,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="path">Path to write file.</param>
         /// <param name="fileRows">Collection of file rows whose source will be written to file.</param>
-        private void CreateContentsFile(string path, FileRowCollection fileRows)
+        private void CreateContentsFile(string path, IEnumerable<FileRow> fileRows)
         {
             string directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
@@ -7136,7 +7045,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="path">Path to write file.</param>
         /// <param name="fileTransfers">Collection of files that were transferred to the output directory.</param>
         /// <param name="pdbPath">Optional path to created .wixpdb.</param>
-        private void CreateOutputsFile(string path, ArrayList fileTransfers, string pdbPath)
+        private void CreateOutputsFile(string path, List<FileTransfer> fileTransfers, string pdbPath)
         {
             string directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
@@ -7170,7 +7079,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="path">Path to write file.</param>
         /// <param name="fileTransfers">Collection of files that were transferred to the output directory.</param>
         /// <param name="pdbPath">Optional path to created .wixpdb.</param>
-        private void CreateBuiltOutputsFile(string path, ArrayList fileTransfers, string pdbPath)
+        private void CreateBuiltOutputsFile(string path, List<FileTransfer> fileTransfers, string pdbPath)
         {
             string directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
@@ -7397,7 +7306,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <summary>
         /// Sorts the WixPatchSymbolPaths table for processing.
         /// </summary>
-        internal sealed class WixPatchSymbolPathsComparer : IComparer
+        internal sealed class WixPatchSymbolPathsComparer : IComparer<Row>
         {
             /// <summary>
             /// Compares two rows from the WixPatchSymbolPaths table.
@@ -7406,14 +7315,21 @@ namespace Microsoft.Tools.WindowsInstallerXml
             /// <param name="b">Second row to compare.</param>
             /// <remarks>Only the File, Product, Component, Directory, and Media tables links are allowed by this method.</remarks>
             /// <returns>Less than zero if a is less than b; Zero if they are equal, and Greater than zero if a is greater than b</returns>
-            public int Compare(Object a, Object b)
-            {
-                Row ra = (Row)a;
-                Row rb = (Row)b;
+            //public int Compare(Object a, Object b)
+            //{
+            //    Row ra = (Row)a;
+            //    Row rb = (Row)b;
 
-                SymbolPathType ia = (SymbolPathType)Enum.Parse(typeof(SymbolPathType), ((Field)ra.Fields[0]).Data.ToString());
-                SymbolPathType ib = (SymbolPathType)Enum.Parse(typeof(SymbolPathType), ((Field)rb.Fields[0]).Data.ToString());
-                return (int)ib - (int)ia;
+            //    SymbolPathType ia = (SymbolPathType)Enum.Parse(typeof(SymbolPathType), ((Field)ra.Fields[0]).Data.ToString());
+            //    SymbolPathType ib = (SymbolPathType)Enum.Parse(typeof(SymbolPathType), ((Field)rb.Fields[0]).Data.ToString());
+            //    return (int)ib - (int)ia;
+            //}
+
+            public int Compare(Row x, Row y)
+            {
+                SymbolPathType ix = (SymbolPathType)Enum.Parse(typeof(SymbolPathType), x.Fields[0].ToString());
+                SymbolPathType iy = (SymbolPathType)Enum.Parse(typeof(SymbolPathType), y.Fields[0].ToString());
+                return (int)iy - (int)ix;
             }
         }
 

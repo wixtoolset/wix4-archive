@@ -529,7 +529,7 @@
     <value>generalGroupBox</value>
   </data>
   <data name="&gt;&gt;generalGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;generalGroupBox.Parent" xml:space="preserve">
     <value>mainTableLayoutPanel</value>
@@ -625,7 +625,7 @@
     <value>outputPathFolderBrowser</value>
   </data>
   <data name="&gt;&gt;outputPathFolderBrowser.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FolderBrowserTextBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.FolderBrowserTextBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;outputPathFolderBrowser.Parent" xml:space="preserve">
     <value>outputTableLayoutPanel</value>
@@ -781,7 +781,7 @@
     <value>outputGroupBox</value>
   </data>
   <data name="&gt;&gt;outputGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;outputGroupBox.Parent" xml:space="preserve">
     <value>mainTableLayoutPanel</value>
@@ -1060,7 +1060,7 @@
     <value>messagesGroupBox</value>
   </data>
   <data name="&gt;&gt;messagesGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;messagesGroupBox.Parent" xml:space="preserve">
     <value>mainTableLayoutPanel</value>
@@ -1120,6 +1120,6 @@
     <value>WixBuildPropertyPagePanel</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
 </root>

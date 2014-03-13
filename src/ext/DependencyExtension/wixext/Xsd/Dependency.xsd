@@ -7,10 +7,15 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<xs:schema xmlns:html="http://www.w3.org/1999/xhtml" xmlns:wix="http://schemas.microsoft.com/wix/2006/wi" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension" targetNamespace="http://schemas.microsoft.com/wix/DependencyExtension" xmlns="http://schemas.microsoft.com/wix/DependencyExtension">
+<xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
+           xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+           targetNamespace="http://wixtoolset.org/schemas/v4/wxs/dependency"
+           xmlns="http://wixtoolset.org/schemas/v4/wxs/dependency">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset Dependency Extension.
+            The source code schema for the WiX Toolset Dependency Extension.
         </xs:documentation>
     </xs:annotation>
     <xs:element name="Provides">
@@ -19,11 +24,11 @@
                 Describes the information for this product or feature that serves as a dependency of other products or features.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="ExePackage" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MsiPackage" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MspPackage" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MsuPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="ExePackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsiPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MspPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsuPackage" />
                 <xse:remarks>
                     <html:p>
                         This element is required for any product, feature, or bundle that will use the Dependency feature to properly reference count
@@ -87,10 +92,10 @@
                 Describes a dependency on a provider for the current component or package.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Bundle" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Bundle" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
                 <xse:remarks>
                     <html:p>
                         This element declares a dependency on any product that uses the Provides element. If that product is uninstalled
@@ -185,7 +190,7 @@
                 Optional attribute to explicitly author the provider key for the entire bundle.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Bundle" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Bundle" />
                 <xse:remarks>
                     <html:p>
                         This provider key is designed to persist throughout compatible upgrades so that dependent bundles do not have to be reinstalled

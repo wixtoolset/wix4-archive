@@ -8,7 +8,7 @@
   </copyright>
 -->
 <!-- LDR3 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
     <Product Id="FB94421B-7FA3-4495-A9D7-212099C19147" Name="Dual Branch Servicing - Single MSP" Language="1033" Version="1.0.1.3" Manufacturer="My Company" UpgradeCode="5A990E27-3480-4D0C-BCA3-75B726C7C048">
 
         <Package Description="Tests dual branch servicing with a single MSP" Comments="Tests dual branch servicing with a single MSP" InstallerVersion="300" Compressed="yes" />

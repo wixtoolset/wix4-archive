@@ -230,7 +230,7 @@ int InvokeCustomAction(MSIHANDLE hSession,
 
         wchar_t szWIAssembly[MAX_PATH + 50];
         StringCchCopy(szWIAssembly, MAX_PATH + 50, szWorkingDir);
-        StringCchCat(szWIAssembly, MAX_PATH + 50, L"\\Microsoft.Deployment.WindowsInstaller.dll");
+        StringCchCat(szWIAssembly, MAX_PATH + 50, L"\\WixToolset.Dtf.WindowsInstaller.dll");
 
         int iResult = ERROR_INSTALL_FAILURE;
         ICorRuntimeHost* pHost;
@@ -308,8 +308,8 @@ bool InvokeManagedCustomAction(MSIHANDLE hSession, _AppDomain* pAppDomain,
         ::VariantInit(&vResult);
 
         const bool f64bit = (sizeof(void*) == sizeof(LONGLONG));
-        const wchar_t* szMsiAssemblyName   = L"Microsoft.Deployment.WindowsInstaller";
-        const wchar_t* szMsiCAProxyClass   = L"Microsoft.Deployment.WindowsInstaller.CustomActionProxy";
+        const wchar_t* szMsiAssemblyName   = L"WixToolset.Dtf.WindowsInstaller";
+        const wchar_t* szMsiCAProxyClass   = L"WixToolset.Dtf.WindowsInstaller.CustomActionProxy";
         const wchar_t* szMsiCAInvokeMethod = (f64bit ? L"InvokeCustomAction64" : L"InvokeCustomAction32");
         
         _MethodInfo* pCAInvokeMethod;

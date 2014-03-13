@@ -126,7 +126,7 @@
     <comment>Filter for the Add New or Add Existing dialog</comment>
   </data>
   <data name="120" xml:space="preserve">
-    <value>Windows Installer XML</value>
+    <value>WiX</value>
     <comment>Name of our project template directory (as seen in the New Project dialog)</comment>
   </data>
   <data name="150" xml:space="preserve">

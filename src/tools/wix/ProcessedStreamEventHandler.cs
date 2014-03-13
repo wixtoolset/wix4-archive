@@ -5,17 +5,12 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-// Preprocessed stream event handler and event args.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
-    using System.IO;
-    using System.Text;
+    using System.Xml.Linq;
 
     /// <summary>
     /// Preprocessed output stream event handler delegate.
@@ -29,36 +24,27 @@ namespace Microsoft.Tools.WindowsInstallerXml
     /// </summary>
     public class ProcessedStreamEventArgs : EventArgs
     {
-        private string sourceFile;
-        private Stream processed;
-
         /// <summary>
         /// Creates a new ProcessedStreamEventArgs.
         /// </summary>
         /// <param name="sourceFile">Source file that is preprocessed.</param>
-        /// <param name="processed">Preprocessed output stream.</param>
-        public ProcessedStreamEventArgs(string sourceFile, Stream processed)
+        /// <param name="document">Preprocessed output document.</param>
+        public ProcessedStreamEventArgs(string sourceFile, XDocument document)
         {
-            this.sourceFile = sourceFile;
-            this.processed = processed;
+            this.SourceFile = sourceFile;
+            this.Document = document;
         }
 
         /// <summary>
         /// Gets the full path of the source file.
         /// </summary>
         /// <value>The full path of the source file.</value>
-        public string SourceFile
-        {
-            get { return this.sourceFile; }
-        }
+        public string SourceFile { get; private set; }
 
         /// <summary>
         /// Gets the preprocessed output stream.
         /// </summary>
         /// <value>The the preprocessed output stream.</value>
-        public Stream Processed
-        {
-            get { return this.processed; }
-        }
+        public XDocument Document { get; private set; }
     }
 }

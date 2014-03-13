@@ -1,0 +1,8 @@
+; cfg.def : declares the module parameters for cfgca.dll
+
+LIBRARY      "cfgca"
+
+EXPORTS
+	SchedCfgProductsInstall
+	SchedCfgProductsUninstall
+	ExecCfgProducts

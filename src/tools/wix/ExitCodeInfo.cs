@@ -11,9 +11,10 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
+    using WixToolset.Data;
 
     /// <summary>
     /// Utility class for Burn ExitCode information.
@@ -29,7 +30,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         {
             this.PackageId = packageId;
             // null value means wildcard
-            if (CompilerCore.IntegerNotSet == value)
+            if (CompilerConstants.IntegerNotSet == value)
             {
                 this.Code = "*";
             }

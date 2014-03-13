@@ -138,7 +138,7 @@
     <value>groupLabel</value>
   </data>
   <data name="&gt;&gt;groupLabel.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupLabel, votive2008, Version=3.0.3610.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupLabel, votive2008, Version=3.0.3610.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
   <data name="&gt;&gt;groupLabel.Parent" xml:space="preserve">
     <value>$this</value>

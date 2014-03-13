@@ -7,16 +7,17 @@
 // </copyright>
 // 
 // <summary>
-// The XSL mutator for the Windows Installer XML Toolset Utility Extension.
+// The XSL mutator for the WiX Toolset Utility Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.IO;
     using System.Xml;
     using System.Xml.Xsl;
+    using WixToolset.Extensibility;
 
     public sealed class UtilTransformMutator : MutatorExtension
     {

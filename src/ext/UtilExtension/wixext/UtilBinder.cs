@@ -7,30 +7,23 @@
 // </copyright>
 // 
 // <summary>
-// The binder for the Windows Installer XML Toolset Utility Extension.
+// The binder for the WiX Toolset Utility Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Text;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The binder for the Windows Installer XML Toolset Utility Extension.
+    /// The binder for the WiX Toolset Utility Extension.
     /// </summary>
     public sealed class UtilBinder : BinderExtension
     {
-        /// <summary>
-        /// Instantiate a new UtilBinder.
-        /// </summary>
-        public UtilBinder()
-        {
-        }
-
         // TODO: When WixSearch is supported in Product, etc, we may need to call
         // ReorderWixSearch() from each of those initializers. 
 
@@ -42,9 +35,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         /// <summary>
         /// Called before bundle binding occurs.
         /// </summary>
-        public override void BundleInitialize(Output bundle)
+        public override void Initialize(Output bundle)
         {
-            this.ReorderWixSearch(bundle);
+            if (OutputType.Bundle == bundle.Type)
+            {
+                this.ReorderWixSearch(bundle);
+            }
         }
 
         /// <summary>

@@ -7,18 +7,19 @@
 // </copyright>
 // 
 // <summary>
-// Burn PE writer for the Windows Installer Xml toolset.
+// Burn PE writer for the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Diagnostics;
     using System.IO;
+    using WixToolset.Data;
 
     /// <summary>
-    /// Common functionality for Burn PE Writer & Reader for the Windows Installer Xml toolset.
+    /// Common functionality for Burn PE Writer & Reader for the WiX toolset.
     /// </summary>
     /// <remarks>This class encapsulates common functionality related to 
     /// bundled/chained setup packages.</remarks>
@@ -26,7 +27,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
     /// </example>
     internal abstract class BurnCommon : IDisposable
     {
-        public const string BurnNamespace = "http://schemas.microsoft.com/wix/2008/Burn";
+        public const string BurnNamespace = "http://wixtoolset.org/schemas/v4/2008/Burn";
         public const string BurnUXContainerEmbeddedIdFormat = "u{0}";
         public const string BurnUXContainerPayloadIdFormat = "p{0}";
         public const string BurnAttachedContainerEmbeddedIdFormat = "a{0}";

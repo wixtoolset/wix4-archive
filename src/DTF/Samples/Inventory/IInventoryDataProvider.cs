@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 
-namespace Microsoft.Deployment.Samples.Inventory
+namespace WixToolset.Dtf.Samples.Inventory
 {
 	/// <summary>
 	/// Reports the total number of items loaded so far by <see cref="IInventoryDataProvider.GetNodes"/>.

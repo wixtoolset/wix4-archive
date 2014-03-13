@@ -7,14 +7,14 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML toolset dependency extension common functionality.
+// The WiX toolset dependency extension common functionality.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset;
 
     internal static class DependencyCommon
     {

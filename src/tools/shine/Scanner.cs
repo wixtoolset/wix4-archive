@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Windows Installer Xml toolset scanner.
+// WiX toolset scanner.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
     /// </summary>
     public class Scanner
     {
-        private const string WixNamespace = "http://schemas.microsoft.com/wix/2006/wi";
+        private const string WixNamespace = "http://wixtoolset.org/schemas/v4/wxs";
 
         public bool RecurseProjects { get; set; }
 

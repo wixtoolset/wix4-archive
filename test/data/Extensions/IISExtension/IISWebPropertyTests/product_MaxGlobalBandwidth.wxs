@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Id="B0FF90C5-EEDA-4173-97D9-E67B120F1B29" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{C7372F7F-78A6-4c15-B667-EA21AAB021B2}">
     <Package Description="Test for: MaxGlobalBandwidth" Comments="Test for: MaxGlobalBandwidth" InstallerVersion="200" Compressed="yes" />
 

@@ -8,12 +8,12 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
-    targetNamespace="http://schemas.microsoft.com/wix/VSExtension"
-              xmlns="http://schemas.microsoft.com/wix/VSExtension">
+          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+    targetNamespace="http://wixtoolset.org/schemas/v4/wxs/vs"
+              xmlns="http://wixtoolset.org/schemas/v4/wxs/vs">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset Visual Studio Extension.
+            The source code schema for the WiX Toolset Visual Studio Extension.
         </xs:documentation>
     </xs:annotation>
 
@@ -23,7 +23,7 @@
                 Help Namespace for a help collection.  The parent file is the key for the HxC (Collection) file.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
@@ -53,9 +53,9 @@
                 Filter for Help Namespace.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
@@ -80,7 +80,7 @@
                 File for Help Namespace.  The parent file is the key for HxS (Title) file.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
@@ -174,9 +174,9 @@
         <xs:annotation>
             <xs:documentation>Create a reference to a HelpCollection element in another Fragment.</xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
@@ -204,8 +204,8 @@
                 duplication, simply use the MSI to install the VSIX package itself.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>

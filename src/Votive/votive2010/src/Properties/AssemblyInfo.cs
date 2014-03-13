@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Votive - Windows Installer XML")]
+[assembly: AssemblyTitle("Votive - WiX")]
 [assembly: AssemblyDescription("WiX Visual Studio Package")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(false)]

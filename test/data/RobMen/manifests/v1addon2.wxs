@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
 <Bundle Name="Bundle Test v1 Addon (2)" Version="0.1.0.0">
    <UX SourceFile="stdux.dll">
        <Payload SourceFile="en-us.wxl" />

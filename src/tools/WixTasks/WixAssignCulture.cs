@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using System.Collections.Generic;
@@ -159,7 +159,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
 
             if (1 == cultureGroups.Count && 0 == this.Files.Length)
             {
-                // Maitain old behavior, if only one culturegroup is specified and no WXL, output to the default folder
+                // Maintain old behavior, if only one culturegroup is specified and no WXL, output to the default folder
                 TaskItem cultureGroupItem = new TaskItem(cultureGroups[0].ToString());
                 cultureGroupItem.SetMetadata(OutputFolderMetadataName, CultureGroup.DefaultFolder);
                 cultureGroupItems.Add(cultureGroupItem);
@@ -176,7 +176,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
             }
 
             this.CultureGroups = cultureGroupItems.ToArray();
-            
             return true;
         }
 
@@ -228,8 +227,10 @@ namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
                 {
                     return String.Join(",", this.Cultures.ToArray());
                 }
-                // We use a keyword for a null culture because MSBuild v2.0.50727 cannnot handle "" items
-                // Null is different from neutral.  For neutral we still want to do WXL filtering in Light.
+
+                // We use a keyword for a null culture because MSBuild cannnot handle "" items
+                // Null is different from neutral.  For neutral we still want to do WXL
+                // filtering in Light.
                 return NullCultureIdentifier;
             }
         }

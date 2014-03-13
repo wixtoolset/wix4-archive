@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.CLR.Interop
+namespace WixToolset.CLR.Interop
 {
     using System;
     using System.Text;

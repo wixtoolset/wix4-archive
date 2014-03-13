@@ -1,0 +1,36 @@
+﻿use appx
+
+package name=Contoso.Suite displayName="Contoso Suite" description="Contoso's Suite"
+        manufacturer="Contoso Corporation" version="1.0.0.0"
+        publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US"
+        image=images\Logo.png
+
+prerequisite version=6.2
+
+appx.capability name=documentsLibrary
+appx.capability name=privateNetworkClientServer
+appx.capability name=internetClient
+
+application name=Contoso.TaxCalculator displayName="Contoso Tax Calculator" description="Contoso's World Famous Tax Calculator"
+            file=TaxCalculator\Index.html
+    appx.tile image=images\taxCalc.png smallImage=images\taxCalc-small.png wideImage=barLogo.png
+              foreground=light background=0084FF shortName=TaxCalc showName=wideLogoOnly
+    appx.lockScreen notification=imageAndTileText image=images\lockscreenimage.png
+    appx.splashScreen background=blue image=ContosoCalculator.jpg
+
+    fileAssociation name=taxdocument description="Contoso Tax Document"
+       fileType extension=.tax
+
+    appx.contentUri rule=include match=http://www.contoso.net/
+    appx.contentUri rule=exclude match=*.xls
+
+file barLogo.png
+file ContosoCalculator.jpg
+folder images
+    file Logo.png
+    file taxCalc.png
+    file taxCalc-small.png
+    file lockscreenimage.png
+
+folder name=taxcalculator
+    file index.html

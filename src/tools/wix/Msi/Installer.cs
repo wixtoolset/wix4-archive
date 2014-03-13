@@ -12,7 +12,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Msi
+namespace WixToolset.Msi
 {
     using System;
     using System.ComponentModel;
@@ -21,7 +21,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
     using System.Reflection;
     using System.Text;
     using System.Xml;
-    using Microsoft.Tools.WindowsInstallerXml.Msi.Interop;
+    using WixToolset.Msi.Interop;
 
     /// <summary>
     /// Windows Installer message types.
@@ -282,9 +282,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
     /// </summary>
     internal sealed class Installer
     {
-        private static TableDefinitionCollection tableDefinitions;
-        private static WixActionRowCollection standardActions;
-
         /// <summary>
         /// Protect the constructor.
         /// </summary>
@@ -354,71 +351,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Msi
 
             version = versionBuffer.ToString();
             language = languageBuffer.ToString();
-        }
-
-        /// <summary>
-        /// Gets the table definitions stored in this assembly.
-        /// </summary>
-        /// <returns>Table definition collection for tables stored in this assembly.</returns>
-        internal static TableDefinitionCollection GetTableDefinitions()
-        {
-            if (null == tableDefinitions)
-            {
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                XmlReader tableDefinitionsReader = null;
-
-                try
-                {
-                    tableDefinitionsReader = new XmlTextReader(assembly.GetManifestResourceStream("Microsoft.Tools.WindowsInstallerXml.Data.tables.xml"));
-
-#if DEBUG
-                    tableDefinitions = TableDefinitionCollection.Load(tableDefinitionsReader, false);
-#else
-                    tableDefinitions = TableDefinitionCollection.Load(tableDefinitionsReader, true);
-#endif
-                }
-                finally
-                {
-                    if (null != tableDefinitionsReader)
-                    {
-                        tableDefinitionsReader.Close();
-                    }
-                }
-            }
-
-            return tableDefinitions.Clone();
-        }
-
-        /// <summary>
-        /// Gets the standard actions stored in this assembly.
-        /// </summary>
-        /// <returns>Collection of standard actions in this assembly.</returns>
-        internal static WixActionRowCollection GetStandardActions()
-        {
-            if (null == standardActions)
-            {
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                XmlReader actionDefinitionsReader = null;
-
-                try
-                {
-                    actionDefinitionsReader = new XmlTextReader(assembly.GetManifestResourceStream("Microsoft.Tools.WindowsInstallerXml.Data.actions.xml"));
-#if DEBUG
-                    standardActions = WixActionRowCollection.Load(actionDefinitionsReader, false);
-#else
-                    standardActions = WixActionRowCollection.Load(actionDefinitionsReader, true);
-#endif
-                }
-                finally
-                {
-                    if (null != actionDefinitionsReader)
-                    {
-                        actionDefinitionsReader.Close();
-                    }
-                }
-            }
-
-            return standardActions;
         }
 
         /// <summary>

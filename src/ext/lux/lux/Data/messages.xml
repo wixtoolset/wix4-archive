@@ -8,10 +8,10 @@
   </copyright>
 -->
 <!--
-    The messages for the Windows Installer XML Toolset Lux Test Builder.
+    The messages for the WiX Toolset Lux Test Builder.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Lux" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-  <Class Name="LuxBuildErrors" ContainerName="LuxErrorEventArgs" BaseContainerName="WixErrorEventArgs" Level="Error">
+<Messages Namespace="WixToolset.Lux" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+  <Class Name="LuxBuildErrors" ContainerName="LuxErrorEventArgs" BaseContainerName="MessageEventArgs" Level="Error">
     <Message Id="MalfunctionNeedInput" Number="8001" SourceLineNumbers="no">
       <Instance>
         Need one or more input files and one output file to be specified.
@@ -30,10 +30,10 @@
     </Message>
   </Class>
 
-  <Class Name="LuxBuildWarnings" ContainerName="LuxWarningEventArgs" BaseContainerName="WixWarningEventArgs" Level="Warning">
+  <Class Name="LuxBuildWarnings" ContainerName="LuxWarningEventArgs" BaseContainerName="MessageEventArgs" Level="Warning">
   </Class>
 
-  <Class Name="LuxBuildVerboses" ContainerName="LuxVerboseEventArgs" BaseContainerName="WixVerboseEventArgs" Level="Information">
+  <Class Name="LuxBuildVerboses" ContainerName="LuxVerboseEventArgs" BaseContainerName="MessageEventArgs" Level="Information">
     <Message Id="GeneratingConsumer" Number="8201" SourceLineNumbers="no">
       <Instance>
         Generating project '{0}' to consume {1} tests.

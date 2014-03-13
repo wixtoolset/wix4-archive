@@ -7,21 +7,22 @@
 // </copyright>
 // 
 // <summary>
-// Burn PE reader for the Windows Installer Xml toolset.
+// Burn PE reader for the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Xml;
-    using Microsoft.Tools.WindowsInstallerXml.Cab;
+    using WixToolset.Cab;
+    using WixToolset.Data;
 
     /// <summary>
-    /// Burn PE reader for the Windows Installer Xml toolset.
+    /// Burn PE reader for the WiX toolset.
     /// </summary>
     /// <remarks>This class encapsulates reading from a stub EXE with containers attached
     /// for dissecting bundled/chained setup packages.</remarks>

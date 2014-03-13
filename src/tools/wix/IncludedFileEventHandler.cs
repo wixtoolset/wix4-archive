@@ -11,10 +11,10 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
-    using System.Text;
+    using WixToolset.Data;
 
     /// <summary>
     /// Included file event handler delegate.
@@ -28,7 +28,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
     /// </summary>
     public class IncludedFileEventArgs : EventArgs
     {
-        private SourceLineNumberCollection sourceLineNumbers;
+        private SourceLineNumber sourceLineNumbers;
         private string fullName;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="sourceLineNumbers">Source line numbers for the included file.</param>
         /// <param name="fullName">The full path of the included file.</param>
-        public IncludedFileEventArgs(SourceLineNumberCollection sourceLineNumbers, string fullName)
+        public IncludedFileEventArgs(SourceLineNumber sourceLineNumbers, string fullName)
         {
             this.sourceLineNumbers = sourceLineNumbers;
             this.fullName = fullName;
@@ -55,7 +55,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Gets the source line numbers.
         /// </summary>
         /// <value>The source line numbers.</value>
-        public SourceLineNumberCollection SourceLineNumbers
+        public SourceLineNumber SourceLineNumbers
         {
             get { return this.sourceLineNumbers; }
         }

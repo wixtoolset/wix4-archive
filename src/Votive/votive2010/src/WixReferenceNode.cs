@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -21,7 +21,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Package;
     using Microsoft.VisualStudio.Shell;
-    using Microsoft.Tools.WindowsInstallerXml.Build.Tasks;
+    using WixToolset.Build.Tasks;
 
     using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
     using VsMenus = Microsoft.VisualStudio.Package.VsMenus;
@@ -173,7 +173,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
         /// <summary>
         /// Links a reference node to the project and hierarchy.
         /// </summary>
-        [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "Microsoft.Tools.WindowsInstallerXml.VisualStudio.WixHelperMethods.ShipAssert(System.Boolean,System.String,System.Object[])")]
+        [SuppressMessage("Microsoft.Globalization", "CA1303:DoNotPassLiteralsAsLocalizedParameters", MessageId = "WixToolset.VisualStudio.WixHelperMethods.ShipAssert(System.Boolean,System.String,System.Object[])")]
         protected override void BindReferenceData()
         {
             WixHelperMethods.ShipAssert(this.ItemNode != null, "The MSBuild ItemNode should have been set by now.");

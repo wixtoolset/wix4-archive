@@ -12,13 +12,13 @@
 //-------------------------------------------------------------------------------------------------
 
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux.CustomActions
+namespace WixToolset.Lux.CustomActions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
 
     /// <summary>
     /// MSI Custom Actions

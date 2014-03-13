@@ -7,35 +7,30 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset harvester.
+// The WiX Toolset harvester.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
     using System.Diagnostics.CodeAnalysis;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The Windows Installer XML Toolset harvester.
+    /// The WiX Toolset harvester.
     /// </summary>
     public sealed class Harvester
     {
         private HarvesterExtension harvesterExtension;
-        private HarvesterCore core;
 
         /// <summary>
         /// Gets or sets the harvester core for the extension.
         /// </summary>
         /// <value>The harvester core for the extension.</value>
-        public HarvesterCore Core
-        {
-            get { return this.core; }
-            set { this.core = value; }
-        }
+        public IHarvesterCore Core { get; set; }
 
         /// <summary>
         /// Gets or sets the extension.
@@ -76,7 +71,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 throw new WixException(WixErrors.HarvestTypeNotFound());
             }
 
-            this.harvesterExtension.Core = this.core;
+            this.harvesterExtension.Core = this.Core;
 
             Wix.Fragment[] fragments = this.harvesterExtension.Harvest(argument);
             if (null == fragments || 0 == fragments.Length)

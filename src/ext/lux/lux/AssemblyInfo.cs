@@ -19,5 +19,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("WiX Toolset Unit Test Builder")]
 [assembly: AssemblyDescription("Unit Test Builder")]
 [assembly: AssemblyCulture("")]
-[assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

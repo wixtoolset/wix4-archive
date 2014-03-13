@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The finalize harvester mutator for the Windows Installer XML Toolset Utility Extension.
+// The finalize harvester mutator for the WiX Toolset Utility Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
@@ -22,11 +22,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Text;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The finalize harvester mutator for the Windows Installer XML Toolset Utility Extension.
+    /// The finalize harvester mutator for the WiX Toolset Utility Extension.
     /// </summary>
     public sealed class UtilFinalizeHarvesterMutator : MutatorExtension
     {
@@ -636,7 +636,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                                                 else
                                                 {
                                                     parentIndex = possibleParentIndex;
-                                                    wixClass.RelativePath = Microsoft.Tools.WindowsInstallerXml.Serialize.YesNoType.yes;
+                                                    wixClass.RelativePath = Wix.YesNoType.yes;
                                                     processed = true;
                                                 }
                                             }

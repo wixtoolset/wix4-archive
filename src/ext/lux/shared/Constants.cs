@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Lux
+namespace WixToolset.Lux
 {
     /// <summary>
     /// Constants shared across Lux projects.
     /// </summary>
     public class Constants
     {
-        public const string LuxNamespace = "http://schemas.microsoft.com/wix/2009/Lux";
+        public const string LuxNamespace = "http://wixtoolset.org/schemas/v4/lux";
         public const string LuxCustomActionName = "WixRunImmediateUnitTests";
         public const string LuxMutationRunningProperty = "WIXLUX_RUNNING_MUTATION";
         public const string LuxTableName = "WixUnitTest";

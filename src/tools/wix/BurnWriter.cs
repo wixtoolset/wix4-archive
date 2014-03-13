@@ -7,18 +7,19 @@
 // </copyright>
 // 
 // <summary>
-// Burn PE writer for the Windows Installer Xml toolset.
+// Burn PE writer for the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Diagnostics;
     using System.IO;
+    using WixToolset.Data;
 
     /// <summary>
-    /// Burn PE writer for the Windows Installer Xml toolset.
+    /// Burn PE writer for the WiX toolset.
     /// </summary>
     /// <remarks>This class encapsulates reading/writing to a stub EXE for
     /// creating bundled/chained setup packages.</remarks>

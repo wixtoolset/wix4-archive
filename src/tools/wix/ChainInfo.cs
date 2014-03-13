@@ -11,10 +11,11 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections.Generic;
+    using WixToolset.Data;
 
     /// <summary>
     /// Chain info for binding Bundles.
@@ -38,6 +39,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
         public bool ParallelCache { get; private set; }
         public List<ChainPackageInfo> Packages { get; private set; }
         public List<RollbackBoundaryInfo> RollbackBoundaries { get; private set; }
-        public SourceLineNumberCollection SourceLineNumbers { get; private set; }
+        public SourceLineNumber SourceLineNumbers { get; private set; }
     }
 }

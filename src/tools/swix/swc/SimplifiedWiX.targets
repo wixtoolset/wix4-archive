@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  <copyright file="SimplifiedWiX.targets" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TargetExt Condition=" '$(OutputType)' == 'Appx' ">.appx</TargetExt>
+    <TargetExt Condition=" '$(OutputType)' == 'Wixlib' ">.wixlib</TargetExt>
+    <TargetExt Condition=" '$(OutputType)' == 'Vsix' ">.vsix</TargetExt>
+  </PropertyGroup>
+
+  <!-- These properties can be overridden to support non-default installations. -->
+  <PropertyGroup>
+      <OutputName Condition=" '$(OutputName)' == '' ">$(MSBuildProjectName)</OutputName>
+      <OutputName>$(OutputName)$(TargetExt)</OutputName>
+
+      <OutputPath Condition=" '$(OutputPath)' != '' and !HasTrailingSlash('$(OutputPath)') ">$(OutputPath)\</OutputPath>
+      <OutputPath Condition=" '$(Platform)'!='' and '$(Configuration)'!='' and '$(OutputPath)'=='' ">$(Platform)\$(Configuration)\</OutputPath>
+      <OutputPath Condition=" '$(Platform)'=='' and '$(Configuration)'=='' and '$(OutputPath)'=='' ">bin\Debug\</OutputPath>
+
+      <PackageArchitecture Condition=" '$(PackageArchitecture)' == '' ">$(OutputArchitecture)</PackageArchitecture>
+      <PackageLanguages Condition=" '$(PackageLanguages)' == '' ">$(OutputLanguages)</PackageLanguages>
+      <PackageOutputPath Condition=" '$(PackageOutputPath)' == '' ">$(OutputPath)$(OutputName)</PackageOutputPath>
+      <PackageType Condition=" '$(PackageType)' == '' ">$(OutputType)</PackageType>
+
+      <SimplifiedWixCompilerTasksPath Condition=" '$(SimplifiedWixCompilerTasksPath)' == '' ">swc.exe</SimplifiedWixCompilerTasksPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <PackageOutput Include="$(PackageOutputPath)" />
+  </ItemGroup>
+
+  <UsingTask TaskName="SimplifiedWixCompiler" AssemblyFile="$(SimplifiedWixCompilerTasksPath)" />
+
+  <!--
+  ================================================================================================
+  Build
+
+    Builds the output.
+
+
+    [IN]
+    @(Package) - source and content files that define the package to be built.
+
+    [OUT]
+    @(PackageOutput) - output of the build.
+  ================================================================================================
+  -->
+  <Target Name="Build"
+          Inputs="@(Package);@(_ResolvedProjectReferencePaths);$(MSBuildAllProjects)"
+          Outputs="@(PackageOutput)"
+          Condition=" '@(Package)' != '' ">
+
+      <Message Importance="low" Text="SearchPaths: $(PackageSearchPaths)" />
+
+      <ItemGroup>
+          <_PackageLanguages Include="$(PackageLanguages)" />
+          <_PackagePreprocessorDefinitions Include="$(PackagePreprocessorDefinitions)" />
+
+          <!-- Append any search paths specified as a property. -->
+          <PackageSearchPaths Include="$(PackageSearchPaths)" />
+      </ItemGroup>
+
+    <SimplifiedWixCompiler
+        Architecture="$(PackageArchitecture)"
+        Extensions="@(PackageExtension)"
+        Languages="@(_PackageLanguages)"
+        OutputPath="@(PackageOutput)"
+        PreprocessorDefines="@(_PackagePreprocessorDefinitions)"
+        SourcePaths="@(Package)"
+        SearchPaths="@(PackageSearchPaths)"
+        Type="$(PackageType)"
+        />
+  </Target>
+
+  <!--
+  ==================================================================================================
+  Signing
+  ==================================================================================================
+  -->
+  <PropertyGroup>
+    <SigningDependsOn>
+      BeforeSigning;
+      InternalSignAppxPackage;
+      AfterSigning
+    </SigningDependsOn>
+  </PropertyGroup>
+  <Target
+    Name="Signing"
+    DependsOnTargets="$(SigningDependsOn)"
+    AfterTargets="Build" />
+
+  <!-- Internal targets so correct signing targets are called. -->
+  <Target
+    Name="InternalSignAppxPackage"
+    DependsOnTargets="SignAppxPackage"
+    Condition=" '$(OutputType)' == 'Appx' " />
+
+  <!--
+  ==================================================================================================
+  BeforeSigning
+
+    Redefine this target in your project in order to run tasks just before all signing tasks.
+  ==================================================================================================
+  -->
+  <Target Name="BeforeSigning" />
+
+  <!--
+  ==================================================================================================
+  SignAppxPackage
+
+    Redefine this target in your project in order to sign when the output is an AppX package.
+  ==================================================================================================
+  -->
+  <Target Name="SignAppxPackage" />
+
+  <!--
+  ==================================================================================================
+  AfterSigning
+
+    Redefine this target in your project in order to run tasks just after all signing tasks.
+  ==================================================================================================
+  -->
+  <Target Name="AfterSigning" />
+
+
+  <!--
+  ================================================================================================
+  Clean
+
+    Cleans the output from this build.
+
+    [IN]
+    @(PackageOutput) - output of the build.
+  ================================================================================================
+  -->
+  <Target Name="Clean">
+    <Delete Files="@(PackageOutput)" />
+  </Target>
+
+
+    <!--
+  ================================================================================================
+  Rebuild
+
+    Cleans then builds.
+  ================================================================================================
+  -->
+  <Target
+    Name="Rebuild"
+    DependsOnTargets="Clean;Build" />
+
+
+    <!--
+  ================================================================================================
+  GetTargetPath
+
+    This stand-alone target returns the name of the build product (i.e. AppX, WixLib) that would be
+    produced if we built this project.
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <GetTargetPathDependsOn>
+    </GetTargetPathDependsOn>
+  </PropertyGroup>
+  <Target
+    Name="GetTargetPath"
+    DependsOnTargets="$(GetTargetPathDependsOn)"
+    Outputs="@(PackageOutput)" />
+
+</Project>

@@ -12,7 +12,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
     <Patch AllowRemoval="yes" Classification="Update" ClientPatchId="$(var.TestName)_PatchA" Description="Patch A in test $(var.TestName)" DisplayName="$(var.TestName) - Patch A" Manufacturer="Microsoft Corporation" MinorUpdateTargetRTM="yes">
         <Media Id="100" Cabinet="A" EmbedCab="yes">
             <PatchBaseline Id="PatchA"/>

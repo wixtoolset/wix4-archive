@@ -8,7 +8,7 @@
 // <summary>A logger for Frost.</summary>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost
+namespace WixToolset.Test.Frost
 {
     using System;
     using System.IO;

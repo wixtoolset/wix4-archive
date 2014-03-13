@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="ja-jp" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="ja-jp" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="msierrComPlusCannotConnect" Overridable="yes">COM+ 管理カタログへ接続できません。  ([2]   [3]   [4]   [5])</String>
   <String Id="msierrComPlusPartitionReadFailed" Overridable="yes">COM+ パーティションの読み込みに失敗しました。  ([2]   [3]   [4]   [5])</String>
   <String Id="msierrComPlusPartitionRoleReadFailed" Overridable="yes">COM+ パーティション役割の読み込みに失敗しました。  ([2]   [3]   [4]   [5])</String>

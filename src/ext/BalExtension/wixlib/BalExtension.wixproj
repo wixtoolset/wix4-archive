@@ -17,12 +17,6 @@
     <Cultures>en-us</Cultures>
   </PropertyGroup>
 
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
-
-  <PropertyGroup>
-    <IncludeSearchPaths>..\..\ca\inc</IncludeSearchPaths>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="BalExtension.wxs" />
     <Compile Include="Mba.wxs" />

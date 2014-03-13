@@ -8,10 +8,10 @@
   </copyright>
 -->
 <!--
-    The messages for the Windows Installer XML Toolset Lux Extension.
+    The messages for the WiX Toolset Lux Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-  <Class Name="LuxErrors" ContainerName="LuxErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+  <Class Name="LuxErrors" ContainerName="LuxErrorEventArgs" BaseContainerName="MessageEventArgs">
     <Message Id="IllegalAttributeWhenNested" Number="6901">
       <Instance>
         The {0}/@{1} attribute cannot be specified when the {0} element is nested underneath another {0} element.

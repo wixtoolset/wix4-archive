@@ -17,16 +17,6 @@
     <Cultures>en-us</Cultures>
   </PropertyGroup>
 
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
-
-  <PropertyGroup>
-    <DefineConstants>
-      $(DefineConstants);
-      scaschedDll=$(OutputPath)\scasched.dll;
-      scaexecDll=$(OutputPath)\scaexec.dll;
-    </DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="SqlExtension.wxs" />
     <EmbeddedResource Include="en-us.wxl" />

@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     using System;
     using System.IO;
@@ -245,7 +245,7 @@ namespace Microsoft.Deployment.WindowsInstaller
         /// </summary>
         /// <remarks><p>
         /// This method is only provided for interop purposes.  A Record object
-        /// should normally be obtained by calling <see cref="Microsoft.Deployment.WindowsInstaller.View.Fetch"/>
+        /// should normally be obtained by calling <see cref="WixToolset.Dtf.WindowsInstaller.View.Fetch"/>
         /// other methods.
         /// <p>The handle will be closed when this object is disposed or finalized.</p>
         /// </p></remarks>

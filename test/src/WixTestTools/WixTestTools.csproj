@@ -136,6 +136,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(WixSrcFolder)libs\WixToolset.Data\WixToolset.Data.csproj" />
     <ProjectReference Include="$(WixSrcFolder)DTF\Libraries\WindowsInstaller\WindowsInstaller.csproj" />
     <ProjectReference Include="$(WixSrcFolder)DTF\Libraries\Compression\Compression.csproj" />
     <ProjectReference Include="$(WixSrcFolder)DTF\Libraries\Compression.Cab\Compression.Cab.csproj" />

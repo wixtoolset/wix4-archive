@@ -1069,7 +1069,7 @@ extern "C" HRESULT DAPI FileEnsureCopy(
     HRESULT hr = S_OK;
     DWORD er;
 
-    // try to move the file first
+    // try to copy the file first
     if (::CopyFileW(wzSource, wzTarget, !fOverwrite))
     {
         ExitFunction();  // we're done
@@ -1771,6 +1771,7 @@ extern "C" HRESULT DAPI FileFromString(
     HRESULT hr = S_OK;
     LPSTR sczUtf8String = NULL;
     BYTE *pbFullFileBuffer = NULL;
+    const BYTE *pcbFullFileBuffer = NULL;
     DWORD cbFullFileBuffer = 0;
     DWORD cbStrLen = 0;
 
@@ -1781,11 +1782,7 @@ extern "C" HRESULT DAPI FileFromString(
         ExitOnFailure(hr, "Failed to convert string to UTF-8 to write UTF-8 file");
         
         cbFullFileBuffer = lstrlenA(sczUtf8String);
-
-        pbFullFileBuffer = reinterpret_cast<BYTE *>(MemAlloc(cbFullFileBuffer, TRUE));
-        ExitOnNull(pbFullFileBuffer, hr, E_OUTOFMEMORY, "Failed to allocate memory for output file buffer");
-
-        memcpy_s(pbFullFileBuffer, cbFullFileBuffer, sczUtf8String, cbFullFileBuffer);
+        pcbFullFileBuffer = reinterpret_cast<BYTE *>(sczUtf8String);
         break;
     case FILE_ENCODING_UTF8_WITH_BOM:
         hr = StrAnsiAllocString(&sczUtf8String, sczString, 0, CP_UTF8);
@@ -1799,14 +1796,11 @@ extern "C" HRESULT DAPI FileFromString(
 
         memcpy_s(pbFullFileBuffer, sizeof(UTF8BOM), UTF8BOM, sizeof(UTF8BOM));
         memcpy_s(pbFullFileBuffer + sizeof(UTF8BOM), cbStrLen, sczUtf8String, cbStrLen);
+        pcbFullFileBuffer = pbFullFileBuffer;
         break;
     case FILE_ENCODING_UTF16:
         cbFullFileBuffer = lstrlenW(sczString) * sizeof(WCHAR);
-
-        pbFullFileBuffer = reinterpret_cast<BYTE *>(MemAlloc(cbFullFileBuffer, TRUE));
-        ExitOnNull(pbFullFileBuffer, hr, E_OUTOFMEMORY, "Failed to allocate memory for output file buffer");
-
-        memcpy_s(pbFullFileBuffer, cbFullFileBuffer, sczString, cbFullFileBuffer);
+        pcbFullFileBuffer = reinterpret_cast<const BYTE *>(sczString);
         break;
     case FILE_ENCODING_UTF16_WITH_BOM:
         cbStrLen = lstrlenW(sczString) * sizeof(WCHAR);
@@ -1817,10 +1811,11 @@ extern "C" HRESULT DAPI FileFromString(
 
         memcpy_s(pbFullFileBuffer, sizeof(UTF16BOM), UTF16BOM, sizeof(UTF16BOM));
         memcpy_s(pbFullFileBuffer + sizeof(UTF16BOM), cbStrLen, sczString, cbStrLen);
+        pcbFullFileBuffer = pbFullFileBuffer;
         break;
     }
 
-    hr = FileWrite(wzFile, dwFlagsAndAttributes, pbFullFileBuffer, cbFullFileBuffer, NULL);
+    hr = FileWrite(wzFile, dwFlagsAndAttributes, pcbFullFileBuffer, cbFullFileBuffer, NULL);
     ExitOnFailure1(hr, "Failed to write file from string to: %ls", wzFile);
 
 LExit:

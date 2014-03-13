@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.MergeMod
+namespace WixToolset.MergeMod
 {
     using System;
     using System.Collections;

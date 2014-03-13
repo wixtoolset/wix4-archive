@@ -20,8 +20,8 @@ namespace WixTest.Tests.Integration.BuildingPackages.InstanceTransforms
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using WixTest;
-    using Microsoft.Deployment.WindowsInstaller;
-    using Microsoft.Deployment.WindowsInstaller.Package;
+    using WixToolset.Dtf.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller.Package;
 
     /// <summary>
     /// Tests for the building an MSI with an Instance Transform
@@ -154,7 +154,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.InstanceTransforms
         /// <param name="transform">The name of the transform to extract</param>
         /// <param name="extractFile">The location to extract to</param>
         /// <remarks>
-        /// Most of this code was copied from DTF's Microsoft.Deployment.WindowsInstaller.Package.PatchPackage class.
+        /// Most of this code was copied from DTF's WixToolset.Dtf.WindowsInstaller.Package.PatchPackage class.
         /// </remarks>
         private static void ExtractTransform(string msi, string transform, string extractFile)
         {

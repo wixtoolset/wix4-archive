@@ -13,9 +13,9 @@ using System.Text;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Deployment.Compression;
+using WixToolset.Dtf.Compression;
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     public class CompressionTestUtil
     {

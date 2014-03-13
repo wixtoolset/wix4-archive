@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     /// <summary>
     /// Subclasses of this abstract class represent an instance

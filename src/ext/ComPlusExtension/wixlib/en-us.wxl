@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="msierrComPlusCannotConnect" Overridable="yes">Cannot connect to the COM+ admin catalog.  ([2]   [3]   [4]   [5])</String>
   <String Id="msierrComPlusPartitionReadFailed" Overridable="yes">Failed to read COM+ partitions.  ([2]   [3]   [4]   [5])</String>
   <String Id="msierrComPlusPartitionRoleReadFailed" Overridable="yes">Failed to read COM+ partition roles.  ([2]   [3]   [4]   [5])</String>

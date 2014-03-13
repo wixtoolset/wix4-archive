@@ -17,8 +17,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
-[assembly: AssemblyTitle("Windows Installer XML Unit")]
-[assembly: AssemblyDescription("Windows Installer XML Toolset Unit Tester")]
+[assembly: AssemblyTitle("WiX Unit")]
+[assembly: AssemblyDescription("WiX Toolset Unit Tester")]
 [assembly: AssemblyCulture("")]
 [assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

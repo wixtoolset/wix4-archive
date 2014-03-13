@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     using System;
     using System.ComponentModel;
@@ -20,7 +20,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.UX
     using System.ServiceModel.Syndication;
     using System.Windows.Input;
     using System.Xml;
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
 
     /// <summary>
     /// The states of the update view model.

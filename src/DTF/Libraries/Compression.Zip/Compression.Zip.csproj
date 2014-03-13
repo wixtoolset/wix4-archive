@@ -12,8 +12,8 @@
     <ProjectGuid>{261F2857-B521-42A4-A3E0-B5165F225E50}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Compression.Zip</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Compression.Zip</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.Compression.Zip</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Compression.Zip</AssemblyName>
     <CreateDocumentationFile>true</CreateDocumentationFile>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>

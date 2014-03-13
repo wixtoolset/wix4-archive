@@ -7,9 +7,9 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The table definitions for the Windows Installer XML Toolset .NET Framework Extension.
+  The table definitions for the WiX Toolset .NET Framework Extension.
 -->
-<tableDefinitions xmlns="http://schemas.microsoft.com/wix/2006/tables">
+<tableDefinitions xmlns="http://wixtoolset.org/schemas/v4/wi/tables">
     <tableDefinition name="NetFxNativeImage">
         <columnDefinition name="NetFxNativeImage" type="string" length="72" primaryKey="yes"  modularize="column"
             category="identifier" description="The primary key, a non-localized token."/>

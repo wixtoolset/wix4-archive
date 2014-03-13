@@ -68,7 +68,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dutil.lib gdiplus.lib comctl32.lib"
-				OutputFile="$(OutDir)\Microsoft.Tools.WindowsInstallerXml.Test.Frost.Shim.dll"
+				OutputFile="$(OutDir)\WixToolset.Test.Frost.Shim.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(ProjectDir)..\..\..\..\..\build\$(ConfigurationName)\x86&quot;"
 				GenerateDebugInformation="true"
@@ -146,7 +146,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dutil.lib gdiplus.lib comctl32.lib"
-				OutputFile="$(OutDir)\Microsoft.Tools.WindowsInstallerXml.Test.Frost.Shim.dll"
+				OutputFile="$(OutDir)\WixToolset.Test.Frost.Shim.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(ProjectDir)..\..\..\..\..\build\$(ConfigurationName)\x86&quot;"
 				GenerateDebugInformation="true"
@@ -222,7 +222,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="dutil.lib gdiplus.lib comctl32.lib"
-				OutputFile="$(OutDir)\Microsoft.Tools.WindowsInstallerXml.Test.Frost.Shim.dll"
+				OutputFile="$(OutDir)\WixToolset.Test.Frost.Shim.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(ProjectDir)..\..\..\..\..\build\$(ConfigurationName)\x86&quot;"
 				GenerateDebugInformation="true"

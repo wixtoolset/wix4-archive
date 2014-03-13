@@ -11,9 +11,8 @@
   <PropertyGroup>
     <ProjectGuid>{E4E8ABBE-1FA6-44F5-BA99-B840C6779A04}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
     <AssemblyName>LuxCustomActions</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>

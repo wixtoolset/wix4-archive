@@ -1,7 +1,7 @@
 <VSTemplate Version="2.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
   <TemplateData>
     <Name _locID="TSDATA_DUT_Name">Bootstrapper Project</Name>
-    <Description _locID="TSDATA_DUT_Description">A project for creating a Windows Installer XML based EXE setup layout</Description>
+    <Description _locID="TSDATA_DUT_Description">A project for creating a WiX based EXE setup layout</Description>
     <Icon>WixBundle.ico</Icon>
     <ProjectType>WiX</ProjectType>
     <SortOrder>50</SortOrder>

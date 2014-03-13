@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     using System;
     using System.Collections.Generic;
@@ -20,8 +20,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.UX
     using System.Windows;
     using System.Windows.Input;
     using IO = System.IO;
-    using Microsoft.Tools.WindowsInstallerXml;
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
 
     /// <summary>
     /// The states of the installation view model.

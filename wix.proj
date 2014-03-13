@@ -32,6 +32,8 @@
 
     <ProjectReference Include="src\wixarm.proj" />
 
+    <ProjectReference Include="src\SettingsEngine\cfg.proj" Condition=" Exists('$(SqlCESdkIncludePath)') " />
+
     <ProjectReference Include="src\setup\setup.proj" />
     <ProjectReference Include="test\test.proj" />
   </ItemGroup>

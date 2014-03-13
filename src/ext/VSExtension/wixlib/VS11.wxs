@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <Property Id="VS11_EXTENSIONS_DIR" Secure="yes">
             <RegistrySearch Id="VS11DevEnvForExtensionsSearch" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\11.0\Setup\VS" Name="EnvironmentDirectory" Type="raw">
@@ -160,7 +160,7 @@
         </Property>
     </Fragment>
 
-    <!-- Indicates whether the Windows Installer XML project system is installed for VS11 -->
+    <!-- Indicates whether the WiX project system is installed for VS11 -->
     <Fragment>
         <Property Id="VS11_IDE_WIX_PROJECTSYSTEM_INSTALLED" Secure="yes">
             <!-- Component search for the .pkgdef file for VS11 -->

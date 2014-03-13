@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Deployment.WindowsInstaller;
-using Microsoft.Deployment.WindowsInstaller.Package;
+using WixToolset.Dtf.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller.Package;
 
-namespace Microsoft.Deployment.Samples.DDiff
+namespace WixToolset.Dtf.Samples.DDiff
 {
     public class MsiDiffEngine : IDiffEngine
     {

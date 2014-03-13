@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Id="BB6E48EF-B98F-4ed2-A684-1A60089B5D59" Name="TestWebErrorProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{4859DD3E-2260-476d-B24D-3E94F5E2D06C}">
     <Package Description="Test IIS WebError in a Product" Comments="Test IIS WebError in a Product" InstallerVersion="200" Compressed="yes" />
 

@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Mount_And_Blade_Warband">
+
+        <Detect>
+            <Arp DisplayName="Mount &amp; Blade: Warband"/>
+        </Detect>
+
+        <Data>
+            <!-- HKCU\Software\MountAndBladeWarbandKeys exists, but doesn't appear to be useful for our purposes -->
+            <!-- AppDataFolder:\Mount&amp;Blade Warband\ also exists, and also appears useless -->
+            <!-- MyDocumentsFolder:\Mount&amp;Blade Warband\ is also not needed -->
+            <Directory Namespace="Save" Location="MyDocumentsFolder:\Mount&amp;Blade Warband Savegames\" />
+
+            <!-- This directory also contains SceneObj, which is empty but likely useless in any case -->
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Mount&amp;Blade Warband\">
+                <CfgFile Namespace="RglConfig.txt" Location="rgl_config.txt" Encoding="UTF8NoBOM">
+                    <Value Separator=" = "/>
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+
+            <!-- Thankfully, this version of Mount & Blade does gracefully handle missing values from Rgl_Config.txt.
+                Most of its values are graphical quality settings, but we can pickup the useful values out of it -->
+            <Ignore Prefix="RglConfig.txt:\"/>
+            <Normal Name="RglConfig.txt:\first_time"/>
+            <Normal Name="RglConfig.txt:\cheat_mode"/>
+            <Normal Name="RglConfig.txt:\enable_edit_mode"/>
+            <Normal Name="RglConfig.txt:\use_secure_connection"/>
+            <Normal Name="RglConfig.txt:\combat_speed"/>
+            <Normal Name="RglConfig.txt:\friend_combat_difficulty"/>
+            <Normal Name="RglConfig.txt:\reduce_combat_ai"/>
+            <Normal Name="RglConfig.txt:\reduce_campaign_ai"/>
+            <Normal Name="RglConfig.txt:\combat_difficulty"/>
+            <Normal Name="RglConfig.txt:\display_labels"/>
+            <Normal Name="RglConfig.txt:\display_targeting_reticule"/>
+            <Normal Name="RglConfig.txt:\display_attack_direction"/>
+            <Normal Name="RglConfig.txt:\turn_camera_with_horse_in_first_person"/>
+            <Normal Name="RglConfig.txt:\verbose_damage"/>
+            <Normal Name="RglConfig.txt:\verbose_shot_difficulty"/>
+            <Normal Name="RglConfig.txt:\attack_direction_control"/>
+            <Normal Name="RglConfig.txt:\defend_direction_control"/>
+            <Normal Name="RglConfig.txt:\lance_control"/>
+            <Normal Name="RglConfig.txt:\verbose_casualties"/>
+            <Normal Name="RglConfig.txt:\verbose_experience"/>
+            <Normal Name="RglConfig.txt:\realistic_headshots"/>
+            <Normal Name="RglConfig.txt:\auto_gfx_quality"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Mount &amp; Blade: Warband</DisplayName>
+    </Product>
+</LegacySettings>

@@ -18,7 +18,7 @@ typedef HRESULT (__clrcall *IniFormatParameters)(
     INI_HANDLE
     );
 
-namespace CfgTests
+namespace DutilTests
 {
     public ref class IniUtil
     {

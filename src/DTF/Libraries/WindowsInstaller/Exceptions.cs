@@ -6,11 +6,11 @@
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
 // <summary>
-// Exceptions for the Microsoft.Deployment.WindowsInstaller namespace.
+// Exceptions for the WixToolset.Dtf.WindowsInstaller namespace.
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     using System;
     using System.IO;

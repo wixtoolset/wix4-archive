@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.IO;
@@ -32,7 +32,8 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
     ////using Microsoft.Build.BuildEngine;
 
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using Wix = WixToolset.Data.Serialize;
+    using WixToolset.Data;
 
     /// <summary>
     /// Harvest WiX authoring for the outputs of a VS project.
@@ -315,7 +316,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 projectName = this.ProjectName;
             }
 
-            string sanitizedProjectName = HarvesterCore.GetIdentifierFromName(projectName);
+            string sanitizedProjectName = this.Core.CreateIdentifierFromFilename(projectName);
 
             Wix.IParentElement harvestParent;
 
@@ -355,7 +356,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    directoryRef.Id = HarvesterCore.GetIdentifierFromName(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.DirectoryIdFormat, sanitizedProjectName, pog.Name));
+                    directoryRef.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.DirectoryIdFormat, sanitizedProjectName, pog.Name));
                 }
 
                 this.directoryRefSeed = this.Core.GenerateIdentifier(DirectoryPrefix, this.projectGUID, pog.Name);
@@ -606,9 +607,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        locDirectory.Id = HarvesterCore.GetIdentifierFromName(String.Format(DirectoryIdFormat, (parentDir is Wix.DirectoryRef) ? ((Wix.DirectoryRef)parentDir).Id : parentDirId, locDirectory.Name));
-                        file.Id = HarvesterCore.GetIdentifierFromName(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.FileIdFormat, projectName, pogName, String.Concat(locDirectory.Name, ".", fileName)));
-                        component.Id = HarvesterCore.GetIdentifierFromName(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.ComponentIdFormat, projectName, pogName, String.Concat(locDirectory.Name, ".", fileName)));
+                        locDirectory.Id = this.Core.CreateIdentifierFromFilename(String.Format(DirectoryIdFormat, (parentDir is Wix.DirectoryRef) ? ((Wix.DirectoryRef)parentDir).Id : parentDirId, locDirectory.Name));
+                        file.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.FileIdFormat, projectName, pogName, String.Concat(locDirectory.Name, ".", fileName)));
+                        component.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.ComponentIdFormat, projectName, pogName, String.Concat(locDirectory.Name, ".", fileName)));
                     }
                 }
             }
@@ -629,8 +630,8 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        file.Id = HarvesterCore.GetIdentifierFromName(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.FileIdFormat, projectName, pogName, fileName));
-                        component.Id = HarvesterCore.GetIdentifierFromName(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.ComponentIdFormat, projectName, pogName, fileName));
+                        file.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.FileIdFormat, projectName, pogName, fileName));
+                        component.Id = this.Core.CreateIdentifierFromFilename(String.Format(CultureInfo.InvariantCulture, VSProjectHarvester.ComponentIdFormat, projectName, pogName, fileName));
                     }
                 }
             }
@@ -895,12 +896,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             return project;
         }
 
-        private static MSBuildProject ConstructMsbuild35Project(string projectFile, HarvesterCore harvesterCore, string configuration, string platform)
+        private static MSBuildProject ConstructMsbuild35Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform)
         {
             return ConstructMsbuild35Project(projectFile, harvesterCore, configuration, platform, null);
         }
 
-        private static MSBuildProject ConstructMsbuild35Project(string projectFile, HarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
+        private static MSBuildProject ConstructMsbuild35Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
         {
             const string MSBuildEngineAssemblyName = "Microsoft.Build.Engine, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             Assembly msbuildAssembly = null;
@@ -1016,12 +1017,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             return new MSBuild35Project(project, projectType, buildItemType, loadVersion);
         }
 
-        private static MSBuildProject ConstructMsbuild40Project(string projectFile, HarvesterCore harvesterCore, string configuration, string platform)
+        private static MSBuildProject ConstructMsbuild40Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform)
         {
             return ConstructMsbuild40Project(projectFile, harvesterCore, configuration, platform, null);
         }
 
-        private static MSBuildProject ConstructMsbuild40Project(string projectFile, HarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
+        private static MSBuildProject ConstructMsbuild40Project(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string loadVersion)
         {
             const string MSBuildEngineAssemblyName = "Microsoft.Build, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             Assembly msbuildAssembly = null;
@@ -1239,9 +1240,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             private object currentProjectInstance;
             private object buildManager;
             private object buildParameters;
-            private HarvesterCore harvesterCore;
+            private IHarvesterCore harvesterCore;
 
-            public MSBuild40Project(object project, Type projectType, Type buildItemType, string loadVersion, MSBuild40Types types, HarvesterCore harvesterCore, string configuration, string platform)
+            public MSBuild40Project(object project, Type projectType, Type buildItemType, string loadVersion, MSBuild40Types types, IHarvesterCore harvesterCore, string configuration, string platform)
                 : base(project, projectType, buildItemType, loadVersion)
             {
                 this.types = types;
@@ -1539,13 +1540,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         // and a default empty Shutdown() implementation.
         internal class HarvestLogger : Logger
         {
-            private HarvesterCore harvesterCore;
-
-            public HarvesterCore HarvesterCore
-            {
-                get { return this.harvesterCore; }
-                set { this.harvesterCore = value; }
-            }
+            public IHarvesterCore HarvesterCore { get; set; }
 
             /// <summary>
             /// Initialize is guaranteed to be called by MSBuild at the start of the build
@@ -1558,11 +1553,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
             void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
             {
-                if (this.harvesterCore != null)
+                if (null != this.HarvesterCore)
                 {
                     // BuildErrorEventArgs adds LineNumber, ColumnNumber, File, amongst other parameters
                     string line = String.Format(CultureInfo.InvariantCulture, "{0}({1},{2}): {3}", e.File, e.LineNumber, e.ColumnNumber, e.Message);
-                    this.harvesterCore.OnMessage(VSErrors.BuildErrorDuringHarvesting(line));
+                    this.HarvesterCore.OnMessage(VSErrors.BuildErrorDuringHarvesting(line));
                 }
             }
         }

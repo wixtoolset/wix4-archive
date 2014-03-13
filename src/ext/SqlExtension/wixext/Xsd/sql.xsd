@@ -8,26 +8,26 @@
   </copyright>
 -->
 <xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
-            xmlns:wix="http://schemas.microsoft.com/wix/2006/wi"
+            xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
              xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
-      targetNamespace="http://schemas.microsoft.com/wix/SqlExtension"
-                xmlns="http://schemas.microsoft.com/wix/SqlExtension">
+            xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+      targetNamespace="http://wixtoolset.org/schemas/v4/wxs/sql"
+                xmlns="http://wixtoolset.org/schemas/v4/wxs/sql">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset SQL Server Extension.
+            The source code schema for the WiX Toolset SQL Server Extension.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+    <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
     <xs:element name="SqlDatabase">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
                 <xse:remarks>
                     <html:dl>
                         <html:dd>Nesting SqlDatabase under a Component element will result in a SqlDatabase being installed to the machine as the package is installed.</html:dd>
@@ -212,7 +212,7 @@
     <xs:element name="SqlScript">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
             </xs:appinfo>
             <xs:documentation>SQL Script</xs:documentation>
         </xs:annotation>
@@ -276,7 +276,7 @@
     <xs:element name="SqlString">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
             </xs:appinfo>
             <xs:documentation>SQL String</xs:documentation>
         </xs:annotation>

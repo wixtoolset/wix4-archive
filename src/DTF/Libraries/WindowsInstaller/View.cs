@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     using System;
     using System.Text;
@@ -20,7 +20,7 @@ namespace Microsoft.Deployment.WindowsInstaller
 
     /// <summary>
     /// A View represents a result set obtained when processing a query using the
-    /// <see cref="Microsoft.Deployment.WindowsInstaller.Database.OpenView"/> method of a
+    /// <see cref="WixToolset.Dtf.WindowsInstaller.Database.OpenView"/> method of a
     /// <see cref="Database"/>. Before any data can be transferred,
     /// the query must be executed using the <see cref="Execute(Record)"/> method, passing to
     /// it all replaceable parameters designated within the SQL query string.

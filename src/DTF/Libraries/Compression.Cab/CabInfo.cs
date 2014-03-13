@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Compression.Cab
+namespace WixToolset.Dtf.Compression.Cab
 {
     using System;
     using System.Collections.Generic;

@@ -11,21 +11,23 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
-
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+    using WixToolset.Extensibility;
+    using WixToolset.Msi;
 
     /// <summary>
     /// Creates a transform by diffing two outputs.
     /// </summary>
     public sealed class Differ : IMessageHandler
     {
-        private List<InspectorExtension> inspectorExtensions;
+        private List<IInspectorExtension> inspectorExtensions;
         private bool showPedanticMessages;
         private bool suppressKeepingSpecialRows;
         private bool preserveUnchangedRows;
@@ -37,13 +39,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         public Differ()
         {
-            this.inspectorExtensions = new List<InspectorExtension>();
+            this.inspectorExtensions = new List<IInspectorExtension>();
         }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
 
         /// <summary>
         /// Gets or sets the option to show pedantic messages.
@@ -79,12 +76,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Adds an extension.
         /// </summary>
         /// <param name="extension">The extension to add.</param>
-        public void AddExtension(WixExtension extension)
+        public void AddExtension(IInspectorExtension extension)
         {
-            if (null != extension.InspectorExtension)
-            {
-                this.inspectorExtensions.Add(extension.InspectorExtension);
-            }
+            this.inspectorExtensions.Add(extension);
         }
 
         /// <summary>
@@ -134,17 +128,17 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 Table updatedTable = updatedOutput.Tables[targetTable.Name];
                 TableOperation operation = TableOperation.None;
 
-                RowCollection rows = this.CompareTables(targetOutput, targetTable, updatedTable, out operation);
+                List<Row> rows = this.CompareTables(targetOutput, targetTable, updatedTable, out operation);
 
                 if (TableOperation.Drop == operation)
                 {
-                    Table droppedTable = transform.Tables.EnsureTable(null, targetTable.Definition);
+                    Table droppedTable = transform.EnsureTable(targetTable.Definition);
                     droppedTable.Operation = TableOperation.Drop;
                 }
-                else if(TableOperation.None == operation)
+                else if (TableOperation.None == operation)
                 {
-                    Table modified = transform.Tables.EnsureTable(null, updatedTable.Definition);
-                    modified.Rows.AddRange(rows);
+                    Table modified = transform.EnsureTable(updatedTable.Definition);
+                    rows.ForEach(r => modified.Rows.Add(r));
                 }
             }
 
@@ -153,7 +147,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             {
                 if (null == targetOutput.Tables[updatedTable.Name])
                 {
-                    Table addedTable = transform.Tables.EnsureTable(null, updatedTable.Definition);
+                    Table addedTable = transform.EnsureTable(updatedTable.Definition);
                     addedTable.Operation = TableOperation.Add;
 
                     foreach (Row updatedRow in updatedTable.Rows)
@@ -173,11 +167,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             // inspect the transform
-            InspectorCore inspectorCore = new InspectorCore(this.Message);
+            InspectorCore inspectorCore = new InspectorCore();
             foreach (InspectorExtension inspectorExtension in this.inspectorExtensions)
             {
                 inspectorExtension.Core = inspectorCore;
-                inspectorExtension.InspectTransform(transform);
+                inspectorExtension.InspectOutput(transform);
 
                 // reset
                 inspectorExtension.Core = null;
@@ -192,16 +186,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs e)
         {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != this.Message)
-            {
-                this.Message(this, e);
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(e);
         }
 
         /// <summary>
@@ -304,7 +289,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     {
                         ColumnDefinition columnDefinition = updatedRow.Fields[i].Column;
 
-                        if (!columnDefinition.IsPrimaryKey)
+                        if (!columnDefinition.PrimaryKey)
                         {
                             bool modified = false;
 
@@ -336,7 +321,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                                 ObjectField targetObjectField = (ObjectField)targetRow.Fields[i];
                                 ObjectField updatedObjectField = (ObjectField)updatedRow.Fields[i];
 
-                                updatedObjectField.PreviousCabinetFileId = targetObjectField.CabinetFileId;
+                                updatedObjectField.PreviousEmbeddedFileIndex = targetObjectField.EmbeddedFileIndex;
                                 updatedObjectField.PreviousBaseUri = targetObjectField.BaseUri;
 
                                 // always keep a copy of the previous data even if they are identical
@@ -379,9 +364,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
             return comparedRow;
         }
 
-        private RowCollection CompareTables(Output targetOutput, Table targetTable, Table updatedTable, out TableOperation operation)
+        private List<Row> CompareTables(Output targetOutput, Table targetTable, Table updatedTable, out TableOperation operation)
         {
-            RowCollection rows = new RowCollection();
+            List<Row> rows = new List<Row>();
             operation = TableOperation.None;
 
             // dropped tables

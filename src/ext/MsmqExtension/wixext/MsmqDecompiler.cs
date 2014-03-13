@@ -7,24 +7,43 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset MSMQ Extension.
+// The decompiler for the WiX Toolset MSMQ Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Globalization;
-
-    using Msmq = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Msmq;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Msmq = WixToolset.Extensions.Serialize.Msmq;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset MSMQ Extension.
+    /// The decompiler for the WiX Toolset MSMQ Extension.
     /// </summary>
     public sealed class MsmqDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for MSMQ Extension.
+        /// </summary>
+        public MsmqDecompiler()
+        {
+            this.TableDefinitions = MsmqExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return MsmqExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -46,14 +65,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     base.DecompileTable(table);
                     break;
             }
-        }
-
-        /// <summary>
-        /// Finalize decompilation.
-        /// </summary>
-        /// <param name="tables">The collection of all tables.</param>
-        public override void FinalizeDecompile(TableCollection tables)
-        {
         }
 
         /// <summary>
@@ -139,7 +150,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
             }
         }
@@ -172,7 +183,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
             }
         }
@@ -205,7 +216,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                 }
             }
         }

@@ -11,11 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Diagnostics;
     using System.Xml;
+    using WixToolset.Data;
 
     /// <summary>
     /// Utility base class for all WixSearches.

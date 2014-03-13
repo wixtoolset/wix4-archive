@@ -6,11 +6,11 @@
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
 // <summary>
-// Microsoft.Deployment.WindowsInstaller.MediaDisk struct.
+// WixToolset.Dtf.WindowsInstaller.MediaDisk struct.
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller
+namespace WixToolset.Dtf.WindowsInstaller
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

@@ -16,7 +16,7 @@ using namespace Xunit;
 
 const DWORD numIterations = 100000;
 
-namespace CfgTests
+namespace DutilTests
 {
     struct Value
     {

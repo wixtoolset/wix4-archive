@@ -11,15 +11,15 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Diagnostics;
     using System.IO;
-    using Microsoft.Tools.WindowsInstallerXml;
-
-    using Util = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Util;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset;
+    using WixToolset.Data;
+    using Util = WixToolset.Extensions.Serialize.Util;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Harvest WiX authoring for a file from the file system.
@@ -41,7 +41,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
             Util.PerformanceCategory perf = this.HarvestPerformanceCategory(argument);
 
             Wix.Component component = new Wix.Component();
-            component.Id = CompilerCore.GetIdentifierFromName(argument);
+            component.Id = this.Core.CreateIdentifierFromFilename(argument);
             component.KeyPath = Wix.YesNoType.yes;
             component.AddChild(perf);
 
@@ -74,7 +74,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
                 // Get the performance counter category and set the appropriate WiX attributes
                 PerformanceCounterCategory pcc = new PerformanceCounterCategory(category);
-                perfCategory.Id = CompilerCore.GetIdentifierFromName(pcc.CategoryName);
+                perfCategory.Id = this.Core.CreateIdentifierFromFilename(pcc.CategoryName);
                 perfCategory.Name = pcc.CategoryName;
                 perfCategory.Help = pcc.CategoryHelp;
                 if (PerformanceCounterCategoryType.MultiInstance == pcc.CategoryType)

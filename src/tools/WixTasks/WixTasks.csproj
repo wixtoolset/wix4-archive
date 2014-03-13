@@ -12,13 +12,11 @@
     <ProjectGuid>{21E8F2D3-EF19-49C8-88CA-A22C5B91DFDC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AssemblyName>WixTasks</AssemblyName>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Build.Tasks</RootNamespace>
+    <RootNamespace>WixToolset.Build.Tasks</RootNamespace>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <CreateDocumentationFile>true</CreateDocumentationFile>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\wconsole\CommandLineResponseFile.cs">
       <Link>CommandLineResponseFile.cs</Link>
@@ -53,43 +51,51 @@
     <Compile Include="WixCommandLineBuilder.cs" />
     <Compile Include="WixToolTask.cs" />
   </ItemGroup>
-
   <ItemGroup>
+    <Content Include="redirect.wix.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="redirect.wix.ca.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="wix.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="wix200x.targets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="wix2010.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="wix.ca.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="wix.harvest.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wix.signing.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\dtf\Libraries\WindowsInstaller\WindowsInstaller.csproj" />
-    <ProjectReference Include="..\Wix\Wix.csproj" />
+    <ProjectReference Include="..\..\DTF\Libraries\WindowsInstaller\WindowsInstaller.csproj">
+      <Project>{24121677-0ED0-41B5-833F-1B9A18E87BF4}</Project>
+      <Name>WindowsInstaller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj">
+      <Project>{eee88c2a-45a0-4e48-a40a-431a4ba458d8}</Project>
+      <Name>WixToolset.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\wix\Wix.csproj">
+      <Project>{9E03A94C-C70E-45C6-A269-E737BBD8B319}</Project>
+      <Name>Wix</Name>
+    </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
-<!--
-  <Target Name="AfterBuild">
-    <Copy SourceFiles="$(TargetPath);$(OutDir)wix.targets;$(OutDir)wix200x.targets;$(OutDir)wix2010.targets" DestinationFolder="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\" SkipUnchangedFiles="true" ContinueOnError="true" />
-    <CreateItem Include="$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\$(TargetFileName);$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\wix.targets;$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\wix200x.targets;$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\wix2010.targets">
-      <Output TaskParameter="Include" ItemName="FileWrites" />
-    </CreateItem>
-  </Target>
--->
 </Project>

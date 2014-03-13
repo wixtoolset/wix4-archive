@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
+
+    <Identity Name="Contoso.BT" Publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
+
+    <Properties>
+        <DisplayName>Contoso BT</DisplayName>
+        <PublisherDisplayName>Contoso Corporation</PublisherDisplayName>
+        <Description>Contoso's BT</Description>
+        <Logo>images\Logo.png</Logo>
+    </Properties>
+
+    <Resources>
+        <Resource Language="en-US" />
+    </Resources>
+
+    <Prerequisites>
+        <OSMinVersion>6.2.1</OSMinVersion>
+        <OSMaxVersionTested>6.2.1</OSMaxVersionTested>
+    </Prerequisites>
+
+    <Applications>
+
+        <Application Id="Contoso.backgroundTask" Executable="bt.exe" EntryPoint="Contoso.AppBt">
+            <VisualElements DisplayName="Contoso BT" Description="BT" Logo="images\Logo.png" SmallLogo="images\Logo.png" ForegroundText="dark" BackgroundColor="#FFFFFF" ToastCapable="true">
+                <SplashScreen Image="images\Logo.png" BackgroundColor="blue" />
+            </VisualElements>
+
+            <Extensions>
+                <Extension Category="windows.backgroundTasks" Executable="bt.exe" EntryPoint="Contoso.SomethingBt">
+                    <BackgroundTasks>
+                        <Task Type="controlChannel" />
+                    </BackgroundTasks>
+                </Extension>
+
+                <Extension Category="windows.backgroundTasks" Executable="bt.exe" EntryPoint="Contoso.NotificationBt">
+                    <BackgroundTasks>
+                        <Task Type="controlChannel" />
+                    </BackgroundTasks>
+                </Extension>
+            </Extensions>
+
+        </Application>
+
+    </Applications>
+</Package>

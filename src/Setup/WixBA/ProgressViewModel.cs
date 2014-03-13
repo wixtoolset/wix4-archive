@@ -11,9 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+using WixToolset.Bootstrapper;
 
-namespace Microsoft.Tools.WindowsInstallerXml.UX
+namespace WixToolset.UX
 {
     public class ProgressViewModel : PropertyNotifyBase
     {

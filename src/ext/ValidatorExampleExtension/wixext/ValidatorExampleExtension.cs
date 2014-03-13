@@ -7,17 +7,17 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset Validator Example Extension.
+// The WiX Toolset Validator Example Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Reflection;
 
     /// <summary>
-    /// The Windows Installer XML Toolset Validator Example Extension.
+    /// The WiX Toolset Validator Example Extension.
     /// </summary>
     public sealed class ValidatorExampleExtension : WixExtension
     {

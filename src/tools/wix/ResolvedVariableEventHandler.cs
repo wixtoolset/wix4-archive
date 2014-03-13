@@ -11,27 +11,28 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Text;
+    using WixToolset.Data;
 
     public delegate void ResolvedVariableEventHandler(object sender, ResolvedVariableEventArgs e);
 
     public class ResolvedVariableEventArgs : EventArgs
     {
-        private SourceLineNumberCollection sourceLineNumbers;
+        private SourceLineNumber sourceLineNumbers;
         private string variableName;
         private string variableValue;
 
-        public ResolvedVariableEventArgs(SourceLineNumberCollection sourceLineNumbers, string variableName, string variableValue)
+        public ResolvedVariableEventArgs(SourceLineNumber sourceLineNumbers, string variableName, string variableValue)
         {
             this.sourceLineNumbers = sourceLineNumbers;
             this.variableName = variableName;
             this.variableValue = variableValue;
         }
 
-        public SourceLineNumberCollection SourceLineNumbers
+        public SourceLineNumber SourceLineNumbers
         {
             get { return this.sourceLineNumbers; }
         }

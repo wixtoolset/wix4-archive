@@ -18,7 +18,7 @@ using System.Resources;
 
 [assembly: AssemblyCompany("Outercurve Foundation")]
 [assembly: AssemblyCopyright("Copyright (c) Outercurve Foundation. All rights reserved.")]
-[assembly: AssemblyProduct("Windows Installer XML Toolset")]
+[assembly: AssemblyProduct("WiX Toolset")]
 
 #if DEBUG
     [assembly: AssemblyConfiguration("DEBUG")]
@@ -27,7 +27,7 @@ using System.Resources;
 #endif
 [assembly: NeutralResourcesLanguage("en-US")]
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     /// <summary>
     /// Distribution specific strings.

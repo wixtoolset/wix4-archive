@@ -1,4 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
 // <copyright file="TestBA.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
@@ -18,7 +18,7 @@ namespace WixTest.BA
     using System.IO;
     using System.Linq;
     using System.Threading;
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
     using Microsoft.Win32;
 
     /// <summary>

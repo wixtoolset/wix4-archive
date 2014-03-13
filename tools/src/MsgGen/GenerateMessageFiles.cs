@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.MsgGen
+namespace WixBuild.Tools.MsgGen
 {
     using System;
     using System.CodeDom;
@@ -62,9 +62,9 @@ namespace Microsoft.Tools.MsgGen
             messagesNamespace.Imports.Add(new CodeNamespaceImport("System"));
             messagesNamespace.Imports.Add(new CodeNamespaceImport("System.Reflection"));
             messagesNamespace.Imports.Add(new CodeNamespaceImport("System.Resources"));
-            if (namespaceAttr != "Microsoft.Tools.WindowsInstallerXml")
+            if (namespaceAttr != "WixToolset.Data")
             {
-                messagesNamespace.Imports.Add(new CodeNamespaceImport("Microsoft.Tools.WindowsInstallerXml"));
+                messagesNamespace.Imports.Add(new CodeNamespaceImport("WixToolset.Data"));
             }
 
             foreach (XmlElement classElement in messagesDoc.DocumentElement.ChildNodes)
@@ -79,7 +79,7 @@ namespace Microsoft.Tools.MsgGen
 
                 // class
                 CodeTypeDeclaration messagesClass = new CodeTypeDeclaration(className);
-                messagesClass.TypeAttributes = TypeAttributes.Public | TypeAttributes.Sealed;
+                messagesClass.TypeAttributes = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
                 messagesNamespace.Types.Add(messagesClass);
 
                 // private constructor (needed since all methods in this class are static)
@@ -130,7 +130,7 @@ namespace Microsoft.Tools.MsgGen
 
                         // create method
                         CodeMemberMethod method = new CodeMemberMethod();
-                        method.ReturnType = new CodeTypeReference(containerName);
+                        method.ReturnType = new CodeTypeReference(baseContainerName);
                         method.Attributes = MemberAttributes.Public | MemberAttributes.Static;
                         messagesClass.Members.Add(method);
 
@@ -168,7 +168,7 @@ namespace Microsoft.Tools.MsgGen
                         // optionally have sourceLineNumbers as the first parameter
                         if (sourceLineNumbers)
                         {
-                            method.Parameters.Add(new CodeParameterDeclarationExpression("SourceLineNumberCollection", "sourceLineNumbers"));
+                            method.Parameters.Add(new CodeParameterDeclarationExpression("SourceLineNumber", "sourceLineNumbers"));
                         }
 
                         foreach (XmlNode parameterNode in instanceElement.ChildNodes)
@@ -222,7 +222,7 @@ namespace Microsoft.Tools.MsgGen
             messageContainer.Members.Add(resourceManager);
 
             // constructor parameters
-            constructor.Parameters.Add(new CodeParameterDeclarationExpression("SourceLineNumberCollection", "sourceLineNumbers"));
+            constructor.Parameters.Add(new CodeParameterDeclarationExpression("SourceLineNumber", "sourceLineNumbers"));
             constructor.Parameters.Add(new CodeParameterDeclarationExpression(typeof(int), "id"));
             constructor.Parameters.Add(new CodeParameterDeclarationExpression(typeof(string), "resourceName"));
             CodeParameterDeclarationExpression messageArgsParam = new CodeParameterDeclarationExpression("params object[]", "messageArgs");
@@ -237,19 +237,23 @@ namespace Microsoft.Tools.MsgGen
             if (!String.IsNullOrEmpty(messageLevel))
             {
                 CodePropertyReferenceExpression levelReference = new CodePropertyReferenceExpression(new CodeBaseReferenceExpression(), "Level");
-                CodeFieldReferenceExpression messageLevelField = new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("Microsoft.Tools.WindowsInstallerXml.MessageLevel"), messageLevel);
+                CodeFieldReferenceExpression messageLevelField = new CodeFieldReferenceExpression(new CodeTypeReferenceExpression("MessageLevel"), messageLevel);
                 constructor.Statements.Add(new CodeAssignStatement(levelReference, messageLevelField));
             }
 
-            // ResourceManager property
-            CodeMemberProperty resourceManagerProperty = new CodeMemberProperty();
-            resourceManagerProperty.Attributes = MemberAttributes.Public | MemberAttributes.Override;
-            resourceManagerProperty.Name = "ResourceManager";
-            resourceManagerProperty.Type = new CodeTypeReference("ResourceManager");
-            CodeFieldReferenceExpression resourceManagerReference = new CodeFieldReferenceExpression();
-            resourceManagerReference.FieldName = "resourceManager";
-            resourceManagerProperty.GetStatements.Add(new CodeMethodReturnStatement(resourceManagerReference));
-            messageContainer.Members.Add(resourceManagerProperty);
+            // Assign base.ResourceManager property
+            CodePropertyReferenceExpression baseResourceManagerReference = new CodePropertyReferenceExpression(new CodeBaseReferenceExpression(), "ResourceManager");
+            CodeFieldReferenceExpression resourceManagerField = new CodeFieldReferenceExpression(null, "resourceManager");
+            constructor.Statements.Add(new CodeAssignStatement(baseResourceManagerReference, resourceManagerField));
+
+            //CodeMemberProperty resourceManagerProperty = new CodeMemberProperty();
+            //resourceManagerProperty.Attributes = MemberAttributes.Public | MemberAttributes.Override;
+            //resourceManagerProperty.Name = "ResourceManager";
+            //resourceManagerProperty.Type = new CodeTypeReference("ResourceManager");
+            //CodeFieldReferenceExpression resourceManagerReference = new CodeFieldReferenceExpression();
+            //resourceManagerReference.FieldName = "resourceManager";
+            //resourceManagerProperty.GetStatements.Add(new CodeMethodReturnStatement(resourceManagerReference));
+            //messageContainer.Members.Add(resourceManagerProperty);
 
             return messageContainer;
         }

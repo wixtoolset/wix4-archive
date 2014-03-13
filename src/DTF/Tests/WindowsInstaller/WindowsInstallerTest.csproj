@@ -11,9 +11,8 @@
   <PropertyGroup>
     <ProjectGuid>{16F5202F-9276-4166-975C-C9654BAF8012}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Deployment.Test</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Test.WindowsInstaller</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>WixToolset.Dtf.Test</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Test.WindowsInstaller</AssemblyName>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
 

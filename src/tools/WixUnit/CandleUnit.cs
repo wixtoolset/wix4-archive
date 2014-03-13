@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Candle unit tester.
+// The WiX Candle unit tester.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -20,7 +20,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Xml;
 
     /// <summary>
-    /// The Windows Installer XML Candle unit tester.
+    /// The WiX Candle unit tester.
     /// </summary>
     internal sealed class CandleUnit
     {

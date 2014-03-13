@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+namespace WixToolset.Tools
 {
     using System;
     using System.CodeDom;
@@ -21,7 +21,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
     using System.Xml;
     using System.Xml.Schema;
     using Microsoft.CSharp;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset;
 
     /// <summary>
     /// Generates a strongly-typed C# class from an XML schema (XSD).

@@ -208,6 +208,18 @@ DAPI_(HRESULT) PathCompress(
     __in_z LPCWSTR wzPath
     );
 
+/*******************************************************************
+ PathGetHierarchyArray - allocates an array containing,
+                in order, every parent directory of the specified path,
+                ending with the actual input path
+                This function also works with registry subkeys
+*******************************************************************/
+DAPI_(HRESULT) PathGetHierarchyArray(
+    __in_z LPCWSTR wzPath,
+    __deref_inout_ecount_opt(*pcStrArray) LPWSTR **prgsczPathArray,
+    __inout LPUINT pcPathArray
+    );
+
 #ifdef __cplusplus
 }
 #endif

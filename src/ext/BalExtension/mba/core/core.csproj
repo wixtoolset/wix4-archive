@@ -12,7 +12,7 @@
     <ProjectGuid>{015AA197-3CEC-4B06-B635-953B1A9619CF}</ProjectGuid>
     <AssemblyName>BootstrapperCore</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Bootstrapper</RootNamespace>
+    <RootNamespace>WixToolset.Bootstrapper</RootNamespace>
     <NoWarn>0693;1591</NoWarn>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
 

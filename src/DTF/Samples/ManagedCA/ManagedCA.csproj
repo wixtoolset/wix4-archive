@@ -3,8 +3,8 @@
     <ProjectGuid>{DB9E5F02-8241-440A-9B60-980EB5B42B13}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.Samples.ManagedCA</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Samples.ManagedCA</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.Samples.ManagedCA</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Samples.ManagedCA</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
@@ -23,7 +23,7 @@
 
 <!--
   <PropertyGroup>
-    <PostBuildEvent>"$(TargetDir)..\x86\MakeSfxCA.exe" "$(TargetPath)" "$(TargetDir)SfxCA.dll" "$(IntermediateOutputPath)$(TargetFileName)" Microsoft.Deployment.WindowsInstaller.dll="$(TargetDir)Microsoft.Deployment.WindowsInstaller.dll" testsub\SampleCAs.cs="$(ProjectDir)\SampleCAs.cs"</PostBuildEvent>
+    <PostBuildEvent>"$(TargetDir)..\x86\MakeSfxCA.exe" "$(TargetPath)" "$(TargetDir)SfxCA.dll" "$(IntermediateOutputPath)$(TargetFileName)" WixToolset.Dtf.WindowsInstaller.dll="$(TargetDir)WixToolset.Dtf.WindowsInstaller.dll" testsub\SampleCAs.cs="$(ProjectDir)\SampleCAs.cs"</PostBuildEvent>
   </PropertyGroup>
 -->
 </Project>

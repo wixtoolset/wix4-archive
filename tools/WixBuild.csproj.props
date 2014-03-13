@@ -24,7 +24,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
     <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)'=='' ">v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFrameworkVersion)'=='' ">v4.0</TargetFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CreateDocumentationFile)' == 'true' ">
@@ -58,5 +58,8 @@
       <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
       <Visible>false</Visible>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="$(WixRoot)tools\CustomDictionary.xml" />
   </ItemGroup>
 </Project>

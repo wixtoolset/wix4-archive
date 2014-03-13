@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
     <Product Id="*" Name="Test NetFx in a Product1" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{B51211CF-856A-413f-BBCC-F343E4449762}">
         <Package Description="Test NetFx in a Product" Comments="Test for NativeImage element" InstallerVersion="200" Compressed="yes" />
 

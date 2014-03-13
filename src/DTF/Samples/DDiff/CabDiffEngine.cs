@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Deployment.Compression.Cab;
+using WixToolset.Dtf.Compression.Cab;
 
-namespace Microsoft.Deployment.Samples.DDiff
+namespace WixToolset.Dtf.Samples.DDiff
 {
 	public class CabDiffEngine : IDiffEngine
 	{

@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Build task to execute the lib tool of the Windows Installer Xml toolset.
+// Build task to execute the lib tool of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using System.Collections.Generic;

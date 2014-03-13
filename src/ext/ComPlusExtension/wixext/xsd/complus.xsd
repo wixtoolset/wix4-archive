@@ -8,26 +8,26 @@
   </copyright>
 -->
 <xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
-            xmlns:wix="http://schemas.microsoft.com/wix/2006/wi"
+            xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
              xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
-      targetNamespace="http://schemas.microsoft.com/wix/ComPlusExtension"
-                xmlns="http://schemas.microsoft.com/wix/ComPlusExtension">
+            xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+      targetNamespace="http://wixtoolset.org/schemas/v4/wxs/complus"
+                xmlns="http://wixtoolset.org/schemas/v4/wxs/complus">
   <xs:annotation>
     <xs:documentation>
-      The source code schema for the Windows Installer XML Toolset COM+ Extension.
+      The source code schema for the WiX Toolset COM+ Extension.
     </xs:documentation>
   </xs:annotation>
 
-  <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+  <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
   <xs:element name="ComPlusPartition">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
       </xs:appinfo>
       <xs:documentation>
         Defines a COM+ partition. If this element is a child of a
@@ -72,10 +72,10 @@
   <xs:element name="ComPlusPartitionRole">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
       </xs:appinfo>
       <xs:documentation>
         Defines a COM+ partition role. Partition roles can not be
@@ -112,7 +112,7 @@
   <xs:element name="ComPlusUserInPartitionRole">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         This element represents a user membership in a partition
@@ -143,7 +143,7 @@
   <xs:element name="ComPlusGroupInPartitionRole">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         This element represents a security group membership in a
@@ -174,7 +174,7 @@
   <xs:element name="ComPlusPartitionUser">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         Represents a default partition definition for a user. When
@@ -205,10 +205,10 @@
   <xs:element name="ComPlusApplication">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
       </xs:appinfo>
       <xs:documentation>
         Defines a COM+ application. If this element is a descendent
@@ -363,10 +363,10 @@
   <xs:element name="ComPlusApplicationRole">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
       </xs:appinfo>
       <xs:documentation>
         Defines an application role. If this element is a descendent
@@ -407,7 +407,7 @@
   <xs:element name="ComPlusUserInApplicationRole">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         This element represents a user membership in an
@@ -443,7 +443,7 @@
   <xs:element name="ComPlusGroupInApplicationRole">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         This element represents a security group membership in an
@@ -486,7 +486,7 @@
         it can not be a child of a ComPlusApplication locator element.
       </xs:documentation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
         <xse:remarks>
           <html:p>
             When installing a native assembly, all components
@@ -712,7 +712,7 @@
   <xs:element name="ComPlusRoleForComponent">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         Represents a role assignment to a COM+ component.
@@ -769,7 +769,7 @@
   <xs:element name="ComPlusRoleForInterface">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         Represents a role assignment to an interface.
@@ -838,7 +838,7 @@
   <xs:element name="ComPlusRoleForMethod">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         Represents a role assignment to a COM+ method.
@@ -869,7 +869,7 @@
   <xs:element name="ComPlusSubscription">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
       </xs:appinfo>
       <xs:documentation>
         Defines an event subscription for a COM+ component.

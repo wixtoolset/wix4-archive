@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     using System;
     using System.IO;
@@ -19,8 +19,8 @@ namespace Microsoft.Deployment.Test
     using System.Globalization;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Deployment.WindowsInstaller;
-    using View = Microsoft.Deployment.WindowsInstaller.View;
+    using WixToolset.Dtf.WindowsInstaller;
+    using View = WixToolset.Dtf.WindowsInstaller.View;
 
     [TestClass]
     public class EmbeddedExternalUI
@@ -50,7 +50,7 @@ namespace Microsoft.Deployment.Test
             string productCode;
 
             string uiDir = Path.GetFullPath(EmbeddedExternalUI.EmbeddedUISampleBinDir);
-            string uiFile = "Microsoft.Deployment.Samples.EmbeddedUI.dll";
+            string uiFile = "WixToolset.Dtf.Samples.EmbeddedUI.dll";
 
             using (Database db = new Database(dbFile, DatabaseOpenMode.CreateDirect))
             {
@@ -118,7 +118,7 @@ namespace Microsoft.Deployment.Test
             string productCode;
 
             string uiDir = Path.GetFullPath(EmbeddedExternalUI.EmbeddedUISampleBinDir);
-            string uiFile = "Microsoft.Deployment.Samples.EmbeddedUI.dll";
+            string uiFile = "WixToolset.Dtf.Samples.EmbeddedUI.dll";
 
             // A number that will be used to check whether a type 19 CA runs.
             const string magicNumber = "3.14159265358979323846264338327950";

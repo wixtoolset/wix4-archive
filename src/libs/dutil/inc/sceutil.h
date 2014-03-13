@@ -87,10 +87,12 @@ struct SCE_DATABASE
 
 HRESULT DAPI SceCreateDatabase(
     __in_z LPCWSTR sczFile,
+    __in_z_opt LPCWSTR wzSqlCeDllPath,
     __deref_out SCE_DATABASE **ppDatabase
     );
 HRESULT DAPI SceOpenDatabase(
     __in_z LPCWSTR sczFile,
+    __in_z_opt LPCWSTR wzSqlCeDllPath,
     __in LPCWSTR wzSchemaType,
     __in DWORD dwExpectedVersion,
     __deref_out SCE_DATABASE **ppDatabase,
@@ -98,6 +100,7 @@ HRESULT DAPI SceOpenDatabase(
     );
 HRESULT DAPI SceEnsureDatabase(
     __in_z LPCWSTR sczFile,
+    __in_z_opt LPCWSTR wzSqlCeDllPath,
     __in LPCWSTR wzSchemaType,
     __in DWORD dwExpectedVersion,
     __in SCE_DATABASE_SCHEMA *pdsSchema,
@@ -169,7 +172,7 @@ HRESULT DAPI SceSetColumnSystemTime(
     __in DWORD dwColumnIndex,
     __in const SYSTEMTIME *pst
     );
-HRESULT DAPI SceSetColumnEmpty(
+HRESULT DAPI SceSetColumnNull(
     __in_bcount(SCE_ROW_HANDLE_BYTES) SCE_ROW_HANDLE rowHandle,
     __in DWORD dwColumnIndex
     );
@@ -252,6 +255,14 @@ HRESULT DAPI SceGetNextResultRow(
     );
 void DAPI SceCloseTable(
     __in SCE_TABLE_SCHEMA *pTable
+    );
+// Returns whether the data in the database changed. Ignores schema changes.
+BOOL DAPI SceDatabaseChanged(
+    __in SCE_DATABASE *pDatabase
+    );
+// Resets the database changed flag
+void DAPI SceResetDatabaseChanged(
+    __in SCE_DATABASE *pDatabase
     );
 HRESULT DAPI SceCloseDatabase(
     __in SCE_DATABASE *pDatabase

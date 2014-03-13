@@ -7,24 +7,43 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset COM+ Extension.
+// The decompiler for the WiX Toolset COM+ Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Globalization;
-
-    using ComPlus = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.ComPlus;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using ComPlus = WixToolset.Extensions.Serialize.ComPlus;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset COM+ Extension.
+    /// The decompiler for the WiX Toolset COM+ Extension.
     /// </summary>
     public sealed class ComPlusDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for ComPlus Extension.
+        /// </summary>
+        public ComPlusDecompiler()
+        {
+            this.TableDefinitions = ComPlusExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return ComPlusExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -112,14 +131,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
         }
 
         /// <summary>
-        /// Finalize decompilation.
-        /// </summary>
-        /// <param name="tables">The collection of all tables.</param>
-        public override void FinalizeDecompile(TableCollection tables)
-        {
-        }
-
-        /// <summary>
         /// Decompile the ComPlusPartition table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
@@ -150,7 +161,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[1], "Component"));
                     }
                 }
                 else
@@ -172,7 +183,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusPartition partition = (ComPlus.ComPlusPartition)this.Core.GetIndexedElement("ComPlusPartition", (string)row[0]);
                 if (null == partition)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Partition_", (string)row[0], "ComPlusPartition"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Partition_", (string)row[0], "ComPlusPartition"));
                 }
 
                 switch ((string)row[1])
@@ -236,7 +247,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
             }
         }
@@ -262,7 +273,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
             }
         }
@@ -288,7 +299,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
             }
         }
@@ -314,7 +325,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
             }
         }
@@ -351,7 +362,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                     }
                 }
                 else
@@ -373,7 +384,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusApplication application = (ComPlus.ComPlusApplication)this.Core.GetIndexedElement("ComPlusApplication", (string)row[0]);
                 if (null == application)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Application_", (string)row[0], "ComPlusApplication"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Application_", (string)row[0], "ComPlusApplication"));
                 }
 
                 switch ((string)row[1])
@@ -505,7 +516,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "ConcurrentApps":
                         int concurrentApps;
-                        if (TryParseInt((string)row[2], out concurrentApps))
+                        if (Int32.TryParse((string)row[2], out concurrentApps))
                         {
                             application.ConcurrentApps = concurrentApps;
                         }
@@ -649,7 +660,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "MaxDumpCount":
                         int maxDumpCount;
-                        if (TryParseInt((string)row[2], out maxDumpCount))
+                        if (Int32.TryParse((string)row[2], out maxDumpCount))
                         {
                             application.MaxDumpCount = maxDumpCount;
                         }
@@ -680,7 +691,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "QCListenerMaxThreads":
                         int qcListenerMaxThreads;
-                        if (TryParseInt((string)row[2], out qcListenerMaxThreads))
+                        if (Int32.TryParse((string)row[2], out qcListenerMaxThreads))
                         {
                             application.QCListenerMaxThreads = qcListenerMaxThreads;
                         }
@@ -719,7 +730,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "RecycleActivationLimit":
                         int recycleActivationLimit;
-                        if (TryParseInt((string)row[2], out recycleActivationLimit))
+                        if (Int32.TryParse((string)row[2], out recycleActivationLimit))
                         {
                             application.RecycleActivationLimit = recycleActivationLimit;
                         }
@@ -730,7 +741,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "RecycleCallLimit":
                         int recycleCallLimit;
-                        if (TryParseInt((string)row[2], out recycleCallLimit))
+                        if (Int32.TryParse((string)row[2], out recycleCallLimit))
                         {
                             application.RecycleCallLimit = recycleCallLimit;
                         }
@@ -741,7 +752,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "RecycleExpirationTimeout":
                         int recycleExpirationTimeout;
-                        if (TryParseInt((string)row[2], out recycleExpirationTimeout))
+                        if (Int32.TryParse((string)row[2], out recycleExpirationTimeout))
                         {
                             application.RecycleExpirationTimeout = recycleExpirationTimeout;
                         }
@@ -752,7 +763,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "RecycleLifetimeLimit":
                         int recycleLifetimeLimit;
-                        if (TryParseInt((string)row[2], out recycleLifetimeLimit))
+                        if (Int32.TryParse((string)row[2], out recycleLifetimeLimit))
                         {
                             application.RecycleLifetimeLimit = recycleLifetimeLimit;
                         }
@@ -763,7 +774,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "RecycleMemoryLimit":
                         int recycleMemoryLimit;
-                        if (TryParseInt((string)row[2], out recycleMemoryLimit))
+                        if (Int32.TryParse((string)row[2], out recycleMemoryLimit))
                         {
                             application.RecycleMemoryLimit = recycleMemoryLimit;
                         }
@@ -802,7 +813,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "ShutdownAfter":
                         int shutdownAfter;
-                        if (TryParseInt((string)row[2], out shutdownAfter))
+                        if (Int32.TryParse((string)row[2], out shutdownAfter))
                         {
                             application.ShutdownAfter = shutdownAfter;
                         }
@@ -896,7 +907,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                     }
                     else
                     {
-                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                        this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                     }
                 }
                 else
@@ -918,7 +929,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusApplicationRole applicationRole = (ComPlus.ComPlusApplicationRole)this.Core.GetIndexedElement("ComPlusApplicationRole", (string)row[0]);
                 if (null == applicationRole)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ApplicationRole_", (string)row[0], "ComPlusApplicationRole"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ApplicationRole_", (string)row[0], "ComPlusApplicationRole"));
                 }
 
                 switch ((string)row[1])
@@ -954,7 +965,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
             }
         }
@@ -980,7 +991,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
             }
         }
@@ -1047,7 +1058,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
                 this.Core.IndexElement(row, assembly);
             }
@@ -1072,7 +1083,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Assembly_", (string)row[0], "ComPlusAssembly"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Assembly_", (string)row[0], "ComPlusAssembly"));
                 }
             }
         }
@@ -1106,7 +1117,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Assembly_", (string)row[1], "ComPlusAssembly"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Assembly_", (string)row[1], "ComPlusAssembly"));
                 }
                 this.Core.IndexElement(row, comPlusComponent);
             }
@@ -1123,7 +1134,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusComponent comPlusComponent = (ComPlus.ComPlusComponent)this.Core.GetIndexedElement("ComPlusComponent", (string)row[0]);
                 if (null == comPlusComponent)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ComPlusComponent_", (string)row[0], "ComPlusComponent"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ComPlusComponent_", (string)row[0], "ComPlusComponent"));
                 }
 
                 switch ((string)row[1])
@@ -1158,7 +1169,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "ComponentTransactionTimeout":
                         int componentTransactionTimeout;
-                        if (TryParseInt((string)row[2], out componentTransactionTimeout))
+                        if (Int32.TryParse((string)row[2], out componentTransactionTimeout))
                         {
                             comPlusComponent.ComponentTransactionTimeout = componentTransactionTimeout;
                         }
@@ -1214,7 +1225,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "CreationTimeout":
                         int creationTimeout;
-                        if (TryParseInt((string)row[2], out creationTimeout))
+                        if (Int32.TryParse((string)row[2], out creationTimeout))
                         {
                             comPlusComponent.CreationTimeout = creationTimeout;
                         }
@@ -1343,7 +1354,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "MaxPoolSize":
                         int maxPoolSize;
-                        if (TryParseInt((string)row[2], out maxPoolSize))
+                        if (Int32.TryParse((string)row[2], out maxPoolSize))
                         {
                             comPlusComponent.MaxPoolSize = maxPoolSize;
                         }
@@ -1354,7 +1365,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         break;
                     case "MinPoolSize":
                         int minPoolSize;
-                        if (TryParseInt((string)row[2], out minPoolSize))
+                        if (Int32.TryParse((string)row[2], out minPoolSize))
                         {
                             comPlusComponent.MinPoolSize = minPoolSize;
                         }
@@ -1514,7 +1525,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[3], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[3], "Component"));
                 }
             }
         }
@@ -1548,7 +1559,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "ComPlusComponent_", (string)row[1], "ComPlusComponent"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "ComPlusComponent_", (string)row[1], "ComPlusComponent"));
                 }
                 this.Core.IndexElement(row, comPlusInterface);
             }
@@ -1565,7 +1576,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusInterface comPlusInterface = (ComPlus.ComPlusInterface)this.Core.GetIndexedElement("ComPlusInterface", (string)row[0]);
                 if (null == comPlusInterface)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Interface_", (string)row[0], "ComPlusInterface"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Interface_", (string)row[0], "ComPlusInterface"));
                 }
 
                 switch ((string)row[1])
@@ -1615,7 +1626,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[3], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[3], "Component"));
                 }
             }
         }
@@ -1649,7 +1660,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Interface_", (string)row[1], "ComPlusInterface"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Interface_", (string)row[1], "ComPlusInterface"));
                 }
                 this.Core.IndexElement(row, comPlusMethod);
             }
@@ -1666,7 +1677,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusMethod comPlusMethod = (ComPlus.ComPlusMethod)this.Core.GetIndexedElement("ComPlusMethod", (string)row[0]);
                 if (null == comPlusMethod)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Method_", (string)row[0], "ComPlusMethod"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Method_", (string)row[0], "ComPlusMethod"));
                 }
 
                 switch ((string)row[1])
@@ -1716,7 +1727,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[3], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[3], "Component"));
                 }
             }
         }
@@ -1745,7 +1756,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[2], "Component"));
                 }
                 this.Core.IndexElement(row, subscription);
             }
@@ -1762,7 +1773,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 ComPlus.ComPlusSubscription subscription = (ComPlus.ComPlusSubscription)this.Core.GetIndexedElement("ComPlusSubscription", (string)row[0]);
                 if (null == subscription)
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Subscription_", (string)row[0], "ComPlusSubscription"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Subscription_", (string)row[0], "ComPlusSubscription"));
                 }
 
                 switch ((string)row[1])
@@ -1837,25 +1848,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         // TODO: Warning
                         break;
                 }
-            }
-        }
-
-        static bool TryParseInt(string s, out int result)
-        {
-            try
-            {
-                result = int.Parse(s);
-                return true;
-            }
-            catch (FormatException)
-            {
-                result = 0;
-                return false;
-            }
-            catch (OverflowException)
-            {
-                result = 0;
-                return false;
             }
         }
     }

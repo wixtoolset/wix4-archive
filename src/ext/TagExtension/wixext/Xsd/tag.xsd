@@ -8,17 +8,17 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
+          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
-    targetNamespace="http://schemas.microsoft.com/wix/TagExtension"
-              xmlns="http://schemas.microsoft.com/wix/TagExtension">
+    targetNamespace="http://wixtoolset.org/schemas/v4/wxs/tag"
+              xmlns="http://wixtoolset.org/schemas/v4/wxs/tag">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset Software Id Tag Extension.
+            The source code schema for the WiX Toolset Software Id Tag Extension.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+    <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
   <xs:element name="Tag">
       <xs:annotation>
@@ -27,8 +27,8 @@
               will be generated an inserted into the Product or Bundle.
           </xs:documentation>
           <xs:appinfo>
-              <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Bundle" />
-              <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+              <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Bundle" />
+              <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
           </xs:appinfo>
       </xs:annotation>
       <xs:complexType>
@@ -84,7 +84,7 @@
         Allows an ISO/IEC 19770-2 SWID tag file to be referenced in a Patch.
       </xs:documentation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="PatchFamily" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="PatchFamily" />
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>

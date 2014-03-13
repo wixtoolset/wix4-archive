@@ -11,9 +11,8 @@
   <PropertyGroup>
     <ProjectGuid>{4544158C-2D63-4146-85FF-62169280144E}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Deployment.Test</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Test.Cab</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>WixToolset.Dtf.Test</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Test.Cab</AssemblyName>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
 

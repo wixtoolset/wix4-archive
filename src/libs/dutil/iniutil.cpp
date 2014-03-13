@@ -25,6 +25,9 @@ struct INI_STRUCT
     LPWSTR sczValuePrefix; // for regular ini, this would be NULL
     LPWSTR sczValueSeparator; // for regular ini, this would be '='
 
+    LPWSTR *rgsczValueSeparatorExceptions;
+    DWORD cValueSeparatorExceptions;
+
     LPWSTR sczCommentLinePrefix; // for regular ini, this would be ';'
 
     INI_VALUE *rgivValues;
@@ -72,6 +75,12 @@ extern "C" void DAPI IniUninitialize(
     ReleaseStr(pi->sczOpenTagPostfix);
     ReleaseStr(pi->sczValuePrefix);
     ReleaseStr(pi->sczValueSeparator);
+
+    for (DWORD i = 0; i < pi->cValueSeparatorExceptions; ++i)
+    {
+        ReleaseStr(pi->rgsczValueSeparatorExceptions + i);
+    }
+
     ReleaseStr(pi->sczCommentLinePrefix);
 
     for (DWORD i = 0; i < pi->cValues; ++i)
@@ -151,6 +160,28 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT DAPI IniSetValueSeparatorException(
+    __inout_bcount(INI_HANDLE_BYTES) INI_HANDLE piHandle,
+    __in_z LPCWSTR wzValueNamePrefix
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD dwInsertedIndex = 0;
+
+    INI_STRUCT *pi = static_cast<INI_STRUCT *>(piHandle);
+
+    hr = MemEnsureArraySize(reinterpret_cast<void **>(&pi->rgsczValueSeparatorExceptions), pi->cValueSeparatorExceptions + 1, sizeof(LPWSTR), 5);
+    ExitOnFailure(hr, "Failed to increase array size for value separator exceptions");
+    dwInsertedIndex = pi->cValueSeparatorExceptions;
+    ++pi->cValueSeparatorExceptions;
+
+    hr = StrAllocString(&pi->rgsczValueSeparatorExceptions[dwInsertedIndex], wzValueNamePrefix, 0);
+    ExitOnFailure(hr, "Failed to copy value separator exception");
+
+LExit:
+    return hr;
+}
+
 extern "C" HRESULT DAPI IniSetCommentStyle(
     __inout_bcount(INI_HANDLE_BYTES) INI_HANDLE piHandle,
     __in_z_opt LPCWSTR wzLinePrefix
@@ -181,6 +212,8 @@ extern "C" HRESULT DAPI IniParse(
     )
 {
     HRESULT hr = S_OK;
+    DWORD dwValuePrefixLength = 0;
+    DWORD dwValueSeparatorExceptionLength = 0;
     LPWSTR sczContents = NULL;
     LPWSTR sczCurrentSection = NULL;
     LPWSTR sczName = NULL;
@@ -190,6 +223,7 @@ extern "C" HRESULT DAPI IniParse(
     LPWSTR wzOpenTagPrefix = NULL;
     LPWSTR wzOpenTagPostfix = NULL;
     LPWSTR wzValuePrefix = NULL;
+    LPWSTR wzValueNameStart = NULL;
     LPWSTR wzValueSeparator = NULL;
     LPWSTR wzCommentLinePrefix = NULL;
     LPWSTR wzValueBegin = NULL;
@@ -216,12 +250,13 @@ extern "C" HRESULT DAPI IniParse(
         ExitFunction1(hr = S_OK);
     }
 
+    dwValuePrefixLength = lstrlenW(pi->sczValuePrefix);
     hr = StrSplitAllocArray(&pi->rgsczLines, reinterpret_cast<UINT *>(&pi->cLines), sczContents, L"\n");
     ExitOnFailure(hr, "Failed to split INI file into lines");
 
     for (DWORD i = 0; i < pi->cLines; ++i)
     {
-        if (!*pi->rgsczLines[i])
+        if (!*pi->rgsczLines[i] || '\r' == *pi->rgsczLines[i])
         {
             continue;
         }
@@ -249,18 +284,29 @@ extern "C" HRESULT DAPI IniParse(
         if (pi->sczValuePrefix)
         {
             wzValuePrefix = wcsstr(pi->rgsczLines[i], pi->sczValuePrefix);
+            if (wzValuePrefix != NULL)
+            {
+                wzValueNameStart = wzValuePrefix + dwValuePrefixLength;
+            }
+        }
+        else
+        {
+            wzValueNameStart = pi->rgsczLines[i];
         }
 
-        if (pi->sczValueSeparator)
+        if (pi->sczValueSeparator && NULL != wzValueNameStart && *wzValueNameStart != L'\0')
         {
-            if (wzValuePrefix)
+            dwValueSeparatorExceptionLength = 0;
+            for (DWORD j = 0; j < pi->cValueSeparatorExceptions; ++j)
             {
-                wzValueSeparator = wcsstr(wzValuePrefix + lstrlenW(pi->sczValuePrefix), pi->sczValueSeparator);
+                if (pi->rgsczLines[i] == wcsstr(pi->rgsczLines[i], pi->rgsczValueSeparatorExceptions[j]))
+                {
+                    dwValueSeparatorExceptionLength = lstrlenW(pi->rgsczValueSeparatorExceptions[j]);
+                    break;
+                }
             }
-            else
-            {
-                wzValueSeparator = wcsstr(pi->rgsczLines[i], pi->sczValueSeparator);
-            }
+
+            wzValueSeparator = wcsstr(wzValueNameStart + dwValueSeparatorExceptionLength, pi->sczValueSeparator);
         }
 
         // Don't keep the '\r' before every '\n'
@@ -558,6 +604,9 @@ extern "C" HRESULT DAPI IniWriteFile(
     }
 
     BOOL fSections = (pi->sczOpenTagPrefix) && (pi->sczOpenTagPostfix);
+
+    hr = StrAllocString(&sczContents, L"", 0);
+    ExitOnFailure(hr, "Failed to begin contents string as empty string");
 
     // Insert any beginning lines we didn't understand like comments
     if (0 < pi->cLines)

@@ -8,9 +8,9 @@
   </copyright>
 -->
 <!--
-    The messages for the Windows Installer XML Toolset Lux Test Builder.
+    The messages for the WiX Toolset Lux Test Builder.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Lux" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+<Messages Namespace="WixToolset.Lux" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
   <Class Name="LuxErrors" ContainerName="LuxErrorEventArgs" BaseContainerName="WixErrorEventArgs" Level="Error">
     <Message Id="MalfunctionNeedInput" Number="8001" SourceLineNumbers="no">
       <Instance>

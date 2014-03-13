@@ -205,7 +205,19 @@ static const THEME_CONTROL* FindControlFromHWnd(
     __in const THEME* pTheme,
     __in HWND hWnd
     );
-
+static void GetControlDimensions(
+    __in const RECT* prcParent,
+    __in const THEME_CONTROL* pControl,
+    __out int* piWidth,
+    __out int* piHeight,
+    __out int* piX,
+    __out int* piY
+    );
+// Using iWidth as total width of listview, base width of columns, and "Expands" flag on columns
+// calculates final width of each column (storing result in each column's nWidth value)
+static HRESULT SizeListViewColumns(
+    __inout THEME_CONTROL* pControl
+    );
 
 DAPI_(HRESULT) ThemeInitialize(
     __in_opt HMODULE hModule
@@ -527,10 +539,8 @@ DAPI_(HRESULT) ThemeLoadControls(
 
             pControl->wId = wControlId;
 
-            int w = pControl->nWidth < 1 ? pControl->nX < 0 ? rcParent.right + pControl->nWidth : rcParent.right + pControl->nWidth - pControl->nX : pControl->nWidth;
-            int h = pControl->nHeight < 1 ? pControl->nY < 0 ? rcParent.bottom + pControl->nHeight : rcParent.bottom + pControl->nHeight - pControl->nY : pControl->nHeight;
-            int x = pControl->nX < 0 ? rcParent.right + pControl->nX - w : pControl->nX;
-            int y = pControl->nY < 0 ? rcParent.bottom + pControl->nY - h : pControl->nY;
+            int w, h, x, y;
+            GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
 
             // disable paged controls so their shortcut keys don't trigger when their page isn't being shown
             dwWindowBits |= 0 < pControl->wPageId ? WS_DISABLED : 0;
@@ -547,6 +557,9 @@ DAPI_(HRESULT) ThemeLoadControls(
             else if (THEME_CONTROL_TYPE_LISTVIEW == pControl->type)
             {
                 ::SendMessageW(pControl->hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, pControl->dwExtendedStyle);
+
+                hr = SizeListViewColumns(pControl);
+                ExitOnFailure(hr, "Failed to get size of list view columns");
 
                 for (DWORD j = 0; j < pControl->cColumns; ++j)
                 {
@@ -865,6 +878,10 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
     __in LPARAM lParam
     )
 {
+    int w,h,x,y;
+    RECT rcParent = { };
+    RECT *pRect = NULL;
+
     if (pTheme)
     {
         switch (uMsg)
@@ -913,6 +930,64 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                 ::EndPaint(hWnd, &ps);
             }
             return 0;
+
+        case WM_SIZING:
+            if (pTheme->fAutoResize)
+            {
+                pRect = reinterpret_cast<RECT *>(lParam);
+                if (pRect->right - pRect->left < pTheme->nMinimumWidth)
+                {
+                    if (wParam == WMSZ_BOTTOMLEFT || wParam == WMSZ_LEFT || wParam == WMSZ_TOPLEFT)
+                    {
+                        pRect->left = pRect->right - pTheme->nMinimumWidth;
+                    }
+                    else
+                    {
+                        pRect->right = pRect->left + pTheme->nMinimumWidth;
+                    }
+                }
+                if (pRect->bottom - pRect->top < pTheme->nMinimumHeight)
+                {
+                    if (wParam == WMSZ_BOTTOM || wParam == WMSZ_BOTTOMLEFT || wParam == WMSZ_BOTTOMRIGHT)
+                    {
+                        pRect->bottom = pRect->top + pTheme->nMinimumHeight;
+                    }
+                    else
+                    {
+                        pRect->top = pRect->bottom - pTheme->nMinimumHeight;
+                    }
+                }
+
+                return TRUE;
+            }
+            break;
+
+        case WM_SIZE:
+            if (pTheme->fAutoResize)
+            {
+                ::GetClientRect(pTheme->hwndParent, &rcParent);
+                for (DWORD i = 0; i < pTheme->cControls; ++i)
+                {
+                    GetControlDimensions(&rcParent, pTheme->rgControls + i, &w, &h, &x, &y);
+                    ::MoveWindow(pTheme->rgControls[i].hWnd, x, y, w, h, TRUE);
+                    if (THEME_CONTROL_TYPE_LISTVIEW == pTheme->rgControls[i].type)
+                    {
+                        SizeListViewColumns(pTheme->rgControls + i);
+
+                        for (DWORD j = 0; j < pTheme->rgControls[i].cColumns; ++j)
+                        {
+                            if (-1 == ::SendMessageW(pTheme->rgControls[i].hWnd, LVM_SETCOLUMNWIDTH, (WPARAM)(int)(j), (LPARAM)(pTheme->rgControls[i].ptcColumns[j].nWidth)))
+                            {
+                                Trace2(REPORT_DEBUG, "Failed to resize listview column %u with error %u", j, ::GetLastError());
+                                return 0;
+                            }
+                        }
+                    }
+                }
+
+                return 0;
+            }
+            break;
 
         case WM_TIMER:
             OnBillboardTimer(pTheme, hWnd, wParam);
@@ -1736,6 +1811,13 @@ static HRESULT ParseApplication(
     }
     ExitOnFailure(hr, "Failed to find application element.");
 
+    hr = XmlGetYesNoAttribute(pixn, L"AutoResize", &pTheme->fAutoResize);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed to get AutoResize attribute.");
+
     hr = XmlGetAttributeNumber(pixn, L"Width", reinterpret_cast<DWORD*>(&pTheme->nWidth));
     if (S_FALSE == hr)
     {
@@ -1759,6 +1841,20 @@ static HRESULT ParseApplication(
         }
     }
     ExitOnFailure(hr, "Failed to get application height attribute.");
+
+    hr = XmlGetAttributeNumber(pixn, L"MinimumWidth", reinterpret_cast<DWORD*>(&pTheme->nMinimumWidth));
+    if (S_FALSE == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed to get application minimum width attribute.");
+
+    hr = XmlGetAttributeNumber(pixn, L"MinimumHeight", reinterpret_cast<DWORD*>(&pTheme->nMinimumHeight));
+    if (S_FALSE == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed to get application minimum height attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"FontId", &pTheme->dwFontId);
     if (S_FALSE == hr)
@@ -2316,17 +2412,20 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_TEXT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Listview", -1) ||
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ListView", -1) ||
+                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Listview", -1) ||
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"lv", 2))
         {
             type = THEME_CONTROL_TYPE_LISTVIEW;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Treeview", -1) ||
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1) ||
+                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Treeview", -1) ||
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tv", 2))
         {
             type = THEME_CONTROL_TYPE_TREEVIEW;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tab", -1) ||
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tabs", -1) ||
+                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tab", -1) ||
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tb", 2))
         {
             type = THEME_CONTROL_TYPE_TAB;
@@ -2853,7 +2952,6 @@ static HRESULT ParseColumns(
 
     if (0 < pControl->cColumns)
     {
-
         hr = ::SizeTMult(sizeof(THEME_COLUMN), pControl->cColumns, &cbAllocSize);
         ExitOnFailure1(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs", pControl->cColumns);
 
@@ -2866,16 +2964,23 @@ static HRESULT ParseColumns(
             hr = XmlGetText(pixnChild, &bstrText);
             ExitOnFailure(hr, "Failed to get inner text of column element");
 
-            hr = XmlGetAttributeNumber(pixnChild, L"Width", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nWidth));
+            hr = XmlGetAttributeNumber(pixnChild, L"Width", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
             if (S_FALSE == hr)
             {
-                hr = XmlGetAttributeNumber(pixnChild, L"w", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nWidth));
+                hr = XmlGetAttributeNumber(pixnChild, L"w", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
                 if (S_FALSE == hr)
                 {
-                    pControl->ptcColumns[i].nWidth = 100; // Default to 100
+                    pControl->ptcColumns[i].nBaseWidth = 100;
                 }
             }
             ExitOnFailure(hr, "Failed to get column width attribute.");
+
+            hr = XmlGetYesNoAttribute(pixnChild, L"Expands", reinterpret_cast<BOOL*>(&pControl->ptcColumns[i].fExpands));
+            if (E_NOTFOUND == hr)
+            {
+                hr = S_OK;
+            }
+            ExitOnFailure(hr, "Failed to find font underline attribute.");
 
             hr = StrAllocString(&(pControl->ptcColumns[i].pszName), bstrText, 0);
             ExitOnFailure(hr, "Failed to copy column name");
@@ -3456,4 +3561,67 @@ static const THEME_CONTROL* FindControlFromHWnd(
     }
 
     return NULL;
+}
+
+static void GetControlDimensions(
+    __in const RECT* prcParent,
+    __in const THEME_CONTROL* pControl,
+    __out int* piWidth,
+    __out int* piHeight,
+    __out int* piX,
+    __out int* piY
+    )
+{
+    *piWidth  = pControl->nWidth < 1  ? pControl->nX < 0 ? prcParent->right  + pControl->nWidth  : prcParent->right  + pControl->nWidth  - pControl->nX : pControl->nWidth;
+    *piHeight = pControl->nHeight < 1 ? pControl->nY < 0 ? prcParent->bottom + pControl->nHeight : prcParent->bottom + pControl->nHeight - pControl->nY : pControl->nHeight;
+    *piX = pControl->nX < 0 ? prcParent->right  + pControl->nX - *piWidth  : pControl->nX;
+    *piY = pControl->nY < 0 ? prcParent->bottom + pControl->nY - *piHeight : pControl->nY;
+}
+
+static HRESULT SizeListViewColumns(
+    __inout THEME_CONTROL* pControl
+    )
+{
+    HRESULT hr = S_OK;
+    RECT rcParent = { };
+    int cNumExpandingColumns = 0;
+    int iExtraAvailableSize;
+
+    if (!::GetWindowRect(pControl->hWnd, &rcParent))
+    {
+        ExitWithLastError(hr, "Failed to get window rect of listview control");
+    }
+
+    iExtraAvailableSize = rcParent.right - rcParent.left;
+
+    for (DWORD i = 0; i < pControl->cColumns; ++i)
+    {
+        if (pControl->ptcColumns[i].fExpands)
+        {
+            ++cNumExpandingColumns;
+        }
+
+        iExtraAvailableSize -= pControl->ptcColumns[i].nBaseWidth;
+    }
+
+    // Leave room for a vertical scroll bar just in case
+    iExtraAvailableSize -= ::GetSystemMetrics(SM_CXVSCROLL);
+
+    for (DWORD i = 0; i < pControl->cColumns; ++i)
+    {
+        if (pControl->ptcColumns[i].fExpands)
+        {
+            pControl->ptcColumns[i].nWidth = pControl->ptcColumns[i].nBaseWidth + (iExtraAvailableSize / cNumExpandingColumns);
+            // In case there is any remainder, use it up the first chance we get
+            pControl->ptcColumns[i].nWidth += iExtraAvailableSize % cNumExpandingColumns;
+            iExtraAvailableSize -= iExtraAvailableSize % cNumExpandingColumns;
+        }
+        else
+        {
+            pControl->ptcColumns[i].nWidth = pControl->ptcColumns[i].nBaseWidth;
+        }
+    }
+
+LExit:
+    return hr;
 }

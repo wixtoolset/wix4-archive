@@ -11,27 +11,30 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
+    using System.Collections.Generic;
     using System.IO;
     using System.Text;
     using System.Xml;
+    using System.Xml.Linq;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// The preprocessor core.
     /// </summary>
-    public sealed class PreprocessorCore : IMessageHandler
+    internal class PreprocessorCore : IPreprocessorCore
     {
         private static readonly char[] variableSplitter = new char[] { '.' };
         private static readonly char[] argumentSplitter = new char[] { ',' };
 
         private Platform currentPlatform;
-        private bool encounteredError;
-        private Hashtable extensionsByPrefix;
+        private Dictionary<string, IPreprocessorExtension> extensionsByPrefix;
         private string sourceFile;
-        private Hashtable variables;
+        private IDictionary<string, string> variables;
 
         /// <summary>
         /// Instantiate a new PreprocessorCore.
@@ -40,23 +43,17 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="messageHandler">The message handler.</param>
         /// <param name="sourceFile">The source file being preprocessed.</param>
         /// <param name="variables">The variables defined prior to preprocessing.</param>
-        internal PreprocessorCore(Hashtable extensionsByPrefix, MessageEventHandler messageHandler, string sourceFile, Hashtable variables)
+        internal PreprocessorCore(Dictionary<string, IPreprocessorExtension> extensionsByPrefix, string sourceFile, IDictionary<string, string> variables)
         {
             this.extensionsByPrefix = extensionsByPrefix;
-            this.MessageHandler = messageHandler;
-            this.sourceFile = Path.GetFullPath(sourceFile);
+            this.sourceFile = String.IsNullOrEmpty(sourceFile) ? null : Path.GetFullPath(sourceFile);
 
-            this.variables = new Hashtable();
-            foreach (DictionaryEntry entry in variables)
+            this.variables = new Dictionary<string, string>();
+            foreach (var entry in variables)
             {
-                this.AddVariable(null, (string)entry.Key, (string)entry.Value);
+                this.AddVariable(null, entry.Key, entry.Value);
             }
         }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        private event MessageEventHandler MessageHandler;
 
         /// <summary>
         /// Event for resolved variables.
@@ -87,7 +84,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <value>Flag if core encountered an error during processing.</value>
         public bool EncounteredError
         {
-            get { return this.encounteredError; }
+            get { return Messaging.Instance.EncounteredError; }
         }
 
         /// <summary>
@@ -96,7 +93,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="sourceLineNumbers">The source line information for the function.</param>
         /// <param name="value">Text that may contain parameters to replace.</param>
         /// <returns>Text after parameters have been replaced.</returns>
-        public string PreprocessString(SourceLineNumberCollection sourceLineNumbers, string value)
+        public string PreprocessString(SourceLineNumber sourceLineNumbers, string value)
         {
             StringBuilder sb = new StringBuilder();
             int currentPosition = 0;
@@ -121,7 +118,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     currentPosition = remainder.IndexOf(')');
                     if (-1 == currentPosition)
                     {
-                        throw new WixException(WixErrors.InvalidPreprocessorVariable(sourceLineNumbers, remainder));
+                        this.OnMessage(WixErrors.InvalidPreprocessorVariable(sourceLineNumbers, remainder));
+                        break;
                     }
 
                     sb.Append("$");   // just put the resource reference back as was
@@ -164,11 +162,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     {
                         if (isFunction)
                         {
-                            throw new WixException(WixErrors.InvalidPreprocessorFunction(sourceLineNumbers, remainder));
+                            this.OnMessage(WixErrors.InvalidPreprocessorFunction(sourceLineNumbers, remainder));
+                            break;
                         }
                         else
                         {
-                            throw new WixException(WixErrors.InvalidPreprocessorVariable(sourceLineNumbers, remainder));
+                            this.OnMessage(WixErrors.InvalidPreprocessorVariable(sourceLineNumbers, remainder));
+                            break;
                         }
                     }
 
@@ -187,11 +187,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     {
                         if (isFunction)
                         {
-                            throw new WixException(WixErrors.UndefinedPreprocessorFunction(sourceLineNumbers, subString));
+                            this.OnMessage(WixErrors.UndefinedPreprocessorFunction(sourceLineNumbers, subString));
+                            break;
                         }
                         else
                         {
-                            throw new WixException(WixErrors.UndefinedPreprocessorVariable(sourceLineNumbers, subString));
+                            this.OnMessage(WixErrors.UndefinedPreprocessorVariable(sourceLineNumbers, subString));
+                            break;
                         }
                     }
                     else
@@ -224,8 +226,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="sourceLineNumbers">The source line information for the function.</param>
         /// <param name="pragmaName">The pragma's full name (<prefix>.<pragma>).</param>
         /// <param name="args">The arguments to the pragma.</param>
-        /// <param name="writer">The xml writer.</param>
-        public void PreprocessPragma(SourceLineNumberCollection sourceLineNumbers, string pragmaName, string args, XmlWriter writer)
+        /// <param name="parent">The parent element of the pragma.</param>
+        public void PreprocessPragma(SourceLineNumber sourceLineNumbers, string pragmaName, string args, XContainer parent)
         {
             string[] prefixParts = pragmaName.Split(variableSplitter, 2);
             // Check to make sure there are 2 parts and neither is an empty string.
@@ -254,7 +256,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                     break;
                 default:
                     PreprocessorExtension extension = (PreprocessorExtension)this.extensionsByPrefix[prefix];
-                    if (null == extension || !extension.ProcessPragma(sourceLineNumbers, prefix, pragma, args, writer))
+                    if (null == extension || !extension.ProcessPragma(sourceLineNumbers, prefix, pragma, args, parent))
                     {
                         this.OnMessage(WixWarnings.PreprocessorUnknownPragma(sourceLineNumbers, pragmaName));
                     }
@@ -268,7 +270,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="sourceLineNumbers">The source line information for the function.</param>
         /// <param name="function">The function expression including the prefix and name.</param>
         /// <returns>The function value.</returns>
-        public string EvaluateFunction(SourceLineNumberCollection sourceLineNumbers, string function)
+        public string EvaluateFunction(SourceLineNumber sourceLineNumbers, string function)
         {
             string[] prefixParts = function.Split(variableSplitter, 2);
             // Check to make sure there are 2 parts and neither is an empty string.
@@ -316,7 +318,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="function">The function name.</param>
         /// <param name="args">The arguments for the function.</param>
         /// <returns>The function value or null if the function is not defined.</returns>
-        public string EvaluateFunction(SourceLineNumberCollection sourceLineNumbers, string prefix, string function, string[] args)
+        public string EvaluateFunction(SourceLineNumber sourceLineNumbers, string prefix, string function, string[] args)
         {
             if (String.IsNullOrEmpty(prefix))
             {
@@ -333,20 +335,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 case "fun":
                     switch (function)
                     {
-                        case "AutoVersion":
-                            // Make sure the base version is specified
-                            if (args.Length == 0 || args[0].Length == 0)
-                            {
-                                throw new WixException(WixErrors.InvalidPreprocessorFunctionAutoVersion(sourceLineNumbers));
-                            }
-
-                            // Build = days since 1/1/2000; Revision = seconds since midnight / 2
-                            DateTime now = DateTime.Now.ToUniversalTime();
-                            TimeSpan tsBuild = now - new DateTime(2000, 1, 1);
-                            TimeSpan tsRevision = now - new DateTime(now.Year, now.Month, now.Day);
-
-                            return String.Format("{0}.{1}.{2}", args[0], (int)tsBuild.TotalDays, (int)(tsRevision.TotalSeconds / 2));
-
                         // Add any core defined functions here
                         default:
                             return null;
@@ -378,7 +366,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="variable">The variable expression including the optional prefix and name.</param>
         /// <param name="allowMissingPrefix">true to allow the variable prefix to be missing.</param>
         /// <returns>The variable value.</returns>
-        public string GetVariableValue(SourceLineNumberCollection sourceLineNumbers, string variable, bool allowMissingPrefix)
+        public string GetVariableValue(SourceLineNumber sourceLineNumbers, string variable, bool allowMissingPrefix)
         {
             // Strip the "$(" off the front.
             if (variable.StartsWith("$(", StringComparison.Ordinal))
@@ -428,7 +416,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="prefix">The variable prefix.</param>
         /// <param name="name">The variable name.</param>
         /// <returns>The variable value or null if the variable is not set.</returns>
-        public string GetVariableValue(SourceLineNumberCollection sourceLineNumbers, string prefix, string name)
+        public string GetVariableValue(SourceLineNumber sourceLineNumbers, string prefix, string name)
         {
             if (String.IsNullOrEmpty(prefix))
             {
@@ -450,9 +438,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         case "CURRENTDIR":
                             return String.Concat(Directory.GetCurrentDirectory(), Path.DirectorySeparatorChar);
                         case "SOURCEFILEDIR":
-                            return String.Concat(Path.GetDirectoryName(sourceLineNumbers[0].FileName), Path.DirectorySeparatorChar);
+                            return String.Concat(Path.GetDirectoryName(sourceLineNumbers.FileName), Path.DirectorySeparatorChar);
                         case "SOURCEFILEPATH":
-                            return sourceLineNumbers[0].FileName;
+                            return sourceLineNumbers.FileName;
                         case "PLATFORM":
                             this.OnMessage(WixWarnings.DeprecatedPreProcVariable(sourceLineNumbers, "$(sys.PLATFORM)", "$(sys.BUILDARCH)"));
 
@@ -476,7 +464,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             return null;
                     }
                 case "var":
-                    return (string)this.variables[name];
+                    string result = null;
+                    return this.variables.TryGetValue(name, out result) ? result : null;
                 default:
                     PreprocessorExtension extension = (PreprocessorExtension)this.extensionsByPrefix[prefix];
                     if (null != extension)
@@ -503,25 +492,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs e)
         {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != errorEventArgs)
-            {
-                this.encounteredError = true;
-            }
-
-            if (null != this.MessageHandler)
-            {
-                this.MessageHandler(this, e);
-                if (MessageLevel.Error == e.Level)
-                {
-                    this.encounteredError = true;
-                }
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(e);
         }
 
         /// <summary>
@@ -542,9 +513,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="sourceLineNumbers">The source line information of the variable.</param>
         /// <param name="name">The variable name.</param>
         /// <param name="value">The variable value.</param>
-        internal void AddVariable(SourceLineNumberCollection sourceLineNumbers, string name, string value)
+        internal void AddVariable(SourceLineNumber sourceLineNumbers, string name, string value)
         {
-            AddVariable(sourceLineNumbers, name, value, true);
+            this.AddVariable(sourceLineNumbers, name, value, true);
         }
 
         /// <summary>
@@ -554,7 +525,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="name">The variable name.</param>
         /// <param name="value">The variable value.</param>
         /// <param name="overwrite">Set to true to show variable overwrite warning.</param>
-        internal void AddVariable(SourceLineNumberCollection sourceLineNumbers, string name, string value, bool showWarning)
+        internal void AddVariable(SourceLineNumber sourceLineNumbers, string name, string value, bool showWarning)
         {
             string currentValue = this.GetVariableValue(sourceLineNumbers, "var", name);
 
@@ -578,15 +549,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// </summary>
         /// <param name="sourceLineNumbers">The source line information of the variable.</param>
         /// <param name="name">The variable name.</param>
-        internal void RemoveVariable(SourceLineNumberCollection sourceLineNumbers, string name)
+        internal void RemoveVariable(SourceLineNumber sourceLineNumbers, string name)
         {
-            if (this.variables.Contains(name))
+            if (!this.variables.Remove(name))
             {
-                this.variables.Remove(name);
-            }
-            else
-            {
-                throw new WixException(WixErrors.CannotReundefineVariable(sourceLineNumbers, name));
+                this.OnMessage(WixErrors.CannotReundefineVariable(sourceLineNumbers, name));
             }
         }
     }

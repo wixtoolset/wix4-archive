@@ -16,8 +16,8 @@
 
   <ItemGroup>
     <SchemaDocument Include="..\libs\dutil\xsd\thmutil.xsd" />
-    <SchemaDocument Include="..\tools\wix\Xsd\wix.xsd" />
-    <SchemaDocument Include="..\tools\wix\Xsd\wixloc.xsd" />
+    <SchemaDocument Include="..\libs\WixToolset.Data\Xsd\wix.xsd" />
+    <SchemaDocument Include="..\libs\WixToolset.Data\Xsd\wixloc.xsd" />
     <SchemaDocument Include="..\ext\BalExtension\wixext\Xsd\bal.xsd" />
     <SchemaDocument Include="..\ext\ComPlusExtension\wixext\xsd\complus.xsd" />
     <SchemaDocument Include="..\ext\DependencyExtension\wixext\Xsd\Dependency.xsd" />

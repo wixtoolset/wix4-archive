@@ -14,7 +14,7 @@ using namespace System::Text;
 using namespace System::Collections::Generic;
 using namespace Xunit;
 
-namespace CfgTests
+namespace DutilTests
 {
     public ref class StrUtil
     {
@@ -62,6 +62,28 @@ namespace CfgTests
             TestTrimAnsi("    \t\t\t    ", "");
         }
 
+        [Fact]
+        void StrUtilConvertTest()
+        {
+            char a[] = { 'a', 'b', 'C', 'd', '\0', '\0' };
+
+            TestStrAllocStringAnsi(a, 5, L"abCd");
+            TestStrAllocStringAnsi(a, 4, L"abCd");
+            TestStrAllocStringAnsi(a, 3, L"abC");
+            TestStrAllocStringAnsi(a, 2, L"ab");
+            TestStrAllocStringAnsi(a, 1, L"a");
+            TestStrAllocStringAnsi(a, 0, L"abCd");
+
+            wchar_t b[] = { L'a', L'b', L'C', L'd', L'\0', L'\0' };
+
+            TestStrAnsiAllocString(b, 5, "abCd");
+            TestStrAnsiAllocString(b, 4, "abCd");
+            TestStrAnsiAllocString(b, 3, "abC");
+            TestStrAnsiAllocString(b, 2, "ab");
+            TestStrAnsiAllocString(b, 1, "a");
+            TestStrAnsiAllocString(b, 0, "abCd");
+        }
+
     private:
         void TestTrim(LPCWSTR wzInput, LPCWSTR wzExpectedResult)
         {
@@ -93,6 +115,42 @@ namespace CfgTests
             {
                 hr = E_FAIL;
                 ExitOnFailure3(hr, "Trimmed string \"%hs\", expected result \"%hs\", actual result \"%ls\"", szInput, szExpectedResult, sczOutput);
+            }
+
+        LExit:
+            ReleaseStr(sczOutput);
+        }
+
+        void TestStrAllocStringAnsi(LPCSTR szSource, DWORD cchSource, LPCWSTR wzExpectedResult)
+        {
+            HRESULT hr = S_OK;
+            LPWSTR sczOutput = NULL;
+
+            hr = StrAllocStringAnsi(&sczOutput, szSource, cchSource, CP_UTF8);
+            ExitOnFailure1(hr, "Failed to call StrAllocStringAnsi on string: \"%hs\"", szSource);
+
+            if (0 != wcscmp(sczOutput, wzExpectedResult))
+            {
+                hr = E_FAIL;
+                ExitOnFailure2(hr, "String doesn't match, expected result \"%ls\", actual result \"%ls\"", wzExpectedResult, sczOutput);
+            }
+
+        LExit:
+            ReleaseStr(sczOutput);
+        }
+
+        void TestStrAnsiAllocString(LPWSTR wzSource, DWORD cchSource, LPCSTR szExpectedResult)
+        {
+            HRESULT hr = S_OK;
+            LPSTR sczOutput = NULL;
+
+            hr = StrAnsiAllocString(&sczOutput, wzSource, cchSource, CP_UTF8);
+            ExitOnFailure1(hr, "Failed to call StrAllocStringAnsi on string: \"%ls\"", wzSource);
+
+            if (0 != strcmp(sczOutput, szExpectedResult))
+            {
+                hr = E_FAIL;
+                ExitOnFailure2(hr, "String doesn't match, expected result \"%hs\", actual result \"%hs\"", szExpectedResult, sczOutput);
             }
 
         LExit:

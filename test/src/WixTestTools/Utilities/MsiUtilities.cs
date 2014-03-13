@@ -11,7 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Deployment.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller;
 using System.Xml;
 using System.Diagnostics;
 

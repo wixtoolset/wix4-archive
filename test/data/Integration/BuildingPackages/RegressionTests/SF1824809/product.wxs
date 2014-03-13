@@ -10,7 +10,7 @@
   This product is for testing purposes.
 -->
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
 
   <Product Id="{D99595A9-B9C3-4464-BE7E-C03968848560}" Name="WiX Test Product" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{1A646C99-D2CD-450f-ABBF-18F9AD36EC4C}">
     <Package Description="This package is used for testing purposes" Manufacturer="Microsoft" InstallerVersion="200" />

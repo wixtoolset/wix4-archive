@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:lux="http://schemas.microsoft.com/wix/2009/Lux">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:lux="http://wixtoolset.org/schemas/v4/2009/Lux">
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">

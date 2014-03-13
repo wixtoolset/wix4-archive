@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
     <Bundle Name="Various" Version="1.0.0.0" UpgradeCode="B6E3E73E-A337-4FC2-846E-8B2695B5F1EE" IconSourceFile="Setup.ico" Compressed="yes">
         <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
             <Payload Name='BootstrapperCore.config' SourceFile='$(var.TestBA.TargetDir)\TestBA.BootstrapperCore.config' />

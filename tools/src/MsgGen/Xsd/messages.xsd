@@ -95,8 +95,9 @@
     </xs:simpleType>
 
     <xs:simpleType name="MessageLevelType">
-        <xs:annotation><xs:documentation>The message level for this message which corresponds to the Microsoft.Tools.WindowsInstallerXml.MessageLevel enumeration.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>The message level for this message which corresponds to the WixToolset.MessageLevel enumeration.</xs:documentation></xs:annotation>
         <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="Verbose"/>
             <xs:enumeration value="Information"/>
             <xs:enumeration value="Warning"/>
             <xs:enumeration value="Error"/>

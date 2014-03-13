@@ -8,7 +8,7 @@
 // <summary>Defines a Frost object</summary>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost.Core
+namespace WixToolset.Test.Frost.Core
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost.Core
     using System.Reflection;
     using System.IO;
 
-    using Microsoft.Tools.WindowsInstallerXml.Test.Frost;
+    using WixToolset.Test.Frost;
 
     /// <summary>
     /// Fake Burn engine. Allows for control of actions to take and values to return from 

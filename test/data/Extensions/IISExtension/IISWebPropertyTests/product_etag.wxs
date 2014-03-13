@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Id="ADB4951E-E43B-4f52-BCC7-EE5704D39FF5" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{5D723308-6305-4b9c-AF7C-92AA5334A37B}">
     <Package Description="Test for: Etag Property" Comments="Test for: Etag Property" InstallerVersion="200" Compressed="yes" />
 

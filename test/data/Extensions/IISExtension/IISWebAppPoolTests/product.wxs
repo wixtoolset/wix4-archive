@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Product Id="27610C70-7E02-41da-8E9D-3DBF9E9228F1" Name="TestAppPoolProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{566663C7-4432-4e0f-8B0B-26C0D2BB26D2}">
     <Package Description="Test AppPool Product" Comments="Test AppPool Product" InstallerVersion="200" Compressed="yes" />
 

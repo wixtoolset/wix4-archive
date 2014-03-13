@@ -17,8 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 
-[assembly: AssemblyTitle("Windows Installer XML Console Interface")]
+[assembly: AssemblyTitle("WiX Console Interface")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCulture("")]
-[assembly: CLSCompliant(true)]
 [assembly: ComVisible(false)]

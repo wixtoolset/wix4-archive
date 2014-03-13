@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using Microsoft.Deployment.WindowsInstaller;
-using Microsoft.Deployment.WindowsInstaller.Package;
+using WixToolset.Dtf.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller.Package;
 
-namespace Microsoft.Deployment.Samples.DDiff
+namespace WixToolset.Dtf.Samples.DDiff
 {
 	public class MspDiffEngine : MsiDiffEngine
 	{

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<WixLocalization Culture="he-il" Codepage="1255" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+<WixLocalization Culture="he-il" Codepage="1255" xmlns="http://wixtoolset.org/schemas/v4/wxl">
     <String Id="WixUIBack" Overridable="yes">ה&amp;קודם</String>
     <String Id="WixUINext" Overridable="yes">ה&amp;בא</String>
     <String Id="WixUICancel" Overridable="yes">ביטול</String>

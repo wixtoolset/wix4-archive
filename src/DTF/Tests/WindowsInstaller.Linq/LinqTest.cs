@@ -14,10 +14,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Deployment.WindowsInstaller;
-using Microsoft.Deployment.WindowsInstaller.Linq;
+using WixToolset.Dtf.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller.Linq;
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     [TestClass]
     public class LinqTest

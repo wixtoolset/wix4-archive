@@ -8,7 +8,7 @@
 // <summary>Defines a Frost application.</summary>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost
+namespace WixToolset.Test.Frost
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost
     using System.Threading;
     using System.Runtime.InteropServices;
 
-    using Microsoft.Tools.WindowsInstallerXml.Test.Frost.Core;
+    using WixToolset.Test.Frost.Core;
 
     public class Program
     {

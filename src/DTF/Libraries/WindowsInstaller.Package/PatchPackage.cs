@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller.Package
+namespace WixToolset.Dtf.WindowsInstaller.Package
 {
     using System;
     using System.IO;

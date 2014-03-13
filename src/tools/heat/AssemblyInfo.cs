@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-// Assembly information for the Windows Installer XML Toolset Harvester application.
+// Assembly information for the WiX Toolset Harvester application.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

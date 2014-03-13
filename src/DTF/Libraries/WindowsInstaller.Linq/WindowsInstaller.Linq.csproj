@@ -12,8 +12,8 @@
     <ProjectGuid>{CD7A37D8-9D8C-41BD-B78F-DB5E0C299D2E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Deployment.WindowsInstaller.Linq</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.WindowsInstaller.Linq</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.WindowsInstaller.Linq</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.WindowsInstaller.Linq</AssemblyName>
     <CreateDocumentationFile>true</CreateDocumentationFile>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>

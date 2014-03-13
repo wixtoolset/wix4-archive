@@ -7,10 +7,10 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-    The messages for the Windows Installer XML Toolset COM+ Extension.
+    The messages for the WiX Toolset COM+ Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="ComPlusErrors" ContainerName="ComPlusErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="ComPlusErrors" ContainerName="ComPlusErrorEventArgs" BaseContainerName="MessageEventArgs">
       <Message Id="IllegalAttributeWithoutComponent" Number="6000">
         <Instance>
           The {0}/@{1} attribute cannot be specified unless the element has a component as an ancestor. A {0} that does not have a component ancestor is not installed.
@@ -74,11 +74,11 @@
         </Instance>
       </Message>
     </Class>
-    <Class Name="ComPlusWarnings" ContainerName="ComPlusWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Class Name="ComPlusWarnings" ContainerName="ComPlusWarningEventArgs" BaseContainerName="MessageEventArgs">
       <Message Id="MissingComponents" Number="6007">
         <Instance>The ComPlusAssembly element has a Type attribute with a value of 'native', but the element does not contain any ComPlusComponent elements. All components contained in a native assembly must be listed, or they will not be correctly removed during uninstall.</Instance>
       </Message>
     </Class>
-    <Class Name="ComPlusVerboses" ContainerName="ComPlusVerboseEventArgs" BaseContainerName="WixVerboseEventArgs">
+    <Class Name="ComPlusVerboses" ContainerName="ComPlusVerboseEventArgs" BaseContainerName="MessageEventArgs">
     </Class>
 </Messages>

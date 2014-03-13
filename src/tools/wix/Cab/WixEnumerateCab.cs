@@ -11,12 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Cab
+namespace WixToolset.Cab
 {
     using System;
     using System.Collections;
     using System.Runtime.InteropServices;
-    using Microsoft.Tools.WindowsInstallerXml.Cab.Interop;
+    using WixToolset.Cab.Interop;
     using Handle = System.Int32;
 
     /// <summary>

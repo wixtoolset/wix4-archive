@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Collections;
@@ -20,13 +20,14 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Globalization;
     using System.Text;
     using System.Text.RegularExpressions;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
 
     /// <summary>
     /// WiX variable resolver.
     /// </summary>
     public sealed class WixVariableResolver
     {
-        private bool encounteredError;
         private Localizer localizer;
         private Hashtable wixVariables;
 
@@ -36,20 +37,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
         public WixVariableResolver()
         {
             this.wixVariables = new Hashtable();
-        }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
-
-        /// <summary>
-        /// Gets whether an error was encountered while resolving variables.
-        /// </summary>
-        /// <value>Whether an error was encountered while resolving variables.</value>
-        public bool EncounteredError
-        {
-            get { return this.encounteredError; }
         }
 
         /// <summary>
@@ -75,7 +62,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
             else
             {
-                this.OnMessage(WixErrors.WixVariableCollision(null, name));
+                Messaging.Instance.OnMessage(WixErrors.WixVariableCollision(null, name));
             }
         }
 
@@ -91,7 +78,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
             else if (!wixVariableRow.Overridable) // collision
             {
-                this.OnMessage(WixErrors.WixVariableCollision(wixVariableRow.SourceLineNumbers, wixVariableRow.Id));
+                Messaging.Instance.OnMessage(WixErrors.WixVariableCollision(wixVariableRow.SourceLineNumbers, wixVariableRow.Id));
             }
         }
 
@@ -102,7 +89,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="value">The value to resolve.</param>
         /// <param name="localizationOnly">true to only resolve localization variables; false otherwise.</param>
         /// <returns>The resolved value.</returns>
-        public string ResolveVariables(SourceLineNumberCollection sourceLineNumbers, string value, bool localizationOnly)
+        public string ResolveVariables(SourceLineNumber sourceLineNumbers, string value, bool localizationOnly)
         {
             bool isDefault = false;
             bool delayedResolve = false;
@@ -118,7 +105,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="localizationOnly">true to only resolve localization variables; false otherwise.</param>
         /// <param name="isDefault">true if the resolved value was the default.</param>
         /// <returns>The resolved value.</returns>
-        public string ResolveVariables(SourceLineNumberCollection sourceLineNumbers, string value, bool localizationOnly, ref bool isDefault)
+        public string ResolveVariables(SourceLineNumber sourceLineNumbers, string value, bool localizationOnly, ref bool isDefault)
         {
             bool delayedResolve = false;
 
@@ -135,7 +122,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="isDefault">true if the resolved value was the default.</param>
         /// <param name="delayedResolve">true if the value has variables that cannot yet be resolved.</param>
         /// <returns>The resolved value.</returns>
-        public string ResolveVariables(SourceLineNumberCollection sourceLineNumbers, string value, bool localizationOnly, ref bool isDefault, ref bool delayedResolve)
+        public string ResolveVariables(SourceLineNumber sourceLineNumbers, string value, bool localizationOnly, ref bool isDefault, ref bool delayedResolve)
         {
             return this.ResolveVariables(sourceLineNumbers, value, localizationOnly, true, ref isDefault, ref delayedResolve);
         }
@@ -150,7 +137,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="isDefault">true if the resolved value was the default.</param>
         /// <param name="delayedResolve">true if the value has variables that cannot yet be resolved.</param>
         /// <returns>The resolved value.</returns>
-        public string ResolveVariables(SourceLineNumberCollection sourceLineNumbers, string value, bool localizationOnly, bool errorOnUnknown, ref bool isDefault, ref bool delayedResolve)
+        public string ResolveVariables(SourceLineNumber sourceLineNumbers, string value, bool localizationOnly, bool errorOnUnknown, ref bool isDefault, ref bool delayedResolve)
         {
             MatchCollection matches = Common.WixVariableRegex.Matches(value);
 
@@ -178,7 +165,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                         // localization variables to not support inline default values
                         if ("loc" == variableNamespace)
                         {
-                            this.OnMessage(WixErrors.IllegalInlineLocVariable(sourceLineNumbers, variableId, variableDefaultValue));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalInlineLocVariable(sourceLineNumbers, variableId, variableDefaultValue));
                         }
                     }
 
@@ -208,7 +195,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             // warn about deprecated syntax of $(loc.var)
                             if ('$' == sb[matches[i].Index])
                             {
-                                this.OnMessage(WixWarnings.DeprecatedLocalizationVariablePrefix(sourceLineNumbers, variableId));
+                                Messaging.Instance.OnMessage(WixWarnings.DeprecatedLocalizationVariablePrefix(sourceLineNumbers, variableId));
                             }
 
                             if (null != this.localizer)
@@ -221,7 +208,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             // illegal syntax of $(wix.var)
                             if ('$' == sb[matches[i].Index])
                             {
-                                this.OnMessage(WixErrors.IllegalWixVariablePrefix(sourceLineNumbers, variableId));
+                                Messaging.Instance.OnMessage(WixErrors.IllegalWixVariablePrefix(sourceLineNumbers, variableId));
                             }
                             else
                             {
@@ -254,11 +241,11 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             }
                             else if ("loc" == variableNamespace && errorOnUnknown) // unresolved loc variable
                             {
-                                this.OnMessage(WixErrors.LocalizationVariableUnknown(sourceLineNumbers, variableId));
+                                Messaging.Instance.OnMessage(WixErrors.LocalizationVariableUnknown(sourceLineNumbers, variableId));
                             }
                             else if (!localizationOnly && "wix" == variableNamespace && errorOnUnknown) // unresolved wix variable
                             {
-                                this.OnMessage(WixErrors.WixVariableUnknown(sourceLineNumbers, variableId));
+                                Messaging.Instance.OnMessage(WixErrors.WixVariableUnknown(sourceLineNumbers, variableId));
                             }
                         }
                     }
@@ -279,7 +266,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <returns>The resolved value.</returns>
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "sourceLineNumbers")]
         [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "This string is not round tripped, and not used for any security decisions")]
-        public static string ResolveDelayedVariables(SourceLineNumberCollection sourceLineNumbers, string value, IDictionary<string, string> resolutionData)
+        public static string ResolveDelayedVariables(SourceLineNumber sourceLineNumbers, string value, IDictionary<string, string> resolutionData)
         {
             MatchCollection matches = Common.WixVariableRegex.Matches(value);
 
@@ -347,33 +334,6 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
 
             return value;
-        }
-
-        /// <summary>
-        /// Sends a message to the message delegate if there is one.
-        /// </summary>
-        /// <param name="mea">Message event arguments.</param>
-        private void OnMessage(MessageEventArgs e)
-        {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != errorEventArgs)
-            {
-                this.encounteredError = true;
-            }
-
-            if (null != this.Message)
-            {
-                this.Message(this, e);
-                if (MessageLevel.Error == e.Level)
-                {
-                    this.encounteredError = true;
-                }
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
         }
     }
 }

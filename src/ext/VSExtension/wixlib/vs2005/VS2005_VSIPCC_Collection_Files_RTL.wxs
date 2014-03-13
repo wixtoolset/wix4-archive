@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment Id="VS2005_Namespace">
     <DirectoryRef Id="VSIPCC">
       <Component Id="VSIPCC_Reg" Guid="96F72137-191F-4120-A2FA-9DA8F6C2C993" KeyPath="yes">

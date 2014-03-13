@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     using System;
     using System.IO;
@@ -15,8 +15,8 @@ namespace Microsoft.Deployment.Test
     using System.Globalization;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Deployment.WindowsInstaller;
-    using View = Microsoft.Deployment.WindowsInstaller.View;
+    using WixToolset.Dtf.WindowsInstaller;
+    using View = WixToolset.Dtf.WindowsInstaller.View;
 
     [TestClass]
     public class WindowsInstallerTransactions

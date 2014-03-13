@@ -5,61 +5,26 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Main entry point for library tool.
-// </summary>
 //-------------------------------------------------------------------------------------------------
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+
+namespace WixToolset.Tools
 {
     using System;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using System.Diagnostics;
-    using System.Globalization;
+    using System.Collections.Generic;
     using System.IO;
-    using System.Reflection;
+    using System.Linq;
     using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Xml;
-    using System.Xml.Schema;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// Main entry point for library tool.
     /// </summary>
     public sealed class Lit
     {
-        private StringCollection bindPaths;
-        private BinderFileManager binderFileManager;
-        private bool bindFiles;
-        private StringCollection inputFiles;
-        private StringCollection invalidArgs;
-        private string outputFile;
-        private bool showLogo;
-        private bool showHelp;
-        private bool showPedanticMessages;
-        private bool suppressSchema;
-        private bool suppressVersionCheck;
-        private ConsoleMessageHandler messageHandler;
-        private StringCollection extensionList;
-        private StringCollection localizationFiles;
-        private StringCollection sourcePaths;
-
-        /// <summary>
-        /// Instantiate a new Lit class.
-        /// </summary>
-        private Lit()
-        {
-            this.bindPaths = new StringCollection();
-            this.inputFiles = new StringCollection();
-            this.invalidArgs = new StringCollection();
-            this.extensionList = new StringCollection();
-            this.showLogo = true;
-            this.messageHandler = new ConsoleMessageHandler("LIT", "lit.exe");
-            this.extensionList = new StringCollection();
-            this.localizationFiles = new StringCollection();
-            this.sourcePaths = new StringCollection();
-        }
+        LitCommandLine commandLine;
+        private IEnumerable<IExtensionData> extensionData;
+        private IEnumerable<IBinderFileManager> fileManagers;
 
         /// <summary>
         /// The main entry point for the application.
@@ -70,368 +35,235 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("LIT", "lit.exe").Display += Lit.DisplayMessage;
+
             Lit lit = new Lit();
-            return lit.Run(args);
+            return lit.Execute(args);
         }
 
         /// <summary>
-        /// Main running method for the application.
+        /// Handler for display message events.
         /// </summary>
-        /// <param name="args">Commandline arguments to the application.</param>
-        /// <returns>Returns the application error code.</returns>
-        private int Run(string[] args)
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        private static void DisplayMessage(object sender, DisplayEventArgs e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
+        private int Execute(string[] args)
         {
             try
             {
-                Librarian librarian = null;
-                SectionCollection sections = new SectionCollection();
-
-                // parse the command line
-                this.ParseCommandLine(args);
-
-                // exit if there was an error parsing the command line (otherwise the logo appears after error messages)
-                if (this.messageHandler.EncounteredError)
+                string[] unparsed = this.ParseCommandLineAndLoadExtensions(args);
+                if (!Messaging.Instance.EncounteredError)
                 {
-                    return this.messageHandler.LastErrorNumber;
-                }
-
-                if (0 == this.inputFiles.Count)
-                {
-                    this.showHelp = true;
-                }
-                else if (null == this.outputFile)
-                {
-                    if (1 < this.inputFiles.Count)
+                    if (this.commandLine.ShowLogo)
                     {
-                        throw new WixException(WixErrors.MustSpecifyOutputWithMoreThanOneInput());
+                        AppCommon.DisplayToolHeader();
                     }
 
-                    this.outputFile = Path.ChangeExtension(Path.GetFileName(this.inputFiles[0]), ".wixlib");
-                }
-
-                if (this.showLogo)
-                {
-                    AppCommon.DisplayToolHeader();
-                }
-
-                if (this.showHelp)
-                {
-                    Console.WriteLine(LitStrings.HelpMessage);
-                    AppCommon.DisplayToolFooter();
-                    return this.messageHandler.LastErrorNumber;
-                }
-
-                foreach (string parameter in this.invalidArgs)
-                {
-                    this.messageHandler.Display(this, WixWarnings.UnsupportedCommandLineArgument(parameter));
-                }
-                this.invalidArgs = null;
-
-                // create the librarian
-                librarian = new Librarian();
-                librarian.Message += new MessageEventHandler(this.messageHandler.Display);
-                librarian.ShowPedanticMessages = this.showPedanticMessages;
-
-                if (null != this.bindPaths)
-                {
-                    foreach (string bindPath in this.bindPaths)
+                    if (this.commandLine.ShowHelp)
                     {
-                        if (-1 == bindPath.IndexOf('='))
-                        {
-                            this.sourcePaths.Add(bindPath);
-                        }
-                    }
-                }
-
-                // load any extensions
-                foreach (string extension in this.extensionList)
-                {
-                    WixExtension wixExtension = WixExtension.Load(extension);
-
-                    librarian.AddExtension(wixExtension);
-
-                    // load the binder file manager regardless of whether it will be used in case there is a collision
-                    if (null != wixExtension.BinderFileManager)
-                    {
-                        if (null != this.binderFileManager)
-                        {
-                            throw new ArgumentException(String.Format(CultureInfo.CurrentUICulture, LitStrings.EXP_CannotLoadBinderFileManager, wixExtension.BinderFileManager.GetType().ToString(), this.binderFileManager.GetType().ToString()), "ext");
-                        }
-
-                        this.binderFileManager = wixExtension.BinderFileManager;
-                    }
-                }
-
-                // add the sections to the librarian
-                foreach (string inputFile in this.inputFiles)
-                {
-                    string inputFileFullPath = Path.GetFullPath(inputFile);
-                    string dirName = Path.GetDirectoryName(inputFileFullPath);
-
-                    if (!this.sourcePaths.Contains(dirName))
-                    {
-                        this.sourcePaths.Add(dirName);
-                    }
-
-                    // try loading as an object file
-                    try
-                    {
-                        Intermediate intermediate = Intermediate.Load(inputFileFullPath, librarian.TableDefinitions, this.suppressVersionCheck, this.suppressSchema);
-                        sections.AddRange(intermediate.Sections);
-                        continue; // next file
-                    }
-                    catch (WixNotIntermediateException)
-                    {
-                        // try another format
-                    }
-
-                    // try loading as a library file
-                    Library loadedLibrary = Library.Load(inputFileFullPath, librarian.TableDefinitions, this.suppressVersionCheck, this.suppressSchema);
-                    sections.AddRange(loadedLibrary.Sections);
-                }
-
-                // and now for the fun part
-                Library library = librarian.Combine(sections);
-
-                // save the library output if an error did not occur
-                if (null != library)
-                {
-                    if (this.bindFiles)
-                    {
-                        // if the binder file manager has not been loaded yet use the built-in binder extension
-                        if (null == this.binderFileManager)
-                        {
-                            this.binderFileManager = new BinderFileManager();
-                        }
-
-
-                        if (null != this.bindPaths)
-                        {
-                            foreach (string bindPath in this.bindPaths)
-                            {
-                                if (-1 == bindPath.IndexOf('='))
-                                {
-                                    this.binderFileManager.BindPaths.Add(bindPath);
-                                }
-                                else
-                                {
-                                    string[] namedPair = bindPath.Split('=');
-
-                                    //It is ok to have duplicate key.
-                                    this.binderFileManager.NamedBindPaths.Add(namedPair[0], namedPair[1]);
-                                }
-                            }
-                        }
-
-                        foreach (string sourcePath in this.sourcePaths)
-                        {
-                            this.binderFileManager.SourcePaths.Add(sourcePath);
-                        }
+                        Console.WriteLine(LitStrings.HelpMessage);
+                        AppCommon.DisplayToolFooter();
                     }
                     else
                     {
-                        this.binderFileManager = null;
+                        foreach (string arg in unparsed)
+                        {
+                            Messaging.Instance.OnMessage(WixWarnings.UnsupportedCommandLineArgument(arg));
+                        }
+
+                        this.Run();
                     }
-
-                    foreach (string localizationFile in this.localizationFiles)
-                    {
-                        Localization localization = Localization.Load(localizationFile, librarian.TableDefinitions, this.suppressSchema);
-
-                        library.AddLocalization(localization);
-                    }
-
-                    WixVariableResolver wixVariableResolver = new WixVariableResolver();
-
-                    wixVariableResolver.Message += new MessageEventHandler(this.messageHandler.Display);
-
-                    library.Save(this.outputFile, this.binderFileManager, wixVariableResolver);
                 }
             }
             catch (WixException we)
             {
-                this.messageHandler.Display(this, we.Error);
+                Messaging.Instance.OnMessage(we.Error);
             }
             catch (Exception e)
             {
-                this.messageHandler.Display(this, WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                Messaging.Instance.OnMessage(WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;
                 }
             }
 
-            return this.messageHandler.LastErrorNumber;
+            return Messaging.Instance.LastErrorNumber;
         }
 
         /// <summary>
-        /// Parse the commandline arguments.
+        /// Parse command line and load all the extensions.
         /// </summary>
-        /// <param name="args">Commandline arguments.</param>
-        private void ParseCommandLine(string[] args)
+        /// <param name="args">Command line arguments to be parsed.</param>
+        private string[] ParseCommandLineAndLoadExtensions(string[] args)
         {
-            for (int i = 0; i < args.Length; ++i)
+            this.commandLine = new LitCommandLine();
+            string[] unparsed = this.commandLine.Parse(args);
+            if (Messaging.Instance.EncounteredError)
             {
-                string arg = args[i];
-                if (null == arg || 0 == arg.Length) // skip blank arguments
+                return unparsed;
+            }
+
+            // Load extensions.
+            ExtensionManager extensionManager = new ExtensionManager();
+            foreach (string extension in this.commandLine.Extensions)
+            {
+                extensionManager.Load(extension);
+            }
+
+            // Extension data command line processing.
+            this.extensionData = extensionManager.Create<IExtensionData>();
+            foreach (IExtensionCommandLine dce in this.extensionData.Where(e => e is IExtensionCommandLine).Cast<IExtensionCommandLine>())
+            {
+                dce.MessageHandler = Messaging.Instance;
+                unparsed = dce.ParseCommandLine(unparsed);
+            }
+
+            // File resolution command line processing.
+            this.fileManagers = extensionManager.Create<IBinderFileManager>();
+            if (this.fileManagers.Any())
+            {
+                foreach (IExtensionCommandLine fme in this.fileManagers.Where(e => e is IExtensionCommandLine).Cast<IExtensionCommandLine>())
                 {
-                    continue;
+                    fme.MessageHandler = Messaging.Instance;
+                    unparsed = fme.ParseCommandLine(unparsed);
+                }
+            }
+            else // there are no extension file managers so add the default one.
+            {
+                List<IBinderFileManager> defaultBinderFileManager = new List<IBinderFileManager>();
+                defaultBinderFileManager.Add(new BinderFileManager());
+
+                this.fileManagers = defaultBinderFileManager;
+            }
+
+            return commandLine.ParsePostExtensions(unparsed);
+        }
+
+        /// <summary>
+        /// Create the library.
+        /// </summary>
+        private void Run()
+        {
+            // Create the librarian and add the extension data.
+            Librarian librarian = new Librarian();
+
+            foreach (IExtensionData data in this.extensionData)
+            {
+                librarian.AddExtensionData(data);
+            }
+
+            // Add the sections to the librarian
+            List<Section> sections = new List<Section>();
+            foreach (string file in this.commandLine.Files)
+            {
+                string inputFile = Path.GetFullPath(file);
+                FileFormat format = FileStructure.GuessFileFormatFromExtension(Path.GetExtension(inputFile));
+                bool retry;
+                do
+                {
+                    retry = false;
+
+                    try
+                    {
+                        switch (format)
+                        {
+                            case FileFormat.Wixobj:
+                                Intermediate intermediate = Intermediate.Load(inputFile, librarian.TableDefinitions, this.commandLine.SuppressVersionCheck);
+                                sections.AddRange(intermediate.Sections);
+                                break;
+
+                            default:
+                                Library loadedLibrary = Library.Load(inputFile, librarian.TableDefinitions, this.commandLine.SuppressVersionCheck);
+                                sections.AddRange(loadedLibrary.Sections);
+                                break;
+                        }
+                    }
+                    catch (WixUnexpectedFileFormatException e)
+                    {
+                        format = e.FileFormat;
+                        retry = (FileFormat.Wixobj == format || FileFormat.Wixlib == format); // .wixobj and .wixout are supported by lit.
+                        if (!retry)
+                        {
+                            Messaging.Instance.OnMessage(e.Error);
+                        }
+                    }
+                } while (retry);
+            }
+
+            // Stop processing if any errors were found loading object files.
+            if (Messaging.Instance.EncounteredError)
+            {
+                return;
+            }
+
+            // and now for the fun part
+            Library library = librarian.Combine(sections);
+
+            // Add any localization files and save the library output if an error did not occur
+            if (null != library)
+            {
+                foreach (string localizationFile in this.commandLine.LocalizationFiles)
+                {
+                    Localization localization = Localizer.ParseLocalizationFile(localizationFile, librarian.TableDefinitions);
+                    if (null != localization)
+                    {
+                        library.AddLocalization(localization);
+                    }
                 }
 
-                if ('-' == arg[0] || '/' == arg[0])
+                // If there was an error adding localization files, then bail.
+                if (Messaging.Instance.EncounteredError)
                 {
-                    string parameter = arg.Substring(1);
+                    return;
+                }
 
-                    if ("b" == parameter)
-                    {
-                        string bindPath = CommandLine.GetDirectory(parameter, this.messageHandler, args, ++i, true);
+                LibraryBinaryFileResolver resolver = null;
+                if (this.commandLine.BindFiles)
+                {
+                    resolver = new LibraryBinaryFileResolver();
+                    resolver.FileManagers = this.fileManagers;
+                    resolver.VariableResolver = new WixVariableResolver();
 
-                        if (String.IsNullOrEmpty(bindPath))
-                        {
-                            return;
-                        }
+                    BinderFileManagerCore core = new BinderFileManagerCore();
+                    core.AddBindPaths(this.commandLine.BindPaths, BindStage.Normal);
 
-                        this.bindPaths.Add(bindPath);
-                    }
-                    else if ("bf" == parameter)
+                    foreach (IBinderFileManager fileManager in resolver.FileManagers)
                     {
-                        this.bindFiles = true;
-                    }
-                    else if ("ext" == parameter)
-                    {
-                        if (!CommandLine.IsValidArg(args, ++i))
-                        {
-                            this.messageHandler.Display(this, WixErrors.TypeSpecificationForExtensionRequired("-ext"));
-                            return;
-                        }
-
-                        this.extensionList.Add(args[i]);
-                    }
-                    else if ("loc" == parameter)
-                    {
-                        string locFile = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(locFile))
-                        {
-                            return;
-                        }
-
-                        this.localizationFiles.Add(locFile);
-                    }
-                    else if ("nologo" == parameter)
-                    {
-                        this.showLogo = false;
-                    }
-                    else if ("o" == parameter || "out" == parameter)
-                    {
-                        this.outputFile = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
-
-                        if (String.IsNullOrEmpty(this.outputFile))
-                        {
-                            return;
-                        }
-                    }
-                    else if ("pedantic" == parameter)
-                    {
-                        this.showPedanticMessages = true;
-                    }
-                    else if ("ss" == parameter)
-                    {
-                        this.suppressSchema = true;
-                    }
-                    else if ("sv" == parameter)
-                    {
-                        this.suppressVersionCheck = true;
-                    }
-                    else if ("swall" == parameter)
-                    {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
-                        this.messageHandler.SuppressAllWarnings = true;
-                    }
-                    else if (parameter.StartsWith("sw", StringComparison.Ordinal))
-                    {
-                        string paramArg = parameter.Substring(2);
-                        try
-                        {
-                            if (0 == paramArg.Length)
-                            {
-                                this.messageHandler.SuppressAllWarnings = true;
-                            }
-                            else
-                            {
-                                int suppressWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
-                                if (0 >= suppressWarning)
-                                {
-                                    this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
-                                }
-
-                                this.messageHandler.SuppressWarningMessage(suppressWarning);
-                            }
-                        }
-                        catch (FormatException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
-                        }
-                        catch (OverflowException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
-                        }
-                    }
-                    else if ("wxall" == parameter)
-                    {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("wxall", "wx"));
-                        this.messageHandler.WarningAsError = true;
-                    }
-                    else if (parameter.StartsWith("wx", StringComparison.Ordinal))
-                    {
-                        string paramArg = parameter.Substring(2);
-                        try
-                        {
-                            if (0 == paramArg.Length)
-                            {
-                                this.messageHandler.WarningAsError = true;
-                            }
-                            else
-                            {
-                                int elevateWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
-                                if (0 >= elevateWarning)
-                                {
-                                    this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
-                                }
-
-                                this.messageHandler.ElevateWarningMessage(elevateWarning);
-                            }
-                        }
-                        catch (FormatException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
-                        }
-                        catch (OverflowException)
-                        {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
-                        }
-                    }
-                    else if ("v" == parameter)
-                    {
-                        this.messageHandler.ShowVerboseMessages = true;
-                    }
-                    else if ("?" == parameter || "help" == parameter)
-                    {
-                        this.showHelp = true;
-                        return;
-                    }
-                    else
-                    {
-                        this.invalidArgs.Add(parameter);
+                        fileManager.Core = core;
                     }
                 }
-                else if ('@' == arg[0])
+
+                library.Save(this.commandLine.OutputFile, resolver);
+            }
+        }
+
+        /// <summary>
+        /// File resolution mechanism to create binary library.
+        /// </summary>
+        private class LibraryBinaryFileResolver : ILibraryBinaryFileResolver
+        {
+            public IEnumerable<IBinderFileManager> FileManagers { get; set; }
+
+            public WixVariableResolver VariableResolver { get; set; }
+
+            public string Resolve(SourceLineNumber sourceLineNumber, string table, string path)
+            {
+                string resolvedPath = this.VariableResolver.ResolveVariables(sourceLineNumber, path, false);
+                foreach (IBinderFileManager fileManager in this.FileManagers)
                 {
-                    this.ParseCommandLine(CommandLineResponseFile.Parse(arg.Substring(1)));
+                    string finalPath = fileManager.ResolveFile(resolvedPath, table, sourceLineNumber, BindStage.Normal);
+                    if (!String.IsNullOrEmpty(finalPath))
+                    {
+                        return finalPath;
+                    }
                 }
-                else
-                {
-                    this.inputFiles.AddRange(AppCommon.GetFiles(arg, "Source"));
-                }
+
+                return null;
             }
         }
     }

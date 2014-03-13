@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Msi.Interop
+namespace WixToolset.Msi.Interop
 {
     using System;
     using System.Text;

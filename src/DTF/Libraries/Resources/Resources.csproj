@@ -11,8 +11,8 @@
   <PropertyGroup>
     <ProjectGuid>{44931ECB-8D6F-4C12-A872-64E261B6A98E}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Deployment.Resources</RootNamespace>
-    <AssemblyName>Microsoft.Deployment.Resources</AssemblyName>
+    <RootNamespace>WixToolset.Dtf.Resources</RootNamespace>
+    <AssemblyName>WixToolset.Dtf.Resources</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <CreateDocumentationFile>true</CreateDocumentationFile>
   </PropertyGroup>

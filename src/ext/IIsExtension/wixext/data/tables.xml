@@ -7,9 +7,9 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The table definitions for the Windows Installer XML Toolset Internet Information Services Extension.
+  The table definitions for the WiX Toolset Internet Information Services Extension.
 -->
-<tableDefinitions xmlns="http://schemas.microsoft.com/wix/2006/tables">
+<tableDefinitions xmlns="http://wixtoolset.org/schemas/v4/wi/tables">
     <tableDefinition name="Certificate" createSymbols="yes">
         <columnDefinition name="Certificate" type="string" length="72" primaryKey="yes" modularize="column"
                 keyColumn="1" category="identifier" description="Identifier for the certificate in the package."/>

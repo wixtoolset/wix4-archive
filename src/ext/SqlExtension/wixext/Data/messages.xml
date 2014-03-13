@@ -7,10 +7,10 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-  The messages for the Windows Installer XML Toolset SQL Server Extension.
+  The messages for the WiX Toolset SQL Server Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="SqlErrors" ContainerName="SqlErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="SqlErrors" ContainerName="SqlErrorEventArgs" BaseContainerName="MessageEventArgs">
         <Message Id="IllegalAttributeWithoutComponent" Number="5100">
             <Instance>
                 The {0}/@{1} attribute cannot be specified unless the element has a Component as an ancestor. A {0} that does not have a Component ancestor is not installed.
@@ -41,8 +41,8 @@
             </Instance>
         </Message>
     </Class>
-    <Class Name="SqlWarnings" ContainerName="SqlWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Class Name="SqlWarnings" ContainerName="SqlWarningEventArgs" BaseContainerName="MessageEventArgs">
     </Class>
-    <Class Name="SqlVerboses" ContainerName="SqlVerboseEventArgs" BaseContainerName="WixVerboseEventArgs">
+    <Class Name="SqlVerboses" ContainerName="SqlVerboseEventArgs" BaseContainerName="MessageEventArgs">
     </Class>
 </Messages>

@@ -7,26 +7,38 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset DirectX extension.
+// The decompiler for the WiX Toolset DirectX extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Text;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The Windows Installer XML Toolset DirectX Extension.
+    /// The WiX Toolset DirectX Extension.
     /// </summary>
     public sealed class DirectXDecompiler : DecompilerExtension
     {
         /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return DirectXExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
+        /// <summary>
         /// Called at the beginning of the decompilation of a database.
         /// </summary>
         /// <param name="tables">The collection of all tables.</param>
-        public override void InitializeDecompile(TableCollection tables)
+        public override void Initialize(TableIndexedCollection tables)
         {
             Table propertyTable = tables["Property"];
 

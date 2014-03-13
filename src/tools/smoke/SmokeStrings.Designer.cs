@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools {
+namespace WixToolset.Tools {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Tools.WindowsInstallerXml.Tools.SmokeStrings", typeof(SmokeStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WixToolset.Tools.SmokeStrings", typeof(SmokeStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

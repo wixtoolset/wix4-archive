@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.CodeDom.Compiler;
@@ -22,7 +22,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using WixToolset.Msi;
 
     /// <summary>
     /// Converts a wixout representation of an MSM database into a ComponentGroup the form of WiX source.
@@ -31,25 +33,10 @@ namespace Microsoft.Tools.WindowsInstallerXml
     {
         private TempFileCollection tempFiles;
         private TableDefinitionCollection tableDefinitions;
-        private bool encounteredError;
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler MessageHandler;
 
         public Inscriber()
         {
-            this.tableDefinitions = Installer.GetTableDefinitions();
-        }
-
-        /// <summary>
-        /// Gets whether the inscriber has encountered an error while processing.
-        /// </summary>
-        /// <value>Flag if inscriber encountered an error during processing.</value>
-        public bool EncounteredError
-        {
-            get { return this.encounteredError; }
+            this.tableDefinitions = new TableDefinitionCollection(WindowsInstallerStandard.GetTableDefinitions());
         }
 
         /// <summary>
@@ -139,7 +126,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 File.Delete(outputFile);
             }
             File.Move(tempFile, outputFile);
-            Microsoft.Tools.WindowsInstallerXml.Cab.Interop.NativeMethods.ResetAcls(new string[] { outputFile }, 1);
+            WixToolset.Cab.Interop.NativeMethods.ResetAcls(new string[] { outputFile }, 1);
 
             return true;
         }
@@ -180,7 +167,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
                 File.Delete(outputFile);
             }
             File.Move(tempFile, outputFile);
-            Microsoft.Tools.WindowsInstallerXml.Cab.Interop.NativeMethods.ResetAcls(new string[] { outputFile }, 1);
+            WixToolset.Cab.Interop.NativeMethods.ResetAcls(new string[] { outputFile }, 1);
 
             return inscribed;
         }
@@ -381,8 +368,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
                             // If we haven't added this cert to the MsiDigitalCertificate table, set it up to be added
                             if (!certificates.ContainsKey(cert2.Thumbprint))
                             {
-                                // generate a stable identifier                                
-                                string certificateGeneratedId = Common.GenerateIdentifier("cer", true, cert2.Thumbprint);
+                                // generate a stable identifier
+                                string certificateGeneratedId = Common.GenerateIdentifier("cer", cert2.Thumbprint);
 
                                 // Add it to our "add to MsiDigitalCertificate" table dictionary
                                 Row digitalCertificateRow = digitalCertificateTable.CreateRow(null);
@@ -417,13 +404,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
 
                 if (digitalCertificateTable.Rows.Count > 0)
                 {
-                    database.ImportTable(codepage, (IMessageHandler)this, digitalCertificateTable, this.TempFilesLocation, true);
+                    database.ImportTable(codepage, digitalCertificateTable, this.TempFilesLocation, true);
                     shouldCommit = true;
                 }
 
                 if (digitalSignatureTable.Rows.Count > 0)
                 {
-                    database.ImportTable(codepage, (IMessageHandler)this, digitalSignatureTable, this.TempFilesLocation, true);
+                    database.ImportTable(codepage, digitalSignatureTable, this.TempFilesLocation, true);
                     shouldCommit = true;
                 }
 
@@ -470,31 +457,9 @@ namespace Microsoft.Tools.WindowsInstallerXml
             }
         }
 
-        /// <summary>
-        /// Sends a message to the message delegate if there is one.
-        /// </summary>
-        /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs e)
         {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != errorEventArgs)
-            {
-                this.encounteredError = true;
-            }
-
-            if (null != this.MessageHandler)
-            {
-                this.MessageHandler(this, e);
-                if (MessageLevel.Error == e.Level)
-                {
-                    this.encounteredError = true;
-                }
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(e);
         }
     }
 }

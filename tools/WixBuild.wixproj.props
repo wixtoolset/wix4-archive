@@ -9,6 +9,7 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
+    <OriginalOutputPath>$(OutputPath)</OriginalOutputPath>
     <OutputPath Condition=" '$(OutputType)'=='Package' ">$(OutputPath)data\</OutputPath>
     <SignOutput Condition=" '$(OutputType)'=='Bundle' and '$(SignServiceUrl)'!='' ">true</SignOutput>
     <DefineSolutionProperties>false</DefineSolutionProperties>
@@ -18,13 +19,14 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);WixBundleCompressed=$(WixBundleCompressed)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BuildIA64=$(BuildIA64)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BuildSandcastleDocumentation=$(BuildSandcastleDocumentation)</DefineConstants>
     <DefineConstants Condition="$(VS2010Available)">$(DefineConstants);VS2010Available=true</DefineConstants>
     <DefineConstants Condition="$(VS2010SdkAvailable)">$(DefineConstants);VS2010SdkAvailable=true</DefineConstants>
     <DefineConstants Condition="$(VS2012Available)">$(DefineConstants);VS2012Available=true</DefineConstants>
     <DefineConstants Condition="$(VS2012SdkAvailable)">$(DefineConstants);VS2012SdkAvailable=true</DefineConstants>
     <DefineConstants Condition="$(VS2013Available)">$(DefineConstants);VS2013Available=true</DefineConstants>
     <DefineConstants Condition="$(VS2013SdkAvailable)">$(DefineConstants);VS2013SdkAvailable=true</DefineConstants>
-    <DefineConstants Condition="$(BuildSandcastleDocumentation)">$(DefineConstants);BuildSandcastleDocumentation=$(BuildSandcastleDocumentation)</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BindInputPaths Include="$(OutputPath)" />
+    <BindInputPaths Include="$(OriginalOutputPath)" />
     <BindInputPaths Include="$(OutputPath_x86)">
         <BindName>x86</BindName>
     </BindInputPaths>

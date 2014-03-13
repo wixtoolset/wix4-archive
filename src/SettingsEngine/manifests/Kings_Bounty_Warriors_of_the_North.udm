@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Kings_Bounty_Warriors_of_the_North">
+        <Detect>
+            <Arp DisplayName="King&apos;s Bounty: Warriors of the North"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyGamesFolder:\Kings Bounty Warriors of the North"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\$save\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">King&apos;s Bounty: Warriors of the North</DisplayName>
+    </Product>
+</LegacySettings>

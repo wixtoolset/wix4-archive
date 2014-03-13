@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
+namespace WixToolset.VisualStudio.PropertyPages
 {
     using System;
     using System.ComponentModel;
@@ -19,7 +19,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
     using System.Drawing;
     using System.Globalization;
     using System.Windows.Forms;
-    using Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls;
+    using WixToolset.VisualStudio.Controls;
 
     /// <summary>
     /// Property page contents for the Wix Project Build Settings page.

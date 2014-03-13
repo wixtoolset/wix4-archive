@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Bootstrapper
+namespace WixToolset.Bootstrapper
 {
     using System;
     using System.CodeDom.Compiler;
@@ -24,7 +24,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Bootstrapper
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("6480D616-27A0-44D7-905B-81512C29C2FB")]
-    [GeneratedCodeAttribute("Microsoft.Tools.WindowsInstallerXml.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
+    [GeneratedCodeAttribute("WixToolset.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
     public interface IBootstrapperEngine
     {
         void GetPackageCount(

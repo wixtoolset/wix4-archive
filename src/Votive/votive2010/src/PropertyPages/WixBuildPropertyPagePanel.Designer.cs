@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
+namespace WixToolset.VisualStudio.PropertyPages
 {
     partial class WixBuildPropertyPagePanel
     {
@@ -38,7 +38,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WixBuildPropertyPagePanel));
-            Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox generalGroupBox;
+            WixToolset.VisualStudio.Controls.WixGroupBox generalGroupBox;
             this.generalTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.label3 = new System.Windows.Forms.Label();
             this.defineDebugCheckBox = new System.Windows.Forms.CheckBox();
@@ -49,12 +49,12 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
             this.culturesTextBox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.outputTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.outputPathFolderBrowser = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FolderBrowserTextBox();
+            this.outputPathFolderBrowser = new WixToolset.VisualStudio.Controls.FolderBrowserTextBox();
             this.bindFilesCheckBox = new System.Windows.Forms.CheckBox();
             this.leaveTempFilesCheckBox = new System.Windows.Forms.CheckBox();
             this.suppressWixPdbCheckBox = new System.Windows.Forms.CheckBox();
             this.warningsAsErrorsCheckBox = new System.Windows.Forms.CheckBox();
-            this.messagesGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
+            this.messagesGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
             this.messageTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.label5 = new System.Windows.Forms.Label();
             this.verboseOutputCheckBox = new System.Windows.Forms.CheckBox();
@@ -64,9 +64,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
             this.mainTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.defineConstantsExampleLabel = new System.Windows.Forms.Label();
             this.defineConstantsLabel = new System.Windows.Forms.Label();
-            generalGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
+            generalGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
             this.outputPathLabel = new System.Windows.Forms.Label();
-            this.outputGroupBox = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox();
+            this.outputGroupBox = new WixToolset.VisualStudio.Controls.WixGroupBox();
             generalGroupBox.SuspendLayout();
             this.generalTableLayoutPanel.SuspendLayout();
             this.outputGroupBox.SuspendLayout();
@@ -301,7 +301,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox culturesTextBox;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox messagesGroupBox;
+        private WixToolset.VisualStudio.Controls.WixGroupBox messagesGroupBox;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox warningLevelCombo;
         private System.Windows.Forms.CheckBox verboseOutputCheckBox;
@@ -310,7 +310,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
         private System.Windows.Forms.CheckBox bindFilesCheckBox;
         private System.Windows.Forms.CheckBox suppressWixPdbCheckBox;
         private System.Windows.Forms.CheckBox leaveTempFilesCheckBox;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.FolderBrowserTextBox outputPathFolderBrowser;
+        private WixToolset.VisualStudio.Controls.FolderBrowserTextBox outputPathFolderBrowser;
         private System.Windows.Forms.TableLayoutPanel mainTableLayoutPanel;
         private System.Windows.Forms.TableLayoutPanel generalTableLayoutPanel;
         private System.Windows.Forms.TableLayoutPanel messageTableLayoutPanel;
@@ -318,6 +318,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages
         private System.Windows.Forms.Label defineConstantsExampleLabel;
         private System.Windows.Forms.Label defineConstantsLabel;
         private System.Windows.Forms.Label outputPathLabel;
-        private Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox outputGroupBox;
+        private WixToolset.VisualStudio.Controls.WixGroupBox outputGroupBox;
     }
 }

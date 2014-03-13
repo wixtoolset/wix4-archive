@@ -14,7 +14,7 @@ using namespace System::Text;
 using namespace System::Collections::Generic;
 using namespace Xunit;
 
-namespace CfgTests
+namespace DutilTests
 {
     public ref class FileUtil
     {

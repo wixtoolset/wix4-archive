@@ -80,6 +80,7 @@
     <ClCompile Include="logutil.cpp" />
     <ClCompile Include="memutil.cpp" />
     <ClCompile Include="metautil.cpp" />
+    <ClCompile Include="monutil.cpp" />
     <ClCompile Include="osutil.cpp" />
     <ClCompile Include="pathutil.cpp" />
     <ClCompile Include="perfutil.cpp" />
@@ -101,6 +102,7 @@
     <ClCompile Include="svcutil.cpp" />
     <ClCompile Include="thmutil.cpp" />
     <ClCompile Include="timeutil.cpp" />
+    <ClCompile Include="uncutil.cpp" />
     <ClCompile Include="uriutil.cpp" />
     <ClCompile Include="userutil.cpp" />
     <ClCompile Include="wiutil.cpp" />
@@ -132,6 +134,7 @@
     <ClInclude Include="inc\logutil.h" />
     <ClInclude Include="inc\memutil.h" />
     <ClInclude Include="inc\metautil.h" />
+    <ClInclude Include="inc\monutil.h" />
     <ClInclude Include="inc\osutil.h" />
     <ClInclude Include="inc\pathutil.h" />
     <ClInclude Include="inc\perfutil.h" />

@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.MsgGen
+namespace WixBuild.Tools.MsgGen
 {
     using System;
     using System.Collections;

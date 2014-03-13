@@ -301,6 +301,6 @@
     <value>WixInstallerPropertyPagePanel</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.3907.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
+    <value>WixToolset.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.3907.0, Culture=neutral, PublicKeyToken=9f4be179981a58d1</value>
   </data>
 </root>

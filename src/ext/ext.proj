@@ -25,6 +25,7 @@
     <ProjectReference Include="MsmqExtension\msmq.proj" />
     <ProjectReference Include="NetFxExtension\netfx.proj" />
     <ProjectReference Include="PSExtension\ps.proj" />
+    <ProjectReference Include="SettingsEngineExtension\settingsengine.proj" Condition=" Exists('$(SqlCESdkIncludePath)') " />
     <ProjectReference Include="SqlExtension\sql.proj" />
     <ProjectReference Include="TagExtension\tag.proj" />
     <ProjectReference Include="UIExtension\ui.proj" />

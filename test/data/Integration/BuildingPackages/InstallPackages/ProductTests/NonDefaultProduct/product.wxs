@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Product Id="*" Codepage="1252" Name="!@#$%^*()_+-=" Language="1040" Version="255.255.65535.99999" Manufacturer="{}[]\|;:,./?`~  " UpgradeCode="{E186D51B-29BA-426f-881F-1EC3ACDA4282}">
     <Package InstallerVersion="200" />
     <Media Id="1" />

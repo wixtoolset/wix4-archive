@@ -7,25 +7,44 @@
 // </copyright>
 // 
 // <summary>
-// The decompiler for the Windows Installer XML Toolset Firewall Extension.
+// The decompiler for the WiX Toolset Firewall Extension.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections;
     using System.Diagnostics;
     using System.Globalization;
-
-    using Firewall = Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.Firewall;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
+    using Firewall = WixToolset.Extensions.Serialize.Firewall;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The decompiler for the Windows Installer XML Toolset Firewall Extension.
+    /// The decompiler for the WiX Toolset Firewall Extension.
     /// </summary>
     public sealed class FirewallDecompiler : DecompilerExtension
     {
+        /// <summary>
+        /// Creates a decompiler for Firewall Extension.
+        /// </summary>
+        public FirewallDecompiler()
+        {
+            this.TableDefinitions = FirewallExtensionData.GetExtensionTableDefinitions();
+        }
+
+        /// <summary>
+        /// Get the extensions library to be removed.
+        /// </summary>
+        /// <param name="tableDefinitions">Table definitions for library.</param>
+        /// <returns>Library to remove from decompiled output.</returns>
+        public override Library GetLibraryToRemove(TableDefinitionCollection tableDefinitions)
+        {
+            return FirewallExtensionData.GetExtensionLibrary(tableDefinitions);
+        }
+
         /// <summary>
         /// Decompiles an extension table.
         /// </summary>
@@ -144,7 +163,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                 }
                 else
                 {
-                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerCore.PrimaryKeyDelimiter), "Component_", (string)row[6], "Component"));
+                    this.Core.OnMessage(WixWarnings.ExpectedForeignRow(row.SourceLineNumbers, table.Name, row.GetPrimaryKey(DecompilerConstants.PrimaryKeyDelimiter), "Component_", (string)row[6], "Component"));
                 }
             }
         }

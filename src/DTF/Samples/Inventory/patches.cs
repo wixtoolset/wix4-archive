@@ -5,9 +5,9 @@ using System.Data;
 using System.Collections;
 using System.Globalization;
 using System.Windows.Forms;
-using Microsoft.Deployment.WindowsInstaller;
+using WixToolset.Dtf.WindowsInstaller;
 
-namespace Microsoft.Deployment.Samples.Inventory
+namespace WixToolset.Dtf.Samples.Inventory
 {
 	/// <summary>
 	/// Provides inventory data about patches installed on the system.

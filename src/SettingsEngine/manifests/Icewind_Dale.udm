@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Icewind_Dale">
+        <Detect>
+            <Arp DisplayName="Icewind Dale Complete" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: Need to cover icewind.ini in main directory -->
+            <Directory Namespace="MpSave" Location="InstallDir:\mpsave\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Icewind Dale</DisplayName>
+    </Product>
+</LegacySettings>

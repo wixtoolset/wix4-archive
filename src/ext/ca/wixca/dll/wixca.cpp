@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML CustomAction DllMain function.
+//    WiX CustomAction DllMain function.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 #include "precomp.h"

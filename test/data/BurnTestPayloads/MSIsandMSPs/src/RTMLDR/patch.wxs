@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
     <Patch Id="EB761DF7-9EF8-42EC-93D7-D409AB391BA6" AllowRemoval="yes" MinorUpdateTargetRTM="yes" Classification="Update" ClientPatchId="RTMLDR" Codepage="1252" Description="With this patch installed, limited distribution releases (QFEs) can be installed. Removing this patch will remove all installed QFEs." DisplayName="Limited Distribution Release Baseline" Manufacturer="My Company" MoreInfoURL="http://support.MyCompany.com/kb/999999">
 
 		<PatchProperty Company="My Company" Name="Branch" Value="LDRBase" />

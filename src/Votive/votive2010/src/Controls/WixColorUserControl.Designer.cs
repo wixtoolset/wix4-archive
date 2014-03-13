@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
+namespace WixToolset.VisualStudio.Controls
 {
     partial class WixColorUserControl
     {

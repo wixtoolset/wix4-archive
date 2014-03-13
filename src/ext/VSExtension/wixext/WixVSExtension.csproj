@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="WixVSExtension.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -12,14 +12,13 @@
     <ProjectGuid>{B0FD938D-C569-457D-AFF0-25EE5E99386E}</ProjectGuid>
     <AssemblyName>WixVSExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="VSCompiler.cs" />
     <Compile Include="VSDecompiler.cs" />
-    <Compile Include="VSExtension.cs" />
+    <Compile Include="VSExtensionData.cs" />
     <Compile Include="VSHeatExtension.cs" />
     <Compile Include="VSProjectHarvester.cs" />
     <EmbeddedFlattenedResource Include="Data\tables.xml">
@@ -27,30 +26,32 @@
     </EmbeddedFlattenedResource>
     <MsgGenSource Include="Data\messages.xml">
       <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
+      <SubType>Designer</SubType>
     </MsgGenSource>
     <EmbeddedFlattenedResource Include="Xsd\vs.xsd">
       <LogicalName>$(RootNamespace).Xsd.vs.xsd</LogicalName>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\vs.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.VS</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.VS</Namespace>
     </XsdGenSource>
     <EmbeddedResource Include="$(OutputPath)\vs.wixlib">
       <Link>Data\vs.wixlib</Link>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities" />
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\VSExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

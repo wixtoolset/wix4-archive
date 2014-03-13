@@ -7,14 +7,14 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Test
+namespace WixToolset.Dtf.Test
 {
     using System;
     using System.IO;
     using System.Text;
     using System.Collections.Generic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
 
     [TestClass]
     public class CustomActionTest
@@ -55,7 +55,7 @@ namespace Microsoft.Deployment.Test
                 string caDir = @"..\..\..\..\..\build\ship\x86\";
                 #endif
                 caDir = Path.GetFullPath(caDir);
-                string caFile = "Microsoft.Deployment.Samples.ManagedCA.dll";
+                string caFile = "WixToolset.Dtf.Samples.ManagedCA.dll";
                 string caProduct = "CustomActionTest.msi";
 
                 this.CreateCustomActionProduct(caProduct, caDir + caFile, customActions, false);

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="WixDifxAppExtension.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -12,14 +12,13 @@
     <ProjectGuid>{2256EFD7-E678-4485-818D-986D590068BE}</ProjectGuid>
     <AssemblyName>WixDifxAppExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DifxAppCompiler.cs" />
     <Compile Include="DifxAppDecompiler.cs" />
-    <Compile Include="DifxAppExtension.cs" />
+    <Compile Include="DifxAppExtensionData.cs" />
     <EmbeddedFlattenedResource Include="Data\tables.xml">
       <LogicalName>$(RootNamespace).Data.tables.xml</LogicalName>
     </EmbeddedFlattenedResource>
@@ -29,15 +28,17 @@
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\difxapp.xsd">
       <SubType>Designer</SubType>
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.DifxApp</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.DifxApp</Namespace>
     </XsdGenSource>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\DIFxAppExtension.wixproj">
       <Properties>Platform=x86</Properties>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -47,6 +48,5 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

@@ -289,7 +289,7 @@
     <value>iceValidationGroupBox</value>
   </data>
   <data name="&gt;&gt;iceValidationGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="&gt;&gt;iceValidationGroupBox.Parent" xml:space="preserve">
     <value>$this</value>
@@ -469,7 +469,7 @@
     <value>additionalParamsGroupBox</value>
   </data>
   <data name="&gt;&gt;additionalParamsGroupBox.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>WixToolset.VisualStudio.Controls.WixGroupBox, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="&gt;&gt;additionalParamsGroupBox.Parent" xml:space="preserve">
     <value>$this</value>
@@ -490,6 +490,6 @@
     <value>WixToolsSettingsPropertyPagePanel</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Microsoft.Tools.WindowsInstallerXml.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>WixToolset.VisualStudio.PropertyPages.WixPropertyPagePanel, votive2008, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

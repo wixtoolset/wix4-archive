@@ -9,7 +9,7 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.VisualStudio</RootNamespace>
+    <RootNamespace>WixToolset.VisualStudio</RootNamespace>
     <ProjectBasePath>vssdk</ProjectBasePath>
   </PropertyGroup>
 

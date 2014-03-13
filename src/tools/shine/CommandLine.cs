@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Windows Installer Xml toolset scanner command line parser.
+// WiX toolset scanner command line parser.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Shine
+namespace WixToolset.Shine
 {
     using System;
     using System.Collections.Generic;

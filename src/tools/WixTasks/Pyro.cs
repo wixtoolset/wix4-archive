@@ -7,18 +7,18 @@
 // </copyright>
 // 
 // <summary>
-// Build task to execute the patch builder of the Windows Installer Xml toolset.
+// Build task to execute the patch builder of the WiX toolset.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Build.Tasks
+namespace WixToolset.Build.Tasks
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using Microsoft.Tools.WindowsInstallerXml.Build.Tasks;
+    using WixToolset.Build.Tasks;
 
     /// <summary>
     /// An MSBuild task to run the WiX patch builder.

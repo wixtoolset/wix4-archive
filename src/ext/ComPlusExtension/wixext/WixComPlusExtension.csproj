@@ -12,14 +12,13 @@
     <ProjectGuid>{1497B777-330B-4CFE-927A-22850CD24D64}</ProjectGuid>
     <AssemblyName>WixComPlusExtension</AssemblyName>
     <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.Tools.WindowsInstallerXml.Extensions</RootNamespace>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="ComPlusCompiler.cs" />
     <Compile Include="ComPlusDecompiler.cs" />
-    <Compile Include="ComPlusExtension.cs" />
+    <Compile Include="ComPlusExtensionData.cs" />
     <MsgGenSource Include="Data\messages.xml">
       <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
     </MsgGenSource>
@@ -30,8 +29,8 @@
       <LogicalName>$(RootNamespace).Xsd.complus.xsd</LogicalName>
     </EmbeddedFlattenedResource>
     <XsdGenSource Include="Xsd\complus.xsd">
-      <CommonNamespace>Microsoft.Tools.WindowsInstallerXml.Serialize</CommonNamespace>
-      <Namespace>Microsoft.Tools.WindowsInstallerXml.Extensions.Serialize.ComPlus</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.ComPlus</Namespace>
     </XsdGenSource>
     <None Include="Xsd\complus.xsd">
       <Link>complus.xsd</Link>
@@ -41,15 +40,16 @@
       <Link>Data\complus.wixlib</Link>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <ProjectReference Include="..\..\..\tools\Wix\Wix.csproj" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
     <ProjectReference Include="..\wixlib\ComPlusExtension.wixproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

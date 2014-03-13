@@ -8,17 +8,17 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
+          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
-    targetNamespace="http://schemas.microsoft.com/wix/2009/Lux"
-              xmlns="http://schemas.microsoft.com/wix/2009/Lux">
+    targetNamespace="http://wixtoolset.org/schemas/v4/lux"
+              xmlns="http://wixtoolset.org/schemas/v4/lux">
   <xs:annotation>
     <xs:documentation>
-      The source code schema for the Windows Installer XML Toolset Lux Extension.
+      The source code schema for the WiX Toolset Lux Extension.
     </xs:documentation>
   </xs:annotation>
 
-  <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+  <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
     <xs:element name="Mutation">
         <xs:annotation>
@@ -30,7 +30,7 @@
               the Mutation element with UnitTest elements as children.            
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
@@ -61,8 +61,8 @@
                 name/value-pair properties can all be tested declaratively.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2009/Lux" ref="Mutation" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/lux" ref="Mutation" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
@@ -208,8 +208,8 @@
         Identifies a unit test to be linked into a project.
       </xs:documentation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>

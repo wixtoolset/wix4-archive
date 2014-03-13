@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML CustomAction utility library logging functions
+//    WiX CustomAction utility library logging functions
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

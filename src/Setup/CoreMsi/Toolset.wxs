@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <ComponentGroup Id="ToolsetComponents" Directory="BinFolder">
             <Component>
@@ -86,6 +86,14 @@
             </Component>
 
             <Component>
+                <File Source="WixToolset.Data.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Extensibility.dll" />
+            </Component>
+
+            <Component>
                 <File Source="wix.dll" />
                 <Environment Id="WIXenv" Name="WIX" Action="set" System="yes" Value="[INSTALLFOLDER]" />
             </Component>
@@ -103,23 +111,23 @@
             </Component>
 
             <Component>
-                <File Source="Microsoft.Deployment.Compression.dll" />
+                <File Source="WixToolset.Dtf.Compression.dll" />
             </Component>
 
             <Component>
-                <File Source="Microsoft.Deployment.Compression.Cab.dll" />
+                <File Source="WixToolset.Dtf.Compression.Cab.dll" />
             </Component>
 
             <Component>
-                <File Source="Microsoft.Deployment.Resources.dll" />
+                <File Source="WixToolset.Dtf.Resources.dll" />
             </Component>
 
             <Component>
-                <File Source="Microsoft.Deployment.WindowsInstaller.dll" />
+                <File Source="WixToolset.Dtf.WindowsInstaller.dll" />
             </Component>
 
             <Component>
-                <File Source="Microsoft.Deployment.WindowsInstaller.Package.dll" />
+                <File Source="WixToolset.Dtf.WindowsInstaller.Package.dll" />
             </Component>
 
             <Component>

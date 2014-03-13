@@ -32,4 +32,4 @@ using System.Security.Permissions;
 [assembly: AllowPartiallyTrustedCallers]
 
 
-[assembly: SuppressMessage("Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes", Scope = "member", Target = "Microsoft.Deployment.Resources.ResourceCollection.#System.Collections.Generic.ICollection`1<Microsoft.Deployment.Resources.Resource>.IsReadOnly")]
+[assembly: SuppressMessage("Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes", Scope = "member", Target = "WixToolset.Dtf.Resources.ResourceCollection.#System.Collections.Generic.ICollection`1<WixToolset.Dtf.Resources.Resource>.IsReadOnly")]

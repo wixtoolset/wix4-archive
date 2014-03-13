@@ -8,9 +8,9 @@
   </copyright>
 -->
 <!--
-  The messages for the Windows Installer XML Toolset Bal Extension.
+  The messages for the WiX Toolset Bal Extension.
 -->
-<Messages Namespace="Microsoft.Tools.WindowsInstallerXml.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
-    <Class Name="BalErrors" ContainerName="BalErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="BalErrors" ContainerName="BalErrorEventArgs" BaseContainerName="MessageEventArgs">
     </Class>
 </Messages>

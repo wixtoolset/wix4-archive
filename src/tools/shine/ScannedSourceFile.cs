@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-// Source file found by the Windows Installer Xml toolset scanner.
+// Source file found by the WiX toolset scanner.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     public class ScannedSourceFile
     {

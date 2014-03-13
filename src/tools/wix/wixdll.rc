@@ -15,5 +15,5 @@
 #define VER_LANG_NEUTRAL
 #define VER_ORIGINAL_FILENAME  "wix.dll"
 #define VER_INTERNAL_NAME      "wix.dll"
-#define VER_FILE_DESCRIPTION   "Windows Installer XML"
+#define VER_FILE_DESCRIPTION   "WiX"
 #include "wix.rc"

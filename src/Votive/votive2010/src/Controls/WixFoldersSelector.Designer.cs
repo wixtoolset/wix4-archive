@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
+namespace WixToolset.VisualStudio.Controls
 {
     partial class FoldersSelector
     {
@@ -100,7 +100,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
             // upButton
             // 
             resources.ApplyResources(this.upButton, "upButton");
-            this.upButton.Image = global::Microsoft.Tools.WindowsInstallerXml.VisualStudio.WixStrings.UpArrow;
+            this.upButton.Image = global::WixToolset.VisualStudio.WixStrings.UpArrow;
             this.upButton.MinimumSize = new System.Drawing.Size(26, 25);
             this.upButton.Name = "upButton";
             this.upButton.UseVisualStyleBackColor = true;
@@ -110,7 +110,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
             // deleteButton
             // 
             resources.ApplyResources(this.deleteButton, "deleteButton");
-            this.deleteButton.Image = global::Microsoft.Tools.WindowsInstallerXml.VisualStudio.WixStrings.Delete;
+            this.deleteButton.Image = global::WixToolset.VisualStudio.WixStrings.Delete;
             this.deleteButton.MinimumSize = new System.Drawing.Size(26, 25);
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.UseVisualStyleBackColor = true;
@@ -120,7 +120,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
             // downButton
             // 
             resources.ApplyResources(this.downButton, "downButton");
-            this.downButton.Image = global::Microsoft.Tools.WindowsInstallerXml.VisualStudio.WixStrings.DownArrow;
+            this.downButton.Image = global::WixToolset.VisualStudio.WixStrings.DownArrow;
             this.downButton.MinimumSize = new System.Drawing.Size(26, 25);
             this.downButton.Name = "downButton";
             this.downButton.UseVisualStyleBackColor = true;

@@ -38,8 +38,12 @@ HRESULT DAPI TimeSystemDateTime(
     __in const SYSTEMTIME *pst,
     __in BOOL fGMT
     );
+HRESULT DAPI TimeSystemToDateTimeString(
+    __deref_out_z LPWSTR* ppwz,
+    __in const SYSTEMTIME *pst,
+    __in LCID locale
+    );
 
 #ifdef __cplusplus
 }
 #endif
-

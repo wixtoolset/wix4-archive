@@ -11,12 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Xml;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Utility class for Burn RelatedBundle information.

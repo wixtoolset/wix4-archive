@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.CodeDom.Compiler;
@@ -22,7 +22,8 @@ namespace Microsoft.Tools.WindowsInstallerXml
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Converts a wixout representation of an MSM database into a ComponentGroup the form of WiX source.
@@ -53,18 +54,13 @@ namespace Microsoft.Tools.WindowsInstallerXml
         }
 
         /// <summary>
-        /// Event for messages.
-        /// </summary>
-        public event MessageEventHandler Message;
-
-        /// <summary>
         /// Creates a new melter object.
         /// </summary>
         /// <param name="decompiler">The decompiler to use during the melting process.</param>
         /// <param name="id">The Id to use for the ComponentGroup, DirectoryRef, and WixVariables. If null, defaults to the Module's Id</param>
         public Melter(Decompiler decompiler, string id)
         {
-            this.core = new MelterCore(this.Message);
+            this.core = new MelterCore();
 
             this.componentGroup = new Wix.ComponentGroup();
             this.fragment = new Wix.Fragment();
@@ -308,7 +304,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         private static bool StartsWithStandardDirectoryId(string directoryId, out string standardDirectoryId)
         {
             standardDirectoryId = null;
-            foreach (string id in Util.StandardDirectories.Keys)
+            foreach (string id in WindowsInstallerStandard.GetStandardDirectories())
             {
                 if (directoryId.StartsWith(id, StringComparison.Ordinal))
                 {

@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller.Linq.Entities
+namespace WixToolset.Dtf.WindowsInstaller.Linq.Entities
 {
     // Silence warnings about style and doc-comments
     #if !CODE_ANALYSIS

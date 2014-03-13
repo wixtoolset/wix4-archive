@@ -7,7 +7,7 @@
 // </copyright>
 //
 // <summary>
-//    Windows Installer XML CustomAction utility library wrappers meant to wrap an MSI view as
+//    WiX CustomAction utility library wrappers meant to wrap an MSI view as
 //    opened by an immediate custom action and transmit it to a deferred custom action
 // </summary>
 //-------------------------------------------------------------------------------------------------

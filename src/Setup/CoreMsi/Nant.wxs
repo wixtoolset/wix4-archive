@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <Feature Id="Feature_NAnt" Title="NAnt Support" Level="1">
             <ComponentGroupRef Id="NAntTaskComponents" />
@@ -17,7 +17,7 @@
     <Fragment>
         <ComponentGroup Id="NAntTaskComponents" Directory="BinFolder">
             <Component>
-                <File Source="Microsoft.Tools.WindowsInstallerXml.NAntTasks.dll" />
+                <File Source="WixToolset.NAntTasks.dll" />
             </Component>
         </ComponentGroup>
     </Fragment>

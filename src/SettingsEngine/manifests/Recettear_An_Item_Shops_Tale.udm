@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Recettear_An_Item_Shops_Tale">
+        <Detect>
+            <Arp DisplayName="Recettear: An Item Shop&apos;s Tale" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <File Name="Save.dat" Location="InstallDir:\save.dat" />
+            <File Name="_Save.dat" Location="InstallDir:\_save.dat" />
+        </Data>
+
+        <DisplayName LCID="1033">Recettear: An Item Shop&apos;s Tale</DisplayName>
+    </Product>
+</LegacySettings>

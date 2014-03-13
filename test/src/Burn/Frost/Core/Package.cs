@@ -8,7 +8,7 @@
 // <summary>Defines a Burn Package state.</summary>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Test.Frost.Core
+namespace WixToolset.Test.Frost.Core
 {
     using System;
     using System.Xml;

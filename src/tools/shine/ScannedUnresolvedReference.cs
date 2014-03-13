@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// Reference found by the Windows Installer Xml toolset scanner.
+// Reference found by the WiX toolset scanner.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
 

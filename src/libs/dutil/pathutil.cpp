@@ -948,3 +948,68 @@ LExit:
 
     return hr;
 }
+
+DAPI_(HRESULT) PathGetHierarchyArray(
+    __in_z LPCWSTR wzPath,
+    __deref_inout_ecount_opt(*pcStrArray) LPWSTR **prgsczPathArray,
+    __inout LPUINT pcPathArray
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczPathCopy = NULL;
+    LPWSTR sczNewPathCopy = NULL;
+    DWORD cArraySpacesNeeded = 0;
+
+    for (int i = 0; i < lstrlenW(wzPath); ++i)
+    {
+        if (wzPath[i] == L'\\')
+        {
+            ++cArraySpacesNeeded;
+        }
+    }
+    if (wzPath[lstrlenW(wzPath) - 1] != L'\\')
+    {
+        ++cArraySpacesNeeded;
+    }
+
+    // If it's a UNC path, cut off the first three paths, 2 because it starts with a double backslash, and another because the first ("\\servername\") isn't a path.
+    if (wzPath[0] == L'\\' && wzPath[1] == L'\\')
+    {
+        cArraySpacesNeeded -= 3;
+    }
+
+    Assert(cArraySpacesNeeded >= 1);
+
+    hr = MemEnsureArraySize(reinterpret_cast<void **>(prgsczPathArray), cArraySpacesNeeded, sizeof(LPWSTR), 0);
+    ExitOnFailure1(hr, "Failed to allocate array of size %u for parent directories", cArraySpacesNeeded);
+    *pcPathArray = cArraySpacesNeeded;
+
+    hr = StrAllocString(&sczPathCopy, wzPath, 0);
+    ExitOnFailure(hr, "Failed to allocate copy of original path");
+
+    for (DWORD i = 0; i < cArraySpacesNeeded; ++i)
+    {
+        hr = StrAllocString((*prgsczPathArray) + cArraySpacesNeeded - 1 - i, sczPathCopy, 0);
+        ExitOnFailure(hr, "Failed to copy path");
+
+        // If it ends in a backslash, it's a directory path, so cut off everything the last backslash before we get the directory portion of the path
+        if (wzPath[lstrlenW(sczPathCopy) - 1] == L'\\')
+        {
+            sczPathCopy[lstrlenW(sczPathCopy) - 1] = L'\0';
+        }
+        
+        hr = PathGetDirectory(sczPathCopy, &sczNewPathCopy);
+        ExitOnFailure(hr, "Failed to get directory portion of path");
+
+        ReleaseStr(sczPathCopy);
+        sczPathCopy = sczNewPathCopy;
+        sczNewPathCopy = NULL;
+    }
+
+    hr = S_OK;
+
+LExit:
+    ReleaseStr(sczPathCopy);
+
+    return hr;
+}

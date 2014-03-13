@@ -16,7 +16,7 @@
 <?define TestName = Test?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Bundle Name="~$(var.TestName) - Bundle H" Version="$(var.Version)" UpgradeCode="CED69C8B-05C3-4680-901E-DC255EF1D5CC">
     <Log Prefix="$(var.TestName)_BundleH"/>
     <Variable Name="TestName" Value="$(var.TestName)" />

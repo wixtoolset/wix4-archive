@@ -8,7 +8,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML CustomAction utility library for Wow64 API-related functionality.
+//    WiX CustomAction utility library for Wow64 API-related functionality.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

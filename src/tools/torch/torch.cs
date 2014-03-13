@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+namespace WixToolset.Tools
 {
     using System;
     using System.CodeDom.Compiler;
@@ -22,7 +22,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
     using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Xml;
-    using Microsoft.Tools.WindowsInstallerXml.Msi;
+    using WixToolset.Data;
+    using WixToolset.Msi;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// The torch transform builder application.
@@ -34,7 +36,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         private StringCollection extensionList;
         private StringCollection inputFiles;
         private StringCollection invalidArgs;
-        private ConsoleMessageHandler messageHandler;
         private string outputFile;
         private bool preserveUnchangedRows;
         private bool showHelp;
@@ -58,7 +59,6 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
             this.extensionList = new StringCollection();
             this.inputFiles = new StringCollection();
             this.invalidArgs = new StringCollection();
-            this.messageHandler = new ConsoleMessageHandler("TRCH", "torch.exe");
             this.showLogo = true;
             this.tidy = true;
             this.validationFlags = 0;
@@ -72,8 +72,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("TRCH", "torch.exe").Display += Torch.DisplayMessage;
+
             Torch torch = new Torch();
             return torch.Run(args);
+        }
+
+        /// <summary>
+        /// Handler for display message events.
+        /// </summary>
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        private static void DisplayMessage(object sender, DisplayEventArgs e)
+        {
+            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -83,7 +95,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// <returns>Returns the application error code.</returns>
         private int Run(string[] args)
         {
-            Microsoft.Tools.WindowsInstallerXml.Binder binder = null;
+            WixToolset.Binder binder = null;
             Differ differ = null;
             Unbinder unbinder = null;
 
@@ -97,7 +109,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 // validate the inputs
                 if (this.xmlInputs && this.adminImage)
                 {
-                    this.messageHandler.Display(this, WixErrors.IllegalCommandlineArgumentCombination("a", "xi"));
+                    Messaging.Instance.OnMessage(WixErrors.IllegalCommandlineArgumentCombination("a", "xi"));
                     this.showHelp = true;
                 }
 
@@ -130,7 +142,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         {
                             if (String.Equals(Path.GetExtension(inputFile), validExtension, StringComparison.OrdinalIgnoreCase))
                             {
-                                this.messageHandler.Display(this, WixErrors.WrongFileExtensionForNumberOfInputs(Path.GetExtension(inputFile), inputFile));
+                                Messaging.Instance.OnMessage(WixErrors.WrongFileExtensionForNumberOfInputs(Path.GetExtension(inputFile), inputFile));
                                 missingInput = true;
                                 break;
                             }
@@ -138,7 +150,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
 
                         if (!missingInput)
                         {
-                            this.messageHandler.Display(this, WixErrors.UnexpectedFileExtension(inputFile, String.Join(", ", expectedSingleInputExtensions)));
+                            Messaging.Instance.OnMessage(WixErrors.UnexpectedFileExtension(inputFile, String.Join(", ", expectedSingleInputExtensions)));
                         }
                     }
                 }
@@ -175,7 +187,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
 
                         if (!hasValidExtension)
                         {
-                            this.messageHandler.Display(this, WixErrors.UnexpectedFileExtension(inputFile, String.Join(", ", expectedExtensions)));
+                            Messaging.Instance.OnMessage(WixErrors.UnexpectedFileExtension(inputFile, String.Join(", ", expectedExtensions)));
                         }
                     }
                 }
@@ -185,9 +197,9 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 }
 
                 // exit if there was an error parsing the command line or with a file extension (otherwise the logo appears after error messages)
-                if (this.messageHandler.EncounteredError)
+                if (Messaging.Instance.EncounteredError)
                 {
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 if (null == this.outputFile)
@@ -204,31 +216,40 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 {
                     Console.WriteLine(TorchStrings.HelpMessage);
                     AppCommon.DisplayToolFooter();
-                    return this.messageHandler.LastErrorNumber;
+                    return Messaging.Instance.LastErrorNumber;
                 }
 
                 foreach (string parameter in this.invalidArgs)
                 {
-                    this.messageHandler.Display(this, WixWarnings.UnsupportedCommandLineArgument(parameter));
+                    Messaging.Instance.OnMessage(WixWarnings.UnsupportedCommandLineArgument(parameter));
                 }
                 this.invalidArgs = null;
 
-                binder = new Microsoft.Tools.WindowsInstallerXml.Binder();
+                binder = new WixToolset.Binder();
                 differ = new Differ();
                 unbinder = new Unbinder();
 
-                // load any extensions
+                // load all extensions
+                ExtensionManager extensionManager = new ExtensionManager();
                 foreach (string extension in this.extensionList)
                 {
-                    WixExtension wixExtension = WixExtension.Load(extension);
-                    unbinder.AddExtension(wixExtension);
-                    binder.AddExtension(wixExtension);
-                    differ.AddExtension(wixExtension);
+                    extensionManager.Load(extension);
                 }
 
-                binder.Message += new MessageEventHandler(this.messageHandler.Display);
-                differ.Message += new MessageEventHandler(this.messageHandler.Display);
-                unbinder.Message += new MessageEventHandler(this.messageHandler.Display);
+                foreach (IUnbinderExtension extension in extensionManager.Create<IUnbinderExtension>())
+                {
+                    unbinder.AddExtension(extension);
+                }
+
+                foreach (IBinderExtension extension in extensionManager.Create<IBinderExtension>())
+                {
+                    binder.AddExtension(extension);
+                }
+
+                foreach (IInspectorExtension extension in extensionManager.Create<IInspectorExtension>())
+                {
+                    differ.AddExtension(extension);
+                }
 
                 binder.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
                 unbinder.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
@@ -249,11 +270,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 Output transform;
                 if (1 == this.inputFiles.Count)
                 {
-                    transform = Output.Load(this.inputFiles[0], false, false);
+                    transform = Output.Load(this.inputFiles[0], false);
                     if (OutputType.Transform != transform.Type)
                     {
-                        this.messageHandler.Display(this, WixErrors.InvalidWixTransform(this.inputFiles[0]));
-                        return this.messageHandler.LastErrorNumber;
+                        Messaging.Instance.OnMessage(WixErrors.InvalidWixTransform(this.inputFiles[0]));
+                        return Messaging.Instance.LastErrorNumber;
                     }
                 }
                 else // 2 inputs
@@ -266,23 +287,23 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         // load the target database
                         if (String.Equals(Path.GetExtension(inputFiles[0]), wixPdbExtension, StringComparison.OrdinalIgnoreCase))
                         {
-                            Pdb targetPdb = Pdb.Load(this.inputFiles[0], false, false);
+                            Pdb targetPdb = Pdb.Load(this.inputFiles[0], false);
                             targetOutput = targetPdb.Output;
                         }
                         else
                         {
-                            targetOutput = Output.Load(this.inputFiles[0], false, false);
+                            targetOutput = Output.Load(this.inputFiles[0], false);
                         }
 
                         // load the updated database
                         if (String.Equals(Path.GetExtension(inputFiles[1]), wixPdbExtension, StringComparison.OrdinalIgnoreCase))
                         {
-                            Pdb updatedPdb = Pdb.Load(this.inputFiles[1], false, false);
+                            Pdb updatedPdb = Pdb.Load(this.inputFiles[1], false);
                             updatedOutput = updatedPdb.Output;
                         }
                         else
                         {
-                            updatedOutput = Output.Load(this.inputFiles[1], false, false);
+                            updatedOutput = Output.Load(this.inputFiles[1], false);
                         }
 
                         this.xmlOutput = true;
@@ -312,7 +333,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     // With xml inputs, many funtions of the binder have not been performed on the inputs (ie. file sequencing). This results in bad IDT files which cannot be put in a transform.
                     if (this.xmlOutput)
                     {
-                        transform.Save(this.outputFile, null, null, tempFileCollection.BasePath);
+                        transform.Save(this.outputFile);
                     }
                     else
                     {
@@ -328,14 +349,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     this.tidy = false;
                 }
 
-                this.messageHandler.Display(this, we.Error);
+                Messaging.Instance.OnMessage(we.Error);
             }
             catch (Exception e)
             {
                 // make sure the files stay around for debugging
                 this.tidy = false;
 
-                this.messageHandler.Display(this, WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
+                Messaging.Instance.OnMessage(WixErrors.UnexpectedException(e.Message, e.GetType().ToString(), e.StackTrace));
                 if (e is NullReferenceException || e is SEHException)
                 {
                     throw;
@@ -397,7 +418,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 }
             }
 
-            return this.messageHandler.LastErrorNumber;
+            return Messaging.Instance.LastErrorNumber;
         }
 
         /// <summary>
@@ -425,7 +446,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("ax" == parameter)
                     {
-                        this.exportBasePath = CommandLine.GetDirectory(parameter, this.messageHandler, args, ++i);
+                        this.exportBasePath = CommandLine.GetDirectory(parameter, args, ++i);
 
                         if (String.IsNullOrEmpty(this.exportBasePath))
                         {
@@ -438,7 +459,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     {
                         if (!CommandLine.IsValidArg(args, ++i))
                         {
-                            this.messageHandler.Display(this, WixErrors.TypeSpecificationForExtensionRequired("-ext"));
+                            Messaging.Instance.OnMessage(WixErrors.TypeSpecificationForExtensionRequired("-ext"));
                             return;
                         }
 
@@ -454,7 +475,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("o" == parameter || "out" == parameter)
                     {
-                        this.outputFile = CommandLine.GetFile(parameter, this.messageHandler, args, ++i);
+                        this.outputFile = CommandLine.GetFile(parameter, args, ++i);
 
                         if (String.IsNullOrEmpty(this.outputFile))
                         {
@@ -471,8 +492,8 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("swall" == parameter)
                     {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
-                        this.messageHandler.SuppressAllWarnings = true;
+                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
+                        Messaging.Instance.SuppressAllWarnings = true;
                     }
                     else if (parameter.StartsWith("sw", StringComparison.Ordinal))
                     {
@@ -481,32 +502,27 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         {
                             if (0 == paramArg.Length)
                             {
-                                this.messageHandler.SuppressAllWarnings = true;
+                                Messaging.Instance.SuppressAllWarnings = true;
                             }
                             else
                             {
                                 int suppressWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
                                 if (0 >= suppressWarning)
                                 {
-                                    this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
+                                    Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                                 }
 
-                                this.messageHandler.SuppressWarningMessage(suppressWarning);
+                                Messaging.Instance.SuppressWarningMessage(suppressWarning);
                             }
                         }
                         catch (FormatException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                         }
                         catch (OverflowException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalSuppressWarningId(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                         }
-                    }
-                    else if ("wxall" == parameter)
-                    {
-                        this.messageHandler.Display(this, WixWarnings.DeprecatedCommandLineSwitch("wxall", "wx"));
-                        this.messageHandler.WarningAsError = true;
                     }
                     else if (parameter.StartsWith("wx", StringComparison.Ordinal))
                     {
@@ -515,26 +531,26 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         {
                             if (0 == paramArg.Length)
                             {
-                                this.messageHandler.WarningAsError = true;
+                                Messaging.Instance.WarningsAsError = true;
                             }
                             else
                             {
                                 int elevateWarning = Convert.ToInt32(paramArg, CultureInfo.InvariantCulture.NumberFormat);
                                 if (0 >= elevateWarning)
                                 {
-                                    this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
+                                    Messaging.Instance.OnMessage(WixErrors.IllegalWarningIdAsError(paramArg));
                                 }
 
-                                this.messageHandler.ElevateWarningMessage(elevateWarning);
+                                Messaging.Instance.ElevateWarningMessage(elevateWarning);
                             }
                         }
                         catch (FormatException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalWarningIdAsError(paramArg));
                         }
                         catch (OverflowException)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalWarningIdAsError(paramArg));
+                            Messaging.Instance.OnMessage(WixErrors.IllegalWarningIdAsError(paramArg));
                         }
                     }
                     else if ("serr" == parameter)
@@ -542,13 +558,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                         // arguments consistent with msitran.exe
                         if (!CommandLine.IsValidArg(args, ++i))
                         {
-                            this.messageHandler.Display(this, WixErrors.ExpectedArgument(parameter));
+                            Messaging.Instance.OnMessage(WixErrors.ExpectedArgument(parameter));
                             return;
                         }
 
                         if (usingTransformType)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalValidationArguments());
+                            Messaging.Instance.OnMessage(WixErrors.IllegalValidationArguments());
                         }
                         else
                         {
@@ -573,7 +589,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                                     this.validationFlags |= TransformFlags.ErrorChangeCodePage;
                                     break;
                                 default:
-                                    this.messageHandler.Display(this, WixErrors.ExpectedArgument(parameter));
+                                    Messaging.Instance.OnMessage(WixErrors.ExpectedArgument(parameter));
                                     break;
                             }
                         }
@@ -582,13 +598,13 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     {
                         if (!CommandLine.IsValidArg(args, ++i))
                         {
-                            this.messageHandler.Display(this, WixErrors.ExpectedArgument(parameter));
+                            Messaging.Instance.OnMessage(WixErrors.ExpectedArgument(parameter));
                             return;
                         }
 
                         if (0 != this.validationFlags)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalValidationArguments());
+                            Messaging.Instance.OnMessage(WixErrors.IllegalValidationArguments());
                         }
                         else
                         {
@@ -604,7 +620,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                                     this.validationFlags = TransformFlags.PatchTransformDefault;
                                     break;
                                 default:
-                                    this.messageHandler.Display(this, WixErrors.ExpectedArgument(parameter));
+                                    Messaging.Instance.OnMessage(WixErrors.ExpectedArgument(parameter));
                                     return;
                             }
 
@@ -613,20 +629,20 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                     }
                     else if ("v" == parameter)
                     {
-                        this.messageHandler.ShowVerboseMessages = true;
+                        Messaging.Instance.ShowVerboseMessages = true;
                     }
                     else if ("val" == parameter)
                     {
                         // arguments consistent with msitran.exe
                         if (!CommandLine.IsValidArg(args, ++i))
                         {
-                            this.messageHandler.Display(this, WixErrors.ExpectedArgument(parameter));
+                            Messaging.Instance.OnMessage(WixErrors.ExpectedArgument(parameter));
                             return;
                         }
 
                         if (usingTransformType)
                         {
-                            this.messageHandler.Display(this, WixErrors.IllegalValidationArguments());
+                            Messaging.Instance.OnMessage(WixErrors.IllegalValidationArguments());
                         }
                         else
                         {
@@ -666,14 +682,14 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                                     this.validationFlags |= TransformFlags.ValidateNewGreaterBaseVersion;
                                     break;
                                 default:
-                                    this.messageHandler.Display(this, WixErrors.ExpectedArgument(parameter));
+                                    Messaging.Instance.OnMessage(WixErrors.ExpectedArgument(parameter));
                                     break;
                             }
                         }
                     }
                     else if ("x" == parameter)
                     {
-                        this.exportBasePath = CommandLine.GetDirectory(parameter, this.messageHandler, args, ++i);
+                        this.exportBasePath = CommandLine.GetDirectory(parameter, args, ++i);
 
                         if (String.IsNullOrEmpty(this.exportBasePath))
                         {
@@ -704,7 +720,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
                 }
                 else
                 {
-                    string inputFile = CommandLine.VerifyPath(this.messageHandler, arg);
+                    string inputFile = CommandLine.VerifyPath(arg);
 
                     if (String.IsNullOrEmpty(inputFile))
                     {

@@ -11,21 +11,22 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
     using System.Text;
+    using WixToolset.Data;
 
     public delegate void IfDefEventHandler(object sender, IfDefEventArgs e);
 
     public class IfDefEventArgs : EventArgs
     {
-        private SourceLineNumberCollection sourceLineNumbers;
+        private SourceLineNumber sourceLineNumbers;
         private bool isIfDef;
         private bool isDefined;
         private string variableName;
 
-        public IfDefEventArgs(SourceLineNumberCollection sourceLineNumbers, bool isIfDef, bool isDefined, string variableName)
+        public IfDefEventArgs(SourceLineNumber sourceLineNumbers, bool isIfDef, bool isDefined, string variableName)
         {
             this.sourceLineNumbers = sourceLineNumbers;
             this.isIfDef = isIfDef;
@@ -33,7 +34,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
             this.variableName = variableName;
         }
 
-        public SourceLineNumberCollection SourceLineNumbers
+        public SourceLineNumber SourceLineNumbers
         {
             get { return this.sourceLineNumbers; }
         }

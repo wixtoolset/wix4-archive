@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.Samples.EmbeddedUI
+namespace WixToolset.Dtf.Samples.EmbeddedUI
 {
     using System;
     using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace Microsoft.Deployment.Samples.EmbeddedUI
     using System.Threading;
     using System.Windows;
     using System.Windows.Threading;
-    using Microsoft.Deployment.WindowsInstaller;
+    using WixToolset.Dtf.WindowsInstaller;
     using Application = System.Windows.Application;
 
     public class SampleEmbeddedUI : IEmbeddedUI

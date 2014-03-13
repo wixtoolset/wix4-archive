@@ -11,34 +11,24 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset
 {
     using System;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// Core facilities for inspector extensions.
     /// </summary>
-    public sealed class InspectorCore : IMessageHandler
+    internal sealed class InspectorCore : IInspectorCore
     {
-        private bool encounteredError;
-        private MessageEventHandler messageHandler;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="InspectorCore"/> class.
-        /// </summary>
-        /// <param name="messageHandler">The <see cref="MessageEventHandler"/> for sending messages to the logger.</param>
-        internal InspectorCore(MessageEventHandler messageHandler)
-        {
-            this.messageHandler = messageHandler;
-        }
-
         /// <summary>
         /// Gets whether an error occured.
         /// </summary>
         /// <value>Whether an error occured.</value>
         public bool EncounteredError
         {
-            get { return this.encounteredError; }
+            get { return Messaging.Instance.EncounteredError; }
         }
 
         /// <summary>
@@ -47,27 +37,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// <param name="e">The <see cref="MessageEventArgs"/> that contains information to log.</param>
         public void OnMessage(MessageEventArgs e)
         {
-            WixErrorEventArgs errorEventArgs = e as WixErrorEventArgs;
-
-            if (null != errorEventArgs)
-            {
-                this.encounteredError = true;
-            }
-
-            if (null != this.messageHandler)
-            {
-                MessageEventHandler handler = this.messageHandler;
-                handler(this, e);
-
-                if (MessageLevel.Error == e.Level)
-                {
-                    this.encounteredError = true;
-                }
-            }
-            else if (null != errorEventArgs)
-            {
-                throw new WixException(errorEventArgs);
-            }
+            Messaging.Instance.OnMessage(e);
         }
     }
 }

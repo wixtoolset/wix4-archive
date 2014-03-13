@@ -7,11 +7,11 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Heat unit tester.
+// The WiX Heat unit tester.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Unit
+namespace WixToolset.Unit
 {
     using System;
     using System.Collections;
@@ -20,7 +20,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
     using System.Xml;
 
     /// <summary>
-    /// The Windows Installer XML Heat unit tester.
+    /// The WiX Heat unit tester.
     /// </summary>
     internal sealed class HeatUnit
     {
@@ -64,7 +64,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Unit
                 doc.Load(outputFile);
 
                 XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
-                namespaceManager.AddNamespace("wix", "http://schemas.microsoft.com/wix/2006/wi");
+                namespaceManager.AddNamespace("wix", "http://wixtoolset.org/schemas/v4/wxs");
 
                 foreach (XmlElement componentElement in doc.SelectNodes("//wix:Component[@Guid=\"PUT-GUID-HERE\"]", namespaceManager))
                 {

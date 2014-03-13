@@ -16,7 +16,7 @@
 <?define TestName = Test?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
   <Bundle Name="~$(var.TestName) - Bundle G" Version="$(var.Version)" UpgradeCode="4B83C1F7-6023-4F6E-944E-8B3D3F07CF66" ParentName="$(var.TestName) - Bundle A">
     <RelatedBundle Id="583B5ECB-04E6-4837-A30C-A1ADCBE24235" Action="Patch" />
     <Log Prefix="$(var.TestName)_BundleG"/>

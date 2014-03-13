@@ -7,9 +7,9 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 
-    The table definitions for the Windows Installer XML Toolset MSMQ Extension.
+    The table definitions for the WiX Toolset MSMQ Extension.
 -->
-<tableDefinitions xmlns="http://schemas.microsoft.com/wix/2006/tables">
+<tableDefinitions xmlns="http://wixtoolset.org/schemas/v4/wi/tables">
   <tableDefinition name="MessageQueue" createSymbols="yes">
     <columnDefinition name="MessageQueue" type="string" length="72" primaryKey="yes" modularize="column"
         category="identifier" description=""/>

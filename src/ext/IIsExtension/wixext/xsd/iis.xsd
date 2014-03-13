@@ -8,25 +8,25 @@
   </copyright>
 -->
 <xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
-            xmlns:wix="http://schemas.microsoft.com/wix/2006/wi"
+            xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
              xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:xse="http://schemas.microsoft.com/wix/2005/XmlSchemaExtension"
-      targetNamespace="http://schemas.microsoft.com/wix/IIsExtension"
-                xmlns="http://schemas.microsoft.com/wix/IIsExtension">
+            xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+      targetNamespace="http://wixtoolset.org/schemas/v4/wxs/iis"
+                xmlns="http://wixtoolset.org/schemas/v4/wxs/iis">
     <xs:annotation>
         <xs:documentation>
-            The source code schema for the Windows Installer XML Toolset Internet Information Services Extension.
+            The source code schema for the WiX Toolset Internet Information Services Extension.
         </xs:documentation>
     </xs:annotation>
 
-    <xs:import namespace="http://schemas.microsoft.com/wix/2006/wi" />
+    <xs:import namespace="http://wixtoolset.org/schemas/v4/wxs" />
 
     <xs:element name="WebDirProperties">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
             </xs:appinfo>
             <xs:documentation>
                 WebDirProperties used by one or more WebSites. Lists properties common to IIS web sites and vroots. Corresponding properties can be viewed through the IIS Manager snap-in. One property entry can be reused by multiple sites or vroots using the Id field as a reference, using WebVirtualDir.DirProperties, WebSite.DirProperties, or WebDir.DirProperties.
@@ -230,7 +230,7 @@
     <xs:element name="WebFilter">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
             </xs:appinfo>
             <xs:documentation>IIs Filter for a Component</xs:documentation>
         </xs:annotation>
@@ -310,10 +310,10 @@
     <xs:element name="WebAppPool">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
             </xs:appinfo>
             <xs:documentation>IIS6 Application Pool</xs:documentation>
         </xs:annotation>
@@ -448,7 +448,7 @@
                 Used to install and uninstall certificates.
             </xs:documentation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
                 <xse:seeAlso ref="CertificateRef"/>
             </xs:appinfo>
         </xs:annotation>
@@ -600,7 +600,7 @@
     <xs:element name="WebProperty">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
                 <xse:remarks>
                     Here is an explanation of the acceptable values for each property and their meaning:
                     <html:ul>
@@ -648,9 +648,9 @@
     <xs:element name="WebApplication">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
             </xs:appinfo>
             <xs:documentation>Defines properties for a web application. These properties can be used for more than one application defined in a web site or vroot, by defining this element in a common location and referring to it by setting the WebApplication attribute of the WebSite and WebVirtualDir elements.</xs:documentation>
         </xs:annotation>
@@ -789,7 +789,7 @@
     <xs:element name="WebVirtualDir">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
             </xs:appinfo>
             <xs:documentation>Defines an IIS virtual directory. When this element is a child of WebSite element, the virtual directory is defined within that web site. Otherwise this virtual directory must reference a WebSite element via the WebSite attribute</xs:documentation>
         </xs:annotation>
@@ -837,7 +837,7 @@
     <xs:element name="WebDir">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
             </xs:appinfo>
             <xs:documentation>Defines a subdirectory within an IIS web site. When this element is a child of WebSite, the web directory is defined within that web site. Otherwise the web directory must reference a WebSite element via the WebSite attribute.</xs:documentation>
         </xs:annotation>
@@ -871,10 +871,10 @@
     <xs:element name="WebSite">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
                 <xse:remarks>
                     <html:dl>
                         <html:dd>Nesting WebSite under a Component element will result in a WebSite being installed to the machine as the package is installed.</html:dd>
@@ -983,9 +983,9 @@
     <xs:element name="WebLog">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Fragment" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Module" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Product" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Fragment" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Module" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Product" />
             </xs:appinfo>
             <xs:documentation>WebLog definition.</xs:documentation>
         </xs:annotation>
@@ -1042,7 +1042,7 @@
     <xs:element name="WebServiceExtension">
         <xs:annotation>
             <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="Component" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
             </xs:appinfo>
             <xs:documentation>The WebServiceExtension property is used by the Web server to determine whether a Web service extension is permitted to run.</xs:documentation>
         </xs:annotation>

@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Windows Installer XML CustomAction utility library.
+//    WiX CustomAction utility library.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

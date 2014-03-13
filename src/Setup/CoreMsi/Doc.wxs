@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <ComponentGroup Id="DocComponents" Directory="DocFolder">
             <Component>
@@ -25,11 +25,11 @@
             </Component>
 
             <Component>
-                <File Source="wix\Xsd\wix.xsd" />
+                <File Source="WixToolset.Data\Xsd\wix.xsd" />
             </Component>
 
             <Component>
-                <File Source="wix\Xsd\wixloc.xsd" />
+                <File Source="WixToolset.Data\Xsd\wixloc.xsd" />
             </Component>
         </ComponentGroup>
     </Fragment>

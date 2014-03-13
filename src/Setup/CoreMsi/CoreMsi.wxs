@@ -10,9 +10,10 @@
 
 <?include WixVer.wxi ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
     <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Core" Language="1033" Manufacturer="!(loc.Company)"
-             Version="$(var.WixVersion)" UpgradeCode="3618724B-2523-44F9-A908-866AA619504D">
+             Version="$(var.WixVersion)" UpgradeCode="AB318522-BCCD-4091-8068-C5969054D2AB">
+
         <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
         <swid:Tag Regid="regid.2008-09.org.wixtoolset" Type="component" />
 
@@ -30,7 +31,7 @@
             </Component>
 
             <Component Id="ProductRegistration" Directory="INSTALLFOLDER">
-                <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows Installer XML\$(var.WixMajorMinor)">
+                <RegistryKey Root="HKLM" Key="SOFTWARE\WiX Toolset\v$(var.WixMajor)">
                     <RegistryValue Name="InstallFolder" Value="[INSTALLFOLDER]" Type="string" />
                 </RegistryKey>
             </Component>
@@ -42,7 +43,7 @@
             </Component>
 
             <Component Id="ProductInformation" Directory="BinFolder">
-                <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows Installer XML\$(var.WixMajorMinor)">
+                <RegistryKey Root="HKLM" Key="SOFTWARE\WiX Toolset\v$(var.WixMajor)">
                     <RegistryValue Name="InstallRoot" Value="[BinFolder]" Type="string"/>
                     <RegistryValue Name="ProductVersion" Value="[ProductVersion]" Type="string" />
                 </RegistryKey>
@@ -51,6 +52,7 @@
             </Component>
 
             <ComponentGroupRef Id="ToolsetComponents" />
+            <ComponentGroupRef Id="SwixComponents" />
             <ComponentGroupRef Id="ExtensionComponents" />
             <ComponentGroupRef Id="LuxComponents" />
             <ComponentGroupRef Id="DocComponents" />

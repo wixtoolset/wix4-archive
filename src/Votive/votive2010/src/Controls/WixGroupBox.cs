@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
+namespace WixToolset.VisualStudio.Controls
 {
     using System;
     using System.ComponentModel;
@@ -97,7 +97,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WixGroupBox));
-            this.groupLabel = new Microsoft.Tools.WindowsInstallerXml.VisualStudio.Controls.WixGroupLabel();
+            this.groupLabel = new WixToolset.VisualStudio.Controls.WixGroupLabel();
             this.SuspendLayout();
 
             // groupLabel

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
   <Product Name='WebApp Test' Id='10D73FCA-A7CE-4D8D-8543-78161330D6A4'
     Language='1033' Codepage='1252' Version='1.0.0' Manufacturer='Test Web dir Product' UpgradeCode='000C11F9-1234-4321-C000-220000000046'>
 

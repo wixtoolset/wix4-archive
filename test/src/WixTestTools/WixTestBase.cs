@@ -70,6 +70,8 @@ namespace WixTest
         /// </summary>
         private const string wixTasksPathEnvironmentVariable = "WixTasksPath";
 
+        private static string TestCodeBasePath = null;
+
         private bool cleanupFiles;
 
         private string originalCurrentDirectory;
@@ -186,7 +188,7 @@ namespace WixTest
                 dataFolder = this.TestName;
             }
 
-            string running = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string running = GetTestCodeBasePath();
             this.TestDataFolder = Path.Combine(running, dataFolder);
 
             this.TestArtifacts = new List<FileSystemInfo>();
@@ -253,6 +255,22 @@ namespace WixTest
             builder.Extensions = null == extensions ? WixTestBase.Extensions : extensions;
 
             return builder.Build();
+        }
+
+        protected static string GetTestCodeBasePath()
+        {
+            if (String.IsNullOrEmpty(WixTestBase.TestCodeBasePath))
+            {
+                WixTestBase.TestCodeBasePath = Assembly.GetExecutingAssembly().CodeBase;
+                if (WixTestBase.TestCodeBasePath.StartsWith("file:///"))
+                {
+                    WixTestBase.TestCodeBasePath = WixTestBase.TestCodeBasePath.Substring(8);
+                }
+
+                WixTestBase.TestCodeBasePath = Path.GetDirectoryName(WixTestBase.TestCodeBasePath);
+            }
+
+            return WixTestBase.TestCodeBasePath;
         }
 
         /// <summary>
@@ -362,8 +380,8 @@ namespace WixTest
             string msBuildDirectory = Environment.GetEnvironmentVariable(WixTestBase.msBuildDirectoryEnvironmentVariable);
             if (null == msBuildDirectory)
             {
-                // Default to MSBuild v3.5.
-                msBuildDirectory = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"Microsoft.NET\Framework\v3.5");
+                // Default to MSBuild v4.0.
+                msBuildDirectory = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"Microsoft.NET\Framework\v4.0.30319");
             }
 
             Settings.MSBuildDirectory = msBuildDirectory;
@@ -376,7 +394,7 @@ namespace WixTest
             }
             else // check if the wix.targets file is next to the test assembly.
             {
-                wixTargetsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "wix.targets");
+                wixTargetsPath = Path.Combine(GetTestCodeBasePath(), "wix.targets");
                 if (File.Exists(wixTargetsPath))
                 {
                     Settings.WixTargetsPath = wixTargetsPath;
@@ -395,7 +413,7 @@ namespace WixTest
             }
             else // check if the WixTasks.dll is next to the test assembly.
             {
-                wixTasksPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "WixTask.dll");
+                wixTasksPath = Path.Combine(GetTestCodeBasePath(), "WixTask.dll");
                 if (File.Exists(wixTasksPath))
                 {
                     Settings.WixTasksPath = wixTasksPath;
@@ -416,7 +434,7 @@ namespace WixTest
             if (null == wixBuildPathDirectory)
             {
 
-                wixBuildPathDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                wixBuildPathDirectory = GetTestCodeBasePath();
             }
 
             Settings.WixBuildDirectory = wixBuildPathDirectory;
@@ -430,7 +448,7 @@ namespace WixTest
             string wixToolsPathDirectory = Environment.GetEnvironmentVariable(WixTestBase.wixToolsPathEnvironmentVariable);
             if (null == wixToolsPathDirectory)
             {
-                wixToolsPathDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                wixToolsPathDirectory = GetTestCodeBasePath();
             }
 
             Settings.WixToolDirectory = wixToolsPathDirectory;

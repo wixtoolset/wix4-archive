@@ -15,7 +15,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml {
+namespace WixToolset {
     using System;
     
     
@@ -46,7 +46,7 @@ namespace Microsoft.Tools.WindowsInstallerXml {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Tools.WindowsInstallerXml.WixDistributionSpecificStrings", typeof(WixDistributionSpecificStrings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WixToolset.WixDistributionSpecificStrings", typeof(WixDistributionSpecificStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -79,7 +79,7 @@ namespace Microsoft.Tools.WindowsInstallerXml {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows Installer Xml {0} version {1}
+        ///   Looks up a localized string similar to WiX {0} version {1}
         ///Copyright (C) Outercurve Foundation. All rights reserved.
         ///.
         /// </summary>

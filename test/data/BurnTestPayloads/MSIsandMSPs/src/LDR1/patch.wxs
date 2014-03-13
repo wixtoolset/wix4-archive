@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
     <Patch Id="E2A9F30E-75D5-457D-87D8-BA57EE95158E" AllowRemoval="yes" Classification="Update" ClientPatchId="KB3" Codepage="1252" Description="Update (KB3)" DisplayName="Update (KB3)" Manufacturer="My Company" MoreInfoURL="http://support.MyCompany.com/kb/3">
 
         <Media Id="3" Cabinet="ldr1.cab" EmbedCab="yes">

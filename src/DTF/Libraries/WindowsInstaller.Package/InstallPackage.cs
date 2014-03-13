@@ -10,7 +10,7 @@
 // </summary>
 //---------------------------------------------------------------------
 
-namespace Microsoft.Deployment.WindowsInstaller.Package
+namespace WixToolset.Dtf.WindowsInstaller.Package
 {
 using System;
 using System.IO;
@@ -20,8 +20,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.Deployment.Compression;
-using Microsoft.Deployment.Compression.Cab;
+using WixToolset.Dtf.Compression;
+using WixToolset.Dtf.Compression.Cab;
 
 /// <summary>
 /// Handles status messages generated when operations are performed on an
@@ -282,11 +282,11 @@ public class InstallPackage : Database
                             if(fileSequence > currentMediaMaxSequence) break;
                         }
 
-                        if((fileAttributes & (int) Microsoft.Deployment.WindowsInstaller.FileAttributes.Compressed) != 0)
+                        if((fileAttributes & (int) WixToolset.Dtf.WindowsInstaller.FileAttributes.Compressed) != 0)
                         {
                             compressedFileMap[fileKey] = fileInstallPath;
                         }
-                        else if ((fileAttributes & (int) Microsoft.Deployment.WindowsInstaller.FileAttributes.NonCompressed) != 0)
+                        else if ((fileAttributes & (int) WixToolset.Dtf.WindowsInstaller.FileAttributes.NonCompressed) != 0)
                         {
                             // Non-compressed files are located
                             // in the same directory as the MSI, without any path.
@@ -632,8 +632,8 @@ public class InstallPackage : Database
             {
                 files.Add(fileRec[1]);
                 int fileAttributes = fileRec.GetInteger(2);
-                fileAttributes &= ~(int) (Microsoft.Deployment.WindowsInstaller.FileAttributes.Compressed
-                    | Microsoft.Deployment.WindowsInstaller.FileAttributes.NonCompressed | Microsoft.Deployment.WindowsInstaller.FileAttributes.PatchAdded);
+                fileAttributes &= ~(int) (WixToolset.Dtf.WindowsInstaller.FileAttributes.Compressed
+                    | WixToolset.Dtf.WindowsInstaller.FileAttributes.NonCompressed | WixToolset.Dtf.WindowsInstaller.FileAttributes.PatchAdded);
                 fileRec[2] = fileAttributes;
                 fileRec[3] = files.Count;
                 fileView.Update(fileRec);
@@ -787,7 +787,7 @@ public class InstallPackage : Database
                     string oldFilePath = filePath + ".old";
                     if(File.Exists(oldFilePath)) File.Delete(oldFilePath);
                     File.Move(filePath, oldFilePath);
-                    Type.GetType("Microsoft.Deployment.WindowsInstaller.FilePatch")
+                    Type.GetType("WixToolset.Dtf.WindowsInstaller.FilePatch")
                         .GetMethod("ApplyPatchToFile",
                         new Type[] { typeof(string), typeof(string), typeof(string) })
                         .Invoke(null, new object[] { tempPatchFile, oldFilePath, filePath });
@@ -1092,11 +1092,11 @@ public class InstallPackage : Database
                 foreach (Record fileRec in fileView) using(fileRec)
                 {
                     int fileAttributes = fileRec.GetInteger(2);
-                    if ((fileAttributes & (int) Microsoft.Deployment.WindowsInstaller.FileAttributes.PatchAdded) != 0)
+                    if ((fileAttributes & (int) WixToolset.Dtf.WindowsInstaller.FileAttributes.PatchAdded) != 0)
                     {
-                        fileAttributes = (fileAttributes | (int) Microsoft.Deployment.WindowsInstaller.FileAttributes.Compressed)
-                            & ~(int) Microsoft.Deployment.WindowsInstaller.FileAttributes.NonCompressed
-                            & ~(int) Microsoft.Deployment.WindowsInstaller.FileAttributes.PatchAdded;
+                        fileAttributes = (fileAttributes | (int) WixToolset.Dtf.WindowsInstaller.FileAttributes.Compressed)
+                            & ~(int) WixToolset.Dtf.WindowsInstaller.FileAttributes.NonCompressed
+                            & ~(int) WixToolset.Dtf.WindowsInstaller.FileAttributes.PatchAdded;
                         fileRec[2] = fileAttributes;
                         fileView.Update(fileRec);
                     }

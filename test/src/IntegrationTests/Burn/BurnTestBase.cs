@@ -12,8 +12,8 @@ namespace WixTest.BurnIntegrationTests
     using System;
     using System.Linq;
     using System.IO;
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
     using Microsoft.Win32;
+    using WixToolset.Bootstrapper;
 
     /// <summary>
     /// Base classs for all Burn tests.

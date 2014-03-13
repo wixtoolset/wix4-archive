@@ -7,29 +7,36 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML toolset dependency extension binder.
+// The WiX toolset dependency extension binder.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions
+namespace WixToolset.Extensions
 {
     using System;
     using System.Collections.ObjectModel;
     using System.Globalization;
-    using Microsoft.Tools.WindowsInstallerXml;
+    using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
-    /// The compiler for the Windows Installer XML toolset dependency extension.
+    /// The compiler for the WiX toolset dependency extension.
     /// </summary>
     public sealed class DependencyBinder : BinderExtension
     {
-        private Output output = null;
+        private Output output;
 
         /// <summary>
         /// Called after all output changes occur and right before the output is bound into its final format.
         /// </summary>
-        public override void DatabaseFinalize(Output output)
+        public override void Finish(Output output)
         {
+            // Only process MSI packages.
+            if (OutputType.Product != output.Type)
+            {
+                return;
+            }
+
             this.output = output;
 
             Table wixDependencyTable = output.Tables["WixDependency"];
@@ -72,7 +79,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         string componentId = (string)wixDependencyProviderRow[1];
 
                         Row row = this.CreateRegistryRow(wixDependencyRow);
-                        row[0] = this.Core.GenerateIdentifier("reg", providesId, requiresId, "(Default)");
+                        row[0] = this.Core.CreateIdentifier("reg", providesId, requiresId, "(Default)");
                         row[1] = -1;
                         row[2] = keyRequires;
                         row[3] = "*";
@@ -83,7 +90,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         if (!String.IsNullOrEmpty(minVersion))
                         {
                             row = this.CreateRegistryRow(wixDependencyRow);
-                            row[0] = this.Core.GenerateIdentifier("reg", providesId, requiresId, "MinVersion");
+                            row[0] = this.Core.CreateIdentifier("reg", providesId, requiresId, "MinVersion");
                             row[1] = -1;
                             row[2] = keyRequires;
                             row[3] = "MinVersion";
@@ -95,7 +102,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                         if (!String.IsNullOrEmpty(minVersion))
                         {
                             row = this.CreateRegistryRow(wixDependencyRow);
-                            row[0] = this.Core.GenerateIdentifier("reg", providesId, requiresId, "MaxVersion");
+                            row[0] = this.Core.CreateIdentifier("reg", providesId, requiresId, "MaxVersion");
                             row[1] = -1;
                             row[2] = keyRequires;
                             row[3] = "MaxVersion";
@@ -108,7 +115,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
                             int attributes = (int)wixDependencyRow[4];
 
                             row = this.CreateRegistryRow(wixDependencyRow);
-                            row[0] = this.Core.GenerateIdentifier("reg", providesId, requiresId, "Attributes");
+                            row[0] = this.Core.CreateIdentifier("reg", providesId, requiresId, "Attributes");
                             row[1] = -1;
                             row[2] = keyRequires;
                             row[3] = "Attributes";
@@ -131,7 +138,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions
 
             // Create the row from the main tables, which were populated during link anyway.
             // We still associate the table with the dependency row's section to maintain servicing.
-            Table table = this.output.Tables.EnsureTable(referenceRow.Table.Section, tableDefinition);
+            Table table = this.output.EnsureTable(tableDefinition, referenceRow.Table.Section);
             Row row = table.CreateRow(referenceRow.SourceLineNumbers);
             
             // Set the section ID for patching and return the new row.

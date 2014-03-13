@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="AI_War_Fleet_Command">
+        <Detect>
+            <Arp DisplayName="AI War: Fleet Command" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- We could pick up "HKCU\Software\Arcen Games, LLC\AI War" - except that it seems to be all
+                 resolution and other per-machine settings -->
+            <Directory Namespace="Save" Location="InstallDir:\RuntimeData\Save\"/>
+
+            <!-- Intentionally ignore settings.bak - it only seems to be used if the main config file
+                is missing or corrupt, which shouldn't really affect our scenarios -->
+            <File Name="Settings.dat" Location="InstallDir:\RuntimeData\Settings.dat">
+                <CfgFile Namespace="Settings.dat" Encoding="UTF8NoBOM">
+                    <Value Separator=":"/>
+                </CfgFile>
+            </File>
+
+            <File Name="AltPlanetNames.txt" Location="InstallDir:\RuntimeData\altplanetnames.txt" />
+        </Data>
+
+        <Filter>
+            <!-- Ignore a bunch of machine-specific settings from the settings.dat.
+                Not all games can do this, but luckily AI War gracefully handles missing config values. -->
+            <Ignore Name="Settings.dat:\FromVersion"/>
+            <Ignore Name="Settings.dat:\SortShipTextures"/>
+            <Ignore Name="Settings.dat:\SizeWindow"/>
+            <Ignore Name="Settings.dat:\IsFullscreen"/>
+            <Ignore Name="Settings.dat:\WindowWidth"/>
+            <Ignore Name="Settings.dat:\WindowHeight"/>
+            <Ignore Name="Settings.dat:\FullscreenWidth"/>
+            <Ignore Name="Settings.dat:\FullscreenHeight"/>
+            <Ignore Name="Settings.dat:\FullscreenPreferredRefreshRate"/>
+            <Ignore Name="Settings.dat:\NetworkSyncSize"/>
+            <Ignore Name="Settings.dat:\LastPerformanceMode"/>
+            <Ignore Name="Settings.dat:\LicenseKey"/>
+            <Ignore Name="Settings.dat:\ExpansionLicenseKeys"/>
+        </Filter>
+
+        <DisplayName LCID="1033">AI War: Fleet Command</DisplayName>
+    </Product>
+</LegacySettings>

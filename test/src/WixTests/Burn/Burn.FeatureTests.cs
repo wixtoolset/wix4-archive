@@ -16,7 +16,7 @@ namespace WixTest.Tests.Burn
     using System.Collections.Generic;
     using System.IO;
 
-    using Microsoft.Tools.WindowsInstallerXml.Bootstrapper;
+    using WixToolset.Bootstrapper;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Microsoft.Win32;
     using WixTest.Verifiers;

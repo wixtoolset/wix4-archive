@@ -7,24 +7,23 @@
 // </copyright>
 // 
 // <summary>
-// The Windows Installer XML Toolset Harvester application core.
+// The WiX Toolset Harvester application core.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Tools
+namespace WixToolset.Tools
 {
     using System;
     using System.Reflection;
-    using Microsoft.Tools.WindowsInstallerXml;
-
-    using Wix = Microsoft.Tools.WindowsInstallerXml.Serialize;
+    using WixToolset.Data;
+    using WixToolset.Extensibilty;
+    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
-    /// The Windows Installer XML Toolset Harvester application core.
+    /// The WiX Toolset Harvester application core.
     /// </summary>
-    public class HeatCore
+    public sealed class HeatCore : IHeatCore, IMessageHandler
     {
-        private bool encounteredError;
         private Harvester harvester;
         private Mutator mutator;
 
@@ -32,17 +31,11 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// Instantiates a new HeatCore.
         /// </summary>
         /// <param name="messageHandler">The message handler for the core.</param>
-        public HeatCore(MessageEventHandler messageHandler)
+        public HeatCore()
         {
-            this.MessageHandler = messageHandler;
             this.harvester = new Harvester();
             this.mutator = new Mutator();
         }
-
-        /// <summary>
-        /// Event for messages.
-        /// </summary>
-        private event MessageEventHandler MessageHandler;
 
         /// <summary>
         /// Gets whether the mutator core encountered an error while processing.
@@ -50,7 +43,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// <value>Flag if core encountered an error during processing.</value>
         public bool EncounteredError
         {
-            get { return this.encounteredError; }
+            get { return Messaging.Instance.EncounteredError; }
         }
 
         /// <summary>
@@ -77,19 +70,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Tools
         /// <param name="mea">Message event arguments.</param>
         public void OnMessage(MessageEventArgs mea)
         {
-            if (mea is WixErrorEventArgs)
-            {
-                this.encounteredError = true;
-            }
-
-            if (null != this.MessageHandler)
-            {
-                this.MessageHandler(this, mea);
-                if (MessageLevel.Error == mea.Level)
-                {
-                    this.encounteredError = true;
-                }
-            }
+            Messaging.Instance.OnMessage(mea);
         }
     }
 }

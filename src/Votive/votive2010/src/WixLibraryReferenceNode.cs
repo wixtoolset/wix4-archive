@@ -11,13 +11,13 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.VisualStudio
+namespace WixToolset.VisualStudio
 {
     using System;
     using System.IO;
     using Microsoft.VisualStudio.Package;
     using Microsoft.VisualStudio.Shell;
-    using Microsoft.Tools.WindowsInstallerXml.Build.Tasks;
+    using WixToolset.Build.Tasks;
 
     /// <summary>
     /// Represents a Wixlib reference node.

@@ -7,7 +7,7 @@
 ; </copyright>
 ; 
 ; <summary>
-;    Windows Installer XML MSMQ CustomAction entry points
+;    WiX MSMQ CustomAction entry points
 ; </summary>
 ;-------------------------------------------------------------------------------------------------
 

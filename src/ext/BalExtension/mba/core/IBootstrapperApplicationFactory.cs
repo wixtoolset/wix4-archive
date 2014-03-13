@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Bootstrapper
+namespace WixToolset.Bootstrapper
 {
     using System;
     using System.CodeDom.Compiler;
@@ -21,7 +21,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Bootstrapper
     [ComVisible(true)]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("2965A12F-AC7B-43A0-85DF-E4B2168478A4")]
-    [GeneratedCodeAttribute("Microsoft.Tools.WindowsInstallerXml.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
+    [GeneratedCodeAttribute("WixToolset.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
     public interface IBootstrapperApplicationFactory
     {
         IBootstrapperApplication Create(
@@ -35,7 +35,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Bootstrapper
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    [GeneratedCodeAttribute("Microsoft.Tools.WindowsInstallerXml.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
+    [GeneratedCodeAttribute("WixToolset.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
     public struct Command
     {
         [MarshalAs(UnmanagedType.U4)] private readonly LaunchAction action;

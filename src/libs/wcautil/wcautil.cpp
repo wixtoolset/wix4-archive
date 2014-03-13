@@ -5,9 +5,9 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
+// 
 // <summary>
-//    Windows Installer XML CustomAction utility library.
+//    WiX CustomAction utility library.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ static UINT s_iRetVal;
 
 
 /********************************************************************
- WcaGlobalInitialize() - initializes the Wca library, should be
+ WcaGlobalInitialize() - initializes the Wca library, should be 
                          called once per custom action Dll during
                          DllMain on DLL_PROCESS_ATTACH
 
@@ -65,7 +65,7 @@ extern "C" void WIXAPI WcaGlobalFinalize()
 
 
 /********************************************************************
- WcaInitialize() - initializes the Wca framework, should be the first
+ WcaInitialize() - initializes the Wca framework, should be the first 
                    thing called by all CustomActions
 
 ********************************************************************/
@@ -75,11 +75,11 @@ extern "C" HRESULT WIXAPI WcaInitialize(
     )
 {
     WCHAR wzCAFileName[MAX_PATH] = {0};
-    DWORD dwMajorVersion = 0;
-    DWORD dwMinorVersion = 0;
+    DWORD dwMajorVersion = 0; 
+    DWORD dwMinorVersion = 0; 
 
     // these statics should be called once per CustomAction invocation.
-    // Darwin doesn't preserve DLL state across CustomAction calls so
+    // Darwin does doesn't preserve DLL state across CustomAction calls so
     // these should always be initialized to NULL.  If that behavior changes
     // we would need to do a careful review of all of our module/global data.
     AssertSz(!s_fInitialized, "WcaInitialize() should only be called once per CustomAction");
@@ -98,7 +98,7 @@ extern "C" HRESULT WIXAPI WcaInitialize(
     hr = ::StringCchCopy(s_szCustomActionLogName, countof(s_szCustomActionLogName), szCustomActionLogName);
     ExitOnFailure1(hr, "Failed to copy CustomAction log name: %s", szCustomActionLogName);
 
-    // If we got the database handle i.e.: immediate CA
+    // If we got the database handle IE: immediate CA
     if (s_hDatabase)
     {
         hr = SetVerboseLoggingAtom(IsVerboseLogging());
@@ -133,7 +133,7 @@ LExit:
 
 
 /********************************************************************
- WcaFinalize() - cleans up after the Wca framework, should be the last
+ WcaFinalize() - cleans up after the Wca framework, should be the last 
                  thing called by all CustomActions
 
 ********************************************************************/
@@ -152,11 +152,10 @@ extern "C" UINT WIXAPI WcaFinalize(
 
     s_hInstall = NULL;
     s_fInitialized = FALSE;
-    *s_szCustomActionLogName = 0;
 
-    // if no error occurred during the processing of the CustomAction return the passed in return value
+    // if no error occurred during the processing of the CusotmAction return the passed in return value
     // otherwise return the previous failure
-    return (ERROR_SUCCESS == s_iRetVal) ? iReturnValue : s_iRetVal;
+    return (ERROR_SUCCESS == s_iRetVal) ? iReturnValue : s_iRetVal; 
 }
 
 

@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/wxs">
   <Module Id="Module1" Language="1033" Version="1.0.0.0">
     
     <Package Id="{6B79366B-9DDA-4cdd-B66C-ED3A29853C78}" Manufacturer="Microsoft" InstallerVersion="200" />

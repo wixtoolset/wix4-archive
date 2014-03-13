@@ -14,7 +14,7 @@
 <?define VsVersion = "2010"?>
 <?define VsRegPath = "SOFTWARE\Microsoft\VisualStudio\10.0" ?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
     <Fragment>
         <PropertyRef Id="VS2010DEVENV" />
         <PropertyRef Id="VS2010_ROOT_FOLDER" />
@@ -36,11 +36,15 @@
                 <File Source="votive2010.dll" />
                 <util:RestartResource Path="[VS2010DEVENV]" />
             </Component>
+
+          <Component>
+            <File Source="WixToolset.Simplified.LanguageService.dll" />
+          </Component>
         </ComponentGroup>
     </Fragment>
 
     <Fragment>
-        <ComponentGroup Id="Votive$(var.VsVersion)ExtensionComponents" Directory="VsExtensions$(var.VsVersion)MicrosoftWix">
+        <ComponentGroup Id="Votive$(var.VsVersion)ExtensionComponents" Directory="VsExtensions$(var.VsVersion)WixVersionFolder">
             <Component>
                 <File Id="extension$(var.VsVersion).vsixmanifest" Source="extension.vsixmanifest"/>
             </Component>
@@ -94,10 +98,10 @@
                 <File Id="ThmutilSchema$(var.VsVersion)" Source="dutil\Xsd\thmutil.xsd" />
             </Component>
             <Component>
-                <File Id="WixSchema$(var.VsVersion)" Source="wix\Xsd\wix.xsd" />
+                <File Id="WixSchema$(var.VsVersion)" Source="WixToolset.Data\Xsd\wix.xsd" />
             </Component>
             <Component>
-                <File Id="WixLocSchema$(var.VsVersion)" Source="wix\Xsd\wixloc.xsd" />
+                <File Id="WixLocSchema$(var.VsVersion)" Source="WixToolset.Data\Xsd\wixloc.xsd" />
             </Component>
             <Component>
                 <File Id="ExtensionXsdBalSchema$(var.VsVersion)" Source="ext\BalExtension\wixext\Xsd\bal.xsd" />
