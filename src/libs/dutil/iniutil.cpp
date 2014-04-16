@@ -227,6 +227,7 @@ extern "C" HRESULT DAPI IniParse(
     LPWSTR wzValueSeparator = NULL;
     LPWSTR wzCommentLinePrefix = NULL;
     LPWSTR wzValueBegin = NULL;
+    LPCWSTR wzTemp = NULL;
 
     INI_STRUCT *pi = static_cast<INI_STRUCT *>(piHandle);
 
@@ -274,6 +275,19 @@ extern "C" HRESULT DAPI IniParse(
         if (pi->sczOpenTagPrefix)
         {
             wzOpenTagPrefix = wcsstr(pi->rgsczLines[i], pi->sczOpenTagPrefix);
+            if (wzOpenTagPrefix)
+            {
+                // If there is an open tag prefix but there is anything but whitespace before it, then it's NOT an open tag prefix
+                // This is important, for example, to support values with names like "Array[0]=blah" in INI format
+                for (wzTemp = pi->rgsczLines[i]; wzTemp < wzOpenTagPrefix; ++wzTemp)
+                {
+                    if (!iswspace(*wzTemp))
+                    {
+                        wzOpenTagPrefix = NULL;
+                        break;
+                    }
+                }
+            }
         }
 
         if (pi->sczOpenTagPostfix)
@@ -309,7 +323,7 @@ extern "C" HRESULT DAPI IniParse(
             wzValueSeparator = wcsstr(wzValueNameStart + dwValueSeparatorExceptionLength, pi->sczValueSeparator);
         }
 
-        // Don't keep the '\r' before every '\n'
+        // Don't keep the endline
         if (pi->rgsczLines[i][lstrlenW(pi->rgsczLines[i])-1] == L'\r')
         {
             pi->rgsczLines[i][lstrlenW(pi->rgsczLines[i])-1] = L'\0';
