@@ -13,6 +13,11 @@
 
 #pragma once
 
+#define ExitTrace LogErrorString
+#define ExitTrace1 LogErrorString
+#define ExitTrace2 LogErrorString
+#define ExitTrace3 LogErrorString
+
 #include <windows.h>
 #include <windowsx.h>
 #include <intsafe.h>

@@ -1,3 +1,5 @@
+* MikeGC: Fix bug in settings browser that can in certain situations result in an inability to look at history of a conflicting value, and other minor bugfixes
+
 * RobMen: Merge recent changes through WiX v3.9.313.0
 
 * SeanHall: WIXBUG:3643 - Incorrect operation for detect-only package
