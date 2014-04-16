@@ -29,7 +29,7 @@ namespace CfgTests
             BOOL fBool = FALSE;
             CFG_ENUMERATION_HANDLE cehHandle = NULL;
 
-            hr = CfgEnumerateProducts(cdbHandle, NULL, &cehHandle, &dwCount);
+            hr = CfgEnumerateProducts(cdbHandle, &cehHandle, &dwCount);
             ExitOnFailure(hr, "Failed to enumerate products in user DB");
 
             if (dwIndex >= dwCount)
@@ -84,7 +84,7 @@ namespace CfgTests
             DWORD dwCount = 0;
             CFG_ENUMERATION_HANDLE cehHandle = NULL;
 
-            hr = CfgEnumerateProducts(cdbHandle, NULL, &cehHandle, &dwCount);
+            hr = CfgEnumerateProducts(cdbHandle, &cehHandle, &dwCount);
             ExitOnFailure(hr, "Failed to enumerate products in admin DB");
 
             if (dwExpectedNumber != dwCount)

@@ -1043,7 +1043,6 @@ static HRESULT HandleSyncRequest(
         // If we previously failed to connect to this remote and now we can again, don't check timestamp, because we need to both push and pull changes
         fCheckDbTimestamp = !fReconnected;
 
-        syncSession.fWriteBackToMachine = TRUE;
         if (!::PostThreadMessageW(pcdb->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_REMOTE, reinterpret_cast<WPARAM>(sczTemp), static_cast<LPARAM>(fCheckDbTimestamp)))
         {
             ExitWithLastError1(hr, "Failed to send message to background thread to sync from remote %ls", sczTemp);

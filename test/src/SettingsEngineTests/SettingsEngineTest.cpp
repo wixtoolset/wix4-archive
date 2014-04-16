@@ -873,7 +873,7 @@ namespace CfgTests
     void CfgTest::WaitForDbToBeIdle(CFGDB_HANDLE cdHandle)
     {
         CFG_ENUMERATION_HANDLE cehProductList = NULL;
-        HRESULT hr = CfgEnumerateProducts(cdHandle, NULL, &cehProductList, NULL);
+        HRESULT hr = CfgEnumerateProducts(cdHandle, &cehProductList, NULL);
         ExitOnFailure(hr, "Failed to enumerate products to confirm DB is idle");
 
     LExit:

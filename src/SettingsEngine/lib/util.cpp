@@ -490,6 +490,8 @@ static HRESULT UtilSyncAllProductsHelp(
     BOOL fLegacyProduct = FALSE;
     SCE_ROW_HANDLE sceRow = NULL;
     BOOL fFirstIsLocal = (NULL == pcdb1->pcdbLocal);
+    BOOL fLocalInSceTransaction = FALSE;
+    BOOL fRemoteInSceTransaction = FALSE;
 
     hr = SceGetFirstRow(pcdb1->psceDb, PRODUCT_INDEX_TABLE, &sceRow);
     while (E_NOTFOUND != hr)
@@ -554,6 +556,17 @@ static HRESULT UtilSyncAllProductsHelp(
             hr = LegacyProductMachineToDb(fFirstIsLocal ? pcdb1 : pcdb2, &pSyncSession->syncProductSession);
             ExitOnFailure(hr, "Failed to read data from local machine and write into settings database for app");
         }
+        else
+        {
+            hr = SceBeginTransaction(fFirstIsLocal ? pcdb1->psceDb : pcdb2->psceDb);
+            ExitOnFailure(hr, "Failed to begin local transaction");
+            fLocalInSceTransaction = TRUE;
+        }
+
+        // Put all remote db operations in a single transaction
+        hr = SceBeginTransaction(fFirstIsLocal ? pcdb2->psceDb : pcdb1->psceDb);
+        ExitOnFailure(hr, "Failed to begin remote transaction");
+        fRemoteInSceTransaction = TRUE;
 
         hr = SyncSingleProduct(pcdb1, pcdb2, fRegistered, &pConflictProductTemp);
         ExitOnFailure(hr, "Failed to sync single product");
@@ -563,6 +576,19 @@ static HRESULT UtilSyncAllProductsHelp(
             hr = LegacySyncFinalizeProduct(fFirstIsLocal ? pcdb1 : pcdb2, pSyncSession);
             ExitOnFailure1(hr, "Failed to finalize product %u in legacy sync session", fFirstIsLocal ? pcdb1->dwAppID : pcdb2->dwAppID);
         }
+        else
+        {
+            // In legacy case, LegacySyncFinalizeProduct will handle committing for us (or in case of failure, rollback will occur in LegacySyncUninitializeSession)
+            hr = SceCommitTransaction(fFirstIsLocal ? pcdb1->psceDb : pcdb2->psceDb);
+            ExitOnFailure(hr, "Failed to commit local transaction");
+            fLocalInSceTransaction = FALSE;
+        }
+
+        // Commit remote db changes AFTER local has been commited
+        // This is important or we can create conflicts by putting changes in remote db that came from the local db, but are no longer in local db due to rollback
+        hr = SceCommitTransaction(fFirstIsLocal ? pcdb2->psceDb : pcdb1->psceDb);
+        ExitOnFailure(hr, "Failed to commit remote transaction");
+        fRemoteInSceTransaction = FALSE;
 
         if (NULL != pConflictProductTemp)
         {
@@ -592,6 +618,16 @@ static HRESULT UtilSyncAllProductsHelp(
     }
 
 LExit:
+    if (fRemoteInSceTransaction)
+    {
+        SceRollbackTransaction(fFirstIsLocal ? pcdb2->psceDb : pcdb1->psceDb);
+    }
+
+    if (fLocalInSceTransaction)
+    {
+        SceRollbackTransaction(fFirstIsLocal ? pcdb1->psceDb : pcdb2->psceDb);
+    }
+
     ReleaseSceRow(sceRow);
     ReleaseStr(sczName);
     ReleaseStr(sczVersion);

@@ -1,3 +1,7 @@
+* MikeGC: Fix bug in settings engine that can cause unnecessary conflicts to appear upon sync failure in certain situations
+
+* MikeGC: In settings engine, remove parameter from CfgEnumerateProducts() that was never used and has not worked for a long time anyway
+
 * RobMen: Merge recent changes through WiX v3.9.313.0
 
 * SeanHall: WIXBUG:3643 - Incorrect operation for detect-only package

@@ -1075,14 +1075,12 @@ LExit:
 
 extern "C" HRESULT CfgEnumerateProducts(
     __in_bcount(CFGDB_HANDLE_BYTES) CFGDB_HANDLE cdHandle,
-    __in_z_opt LPCWSTR wzPublicKey,
     __deref_out_bcount(CFG_ENUMERATION_HANDLE_BYTES) CFG_ENUMERATION_HANDLE *ppvHandle,
     __out_opt DWORD *pcCount
     )
 {
     HRESULT hr = S_OK;
     CFGDB_STRUCT *pcdb = static_cast<CFGDB_STRUCT *>(cdHandle);
-    LPWSTR sczLowPublicKey = NULL;
     SCE_ROW_HANDLE sceRow = NULL;
     BOOL fLocked = FALSE;
 
@@ -1102,45 +1100,32 @@ extern "C" HRESULT CfgEnumerateProducts(
     ExitOnFailure(hr, "Failed to lock handle when enumerating products");
     fLocked = TRUE;
 
-    if (NULL != wzPublicKey)
-    {
-        hr = StrAllocString(&sczLowPublicKey, wzPublicKey, 0);
-        ExitOnFailure(hr, "Failed to allocate 2nd public key buffer");
-
-        // Convert to lower case characters
-        StrStringToLower(sczLowPublicKey);
-    }
-
     hr = SceGetFirstRow(pcdb->psceDb, PRODUCT_INDEX_TABLE, &sceRow);
     while (E_NOTFOUND != hr)
     {
         ExitOnFailure1(hr, "Failed to get row from table: %u", PRODUCT_INDEX_TABLE);
 
-        // If they specified a public key and it doesn't equal the one we're looking at, skip it
-        if (NULL == sczLowPublicKey || 0 == lstrcmpW(pcesEnum->products.rgsczPublicKey[pcesEnum->dwNumValues], sczLowPublicKey))
+        if (pcesEnum->dwNumValues >= pcesEnum->dwMaxValues)
         {
-            if (pcesEnum->dwNumValues >= pcesEnum->dwMaxValues)
-            {
-                DWORD dwNewSize = pcesEnum->dwMaxValues * 2;
+            DWORD dwNewSize = pcesEnum->dwMaxValues * 2;
 
-                hr = EnumResize(pcesEnum, dwNewSize);
-                ExitOnFailure(hr, "Failed to resize enumeration struct");
-            }
-
-            hr = SceGetColumnString(sceRow, PRODUCT_NAME, &(pcesEnum->products.rgsczName[pcesEnum->dwNumValues]));
-            ExitOnFailure(hr, "Failed to retrieve product name while enumerating products");
-
-            hr = SceGetColumnString(sceRow, PRODUCT_VERSION, &(pcesEnum->products.rgsczVersion[pcesEnum->dwNumValues]));
-            ExitOnFailure(hr, "Failed to retrieve version while enumerating products");
-
-            hr = SceGetColumnString(sceRow, PRODUCT_PUBLICKEY, &(pcesEnum->products.rgsczPublicKey[pcesEnum->dwNumValues]));
-            ExitOnFailure(hr, "Failed to retrieve public key while enumerating products");
-
-            hr = SceGetColumnBool(sceRow, PRODUCT_REGISTERED, &(pcesEnum->products.rgfRegistered[pcesEnum->dwNumValues]));
-            ExitOnFailure(hr, "Failed to retrieve registered flag while enumerating products");
-
-            ++pcesEnum->dwNumValues;
+            hr = EnumResize(pcesEnum, dwNewSize);
+            ExitOnFailure(hr, "Failed to resize enumeration struct");
         }
+
+        hr = SceGetColumnString(sceRow, PRODUCT_NAME, &(pcesEnum->products.rgsczName[pcesEnum->dwNumValues]));
+        ExitOnFailure(hr, "Failed to retrieve product name while enumerating products");
+
+        hr = SceGetColumnString(sceRow, PRODUCT_VERSION, &(pcesEnum->products.rgsczVersion[pcesEnum->dwNumValues]));
+        ExitOnFailure(hr, "Failed to retrieve version while enumerating products");
+
+        hr = SceGetColumnString(sceRow, PRODUCT_PUBLICKEY, &(pcesEnum->products.rgsczPublicKey[pcesEnum->dwNumValues]));
+        ExitOnFailure(hr, "Failed to retrieve public key while enumerating products");
+
+        hr = SceGetColumnBool(sceRow, PRODUCT_REGISTERED, &(pcesEnum->products.rgfRegistered[pcesEnum->dwNumValues]));
+        ExitOnFailure(hr, "Failed to retrieve registered flag while enumerating products");
+
+        ++pcesEnum->dwNumValues;
 
         ReleaseNullSceRow(sceRow);
         hr = SceGetNextRow(pcdb->psceDb, PRODUCT_INDEX_TABLE, &sceRow);
@@ -1176,7 +1161,6 @@ LExit:
     {
         HandleUnlock(pcdb);
     }
-    ReleaseStr(sczLowPublicKey);
 
     return hr;
 }
