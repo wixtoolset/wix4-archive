@@ -58,7 +58,6 @@ HRESULT BrowseWindow::SetSelectedProduct(
     HRESULT hr = S_OK;
     CURRENTDATABASE.dwSetProductIndex = dwIndex;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
-    BOOL fCsEntered = TRUE;
 
     hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PRODUCTNAME, &CURRENTDATABASE.prodCurrent.wzName);
     ExitOnFailure(hr, "Failed to read product name from enumeration");
@@ -69,24 +68,13 @@ HRESULT BrowseWindow::SetSelectedProduct(
     hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PUBLICKEY, &CURRENTDATABASE.prodCurrent.wzPublicKey);
     ExitOnFailure(hr, "Failed to read product public key from enumeration");
 
-    if (NULL != CURRENTDATABASE.prodCurrent.wzPublicKey)
-    {
-        hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.wzName, CURRENTDATABASE.prodCurrent.wzVersion, CURRENTDATABASE.prodCurrent.wzPublicKey);
-        ExitOnFailure(hr, "Failed to allocate product display name with public key");
-    }
-    else
-    {
-        hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls", CURRENTDATABASE.prodCurrent.wzName, CURRENTDATABASE.prodCurrent.wzVersion);
-        ExitOnFailure(hr, "Failed to allocate product display name without public key");
-    }
+    hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.wzName, CURRENTDATABASE.prodCurrent.wzVersion, CURRENTDATABASE.prodCurrent.wzPublicKey);
+    ExitOnFailure(hr, "Failed to allocate product display name with public key");
 
 LExit:
-    if (fCsEntered)
-    {
-        ::LeaveCriticalSection(&CURRENTDATABASE.cs);
-    }
+    ::LeaveCriticalSection(&CURRENTDATABASE.cs);
 
-    return S_OK;
+    return hr;
 }
 
 void BrowseWindow::Bomb(
@@ -347,7 +335,6 @@ HRESULT BrowseWindow::OpenSetValueScreen()
     LPCWSTR wzText = NULL;
     LPWSTR sczText = NULL;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
-    BOOL fCsEntered = TRUE;
 
     if (VALUE_INVALID == CURRENTDATABASE.cdSetValueType)
     {
@@ -440,10 +427,7 @@ HRESULT BrowseWindow::OpenSetValueScreen()
     RefreshTypeRadioButton();
 
 LExit:
-    if (fCsEntered)
-    {
-        ::LeaveCriticalSection(&CURRENTDATABASE.cs);
-    }
+    ::LeaveCriticalSection(&CURRENTDATABASE.cs);
     ReleaseStr(sczText);
 
     return hr;
@@ -545,11 +529,11 @@ HRESULT BrowseWindow::RefreshValueHistoryList(DWORD dwDatabaseIndex)
         ExitFunction();
     }
 
-    if (DATABASE(dwDatabaseIndex).fValueHistoryLoading)
+    if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && DATABASE(dwDatabaseIndex).fValueHistoryLoading)
     {
         DATABASE(dwDatabaseIndex).wzValueHistoryListText = L"Enumerating...";
     }
-    else if (FAILED(DATABASE(dwDatabaseIndex).hrValueHistoryResult))
+    else if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && FAILED(DATABASE(dwDatabaseIndex).hrValueHistoryResult))
     {
         DATABASE(dwDatabaseIndex).wzValueHistoryListText = L"Error!";
     }
@@ -1060,6 +1044,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     )
 {
     HRESULT hr = S_OK;
+    HRESULT hrTemp = S_OK;
     LRESULT lres = 0;
     int iRet = 0;
     DWORD dwIndex = 0;
@@ -1308,7 +1293,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             }
 
             ::EnterCriticalSection(&UXDATABASE(dwIndex).cs);
-            BOOL fCsEntered = TRUE;
+            fCsEntered = TRUE;
 
             for (DWORD i = 0; i < UXDATABASE(dwIndex).dwDatabaseListCount; ++i)
             {
@@ -1738,19 +1723,22 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             switch (lpnmitem->hdr.code)
             {
             case NM_CLICK:
-                dwTemp1 = pUX->GetSelectedValueHistoryIndex();
-
-                if (DWORD_MAX != dwTemp1)
+                // Export file button is not visible on value conflict screens, so don't bother in that case
+                if (BROWSE_TAB_OTHERDATABASES != pUX->m_tab || (BROWSE_OTHERDATABASES_VIEW_MY_VALUE_CONFLICTS != pUX->m_otherDatabasesState && BROWSE_OTHERDATABASES_VIEW_OTHER_VALUE_CONFLICTS != pUX->m_otherDatabasesState))
                 {
-                    hr = CfgEnumReadDataType(CURRENTUXDATABASE.cehValueHistory, pUX->GetSelectedValueHistoryIndex(), ENUM_DATA_VALUETYPE, &cvType);
-                    ExitOnFailure(hr, "Failed to get data type from value history enumeration");
-                }
-                else
-                {
+                    dwTemp1 = pUX->GetSelectedValueHistoryIndex();
                     cvType = VALUE_DELETED;
-                }
 
-                ThemeControlEnable(pUX->m_pTheme, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_EXPORT_FILE_BUTTON, VALUE_BLOB == cvType);
+                    if (DWORD_MAX != dwTemp1)
+                    {
+                        ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
+                        // Ignore failure (this is expected in certain race conditions), it just means button will be disabled
+                        CfgEnumReadDataType(CURRENTUXDATABASE.cehValueHistory, pUX->GetSelectedValueHistoryIndex(), ENUM_DATA_VALUETYPE, &cvType);
+                        ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                    }
+
+                    ThemeControlEnable(pUX->m_pTheme, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_EXPORT_FILE_BUTTON, VALUE_BLOB == cvType);
+                }
                 break;
             }
             break;
@@ -1904,27 +1892,36 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         case BROWSE_CONTROL_VIEW_VALUE_HISTORY_BUTTON:
             if (BN_CLICKED == HIWORD(wParam))
             {
-                CURRENTUXDATABASE.fValueHistoryLoading = TRUE;
-
-                if (BROWSE_TAB_MAIN == pUX->m_tab)
+                ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
+                // Ignore failure (this is expected in certain race conditions), just pretend the button was never hit
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                if (SUCCEEDED(hrTemp))
                 {
-                    hr = pUX->SetMainState(BROWSE_MAIN_STATE_SINGLEVALUEHISTORY);
-                    ExitOnFailure(hr, "Failed while switching main state to single value history screen");
+                    hr = StrAllocString(&CURRENTUXDATABASE.sczValueName, wzText, 0);
+                    ExitOnFailure(hr, "Failed to copy value name");
                 }
-                else if (BROWSE_TAB_OTHERDATABASES == pUX->m_tab)
+                ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+
+                if (FAILED(hrTemp))
                 {
-                    hr = pUX->SetOtherDatabasesState(BROWSE_OTHERDATABASES_SINGLE_DATABASE_SINGLEVALUEHISTORY);
-                    ExitOnFailure(hr, "Failed while switching other databases state to single value history screen");
+                    LogStringLine(REPORT_STANDARD, "Failed to go to value history screen due to failure to read enum with error 0x%X", hrTemp);
                 }
+                else
+                {
+                    if (BROWSE_TAB_MAIN == pUX->m_tab)
+                    {
+                        hr = pUX->SetMainState(BROWSE_MAIN_STATE_SINGLEVALUEHISTORY);
+                        ExitOnFailure(hr, "Failed while switching main state to single value history screen");
+                    }
+                    else if (BROWSE_TAB_OTHERDATABASES == pUX->m_tab)
+                    {
+                        hr = pUX->SetOtherDatabasesState(BROWSE_OTHERDATABASES_SINGLE_DATABASE_SINGLEVALUEHISTORY);
+                        ExitOnFailure(hr, "Failed while switching other databases state to single value history screen");
+                    }
 
-                hr = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
-                ExitOnFailure(hr, "Failed to read value name to enumerate value history");
-
-                hr = StrAllocString(&CURRENTUXDATABASE.sczValueName, wzText, 0);
-                ExitOnFailure(hr, "Failed to copy value name");
-
-                hr = pUX->EnumerateValueHistory(pUX->m_dwDatabaseIndex);
-                ExitOnFailure(hr, "Failed to enumerate value history");
+                    hr = pUX->EnumerateValueHistory(pUX->m_dwDatabaseIndex);
+                    ExitOnFailure(hr, "Failed to enumerate value history");
+                }
             }
             break;
         case BROWSE_CONTROL_VIEW_MY_VALUE_HISTORY_BUTTON:
@@ -1995,12 +1992,10 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 }
                 else
                 {
-                    ::EnterCriticalSection(&UXDATABASE(dwIndex).cs);
-                    fCsEntered = TRUE;
+                    ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
                     hr = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                    ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
                     ExitOnFailure(hr, "Failed to read value name from enumeration");
-                    ::LeaveCriticalSection(&UXDATABASE(dwIndex).cs);
-                    fCsEntered = FALSE;
                 }
 
                 if (VALUE_BLOB == CURRENTUXDATABASE.cdSetValueType)
@@ -2269,10 +2264,17 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
             if (NULL != sczTemp1)
             {
-                if (SUCCEEDED(CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText)))
+                ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                if (SUCCEEDED(hrTemp))
                 {
                     hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_EXPORT_FILE, pUX->m_dwDatabaseIndex, wzText, sczTemp1);
                     ExitOnFailure(hr, "Failed to send WM_BROWSE_EXPORT_FILE message to worker thread");
+                }
+                else
+                {
+                    LogStringLine(REPORT_STANDARD, "Failed to export file due to failure to read enum with error 0x%X", hrTemp);
                 }
             }
             break;
@@ -2736,6 +2738,8 @@ HRESULT BrowseWindow::SetOtherDatabasesState(
     }
     else if (BROWSE_OTHERDATABASES_VIEW_MY_VALUE_CONFLICTS == state)
     {
+        ThemeShowControl(m_pTheme, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_EXPORT_FILE_BUTTON, FALSE);
+
         CURRENTDATABASE.vhmValueHistoryMode = HISTORY_LOCAL_CONFLICTS;
 
         hr = RefreshValueHistoryList(m_dwDatabaseIndex);
@@ -2743,6 +2747,8 @@ HRESULT BrowseWindow::SetOtherDatabasesState(
     }
     else if (BROWSE_OTHERDATABASES_VIEW_OTHER_VALUE_CONFLICTS == state)
     {
+        ThemeShowControl(m_pTheme, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_EXPORT_FILE_BUTTON, FALSE);
+
         CURRENTDATABASE.vhmValueHistoryMode = HISTORY_REMOTE_CONFLICTS;
 
         hr = RefreshValueHistoryList(m_dwDatabaseIndex);
@@ -2760,6 +2766,10 @@ HRESULT BrowseWindow::SetOtherDatabasesState(
     {
         hr = OpenSetValueScreen();
         ExitOnFailure(hr, "Failed to setup set value screen");
+    }
+    else if (BROWSE_OTHERDATABASES_SINGLE_DATABASE_SINGLEVALUEHISTORY == state)
+    {
+        ThemeShowControl(m_pTheme, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_EXPORT_FILE_BUTTON, TRUE);
     }
 
     ::SetFocus(m_hWnd);
