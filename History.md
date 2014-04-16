@@ -1,3 +1,5 @@
+* MikeGC: Bug #4345: Make IniUtil tolerate ini files that have '[' or ']' in the name of a value
+
 * RobMen: Merge recent changes through WiX v3.9.313.0
 
 * SeanHall: WIXBUG:3643 - Incorrect operation for detect-only package

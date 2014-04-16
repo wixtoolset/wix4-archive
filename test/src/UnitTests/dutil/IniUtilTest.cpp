@@ -29,8 +29,8 @@ namespace DutilTests
             HRESULT hr = S_OK;
             LPWSTR sczTempIniFilePath = NULL;
             LPWSTR sczTempIniFileDir = NULL;
-            LPWSTR wzIniContents = L"           PlainValue             =       \t      Blah               \r\n;CommentHere\r\n[Section1]\r\n     ;Another Comment With = Equal Sign\r\nSection1ValueA=Foo\r\n\r\nSection1ValueB=Bar\r\n[Section2]\r\nSection2ValueA=Cha\r\n\r\n";
-            LPWSTR wzScriptContents = L"setf ~PlainValue Blah\r\n;CommentHere\r\n\r\nsetf ~Section1\\Section1ValueA Foo\r\n\r\nsetf ~Section1\\Section1ValueB Bar\r\nsetf ~Section2\\Section2ValueA Cha\r\n\r\n";
+            LPWSTR wzIniContents = L"           PlainValue             =       \t      Blah               \r\n;CommentHere\r\n[Section1]\r\n     ;Another Comment With = Equal Sign\r\nSection1ValueA=Foo\r\n\r\nSection1ValueB=Bar\r\n[Section2]\r\nSection2ValueA=Cha\r\nArray[0]=Arr\r\n";
+            LPWSTR wzScriptContents = L"setf ~PlainValue Blah\r\n;CommentHere\r\n\r\nsetf ~Section1\\Section1ValueA Foo\r\n\r\nsetf ~Section1\\Section1ValueB Bar\r\nsetf ~Section2\\Section2ValueA Cha\r\nsetf ~Section2\\Array[0] Arr\r\n";
 
             hr = PathExpand(&sczTempIniFilePath, L"%TEMP%\\IniUtilTest\\Test.ini", PATH_EXPAND_ENVIRONMENT);
             ExitOnFailure(hr, "Failed to get path to temp INI file");
@@ -155,10 +155,10 @@ namespace DutilTests
             hr = IniGetValueList(iniHandle, &rgValues, &cValues);
             ExitOnFailure(hr, "Failed to get list of values in INI");
 
-            if (cValues != 4)
+            if (cValues != 5)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 4 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure1(hr, "Expected to find 5 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle, L"PlainValue", L"Blah");
@@ -167,6 +167,7 @@ namespace DutilTests
             AssertValue(iniHandle, L"Section1\\Section1ValueB", L"Bar");
             AssertValue(iniHandle, L"Section2\\Section2ValueA", L"Cha");
             AssertNoValue(iniHandle, L"Section1\\ValueDoesntExist");
+            AssertValue(iniHandle, L"Section2\\Array[0]", L"Arr");
 
             hr = IniSetValue(iniHandle, L"PlainValue2", L"Blah2");
             ExitOnFailure(hr, "Failed to set value in INI");
@@ -174,13 +175,16 @@ namespace DutilTests
             hr = IniSetValue(iniHandle, L"Section1\\CreatedValue", L"Woo");
             ExitOnFailure(hr, "Failed to set value in INI");
 
+            hr = IniSetValue(iniHandle, L"Section2\\Array[0]", L"Arrmod");
+            ExitOnFailure(hr, "Failed to set value in INI");
+
             hr = IniGetValueList(iniHandle, &rgValues, &cValues);
             ExitOnFailure(hr, "Failed to get list of values in INI");
 
-            if (cValues != 6)
+            if (cValues != 7)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 4 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure1(hr, "Expected to find 7 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle, L"PlainValue", L"Blah");
@@ -190,6 +194,7 @@ namespace DutilTests
             AssertValue(iniHandle, L"Section2\\Section2ValueA", L"Cha");
             AssertNoValue(iniHandle, L"Section1\\ValueDoesntExist");
             AssertValue(iniHandle, L"Section1\\CreatedValue", L"Woo");
+            AssertValue(iniHandle, L"Section2\\Array[0]", L"Arrmod");
 
             // Try deleting a value as well
             hr = IniSetValue(iniHandle, L"Section1\\Section1ValueB", NULL);
@@ -212,10 +217,10 @@ namespace DutilTests
             hr = IniGetValueList(iniHandle2, &rgValues, &cValues);
             ExitOnFailure(hr, "Failed to get list of values in INI");
 
-            if (cValues != 5)
+            if (cValues != 6)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 5 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure1(hr, "Expected to find 6 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle2, L"PlainValue", L"Blah");
@@ -225,6 +230,7 @@ namespace DutilTests
             AssertValue(iniHandle2, L"Section2\\Section2ValueA", L"Cha");
             AssertNoValue(iniHandle2, L"Section1\\ValueDoesntExist");
             AssertValue(iniHandle2, L"Section1\\CreatedValue", L"Woo");
+            AssertValue(iniHandle2, L"Section2\\Array[0]", L"Arrmod");
 
         LExit:
             ReleaseIni(iniHandle);
@@ -272,6 +278,9 @@ namespace DutilTests
             hr = IniSetValue(iniHandle, L"Section2\\Value1", L"Section2Value1");
             ExitOnFailure(hr, "Failed to set value in INI");
 
+            hr = IniSetValue(iniHandle, L"Section2\\Array[0]", L"Arr");
+            ExitOnFailure(hr, "Failed to set value in INI");
+
             hr = IniSetValue(iniHandle, L"Value3", L"Blah3");
             ExitOnFailure(hr, "Failed to set value in INI");
 
@@ -287,10 +296,10 @@ namespace DutilTests
             hr = IniGetValueList(iniHandle, &rgValues, &cValues);
             ExitOnFailure(hr, "Failed to get list of values in INI");
 
-            if (cValues != 7)
+            if (cValues != 8)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 6 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure1(hr, "Expected to find 8 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle, L"Value1", L"Blah1");
@@ -300,6 +309,7 @@ namespace DutilTests
             AssertValue(iniHandle, L"Section1\\Value1", L"Section1Value1");
             AssertValue(iniHandle, L"Section1\\Value2", L"Section1Value2");
             AssertValue(iniHandle, L"Section2\\Value1", L"Section2Value1");
+            AssertValue(iniHandle, L"Section2\\Array[0]", L"Arr");
 
             hr = IniWriteFile(iniHandle, wzIniFilePath, FILE_ENCODING_UNSPECIFIED);
             ExitOnFailure(hr, "Failed to write ini file back out to disk");
@@ -318,10 +328,10 @@ namespace DutilTests
             hr = IniGetValueList(iniHandle2, &rgValues, &cValues);
             ExitOnFailure(hr, "Failed to get list of values in INI");
 
-            if (cValues != 6)
+            if (cValues != 7)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 4 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure1(hr, "Expected to find 7 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle2, L"Value1", L"Blah1");
@@ -331,6 +341,7 @@ namespace DutilTests
             AssertValue(iniHandle2, L"Section1\\Value1", L"Section1Value1");
             AssertValue(iniHandle2, L"Section1\\Value2", L"Section1Value2");
             AssertValue(iniHandle2, L"Section2\\Value1", L"Section2Value1");
+            AssertValue(iniHandle2, L"Section2\\Array[0]", L"Arr");
 
         LExit:
             ReleaseIni(iniHandle);
