@@ -281,7 +281,7 @@ extern "C" HRESULT DAPI IniParse(
                 // This is important, for example, to support values with names like "Array[0]=blah" in INI format
                 for (wzTemp = pi->rgsczLines[i]; wzTemp < wzOpenTagPrefix; ++wzTemp)
                 {
-                    if (!iswspace(*wzTemp))
+                    if (*wzTemp != L' ' && *wzTemp != L'\t')
                     {
                         wzOpenTagPrefix = NULL;
                         break;
