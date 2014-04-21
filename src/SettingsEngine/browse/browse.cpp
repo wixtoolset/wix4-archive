@@ -355,7 +355,7 @@ BOOL ProcessMessage(
         break;
     case WM_BROWSE_ENUMERATE_PRODUCTS:
         dwIndex = static_cast<DWORD>(msg->wParam);
-        hrSend = CfgEnumerateProducts(bdlDatabaseList.rgDatabases[dwIndex].cdb, NULL, &cehHandle, &dwEnumCount);
+        hrSend = CfgEnumerateProducts(bdlDatabaseList.rgDatabases[dwIndex].cdb, &cehHandle, &dwEnumCount);
 
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;

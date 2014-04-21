@@ -248,7 +248,6 @@ HRESULT CFGAPI CfgEnumerateValues(
 // Enumerate products
 HRESULT CFGAPI CfgEnumerateProducts(
     __in_bcount(CFGDB_HANDLE_BYTES) CFGDB_HANDLE cdHandle,
-    __in_z_opt LPCWSTR wzPublicKey,
     __deref_opt_out_bcount_opt(CFG_ENUMERATION_HANDLE_BYTES) CFG_ENUMERATION_HANDLE *ppvHandle,
     __out_opt DWORD *pcCount
     );
