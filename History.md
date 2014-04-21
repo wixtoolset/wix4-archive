@@ -1,3 +1,5 @@
+* MikeGC: Bug #4345: Make IniUtil tolerate ini files that have '[' or ']' in the name of a value
+
 * MikeGC: Fix bug in settings browser that can in certain situations result in an inability to look at history of a conflicting value, and other minor bugfixes
 
 * MikeGC: Fix bug in settings engine that can cause unnecessary conflicts to appear upon sync failure in certain situations
