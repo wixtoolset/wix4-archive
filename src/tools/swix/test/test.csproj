@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="test.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -157,15 +157,18 @@
     <Reference Include="WixToolset.Dtf.Compression.Zip">
       <HintPath>..\..\bin\dtf\WixToolset.Dtf.Compression.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="xunit">
-      <HintPath>..\..\bin\xUnit\xunit.dll</HintPath>
-    </Reference>
     <ProjectReference Include="..\swc\swc.csproj">
       <Project>{28886709-2988-45B3-8A0F-A419CEE75540}</Project>
       <Name>swc</Name>
     </ProjectReference>
+    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="Data\appx\charms\package.swr">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -191,6 +194,7 @@
     <Content Include="Data\wixlib\inproc\inproc.swr">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

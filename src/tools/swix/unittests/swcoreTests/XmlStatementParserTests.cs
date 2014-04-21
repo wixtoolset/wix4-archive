@@ -7,15 +7,10 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Xunit;
-using Xunit.Extensions;
 using WixToolset.Simplified.CompilerFrontend.Parser;
 using WixToolset.Simplified.ParserCore;
-using System.Reflection;
+using Xunit;
 
 namespace WixToolset.Simplified.UnitTest.Swcore
 {
@@ -376,61 +371,61 @@ namespace WixToolset.Simplified.UnitTest.Swcore
         ////        );
         ////}
 
-////        [Fact]
-////        public void WixlibFileSearchTest()
-////        {
-////            this.TestParser(
-////                @"use msi
-////
-////msi.fileSearch id=fsC component=c00d5a59-1bd1-4f6b-9b2b-27e0ae64020b
-////
-////msi.fileSearch id=fsRK registry=HKLM\Search\Registry\Key\",
-////                Statement(
-////                ////    StatementType.Use,
-////                ////    Token(ParserTokenType.UseKeyword, "use")
-////                ////    .Token(ParserTokenType.Whitespace, " ")
-////                ////    .Token(ParserTokenType.NamespacePrefixDeclaration, "msi")
-////                ////    .Token(ParserTokenType.Whitespace, "\r\n")
-////                ////    )
-////                ////.Statement(
-////                    StatementType.Ignorable,
-////                    Token(ParserTokenType.Whitespace, "\r\n")
-////                    )
-////                .Statement(
-////                    StatementType.Object,
-////                    Token(ParserTokenType.NamespacePrefix, "msi")
-////                    .Token(ParserTokenType.Period, ".")
-////                    .Token(ParserTokenType.Object, "fileSearch")
-////                    .Token(ParserTokenType.Whitespace, " ")
-////                    .Token(ParserTokenType.PropertyName, "id")
-////                    .Token(ParserTokenType.Equals, "=")
-////                    .Token(ParserTokenType.PropertyValue, "fsC")
-////                    .Token(ParserTokenType.Whitespace, " ")
-////                    .Token(ParserTokenType.PropertyName, "component")
-////                    .Token(ParserTokenType.Equals, "=")
-////                    .Token(ParserTokenType.PropertyValue, "c00d5a59-1bd1-4f6b-9b2b-27e0ae64020b")
-////                    .Token(ParserTokenType.Whitespace, "\r\n")
-////                    )
-////                .Statement(
-////                    StatementType.Ignorable,
-////                    Token(ParserTokenType.Whitespace, "\r\n")
-////                    )
-////                .Statement(
-////                    StatementType.Object,
-////                    Token(ParserTokenType.NamespacePrefix, "msi")
-////                    .Token(ParserTokenType.Period, ".")
-////                    .Token(ParserTokenType.Object, "fileSearch")
-////                    .Token(ParserTokenType.Whitespace, " ")
-////                    .Token(ParserTokenType.PropertyName, "id")
-////                    .Token(ParserTokenType.Equals, "=")
-////                    .Token(ParserTokenType.PropertyValue, "fsRK")
-////                    .Token(ParserTokenType.Whitespace, " ")
-////                    .Token(ParserTokenType.PropertyName, "registry")
-////                    .Token(ParserTokenType.Equals, "=")
-////                    .Token(ParserTokenType.PropertyValue, "HKLM\\Search\\Registry\\Key\\")
-////                    )
-////                );
-////        }
+        ////        [Fact]
+        ////        public void WixlibFileSearchTest()
+        ////        {
+        ////            this.TestParser(
+        ////                @"use msi
+        ////
+        ////msi.fileSearch id=fsC component=c00d5a59-1bd1-4f6b-9b2b-27e0ae64020b
+        ////
+        ////msi.fileSearch id=fsRK registry=HKLM\Search\Registry\Key\",
+        ////                Statement(
+        ////                ////    StatementType.Use,
+        ////                ////    Token(ParserTokenType.UseKeyword, "use")
+        ////                ////    .Token(ParserTokenType.Whitespace, " ")
+        ////                ////    .Token(ParserTokenType.NamespacePrefixDeclaration, "msi")
+        ////                ////    .Token(ParserTokenType.Whitespace, "\r\n")
+        ////                ////    )
+        ////                ////.Statement(
+        ////                    StatementType.Ignorable,
+        ////                    Token(ParserTokenType.Whitespace, "\r\n")
+        ////                    )
+        ////                .Statement(
+        ////                    StatementType.Object,
+        ////                    Token(ParserTokenType.NamespacePrefix, "msi")
+        ////                    .Token(ParserTokenType.Period, ".")
+        ////                    .Token(ParserTokenType.Object, "fileSearch")
+        ////                    .Token(ParserTokenType.Whitespace, " ")
+        ////                    .Token(ParserTokenType.PropertyName, "id")
+        ////                    .Token(ParserTokenType.Equals, "=")
+        ////                    .Token(ParserTokenType.PropertyValue, "fsC")
+        ////                    .Token(ParserTokenType.Whitespace, " ")
+        ////                    .Token(ParserTokenType.PropertyName, "component")
+        ////                    .Token(ParserTokenType.Equals, "=")
+        ////                    .Token(ParserTokenType.PropertyValue, "c00d5a59-1bd1-4f6b-9b2b-27e0ae64020b")
+        ////                    .Token(ParserTokenType.Whitespace, "\r\n")
+        ////                    )
+        ////                .Statement(
+        ////                    StatementType.Ignorable,
+        ////                    Token(ParserTokenType.Whitespace, "\r\n")
+        ////                    )
+        ////                .Statement(
+        ////                    StatementType.Object,
+        ////                    Token(ParserTokenType.NamespacePrefix, "msi")
+        ////                    .Token(ParserTokenType.Period, ".")
+        ////                    .Token(ParserTokenType.Object, "fileSearch")
+        ////                    .Token(ParserTokenType.Whitespace, " ")
+        ////                    .Token(ParserTokenType.PropertyName, "id")
+        ////                    .Token(ParserTokenType.Equals, "=")
+        ////                    .Token(ParserTokenType.PropertyValue, "fsRK")
+        ////                    .Token(ParserTokenType.Whitespace, " ")
+        ////                    .Token(ParserTokenType.PropertyName, "registry")
+        ////                    .Token(ParserTokenType.Equals, "=")
+        ////                    .Token(ParserTokenType.PropertyValue, "HKLM\\Search\\Registry\\Key\\")
+        ////                    )
+        ////                );
+        ////        }
 
 
         private static StatementListBuilder<StatementType, ParserTokenType> Statement(StatementType type, TokenListBuilder<ParserTokenType> tokens)
