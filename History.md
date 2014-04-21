@@ -1,3 +1,5 @@
+* MikeGC: Fix bug in settings browser that can in certain situations result in an inability to look at history of a conflicting value, and other minor bugfixes
+
 * MikeGC: Fix bug in settings engine that can cause unnecessary conflicts to appear upon sync failure in certain situations
 
 * MikeGC: In settings engine, remove parameter from CfgEnumerateProducts() that was never used and has not worked for a long time anyway
