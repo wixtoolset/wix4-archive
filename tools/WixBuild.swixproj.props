@@ -19,7 +19,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageSearchPaths Include="$(OriginalOutputPath)" />
+    <PackageSearchPaths Include="$(OutputPath_x86)" />
+    <PackageSearchPaths Include="$(OutputPath_x64)" />
   </ItemGroup>
 
 </Project>
