@@ -10,6 +10,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <TargetExt Condition=" '$(OutputType)' == 'Appx' ">.appx</TargetExt>
+    <TargetExt Condition=" '$(OutputType)' == 'Nuget' ">.nupkg</TargetExt>
+    <TargetExt Condition=" '$(OutputType)' == 'Nupkg' ">.nupkg</TargetExt>
     <TargetExt Condition=" '$(OutputType)' == 'Wixlib' ">.wixlib</TargetExt>
     <TargetExt Condition=" '$(OutputType)' == 'Vsix' ">.vsix</TargetExt>
   </PropertyGroup>
@@ -76,6 +78,8 @@
         SearchPaths="@(PackageSearchPaths)"
         Type="$(PackageType)"
         />
+
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; @(PackageOutput->'%(FullPath)')" />
   </Target>
 
   <!--
