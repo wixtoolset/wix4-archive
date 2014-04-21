@@ -286,11 +286,6 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<ExecuteCompleteEventArgs> ExecuteComplete;
 
         /// <summary>
-        /// Fired by the engine to request a restart now or inform the user a manual restart is required later.
-        /// </summary>
-        public event EventHandler<RestartRequiredEventArgs> RestartRequired;
-
-        /// <summary>
         /// Fired when the engine has completed installing the bundle.
         /// </summary>
         public event EventHandler<ApplyCompleteEventArgs> ApplyComplete;
@@ -969,19 +964,6 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnExecuteComplete(ExecuteCompleteEventArgs args)
         {
             EventHandler<ExecuteCompleteEventArgs> handler = this.ExecuteComplete;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called by the engine to request a restart now or inform the user a manual restart is required later.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnRestartRequired(RestartRequiredEventArgs args)
-        {
-            EventHandler<RestartRequiredEventArgs> handler = this.RestartRequired;
             if (null != handler)
             {
                 handler(this, args);

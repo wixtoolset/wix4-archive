@@ -1697,31 +1697,6 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
-    /// Additional arguments used by the engine to request a restart now or inform the user a manual restart is required later.
-    /// </summary>
-    [Serializable]
-    public class RestartRequiredEventArgs : EventArgs
-    {
-        private bool restart;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="RestartRequiredEventArgs"/> class.
-        /// </summary>
-        public RestartRequiredEventArgs()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets whether the engine should restart now. The default is false.
-        /// </summary>
-        public bool Restart
-        {
-            get { return this.restart; }
-            set { this.restart = value; }
-        }
-    }
-
-    /// <summary>
     /// Additional arguments used when the engine has completed installing the bundle.
     /// </summary>
     [Serializable]
