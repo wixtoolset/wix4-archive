@@ -11,8 +11,8 @@ namespace WixToolset.Simplified
 {
     using System;
     using System.Globalization;
+    using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using WixToolset.Simplified;
 
     /// <summary>
     /// Internal messaging system to appropriately route messages to command-line or MSBuild logger.
@@ -116,12 +116,15 @@ namespace WixToolset.Simplified
                     break;
 
                 case CompilerMessage.CompilerMessageType.Warning:
-                    this.logger.LogWarning("SWIX", e.Message.Id, null, e.FileName, e.LineNumber, e.LinePosition, 0, 0, e.Message.Message);
+                    this.logger.LogWarning("SWIX", e.Message.Id, null, e.FileName, e.LineNumber, e.LinePosition, 0, e.LinePositionEnd, e.Message.Message);
                     break;
 
                 case CompilerMessage.CompilerMessageType.Information:
+                    this.logger.LogMessage(MessageImportance.Normal, e.Message.Message);
+                    break;
+
                 case CompilerMessage.CompilerMessageType.Verbose:
-                    this.logger.LogMessage("SWIX", e.Message.Id, null, e.FileName, e.LineNumber, e.LinePosition, 0, 0, e.Message.Message);
+                    this.logger.LogMessage(MessageImportance.Low, e.Message.Message);
                     break;
             }
         }
