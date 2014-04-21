@@ -14,12 +14,14 @@ namespace WixToolset.Simplified.CompilerBackend
     using System.Globalization;
     using System.IO;
     using WixToolset.Simplified.CompilerBackend.Appx;
+    using WixToolset.Simplified.CompilerBackend.Nuget;
     using WixToolset.Simplified.CompilerBackend.Vsix;
     using WixToolset.Simplified.CompilerBackend.Wix;
 
     internal enum CompilerOutputType
     {
         AppxPackage,
+        NugetPackage,
         MsiModule,
         MsiPackage,
         VsixPackage,
@@ -85,6 +87,10 @@ namespace WixToolset.Simplified.CompilerBackend
             {
                 case PackageType.Appx:
                     backend = new AppxBackendCompiler(CompilerOutputType.AppxPackage);
+                    break;
+
+                case PackageType.Nuget:
+                    backend = new NugetBackendCompiler();
                     break;
 
                 case PackageType.Msi:

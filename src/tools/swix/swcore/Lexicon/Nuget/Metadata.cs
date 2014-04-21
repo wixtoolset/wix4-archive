@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="PackageType.cs" company="Outercurve Foundation">
+// <copyright file="Metadata.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -7,18 +7,19 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Simplified
+namespace WixToolset.Simplified.Lexicon.Nuget
 {
-    /// <summary>
-    /// Type of the resulting package.
-    /// </summary>
-    public enum PackageType
+    public class Metadata : PackageItem
     {
-        Unknown,
-        Appx,
-        Nuget,
-        Msi,
-        Vsix,
-        Wixlib,
+        public bool DevelopmentDependency { get; set; }
+
+        public string ReleaseNotes { get; set; }
+
+        public bool RequireLicenseAcceptance { get; set; }
+
+        public string Summary { get; set; }
+
+        // TODO: consider creating type converter to make this a string[]
+        public string Tags { get; set; }
     }
 }

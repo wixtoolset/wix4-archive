@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="swcore.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -14,7 +14,6 @@
     <RootNamespace>WixToolset.Simplified</RootNamespace>
     <AssemblyName>swcore</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\ParserCore\Error.cs">
       <Link>CompilerFrontend\Parser\Error.cs</Link>
@@ -41,6 +40,8 @@
     <Compile Include="CompilerBackend\Appx\ManifestApplicationItem.cs" />
     <Compile Include="CompilerBackend\Appx\ManifestPackageItem.cs" />
     <Compile Include="CompilerBackend\Appx\AppxPackage.cs" />
+    <Compile Include="CompilerBackend\Nuget\NugetBackendCompiler.cs" />
+    <Compile Include="CompilerBackend\Nuget\NugetManifest.cs" />
     <Compile Include="CompilerBackend\Wix\MurmurHash3.cs" />
     <Compile Include="CompilerBackend\Wix\WixClassId.cs" />
     <Compile Include="CompilerBackend\Wix\WixFileSearch.cs" />
@@ -148,6 +149,8 @@
     <Compile Include="Lexicon\Msi\Ngen.cs" />
     <Compile Include="Lexicon\Msi\NgenPackageItem.cs" />
     <Compile Include="Lexicon\Msi\Property.cs" />
+    <Compile Include="Lexicon\Nuget\Metadata.cs" />
+    <Compile Include="Lexicon\Nuget\Target.cs" />
     <Compile Include="Lexicon\OutprocServer.cs" />
     <Compile Include="Lexicon\Package.cs" />
     <Compile Include="Lexicon\PackageItem.cs" />
@@ -167,14 +170,15 @@
     <Compile Include="PackageType.cs" />
     <Compile Include="SimplifiedCompiler.cs" />
   </ItemGroup>
-
   <ItemGroup>
+    <EmbeddedResource Include="CompilerBackend\Nuget\schema\nuget.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="CompilerMessage.msgs">
       <Generator>TypedMessageGenerator</Generator>
       <LastGenOutput>CompilerMessage.Generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="CompilerMessage.Generated.resx">
       <DependentUpon>CompilerMessage.msgs</DependentUpon>
@@ -186,17 +190,22 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\BlockDeflateStream\BlockDeflateStream.vcxproj" />
-    <ProjectReference Include="..\..\..\DTF\Libraries\Compression.Zip\Compression.Zip.csproj" />
-
+    <ProjectReference Include="..\BlockDeflateStream\BlockDeflateStream.vcxproj">
+      <Project>{FA4862F1-BA70-4F42-82D7-8D298E6006FB}</Project>
+      <Name>WixToolset.BlockDeflateStream</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\DTF\Libraries\Compression.Zip\Compression.Zip.csproj">
+      <Project>{261F2857-B521-42A4-A3E0-B5165F225E50}</Project>
+      <Name>Compression.Zip</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>
