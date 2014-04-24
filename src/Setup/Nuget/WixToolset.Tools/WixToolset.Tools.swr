@@ -63,6 +63,7 @@ folder tools\
   file WixToolset.Dtf.WindowsInstaller.Package.dll
 
   file WixBalExtension.dll
+  file WixComPlusExtension.dll
   file WixDifxAppExtension.dll
   file WixDependencyExtension.dll
   file WixDirectXExtension.dll
