@@ -25,6 +25,18 @@ namespace WixToolset.Simplified.Lexicon
     public class Package : PackageItem
     {
         /// <summary>
+        /// `about` - URL for more information about the package, For example,
+        /// `about="http://wixtoolset.org/"`
+        /// </summary>
+        public string About { get; set; }
+
+        /// <summary>
+        /// `copyright` - copyright information for the package, For example,
+        /// `copyright="Outercurve Foundation"`
+        /// </summary>
+        public string Copyright { get; set; }
+
+        /// <summary>
         /// `displayName` - human readable name for the package. For example,
         /// `displayName="The WiX Toolset"`
         /// </summary>
@@ -50,6 +62,12 @@ namespace WixToolset.Simplified.Lexicon
         /// example, `image=wixlogo.png`
         /// </summary>
         public QualifiedFile Image { get; set; }
+
+        /// <summary>
+        /// `license` - url to license information for the package. For example,
+        /// `license="http://wixtoolset.org/about/license/"`
+        /// </summary>
+        public string License { get; set; }
 
         /// <summary>
         /// `manufacturer` - human readable company name that creates the package.

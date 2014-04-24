@@ -53,6 +53,7 @@
     <OutputPath_x64>$(BaseOutputPath)x64\</OutputPath_x64>
     <OutputPath_arm>$(BaseOutputPath)arm\</OutputPath_arm>
     <BuiltIncludePath>$(WIX_BUILDROOT)$(WixFlavor)\inc\</BuiltIncludePath>
+    <SwixTargetsPath>$(OutputPath_x86)SimplifiedWiX.targets</SwixTargetsPath>
     <WixToolPath>$(OutputPath_x86)</WixToolPath>
     <WixTargetsPath>$(OutputPath_x86)wix.targets</WixTargetsPath>
     <WixTargets200xPath>$(OutputPath_x86)wix200x.targets</WixTargets200xPath>

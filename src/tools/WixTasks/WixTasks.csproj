@@ -52,6 +52,9 @@
     <Compile Include="WixToolTask.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="redirect.wix.nuget.props">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="redirect.wix.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -9,13 +9,13 @@
 
 namespace WixToolset.Simplified.CompilerBackend.Vsix
 {
+    using System;
     using System.Collections.Generic;
     using System.Reflection;
     using System.Xml.Linq;
     using System.Xml.Schema;
-    using WixToolset.Simplified.Lexicon;
     using IO = System.IO;
-    using System;
+    using WixToolset.Simplified.Lexicon;
     using WixToolset.Simplified.Lexicon.Vsix;
 
     /// <summary>

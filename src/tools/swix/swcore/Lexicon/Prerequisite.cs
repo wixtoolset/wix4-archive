@@ -22,7 +22,7 @@ namespace WixToolset.Simplified.Lexicon
         public Version MaxVersion { get; set; }
 
         /// <summary>
-        /// Name of platform the prequisite targets. For example: os, netfx or vs.
+        /// Name of platform the prequisite targets. For example: os, netfx, nuget or vs.
         /// </summary>
         public string On { get; set; }
 

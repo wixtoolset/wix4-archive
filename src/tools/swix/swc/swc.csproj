@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="swc.csproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -14,7 +14,6 @@
     <RootNamespace>WixToolset</RootNamespace>
     <AssemblyName>swc</AssemblyName>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CommandLine.cs" />
@@ -25,15 +24,17 @@
   <ItemGroup>
     <None Include="SimplifiedWiX.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\swcore\swcore.csproj" />
+    <ProjectReference Include="..\swcore\swcore.csproj">
+      <Project>{724901A4-16FF-4759-87A8-FDF85F2C3304}</Project>
+      <Name>swcore</Name>
+    </ProjectReference>
     <Reference Include="System" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

@@ -9,7 +9,6 @@
 
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Markup;
 
@@ -24,11 +23,13 @@ using System.Windows.Markup;
 [assembly: XmlnsPrefix("http://wixtoolset.org/schemas/v4/swx/appx", "appx")]
 [assembly: XmlnsPrefix("http://wixtoolset.org/schemas/v4/swx/msi", "msi")]
 [assembly: XmlnsPrefix("http://wixtoolset.org/schemas/v4/swx/vsix", "vsix")]
+[assembly: XmlnsPrefix("http://wixtoolset.org/schemas/v4/swx/nuget", "nuget")]
 
 [assembly: XmlnsDefinition("http://wixtoolset.org/schemas/v4/swx", "WixToolset.Simplified.Lexicon")]
 [assembly: XmlnsDefinition("http://wixtoolset.org/schemas/v4/swx/appx", "WixToolset.Simplified.Lexicon.Appx")]
 [assembly: XmlnsDefinition("http://wixtoolset.org/schemas/v4/swx/msi", "WixToolset.Simplified.Lexicon.Msi")]
 [assembly: XmlnsDefinition("http://wixtoolset.org/schemas/v4/swx/vsix", "WixToolset.Simplified.Lexicon.Vsix")]
+[assembly: XmlnsDefinition("http://wixtoolset.org/schemas/v4/swx/nuget", "WixToolset.Simplified.Lexicon.Nuget")]
 
 // Expose our internal types to the unit test assembly.
 //[assembly: InternalsVisibleTo("WixToolset.Simplified.UnitTest.Swcore")]

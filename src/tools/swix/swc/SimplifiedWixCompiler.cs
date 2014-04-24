@@ -105,7 +105,7 @@ namespace WixToolset.Simplified
             {
                 if (this.OutputPath == null)
                 {
-                    messaging.OnError(this, "Package type cannot be inferred from output path. Explicitly specify PackageType in your MSBuild project or -type from the swc.exe command-line. Valid options are: appx, msi, vsix, or wixlib");
+                    messaging.OnError(this, "Package type cannot be inferred from output path. Explicitly specify PackageType in your MSBuild project or -type from the swc.exe command-line. Valid options are: appx, msi, nuget, vsix, or wixlib");
                 }
                 else
                 {
@@ -159,11 +159,11 @@ namespace WixToolset.Simplified
             PackageType type = PackageType.Unknown;
             if (String.IsNullOrEmpty(this.Type))
             {
-                messaging.OnError(this, "A package type must specified. Use the PackageType in your MSBuild project or -type from the swc.exe command-line. Valid options are: appx, msi, vsix or wixlib");
+                messaging.OnError(this, "A package type must specified. Use the PackageType in your MSBuild project or -type from the swc.exe command-line. Valid options are: appx, msi, nuget, vsix or wixlib");
             }
             else if (!SimplifiedWixCompiler.TryConvertPackageType(this.Type, out type))
             {
-                messaging.OnError(this, "Unknown package type specified: {0}. Valid options are: appx, msi, vsix or wixlib", this.Type);
+                messaging.OnError(this, "Unknown package type specified: {0}. Valid options are: appx, msi, nuget, vsix or wixlib", this.Type);
             }
 
             if (type == PackageType.Appx && locales.Count == 0)
@@ -236,7 +236,7 @@ namespace WixToolset.Simplified
             Console.WriteLine("   -o[ut]         specify output file (default: write to current directory)");
             Console.WriteLine("   -sp            ordered list of paths to find source files");
             Console.WriteLine("   -type          type of package to output (default: inferred from -out)");
-            Console.WriteLine("                     values: appx, msi, vsix or wixlib");
+            Console.WriteLine("                     values: appx, msi, nuget, vsix or wixlib");
             Console.WriteLine("   -? | -help     this help information");
             Console.WriteLine();
         }
@@ -282,6 +282,11 @@ namespace WixToolset.Simplified
             {
                 case "appx":
                     type = PackageType.Appx;
+                    break;
+
+                case "nuget":
+                case "nupkg":
+                    type = PackageType.Nuget;
                     break;
 
                 case "msi":

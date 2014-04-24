@@ -14,6 +14,7 @@
     </ProjectReference>
 
     <ProjectReference Include="Bundle\Bundle.wixproj" />
+    <ProjectReference Include="Nuget\WixToolset.Tools\WixToolset.Tools.swixproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
