@@ -23,7 +23,7 @@ namespace WixToolset.Simplified.Lexicon.Nuget
             Target.PrerequisiteFramework.Add(prerequisite, framework);
         }
 
-        public static string SetFramework(Lexicon.Prerequisite prerequisite)
+        public static string GetFramework(Lexicon.Prerequisite prerequisite)
         {
             string framework = null;
             if (Target.PrerequisiteFramework.TryGetValue(prerequisite, out framework))

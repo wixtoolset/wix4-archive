@@ -21,7 +21,7 @@ namespace WixToolset.Simplified.CompilerBackend.Nuget
     using IO = System.IO;
 
     /// <summary>
-    /// Nuget manifest object that manages the creation of the extension.vsixmanifest file.
+    /// Nuget manifest object that manages the creation of the .nuspec file.
     /// </summary>
     internal class NugetManifest
     {
@@ -150,36 +150,36 @@ namespace WixToolset.Simplified.CompilerBackend.Nuget
                                 break;
                         }
                     }
-                    else if (item is Dependency)
-                    {
-                        Dependency dependency = (Dependency)item;
-                        XElement reference = new XElement(NugetNamespace + "reference",
-                            new XAttribute("Id", dependency.Name),
-                            new XElement(NugetNamespace + "Name", dependency.Publisher)
-                            );
+                    // TODO: handle dependencies and references correctly.
+                    //else if (item is Dependency)
+                    //{
+                    //    Dependency dependency = (Dependency)item;
+                    //    XElement reference = new XElement(NugetNamespace + "reference",
+                    //        new XAttribute("Id", dependency.Name),
+                    //        new XElement(NugetNamespace + "Name", dependency.Publisher)
+                    //        );
 
-                        string targetFramework = String.Empty;
+                    //    string targetFramework = String.Empty;
 
-                        if (dependency.Version != null)
-                        {
-                            reference.Add(new XAttribute("MinVersion", dependency.Version.ToString()));
-                        }
+                    //    if (dependency.Version != null)
+                    //    {
+                    //        reference.Add(new XAttribute("MinVersion", dependency.Version.ToString()));
+                    //    }
 
-                        if (dependency.MaxVersion != null)
-                        {
-                            reference.Add(new XAttribute("MaxVersion", dependency.MaxVersion.ToString()));
-                        }
+                    //    if (dependency.MaxVersion != null)
+                    //    {
+                    //        reference.Add(new XAttribute("MaxVersion", dependency.MaxVersion.ToString()));
+                    //    }
 
-                        List<XElement> dependencies;
-                        if (!groupedDependencies.TryGetValue(targetFramework, out dependencies))
-                        {
-                            dependencies = new List<XElement>();
-                            groupedDependencies.Add(targetFramework, dependencies);
-                        }
+                    //    List<XElement> dependencies;
+                    //    if (!groupedDependencies.TryGetValue(targetFramework, out dependencies))
+                    //    {
+                    //        dependencies = new List<XElement>();
+                    //        groupedDependencies.Add(targetFramework, dependencies);
+                    //    }
 
-                        dependencies.Add(reference);
-                    }
-                    // TODO: handle references
+                    //    dependencies.Add(reference);
+                    //}
                     //else if (item is Reference)
                     //{
                     //    Reference reference = (Reference)item;
@@ -300,7 +300,7 @@ namespace WixToolset.Simplified.CompilerBackend.Nuget
         }
 
         /// <summary>
-        /// Validate the manifest document against the appropriate AppX manifest.
+        /// Validate the manifest document against the appropriate NuGet manifest.
         /// </summary>
         /// <param name="eventHandler">Optional event handler to post validation errors.</param>
         public void Validate(ValidationEventHandler eventHandler)
@@ -318,7 +318,7 @@ namespace WixToolset.Simplified.CompilerBackend.Nuget
             string[] idPath = path.Split(new char[] { ':' }, 2);
             if (!idPath[0].Equals("ApplicationFolder"))
             {
-                // TOOD: send warning that we are ignoring all other roots and we always put files in ApplicationFolder
+                // TODO: send warning that we are ignoring all other roots and we always put files in ApplicationFolder
             }
 
             return idPath[1].Substring(1); // skip the backslash.
