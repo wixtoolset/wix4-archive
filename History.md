@@ -1,3 +1,5 @@
+## WixBuild: Version 4.0.1621.0
+
 * RobMen: Merge recent changes through WiX v3.9.313.0
 
 * SeanHall: WIXBUG:3643 - Incorrect operation for detect-only package
