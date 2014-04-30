@@ -11,7 +11,11 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
+using WixToolset.Extensions;
+using WixToolset.Tools;
+
 [assembly: AssemblyTitle("WiX Toolset VS Extension")]
 [assembly: AssemblyDescription("WiX Toolset Visual Studio Extension")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
+[assembly: AssemblyDefaultHeatExtension(typeof(VSHeatExtension))]

@@ -1,3 +1,5 @@
+* RobMen: Fix #4395 by replacing incorrectly removed AssemblyDefaultHeatExtension attribute from VSHeatExtension.
+
 * MikeGC: Bug #4345: Make IniUtil tolerate ini files that have '[' or ']' in the name of a value
 
 * MikeGC: Fix bug in settings browser that can in certain situations result in an inability to look at history of a conflicting value, and other minor bugfixes
