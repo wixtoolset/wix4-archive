@@ -61,6 +61,7 @@ enum WIXSTDBA_PAGE
     WIXSTDBA_PAGE_PROGRESS_PASSIVE,
     WIXSTDBA_PAGE_SUCCESS,
     WIXSTDBA_PAGE_FAILURE,
+    WIXSTDBA_PAGE_UNINSTALL_SUCCESS,
     COUNT_WIXSTDBA_PAGE,
 };
 
@@ -75,6 +76,7 @@ static LPCWSTR vrgwzPageNames[] = {
     L"ProgressPassive",
     L"Success",
     L"Failure",
+    L"UninstallSuccess",
 };
 
 enum WIXSTDBA_CONTROL
@@ -135,6 +137,11 @@ enum WIXSTDBA_CONTROL
     WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT,
     WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON,
     WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON,
+
+    // UninstallSuccess page
+    WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_TEXT,
+    WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_BUTTON,
+    WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_CLOSE_BUTTON,
 };
 
 static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
@@ -183,6 +190,10 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
     { WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT, L"FailureRestartText" },
     { WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, L"FailureRestartButton" },
     { WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON, L"FailureCloseButton" },
+
+    { WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_TEXT, L"UninstallSuccessRestartText" },
+    { WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_BUTTON, L"UninstallSuccessRestartButton" },
+    { WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_CLOSE_BUTTON, L"UninstallSuccessCloseButton" },
 };
 
 class CWixStandardBootstrapperApplication : public CBalBaseBootstrapperApplication
@@ -1490,6 +1501,7 @@ private: // privates
                 return 0;
 
             case WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON: __fallthrough;
+            case WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_BUTTON: __fallthrough;
             case WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON:
                 pBA->OnClickRestartButton();
                 return 0;
@@ -1499,6 +1511,7 @@ private: // privates
             case WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON: __fallthrough;
             case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON: __fallthrough;
             case WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON: __fallthrough;
+            case WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_CLOSE_BUTTON: __fallthrough;
             case WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON: __fallthrough;
             case WIXSTDBA_CONTROL_CLOSE_BUTTON:
                 pBA->OnClickCloseButton();
@@ -1861,6 +1874,20 @@ private: // privates
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_LAUNCH_BUTTON, fLaunchTargetExists && BOOTSTRAPPER_ACTION_UNINSTALL < m_plannedAction);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT, fShowRestartButton);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON, fShowRestartButton);
+                }
+                else if (m_rgdwPageIds[WIXSTDBA_PAGE_UNINSTALL_SUCCESS] == dwNewPageId) // on the "UninstallSuccess" page, check if the restart button should be enabled.
+                {
+                    BOOL fShowRestartButton = FALSE;
+                    if (m_fRestartRequired)
+                    {
+                        if (BOOTSTRAPPER_RESTART_PROMPT == m_command.restart)
+                        {
+                            fShowRestartButton = TRUE;
+                        }
+                    }
+
+                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_TEXT, fShowRestartButton);
+                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_UNINSTALL_SUCCESS_RESTART_BUTTON, fShowRestartButton);
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_FAILURE] == dwNewPageId) // on the "Failure" page, show error message and check if the restart button should be enabled.
                 {
@@ -2402,7 +2429,7 @@ private: // privates
                 break;
 
             case WIXSTDBA_STATE_APPLIED:
-                *pdwPageId = m_rgdwPageIds[WIXSTDBA_PAGE_SUCCESS];
+                *pdwPageId = BOOTSTRAPPER_ACTION_UNINSTALL == m_plannedAction ? m_rgdwPageIds[WIXSTDBA_PAGE_UNINSTALL_SUCCESS] : m_rgdwPageIds[WIXSTDBA_PAGE_SUCCESS];
                 break;
 
             case WIXSTDBA_STATE_FAILED:
@@ -2430,8 +2457,6 @@ private: // privates
                 BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "%ls", m_sczFailedMessage);
 
                 hr = E_WIXSTDBA_CONDITION_FAILED;
-                // todo: remove in WiX v4, in case people are relying on v3.x logging behavior
-                BalExitOnFailure1(hr, "Bundle condition evaluated to false: %ls", pCondition->sczCondition);
             }
         }
 

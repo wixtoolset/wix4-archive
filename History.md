@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4149 - Add UninstallSuccess page to WixStdBA so the uninstall success message can be different from the install/modify/repair success message.
+
 * RobMen: Fix #4395 by replacing incorrectly removed AssemblyDefaultHeatExtension attribute from VSHeatExtension.
 
 * MikeGC: Bug #4345: Make IniUtil tolerate ini files that have '[' or ']' in the name of a value
