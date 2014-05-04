@@ -52,6 +52,12 @@
         <Button Name="SuccessRestartButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessRestartButton)</Button>
         <Button Name="SuccessCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.SuccessCloseButton)</Button>
     </Page>
+    <Page Name="UninstallSuccess">
+        <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.UninstallSuccessHeader)</Text>
+        <Text Name="UninstallSuccessRestartText" X="-11" Y="-51" Width="400" Height="34" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.UninstallSuccessRestartText)</Text>
+        <Button Name="UninstallSuccessRestartButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.UninstallSuccessRestartButton)</Button>
+        <Button Name="UninstallSuccessCloseButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.UninstallSuccessCloseButton)</Button>
+    </Page>
     <Page Name="Failure">
         <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.FailureHeader)</Text>
         <Hypertext Name="FailureLogFileLink" X="11" Y="121" Width="-11" Height="42" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
