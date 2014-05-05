@@ -43,7 +43,9 @@ struct CFGDB_STRUCT
     LPWSTR sczOriginalDbPath; // The original path to the DB (before converting mounted drives to UNC paths)
     LPWSTR sczOriginalDbDir; // The original path to the DB (before converting mounted drives to UNC paths)
     LPWSTR sczDbPath; // The full path to the database file that was opened
-    LPWSTR sczDbChangesPath; // The full path to the hidden file next to a database which tracks when the last real change to it was
+    // The modified time of the remote db at the moment we copied it. Before we copy it back, we verify nobody else has changed it.
+    FILETIME ftBeforeModify;
+    LPWSTR sczDbCopiedPath; // The full path to the database file that was copied locally (used when remote databases are opened)
     LPWSTR sczDbDir; // The directory this DB was opened or created in
     LPWSTR sczStreamsDir; // The directory where external streams for this database should be stored
     SCE_DATABASE *psceDb;

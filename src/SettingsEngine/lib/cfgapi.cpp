@@ -135,6 +135,7 @@ extern "C" HRESULT CFGAPI CfgUninitialize(
         pcdb->dwAppID = DWORD_MAX;
         pcdb->fProductSet = FALSE;
         ReleaseNullStr(pcdb->sczGuid);
+        ReleaseNullStr(pcdb->sczDbCopiedPath);
         ReleaseNullStr(pcdb->sczDbDir);
         ReleaseNullStr(pcdb->sczStreamsDir);
 
@@ -160,7 +161,7 @@ extern "C" HRESULT CFGAPI CfgUninitialize(
 
         if (pcdb->hToken)
         {
-            ::CloseHandle(pcdb->hToken);
+            ReleaseHandle(pcdb->hToken);
         }
 
         LogUninitialize(TRUE);

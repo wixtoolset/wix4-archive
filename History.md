@@ -1,3 +1,9 @@
+* MikeGC: Feature #4352: Settings Engine now has primitive cloud support (tested with dropbox, should work with other similar products)
+
+* MikeGC: Bug #4401: MonUtil can now monitor removable drives (and allow them to be unplugged)
+
+* MikeGC: Bug #4405: LAN Database no longer has annoying locking issue where one client's connection failure causes everyone to fail to sync for a lengthy period of time
+
 * MikeGC: Bug #4345: Make IniUtil tolerate ini files that have '[' or ']' in the name of a value
 
 * MikeGC: Fix bug in settings browser that can in certain situations result in an inability to look at history of a conflicting value, and other minor bugfixes

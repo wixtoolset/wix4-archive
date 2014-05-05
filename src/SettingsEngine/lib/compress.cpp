@@ -157,8 +157,11 @@ HRESULT CompressWriteStream(
         *pcfCompressionFormat = COMPRESSION_CAB;
 
         // We saved enough space to bother with CAB, so use that
-        hr = FileEnsureMove(sczCabPath, sczStreamPath, FALSE, TRUE);
-        ExitOnFailure(hr, "Failed to move file from cab path to stream path");
+        // It's important to overwrite - in some cases (such as writing streams to a db,
+        // then rolling back the transaction or crashing or losing connection to remote)
+        // we'll leave a stream behind that db doesn't know about, and is possibly incomplete. So just overwrite it.
+        hr = FileEnsureMove(sczCabPath, sczStreamPath, TRUE, TRUE);
+        ExitOnFailure2(hr, "Failed to move file from cab path %ls to stream path %ls", sczCabPath, sczStreamPath);
 
         ReleaseNullStr(sczCabPath);
     }
@@ -199,6 +202,12 @@ HRESULT CompressReadStream(
 
     hr = StreamGetFilePath(&sczStreamPath, pcdb, pbHash, FALSE);
     ExitOnFailure(hr, "Failed to get stream file path");
+
+    if (!FileExistsEx(sczStreamPath, NULL))
+    {
+        LogStringLine(REPORT_STANDARD, "Stream %ls was missing. If syncing to a cloud-managed directory, this is normal, and autosync (when the file is downloaded to the machine) will automatically fix the situation.", sczStreamPath);
+        ExitFunction1(hr = HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA));
+    }
 
     switch (cfCompressionFormat)
     {

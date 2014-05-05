@@ -717,7 +717,14 @@ static HRESULT BeginMonitoring(
             ExitOnFailure(hr, "Failed to get product name");
 
             hr = BeginMonitoringProduct(pcdb, sceRow, &syncSession, pContext);
-            ExitOnFailure1(hr, "Failed to begin monitoring product %ls", sczProductId);
+            // Don't just die if a product fails - this could be due to a badly written manifest, or a bad ARP key
+            // We log and move on to give user a chance to fix it
+            // TODO: we should have a way to notify UI of a warning (non-catastrophic error)
+            if (FAILED(hr))
+            {
+                LogStringLine(REPORT_STANDARD, "Failed to begin monitoring product %ls with error 0x%X", sczProductId, hr);
+                hr = S_OK;
+            }
         }
 
         ReleaseNullSceRow(sceRow);
@@ -1486,19 +1493,12 @@ static HRESULT AddRemoteToMonitorList(
     HRESULT hr = S_OK;
     DWORD dwIndex = DWORD_MAX;
     LPWSTR sczDirectory = NULL;
-    LPWSTR sczUncDirectory = NULL;
     MONITOR_ITEM *pItem = NULL;
     DWORD dwOriginalAppIDLocal = DWORD_MAX;
     BOOL fLocked = FALSE;
 
     hr = PathGetDirectory(wzPath, &sczDirectory);
     ExitOnFailure1(hr, "Failed to get directory portion of remote path %ls", wzPath);
-
-    hr = UncConvertFromMountedDrive(&sczUncDirectory, sczDirectory);
-    if (FAILED(hr))
-    {
-        ReleaseNullStr(sczUncDirectory);
-    }
 
     // If this directory is already watched by some other product, add our product ID to the appID list for that monitor
     if (!FindDirectoryMonitorIndex(pContext, sczDirectory, FALSE, &dwIndex))
@@ -1510,7 +1510,10 @@ static HRESULT AddRemoteToMonitorList(
         pItem = pContext->rgMonitorItems + pContext->cMonitorItems - 1;
         pItem->type = MONITOR_DIRECTORY;
         pItem->fRemote = TRUE;
-        pItem->fRecursive = FALSE;
+        // Recursive true is important in dropbox-like situations,
+        // we may have received a new DB but not all dependent streams, so we need to notice when the streams arrive
+        // Retrying cannot cover this because getting the streams might take longer than our retry interval
+        pItem->fRecursive = TRUE;
         pItem->sczPath = sczDirectory;
         sczDirectory = NULL;
 
@@ -1519,13 +1522,8 @@ static HRESULT AddRemoteToMonitorList(
         fLocked = TRUE;
         dwOriginalAppIDLocal = pcdb->dwAppID;
 
-        // Only add for monitoring if it's a network location. Other remotes (such as those on removable drives)
-        // shouldn't have a wait, because it's not necessary, and because it disallows the user from disconnecting them.
-        if (NULL != sczUncDirectory)
-        {
-            hr = MonAddDirectory(pContext->monitorHandle, pItem->sczPath, FALSE, REMOTEDB_SILENCE_PERIOD, NULL);
-            ExitOnFailure1(hr, "Failed to add directory %ls for monitoring", pItem->sczPath);
-        }
+        hr = MonAddDirectory(pContext->monitorHandle, pItem->sczPath, TRUE, REMOTEDB_SILENCE_PERIOD, NULL);
+        ExitOnFailure1(hr, "Failed to add directory %ls for monitoring", pItem->sczPath);
 
         hr = SyncRemotes(pcdb, pItem->sczPath, FALSE);
         ExitOnFailure1(hr, "Failed to sync remotes starting with the one under directory %ls", pItem->sczPath);
@@ -1546,7 +1544,6 @@ LExit:
         HandleUnlock(pcdb);
     }
     ReleaseStr(sczDirectory);
-    ReleaseStr(sczUncDirectory);
 
     return hr;
 }
@@ -1662,6 +1659,11 @@ static HRESULT SyncRemotes(
                 LogErrorString(hr, "Failed to sync remote DB at %ls, the network connection may be down, or the server may be down.", pcdb->rgpcdbOpenDatabases[dwFirstSyncedIndex]->sczDbDir);
                 hr = S_OK;
             }
+            else if (HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA) == hr)
+            {
+                LogErrorString(hr, "Stream file not (yet) present for database %ls. Autosync will not retry now, but will automatically retry if file later becomes present.", pcdb->rgpcdbOpenDatabases[dwFirstSyncedIndex]->sczDbDir);
+                hr = S_OK;
+            }
             ExitOnFailure(hr, "Failed to sync first remote");
         }
         else
@@ -1690,6 +1692,11 @@ static HRESULT SyncRemotes(
                 else if (HRESULT_FROM_WIN32(ERROR_BAD_NETPATH) == hr || HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME) == hr || HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND) == hr || HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE) == hr)
                 {
                     LogErrorString(hr, "Failed to sync remote DB at %ls, the network connection may be down, or the server may be down.", pcdb->rgpcdbOpenDatabases[i]->sczDbDir);
+                    hr = S_OK;
+                }
+                else if (HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA) == hr)
+                {
+                    LogErrorString(hr, "Stream file not (yet) present for database %ls. Autosync will not retry now, but will automatically retry if file later becomes present.", pcdb->rgpcdbOpenDatabases[dwFirstSyncedIndex]->sczDbDir);
                     hr = S_OK;
                 }
                 ExitOnFailure(hr, "Failed to sync another remote");
@@ -1745,8 +1752,8 @@ static HRESULT SyncRemote(
 
     if (fCheckDbTimestamp)
     {
-        hr = FileGetTime(pcdb->sczDbChangesPath, NULL, NULL, &ftLastModified);
-        ExitOnFailure1(hr, "Failed to get file time of remote db changes path: %ls", pcdb->sczDbChangesPath);
+        hr = FileGetTime(pcdb->sczDbPath, NULL, NULL, &ftLastModified);
+        ExitOnFailure1(hr, "Failed to get file time of remote db: %ls", pcdb->sczDbPath);
 
         if (0 == ::CompareFileTime(&ftLastModified, &pcdb->ftLastModified))
         {
