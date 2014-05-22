@@ -20,6 +20,7 @@ const int MON_THREAD_INIT_RETRIES = 1000;
 const int MON_THREAD_INIT_RETRY_PERIOD_IN_MS = 10;
 const int MON_THREAD_NETWORK_FAIL_RETRY_IN_MS = 1000*60; // if we know we failed to connect, retry every minute
 const int MON_THREAD_NETWORK_SUCCESSFUL_RETRY_IN_MS = 1000*60*20; // if we're just checking for remote servers dieing, check much less frequently
+const int MON_THREAD_WAIT_REMOVE_DEVICE = 5000;
 const LPCWSTR MONUTIL_WINDOW_CLASS = L"MonUtilClass";
 
 enum MON_MESSAGE
@@ -38,6 +39,7 @@ enum MON_MESSAGE
         // If we do this often, it can cause a lot of wasted work (which could be expensive for battery life), so the default is to do it very rarely (every 20 minutes).
     MON_MESSAGE_NETWORK_RETRY_FAILED_NETWORK_WAITS, // Coordinator thread is telling waiters to retry any failed network waits
     MON_MESSAGE_DRIVE_STATUS_UPDATE, // Some change to local drive has occurred (new drive created or plugged in, or removed)
+    MON_MESSAGE_DRIVE_QUERY_REMOVE, // User wants to unplug a drive, which MonUtil will always allow
     MON_MESSAGE_STOP
 };
 
@@ -52,6 +54,11 @@ struct MON_REQUEST
 {
     MON_TYPE type;
     DWORD dwMaxSilencePeriodInMs;
+
+    // Handle to the main window for RegisterDeviceNotification() (same handle as owned by coordinator thread)
+    HWND hwnd;
+    // and handle to the notification (specific to this request)
+    HDEVNOTIFY hNotify;
 
     BOOL fRecursive;
     void *pvContext;
@@ -110,25 +117,6 @@ struct MON_REMOVE_MESSAGE
     };
 };
 
-struct MON_STRUCT
-{
-    HANDLE hCoordinatorThread;
-    DWORD dwCoordinatorThreadId;
-    BOOL fCoordinatorThreadMessageQueueInitialized;
-
-    // Invisible window for receiving network status & drive added/removal messages
-    HWND hwnd;
-
-    // Callbacks
-    PFN_MONGENERAL vpfMonGeneral;
-    PFN_MONDRIVESTATUS vpfMonDriveStatus;
-    PFN_MONDIRECTORY vpfMonDirectory;
-    PFN_MONREGKEY vpfMonRegKey;
-
-    // Context for callbacks
-    LPVOID pvContext;
-};
-
 struct MON_WAITER_CONTEXT
 {
     DWORD dwCoordinatorThreadId;
@@ -168,6 +156,53 @@ struct MON_WAITER_INFO
     DWORD cMonitorCount;
 
     MON_WAITER_CONTEXT *pWaiterContext;
+};
+
+// This struct is used when Thread A wants to send a task to another thread B (and get notified when the task finishes)
+// You typically declare this struct in a manner that a pointer to it is valid as long as a thread that could respond is still running
+// (even long after sender is no longer waiting, in case thread has huge message queue)
+// and you must send 2 parameters in the message:
+// 1) a pointer to this struct (which is always valid)
+// 2) the original value of dwIteration
+// The receiver of the message can compare the current value of dwSendIteration in the struct with what was sent in the message
+// If values are different, we're too late and thread A is no longer waiting on this response
+// otherwise, set dwResponseIteration to the same value, and call ::SetEvent() on hWait
+// Thread A will then wakeup, and must verify that dwResponseIteration == dwSendIteration to ensure it isn't an earlier out-of-date reply
+// replying to a newer wait
+// pvContext is used to send a misc parameter related to processing data
+struct MON_INTERNAL_TEMPORARY_WAIT
+{
+    // Should be incremented each time sender sends a pointer to this struct, so each request has a different iteration
+    DWORD dwSendIteration;
+    DWORD dwReceiveIteration;
+    HANDLE hWait;
+    void *pvContext;
+};
+
+struct MON_STRUCT
+{
+    HANDLE hCoordinatorThread;
+    DWORD dwCoordinatorThreadId;
+    BOOL fCoordinatorThreadMessageQueueInitialized;
+
+    // Invisible window for receiving network status & drive added/removal messages
+    HWND hwnd;
+    // Used by window procedure for sending request and waiting for response from waiter threads
+    // such as in event of a request to remove a device
+    MON_INTERNAL_TEMPORARY_WAIT internalWait;
+
+    // Callbacks
+    PFN_MONGENERAL vpfMonGeneral;
+    PFN_MONDRIVESTATUS vpfMonDriveStatus;
+    PFN_MONDIRECTORY vpfMonDirectory;
+    PFN_MONREGKEY vpfMonRegKey;
+
+    // Context for callbacks
+    LPVOID pvContext;
+
+    // Waiter thread array
+    MON_WAITER_INFO *rgWaiterThreads;
+    DWORD cWaiterThreads;
 };
 
 const int MON_HANDLE_BYTES = sizeof(MON_STRUCT);
@@ -226,6 +261,7 @@ static LRESULT CALLBACK MonWndProc(
     __in LPARAM lParam
     );
 static HRESULT CreateMonWindow(
+    __in MON_STRUCT *pm,
     __out HWND *pHwnd
     );
 // if *phMonitor is non-NULL, closes the old wait before re-starting the new wait
@@ -337,7 +373,8 @@ extern "C" HRESULT DAPI MonAddDirectory(
     pMessage->handle = INVALID_HANDLE_VALUE;
     pMessage->request.type = MON_DIRECTORY;
     pMessage->request.fRecursive = fRecursive;
-    pMessage->request.dwMaxSilencePeriodInMs = dwSilencePeriodInMs,
+    pMessage->request.dwMaxSilencePeriodInMs = dwSilencePeriodInMs;
+    pMessage->request.hwnd = pm->hwnd;
     pMessage->request.pvContext = pvDirectoryContext;
     pMessage->request.sczOriginalPathRequest = sczOriginalPathRequest;
     sczOriginalPathRequest = NULL;
@@ -388,15 +425,14 @@ extern "C" HRESULT DAPI MonAddRegKey(
     ExitOnNull(pMessage, hr, E_OUTOFMEMORY, "Failed to allocate memory for message");
 
     pMessage->handle = ::CreateEventW(NULL, TRUE, FALSE, NULL);
-    if (NULL == pMessage->handle) // Yes, unfortunately NULL is the invalid handle value for regkey waits, INVALID_HANDLE_VALUE is for directory waits. yuck.
-    {
-        ExitWithLastError(hr, "Failed to create anonymous event for regkey monitor");
-    }
+    ExitOnNullWithLastError(pMessage->handle, hr, "Failed to create anonymous event for regkey monitor");
+
     pMessage->request.type = MON_REGKEY;
     pMessage->request.regkey.hkRoot = hkRoot;
     pMessage->request.regkey.kbKeyBitness = kbKeyBitness;
     pMessage->request.fRecursive = fRecursive;
     pMessage->request.dwMaxSilencePeriodInMs = dwSilencePeriodInMs,
+    pMessage->request.hwnd = pm->hwnd;
     pMessage->request.pvContext = pvRegKeyContext;
 
     hr = PathGetHierarchyArray(sczSubKey, &pMessage->request.rgsczPathHierarchy, reinterpret_cast<LPUINT>(&pMessage->request.cPathHierarchy));
@@ -537,12 +573,17 @@ static void MonRequestDestroy(
 {
     if (NULL != pRequest)
     {
-        ReleaseStr(pRequest->sczOriginalPathRequest);
-        ReleaseStrArray(pRequest->rgsczPathHierarchy, pRequest->cPathHierarchy);
         if (MON_REGKEY == pRequest->type)
         {
             ReleaseRegKey(pRequest->regkey.hkSubKey);
         }
+        else if (MON_DIRECTORY == pRequest->type && pRequest->hNotify)
+        {
+            UnregisterDeviceNotification(pRequest->hNotify);
+            pRequest->hNotify = NULL;
+        }
+        ReleaseStr(pRequest->sczOriginalPathRequest);
+        ReleaseStrArray(pRequest->rgsczPathHierarchy, pRequest->cPathHierarchy);
     }
 }
 
@@ -552,6 +593,7 @@ static void MonAddMessageDestroy(
 {
     if (NULL != pMessage)
     {
+        MonRequestDestroy(&pMessage->request);
         if (MON_DIRECTORY == pMessage->request.type && INVALID_HANDLE_VALUE != pMessage->handle)
         {
             ::FindCloseChangeNotification(pMessage->handle);
@@ -560,7 +602,6 @@ static void MonAddMessageDestroy(
         {
             ReleaseHandle(pMessage->handle);
         }
-        MonRequestDestroy(&pMessage->request);
 
         ReleaseMem(pMessage);
     }
@@ -597,8 +638,6 @@ static DWORD WINAPI CoordinatorThread(
     DWORD dwThreadIndex = DWORD_MAX;
     DWORD dwRetries;
     DWORD dwFailingNetworkWaits = 0;
-    MON_WAITER_INFO *rgWaiterThreads = NULL;
-    DWORD cWaiterThreads = 0;
     MON_WAITER_CONTEXT *pWaiterContext = NULL;
     MON_REMOVE_MESSAGE *pRemoveMessage = NULL;
     MON_REMOVE_MESSAGE *pTempRemoveMessage = NULL;
@@ -613,7 +652,7 @@ static DWORD WINAPI CoordinatorThread(
     ::PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
     pm->fCoordinatorThreadMessageQueueInitialized = TRUE;
 
-    hr = CreateMonWindow(&pm->hwnd);
+    hr = CreateMonWindow(pm, &pm->hwnd);
     ExitOnFailure(hr, "Failed to create window for status update thread");
 
     WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -640,29 +679,29 @@ static DWORD WINAPI CoordinatorThread(
             {
             case MON_MESSAGE_ADD:
                 dwThreadIndex = DWORD_MAX;
-                for (DWORD i = 0; i < cWaiterThreads; ++i)
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    if (rgWaiterThreads[i].cMonitorCount < MON_MAX_MONITORS_PER_THREAD)
+                    if (pm->rgWaiterThreads[i].cMonitorCount < MON_MAX_MONITORS_PER_THREAD)
                     {
                         dwThreadIndex = i;
                         break;
                     }
                 }
 
-                if (dwThreadIndex < cWaiterThreads)
+                if (dwThreadIndex < pm->cWaiterThreads)
                 {
-                    pWaiterContext = rgWaiterThreads[dwThreadIndex].pWaiterContext;
+                    pWaiterContext = pm->rgWaiterThreads[dwThreadIndex].pWaiterContext;
                 }
                 else
                 {
-                    hr = MemEnsureArraySize(reinterpret_cast<void **>(&rgWaiterThreads), cWaiterThreads + 1, sizeof(MON_WAITER_INFO), MON_THREAD_GROWTH);
+                    hr = MemEnsureArraySize(reinterpret_cast<void **>(&pm->rgWaiterThreads), pm->cWaiterThreads + 1, sizeof(MON_WAITER_INFO), MON_THREAD_GROWTH);
                     ExitOnFailure(hr, "Failed to grow waiter thread array size");
-                    ++cWaiterThreads;
+                    ++pm->cWaiterThreads;
 
-                    dwThreadIndex = cWaiterThreads - 1;
-                    rgWaiterThreads[dwThreadIndex].pWaiterContext = reinterpret_cast<MON_WAITER_CONTEXT*>(MemAlloc(sizeof(MON_WAITER_CONTEXT), TRUE));
-                    ExitOnNull(rgWaiterThreads[dwThreadIndex].pWaiterContext, hr, E_OUTOFMEMORY, "Failed to allocate waiter context struct");
-                    pWaiterContext = rgWaiterThreads[dwThreadIndex].pWaiterContext;
+                    dwThreadIndex = pm->cWaiterThreads - 1;
+                    pm->rgWaiterThreads[dwThreadIndex].pWaiterContext = reinterpret_cast<MON_WAITER_CONTEXT*>(MemAlloc(sizeof(MON_WAITER_CONTEXT), TRUE));
+                    ExitOnNull(pm->rgWaiterThreads[dwThreadIndex].pWaiterContext, hr, E_OUTOFMEMORY, "Failed to allocate waiter context struct");
+                    pWaiterContext = pm->rgWaiterThreads[dwThreadIndex].pWaiterContext;
                     pWaiterContext->dwCoordinatorThreadId = ::GetCurrentThreadId();
                     pWaiterContext->vpfMonGeneral = pm->vpfMonGeneral;
                     pWaiterContext->vpfMonDirectory = pm->vpfMonDirectory;
@@ -696,7 +735,7 @@ static DWORD WINAPI CoordinatorThread(
                     }
                 }
 
-                ++rgWaiterThreads[dwThreadIndex].cMonitorCount;
+                ++pm->rgWaiterThreads[dwThreadIndex].cMonitorCount;
                 if (!::PostThreadMessageW(pWaiterContext->dwWaiterThreadId, MON_MESSAGE_ADD, msg.wParam, 0))
                 {
                     ExitWithLastError(hr, "Failed to send message to waiter thread to add monitor");
@@ -712,9 +751,9 @@ static DWORD WINAPI CoordinatorThread(
                 // Send remove to all waiter threads. They'll ignore it if they don't have that monitor.
                 // If they do have that monitor, they'll remove it from their list, and tell coordinator they have another
                 // empty slot via MON_MESSAGE_REMOVED message
-                for (DWORD i = 0; i < cWaiterThreads; ++i)
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    pWaiterContext = rgWaiterThreads[i].pWaiterContext;
+                    pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
                     pRemoveMessage = reinterpret_cast<MON_REMOVE_MESSAGE *>(msg.wParam);
 
                     hr = DuplicateRemoveMessage(pRemoveMessage, &pTempRemoveMessage);
@@ -736,20 +775,20 @@ static DWORD WINAPI CoordinatorThread(
                 break;
 
             case MON_MESSAGE_REMOVED:
-                for (DWORD i = 0; i < cWaiterThreads; ++i)
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    if (rgWaiterThreads[i].pWaiterContext->dwWaiterThreadId == static_cast<DWORD>(msg.wParam))
+                    if (pm->rgWaiterThreads[i].pWaiterContext->dwWaiterThreadId == static_cast<DWORD>(msg.wParam))
                     {
-                        Assert(rgWaiterThreads[i].cMonitorCount > 0);
-                        --rgWaiterThreads[i].cMonitorCount;
-                        if (0 == rgWaiterThreads[i].cMonitorCount)
+                        Assert(pm->rgWaiterThreads[i].cMonitorCount > 0);
+                        --pm->rgWaiterThreads[i].cMonitorCount;
+                        if (0 == pm->rgWaiterThreads[i].cMonitorCount)
                         {
-                            if (!::PostThreadMessageW(rgWaiterThreads[i].pWaiterContext->dwWaiterThreadId, MON_MESSAGE_STOP, msg.wParam, msg.lParam))
+                            if (!::PostThreadMessageW(pm->rgWaiterThreads[i].pWaiterContext->dwWaiterThreadId, MON_MESSAGE_STOP, msg.wParam, msg.lParam))
                             {
                                 ExitWithLastError(hr, "Failed to send message to waiter thread to stop");
                             }
-                            MemRemoveFromArray(reinterpret_cast<LPVOID>(rgWaiterThreads), i, 1, cWaiterThreads, sizeof(MON_WAITER_INFO), TRUE);
-                            --cWaiterThreads;
+                            MemRemoveFromArray(reinterpret_cast<LPVOID>(pm->rgWaiterThreads), i, 1, pm->cWaiterThreads, sizeof(MON_WAITER_INFO), TRUE);
+                            --pm->cWaiterThreads;
                             --i; // reprocess this index in the for loop, which will now contain the item after the one we removed
                         }
                     }
@@ -785,9 +824,9 @@ static DWORD WINAPI CoordinatorThread(
                 ExitOnFailure(hr, "Failed to re-wait for network changes");
 
                 // Propagate any network status update messages to all waiter threads
-                for (DWORD i = 0; i < cWaiterThreads; ++i)
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    pWaiterContext = rgWaiterThreads[i].pWaiterContext;
+                    pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
 
                     if (!::PostThreadMessageW(pWaiterContext->dwWaiterThreadId, MON_MESSAGE_NETWORK_STATUS_UPDATE, 0, 0))
                     {
@@ -803,9 +842,9 @@ static DWORD WINAPI CoordinatorThread(
 
             case WM_TIMER:
                 // Timer means some network wait is failing, and we need to retry every so often in case a remote server goes back up
-                for (DWORD i = 0; i < cWaiterThreads; ++i)
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    pWaiterContext = rgWaiterThreads[i].pWaiterContext;
+                    pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
 
                     if (!::PostThreadMessageW(pWaiterContext->dwWaiterThreadId, msg.wParam == uTimerFailedNetworkRetry ? MON_MESSAGE_NETWORK_RETRY_FAILED_NETWORK_WAITS : MON_MESSAGE_NETWORK_RETRY_SUCCESSFUL_NETWORK_WAITS, 0, 0))
                     {
@@ -827,18 +866,18 @@ static DWORD WINAPI CoordinatorThread(
                 }
 
                 // Propagate any drive status update messages to all waiter threads
-                for (DWORD i = 0; i < cWaiterThreads; ++i)
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    pWaiterContext = rgWaiterThreads[i].pWaiterContext;
+                    pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
 
                     if (!::PostThreadMessageW(pWaiterContext->dwWaiterThreadId, MON_MESSAGE_DRIVE_STATUS_UPDATE, msg.wParam, msg.lParam))
                     {
-                        ExitWithLastError(hr, "Failed to send message to waiter thread to notify of network status update");
+                        ExitWithLastError(hr, "Failed to send message to waiter thread to notify of drive status update");
                     }
 
                     if (!::SetEvent(pWaiterContext->rgHandles[0]))
                     {
-                        ExitWithLastError(hr, "Failed to set event to notify waiter thread of incoming network status update message");
+                        ExitWithLastError(hr, "Failed to set event to notify waiter thread of incoming drive status update message");
                     }
                 }
                 break;
@@ -871,9 +910,9 @@ LExit:
     }
 
     // Tell all waiter threads to shutdown
-    for (DWORD i = 0; i < cWaiterThreads; ++i)
+    for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
     {
-        pWaiterContext = rgWaiterThreads[i].pWaiterContext;
+        pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
         if (NULL != pWaiterContext->rgHandles[0])
         {
             if (!::PostThreadMessageW(pWaiterContext->dwWaiterThreadId, MON_MESSAGE_STOP, msg.wParam, msg.lParam))
@@ -888,9 +927,9 @@ LExit:
         }
     }
     // Now confirm they're actually shut down before returning
-    for (DWORD i = 0; i < cWaiterThreads; ++i)
+    for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
     {
-        pWaiterContext = rgWaiterThreads[i].pWaiterContext;
+        pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
         if (NULL != pWaiterContext->hWaiterThread)
         {
             ::WaitForSingleObject(pWaiterContext->hWaiterThread, INFINITE);
@@ -923,12 +962,19 @@ static HRESULT InitiateWait(
 {
     HRESULT hr = S_OK;
     HRESULT hrTemp = S_OK;
+    DEV_BROADCAST_HANDLE dev = { };
     BOOL fRedo = FALSE;
     BOOL fHandleFound;
     DWORD er = ERROR_SUCCESS;
     DWORD dwIndex = 0;
     HKEY hk = NULL;
     HANDLE hTemp = INVALID_HANDLE_VALUE;
+
+    if (pRequest->hNotify)
+    {
+        UnregisterDeviceNotification(pRequest->hNotify);
+        pRequest->hNotify = NULL;
+    }
 
     do
     {
@@ -1019,7 +1065,17 @@ static HRESULT InitiateWait(
         }
     } while (fRedo);
 
-    ExitOnFailure1(hr, "Didn't get a successful wait after looping through all available options %ls", pRequest->rgsczPathHierarchy[0]);
+    ExitOnFailure1(hr, "Didn't get a successful wait after looping through all available options %ls", pRequest->rgsczPathHierarchy[pRequest->cPathHierarchy - 1]);
+
+    if (MON_DIRECTORY == pRequest->type)
+    {
+        dev.dbch_size = sizeof(dev);
+        dev.dbch_devicetype = DBT_DEVTYP_HANDLE;
+        dev.dbch_handle = *pHandle;
+        // Ignore failure on this - some drives by design don't support it (like network paths), and the worst that can happen is a
+        // removable device will be left in use so user cannot gracefully remove
+        pRequest->hNotify = RegisterDeviceNotification(pRequest->hwnd, &dev, DEVICE_NOTIFY_WINDOW_HANDLE);
+    }
 
 LExit:
     ReleaseRegKey(hk);
@@ -1052,6 +1108,7 @@ static DWORD WINAPI WaiterThread(
     DWORD cRequestsPendingBeforeLoop = 0;
     LPWSTR sczDirectory = NULL;
     bool rgfProcessedIndex[MON_MAX_MONITORS_PER_THREAD + 1] = { };
+    MON_INTERNAL_TEMPORARY_WAIT * pInternalWait = NULL;
 
     // Ensure the thread has a message queue
     ::PeekMessage(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
@@ -1078,24 +1135,30 @@ static DWORD WINAPI WaiterThread(
                         case MON_MESSAGE_ADD:
                             pAddMessage = reinterpret_cast<MON_ADD_MESSAGE *>(msg.wParam);
 
-                            ++pWaiterContext->cHandles;
+                            // Don't just blindly put it at the end of the array - it must be before any failing requests
+                            // for WaitForMultipleObjects() to succeed
+                            dwNewRequestIndex = pWaiterContext->cRequests - pWaiterContext->cRequestsFailing;
                             if (FAILED(pAddMessage->request.hrStatus))
                             {
                                 ++pWaiterContext->cRequestsFailing;
                             }
 
+                            hr = MemInsertIntoArray(reinterpret_cast<void **>(&pWaiterContext->rgHandles), dwNewRequestIndex + 1, 1, pWaiterContext->cHandles, sizeof(HANDLE), MON_ARRAY_GROWTH);
+                            ExitOnFailure(hr, "Failed to insert additional handle");
+                            ++pWaiterContext->cHandles;
+
                             // Ugh - directory types start with INVALID_HANDLE_VALUE instead of NULL
                             if (MON_DIRECTORY == pAddMessage->request.type)
                             {
-                                pWaiterContext->rgHandles[pWaiterContext->cHandles - 1] = INVALID_HANDLE_VALUE;
+                                pWaiterContext->rgHandles[dwNewRequestIndex + 1] = INVALID_HANDLE_VALUE;
                             }
 
-                            hr = MemEnsureArraySize(reinterpret_cast<void **>(&pWaiterContext->rgRequests), pWaiterContext->cRequests + 1, sizeof(MON_REQUEST), MON_ARRAY_GROWTH);
-                            ExitOnFailure(hr, "Failed to allocate additional request struct");
+                            hr = MemInsertIntoArray(reinterpret_cast<void **>(&pWaiterContext->rgRequests), dwNewRequestIndex, 1, pWaiterContext->cRequests, sizeof(MON_REQUEST), MON_ARRAY_GROWTH);
+                            ExitOnFailure(hr, "Failed to insert additional request struct");
                             ++pWaiterContext->cRequests;
 
-                            pWaiterContext->rgRequests[pWaiterContext->cRequests - 1] = pAddMessage->request;
-                            pWaiterContext->rgHandles[pWaiterContext->cHandles - 1] = pAddMessage->handle;
+                            pWaiterContext->rgRequests[dwNewRequestIndex] = pAddMessage->request;
+                            pWaiterContext->rgHandles[dwNewRequestIndex + 1] = pAddMessage->handle;
 
                             ReleaseNullMem(pAddMessage);
                             break;
@@ -1264,6 +1327,44 @@ static DWORD WINAPI WaiterThread(
                             }
                             break;
 
+                        case MON_MESSAGE_DRIVE_QUERY_REMOVE:
+                            pInternalWait = reinterpret_cast<MON_INTERNAL_TEMPORARY_WAIT *>(msg.wParam);
+                            // Only do any work if message is not yet out of date
+                            // While it could become out of date while doing this processing, sending thread will check response to guard against this
+                            if (pInternalWait->dwSendIteration == static_cast<DWORD>(msg.lParam))
+                            {
+                                for (DWORD i = 0; i < pWaiterContext->cRequests; ++i)
+                                { 
+                                    if (MON_DIRECTORY == pWaiterContext->rgRequests[i].type && pWaiterContext->rgHandles[i + 1] == reinterpret_cast<HANDLE>(pInternalWait->pvContext))
+                                    {
+                                        // Release handles ASAP so the remove request will succeed
+                                        if (pWaiterContext->rgRequests[i].hNotify)
+                                        {
+                                            UnregisterDeviceNotification(pWaiterContext->rgRequests[i].hNotify);
+                                            pWaiterContext->rgRequests[i].hNotify = NULL;
+                                        }
+                                        ::FindCloseChangeNotification(pWaiterContext->rgHandles[i + 1]);
+                                        pWaiterContext->rgHandles[i + 1] = INVALID_HANDLE_VALUE;
+
+                                        // Reply to unblock our reply to the remove request
+                                        pInternalWait->dwReceiveIteration = static_cast<DWORD>(msg.lParam);
+                                        if (!::SetEvent(pInternalWait->hWait))
+                                        {
+                                            TraceError(HRESULT_FROM_WIN32(::GetLastError()), "Failed to set event to notify coordinator thread that removable device handle was released, this could be due to wndproc no longer waiting for waiter thread's response");
+                                        }
+
+                                        // Drive is disconnecting, don't even try to wait, just mark it as gone
+                                        hrTemp = E_PATHNOTFOUND;
+
+                                        hr = UpdateWaitStatus(hrTemp, pWaiterContext, i, &dwNewRequestIndex);
+                                        ExitOnFailure(hr, "Failed to update wait status");
+                                        hrTemp = S_OK;
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
+
                         case MON_MESSAGE_STOP:
                             // Stop requested, so abort the whole thread
                             Trace(REPORT_DEBUG, "Waiter thread was told to stop");
@@ -1392,6 +1493,8 @@ LExit:
 
     for (DWORD i = 0; i < pWaiterContext->cRequests; ++i)
     {
+        MonRequestDestroy(pWaiterContext->rgRequests + i);
+
         switch (pWaiterContext->rgRequests[i].type)
         {
         case MON_DIRECTORY:
@@ -1406,8 +1509,6 @@ LExit:
         default:
             Assert(false);
         }
-
-        MonRequestDestroy(pWaiterContext->rgRequests + i);
     }
 
     if (FAILED(hr))
@@ -1518,6 +1619,8 @@ static HRESULT RemoveRequest(
 {
     HRESULT hr = S_OK;
 
+    MonRequestDestroy(pWaiterContext->rgRequests + dwRequestIndex);
+
     switch (pWaiterContext->rgRequests[dwRequestIndex].type)
     {
     case MON_DIRECTORY:
@@ -1542,8 +1645,6 @@ static HRESULT RemoveRequest(
     {
         --pWaiterContext->cRequestsFailing;
     }
-
-    MonRequestDestroy(pWaiterContext->rgRequests + dwRequestIndex);
 
     MemRemoveFromArray(reinterpret_cast<void *>(pWaiterContext->rgHandles), dwRequestIndex + 1, 1, pWaiterContext->cHandles, sizeof(HANDLE), TRUE);
     --pWaiterContext->cHandles;
@@ -1621,49 +1722,145 @@ static LRESULT CALLBACK MonWndProc(
 {
     HRESULT hr = S_OK;
     DEV_BROADCAST_HDR *pHdr = NULL;
+    DEV_BROADCAST_HANDLE *pHandle = NULL;
     DEV_BROADCAST_VOLUME *pVolume = NULL;
     DWORD dwUnitMask = 0;
+    DWORD er = ERROR_SUCCESS;
     WCHAR chDrive = L'\0';
     BOOL fArrival = FALSE;
+    BOOL fReturnTrue = FALSE;
+    CREATESTRUCT *pCreateStruct = NULL;
+    MON_WAITER_CONTEXT *pWaiterContext = NULL;
+    MON_STRUCT *pm = NULL;
+
+    // keep track of the MON_STRUCT pointer that was passed in on init, associate it with the window
+    if (WM_CREATE == uMsg)
+    {
+        pCreateStruct = reinterpret_cast<CREATESTRUCT *>(lParam);
+        if (pCreateStruct)
+        {
+            ::SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pCreateStruct->lpCreateParams));
+        }
+    }
+    else if (WM_NCDESTROY == uMsg)
+    {
+        ::SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
+    }
 
     // Note this message ONLY comes in through WndProc, it isn't visible from the GetMessage loop.
-    if (WM_DEVICECHANGE == uMsg && (DBT_DEVICEARRIVAL == wParam || DBT_DEVICEREMOVECOMPLETE == wParam))
+    else if (WM_DEVICECHANGE == uMsg)
     {
-        fArrival = DBT_DEVICEARRIVAL == wParam;
-
-        pHdr = reinterpret_cast<DEV_BROADCAST_HDR*>(lParam);
-        if (DBT_DEVTYP_VOLUME == pHdr->dbch_devicetype)
+        if (DBT_DEVICEARRIVAL == wParam || DBT_DEVICEREMOVECOMPLETE == wParam)
         {
-            pVolume = reinterpret_cast<DEV_BROADCAST_VOLUME*>(lParam);
-            dwUnitMask = pVolume->dbcv_unitmask;
-            chDrive = L'a';
-            while (0 < dwUnitMask)
+            fArrival = DBT_DEVICEARRIVAL == wParam;
+
+            pHdr = reinterpret_cast<DEV_BROADCAST_HDR*>(lParam);
+            if (DBT_DEVTYP_VOLUME == pHdr->dbch_devicetype)
             {
-                if (dwUnitMask & 0x1)
+                pVolume = reinterpret_cast<DEV_BROADCAST_VOLUME*>(lParam);
+                dwUnitMask = pVolume->dbcv_unitmask;
+                chDrive = L'a';
+                while (0 < dwUnitMask)
                 {
-                    // This drive had a status update, so send it out to all threads
-                    if (!::PostThreadMessageW(::GetCurrentThreadId(), MON_MESSAGE_DRIVE_STATUS_UPDATE, static_cast<WPARAM>(chDrive), static_cast<LPARAM>(fArrival)))
+                    if (dwUnitMask & 0x1)
                     {
-                        ExitWithLastError2(hr, "Failed to send drive status update with drive %c and arrival %ls", chDrive, fArrival ? L"TRUE" : L"FALSE");
+                        // This drive had a status update, so send it out to all threads
+                        if (!::PostThreadMessageW(::GetCurrentThreadId(), MON_MESSAGE_DRIVE_STATUS_UPDATE, static_cast<WPARAM>(chDrive), static_cast<LPARAM>(fArrival)))
+                        {
+                            ExitWithLastError2(hr, "Failed to send drive status update with drive %wc and arrival %ls", chDrive, fArrival ? L"TRUE" : L"FALSE");
+                        }
+                    }
+                    dwUnitMask >>= 1;
+                    ++chDrive;
+
+                    if (chDrive == 'z')
+                    {
+                        hr = E_UNEXPECTED;
+                        ExitOnFailure1(hr, "UnitMask showed drives beyond z:. Remaining UnitMask at this point: %u", dwUnitMask);
                     }
                 }
-                dwUnitMask >>= 1;
-                ++chDrive;
+            }
+        }
+        // We can only process device query remove messages if we have a MON_STRUCT pointer
+        else if (DBT_DEVICEQUERYREMOVE == wParam)
+        {
+            pm = reinterpret_cast<MON_STRUCT*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+            if (!pm)
+            {
+                hr = E_POINTER;
+                ExitOnFailure(hr, "DBT_DEVICEQUERYREMOVE message received with no MON_STRUCT pointer, so message was ignored");
+            }
 
-                if (chDrive == 'z')
+            fReturnTrue = TRUE;
+
+            pHdr = reinterpret_cast<DEV_BROADCAST_HDR*>(lParam);
+            if (DBT_DEVTYP_HANDLE == pHdr->dbch_devicetype)
+            {
+                // We must wait for the actual wait handle to be released by waiter thread before telling windows to proceed with device removal, otherwise it could fail
+                // due to handles still being open, so use a MON_INTERNAL_TEMPORARY_WAIT struct to send and receive a reply from a waiter thread
+                pm->internalWait.hWait = ::CreateEventW(NULL, TRUE, FALSE, NULL);
+                ExitOnNullWithLastError(pm->internalWait.hWait, hr, "Failed to create anonymous event for waiter to notify wndproc device can be removed");
+
+                pHandle = reinterpret_cast<DEV_BROADCAST_HANDLE*>(lParam);
+                pm->internalWait.pvContext = pHandle->dbch_handle;
+                pm->internalWait.dwReceiveIteration = pm->internalWait.dwSendIteration - 1;
+                // This drive had a status update, so send it out to all threads
+                for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
                 {
-                    hr = E_UNEXPECTED;
-                    ExitOnFailure1(hr, "UnitMask showed drives beyond z:. Remaining UnitMask at this point: %u", dwUnitMask);
+                    pWaiterContext = pm->rgWaiterThreads[i].pWaiterContext;
+
+                    if (!::PostThreadMessageW(pWaiterContext->dwWaiterThreadId, MON_MESSAGE_DRIVE_QUERY_REMOVE, reinterpret_cast<WPARAM>(&pm->internalWait), static_cast<LPARAM>(pm->internalWait.dwSendIteration)))
+                    {
+                        ExitWithLastError(hr, "Failed to send message to waiter thread to notify of drive query remove");
+                    }
+
+                    if (!::SetEvent(pWaiterContext->rgHandles[0]))
+                    {
+                        ExitWithLastError(hr, "Failed to set event to notify waiter thread of incoming drive query remove message");
+                    }
                 }
+
+                er = ::WaitForSingleObject(pm->internalWait.hWait, MON_THREAD_WAIT_REMOVE_DEVICE);
+                // Make sure any waiter thread processing really old messages can immediately know that we're no longer waiting for a response
+                if (WAIT_OBJECT_0 == er)
+                {
+                    // If the response ID matches what we sent, we actually got a valid reply!
+                    if (pm->internalWait.dwReceiveIteration != pm->internalWait.dwSendIteration)
+                    {
+                        TraceError(HRESULT_FROM_WIN32(er), "Waiter thread received wrong ID reply");
+                    }
+                }
+                else if (WAIT_TIMEOUT == er)
+                {
+                    TraceError(HRESULT_FROM_WIN32(er), "No response from any waiter thread for query remove message");
+                }
+                else
+                {
+                    ExitWithLastError(hr, "WaitForSingleObject failed with non-timeout reason while waiting for response from waiter thread");
+                }
+                ++pm->internalWait.dwSendIteration;
             }
         }
     }
 
 LExit:
-    return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    if (pm)
+    {
+        ReleaseHandle(pm->internalWait.hWait);
+    }
+
+    if (fReturnTrue)
+    {
+        return TRUE;
+    }
+    else
+    {
+        return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    }
 }
 
 static HRESULT CreateMonWindow(
+    __in MON_STRUCT *pm,
     __out HWND *pHwnd
     )
 {
@@ -1681,7 +1878,7 @@ static HRESULT CreateMonWindow(
         }
     }
 
-    *pHwnd = ::CreateWindowExW(0, wc.lpszClassName, L"", 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, HWND_DESKTOP, NULL, wc.hInstance, NULL);
+    *pHwnd = ::CreateWindowExW(0, wc.lpszClassName, L"", 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, HWND_DESKTOP, NULL, wc.hInstance, pm);
     ExitOnNullWithLastError(*pHwnd, hr, "Failed to create window.");
 
     // Rumor has it that drive arrival / removal events can be lost in the rare event that some other application higher up in z-order is hanging if we don't make our window topmost

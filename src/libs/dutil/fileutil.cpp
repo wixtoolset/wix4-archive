@@ -1370,12 +1370,14 @@ extern "C" HRESULT DAPI FileCreateTempW(
     int i = 0;
 
     if (!::GetTempPathW(cchTempPath, wzTempPath))
+    {
         ExitOnLastError(hr, "failed to get temp path");
+    }
 
     for (i = 0; i < 1000 && INVALID_HANDLE_VALUE == hTempFile; ++i)
     {
         hr = StrAllocFormatted(&pwzTempFile, L"%s%s%05d.%s", wzTempPath, wzPrefix, i, wzExtension);
-        ExitOnFailure(hr, "failed to allocate memory for log file");
+        ExitOnFailure(hr, "failed to allocate memory for temp filename");
 
         hTempFile = ::CreateFileW(pwzTempFile, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
         if (INVALID_HANDLE_VALUE == hTempFile)

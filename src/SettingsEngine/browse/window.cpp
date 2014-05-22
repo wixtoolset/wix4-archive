@@ -1487,13 +1487,19 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         fCsEntered = TRUE;
         if (SUCCEEDED(UXDATABASE(dwIndex).hrSyncResult) && NULL != UXDATABASE(dwIndex).pcplConflictProductList)
         {
-            hr = TrayShowBalloon(L"Sync Conflicts", L"Sync conflicts occurred. Click here to open main browser window, and resolve them.", NIIF_WARNING);
-            ExitOnFailure(hr, "Failed to show tray message");
+            hrTemp = TrayShowBalloon(L"Sync Conflicts", L"Sync conflicts occurred. Click here to open main browser window, and resolve them.", NIIF_WARNING);
+            if (FAILED(hrTemp))
+            {
+                LogStringLine(REPORT_STANDARD, "Failed to show tray balloon");
+            }
         }
         else
         {
-            hr = TrayHideBalloon();
-            ExitOnFailure(hr, "Failed to hide tray message");
+            hrTemp = TrayHideBalloon();
+            if (FAILED(hrTemp))
+            {
+                LogStringLine(REPORT_STANDARD, "Failed to hide tray balloon");
+            }
         }
 
         hr = pUX->RefreshSingleDatabaseConflictList(dwIndex);

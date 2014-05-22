@@ -1,3 +1,9 @@
+* MikeGC: Feature #4352: Settings Engine now has primitive cloud support (tested with dropbox, should work with other similar products)
+
+* MikeGC: Bug #4401: MonUtil can now monitor removable drives (and allow them to be unplugged)
+
+* MikeGC: Bug #4405: LAN Database no longer has annoying locking issue where one client's connection failure causes everyone to fail to sync for a lengthy period of time
+
 * RobMen: Merge recent changes through WiX v3.9.521.0
 
 * RobMen: Fix #4395 by replacing incorrectly removed AssemblyDefaultHeatExtension attribute from VSHeatExtension.

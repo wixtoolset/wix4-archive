@@ -809,7 +809,7 @@ static HRESULT DeleteEmptyDirectoryChildren(
 
     do
     {
-        // Safety / silence OACR
+        // Safety / silence code analysis tools
         wfd.cFileName[MAX_PATH - 1] = L'\0';
 
         // Don't use "." or ".."
@@ -1060,7 +1060,7 @@ static HRESULT ReadDirWriteLegacyDbHelp(
 
     do
     {
-        // Safety / silence OACR
+        // Safety / silence code analysis tools
         wfd.cFileName[MAX_PATH - 1] = L'\0';
 
         // Don't use "." or ".."

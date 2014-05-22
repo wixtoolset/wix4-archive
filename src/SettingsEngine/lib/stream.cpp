@@ -280,6 +280,11 @@ HRESULT StreamCopy(
     ExitOnFailure(hr, "Failed to get stream file path");
 
     hr = FileEnsureCopy(sczStreamPathFrom, sczStreamPathTo, FALSE);
+    if (E_FILENOTFOUND == hr || E_PATHNOTFOUND == hr)
+    {
+        LogStringLine(REPORT_STANDARD, "Stream %ls was missing. If syncing to a cloud-managed directory, this is normal, and autosync (when the file is downloaded to the machine) will automatically fix the situation.", sczStreamPathFrom);
+        ExitFunction1(hr = HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA));
+    }
     ExitOnFailure2(hr, "Failed to copy file from %ls to %ls", sczStreamPathFrom, sczStreamPathTo);
 
     hr = SceSetColumnDword(sceRowInsert, BINARY_COMPRESSION, static_cast<DWORD>(cfCompressionFormat));

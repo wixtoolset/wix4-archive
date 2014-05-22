@@ -259,6 +259,7 @@ extern "C" HRESULT CFGAPI CfgRemoteDisconnect(
     ReleaseStr(pcdb->sczOriginalDbPath);
     ReleaseStr(pcdb->sczOriginalDbDir);
     ReleaseStr(pcdb->sczDbPath);
+    ReleaseStr(pcdb->sczDbCopiedPath);
     ReleaseStr(pcdb->sczDbDir);
     ReleaseStr(pcdb->sczStreamsDir);
 
@@ -358,19 +359,10 @@ static HRESULT RemoteDatabaseInitialize(
     hr = PathGetDirectory(pcdb->sczDbPath, &pcdb->sczDbDir);
     ExitOnFailure(hr, "Failed to copy remote database directory");
 
-    hr = PathConcat(pcdb->sczDbDir, L"LAST_REAL_CHANGE", &pcdb->sczDbChangesPath);
-    ExitOnFailure(hr, "Failed to get db changes path");
-
     if (fCreate)
     {
         hr = DirEnsureExists(pcdb->sczDbDir, NULL);
         ExitOnFailure(hr, "Failed to ensure remote database directory exists after UNC conversion");
-
-        if (!FileExistsEx(pcdb->sczDbChangesPath, NULL))
-        {
-            hr = FileWrite(pcdb->sczDbChangesPath, FILE_ATTRIBUTE_HIDDEN, NULL, 0, NULL);
-            ExitOnFailure1(hr, "Failed to write new db changes file: %ls", pcdb->sczDbChangesPath);
-        }
     }
 
     // Setup expected schema in memory
