@@ -673,6 +673,7 @@
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:element ref="Payload" />
         <xs:element ref="PayloadGroupRef" />
+        <xs:element ref="RemotePayload" />
         <xs:any namespace="##other" processContents="lax">
           <xs:annotation>
             <xs:documentation>
@@ -878,9 +879,9 @@
         <xs:documentation>A condition to evaluate before installing the package. The package will only be installed if the condition evaluates to true. If the condition evaluates to false and the bundle is being installed, repaired, or modified, the package will be uninstalled.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="Cache" type="YesNoTypeUnion">
+    <xs:attribute name="Cache" type="YesNoAlwaysTypeUnion">
       <xs:annotation>
-        <xs:documentation>Whether to cache the package.</xs:documentation>
+        <xs:documentation>Whether to cache the package. The default is "yes".</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="CacheId" type="xs:string">
@@ -903,7 +904,7 @@
         <xs:documentation>
           Specifies the description to place in the bootstrapper application data manifest for the package. By default, ExePackages
           use the FileName field from the version information, MsiPackages use the ARPCOMMENTS property, and MspPackages use
-          the Description patch metadata property. Other package types must use this attribute to define a desciption in the
+          the Description patch metadata property. Other package types must use this attribute to define a description in the
           bootstrapper application data manifest.
         </xs:documentation>
       </xs:annotation>
@@ -936,7 +937,7 @@
       <xs:annotation>
         <xs:documentation>
             Specifies whether the package must succeed for the chain to continue. The default "yes"
-            inidicates that if the package fails then the chain will fail and rollback or stop. If
+            indicates that if the package fails then the chain will fail and rollback or stop. If
             "no" is specified then the chain will continue even if the package reports failure.
         </xs:documentation>
       </xs:annotation>
@@ -1290,10 +1291,11 @@
   </xs:element>
   <xs:element name="RemotePayload">
     <xs:annotation>
-      <xs:documentation>Describes a information about a remote file payload that is not available at the time of building the bundle.  
+      <xs:documentation>Describes information about a remote file payload that is not available at the time of building the bundle.  
       The parent must specify DownloadUrl and must not specify SourceFile when using this element.</xs:documentation>
       <xs:appinfo>
         <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="ExePackage" />
+        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MsuPackage" />
       </xs:appinfo>
     </xs:annotation>
     <xs:complexType>
@@ -1309,7 +1311,7 @@
       </xs:attribute>
       <xs:attribute name="Description" type="xs:string" use="required">
         <xs:annotation>
-          <xs:documentation>Description of the file from version resouces.</xs:documentation>
+          <xs:documentation>Description of the file from version resources.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="Hash" type="HexType" use="required">
@@ -3979,7 +3981,12 @@
       </xs:attribute>
       <xs:attribute name="Win64" type="YesNoTypeUnion">
         <xs:annotation>
-          <xs:documentation>Instructs the search to look in the 64-bit registry when the value is 'yes'. When the value is 'no', the search looks in the 32-bit registry. The default value depends on the value of the Package/@Platform attribute: if the @Platform attribute value is 'x86', the default @Win64 attribute value is 'no'; otherwise, the default value is 'yes'.</xs:documentation>
+          <xs:documentation>Instructs the search to look in the 64-bit registry when the value is 'yes'. When the value is 'no', the search looks in the 32-bit registry.
+          The default value is based on the platform set by the -arch switch to candle.exe
+          or the InstallerPlatform property in a .wixproj MSBuild project: 
+          For x86 and ARM, the default value is 'no'. 
+          For x64 and IA64, the default value is 'yes'.
+          </xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
@@ -7583,10 +7590,13 @@
         <xs:annotation>
           <xs:documentation>
                         Set this attribute to 'yes' to mark this as a 64-bit component. This attribute facilitates
-                        the installation of packages that include both 32-bit and 64-bit components.  If this bit
-                        is not set, the component is registered as a 32-bit component.  If this is a 64-bit
-                        component replacing a 32-bit component, set this bit and assign a new GUID in the Guid attribute.
-                    </xs:documentation>
+                        the installation of packages that include both 32-bit and 64-bit components.  If this is a 64-bit
+                        component replacing a 32-bit component, set this attribute to 'yes' and assign a new GUID in the Guid attribute.
+          The default value is based on the platform set by the -arch switch to candle.exe
+          or the InstallerPlatform property in a .wixproj MSBuild project: 
+          For x86 and ARM, the default value is 'no'. 
+          For x64 and IA64, the default value is 'yes'.
+          </xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:anyAttribute namespace="##other" processContents="lax">
@@ -9017,7 +9027,11 @@
               <xs:documentation>
                                 Specifies that a script custom action targets a 64-bit platform. Valid only when used with
                                 the Script, VBScriptCall, and JScriptCall attributes.
-                            </xs:documentation>
+          The default value is based on the platform set by the -arch switch to candle.exe
+          or the InstallerPlatform property in a .wixproj MSBuild project: 
+          For x86 and ARM, the default value is 'no'. 
+          For x64 and IA64, the default value is 'yes'.
+              </xs:documentation>
             </xs:annotation>
           </xs:attribute>
           <xs:attribute name="TerminalServerAware" type="YesNoTypeUnion">
@@ -12800,6 +12814,22 @@
     </xs:annotation>
     <xs:restriction base="xs:NMTOKEN">
       <xs:enumeration value="default" />
+      <xs:enumeration value="no" />
+      <xs:enumeration value="yes" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="YesNoAlwaysTypeUnion">
+    <xs:annotation>
+      <xs:documentation>Values of this type will either be "always", "yes", or "no".</xs:documentation>
+    </xs:annotation>
+    <xs:union memberTypes="YesNoAlwaysType PreprocessorVariables"/>
+  </xs:simpleType>
+  <xs:simpleType name="YesNoAlwaysType">
+    <xs:annotation>
+      <xs:documentation>Values of this type will either be "always", "yes", or "no".</xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="always" />
       <xs:enumeration value="no" />
       <xs:enumeration value="yes" />
     </xs:restriction>

@@ -1133,6 +1133,39 @@ namespace WixToolset
         }
 
         /// <summary>
+        /// Gets a yes/no/always value and displays an error for an illegal value.
+        /// </summary>
+        /// <param name="sourceLineNumbers">Source line information about the owner element.</param>
+        /// <param name="attribute">The attribute containing the value to get.</param>
+        /// <returns>The attribute's YesNoAlwaysType value.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes")]
+        public YesNoAlwaysType GetAttributeYesNoAlwaysValue(SourceLineNumber sourceLineNumbers, XAttribute attribute)
+        {
+            string value = this.GetAttributeValue(sourceLineNumbers, attribute);
+
+            if (0 < value.Length)
+            {
+                switch (Wix.Enums.ParseYesNoAlwaysType(value))
+                {
+                    case Wix.YesNoAlwaysType.@always:
+                        return YesNoAlwaysType.Always;
+                    case Wix.YesNoAlwaysType.no:
+                        return YesNoAlwaysType.No;
+                    case Wix.YesNoAlwaysType.yes:
+                        return YesNoAlwaysType.Yes;
+                    case Wix.YesNoAlwaysType.NotSet:
+                        // Previous code never returned 'NotSet'!
+                        break;
+                    default:
+                        this.OnMessage(WixErrors.IllegalYesNoAlwaysValue(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
+                        break;
+                }
+            }
+
+            return YesNoAlwaysType.IllegalValue;
+        }
+
+        /// <summary>
         /// Gets a short filename value and displays an error for an illegal short filename value.
         /// </summary>
         /// <param name="sourceLineNumbers">Source line information about the owner element.</param>

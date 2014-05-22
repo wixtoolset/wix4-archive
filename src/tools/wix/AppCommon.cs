@@ -23,6 +23,7 @@ namespace WixToolset
     using System.Text;
     using System.Threading;
     using System.Reflection;
+    using WixToolset.Data;
 
     /// <summary>
     /// Common utilities for Wix applications.
@@ -57,6 +58,17 @@ namespace WixToolset
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Delete a directory with retries and best-effort cleanup.
+        /// </summary>
+        /// <param name="path">The directory to delete.</param>
+        /// <param name="messageHandler">The message handler.</param>
+        /// <returns>True if all files were deleted, false otherwise.</returns>
+        public static bool DeleteDirectory(string path, IMessageHandler messageHandler)
+        {
+            return Common.DeleteTempFiles(path, messageHandler);
         }
 
         /// <summary>

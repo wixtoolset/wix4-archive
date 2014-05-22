@@ -222,6 +222,17 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_z LPCWSTR wzPackageId
         ) = 0;
 
+    // OnDetectCompatiblePackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.
+    //
+    // Return:
+    //  IDCANCEL instructs the engine to stop detection.
+    //
+    //  IDNOACTION instructs the engine to continue.
+    STDMETHOD_(int, OnDetectCompatiblePackage)(
+        __in_z LPCWSTR wzPackageId,
+        __in_z LPCWSTR wzCompatiblePackageId
+        ) = 0;
+
     // OnDetectRelatedMsiPackage - called when the engine begins detects a related package.
     //
     // Return:
@@ -307,6 +318,17 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
         ) = 0;
 
+    // OnPlanCompatiblePackage - called when the engine plans a newer, compatible package using the same provider key.
+    //
+    // Return:
+    //  IDCANCEL instructs the engine to stop planning.
+    //
+    //  IDNOACTION instructs the engine to continue.
+    STDMETHOD_(int, OnPlanCompatiblePackage)(
+        __in_z LPCWSTR wzPackageId,
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        ) = 0;
+
     // OnPlanTargetMsiPackage - called when the engine plans an MSP package
     //                          to apply to an MSI package.
     //
@@ -357,6 +379,13 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //
     //  IDNOACTION instructs the engine to continue.
     STDMETHOD_(int, OnApplyBegin)() = 0;
+
+    // DEPRECATED: In wix4, this will be merged with OnApplyBegin.
+    // OnApplyNumberOfPhases - called right after OnApplyBegin.
+    //
+    STDMETHOD_(void, OnApplyNumberOfPhases)(
+        __in DWORD dwNumberOfApplyPhases
+        ) = 0;
 
     // OnElevate - called before the engine displays an elevation prompt.
     //             Will only happen once per execution of the engine.

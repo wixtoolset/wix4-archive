@@ -7639,8 +7639,7 @@ namespace WixToolset
             string volumeLabel = null;
             int maximumUncompressedMediaSize = CompilerConstants.IntegerNotSet;
             int maximumCabinetSizeForLargeFileSplitting = CompilerConstants.IntegerNotSet;
-
-            Wix.CompressionLevelType compressionLevelType = Wix.CompressionLevelType.none;
+            Wix.CompressionLevelType compressionLevelType = Wix.CompressionLevelType.NotSet;
 
             YesNoType embedCab = patch ? YesNoType.Yes : YesNoType.NotSet;
 
@@ -7763,7 +7762,6 @@ namespace WixToolset
                         mediaTemplateRow.CompressionLevel = CompressionLevel.None.ToString();
                         break;
                     case Wix.CompressionLevelType.mszip:
-                    case Wix.CompressionLevelType.NotSet:
                         mediaTemplateRow.CompressionLevel = CompressionLevel.Mszip.ToString();
                         break;
                 }
@@ -19567,7 +19565,7 @@ namespace WixToolset
             string downloadUrl = null;
             string after = null;
             string installCondition = null;
-            YesNoType cache = YesNoType.NotSet;
+            YesNoAlwaysType cache = YesNoAlwaysType.NotSet;
             string cacheId = null;
             string description = null;
             string displayName = null;
@@ -19631,7 +19629,7 @@ namespace WixToolset
                             installCondition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "Cache":
-                            cache = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            cache = this.core.GetAttributeYesNoAlwaysValue(sourceLineNumbers, attrib);
                             break;
                         case "CacheId":
                             cacheId = this.core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -19737,20 +19735,24 @@ namespace WixToolset
             // We need to handle RemotePayload up front because it effects value of sourceFile which is used in Id generation.  Id is needed by other child elements.
             foreach (XElement child in node.Elements(CompilerCore.WixNamespace + "RemotePayload"))
             {
-                SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
-
-                if (CompilerCore.WixNamespace == node.Name.Namespace && node.Name.LocalName != "ExePackage")
+                // We need to handle RemotePayload up front because it effects value of sourceFile which is used in Id generation.  Id is needed by other child elements.
+                if (CompilerCore.WixNamespace == child.Name.Namespace && child.Name.LocalName == "RemotePayload")
                 {
-                    this.core.OnMessage(WixErrors.RemotePayloadUnsupported(childSourceLineNumbers));
-                    continue;
-                }
+                    SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
 
-                if (null != remotePayload)
-                {
-                    this.core.OnMessage(WixErrors.TooManyChildren(childSourceLineNumbers, node.Name.LocalName, child.Name.LocalName));
-                }
+                    if (CompilerCore.WixNamespace == node.Name.Namespace && node.Name.LocalName != "ExePackage" && node.Name.LocalName != "MsuPackage")
+                    {
+                        this.core.OnMessage(WixErrors.RemotePayloadUnsupported(childSourceLineNumbers));
+                        continue;
+                    }
 
-                remotePayload = this.ParseRemotePayloadElement(child);
+                    if (null != remotePayload)
+                    {
+                        this.core.OnMessage(WixErrors.TooManyChildren(childSourceLineNumbers, node.Name.LocalName, child.Name.LocalName));
+                    }
+
+                    remotePayload = this.ParseRemotePayloadElement(child);
+                }
             }
 
             if (String.IsNullOrEmpty(sourceFile))
@@ -19954,9 +19956,17 @@ namespace WixToolset
                 row[5] = repairCommand;
                 row[6] = uninstallCommand;
 
-                if (YesNoType.NotSet != cache)
+                switch (cache)
                 {
-                    row[7] = (YesNoType.Yes == cache) ? 1 : 0;
+                    case YesNoAlwaysType.No:
+                        row[7] = 0;
+                        break;
+                    case YesNoAlwaysType.Yes:
+                        row[7] = 1;
+                        break;
+                    case YesNoAlwaysType.Always:
+                        row[7] = 2;
+                        break;
                 }
 
                 row[8] = cacheId;

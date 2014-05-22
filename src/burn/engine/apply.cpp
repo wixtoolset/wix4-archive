@@ -203,6 +203,10 @@ static HRESULT ExecuteDependencyAction(
     __in BURN_EXECUTE_ACTION* pAction,
     __in BURN_EXECUTE_CONTEXT* pContext
     );
+static HRESULT ExecuteCompatiblePackageAction(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_EXECUTE_ACTION* pAction
+    );
 static HRESULT CleanPackage(
     __in HANDLE hElevatedPipe,
     __in BURN_PACKAGE* pPackage
@@ -380,8 +384,8 @@ extern "C" HRESULT ApplyUnregister(
 
     // Calculate the correct resume mode. If a restart has been initiated, that trumps all other
     // modes. If the user chose to suspend the install then we'll use that as the resume mode.
-    // Barring those special cases, if it was determined that we should keep the registration
-    // do that otherwise the resume mode was initialized to none and registration will be removed.
+    // Barring those special cases, if it was determined that we should keep the registration then
+    // do that, otherwise the resume mode was initialized to none and registration will be removed.
     if (BOOTSTRAPPER_APPLY_RESTART_INITIATED == restart)
     {
         resumeMode = BURN_RESUME_MODE_REBOOT_PENDING;
@@ -1507,6 +1511,10 @@ static DWORD CALLBACK CacheProgressRoutine(
     LPCWSTR wzPackageOrContainerId = pProgress->pContainer ? pProgress->pContainer->sczId : pProgress->pPackage ? pProgress->pPackage->sczId : NULL;
     LPCWSTR wzPayloadId = pProgress->pPayload ? pProgress->pPayload->sczKey : NULL;
     DWORD64 qwCacheProgress = pProgress->qwCacheProgress + TotalBytesTransferred.QuadPart;
+    if (qwCacheProgress > pProgress->qwTotalCacheSize)
+    {
+        qwCacheProgress = pProgress->qwTotalCacheSize;
+    }
     DWORD dwOverallPercentage = pProgress->qwTotalCacheSize ? static_cast<DWORD>(qwCacheProgress * 100 / pProgress->qwTotalCacheSize) : 0;
 
     int nResult = pProgress->pUX->pUserExperience->OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, TotalBytesTransferred.QuadPart, TotalFileSize.QuadPart, dwOverallPercentage);
@@ -1673,6 +1681,11 @@ static HRESULT DoExecuteAction(
         case BURN_EXECUTE_ACTION_TYPE_PACKAGE_DEPENDENCY:
             hr = ExecuteDependencyAction(pEngineState, pExecuteAction, pContext);
             ExitOnFailure(hr, "Failed to execute dependency action.");
+            break;
+
+        case BURN_EXECUTE_ACTION_TYPE_COMPATIBLE_PACKAGE:
+            hr = ExecuteCompatiblePackageAction(pEngineState, pExecuteAction);
+            ExitOnFailure(hr, "Failed to execute compatible package action.");
             break;
 
         case BURN_EXECUTE_ACTION_TYPE_REGISTRATION:
@@ -2108,6 +2121,25 @@ LExit:
     return hr;
 }
 
+static HRESULT ExecuteCompatiblePackageAction(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_EXECUTE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (pAction->compatiblePackage.pReferencePackage->fPerMachine)
+    {
+        hr = ElevationLoadCompatiblePackageAction(pEngineState->companionConnection.hPipe, pAction);
+        ExitOnFailure(hr, "Failed to load compatible package on per-machine package.");
+    }
+
+    // Compatible package already loaded in this process.
+
+LExit:
+    return hr;
+}
+
 static HRESULT CleanPackage(
     __in HANDLE hElevatedPipe,
     __in BURN_PACKAGE* pPackage
@@ -2139,7 +2171,7 @@ static int GenericExecuteMessageHandler(
     {
     case GENERIC_EXECUTE_MESSAGE_PROGRESS:
         {
-            DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? ((pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) * 100) / (pContext->cExecutePackagesTotal * 100) : 0;
+            DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? (pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) / (pContext->cExecutePackagesTotal) : 0;
             nResult = pContext->pUX->pUserExperience->OnExecuteProgress(pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress);
         }
         break;
@@ -2169,7 +2201,7 @@ static int MsiExecuteMessageHandler(
     {
     case WIU_MSI_EXECUTE_MESSAGE_PROGRESS:
         {
-        DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? ((pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) * 100) / (pContext->cExecutePackagesTotal * 100) : 0;
+        DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? (pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) / (pContext->cExecutePackagesTotal) : 0;
         nResult = pContext->pUX->pUserExperience->OnExecuteProgress(pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress);
         }
         break;

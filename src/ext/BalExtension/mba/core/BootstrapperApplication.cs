@@ -100,6 +100,11 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<DetectPackageBeginEventArgs> DetectPackageBegin;
 
         /// <summary>
+        /// Fired when a package was not detected but a package using the same provider key was.
+        /// </summary>
+        public event EventHandler<DetectCompatiblePackageEventArgs> DetectCompatiblePackage;
+
+        /// <summary>
         /// Fired when a related MSI package has been detected for a package.
         /// </summary>
         public event EventHandler<DetectRelatedMsiPackageEventArgs> DetectRelatedMsiPackage;
@@ -140,6 +145,11 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<PlanPackageBeginEventArgs> PlanPackageBegin;
 
         /// <summary>
+        /// Fired when the engine plans a new, compatible package using the same provider key.
+        /// </summary>
+        public event EventHandler<PlanCompatiblePackageEventArgs> PlanCompatiblePackage;
+
+        /// <summary>
         /// Fired when the engine is about to plan the target MSI of a MSP package.
         /// </summary>
         public event EventHandler<PlanTargetMsiPackageEventArgs> PlanTargetMsiPackage;
@@ -163,6 +173,12 @@ namespace WixToolset.Bootstrapper
         /// Fired when the engine has begun installing the bundle.
         /// </summary>
         public event EventHandler<ApplyBeginEventArgs> ApplyBegin;
+
+        /// <summary>
+        /// DEPRECATED: This event will be merged with ApplyBegin in wix4.
+        /// Fired right after ApplyBegin, providing the number of phases that the engine will go through in apply.
+        /// </summary>
+        public event EventHandler<ApplyNumberOfPhasesArgs> ApplyNumberOfPhases;
 
         /// <summary>
         /// Fired when the engine is about to start the elevated process.
@@ -489,6 +505,19 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
+        /// Called when a package was not detected but a package using the same provider key was.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnDetectCompatiblePackage(DetectCompatiblePackageEventArgs args)
+        {
+            EventHandler<DetectCompatiblePackageEventArgs> handler = this.DetectCompatiblePackage;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
         /// Called when a related MSI package has been detected for a package.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
@@ -593,6 +622,19 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
+        /// Called when the engine plans a new, compatible package using the same provider key.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnPlanCompatiblePackage(PlanCompatiblePackageEventArgs args)
+        {
+            EventHandler<PlanCompatiblePackageEventArgs> handler = this.PlanCompatiblePackage;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
         /// Called when the engine is about to plan the target MSI of a MSP package.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
@@ -651,6 +693,19 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnApplyBegin(ApplyBeginEventArgs args)
         {
             EventHandler<ApplyBeginEventArgs> handler = this.ApplyBegin;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called right after OnApplyBegin.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnApplyNumberOfPhases(ApplyNumberOfPhasesArgs args)
+        {
+            EventHandler<ApplyNumberOfPhasesArgs> handler = this.ApplyNumberOfPhases;
             if (null != handler)
             {
                 handler(this, args);
@@ -1065,6 +1120,14 @@ namespace WixToolset.Bootstrapper
             return args.Result;
         }
 
+        Result IBootstrapperApplication.OnDetectCompatiblePackage(string wzPackageId, string wzCompatiblePackageId)
+        {
+            DetectCompatiblePackageEventArgs args = new DetectCompatiblePackageEventArgs(wzPackageId, wzCompatiblePackageId);
+            this.OnDetectCompatiblePackage(args);
+
+            return args.Result;
+        }
+
         Result IBootstrapperApplication.OnDetectRelatedMsiPackage(string wzPackageId, string wzProductCode, bool fPerMachine, long version, RelatedOperation operation)
         {
             DetectRelatedMsiPackageEventArgs args = new DetectRelatedMsiPackageEventArgs(wzPackageId, wzProductCode, fPerMachine, version, operation);
@@ -1125,6 +1188,15 @@ namespace WixToolset.Bootstrapper
             return args.Result;
         }
 
+        Result IBootstrapperApplication.OnPlanCompatiblePackage(string wzPackageId, ref RequestState pRequestedState)
+        {
+            PlanCompatiblePackageEventArgs args = new PlanCompatiblePackageEventArgs(wzPackageId, pRequestedState);
+            this.OnPlanCompatiblePackage(args);
+
+            pRequestedState = args.State;
+            return args.Result;
+        }
+
         Result IBootstrapperApplication.OnPlanTargetMsiPackage(string wzPackageId, string wzProductCode, ref RequestState pRequestedState)
         {
             PlanTargetMsiPackageEventArgs args = new PlanTargetMsiPackageEventArgs(wzPackageId, wzProductCode, pRequestedState);
@@ -1161,6 +1233,11 @@ namespace WixToolset.Bootstrapper
             this.OnApplyBegin(args);
 
             return args.Result;
+        }
+
+        void IBootstrapperApplication.OnApplyNumberOfPhases(int dwNumberOfApplyPhases)
+        {
+            this.OnApplyNumberOfPhases(new ApplyNumberOfPhasesArgs(dwNumberOfApplyPhases));
         }
 
         Result IBootstrapperApplication.OnElevate()

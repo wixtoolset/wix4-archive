@@ -100,6 +100,7 @@
     <Compile Include="WixUnexpectedFileFormatException.cs" />
     <Compile Include="WixInvalidIdtException.cs" />
     <Compile Include="WixMissingTableDefinitionException.cs" />
+    <Compile Include="YesNoAlwaysType.cs" />
     <Compile Include="YesNoDefaultType.cs" />
     <Compile Include="YesNoType.cs" />
   </ItemGroup>

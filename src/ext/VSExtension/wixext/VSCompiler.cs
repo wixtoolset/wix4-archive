@@ -759,7 +759,7 @@ namespace WixToolset.Extensions
                 {
                     Identifier rollbackNamePerUser = this.Core.CreateIdentifier("vru", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
                     Identifier rollbackNamePerMachine = this.Core.CreateIdentifier("vrm", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
-                    string rollbackCmdLinePerUser = String.Concat(cmdlinePrefix, " /u:", packageId);
+                    string rollbackCmdLinePerUser = String.Concat(cmdlinePrefix, " /u:\"", packageId, "\"");
                     string rollbackCmdLinePerMachine = String.Concat(rollbackCmdLinePerUser, " /admin");
                     int rollbackExtraBitsPerUser = VSCompiler.MsidbCustomActionTypeContinue | VSCompiler.MsidbCustomActionTypeRollback | VSCompiler.MsidbCustomActionTypeInScript;
                     int rollbackExtraBitsPerMachine = rollbackExtraBitsPerUser | VSCompiler.MsidbCustomActionTypeNoImpersonate;
@@ -787,7 +787,7 @@ namespace WixToolset.Extensions
                 {
                     Identifier uninstallNamePerUser = this.Core.CreateIdentifier("vuu", componentId, fileId, "per-user", target ?? String.Empty, targetVersion ?? String.Empty);
                     Identifier uninstallNamePerMachine = this.Core.CreateIdentifier("vum", componentId, fileId, "per-machine", target ?? String.Empty, targetVersion ?? String.Empty);
-                    string uninstallCmdLinePerUser = String.Concat(cmdlinePrefix, " /u:", packageId);
+                    string uninstallCmdLinePerUser = String.Concat(cmdlinePrefix, " /u:\"", packageId, "\"");
                     string uninstallCmdLinePerMachine = String.Concat(uninstallCmdLinePerUser, " /admin");
                     int uninstallExtraBitsPerUser = VSCompiler.MsidbCustomActionTypeContinue | VSCompiler.MsidbCustomActionTypeInScript;
                     int uninstallExtraBitsPerMachine = uninstallExtraBitsPerUser | VSCompiler.MsidbCustomActionTypeNoImpersonate;

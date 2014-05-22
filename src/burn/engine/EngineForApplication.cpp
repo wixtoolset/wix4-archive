@@ -87,6 +87,7 @@ public: // IBootstrapperEngine
         return hr;
     }
 
+    // The contents of pllValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     virtual STDMETHODIMP GetVariableNumeric(
         __in_z LPCWSTR wzVariable,
         __out LONGLONG* pllValue
@@ -106,6 +107,7 @@ public: // IBootstrapperEngine
         return hr;
     }
 
+    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroFree.
     virtual STDMETHODIMP GetVariableString(
         __in_z LPCWSTR wzVariable,
         __out_ecount_opt(*pcchValue) LPWSTR wzValue,
@@ -146,10 +148,11 @@ public: // IBootstrapperEngine
             hr = E_INVALIDARG;
         }
 
-        ReleaseStr(sczValue);
+        StrSecureZeroFreeString(sczValue);
         return hr;
     }
 
+    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     virtual STDMETHODIMP GetVariableVersion(
         __in_z LPCWSTR wzVariable,
         __out DWORD64* pqwValue
@@ -169,6 +172,7 @@ public: // IBootstrapperEngine
         return hr;
     }
 
+    // The contents of wzOut may be sensitive, should keep encrypted and SecureZeroFree.
     virtual STDMETHODIMP FormatString(
         __in_z LPCWSTR wzIn,
         __out_ecount_opt(*pcchOut) LPWSTR wzOut,
@@ -208,7 +212,7 @@ public: // IBootstrapperEngine
             hr = E_INVALIDARG;
         }
 
-        ReleaseStr(sczValue);
+        StrSecureZeroFreeString(sczValue);
         return hr;
     }
 
@@ -249,7 +253,7 @@ public: // IBootstrapperEngine
             hr = E_INVALIDARG;
         }
 
-        ReleaseStr(sczValue);
+        StrSecureZeroFreeString(sczValue);
         return hr;
     }
 
@@ -416,7 +420,7 @@ public: // IBootstrapperEngine
                 ExitOnFailure(hr, "Failed to default local update source");
             }
 
-            hr = CoreRecreateCommandLine(&sczCommandline, BOOTSTRAPPER_ACTION_INSTALL, m_pEngineState->command.display, m_pEngineState->command.restart, BOOTSTRAPPER_RELATION_NONE, FALSE, m_pEngineState->registration.sczActiveParent, NULL, m_pEngineState->command.wzCommandLine);
+            hr = CoreRecreateCommandLine(&sczCommandline, BOOTSTRAPPER_ACTION_INSTALL, m_pEngineState->command.display, m_pEngineState->command.restart, BOOTSTRAPPER_RELATION_NONE, FALSE, m_pEngineState->registration.sczActiveParent, m_pEngineState->registration.sczAncestors, NULL, m_pEngineState->command.wzCommandLine);
             ExitOnFailure(hr, "Failed to recreate command-line for update bundle.");
 
             hr = PseudoBundleInitialize(FILEMAKEVERSION(rmj, rmm, rup, 0), &m_pEngineState->update.package, FALSE, m_pEngineState->registration.sczId, BOOTSTRAPPER_RELATION_UPDATE, BOOTSTRAPPER_PACKAGE_STATE_ABSENT, m_pEngineState->registration.sczExecutableName, sczLocalSource ? sczLocalSource : wzLocalSource, wzDownloadSource, qwSize, TRUE, sczCommandline, NULL, NULL, NULL, rgbHash, cbHash);

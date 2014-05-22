@@ -86,6 +86,12 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId
             );
 
+        [return: MarshalAs(UnmanagedType.I4)]
+        Result OnDetectCompatiblePackage(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId
+            );
+
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
         Result OnDetectRelatedMsiPackage(
@@ -144,6 +150,13 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
+        Result OnPlanCompatiblePackage(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
         Result OnPlanTargetMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
@@ -174,6 +187,10 @@ namespace WixToolset.Bootstrapper
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
         Result OnApplyBegin();
+
+        void OnApplyNumberOfPhases(
+            int dwNumberOfApplyPhases
+            );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]

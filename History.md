@@ -1,3 +1,5 @@
+* RobMen: Merge recent changes through WiX v3.9.521.0
+
 * RobMen: Fix #4395 by replacing incorrectly removed AssemblyDefaultHeatExtension attribute from VSHeatExtension.
 
 * MikeGC: Bug #4345: Make IniUtil tolerate ini files that have '[' or ']' in the name of a value

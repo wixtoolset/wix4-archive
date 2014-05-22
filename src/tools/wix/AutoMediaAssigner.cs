@@ -18,6 +18,7 @@ namespace WixToolset
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using WixToolset.Cab;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
@@ -353,6 +354,12 @@ namespace WixToolset
             MediaRow currentMediaRow = (MediaRow)mediaTable.CreateRow(null);
             currentMediaRow.DiskId = cabIndex;
             currentMediaRow.Cabinet = String.Format(this.cabinetNameTemplate, cabIndex);
+
+            if (!String.IsNullOrEmpty(compressionLevel))
+            {
+                currentMediaRow.CompressionLevel = WixCreateCab.CompressionLevelFromString(compressionLevel);
+            }
+
             this.mediaRows.Add(currentMediaRow);
             this.cabinets.Add(currentMediaRow, new List<FileRow>());
 

@@ -1525,6 +1525,11 @@ namespace WixToolset
         /// <param name="fileName">Name to push on to the stack of included files.</param>
         private void PushInclude(string fileName)
         {
+            if (1023 < this.currentFileStack.Count)
+            {
+                throw new WixException(WixErrors.TooDeeplyIncluded(this.currentLineNumber, this.currentFileStack.Count));
+            }
+
             this.currentFileStack.Push(fileName);
             this.sourceStack.Push(this.currentLineNumber);
             this.currentLineNumber = new SourceLineNumber(fileName);
