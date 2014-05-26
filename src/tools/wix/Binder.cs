@@ -98,6 +98,7 @@ namespace WixToolset
         // The following constants must stay in sync with src\burn\engine\core.h
         private const string BURN_BUNDLE_NAME = "WixBundleName";
         private const string BURN_BUNDLE_ORIGINAL_SOURCE = "WixBundleOriginalSource";
+        private const string BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER = "WixBundleOriginalSourceFolder";
         private const string BURN_BUNDLE_LAST_USED_SOURCE = "WixBundleLastUsedSource";
 
         private string emptyFile;
@@ -3061,6 +3062,11 @@ namespace WixToolset
             bundleOriginalSourceWellKnownVariable.Id = Binder.BURN_BUNDLE_ORIGINAL_SOURCE;
             bundleOriginalSourceWellKnownVariable.Hidden = false;
             bundleOriginalSourceWellKnownVariable.Persisted = true;
+
+            VariableRow bundleOriginalSourceFolderWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
+            bundleOriginalSourceFolderWellKnownVariable.Id = Binder.BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER;
+            bundleOriginalSourceFolderWellKnownVariable.Hidden = false;
+            bundleOriginalSourceFolderWellKnownVariable.Persisted = true;
 
             VariableRow bundleLastUsedSourceWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
             bundleLastUsedSourceWellKnownVariable.Id = Binder.BURN_BUNDLE_LAST_USED_SOURCE;

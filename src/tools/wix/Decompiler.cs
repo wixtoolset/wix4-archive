@@ -1917,7 +1917,7 @@ namespace WixToolset
                         Wix.Property property = (Wix.Property)this.core.GetIndexedElement("Property", Convert.ToString(row[0]));
 
                         // If no other fields on the property are set we must have created it during link
-                        if (null == property.Value && Wix.YesNoType.yes != property.Secure && Wix.YesNoType.yes != property.SuppressModularization)
+                        if (null != property && null == property.Value && Wix.YesNoType.yes != property.Secure && Wix.YesNoType.yes != property.SuppressModularization)
                         {
                             this.core.RootElement.RemoveChild(property);
                         }
