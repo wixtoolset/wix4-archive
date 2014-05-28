@@ -175,12 +175,6 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<ApplyBeginEventArgs> ApplyBegin;
 
         /// <summary>
-        /// DEPRECATED: This event will be merged with ApplyBegin in wix4.
-        /// Fired right after ApplyBegin, providing the number of phases that the engine will go through in apply.
-        /// </summary>
-        public event EventHandler<ApplyNumberOfPhasesArgs> ApplyNumberOfPhases;
-
-        /// <summary>
         /// Fired when the engine is about to start the elevated process.
         /// </summary>
         public event EventHandler<ElevateEventArgs> Elevate;
@@ -700,19 +694,6 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
-        /// Called right after OnApplyBegin.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnApplyNumberOfPhases(ApplyNumberOfPhasesArgs args)
-        {
-            EventHandler<ApplyNumberOfPhasesArgs> handler = this.ApplyNumberOfPhases;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
         /// Called when the engine is about to start the elevated process.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
@@ -1225,19 +1206,14 @@ namespace WixToolset.Bootstrapper
             this.OnPlanComplete(new PlanCompleteEventArgs(hrStatus));
         }
 
-        Result IBootstrapperApplication.OnApplyBegin()
+        Result IBootstrapperApplication.OnApplyBegin(int dwPhases)
         {
             this.applying = true;
 
-            ApplyBeginEventArgs args = new ApplyBeginEventArgs();
+            ApplyBeginEventArgs args = new ApplyBeginEventArgs(dwPhases);
             this.OnApplyBegin(args);
 
             return args.Result;
-        }
-
-        void IBootstrapperApplication.OnApplyNumberOfPhases(int dwNumberOfApplyPhases)
-        {
-            this.OnApplyNumberOfPhases(new ApplyNumberOfPhasesArgs(dwNumberOfApplyPhases));
         }
 
         Result IBootstrapperApplication.OnElevate()

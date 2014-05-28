@@ -268,7 +268,9 @@ public: // IBurnUserExperience
     {
     }
 
-    virtual STDMETHODIMP_(int) OnApplyBegin()
+    virtual STDMETHODIMP_(int) OnApplyBegin(
+        __in DWORD /*dwPhases*/
+        )
     {
         m_fApplying = TRUE;
 
@@ -276,13 +278,6 @@ public: // IBurnUserExperience
         m_dwOverallProgressPercentage = 0;
 
         return CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    // DEPRECATED: this will be merged with OnApplyBegin in wix4.
-    virtual STDMETHODIMP_(void) OnApplyNumberOfPhases(
-        __in DWORD /*dwNumberOfPhases*/
-        )
-    {
     }
 
     virtual STDMETHODIMP_(int) OnElevate()

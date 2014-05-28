@@ -527,7 +527,7 @@ extern "C" HRESULT CoreApply(
     BOOL fSuspend = FALSE;
     BOOTSTRAPPER_APPLY_RESTART restart = BOOTSTRAPPER_APPLY_RESTART_NONE;
     BURN_CACHE_THREAD_CONTEXT cacheThreadContext = { };
-    DWORD dwNumberOfPhases = 0;
+    DWORD dwPhases = 0;
 
     LogId(REPORT_STANDARD, MSG_APPLY_BEGIN);
 
@@ -539,15 +539,14 @@ extern "C" HRESULT CoreApply(
 
     if (pEngineState->plan.cCacheActions)
     {
-        ++dwNumberOfPhases;
+        ++dwPhases;
     }
     if (pEngineState->plan.cExecuteActions)
     {
-        ++dwNumberOfPhases;
+        ++dwPhases;
     }
-    pEngineState->userExperience.pUserExperience->OnApplyNumberOfPhases(dwNumberOfPhases);
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin();
+    int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin(dwPhases);
     hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
     ExitOnRootFailure(hr, "UX aborted apply begin.");
 

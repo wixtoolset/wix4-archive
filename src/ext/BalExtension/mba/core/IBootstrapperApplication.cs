@@ -186,10 +186,8 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnApplyBegin();
-
-        void OnApplyNumberOfPhases(
-            int dwNumberOfApplyPhases
+        Result OnApplyBegin(
+            [MarshalAs(UnmanagedType.U4)] int dwPhases
             );
 
         [PreserveSig]
