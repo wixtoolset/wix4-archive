@@ -1077,30 +1077,20 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class ApplyBeginEventArgs : ResultEventArgs
     {
-    }
+        private int phases;
 
-    /// <summary>
-    /// DEPRECATED: this information will be provided in ApplyBeginEventArgs in wix4.
-    /// Additional arguments used when the engine has determined the number of phases in apply.
-    /// </summary>
-    [Serializable]
-    public class ApplyNumberOfPhasesArgs : EventArgs
-    {
-        private int numberOfApplyPhases;
-
-        public ApplyNumberOfPhasesArgs(int numberOfApplyPhases)
+        public ApplyBeginEventArgs(int phases)
         {
-            this.numberOfApplyPhases = numberOfApplyPhases;
+            this.phases = phases;
         }
 
         /// <summary>
-        /// DEPRECATED: this information will be provided in ApplyBeginEventArgs in wix4.
         /// Gets the number of phases that the engine will go through in apply.
         /// There are currently two possible phases: cache and execute.
         /// </summary>
-        public int NumberOfApplyPhases
+        public int Phases
         {
-            get { return this.numberOfApplyPhases; }
+            get { return this.phases; }
         }
     }
 

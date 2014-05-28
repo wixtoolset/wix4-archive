@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4413 - Merge OnApplyNumberOfPhases into OnApplyBegin.
+
 * RobMen: Merge recent changes through WiX v3.9.526.0
 
 * MikeGC: Feature #4352: Settings Engine now has primitive cloud support (tested with dropbox, should work with other similar products)
