@@ -12,7 +12,7 @@ nuget.metadata developmentDependency=true
 folder build\
   file WixToolset.Tools.props source=redirect.wix.nuget.props
 
-folder tools\
+folder tools\bin\
   file candle.exe
   file candle.exe.config
   file dark.exe
