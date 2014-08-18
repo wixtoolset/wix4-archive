@@ -87,6 +87,11 @@ struct CFGDB_STRUCT
 
     CFGDB_STRUCT **rgpcdbOpenDatabases;
     DWORD cOpenDatabases;
+
+    // Defer all stream deletes to when the database is closed - deleting a stream before database changes are committed is dangerous in case of rollback,
+    // and remotes don't *really* commit until database is recopied
+    LPWSTR *rgsczStreamsToDelete;
+    DWORD cStreamsToDelete;
 };
 
 HRESULT HandleLock(

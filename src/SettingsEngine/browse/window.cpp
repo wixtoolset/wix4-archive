@@ -1896,11 +1896,13 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             }
             break;
         case BROWSE_CONTROL_VIEW_VALUE_HISTORY_BUTTON:
-            if (BN_CLICKED == HIWORD(wParam))
+            dwIndex = pUX->GetSelectedValueIndex();
+            if (BN_CLICKED == HIWORD(wParam) && DWORD_MAX != dwIndex)
             {
                 ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
+                fCsEntered = TRUE;
                 // Ignore failure (this is expected in certain race conditions), just pretend the button was never hit
-                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, dwIndex, ENUM_DATA_VALUENAME, &wzText);
                 if (SUCCEEDED(hrTemp))
                 {
                     hr = StrAllocString(&CURRENTUXDATABASE.sczValueName, wzText, 0);
@@ -1999,7 +2001,13 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 else
                 {
                     ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
-                    hr = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                    fCsEntered = TRUE;
+                    if (SUCCEEDED(hrTemp))
+                    {
+                        hr = StrAllocString(&sczTemp1, wzText, 0);
+                        ExitOnFailure(hr, "Failed to copy value name");
+                    }
                     ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
                     ExitOnFailure(hr, "Failed to read value name from enumeration");
                 }
@@ -2017,12 +2025,12 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
                 if (VALUE_BLOB == CURRENTUXDATABASE.cdSetValueType)
                 {
-                    hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_SET_FILE, pUX->m_dwDatabaseIndex, wzText, sczTemp2);
+                    hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_SET_FILE, pUX->m_dwDatabaseIndex, sczTemp1, sczTemp2);
                     ExitOnFailure(hr, "Failed to send set file command to worker thread");
                 }
                 if (VALUE_STRING == CURRENTUXDATABASE.cdSetValueType)
                 {
-                    hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_SET_STRING, pUX->m_dwDatabaseIndex, wzText, sczTemp2);
+                    hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_SET_STRING, pUX->m_dwDatabaseIndex, sczTemp1, sczTemp2);
                     ExitOnFailure(hr, "Failed to send set string command to worker thread");
                 }
                 else if (VALUE_DWORD == CURRENTUXDATABASE.cdSetValueType)
@@ -2034,7 +2042,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                         ExitWithLastError(hr, "Failed to convert string to dword");
                     }
 
-                    hr = SendDwordString(pUX->m_dwWorkThreadId, WM_BROWSE_SET_DWORD, pUX->m_dwDatabaseIndex, dwTemp1, wzText);
+                    hr = SendDwordString(pUX->m_dwWorkThreadId, WM_BROWSE_SET_DWORD, pUX->m_dwDatabaseIndex, dwTemp1, sczTemp1);
                     ExitOnFailure(hr, "Failed to send set dword command to worker thread");
                 }
                 else if (VALUE_QWORD == CURRENTUXDATABASE.cdSetValueType)
@@ -2046,12 +2054,12 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                         ExitWithLastError(hr, "Failed to convert string to qword");
                     }
 
-                    hr = SendQwordString(pUX->m_dwWorkThreadId, WM_BROWSE_SET_QWORD, pUX->m_dwDatabaseIndex, qwTemp, wzText);
+                    hr = SendQwordString(pUX->m_dwWorkThreadId, WM_BROWSE_SET_QWORD, pUX->m_dwDatabaseIndex, qwTemp, sczTemp1);
                     ExitOnFailure(hr, "Failed to send set qword command to worker thread");
                 }
                 else if (VALUE_BOOL == CURRENTUXDATABASE.cdSetValueType)
                 {
-                    hr = SendDwordString(pUX->m_dwWorkThreadId, WM_BROWSE_SET_BOOL, pUX->m_dwDatabaseIndex, static_cast<BOOL>(ThemeIsControlChecked(pUX->m_pTheme, BROWSE_CONTROL_SET_VALUE_CHECKBOX)), wzText);
+                    hr = SendDwordString(pUX->m_dwWorkThreadId, WM_BROWSE_SET_BOOL, pUX->m_dwDatabaseIndex, static_cast<BOOL>(ThemeIsControlChecked(pUX->m_pTheme, BROWSE_CONTROL_SET_VALUE_CHECKBOX)), sczTemp1);
                     ExitOnFailure(hr, "Failed to send set bool command to worker thread");
                 }
             }
@@ -2272,7 +2280,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             {
                 ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
                 hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
-                ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                fCsEntered = TRUE;
                 if (SUCCEEDED(hrTemp))
                 {
                     hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_EXPORT_FILE, pUX->m_dwDatabaseIndex, wzText, sczTemp1);
@@ -2282,6 +2290,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 {
                     LogStringLine(REPORT_STANDARD, "Failed to export file due to failure to read enum with error 0x%X", hrTemp);
                 }
+                ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
             }
             break;
         case BROWSE_CONTROL_OTHERDATABASES_SET_EXTERNAL_BUTTON:

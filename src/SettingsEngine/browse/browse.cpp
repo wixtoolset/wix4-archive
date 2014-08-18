@@ -91,6 +91,11 @@ int WINAPI wWinMain(
 
     (void)HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
 
+    if (!IsLogInitialized())
+    {
+        LogInitialize(NULL);
+    }
+
     hr = ProcessCommandLine(lpCmdLine, &commandLineRequest);
     ExitOnFailure(hr, "Failed to process command line");
 

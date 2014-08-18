@@ -47,7 +47,10 @@ extern "C" HRESULT CFGAPI CfgInitialize(
         ExitOnNull(vpfBackgroundStatus, hr, E_INVALIDARG, "Background status function pointer must not be NULL");
         ExitOnNull(vpfConflictsFound, hr, E_INVALIDARG, "Conflicts found function pointer must not be NULL");
 
-        LogInitialize(NULL);
+        if (!IsLogInitialized())
+        {
+            LogInitialize(NULL);
+        }
 
         hr = LogOpen(NULL, L"CfgAPI", NULL, L".log", FALSE, TRUE, NULL);
         ExitOnFailure(hr, "Failed to initialize log");
@@ -138,6 +141,7 @@ extern "C" HRESULT CFGAPI CfgUninitialize(
         ReleaseNullStr(pcdb->sczDbCopiedPath);
         ReleaseNullStr(pcdb->sczDbDir);
         ReleaseNullStr(pcdb->sczStreamsDir);
+        ReleaseNullStrArray(pcdb->rgsczStreamsToDelete, pcdb->cStreamsToDelete);
 
         if (s_fXmlInitialized)
         {
@@ -159,10 +163,7 @@ extern "C" HRESULT CFGAPI CfgUninitialize(
             vfComInitialized = FALSE;
         }
 
-        if (pcdb->hToken)
-        {
-            ReleaseHandle(pcdb->hToken);
-        }
+        ReleaseHandle(pcdb->hToken);
 
         LogUninitialize(TRUE);
 
