@@ -41,6 +41,7 @@
 #include "xmlutil.h"
 #include "wiutil.h"
 #include "osutil.h"
+#include "shelutil.h"
 
 #include "CustomMsiErrors.h"
 #include "cost.h"

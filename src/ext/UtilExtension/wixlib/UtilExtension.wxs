@@ -377,6 +377,11 @@
     </Fragment>
 
     <Fragment>
+        <PropertyRef Id="WixUnelevatedShellExecTarget" />
+        <CustomAction Id="WixUnelevatedShellExec" BinaryKey="WixCA" DllEntry="WixUnelevatedShellExec" Execute="immediate" Return="check" Impersonate="yes" />
+    </Fragment>
+
+    <Fragment>
         <PropertyRef Id="QtExecCmdLine" />
         <CustomAction Id="QtExec" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="immediate" Return="check" Impersonate="yes" />
     </Fragment>
