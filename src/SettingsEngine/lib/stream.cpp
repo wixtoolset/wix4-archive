@@ -370,7 +370,6 @@ HRESULT StreamDecreaseRefcount(
     SIZE_T cbHashSize = 0;
     LPWSTR sczStreamPath = NULL;
     DWORD dwRefCount = 0;
-    LPWSTR pwcLastBackslash = NULL;
 
     hr = SceBeginQuery(pcdb->psceDb, BINARY_CONTENT_TABLE, 0, &sqhHandle);
     ExitOnFailure(hr, "Failed to begin query into binary content table");
@@ -403,44 +402,13 @@ HRESULT StreamDecreaseRefcount(
 
     if (0 == dwRefCount)
     {
-        hr = StreamGetFilePath(&sczStreamPath, pcdb, pbHashBuffer, FALSE);
+        // Add to list of streams to be deleted after commit
+        hr = MemEnsureArraySize(reinterpret_cast<void **>(&pcdb->rgsczStreamsToDelete), pcdb->cStreamsToDelete + 1, sizeof(LPWSTR), 10);
+        ExitOnFailure(hr, "Failed to grow stream delete array");
+        ++pcdb->cStreamsToDelete;
+
+        hr = StreamGetFilePath(&pcdb->rgsczStreamsToDelete[pcdb->cStreamsToDelete - 1], pcdb, pbHashBuffer, FALSE);
         ExitOnFailure(hr, "Failed to get stream file path");
-
-        hr = FileEnsureDelete(sczStreamPath);
-        ExitOnFailure1(hr, "Failed to delete file: %ls", sczStreamPath);
-
-        // Try to delete the two parent directories, in case they're empty
-        pwcLastBackslash = wcsrchr(sczStreamPath, '\\');
-        if (pwcLastBackslash == NULL)
-        {
-            hr = E_FAIL;
-            ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
-        }
-        *pwcLastBackslash = '\0';
-
-        hr = DirEnsureDelete(sczStreamPath, FALSE, FALSE);
-        if (FAILED(hr))
-        {
-            hr = S_OK;
-        }
-        else
-        {
-            // Try to delete the next parent up
-            // (but don't go further, because the DB file is a sibling of this)
-            pwcLastBackslash = wcsrchr(sczStreamPath, '\\');
-            if (pwcLastBackslash == NULL)
-            {
-                hr = E_FAIL;
-                ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
-            }
-            *pwcLastBackslash = '\0';
-
-            hr = DirEnsureDelete(sczStreamPath, FALSE, FALSE);
-            if (FAILED(hr))
-            {
-                hr = S_OK;
-            }
-        }
 
         hr = SceDeleteRow(&sceRow);
         ExitOnFailure1(hr, "Failed to delete row of binary ID: %u", dwContentID);

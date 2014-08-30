@@ -23,7 +23,6 @@ extern "C" HRESULT CfgAdminInitialize(
     )
 {
     HRESULT hr = S_OK;
-    LPWSTR sczDbDir = NULL;
     LPWSTR sczDbFilePath = NULL;
     CFGDB_STRUCT *pcdb;
 
@@ -81,7 +80,6 @@ extern "C" HRESULT CfgAdminInitialize(
     }
 
 LExit:
-    ReleaseStr(sczDbDir);
     ReleaseStr(sczDbFilePath);
 
     return hr;

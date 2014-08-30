@@ -15,8 +15,14 @@
 
 const DWORD STALE_WRITETIME_RETRY = 100;
 
-HRESULT GenerateGuidString(
+
+static HRESULT GenerateGuidString(
     __out_z LPWSTR *psczGuid
+    );
+// Deletes a stream and attempts to delete any empty parent directories
+// Modifies the string in the process for perf (instead of copying the string)
+static HRESULT DeleteStream(
+    __in_z LPWSTR sczStreamPath
     );
 
 // There is some fancy footwork here to handle dropbox-like scenarios well.
@@ -176,6 +182,12 @@ void HandleUnlock(
         ReleaseNullStr(pcdb->sczDbCopiedPath);
     }
 
+    for (DWORD i = 0; i < pcdb->cStreamsToDelete; ++i)
+    {
+        DeleteStream(pcdb->rgsczStreamsToDelete[i]);
+    }
+    ReleaseNullStrArray(pcdb->rgsczStreamsToDelete, pcdb->cStreamsToDelete);
+
     pcdb->fUpdateLastModified = FALSE;
 
 LExit:
@@ -269,6 +281,53 @@ HRESULT GenerateGuidString(
     {
         hr = E_OUTOFMEMORY;
         ExitOnRootFailure(hr, "Failed to convert endpoint guid into string.");
+    }
+
+LExit:
+    return hr;
+}
+
+HRESULT DeleteStream(
+    __in_z LPWSTR sczStreamPath
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR pwcLastBackslash = NULL;
+
+    hr = FileEnsureDelete(sczStreamPath);
+    ExitOnFailure1(hr, "Failed to delete file: %ls", sczStreamPath);
+
+    // Try to delete the two parent directories, in case they're empty
+    pwcLastBackslash = wcsrchr(sczStreamPath, '\\');
+    if (pwcLastBackslash == NULL)
+    {
+        hr = E_FAIL;
+        ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
+    }
+    *pwcLastBackslash = '\0';
+
+    hr = DirEnsureDelete(sczStreamPath, FALSE, FALSE);
+    if (FAILED(hr))
+    {
+        hr = S_OK;
+    }
+    else
+    {
+        // Try to delete the next parent up
+        // (but don't go further, because the DB file is a sibling of this)
+        pwcLastBackslash = wcsrchr(sczStreamPath, '\\');
+        if (pwcLastBackslash == NULL)
+        {
+            hr = E_FAIL;
+            ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
+        }
+        *pwcLastBackslash = '\0';
+
+        hr = DirEnsureDelete(sczStreamPath, FALSE, FALSE);
+        if (FAILED(hr))
+        {
+            hr = S_OK;
+        }
     }
 
 LExit:

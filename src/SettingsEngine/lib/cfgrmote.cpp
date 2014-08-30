@@ -262,6 +262,7 @@ extern "C" HRESULT CFGAPI CfgRemoteDisconnect(
     ReleaseStr(pcdb->sczDbCopiedPath);
     ReleaseStr(pcdb->sczDbDir);
     ReleaseStr(pcdb->sczStreamsDir);
+    ReleaseNullStrArray(pcdb->rgsczStreamsToDelete, pcdb->cStreamsToDelete);
 
     hr = SceCloseDatabase(pcdb->psceDb);
     ExitOnFailure(hr, "Failed to close remote database");
