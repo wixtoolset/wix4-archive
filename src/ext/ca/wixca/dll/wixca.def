@@ -45,6 +45,7 @@ EXPORTS
 ; shellexecca.cpp
     WixShellExec
     WixShellExecBinary
+    WixUnelevatedShellExec
 ; test.cpp
     WixFailWhenDeferred
     WixWaitForEvent

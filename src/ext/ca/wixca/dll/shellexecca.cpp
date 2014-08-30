@@ -14,7 +14,8 @@
 #include "precomp.h"
 
 HRESULT ShellExec(
-    __in LPCWSTR wzTarget
+    __in LPCWSTR wzTarget,
+    __in BOOL fUnelevated
     )
 {
     HRESULT hr = S_OK;
@@ -28,45 +29,54 @@ HRESULT ShellExec(
     {
         ReleaseNullStr(sczWorkingDirectory);
     }
-    
-    HINSTANCE hinst = ::ShellExecuteW(NULL, NULL, wzTarget, NULL, sczWorkingDirectory, SW_SHOWDEFAULT);
-    if (hinst <= HINSTANCE(32))
-    {
-        switch (int(hinst))
-        {
-        case ERROR_FILE_NOT_FOUND:
-            hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-            break;
-        case ERROR_PATH_NOT_FOUND:
-            hr = HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
-            break;
-        case ERROR_BAD_FORMAT:
-            hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            break;
-        case SE_ERR_ASSOCINCOMPLETE:
-        case SE_ERR_NOASSOC:
-            hr = HRESULT_FROM_WIN32(ERROR_NO_ASSOCIATION);
-            break;
-        case SE_ERR_DDEBUSY:
-        case SE_ERR_DDEFAIL:
-        case SE_ERR_DDETIMEOUT:
-            hr = HRESULT_FROM_WIN32(ERROR_DDE_FAIL);
-            break;
-        case SE_ERR_DLLNOTFOUND:
-            hr = HRESULT_FROM_WIN32(ERROR_DLL_NOT_FOUND);
-            break;
-        case SE_ERR_OOM:
-            hr = E_OUTOFMEMORY;
-            break;
-        case SE_ERR_ACCESSDENIED:
-            hr = E_ACCESSDENIED;
-            break;
-        default:
-            hr = E_FAIL;
-        }
 
-        ExitOnFailure1(hr, "ShellExec failed with return code %d", int(hinst));
+    if (fUnelevated)
+    {
+        hr = ShelExecUnelevated(wzTarget, NULL, NULL, sczWorkingDirectory, SW_SHOWDEFAULT);
+        ExitOnFailure1(hr, "ShelExecUnelevated failed with target %ls", wzTarget);
     }
+    else
+    {
+        HINSTANCE hinst = ::ShellExecuteW(NULL, NULL, wzTarget, NULL, sczWorkingDirectory, SW_SHOWDEFAULT);
+        if (hinst <= HINSTANCE(32))
+        {
+            switch (int(hinst))
+            {
+            case ERROR_FILE_NOT_FOUND:
+                hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+                break;
+            case ERROR_PATH_NOT_FOUND:
+                hr = HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
+                break;
+            case ERROR_BAD_FORMAT:
+                hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+                break;
+            case SE_ERR_ASSOCINCOMPLETE:
+            case SE_ERR_NOASSOC:
+                hr = HRESULT_FROM_WIN32(ERROR_NO_ASSOCIATION);
+                break;
+            case SE_ERR_DDEBUSY:
+            case SE_ERR_DDEFAIL:
+            case SE_ERR_DDETIMEOUT:
+                hr = HRESULT_FROM_WIN32(ERROR_DDE_FAIL);
+                break;
+            case SE_ERR_DLLNOTFOUND:
+                hr = HRESULT_FROM_WIN32(ERROR_DLL_NOT_FOUND);
+                break;
+            case SE_ERR_OOM:
+                hr = E_OUTOFMEMORY;
+                break;
+            case SE_ERR_ACCESSDENIED:
+                hr = E_ACCESSDENIED;
+                break;
+            default:
+                hr = E_FAIL;
+            }
+
+            ExitOnFailure1(hr, "ShellExec failed with return code %d", int(hinst));
+        }
+    }
+
 
 LExit:
     ReleaseStr(sczWorkingDirectory);
@@ -96,7 +106,43 @@ extern "C" UINT __stdcall WixShellExec(
         ExitOnFailure(hr, "failed to get WixShellExecTarget");
     }
 
-    hr = ShellExec(pwzTarget);
+    hr = ShellExec(pwzTarget, FALSE);
+    ExitOnFailure(hr, "failed to launch target");
+
+LExit:
+    ReleaseStr(pwzTarget);
+
+    if (FAILED(hr)) 
+    {
+        er = ERROR_INSTALL_FAILURE;
+    }
+    return WcaFinalize(er); 
+}
+
+extern "C" UINT __stdcall WixUnelevatedShellExec(
+    __in MSIHANDLE hInstall
+    )
+{
+    Assert(hInstall);
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPWSTR pwzTarget = NULL;
+
+    hr = WcaInitialize(hInstall, "WixUnelevatedShellExec");
+    ExitOnFailure(hr, "failed to initialize");
+
+    hr = WcaGetFormattedProperty(L"WixUnelevatedShellExecTarget", &pwzTarget);
+    ExitOnFailure(hr, "failed to get WixUnelevatedShellExecTarget");
+
+    WcaLog(LOGMSG_VERBOSE, "WixUnelevatedShellExecTarget is %ls", pwzTarget);
+
+    if (!pwzTarget || !*pwzTarget)
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "failed to get WixShellExecTarget");
+    }
+
+    hr = ShellExec(pwzTarget, TRUE);
     ExitOnFailure(hr, "failed to launch target");
 
 LExit:
@@ -111,7 +157,6 @@ LExit:
 
 //
 // ExtractBinary extracts the data from the Binary table row with the given ID into a file. 
-// If wzDirectory is NULL, ExtractBinary defaults to the temporary directory.
 //
 HRESULT ExtractBinary(
     __in LPCWSTR wzBinaryId,
@@ -216,7 +261,7 @@ extern "C" UINT __stdcall WixShellExecBinary(
     hFile = INVALID_HANDLE_VALUE;
 
     // and run it
-    hr = ShellExec(pwzFilename);
+    hr = ShellExec(pwzFilename, FALSE);
     ExitOnFailure1(hr, "failed to launch target: %ls", pwzFilename);
 
 LExit:

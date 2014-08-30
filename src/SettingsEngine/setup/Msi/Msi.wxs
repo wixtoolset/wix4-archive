@@ -25,8 +25,8 @@
 
         <util:CloseApplication Id="CloseBrowser" CloseMessage="yes" Target="CfgBrowser.exe" TerminateProcess="1" Timeout="10" RebootPrompt="no"/>
 
-        <Property Id="WixShellExecTarget" Value="[#CfgBrowser.exe]" />
-        <CustomAction Id="LaunchBrowser" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes"/>
+        <Property Id="WixUnelevatedShellExecTarget" Value="[#CfgBrowser.exe]" />
+        <CustomAction Id="LaunchBrowser" BinaryKey="WixCA" DllEntry="WixUnelevatedShellExec" Impersonate="yes"/>
 
         <InstallExecuteSequence>
             <!-- If we're not uninstalling, launch browser afterward. Yes, during repair we want to restart browser. -->
