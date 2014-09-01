@@ -2002,8 +2002,8 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 else
                 {
                     ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
-                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                     fCsEntered = TRUE;
+                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                     if (SUCCEEDED(hrTemp))
                     {
                         hr = StrAllocString(&sczTemp1, wzText, 0);
@@ -2281,8 +2281,8 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             if (NULL != sczTemp1)
             {
                 ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
-                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                 fCsEntered = TRUE;
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                 if (SUCCEEDED(hrTemp))
                 {
                     hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_EXPORT_FILE, pUX->m_dwDatabaseIndex, wzText, sczTemp1);
