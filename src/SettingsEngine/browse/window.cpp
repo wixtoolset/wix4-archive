@@ -1909,6 +1909,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     ExitOnFailure(hr, "Failed to copy value name");
                 }
                 ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                fCsEntered = FALSE;
 
                 if (FAILED(hrTemp))
                 {
@@ -2009,6 +2010,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                         ExitOnFailure(hr, "Failed to copy value name");
                     }
                     ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                    fCsEntered = FALSE;
                     ExitOnFailure(hr, "Failed to read value name from enumeration");
                 }
 
@@ -2291,6 +2293,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     LogStringLine(REPORT_STANDARD, "Failed to export file due to failure to read enum with error 0x%X", hrTemp);
                 }
                 ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                fCsEntered = FALSE;
             }
             break;
         case BROWSE_CONTROL_OTHERDATABASES_SET_EXTERNAL_BUTTON:
