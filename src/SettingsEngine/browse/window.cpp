@@ -1909,6 +1909,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     ExitOnFailure(hr, "Failed to copy value name");
                 }
                 ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                fCsEntered = FALSE;
 
                 if (FAILED(hrTemp))
                 {
@@ -2001,14 +2002,15 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 else
                 {
                     ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
-                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                     fCsEntered = TRUE;
+                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                     if (SUCCEEDED(hrTemp))
                     {
                         hr = StrAllocString(&sczTemp1, wzText, 0);
                         ExitOnFailure(hr, "Failed to copy value name");
                     }
                     ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                    fCsEntered = FALSE;
                     ExitOnFailure(hr, "Failed to read value name from enumeration");
                 }
 
@@ -2279,8 +2281,8 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             if (NULL != sczTemp1)
             {
                 ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
-                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                 fCsEntered = TRUE;
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                 if (SUCCEEDED(hrTemp))
                 {
                     hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_EXPORT_FILE, pUX->m_dwDatabaseIndex, wzText, sczTemp1);
@@ -2291,6 +2293,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     LogStringLine(REPORT_STANDARD, "Failed to export file due to failure to read enum with error 0x%X", hrTemp);
                 }
                 ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
+                fCsEntered = FALSE;
             }
             break;
         case BROWSE_CONTROL_OTHERDATABASES_SET_EXTERNAL_BUTTON:

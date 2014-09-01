@@ -301,7 +301,7 @@ HRESULT DeleteStream(
     pwcLastBackslash = wcsrchr(sczStreamPath, '\\');
     if (pwcLastBackslash == NULL)
     {
-        hr = E_FAIL;
+        hr = HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME);
         ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
     }
     *pwcLastBackslash = '\0';
