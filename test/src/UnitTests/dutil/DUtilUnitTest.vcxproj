@@ -32,6 +32,11 @@
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc</ProjectAdditionalIncludeDirectories>
     <ProjectAdditionalLinkLibraries>rpcrt4.lib;dutil.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Link>
+      <AdditionalDependencies>urlmon.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="CondUtilTest.cpp" />
@@ -45,6 +50,7 @@
     <ClCompile Include="PathUtilTest.cpp" />
     <ClCompile Include="SceUtilTest.cpp" Condition=" Exists('$(SqlCESdkIncludePath)') " />
     <ClCompile Include="StrUtilTest.cpp" />
+    <ClCompile Include="UriUtilTest.cpp" />
     <ClCompile Include="VarHelpers.cpp" />
     <ClCompile Include="VarUtilTest.cpp" />
   </ItemGroup>

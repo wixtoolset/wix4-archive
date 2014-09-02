@@ -31,6 +31,7 @@
 #include <strutil.h>
 #include <monutil.h>
 #include <regutil.h>
+#include <uriutil.h>
 #include <varutil.h>
 #include <condutil.h>
 
