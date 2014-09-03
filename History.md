@@ -1,3 +1,5 @@
+## WixBuild: Version 4.0.2102.0
+
 * RobMen: Merge recent changes through WiX v3.9.901.0
 
 * MikeGC: Bug #4506: Make settings browser run non-elevated (when started from settings browser setup). Create WixUnelevatedShellExec to make this possible.
