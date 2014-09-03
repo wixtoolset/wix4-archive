@@ -159,6 +159,17 @@ namespace WixToolset.Tools
                             }
                         }
                     }
+                    else if (parameter.StartsWith("dcl:", StringComparison.Ordinal))
+                    {
+                        string defaultCompressionLevel = arg.Substring(5);
+
+                        if (String.IsNullOrEmpty(defaultCompressionLevel))
+                        {
+                            break;
+                        }
+
+                        this.DefaultCompressionLevel = WixCreateCab.CompressionLevelFromString(defaultCompressionLevel);
+                    }
                     else if (parameter.StartsWith("d", StringComparison.Ordinal))
                     {
                         parameter = arg.Substring(2);
@@ -272,17 +283,6 @@ namespace WixToolset.Tools
                         }
 
                         this.CubeFiles.Add(cubeFile);
-                    }
-                    else if (parameter.StartsWith("dcl:", StringComparison.Ordinal))
-                    {
-                        string defaultCompressionLevel = arg.Substring(5);
-
-                        if (String.IsNullOrEmpty(defaultCompressionLevel))
-                        {
-                            break;
-                        }
-
-                        this.DefaultCompressionLevel = WixCreateCab.CompressionLevelFromString(defaultCompressionLevel);
                     }
                     else if (parameter.Equals("eav", StringComparison.Ordinal))
                     {
