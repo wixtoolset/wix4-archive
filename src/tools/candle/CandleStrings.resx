@@ -124,16 +124,14 @@
     <value> usage:  candle.exe [-?] [-nologo] [-out outputFile] sourceFile [sourceFile ...] [@responseFile]
 
    -arch      set architecture defaults for package, components, etc.
-              values: x86, x64, or ia64 (default: x86)
+              values: x86, x64, ia64 or arm (default: x86)
    -d&lt;name&gt;[=&lt;value&gt;]  define a parameter for the preprocessor
    -ext &lt;extension&gt;  extension assembly or "class, assembly"
-   -fips      enables FIPS compliant algorithms
    -I&lt;dir&gt;    add to include search path
    -nologo    skip printing candle logo information
    -o[ut]     specify output file (default: write to current directory)
    -p&lt;file&gt;   preprocess to a file (or stdout if no file supplied)
    -pedantic  show pedantic messages
-   -platform  (deprecated alias for -arch)
    -sw[N]     suppress all warnings or a specific message ID
               (example: -sw1009 -sw1103)
    -v         verbose output

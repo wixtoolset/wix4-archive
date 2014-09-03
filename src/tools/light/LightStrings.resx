@@ -161,9 +161,6 @@
    -xo        output wixout format instead of MSI format
    -? | -help this help information</value>
   </data>
-  <data name="EXP_BindFileOptionNotApplicable" xml:space="preserve">
-    <value>The -bf (bind files) option is only applicable with the -xo option.</value>
-  </data>
   <data name="EXP_CannotLinkObjFilesWithOutpuFile" xml:space="preserve">
     <value>Cannot link object files (.wixobj) files with an output file (.wixout)</value>
   </data>
