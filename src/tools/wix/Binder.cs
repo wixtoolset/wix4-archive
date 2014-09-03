@@ -367,6 +367,7 @@ namespace WixToolset
 
             this.core = new BinderCore();
             this.core.FileManagerCore = this.fileManagerCore;
+
             foreach (IBinderExtension extension in this.extensions)
             {
                 extension.Core = this.core;
@@ -1851,11 +1852,17 @@ namespace WixToolset
             // validate the output if there is an MSI validator
             if (null != this.validator)
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 // set the output file for source line information
                 this.validator.Output = output;
 
                 this.core.OnMessage(WixVerboses.ValidatingDatabase());
+
                 this.validator.Validate(tempDatabaseFile);
+
+                stopwatch.Stop();
+                this.core.OnMessage(WixVerboses.ValidatedDatabase(stopwatch.ElapsedMilliseconds));
 
                 // Stop processing if an error occurred.
                 if (Messaging.Instance.EncounteredError)
@@ -2566,7 +2573,7 @@ namespace WixToolset
             }
 
             // index paired transforms
-            Dictionary<string, Output> pairedTransforms = new Dictionary<string,Output>();
+            Dictionary<string, Output> pairedTransforms = new Dictionary<string, Output>();
             foreach (SubStorage substorage in output.SubStorages)
             {
                 if (substorage.Name.StartsWith("#"))
@@ -2986,6 +2993,15 @@ namespace WixToolset
                 throw new WixException(WixErrors.MissingBundleInformation("WixBundle"));
             }
 
+            // Ensure there is one and only one row in the WixBootstrapperApplication table.
+            // The compiler and linker behavior should have colluded to get
+            // this behavior.
+            Table baTable = bundle.Tables["WixBootstrapperApplication"];
+            if (null == baTable || 1 != baTable.Rows.Count)
+            {
+                throw new WixException(WixErrors.MissingBundleInformation("WixBootstrapperApplication"));
+            }
+
             // Ensure there is one and only one row in the WixChain table.
             // The compiler and linker behavior should have colluded to get
             // this behavior.
@@ -3229,6 +3245,9 @@ namespace WixToolset
             ContainerInfo defaultAttachedContainer = new ContainerInfo("WixAttachedContainer", "bundle-attached.cab", "attached", null, this.fileManagerCore.TempFilesLocation);
             containers.Add(defaultAttachedContainer.Id, defaultAttachedContainer);
 
+            Row baRow = baTable.Rows[0];
+            string baPayloadId = (string)baRow[0];
+
             // Create lists of which payloads go in each container or are layout only.
             foreach (Row row in wixGroupTable.Rows)
             {
@@ -3244,7 +3263,16 @@ namespace WixToolset
                     if (Enum.GetName(typeof(ComplexReferenceParentType), ComplexReferenceParentType.Container) == rowParentType)
                     {
                         ContainerInfo container = containers[rowParentName];
-                        container.Payloads.Add(payload);
+
+                        // Make sure the BA DLL is the first payload.
+                        if (payload.Id.Equals(baPayloadId))
+                        {
+                            container.Payloads.Insert(0, payload);
+                        }
+                        else
+                        {
+                            container.Payloads.Add(payload);
+                        }
 
                         payload.Container = container.Id;
                         payloadsAddedToContainers.Add(rowChildName, false);
@@ -3579,6 +3607,18 @@ namespace WixToolset
                 this.ResolveDelayedFields(bundle, delayedFields, variableCache, null);
             }
 
+            // Process WixApprovedExeForElevation rows.
+            Table wixApprovedExeForElevationTable = bundle.Tables["WixApprovedExeForElevation"];
+            List<ApprovedExeForElevation> approvedExesForElevation = new List<ApprovedExeForElevation>();
+            if (null != wixApprovedExeForElevationTable && 0 < wixApprovedExeForElevationTable.Rows.Count)
+            {
+                foreach (WixApprovedExeForElevationRow wixApprovedExeForElevationRow in wixApprovedExeForElevationTable.Rows)
+                {
+                    ApprovedExeForElevation approvedExeForElevation = new ApprovedExeForElevation(wixApprovedExeForElevationRow);
+                    approvedExesForElevation.Add(approvedExeForElevation);
+                }
+            }
+
             // Set the overridable bundle provider key.
             this.SetBundleProviderKey(bundle, bundleInfo);
 
@@ -3646,7 +3686,7 @@ namespace WixToolset
             }
 
             string manifestPath = Path.Combine(this.TempFilesLocation, "bundle-manifest.xml");
-            this.CreateBurnManifest(bundleFile, bundleInfo, bundleUpdateRow, updateRegistrationInfo, manifestPath, allRelatedBundles, allVariables, orderedSearches, allPayloads, chain, containers, catalogs, bundle.Tables["WixBundleTag"]);
+            this.CreateBurnManifest(bundleFile, bundleInfo, bundleUpdateRow, updateRegistrationInfo, manifestPath, allRelatedBundles, allVariables, orderedSearches, allPayloads, chain, containers, catalogs, bundle.Tables["WixBundleTag"], approvedExesForElevation);
 
             this.UpdateBurnResources(bundleTempPath, bundleFile, bundleInfo);
 
@@ -4063,7 +4103,7 @@ namespace WixToolset
             }
         }
 
-        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, Dictionary<string, CatalogInfo> catalogs, Table wixBundleTagTable)
+        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, Dictionary<string, CatalogInfo> catalogs, Table wixBundleTagTable, List<ApprovedExeForElevation> approvedExesForElevation)
         {
             string executableName = Path.GetFileName(outputPath);
 
@@ -4491,6 +4531,29 @@ namespace WixToolset
                         writer.WriteStartElement("PatchTargetCode");
                         writer.WriteAttributeString("TargetCode", targetCode.TargetCode);
                         writer.WriteAttributeString("Product", targetCode.TargetsProductCode ? "yes" : "no");
+                        writer.WriteEndElement();
+                    }
+                }
+
+                // write the ApprovedExeForElevation elements
+                if (0 < approvedExesForElevation.Count)
+                {
+                    foreach (ApprovedExeForElevation approvedExeForElevation in approvedExesForElevation)
+                    {
+                        writer.WriteStartElement("ApprovedExeForElevation");
+                        writer.WriteAttributeString("Id", approvedExeForElevation.Id);
+                        writer.WriteAttributeString("Key", approvedExeForElevation.Key);
+
+                        if (!String.IsNullOrEmpty(approvedExeForElevation.ValueName))
+                        {
+                            writer.WriteAttributeString("ValueName", approvedExeForElevation.ValueName);
+                        }
+
+                        if (approvedExeForElevation.Win64)
+                        {
+                            writer.WriteAttributeString("Win64", "yes");
+                        }
+
                         writer.WriteEndElement();
                     }
                 }

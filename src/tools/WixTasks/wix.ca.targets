@@ -57,6 +57,12 @@
                                      Condition=" '%(Extension)'=='.dll' or '%(Extension)'=='.exe' " />
     </ItemGroup>
 
+    <CreateItem
+     Include="@(ReferenceComWrappersToCopyLocal)"
+     Condition=" '%(ReferenceComWrappersToCopyLocal.extension)' == '.dll' or '%(ReferenceComWrappersToCopyLocal.extension)' == '.exe' ">
+      <Output TaskParameter="Include" ItemName="CustomActionReferenceContents"/>
+    </CreateItem>
+
     <!--
       Items to include in the CA package:
          - Reference assemblies marked CopyLocal

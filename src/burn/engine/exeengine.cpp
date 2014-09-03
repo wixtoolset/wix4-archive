@@ -441,6 +441,9 @@ extern "C" HRESULT ExeEngineExecutePackage(
     hr = CacheGetCompletedPath(pExecuteAction->exePackage.pPackage->fPerMachine, pExecuteAction->exePackage.pPackage->sczCacheId, &sczCachedDirectory);
     ExitOnFailure1(hr, "Failed to get cached path for package: %ls", pExecuteAction->exePackage.pPackage->sczId);
 
+    // Best effort to set the execute package cache folder variable.
+    VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, sczCachedDirectory, TRUE);
+
     hr = PathConcat(sczCachedDirectory, pExecuteAction->exePackage.pPackage->rgPayloads[0].pPayload->sczFilePath, &sczExecutablePath);
     ExitOnFailure(hr, "Failed to build executable path.");
 
@@ -470,7 +473,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
         hr = VariableFormatString(pVariables, wzArguments, &sczArgumentsFormatted, NULL);
         ExitOnFailure(hr, "Failed to format argument string.");
 
-        hr = StrAllocateFormatted(&sczCommand, TRUE, L"\"%ls\" %s", sczExecutablePath, sczArgumentsFormatted);
+        hr = StrAllocFormattedSecure(&sczCommand, L"\"%ls\" %s", sczExecutablePath, sczArgumentsFormatted);
         ExitOnFailure(hr, "Failed to create executable command.");
 
         hr = VariableFormatStringObfuscated(pVariables, wzArguments, &sczArgumentsObfuscated, NULL);
@@ -492,7 +495,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
         // Add the list of dependencies to ignore, if any, to the burn command line.
         if (pExecuteAction->exePackage.sczIgnoreDependencies && BURN_EXE_PROTOCOL_TYPE_BURN == pExecuteAction->exePackage.pPackage->Exe.protocol)
         {
-            hr = StrAllocFormatted(&sczCommand, L"%ls -%ls=%ls", sczCommand, BURN_COMMANDLINE_SWITCH_IGNOREDEPENDENCIES, pExecuteAction->exePackage.sczIgnoreDependencies);
+            hr = StrAllocFormattedSecure(&sczCommand, L"%ls -%ls=%ls", sczCommand, BURN_COMMANDLINE_SWITCH_IGNOREDEPENDENCIES, pExecuteAction->exePackage.sczIgnoreDependencies);
             ExitOnFailure(hr, "Failed to append the list of dependencies to ignore to the command line.");
 
             hr = StrAllocFormatted(&sczCommandObfuscated, L"%ls -%ls=%ls", sczCommandObfuscated, BURN_COMMANDLINE_SWITCH_IGNOREDEPENDENCIES, pExecuteAction->exePackage.sczIgnoreDependencies);
@@ -502,7 +505,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
         // Add the list of ancestors, if any, to the burn command line.
         if (pExecuteAction->exePackage.sczAncestors)
         {
-            hr = StrAllocFormatted(&sczCommand, L"%ls -%ls=%ls", sczCommand, BURN_COMMANDLINE_SWITCH_ANCESTORS, pExecuteAction->exePackage.sczAncestors);
+            hr = StrAllocFormattedSecure(&sczCommand, L"%ls -%ls=%ls", sczCommand, BURN_COMMANDLINE_SWITCH_ANCESTORS, pExecuteAction->exePackage.sczAncestors);
             ExitOnFailure(hr, "Failed to append the list of ancestors to the command line.");
 
             hr = StrAllocFormatted(&sczCommandObfuscated, L"%ls -%ls=%ls", sczCommandObfuscated, BURN_COMMANDLINE_SWITCH_ANCESTORS, pExecuteAction->exePackage.sczAncestors);
@@ -579,6 +582,9 @@ LExit:
 
     ReleaseHandle(pi.hThread);
     ReleaseHandle(pi.hProcess);
+
+    // Best effort to clear the execute package cache folder variable.
+    VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, NULL, TRUE);
 
     return hr;
 }

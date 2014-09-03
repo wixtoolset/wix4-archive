@@ -13,13 +13,9 @@
 namespace WixTest.Tests.Integration.BuildingPackages.Shortcuts
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Text;
-
-    using DTF = WixToolset.Dtf.WindowsInstaller;
     using WixTest;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using DTF = WixToolset.Dtf.WindowsInstaller;
 
     /// <summary>
     /// Tests for shortcut property
@@ -27,12 +23,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Shortcuts
     /// <remarks>
     /// ShortcutProperty is new in Windows Installer 5.0
     /// </remarks>
-    [TestClass]
     public class ShortcutPropertyTests : WixTests
     {
         private static readonly string TestDataDirectory = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\Integration\BuildingPackages\Shortcuts\ShortcutPropertyTests");
 
-        [TestMethod]
+        [NamedFact]
         [Description("Verify that a shortcut property can be set")]
         [Priority(2)]
         public void SimpleShortcutProperty()
@@ -48,13 +43,13 @@ namespace WixTest.Tests.Integration.BuildingPackages.Shortcuts
             {
                 light.SuppressMSIAndMSMValidation = true;
             }
-            
+
             light.Run();
 
             Verifier.VerifyResults(Path.Combine(ShortcutPropertyTests.TestDataDirectory, @"SimpleShortcutProperty\expected.msi"), light.OutputFile, "MsiShortcutProperty");
         }
 
-        [TestMethod]
+        [NamedFact]
         [Description("Verify that ShortcutProperty doesn't cause ICEs to fail on MSI versions less than 5.0")]
         [Priority(3)]
         public void PreMsi50ShortcutProperty()
@@ -85,7 +80,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Shortcuts
             }
         }
 
-        [TestMethod]
+        [NamedFact]
         [Description("Verify that there is an error for duplicate ShortcutProperty Ids")]
         [Priority(3)]
         public void DuplicateShortcutPropertyIds()

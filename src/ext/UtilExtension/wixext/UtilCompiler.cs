@@ -42,6 +42,7 @@ namespace WixToolset.Extensions
 
         internal const int UserDontRemoveOnUninstall = 0x00000100;
         internal const int UserDontCreateUser = 0x00000200;
+        internal const int UserNonVital = 0x00000400;
 
         [Flags]
         internal enum WixFileSearchAttributes
@@ -3197,6 +3198,17 @@ namespace WixToolset.Extensions
                             if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
                                 attributes |= UserUpdateIfExists;
+                            }
+                            break;
+                        case "Vital":
+                            if (null == componentId)
+                            {
+                                this.Core.OnMessage(UtilErrors.IllegalAttributeWithoutComponent(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName));
+                            }
+
+                            if (YesNoType.No == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                attributes |= UserNonVital;
                             }
                             break;
                         default:

@@ -19,15 +19,12 @@ namespace WixTest
     using System.Globalization;
     using System.IO;
     using System.Reflection;
-    using System.Text;
     using System.Xml;
-    using System.Xml.XPath;
-
-    using DTF = WixToolset.Dtf.WindowsInstaller;
     using WixToolset;
-    using WixToolset.Msi;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using WixToolset.Data;
+    using WixToolset.Msi;
+    using Xunit;
+    using DTF = WixToolset.Dtf.WindowsInstaller;
 
     /// <summary>
     /// Contains methods for test verification
@@ -46,7 +43,7 @@ namespace WixTest
         public static void VerifyQuery(string msi, string query, string expectedValue)
         {
             string queryResult = Verifier.Query(msi, query);
-            Assert.AreEqual(expectedValue, queryResult, "The query '{0}' on '{1}' did not return the expected results", query, msi);
+            Assert.True(expectedValue == queryResult, String.Format("The query '{0}' on '{1}' did not return the expected results", query, msi));
         }
 
         /// <summary>
@@ -66,7 +63,7 @@ namespace WixTest
             {
                 using (View view = database.OpenExecuteView(query))
                 {
-                    using (Record record = view.Fetch())
+                    using (var record = view.Fetch())
                     {
                         if (null != record)
                         {
@@ -92,7 +89,7 @@ namespace WixTest
 
             using (DTF.Database database = new DTF.Database(msi, DTF.DatabaseOpenMode.ReadOnly))
             {
-                using (DTF.View view = database.OpenView(query,null))
+                using (DTF.View view = database.OpenView(query, null))
                 {
                     view.Execute();
 
@@ -122,7 +119,7 @@ namespace WixTest
         public static void VerifyDatabaseCodepage(string msi, int expectedCodepage)
         {
             int actualCodepage = Verifier.GetDatabaseCodepage(msi);
-            Assert.AreEqual(expectedCodepage, actualCodepage, "The codepage for {0} does not match the expected codepage", msi);
+            Assert.True(expectedCodepage == actualCodepage, String.Format("The codepage for {0} does not match the expected codepage", msi));
         }
 
         /// <summary>
@@ -251,7 +248,7 @@ namespace WixTest
         public static void VerifySummaryInformationProperty(string msi, int propertyIndex, string expectedValue)
         {
             string actualValue = Verifier.GetSummaryInformationProperty(msi, propertyIndex);
-            Assert.AreEqual(expectedValue, actualValue, "The expected summary information property does not match the actual value");
+            Assert.True(expectedValue == actualValue, "The expected summary information property does not match the actual value");
         }
 
         /// <summary>
@@ -266,7 +263,7 @@ namespace WixTest
         public static string GetSummaryInformationProperty(string msi, int propertyIndex)
         {
             // Load the wix.dll assembly
-            string wixDllLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "wix.dll");
+            string wixDllLocation = Path.Combine(Settings.WixToolsDirectory, "wix.dll");
             Assembly wix = Assembly.LoadFile(wixDllLocation);
 
             // Find the SummaryInformation type
@@ -309,7 +306,7 @@ namespace WixTest
         /// </remarks>
         public static string GetMsiSummaryInformationProperty(string msi, MsiSummaryInformationProperty index)
         {
-            return GetSummaryInformationProperty (msi ,(int)index );
+            return GetSummaryInformationProperty(msi, (int)index);
         }
 
         /// <summary>
@@ -350,7 +347,7 @@ namespace WixTest
                     Console.WriteLine(difference);
                 }
 
-                Assert.Fail("Expected output '{0}' did not match actual output '{1}'", expectedResult, actualResult);
+                Assert.True(false, String.Format("Expected output '{0}' did not match actual output '{1}'", expectedResult, actualResult));
             }
         }
 
@@ -424,7 +421,7 @@ namespace WixTest
                 targetOutput = Output.Load(expectedResult, false);
                 updatedOutput = Output.Load(actualResult, false);
             }
-            
+
             differences.AddRange(CompareOutput(targetOutput, updatedOutput, tables));
 
             // If the Output type is a Patch, then compare the patch's transforms
@@ -505,7 +502,7 @@ namespace WixTest
         {
             if (null == columns || columns.Length < 1)
             {
-                throw new ArgumentException("Columns can not be empty.","Columns");
+                throw new ArgumentException("Columns can not be empty.", "Columns");
             }
 
             string query = string.Format("SELECT * FROM `{0}` WHERE ", table.ToString());
@@ -538,7 +535,7 @@ namespace WixTest
             }
 
             List<DTF.Record> result = Verifier.QueryAllRecords(msiFile, query);
-            Assert.IsTrue(1 == result.Count, string.Format("Result count: {0} Rows, Expected: 1 Rows. Query:'{1}', MSI File '{2}'", result.Count, query, msiFile));
+            Assert.True(1 == result.Count, string.Format("Result count: {0} Rows, Expected: 1 Rows. Query:'{1}', MSI File '{2}'", result.Count, query, msiFile));
         }
 
         /// <summary>
@@ -572,7 +569,7 @@ namespace WixTest
         public static void VerifyTableExists(string msi, string tableName)
         {
             bool tableExists = Verifier.CheckTableExists(msi, tableName);
-            Assert.IsTrue(tableExists, "Table '{0}' does not exist in msi '{1}'. It was expected to exist.", tableName, msi);
+            Assert.True(tableExists, String.Format("Table '{0}' does not exist in msi '{1}'. It was expected to exist.", tableName, msi));
         }
 
         /// <summary>
@@ -583,7 +580,7 @@ namespace WixTest
         public static void VerifyNotTableExists(string msi, string tableName)
         {
             bool tableExists = Verifier.CheckTableExists(msi, tableName);
-            Assert.IsFalse(tableExists, "Table '{0}' exists in msi '{1}'. It was NOT expected to exist.", tableName, msi);
+            Assert.False(tableExists, String.Format("Table '{0}' exists in msi '{1}'. It was NOT expected to exist.", tableName, msi));
         }
 
         /// <summary>
@@ -613,7 +610,7 @@ namespace WixTest
         public static void VerifyTableExists(Output output, string tableName, string wixoutFile)
         {
             bool tableExists = CheckTableExists(output, tableName);
-            Assert.IsTrue(tableExists, "Table '{0}' does not exist in output '{1}'. It was expected to exist.", tableName, wixoutFile);
+            Assert.True(tableExists, String.Format("Table '{0}' does not exist in output '{1}'. It was expected to exist.", tableName, wixoutFile));
         }
 
         /// <summary>
@@ -625,7 +622,7 @@ namespace WixTest
         public static void VerifyNotTableExists(Output output, string tableName, string wixoutFile)
         {
             bool tableExists = CheckTableExists(output, tableName);
-            Assert.IsFalse(tableExists, "Table '{0}' exists in output '{1}'. It was NOT expected to exist.", tableName, wixoutFile);
+            Assert.False(tableExists, String.Format("Table '{0}' exists in output '{1}'. It was NOT expected to exist.", tableName, wixoutFile));
         }
 
         /// <summary>
@@ -758,11 +755,11 @@ namespace WixTest
         {
             string xpathQuery = String.Format(@" /lib:wixLibrary/loc:WixLocalization[@Culture='{0}']/loc:String[@Id='{1}']", culture, stringId);
             XmlNodeList stringNode = Verifier.QueryWixLib(libraryFile, xpathQuery);
-            Assert.AreEqual(1, stringNode.Count, "Expected 1 node to be returned");
-            Assert.IsNotNull(stringNode[0].InnerText, "String is Null");
+            Assert.Equal(1, stringNode.Count);
+            Assert.NotNull(stringNode[0].InnerText);
 
             string actualValue = stringNode[0].InnerText;
-            Assert.AreEqual(expectedValue, actualValue, "Unexpected value for Loc String: '{0}'  with Cutlure: '{1}'", stringId, culture);
+            Assert.True(expectedValue == actualValue, String.Format("Unexpected value for Loc String: '{0}'  with Cutlure: '{1}'", stringId, culture));
         }
 
         /// <summary>
@@ -776,11 +773,11 @@ namespace WixTest
         {
             string xpathQuery = String.Format(@"/lib:wixLibrary/wix:section/wix:table[@name='Property']/wix:row/wix:field[text()='{0}']", propertyName);
             XmlNodeList propertyNode = Verifier.QueryWixLib(libraryFile, xpathQuery);
-            Assert.IsTrue(propertyNode.Count > 0, "Expected at least 1 node to be returned");
-            Assert.IsNotNull(propertyNode[0].NextSibling, "Property's sibling does not exist");
+            Assert.True(propertyNode.Count > 0, "Expected at least 1 node to be returned");
+            Assert.NotNull(propertyNode[0].NextSibling);
 
             string actualValue = propertyNode[0].NextSibling.InnerText;
-            Assert.AreEqual(expectedValue, actualValue, "Unexpected value for Property {0}", propertyName);
+            Assert.True(expectedValue == actualValue, String.Format("Unexpected value for Property {0}", propertyName));
         }
 
         /// <summary>
@@ -793,11 +790,11 @@ namespace WixTest
         {
             string xpathQuery = String.Format(@"//wix:wixObject/wix:section/wix:table[@name='Property']/wix:row/wix:field[text()='{0}']", propertyName);
             XmlNodeList propertyNode = Verifier.QueryWixobj(outputFile, xpathQuery);
-            Assert.AreEqual(1, propertyNode.Count, "Expected 1 node to be returned");
-            Assert.IsNotNull(propertyNode[0].NextSibling, "Property's sibling does not exist");
+            Assert.Equal(1, propertyNode.Count);
+            Assert.NotNull(propertyNode[0].NextSibling);
 
             string actualValue = propertyNode[0].NextSibling.InnerText;
-            Assert.AreEqual(expectedValue, actualValue, "Unexpected value for Property {0}", propertyName);
+            Assert.True(expectedValue == actualValue, String.Format("Unexpected value for Property {0}", propertyName));
         }
 
         /// <summary>

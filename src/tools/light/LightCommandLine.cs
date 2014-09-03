@@ -265,7 +265,7 @@ namespace WixToolset.Tools
                     else if (parameter.Equals("cub", StringComparison.Ordinal))
                     {
                         string cubeFile = CommandLine.GetFile(parameter, args, ++i);
-                        
+
                         if (String.IsNullOrEmpty(cubeFile))
                         {
                             break;

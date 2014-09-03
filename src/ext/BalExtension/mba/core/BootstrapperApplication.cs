@@ -80,6 +80,11 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<DetectUpdateBeginEventArgs> DetectUpdateBegin;
 
         /// <summary>
+        /// Fired when the update detection has found a potential update candidate.
+        /// </summary>
+        public event EventHandler<DetectUpdateEventArgs> DetectUpdate;
+
+        /// <summary>
         /// Fired when the update detection phase has completed.
         /// </summary>
         public event EventHandler<DetectUpdateCompleteEventArgs> DetectUpdateComplete;
@@ -178,7 +183,7 @@ namespace WixToolset.Bootstrapper
         /// DEPRECATED: This event will be merged with ApplyBegin in wix4.
         /// Fired right after ApplyBegin, providing the number of phases that the engine will go through in apply.
         /// </summary>
-        public event EventHandler<ApplyNumberOfPhasesArgs> ApplyNumberOfPhases;
+        public event EventHandler<ApplyPhaseCountArgs> ApplyPhaseCount;
 
         /// <summary>
         /// Fired when the engine is about to start the elevated process.
@@ -310,6 +315,16 @@ namespace WixToolset.Bootstrapper
         /// Fired by the engine while executing on payload.
         /// </summary>
         public event EventHandler<ExecuteProgressEventArgs> ExecuteProgress;
+
+        /// <summary>
+        /// Fired when the engine is about to launch the preapproved executable.
+        /// </summary>
+        public event EventHandler<LaunchApprovedExeBeginArgs> LaunchApprovedExeBegin;
+
+        /// <summary>
+        /// Fired when the engine has completed launching the preapproved executable.
+        /// </summary>
+        public event EventHandler<LaunchApprovedExeCompleteArgs> LaunchApprovedExeComplete;
 
         /// <summary>
         /// Specifies whether this bootstrapper should run asynchronously. The default is true.
@@ -446,6 +461,19 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnDetectUpdateBegin(DetectUpdateBeginEventArgs args)
         {
             EventHandler<DetectUpdateBeginEventArgs> handler = this.DetectUpdateBegin;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Fired when the update detection has found a potential update candidate.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnDetectUpdate(DetectUpdateEventArgs args)
+        {
+            EventHandler<DetectUpdateEventArgs> handler = this.DetectUpdate;
             if (null != handler)
             {
                 handler(this, args);
@@ -703,9 +731,9 @@ namespace WixToolset.Bootstrapper
         /// Called right after OnApplyBegin.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnApplyNumberOfPhases(ApplyNumberOfPhasesArgs args)
+        protected virtual void OnApplyPhaseCount(ApplyPhaseCountArgs args)
         {
-            EventHandler<ApplyNumberOfPhasesArgs> handler = this.ApplyNumberOfPhases;
+            EventHandler<ApplyPhaseCountArgs> handler = this.ApplyPhaseCount;
             if (null != handler)
             {
                 handler(this, args);
@@ -1051,7 +1079,33 @@ namespace WixToolset.Bootstrapper
             }
         }
 
-        #region IBurnUserExperience Members
+        /// <summary>
+        /// Called by the engine before trying to launch the preapproved executable.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnLaunchApprovedExeBegin(LaunchApprovedExeBeginArgs args)
+        {
+            EventHandler<LaunchApprovedExeBeginArgs> handler = this.LaunchApprovedExeBegin;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called by the engine after trying to launch the preapproved executable.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnLaunchApprovedExeComplete(LaunchApprovedExeCompleteArgs args)
+        {
+            EventHandler<LaunchApprovedExeCompleteArgs> handler = this.LaunchApprovedExeComplete;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        #region IBootstrapperApplication Members
 
         void IBootstrapperApplication.OnStartup()
         {
@@ -1095,6 +1149,14 @@ namespace WixToolset.Bootstrapper
         {
             DetectUpdateBeginEventArgs args = new DetectUpdateBeginEventArgs(wzUpdateLocation, nRecommendation);
             this.OnDetectUpdateBegin(args);
+
+            return args.Result;
+        }
+
+        Result IBootstrapperApplication.OnDetectUpdate(string wzUpdateLocation, long dw64Size, long dw64Version, string wzTitle, string wzSummary, string wzContentType, string wzContent, int nRecommendation)
+        {
+            DetectUpdateEventArgs args = new DetectUpdateEventArgs(wzUpdateLocation, dw64Size, dw64Version, wzTitle, wzSummary, wzContentType, wzContent, nRecommendation);
+            this.OnDetectUpdate(args);
 
             return args.Result;
         }
@@ -1235,9 +1297,9 @@ namespace WixToolset.Bootstrapper
             return args.Result;
         }
 
-        void IBootstrapperApplication.OnApplyNumberOfPhases(int dwNumberOfApplyPhases)
+        void IBootstrapperApplication.OnApplyPhaseCount(int dwPhaseCount)
         {
-            this.OnApplyNumberOfPhases(new ApplyNumberOfPhasesArgs(dwNumberOfApplyPhases));
+            this.OnApplyPhaseCount(new ApplyPhaseCountArgs(dwPhaseCount));
         }
 
         Result IBootstrapperApplication.OnElevate()
@@ -1433,6 +1495,19 @@ namespace WixToolset.Bootstrapper
             this.OnExecuteProgress(args);
 
             return args.Result;
+        }
+
+        Result IBootstrapperApplication.OnLaunchApprovedExeBegin()
+        {
+            LaunchApprovedExeBeginArgs args = new LaunchApprovedExeBeginArgs();
+            this.OnLaunchApprovedExeBegin(args);
+
+            return args.Result;
+        }
+
+        void IBootstrapperApplication.OnLaunchApprovedExeComplete(int hrStatus, int processId)
+        {
+            this.OnLaunchApprovedExeComplete(new LaunchApprovedExeCompleteArgs(hrStatus, processId));
         }
 
         #endregion

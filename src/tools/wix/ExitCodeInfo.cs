@@ -36,7 +36,7 @@ namespace WixToolset
             }
             else
             {
-                this.Code = value.ToString();
+                this.Code = unchecked((uint)value).ToString();
             }
             this.Type = behavior;
         }

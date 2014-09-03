@@ -1,0 +1,50 @@
+﻿//-------------------------------------------------------------------------------------------------
+// <copyright file="ApprovedExeForElevation.cs" company="Outercurve Foundation">
+//   Copyright (c) 2004, Outercurve Foundation.
+//   This software is released under Microsoft Reciprocal License (MS-RL).
+//   The license and further copyright text can be found in the file
+//   LICENSE.TXT at the root directory of the distribution.
+// </copyright>
+// 
+// <summary>
+// ApprovedExeForElevation dynamically generated info.
+// </summary>
+//-------------------------------------------------------------------------------------------------
+
+namespace WixToolset
+{
+    using System;
+    using System.IO;
+    using WixToolset.Data;
+    using WixToolset.Data.Rows;
+
+    /// <summary>
+    /// ApprovedExeForElevation dynamically generated info.
+    /// </summary>
+    internal class ApprovedExeForElevation
+    {
+        public ApprovedExeForElevation(WixApprovedExeForElevationRow wixApprovedExeForElevationRow)
+        {
+            this.Id = wixApprovedExeForElevationRow.Id;
+            this.Key = wixApprovedExeForElevationRow.Key;
+            this.ValueName = wixApprovedExeForElevationRow.ValueName;
+            this.Attributes = wixApprovedExeForElevationRow.Attributes;
+        }
+
+        public string Id { get; private set; }
+
+        public string Key { get; private set; }
+
+        public string ValueName { get; private set; }
+
+        public BundleApprovedExeForElevationAttributes Attributes { get; private set; }
+
+        public bool Win64
+        {
+            get
+            {
+                return BundleApprovedExeForElevationAttributes.Win64 == (this.Attributes & BundleApprovedExeForElevationAttributes.Win64);
+            }
+        }
+    }
+}

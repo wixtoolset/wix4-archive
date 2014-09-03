@@ -65,7 +65,7 @@ public: // IUnknown
         return 0;
     }
 
-public: // IBurnUserExperience
+public: // IBootstrapperApplication
     virtual STDMETHODIMP OnStartup()
     {
         return S_OK;
@@ -112,6 +112,20 @@ public: // IBurnUserExperience
 
     virtual STDMETHODIMP_(int) OnDetectUpdateBegin(
         __in_z LPCWSTR /*wzUpdateLocation*/,
+        __in int nRecommendation
+        )
+    {
+        return CheckCanceled() ? IDCANCEL : nRecommendation;
+    }
+
+    virtual STDMETHODIMP_(int) OnDetectUpdate(
+        __in_z LPCWSTR /*wzUpdateLocation*/,
+        __in DWORD64 /*dw64Size*/,
+        __in DWORD64 /*dw64Version*/,
+        __in_z LPCWSTR /*wzTitle*/,
+        __in_z LPCWSTR /*wzSummary*/,
+        __in_z LPCWSTR /*wzContentType*/,
+        __in_z LPCWSTR /*wzContent*/,
         __in int nRecommendation
         )
     {
@@ -279,8 +293,8 @@ public: // IBurnUserExperience
     }
 
     // DEPRECATED: this will be merged with OnApplyBegin in wix4.
-    virtual STDMETHODIMP_(void) OnApplyNumberOfPhases(
-        __in DWORD /*dwNumberOfPhases*/
+    virtual STDMETHODIMP_(void) OnApplyPhaseCount(
+        __in DWORD /*dwPhaseCount*/
         )
     {
     }
@@ -575,6 +589,18 @@ public: // IBurnUserExperience
         )
     {
         return CheckCanceled() ? IDCANCEL : IDNOACTION;
+    }
+
+    virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()
+    {
+        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+    }
+
+    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+        __in HRESULT /*hrStatus*/,
+        __in DWORD /*dwProcessId*/
+        )
+    {
     }
 
 protected:

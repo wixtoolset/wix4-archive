@@ -197,7 +197,8 @@ LExit:
 }
 
 extern "C" HRESULT CoreDetect(
-    __in BURN_ENGINE_STATE* pEngineState
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in_opt HWND hwndParent
     )
 {
     HRESULT hr = S_OK;
@@ -213,6 +214,8 @@ extern "C" HRESULT CoreDetect(
     int nResult = pEngineState->userExperience.pUserExperience->OnDetectBegin(pEngineState->registration.fInstalled, pEngineState->packages.cPackages);
     hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
     ExitOnRootFailure(hr, "UX aborted detect begin.");
+
+    pEngineState->userExperience.hwndDetect = hwndParent;
 
     // Always reset the detect state which means the plan should be reset too.
     DetectReset(&pEngineState->registration, &pEngineState->packages, &pEngineState->update);
@@ -354,6 +357,7 @@ LExit:
     }
 
     pEngineState->userExperience.pUserExperience->OnDetectComplete(hr);
+    pEngineState->userExperience.hwndDetect = NULL;
 
     LogId(REPORT_STANDARD, MSG_DETECT_COMPLETE, hr);
 
@@ -527,7 +531,7 @@ extern "C" HRESULT CoreApply(
     BOOL fSuspend = FALSE;
     BOOTSTRAPPER_APPLY_RESTART restart = BOOTSTRAPPER_APPLY_RESTART_NONE;
     BURN_CACHE_THREAD_CONTEXT cacheThreadContext = { };
-    DWORD dwNumberOfPhases = 0;
+    DWORD dwPhaseCount = 0;
 
     LogId(REPORT_STANDARD, MSG_APPLY_BEGIN);
 
@@ -539,13 +543,13 @@ extern "C" HRESULT CoreApply(
 
     if (pEngineState->plan.cCacheActions)
     {
-        ++dwNumberOfPhases;
+        ++dwPhaseCount;
     }
     if (pEngineState->plan.cExecuteActions)
     {
-        ++dwNumberOfPhases;
+        ++dwPhaseCount;
     }
-    pEngineState->userExperience.pUserExperience->OnApplyNumberOfPhases(dwNumberOfPhases);
+    pEngineState->userExperience.pUserExperience->OnApplyPhaseCount(dwPhaseCount);
 
     int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin();
     hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
@@ -696,6 +700,46 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT CoreLaunchApprovedExe(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_LAUNCH_APPROVED_EXE* pLaunchApprovedExe
+    )
+{
+    HRESULT hr = S_OK;
+    BOOL fActivated = FALSE;
+    DWORD dwProcessId = 0;
+
+    LogId(REPORT_STANDARD, MSG_LAUNCH_APPROVED_EXE_BEGIN, pLaunchApprovedExe->sczId);
+
+    hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
+    ExitOnFailure(hr, "Engine cannot start LaunchApprovedExe because it is busy with another action.");
+
+    int nResult = pEngineState->userExperience.pUserExperience->OnLaunchApprovedExeBegin();
+    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
+    ExitOnRootFailure(hr, "UX aborted LaunchApprovedExe begin.");
+
+    // Elevate.
+    hr = CoreElevate(pEngineState, pLaunchApprovedExe->hwndParent);
+    ExitOnFailure(hr, "Failed to elevate.");
+
+    // Launch.
+    hr = ElevationLaunchApprovedExe(pEngineState->companionConnection.hPipe, pLaunchApprovedExe, &dwProcessId);
+
+LExit:
+    if (fActivated)
+    {
+        UserExperienceDeactivateEngine(&pEngineState->userExperience);
+    }
+
+    pEngineState->userExperience.pUserExperience->OnLaunchApprovedExeComplete(hr, dwProcessId);
+
+    LogId(REPORT_STANDARD, MSG_LAUNCH_APPROVED_EXE_COMPLETE, hr, dwProcessId);
+
+    ApprovedExesUninitializeLaunch(pLaunchApprovedExe);
+
+    return hr;
+}
+
 extern "C" HRESULT CoreQuit(
     __in BURN_ENGINE_STATE* pEngineState,
     __in int nExitCode
@@ -793,13 +837,16 @@ extern "C" HRESULT CoreRecreateCommandLine(
     __in BOOL fPassthrough,
     __in_z_opt LPCWSTR wzActiveParent,
     __in_z_opt LPCWSTR wzAncestors,
-    __in_z_opt LPCWSTR wzApppendLogPath,
+    __in_z_opt LPCWSTR wzAppendLogPath,
     __in_z_opt LPCWSTR wzAdditionalCommandLineArguments
     )
 {
     HRESULT hr = S_OK;
     LPWSTR scz = NULL;
     LPCWSTR wzRelationTypeCommandLine = CoreRelationTypeToCommandLineString(relationType);
+
+    hr = StrAllocString(psczCommandLine, L"", 0);
+    ExitOnFailure(hr, "Failed to empty command line.");
 
     switch (display)
     {
@@ -881,9 +928,9 @@ extern "C" HRESULT CoreRecreateCommandLine(
         ExitOnFailure(hr, "Failed to append passthrough to command-line.");
     }
 
-    if (wzApppendLogPath && *wzApppendLogPath)
+    if (wzAppendLogPath && *wzAppendLogPath)
     {
-        hr = StrAllocFormatted(&scz, L" /%ls \"%ls\"", BURN_COMMANDLINE_SWITCH_LOG_APPEND, wzApppendLogPath);
+        hr = StrAllocFormatted(&scz, L" /%ls \"%ls\"", BURN_COMMANDLINE_SWITCH_LOG_APPEND, wzAppendLogPath);
         ExitOnFailure(hr, "Failed to format append log command-line for command-line.");
 
         hr = StrAllocConcat(psczCommandLine, scz, 0);
@@ -1332,20 +1379,21 @@ static HRESULT DetectPackagePayloadsCached(
                 hr = PathConcat(sczCachePath, pPackagePayload->pPayload->sczFilePath, &sczPayloadCachePath);
                 ExitOnFailure(hr, "Failed to concat payload cache path.");
 
-                // TODO: should we do a full on hash verification on the file to ensure the exact right
-                //       file is cached?
                 hr = FileSize(sczPayloadCachePath, &llSize);
-                if (SUCCEEDED(hr) && static_cast<DWORD64>(llSize) == pPackagePayload->pPayload->qwFileSize)
+                if (SUCCEEDED(hr) && static_cast<DWORD64>(llSize) != pPackagePayload->pPayload->qwFileSize)
                 {
+                    hr = HRESULT_FROM_WIN32(ERROR_FILE_CORRUPT); // size did not match expectations, so cache must have the wrong file.
+                }
+
+                if (SUCCEEDED(hr))
+                {
+                    // TODO: should we do a full on hash verification on the file to ensure
+                    //       the exact right file is cached?
+
                     pPackagePayload->fCached = TRUE;
                 }
                 else
                 {
-                    if (static_cast<DWORD64>(llSize) != pPackagePayload->pPayload->qwFileSize)
-                    {
-                        hr = HRESULT_FROM_WIN32(ERROR_FILE_CORRUPT);
-                    }
-
                     LogId(REPORT_STANDARD, MSG_DETECT_PACKAGE_NOT_FULLY_CACHED, pPackage->sczId, pPackagePayload->pPayload->sczKey, hr);
 
                     cache = BURN_CACHE_STATE_PARTIAL; // found a payload that was not cached so we are partial.

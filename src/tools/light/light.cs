@@ -14,22 +14,12 @@
 namespace WixToolset.Tools
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Collections.Specialized;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.Linq;
     using System.IO;
-    using System.Reflection;
+    using System.Linq;
     using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Xml;
-    using System.Xml.XPath;
-    using WixToolset.Extensibility;
     using WixToolset.Data;
+    using WixToolset.Extensibility;
 
     /// <summary>
     /// The main entry point for light.

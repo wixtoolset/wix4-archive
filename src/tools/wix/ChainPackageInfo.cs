@@ -19,6 +19,7 @@ namespace WixToolset
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
+    using System.Text;
     using System.Xml;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
@@ -34,9 +35,12 @@ namespace WixToolset
         private const string PropertySqlFormat = "SELECT `Value` FROM `Property` WHERE `Property` = '{0}'";
         private const string PatchMetadataFormat = "SELECT `Value` FROM `MsiPatchMetadata` WHERE `Property` = '{0}'";
 
+        private static readonly Encoding XmlOutputEncoding = new UTF8Encoding(false);
+
         private PayloadInfoRow packagePayload;
 
-        public ChainPackageInfo(Row chainPackageRow, Table wixGroupTable, Dictionary<string, PayloadInfoRow> allPayloads, Dictionary<string, ContainerInfo> containers, IBinderFileManager fileManager, IBinderCore core, Output bundle) : base(chainPackageRow.SourceLineNumbers, bundle.Tables["ChainPackageInfo"])
+        public ChainPackageInfo(Row chainPackageRow, Table wixGroupTable, Dictionary<string, PayloadInfoRow> allPayloads, Dictionary<string, ContainerInfo> containers, IBinderFileManager fileManager, IBinderCore core, Output bundle)
+            : base(chainPackageRow.SourceLineNumbers, bundle.Tables["ChainPackageInfo"])
         {
             string id = (string)chainPackageRow[0];
             string packageType = (string)chainPackageRow[1];
@@ -207,10 +211,10 @@ namespace WixToolset
                     this.ResolveMspPackage(core, bundle);
                     break;
                 case Compiler.ChainPackageType.Msu:
-                    this.ResolveMsuPackage(core);
+                    this.ResolveMsuPackage();
                     break;
                 case Compiler.ChainPackageType.Exe:
-                    this.ResolveExePackage(core);
+                    this.ResolveExePackage();
                     break;
             }
 
@@ -251,7 +255,7 @@ namespace WixToolset
         public string InstallCondition
         {
             get { return (string)this.Fields[3].Data; }
-            private set { this.Fields[3].Data = value;  }
+            private set { this.Fields[3].Data = value; }
         }
 
         public string InstallCommand
@@ -607,6 +611,11 @@ namespace WixToolset
                     this.Language = ChainPackageInfo.GetProperty(db, "ProductLanguage");
                     this.Version = ChainPackageInfo.GetProperty(db, "ProductVersion");
 
+                    if (!Common.IsValidModuleOrBundleVersion(this.Version))
+                    {
+                        core.OnMessage(WixErrors.InvalidProductVersion(this.PackagePayload.SourceLineNumbers, this.Version, sourcePath));
+                    }
+
                     if (String.IsNullOrEmpty(this.CacheId))
                     {
                         this.CacheId = String.Format("{0}v{1}", this.ProductCode, this.Version);
@@ -703,7 +712,7 @@ namespace WixToolset
 
                     this.UpgradeCode = ChainPackageInfo.GetProperty(db, "UpgradeCode");
 
-                        // Represent the Upgrade table as related packages.
+                    // Represent the Upgrade table as related packages.
                     if (db.Tables.Contains("Upgrade") && !String.IsNullOrEmpty(this.UpgradeCode))
                     {
                         using (WixToolset.Dtf.WindowsInstaller.View view = db.OpenView("SELECT `UpgradeCode`, `VersionMin`, `VersionMax`, `Language`, `Attributes` FROM `Upgrade`"))
@@ -1011,7 +1020,6 @@ namespace WixToolset
         /// <summary>
         /// Initializes package state from the MSP contents.
         /// </summary>
-        /// <param name="core">BinderCore for messages.</param>
         private void ResolveMspPackage(IBinderCore core, Output bundle)
         {
             string sourcePath = this.PackagePayload.FullFileName;
@@ -1038,49 +1046,7 @@ namespace WixToolset
 
                     this.Manufacturer = ChainPackageInfo.GetPatchMetadataProperty(db, "ManufacturerName");
                 }
-
-                this.PatchXml = WixToolset.Dtf.WindowsInstaller.Installer.ExtractPatchXmlData(sourcePath);
-
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(this.PatchXml);
-
-                XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
-                nsmgr.AddNamespace("p", "http://www.microsoft.com/msi/patch_applicability.xsd");
-
-                foreach (XmlNode node in doc.SelectNodes("/p:MsiPatch/p:TargetProduct", nsmgr))
-                {
-                    // If this patch targes a product code, this is the best case.
-                    XmlNode targetCode = node.SelectSingleNode("p:TargetProductCode", nsmgr);
-                    WixBundlePatchTargetCodeAttributes attributes = WixBundlePatchTargetCodeAttributes.None;
-
-                    if (null != targetCode)
-                    {
-                        attributes = WixBundlePatchTargetCodeAttributes.TargetsProductCode;
-                    }
-                    else // maybe targets and upgrade code?
-                    {
-                        targetCode = node.SelectSingleNode("p:UpgradeCode", nsmgr);
-                        if (null != targetCode)
-                        {
-                            attributes = WixBundlePatchTargetCodeAttributes.TargetsUpgradeCode;
-                        }
-                        else // this patch targets a unknown number of products
-                        {
-                            this.TargetUnspecified = true;
-                        }
-                    }
-
-                    Table table = bundle.EnsureTable(core.TableDefinitions["WixBundlePatchTargetCode"]);
-                    WixBundlePatchTargetCodeRow row = (WixBundlePatchTargetCodeRow)table.CreateRow(this.PackagePayload.SourceLineNumbers, false);
-                    row.MspPackageId = this.PackagePayload.Id;
-                    row.TargetCode = targetCode.InnerText;
-                    row.Attributes = attributes;
-
-                    if (this.TargetCodes.TryAdd(row))
-                    {
-                        table.Rows.Add(row);
-                    }
-                }
+                this.ProcessPatchXml(core, sourcePath, bundle);
             }
             catch (WixToolset.Dtf.WindowsInstaller.InstallerException e)
             {
@@ -1097,8 +1063,7 @@ namespace WixToolset
         /// <summary>
         /// Initializes package state from the MSU contents.
         /// </summary>
-        /// <param name="core">BinderCore for messages.</param>
-        private void ResolveMsuPackage(IBinderCore core)
+        private void ResolveMsuPackage()
         {
             this.PerMachine = YesNoDefaultType.Yes; // MSUs are always per-machine.
 
@@ -1111,8 +1076,7 @@ namespace WixToolset
         /// <summary>
         /// Initializes package state from the EXE contents.
         /// </summary>
-        /// <param name="core">BinderCore for messages.</param>
-        private void ResolveExePackage(IBinderCore core)
+        private void ResolveExePackage()
         {
             if (String.IsNullOrEmpty(this.CacheId))
             {
@@ -1124,11 +1088,83 @@ namespace WixToolset
             // TODO: Future version could add Manufacturer to table definition.
         }
 
+        private void ProcessPatchXml(IBinderCore core, string sourcePath, Output bundle)
+        {
+            string patchXml = WixToolset.Dtf.WindowsInstaller.Installer.ExtractPatchXmlData(sourcePath);
+
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(patchXml);
+
+            XmlNamespaceManager nsmgr = new XmlNamespaceManager(doc.NameTable);
+            nsmgr.AddNamespace("p", "http://www.microsoft.com/msi/patch_applicability.xsd");
+
+            // Determine target ProductCodes and/or UpgradeCodes.
+            foreach (XmlNode node in doc.SelectNodes("/p:MsiPatch/p:TargetProduct", nsmgr))
+            {
+                // If this patch targets a product code, this is the best case.
+                XmlNode targetCode = node.SelectSingleNode("p:TargetProductCode", nsmgr);
+                WixBundlePatchTargetCodeAttributes attributes = WixBundlePatchTargetCodeAttributes.None;
+
+                if (ChainPackageInfo.TargetsCode(targetCode))
+                {
+                    attributes = WixBundlePatchTargetCodeAttributes.TargetsProductCode;
+                }
+                else // maybe targets an upgrade code?
+                {
+                    targetCode = node.SelectSingleNode("p:UpgradeCode", nsmgr);
+                    if (ChainPackageInfo.TargetsCode(targetCode))
+                    {
+                        attributes = WixBundlePatchTargetCodeAttributes.TargetsUpgradeCode;
+                    }
+                    else // this patch targets an unknown number of products
+                    {
+                        this.TargetUnspecified = true;
+                    }
+                }
+
+                Table table = bundle.EnsureTable(core.TableDefinitions["WixBundlePatchTargetCode"]);
+                WixBundlePatchTargetCodeRow row = (WixBundlePatchTargetCodeRow)table.CreateRow(this.PackagePayload.SourceLineNumbers, false);
+                row.MspPackageId = this.PackagePayload.Id;
+                row.TargetCode = targetCode.InnerText;
+                row.Attributes = attributes;
+
+                if (this.TargetCodes.TryAdd(row))
+                {
+                    table.Rows.Add(row);
+                }
+            }
+
+            // Suppress patch sequence data for improved performance.
+            XmlNode root = doc.DocumentElement;
+            foreach (XmlNode node in root.SelectNodes("p:SequenceData", nsmgr))
+            {
+                root.RemoveChild(node);
+            }
+
+            // Save the XML as compact as possible.
+            using (StringWriter writer = new StringWriter())
+            {
+                XmlWriterSettings settings = new XmlWriterSettings()
+                {
+                    Encoding = ChainPackageInfo.XmlOutputEncoding,
+                    Indent = false,
+                    NewLineChars = string.Empty,
+                    NewLineHandling = NewLineHandling.Replace,
+                };
+
+                using (XmlWriter xmlWriter = XmlWriter.Create(writer, settings))
+                {
+                    doc.WriteTo(xmlWriter);
+                }
+
+                this.PatchXml = writer.ToString();
+            }
+        }
+
         /// <summary>
         /// Verifies that only allowed properties are passed to the MSI.
         /// </summary>
-        /// <param name="core">Message handler.</param>
-        private void VerifyMsiProperties(IMessageHandler core)
+        private void VerifyMsiProperties(IBinderCore core)
         {
             foreach (string disallowed in new string[] { "ACTION", "ALLUSERS", "REBOOT", "REINSTALL", "REINSTALLMODE" })
             {
@@ -1214,6 +1250,16 @@ namespace WixToolset
             Debug.Assert(!property.Contains("'"));
             return String.Format(CultureInfo.InvariantCulture, ChainPackageInfo.PatchMetadataFormat, property);
         }
-    }
 
+        private static bool TargetsCode(XmlNode node)
+        {
+            if (null != node)
+            {
+                XmlAttribute attr = node.Attributes["Validate"];
+                return null != attr && "true".Equals(attr.Value);
+            }
+
+            return false;
+        }
+    }
 }

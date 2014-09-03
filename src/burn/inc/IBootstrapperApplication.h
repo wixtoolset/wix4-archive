@@ -188,6 +188,25 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in int nRecommendation
         ) = 0;
 
+    // OnDetectUpdate - called when the engine has an update candidate for bundle update.
+    //
+    // Return:
+    //  IDOK instructs the engine to stop further update detection.
+    //
+    //  IDCANCEL instructs the engine to stop detection.
+    //
+    //  IDNOACTION instructs the engine to process further update candidates.
+    STDMETHOD_(int, OnDetectUpdate)(
+        __in_z_opt LPCWSTR wzUpdateLocation,
+        __in DWORD64 dw64Size,
+        __in DWORD64 dw64Version,
+        __in_z_opt LPCWSTR wzTitle,
+        __in_z_opt LPCWSTR wzSummary,
+        __in_z_opt LPCWSTR wzContentType,
+        __in_z_opt LPCWSTR wzContent,
+        __in int nRecommendation
+        ) = 0;
+
     // OnDetectUpdateComplete - called when the engine completes detection for bundle update.
     //
     // Remarks:
@@ -381,10 +400,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD_(int, OnApplyBegin)() = 0;
 
     // DEPRECATED: In wix4, this will be merged with OnApplyBegin.
-    // OnApplyNumberOfPhases - called right after OnApplyBegin.
+    // OnApplyPhaseCount - called right after OnApplyBegin.
     //
-    STDMETHOD_(void, OnApplyNumberOfPhases)(
-        __in DWORD dwNumberOfApplyPhases
+    STDMETHOD_(void, OnApplyPhaseCount)(
+        __in DWORD dwPhaseCount
         ) = 0;
 
     // OnElevate - called before the engine displays an elevation prompt.
@@ -720,6 +739,21 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD_(int, OnApplyComplete)(
         __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart
+        ) = 0;
+
+    // OnLaunchApprovedExeBegin - called before trying to launch the preapproved executable.
+    // 
+    STDMETHOD_(int, OnLaunchApprovedExeBegin)() = 0;
+
+
+    // OnLaunchApprovedExeComplete - called after trying to launch the preapproved executable.
+    //
+    // Parameters:
+    //  dwProcessId is only valid if the operation succeeded.
+    //
+    STDMETHOD_(void, OnLaunchApprovedExeComplete)(
+        __in HRESULT hrStatus,
+        __in DWORD dwProcessId
         ) = 0;
 };
 

@@ -17,6 +17,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ApprovedExeForElevation.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="AutoMediaAssigner.cs" />
     <Compile Include="Binder.cs" />

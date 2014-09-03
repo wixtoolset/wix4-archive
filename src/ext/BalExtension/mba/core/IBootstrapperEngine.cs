@@ -127,7 +127,9 @@ namespace WixToolset.Bootstrapper
 
         void CloseSplashScreen();
 
-        void Detect();
+        void Detect(
+            IntPtr hwndParent
+            );
 
         void Plan(
             [MarshalAs(UnmanagedType.U4)] LaunchAction action
@@ -144,6 +146,13 @@ namespace WixToolset.Bootstrapper
 
         void Quit(
             [MarshalAs(UnmanagedType.U4)] int dwExitCode
+            );
+
+        void LaunchApprovedExe(
+            IntPtr hwndParent,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzApprovedExeForElevationId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzArguments,
+            [MarshalAs(UnmanagedType.U4)] int dwWaitForInputIdleTimeout
             );
     }
 

@@ -13,6 +13,8 @@
     <PlatformToolset Condition="$(VS2013Available)">v120</PlatformToolset>
     <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
+    <!-- turn off deprecation warning -->
+    <DisableSpecificCompilerWarnings>4996</DisableSpecificCompilerWarnings>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -70,6 +72,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>-YlprecompDefine</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>$(ArmPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>

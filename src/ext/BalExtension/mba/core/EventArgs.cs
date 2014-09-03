@@ -329,6 +329,90 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
+    /// Additional arguments used when the detection for an update has begun.
+    /// </summary>
+    [Serializable]
+    public class DetectUpdateEventArgs : DetectUpdateBeginEventArgs
+    {
+        private long size;
+        private Version version;
+        private string title;
+        private string summary;
+        private string contentType;
+        private string content;
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
+        /// </summary>
+        /// <param name="updateLocation">The location to check for an updated bundle.</param>
+        /// <param name="size">The expected size of the updated bundle.</param>
+        /// <param name="version">The expected version of the updated bundle.</param>
+        /// <param name="title">The title of the updated bundle.</param>
+        /// <param name="summary">The summary of the updated bundle.</param>
+        /// <param name="contentType">The content type of the content of the updated bundle.</param>
+        /// <param name="content">The content of the updated bundle.</param>
+        /// <param name="recommendation">The recommendation from the engine.</param>
+        public DetectUpdateEventArgs(string updateLocation, long size, long version, string title, string summary, string contentType, string content, int recommendation)
+            : base(updateLocation, recommendation)
+        {
+            this.size = size;
+            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
+            this.title = title;
+            this.summary = summary;
+            this.contentType = contentType;
+            this.content = content;
+        }
+
+        /// <summary>
+        /// Gets the size of the updated bundle.
+        /// </summary>
+        public long Size
+        {
+            get { return this.size; }
+        }
+
+        /// <summary>
+        /// Gets the version of the updated bundle.
+        /// </summary>
+        public Version Version
+        {
+            get { return this.version; }
+        }
+
+        /// <summary>
+        /// Gets the title of the the updated bundle.
+        /// </summary>
+        public string Title
+        {
+            get { return this.title; }
+        }
+
+        /// <summary>
+        /// Gets the summary of the updated bundle.
+        /// </summary>
+        public string Summary
+        {
+            get { return this.summary; }
+        }
+
+        /// <summary>
+        /// Gets the content type of the content of the updated bundle.
+        /// </summary>
+        public string ContentType
+        {
+            get { return this.contentType; }
+        }
+
+        /// <summary>
+        /// Gets the content of the updated bundle.
+        /// </summary>
+        public string Content
+        {
+            get { return this.content; }
+        }
+    }
+
+    /// <summary>
     /// Additional arguments used when the detection for an update has completed.
     /// </summary>
     [Serializable]
@@ -1084,13 +1168,13 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has determined the number of phases in apply.
     /// </summary>
     [Serializable]
-    public class ApplyNumberOfPhasesArgs : EventArgs
+    public class ApplyPhaseCountArgs : EventArgs
     {
-        private int numberOfApplyPhases;
+        private int phaseCount;
 
-        public ApplyNumberOfPhasesArgs(int numberOfApplyPhases)
+        public ApplyPhaseCountArgs(int phaseCount)
         {
-            this.numberOfApplyPhases = numberOfApplyPhases;
+            this.phaseCount = phaseCount;
         }
 
         /// <summary>
@@ -1098,9 +1182,9 @@ namespace WixToolset.Bootstrapper
         /// Gets the number of phases that the engine will go through in apply.
         /// There are currently two possible phases: cache and execute.
         /// </summary>
-        public int NumberOfApplyPhases
+        public int PhaseCount
         {
-            get { return this.numberOfApplyPhases; }
+            get { return this.phaseCount; }
         }
     }
 
@@ -2118,6 +2202,41 @@ namespace WixToolset.Bootstrapper
         public int OverallPercentage
         {
             get { return this.overallPercentage; }
+        }
+    }
+
+    /// <summary>
+    /// Additional arguments passed by the engine before it tries to launch the preapproved executable.
+    /// </summary>
+    [Serializable]
+    public class LaunchApprovedExeBeginArgs : ResultEventArgs
+    {
+        public LaunchApprovedExeBeginArgs()
+        {
+        }
+    }
+
+    /// <summary>
+    /// Additional arguments passed by the engine after it finished trying to launch the preapproved executable.
+    /// </summary>
+    [Serializable]
+    public class LaunchApprovedExeCompleteArgs : StatusEventArgs
+    {
+        private int processId;
+
+        public LaunchApprovedExeCompleteArgs(int status, int processId)
+            : base(status)
+        {
+            this.processId = processId;
+        }
+
+        /// <summary>
+        /// Gets the ProcessId of the process that was launched.
+        /// This is only valid if the status reports success.
+        /// </summary>
+        public int ProcessId
+        {
+            get { return this.processId; }
         }
     }
 }

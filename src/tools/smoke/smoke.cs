@@ -196,7 +196,8 @@ namespace WixToolset.Tools
 
                     // print friendly message saying what file is being validated
                     Console.WriteLine(Path.GetFileName(inputFile));
-
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    
                     try
                     {
                         validator.Validate(Path.GetFullPath(inputFile));
@@ -207,6 +208,9 @@ namespace WixToolset.Tools
                     }
                     finally
                     {
+                        stopwatch.Stop();
+                        Messaging.Instance.OnMessage(WixVerboses.ValidatedDatabase(stopwatch.ElapsedMilliseconds));
+                      
                         if (this.tidy)
                         {
                             if (!validator.DeleteTempFiles())

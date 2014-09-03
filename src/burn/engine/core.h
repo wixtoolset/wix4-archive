@@ -46,6 +46,7 @@ const LPCWSTR BURN_COMMANDLINE_SWITCH_PREFIX = L"burn.";
 const LPCWSTR BURN_BUNDLE_LAYOUT_DIRECTORY = L"WixBundleLayoutDirectory";
 const LPCWSTR BURN_BUNDLE_ACTION = L"WixBundleAction";
 const LPCWSTR BURN_BUNDLE_ACTIVE_PARENT = L"WixBundleActiveParent";
+const LPCWSTR BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER = L"WixBundleExecutePackageCacheFolder";
 const LPCWSTR BURN_BUNDLE_FORCED_RESTART_PACKAGE = L"WixBundleForcedRestartPackage";
 const LPCWSTR BURN_BUNDLE_INSTALLED = L"WixBundleInstalled";
 const LPCWSTR BURN_BUNDLE_ELEVATED = L"WixBundleElevated";
@@ -116,6 +117,7 @@ typedef struct _BURN_ENGINE_STATE
     BURN_PAYLOADS payloads;
     BURN_PACKAGES packages;
     BURN_UPDATE update;
+    BURN_APPROVED_EXES approvedExes;
 
     HWND hMessageWindow;
     HANDLE hMessageWindowThread;
@@ -165,7 +167,8 @@ HRESULT CoreQueryRegistration(
 //    __in SIZE_T cbBuffer
 //    );
 HRESULT CoreDetect(
-    __in BURN_ENGINE_STATE* pEngineState
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in_opt HWND hwndParent
     );
 HRESULT CorePlan(
     __in BURN_ENGINE_STATE* pEngineState,
@@ -178,6 +181,10 @@ HRESULT CoreElevate(
 HRESULT CoreApply(
     __in BURN_ENGINE_STATE* pEngineState,
     __in_opt HWND hwndParent
+    );
+HRESULT CoreLaunchApprovedExe(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_LAUNCH_APPROVED_EXE* pLaunchApprovedExe
     );
 HRESULT CoreQuit(
     __in BURN_ENGINE_STATE* pEngineState,
@@ -198,7 +205,7 @@ HRESULT CoreRecreateCommandLine(
     __in BOOL fPassthrough,
     __in_z_opt LPCWSTR wzActiveParent,
     __in_z_opt LPCWSTR wzAncestors,
-    __in_z_opt LPCWSTR wzApppendLogPath,
+    __in_z_opt LPCWSTR wzAppendLogPath,
     __in_z_opt LPCWSTR wzAdditionalCommandLineArguments
     );
 

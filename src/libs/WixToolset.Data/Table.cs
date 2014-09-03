@@ -114,6 +114,9 @@ namespace WixToolset.Data
                 case "WixAction":
                     row = new WixActionRow(sourceLineNumbers, this);
                     break;
+                case "WixApprovedExeForElevation":
+                    row = new WixApprovedExeForElevationRow(sourceLineNumbers, this);
+                    break;
                 case "WixBundle":
                     row = new WixBundleRow(sourceLineNumbers, this);
                     break;
@@ -323,6 +326,11 @@ namespace WixToolset.Data
             if (this.Definition.Unreal)
             {
                 return;
+            }
+
+            if (TableDefinition.MaxColumnsInRealTable < this.Definition.Columns.Count)
+            {
+                throw new WixException(WixDataErrors.TooManyColumnsInRealTable(this.Definition.Name, this.Definition.Columns.Count, TableDefinition.MaxColumnsInRealTable));
             }
 
             // Tack on the table header, and flush before we start writing bytes directly to the stream.

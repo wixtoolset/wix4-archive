@@ -61,6 +61,19 @@ namespace WixToolset.Bootstrapper
         [return: MarshalAs(UnmanagedType.I4)]
         Result OnDetectUpdateBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation,
+             [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        Result OnDetectUpdate(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation,
+            [MarshalAs(UnmanagedType.U8)] long dw64Size,
+            [MarshalAs(UnmanagedType.U8)] long dw64Version,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzTitle,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzSummary,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzContentType,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzContent,
             [MarshalAs(UnmanagedType.I4)] int nRecommendation
             );
 
@@ -188,8 +201,8 @@ namespace WixToolset.Bootstrapper
         [return: MarshalAs(UnmanagedType.I4)]
         Result OnApplyBegin();
 
-        void OnApplyNumberOfPhases(
-            int dwNumberOfApplyPhases
+        void OnApplyPhaseCount(
+            int dwPhaseCount
             );
 
         [PreserveSig]
@@ -373,6 +386,15 @@ namespace WixToolset.Bootstrapper
         Result OnApplyComplete(
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] ApplyRestart restart
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        Result OnLaunchApprovedExeBegin();
+
+        void OnLaunchApprovedExeComplete(
+            int hrStatus,
+            int processId
             );
     }
 

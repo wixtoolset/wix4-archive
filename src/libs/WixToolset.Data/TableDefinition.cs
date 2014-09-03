@@ -21,6 +21,12 @@ namespace WixToolset.Data
     public sealed class TableDefinition : IComparable<TableDefinition>
     {
         /// <summary>
+        /// Tracks the maximum number of columns supported in a real table.
+        /// This is a Windows Installer limitation.
+        /// </summary>
+        public const int MaxColumnsInRealTable = 32;
+
+        /// <summary>
         /// Creates a table definition.
         /// </summary>
         /// <param name="name">Name of table to create.</param>

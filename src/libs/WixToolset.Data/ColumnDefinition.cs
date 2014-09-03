@@ -375,7 +375,7 @@ namespace WixToolset.Data
         /// <summary>
         /// Gets the validation category for this column.
         /// </summary>
-        /// <value>Validaiton category.</value>
+        /// <value>Validation category.</value>
         public ColumnCategory Category
         {
             get { return this.category; }
@@ -900,12 +900,12 @@ namespace WixToolset.Data
                     break;
             }
 
-            if (null != this.possibilities)
+            if (!String.IsNullOrEmpty(this.possibilities))
             {
                 writer.WriteAttributeString("set", this.possibilities);
             }
 
-            if (null != this.description)
+            if (!String.IsNullOrEmpty(this.description))
             {
                 writer.WriteAttributeString("description", this.description);
             }

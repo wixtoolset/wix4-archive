@@ -323,7 +323,7 @@ extern "C" HRESULT ApplyRegister(
         // resume previous session
         if (pEngineState->registration.fPerMachine)
         {
-            hr =  ElevationSessionResume(pEngineState->companionConnection.hPipe, pEngineState->registration.sczResumeCommandLine);
+            hr = ElevationSessionResume(pEngineState->companionConnection.hPipe, pEngineState->registration.sczResumeCommandLine, pEngineState->registration.fDisableResume);
             ExitOnFailure(hr, "Failed to resume registration session in per-machine process.");
         }
         else
@@ -340,7 +340,7 @@ extern "C" HRESULT ApplyRegister(
         // begin new session
         if (pEngineState->registration.fPerMachine)
         {
-            hr = ElevationSessionBegin(pEngineState->companionConnection.hPipe, sczEngineWorkingPath, pEngineState->registration.sczResumeCommandLine, &pEngineState->variables, pEngineState->plan.dwRegistrationOperations, pEngineState->plan.dependencyRegistrationAction, pEngineState->plan.qwEstimatedSize);
+            hr = ElevationSessionBegin(pEngineState->companionConnection.hPipe, sczEngineWorkingPath, pEngineState->registration.sczResumeCommandLine, pEngineState->registration.fDisableResume, &pEngineState->variables, pEngineState->plan.dwRegistrationOperations, pEngineState->plan.dependencyRegistrationAction, pEngineState->plan.qwEstimatedSize);
             ExitOnFailure(hr, "Failed to begin registration session in per-machine process.");
         }
         else
@@ -1387,8 +1387,8 @@ static HRESULT DownloadPayload(
     DOWNLOAD_SOURCE* pDownloadSource = pProgress->pContainer ? &pProgress->pContainer->downloadSource : &pProgress->pPayload->downloadSource;
     DWORD64 qwDownloadSize = pProgress->pContainer ? pProgress->pContainer->qwFileSize : pProgress->pPayload->qwFileSize;
     DOWNLOAD_CACHE_CALLBACK cacheCallback = { };
-    DOWNLOAD_AUTHENTICATION_CALLBACK authenticationCallback = {};
-    APPLY_AUTHENTICATION_REQUIRED_DATA authenticationData = {};
+    DOWNLOAD_AUTHENTICATION_CALLBACK authenticationCallback = { };
+    APPLY_AUTHENTICATION_REQUIRED_DATA authenticationData = { };
 
     DWORD dwLogId = pProgress->pContainer ? (pProgress->pPayload ? MSG_ACQUIRE_CONTAINER_PAYLOAD : MSG_ACQUIRE_CONTAINER) : pProgress->pPackage ? MSG_ACQUIRE_PACKAGE_PAYLOAD : MSG_ACQUIRE_BUNDLE_PAYLOAD;
     LogId(REPORT_STANDARD, dwLogId, wzPackageOrContainerId, wzPayloadId, "download", pDownloadSource->sczUrl);

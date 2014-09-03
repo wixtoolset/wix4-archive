@@ -141,13 +141,10 @@
    -sl        suppress layout
    -spdb      suppress outputting the WixPdb
    -sval      suppress MSI/MSM validation
-   -binder &lt;classname&gt;  specify a specific custom binder to use provided by
-                        an extension
    -cultures:&lt;cultures&gt;  semicolon or comma delimited list of localized
              string cultures to load from .wxl files and libraries.
              Precedence of cultures is from left to right.
    -d&lt;name&gt;[=&lt;value&gt;]  define a wix variable, with or without a value.
-   -dut       drop unreal tables from the output image
    -ext &lt;extension&gt;  extension assembly or "class, assembly"
    -loc &lt;loc.wxl&gt;  read localization strings from .wxl file
    -nologo    skip printing light logo information
@@ -155,7 +152,6 @@
    -o[ut]     specify output file (default: write to current directory)
    -pedantic  show pedantic messages
    -sloc      suppress localization
-   -sv        suppress intermediate file version mismatch checking
    -sw[N]     suppress all warnings or a specific message ID
               (example: -sw1009 -sw1103)
    -usf &lt;output.xml&gt;  unreferenced symbols file

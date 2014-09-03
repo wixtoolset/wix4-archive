@@ -10,21 +10,19 @@
 namespace WixToolset
 {
     using System;
-    using System.IO;
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
+    using System.IO;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
-
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
     using WixToolset.Msi;
     using WixToolset.Msi.Interop;
-
     using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
@@ -14654,7 +14652,7 @@ namespace WixToolset
                 }
                 else
                 {
-                    Dictionary<string, string> context = new Dictionary<string,string>() { { "ServiceInstallId", id.Id }, { "ServiceInstallName", name }, { "ServiceInstallComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "ServiceInstallId", id.Id }, { "ServiceInstallName", name }, { "ServiceInstallComponentId", componentId }, { "Win64", win64Component.ToString() } };
                     this.core.ParseExtensionElement(node, child, context);
                 }
             }
@@ -18106,6 +18104,77 @@ namespace WixToolset
             }
         }
 
+
+        /// <summary>
+        /// Parses an ApprovedExeForElevation element.
+        /// </summary>
+        /// <param name="node">Element to parse</param>
+        private void ParseApprovedExeForElevation(XElement node)
+        {
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string id = null;
+            string key = null;
+            string valueName = null;
+            YesNoType win64 = YesNoType.NotSet;
+
+            foreach (XAttribute attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
+                {
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "Id":
+                            id = this.core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Key":
+                            key = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Value":
+                            valueName = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Win64":
+                            win64 = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            this.core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.core.ParseExtensionAttribute(node, attrib);
+                }
+            }
+
+            if (null == id)
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Id"));
+            }
+
+            if (null == key)
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Key"));
+            }
+
+            BundleApprovedExeForElevationAttributes attributes = BundleApprovedExeForElevationAttributes.None;
+
+            if (win64 == YesNoType.Yes)
+            {
+                attributes |= BundleApprovedExeForElevationAttributes.Win64;
+            }
+
+            this.core.ParseForExtensionElements(node);
+
+            if (!this.core.EncounteredError)
+            {
+                WixApprovedExeForElevationRow wixApprovedExeForElevationRow = (WixApprovedExeForElevationRow)this.core.CreateRow(sourceLineNumbers, "WixApprovedExeForElevation");
+                wixApprovedExeForElevationRow.Id = id;
+                wixApprovedExeForElevationRow.Key = key;
+                wixApprovedExeForElevationRow.ValueName = valueName;
+                wixApprovedExeForElevationRow.Attributes = attributes;
+            }
+        }
+
         /// <summary>
         /// Parses a Bundle element.
         /// </summary>
@@ -18276,6 +18345,9 @@ namespace WixToolset
                 {
                     switch (child.Name.LocalName)
                     {
+                        case "ApprovedExeForElevation":
+                            this.ParseApprovedExeForElevation(child);
+                            break;
                         case "BootstrapperApplication":
                             if (baSeen)
                             {
@@ -18886,7 +18958,7 @@ namespace WixToolset
 
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             YesNoDefaultType compressed = YesNoDefaultType.Default;
-            YesNoType suppressSignatureVerification = YesNoType.NotSet;
+            YesNoType suppressSignatureVerification = YesNoType.Yes;
             Identifier id = null;
             string name = null;
             string sourceFile = null;
@@ -19588,7 +19660,7 @@ namespace WixToolset
             int installSize = CompilerConstants.IntegerNotSet;
             string msuKB = null;
             YesNoType suppressLooseFilePayloadGeneration = YesNoType.NotSet;
-            YesNoType suppressSignatureVerification = YesNoType.NotSet;
+            YesNoType suppressSignatureVerification = YesNoType.Yes;
             YesNoDefaultType compressed = YesNoDefaultType.Default;
             YesNoType displayInternalUI = YesNoType.NotSet;
             YesNoType enableFeatureSelection = YesNoType.NotSet;

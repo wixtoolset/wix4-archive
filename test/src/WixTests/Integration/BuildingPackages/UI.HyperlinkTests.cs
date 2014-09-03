@@ -13,13 +13,9 @@
 namespace WixTest.Tests.Integration.BuildingPackages.UI
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Text;
-
-    using DTF = WixToolset.Dtf.WindowsInstaller;
     using WixTest;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using DTF = WixToolset.Dtf.WindowsInstaller;
 
     /// <summary>
     /// Tests for the Hyperlinks in UI
@@ -27,12 +23,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.UI
     /// <remarks>
     /// Hyperlinks is new in Windows Installer 5.0
     /// </remarks>
-    [TestClass]
     public class HyperlinkTests
     {
         private static readonly string TestDataDirectory = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\Integration\BuildingPackages\UI\HyperlinkTests");
 
-        [TestMethod]
+        [NamedFact]
         [Description("Verify that a hyperlink can be created")]
         [Priority(2)]
         public void SimpleHyperlink()
@@ -54,7 +49,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.UI
             Verifier.VerifyQuery(light.OutputFile, "SELECT `Type` from `Control` WHERE `Control`='Control1'", "Hyperlink");
         }
 
-        [TestMethod]
+        [NamedFact]
         [Description("Verify that multiple hyperlinks can be created")]
         [Priority(2)]
         public void MultipleHyperlinks()

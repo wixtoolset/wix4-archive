@@ -9,6 +9,8 @@
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
+        <Icon Id="WixSetupIcons.ico" SourceFile="wixsetupicons.dll" />
+
         <ComponentGroup Id="DocComponents" Directory="DocFolder">
             <Component>
                 <File Source="WiX.chm" />

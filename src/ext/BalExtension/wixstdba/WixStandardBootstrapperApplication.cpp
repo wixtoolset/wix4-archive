@@ -10,13 +10,12 @@
 
 #include "precomp.h"
 
-static const HRESULT E_WIXSTDBA_CONDITION_FAILED = MAKE_HRESULT(SEVERITY_ERROR, 500, 1);
-
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
 static const LPCWSTR WIXSTDBA_WINDOW_CLASS = L"WixStdBA";
 static const LPCWSTR WIXSTDBA_VARIABLE_INSTALL_FOLDER = L"InstallFolder";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH = L"LaunchTarget";
+static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID = L"LaunchTargetElevatedId";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS = L"LaunchArguments";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_HIDDEN = L"LaunchHidden";
 static const DWORD WIXSTDBA_ACQUIRE_PERCENTAGE = 30;
@@ -48,6 +47,7 @@ enum WM_WIXSTDBA
     WM_WIXSTDBA_PLAN_PACKAGES,
     WM_WIXSTDBA_APPLY_PACKAGES,
     WM_WIXSTDBA_CHANGE_STATE,
+    WM_WIXSTDBA_SHOW_FAILURE,
 };
 
 // This enum must be kept in the same order as the vrgwzPageNames array.
@@ -189,7 +189,6 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
 typedef struct _WIXSTDBA_PREREQ_PACKAGE
 {
     LPWSTR sczPackageId;
-    BAL_INFO_PACKAGE* pPackage;
     BOOL fAlwaysInstall;
     BOOL fWasAlreadyInstalled;
     BOOL fPlannedToBeInstalled;
@@ -287,7 +286,8 @@ public: // IBootstrapperApplication
         )
     {
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
-        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage);
+        BAL_INFO_PACKAGE* pPackage = NULL;
+        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
         if (SUCCEEDED(hr) && BOOTSTRAPPER_PACKAGE_STATE_PRESENT == state)
         {
             // If the prerequisite package is already installed, remember that.
@@ -310,14 +310,18 @@ public: // IBootstrapperApplication
         {
             hrStatus = EvaluateConditions();
             
-            m_fPrereqAlreadyInstalled = TRUE;
-
-            // At this point we have to assume that all prerequisite packages need to be installed, so set to false if any of them aren't installed.
-            for (UINT i = 0; i < m_cPrereqPackages; ++i)
+            if (m_fPrereq)
             {
-                if (m_rgPrereqPackages[i].sczPackageId && !m_rgPrereqPackages[i].fWasAlreadyInstalled)
+                m_fPrereqAlreadyInstalled = TRUE;
+
+                // At this point we have to assume that all prerequisite packages need to be installed, so set to false if any of them aren't installed.
+                for (DWORD i = 0; i < m_cPrereqPackages; ++i)
                 {
-                    m_fPrereqAlreadyInstalled = FALSE;
+                    if (m_rgPrereqPackages[i].sczPackageId && !m_rgPrereqPackages[i].fWasAlreadyInstalled)
+                    {
+                        m_fPrereqAlreadyInstalled = FALSE;
+                        break;
+                    }
                 }
             }
         }
@@ -358,6 +362,7 @@ public: // IBootstrapperApplication
     {
         HRESULT hr = S_OK;
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
+        BAL_INFO_PACKAGE* pPackage = NULL;
 
         // If we're planning to install a prerequisite, install it. The prerequisite needs to be installed
         // in all cases (even uninstall!) so the BA can load next.
@@ -365,16 +370,16 @@ public: // IBootstrapperApplication
         {
             // Only install prerequisite packages, and check the InstallCondition on prerequisite support packages.
             BOOL fInstall = FALSE;
-            hr = GetPrereqPackage(wzPackageId, &pPrereqPackage);
-            if (SUCCEEDED(hr) && pPrereqPackage->pPackage)
+            hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
+            if (SUCCEEDED(hr) && pPackage)
             {
                 if (pPrereqPackage->fAlwaysInstall)
                 {
                     fInstall = TRUE;
                 }
-                else if(pPrereqPackage->pPackage->sczInstallCondition && *pPrereqPackage->pPackage->sczInstallCondition)
+                else if(pPackage->sczInstallCondition && *pPackage->sczInstallCondition)
                 {
-                    hr = m_pEngine->EvaluateCondition(pPrereqPackage->pPackage->sczInstallCondition, &fInstall);
+                    hr = m_pEngine->EvaluateCondition(pPackage->sczInstallCondition, &fInstall);
                     if (FAILED(hr))
                     {
                         fInstall = FALSE;
@@ -434,14 +439,18 @@ public: // IBootstrapperApplication
             m_pBAFunction->OnPlanComplete();
         }
 
-        m_fPrereqAlreadyInstalled = TRUE;
-
-        // Now that we've planned the packages, we can focus on the prerequisite packages that are supposed to be installed.
-        for (UINT i = 0; i < m_cPrereqPackages; ++i)
+        if (m_fPrereq)
         {
-            if (m_rgPrereqPackages[i].sczPackageId && !m_rgPrereqPackages[i].fWasAlreadyInstalled && m_rgPrereqPackages[i].fPlannedToBeInstalled)
+            m_fPrereqAlreadyInstalled = TRUE;
+
+            // Now that we've planned the packages, we can focus on the prerequisite packages that are supposed to be installed.
+            for (DWORD i = 0; i < m_cPrereqPackages; ++i)
             {
-                m_fPrereqAlreadyInstalled = FALSE;
+                if (m_rgPrereqPackages[i].sczPackageId && !m_rgPrereqPackages[i].fWasAlreadyInstalled && m_rgPrereqPackages[i].fPlannedToBeInstalled)
+                {
+                    m_fPrereqAlreadyInstalled = FALSE;
+                    break;
+                }
             }
         }
 
@@ -751,7 +760,8 @@ public: // IBootstrapperApplication
         int nResult = __super::OnExecutePackageComplete(wzPackageId, hrExitCode, restart, nRecommendation);
 
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
-        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage);
+        BAL_INFO_PACKAGE* pPackage;
+        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
         if (SUCCEEDED(hr))
         {
             pPrereqPackage->fSuccessfullyInstalled = TRUE;
@@ -847,25 +857,29 @@ public: // IBootstrapperApplication
         // If a restart is required and we're not displaying a UI or we are not supposed to prompt for restart then allow the restart.
         m_fAllowRestart = m_fRestartRequired && (BOOTSTRAPPER_DISPLAY_FULL > m_command.display || BOOTSTRAPPER_RESTART_PROMPT < m_command.restart);
 
-        m_fPrereqInstalled = TRUE;
-        BOOL fInstalledAPackage = FALSE;
-
-        for (UINT i = 0; i < m_cPrereqPackages; ++i)
+        if (m_fPrereq)
         {
-            if (m_rgPrereqPackages[i].sczPackageId && m_rgPrereqPackages[i].fPlannedToBeInstalled)
+            m_fPrereqInstalled = TRUE;
+            BOOL fInstalledAPackage = FALSE;
+
+            for (DWORD i = 0; i < m_cPrereqPackages; ++i)
             {
-                if (m_rgPrereqPackages[i].fSuccessfullyInstalled)
+                if (m_rgPrereqPackages[i].sczPackageId && m_rgPrereqPackages[i].fPlannedToBeInstalled)
                 {
-                    fInstalledAPackage = TRUE;
-                }
-                else
-                {
-                    m_fPrereqInstalled = FALSE;
+                    if (m_rgPrereqPackages[i].fSuccessfullyInstalled)
+                    {
+                        fInstalledAPackage = TRUE;
+                    }
+                    else
+                    {
+                        m_fPrereqInstalled = FALSE;
+                        break;
+                    }
                 }
             }
-        }
 
-        m_fPrereqInstalled = m_fPrereqInstalled && fInstalledAPackage;
+            m_fPrereqInstalled = m_fPrereqInstalled && fInstalledAPackage;
+        }
 
         // If we are showing UI, wait a beat before moving to the final screen.
         if (BOOTSTRAPPER_DISPLAY_NONE < m_command.display)
@@ -877,6 +891,22 @@ public: // IBootstrapperApplication
         SetTaskbarButtonProgress(100); // show full progress bar, green, yellow, or red
 
         return IDNOACTION;
+    }
+
+    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+        __in HRESULT hrStatus,
+        __in DWORD /*processId*/
+        )
+    {
+        if (HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hrStatus)
+        {
+            //try with ShelExec next time
+            OnClickLaunchButton();
+        }
+        else
+        {
+            ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+        }
     }
 
 
@@ -910,9 +940,17 @@ private: // privates
         hr = pThis->CreateMainWindow();
         BalExitOnFailure(hr, "Failed to create main window.");
 
-        // Okay, we're ready for packages now.
-        pThis->SetState(WIXSTDBA_STATE_INITIALIZED, hr);
-        ::PostMessageW(pThis->m_hWnd, BOOTSTRAPPER_ACTION_HELP == pThis->m_command.action ? WM_WIXSTDBA_SHOW_HELP : WM_WIXSTDBA_DETECT_PACKAGES, 0, 0);
+        if (FAILED(pThis->m_hrFinal))
+        {
+            pThis->SetState(WIXSTDBA_STATE_FAILED, hr);
+            ::PostMessageW(pThis->m_hWnd, WM_WIXSTDBA_SHOW_FAILURE, 0, 0);
+        }
+        else
+        {
+            // Okay, we're ready for packages now.
+            pThis->SetState(WIXSTDBA_STATE_INITIALIZED, hr);
+            ::PostMessageW(pThis->m_hWnd, BOOTSTRAPPER_ACTION_HELP == pThis->m_command.action ? WM_WIXSTDBA_SHOW_HELP : WM_WIXSTDBA_DETECT_PACKAGES, 0, 0);
+        }
 
         // message pump
         while (0 != (fRet = ::GetMessageW(&msg, NULL, 0, 0)))
@@ -1282,8 +1320,6 @@ private: // privates
         pPrereqPackage = m_rgPrereqPackages;
         pPrereqPackage->sczPackageId = m_sczPrereqPackage;
         pPrereqPackage->fAlwaysInstall = TRUE;
-        hr = BalInfoFindPackageById(&m_Bundle.packages, pPrereqPackage->sczPackageId, &pPrereqPackage->pPackage);
-        // Ignore error.
         hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
         ExitOnFailure1(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
 
@@ -1316,7 +1352,6 @@ private: // privates
             {
                 pPrereqPackage = &m_rgPrereqPackages[i + 1];
                 pPrereqPackage->sczPackageId = pPackage->sczId;
-                pPrereqPackage->pPackage = pPackage;
                 hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
                 ExitOnFailure1(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
             }
@@ -1428,13 +1463,16 @@ private: // privates
 
     HRESULT GetPrereqPackage(
         __in_z LPCWSTR wzPackageId,
-        __out WIXSTDBA_PREREQ_PACKAGE** ppPrereqPackage
+        __out WIXSTDBA_PREREQ_PACKAGE** ppPrereqPackage,
+        __out BAL_INFO_PACKAGE** ppPackage
         )
     {
         HRESULT hr = E_NOTFOUND;
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
+        BAL_INFO_PACKAGE* pPackage = NULL;
 
         Assert(wzPackageId && *wzPackageId);
+        Assert(ppPackage);
         Assert(ppPrereqPackage);
 
         if (m_shPrereqSupportPackages)
@@ -1443,12 +1481,16 @@ private: // privates
             if (E_NOTFOUND != hr)
             {
                 ExitOnFailure(hr, "Failed to check the dictionary of prerequisite packages.");
+
+                // Ignore error.
+                BalInfoFindPackageById(&m_Bundle.packages, wzPackageId, &pPackage);
             }
         }
 
         if (pPrereqPackage)
         {
             *ppPrereqPackage = pPrereqPackage;
+            *ppPackage = pPackage;
         }
     LExit:
         return hr;
@@ -1672,6 +1714,10 @@ private: // privates
             pBA->OnChangeState(static_cast<WIXSTDBA_STATE>(lParam));
             return 0;
 
+        case WM_WIXSTDBA_SHOW_FAILURE:
+            pBA->OnShowFailure();
+            return 0;
+
         case WM_COMMAND:
             switch (LOWORD(wParam))
             {
@@ -1852,6 +1898,25 @@ private: // privates
         ReleaseStr(sczText);
 
         return SUCCEEDED(hr);
+    }
+
+
+    //
+    // OnShowFailure - display the failure page.
+    //
+    void OnShowFailure()
+    {
+        SetState(WIXSTDBA_STATE_FAILED, S_OK);
+
+        // If the UI should be visible, display it now and hide the splash screen
+        if (BOOTSTRAPPER_DISPLAY_NONE < m_command.display)
+        {
+            ::ShowWindow(m_pTheme->hwndParent, SW_SHOW);
+        }
+
+        m_pEngine->CloseSplashScreen();
+
+        return;
     }
 
 
@@ -2105,6 +2170,23 @@ private: // privates
                         {
                             StrAllocString(&sczUnformattedText, m_sczFailedMessage, 0);
                         }
+                        else if (E_MBAHOST_NET452_ON_WIN7RTM == m_hrFinal)
+                        {
+                            HRESULT hr = StrAllocString(&sczUnformattedText, L"#(loc.NET452WIN7RTMErrorMessage)", 0);
+                            if (FAILED(hr))
+                            {
+                                BalLogError(hr, "Failed to initialize NET452WIN7RTMErrorMessage loc identifier.");
+                            }
+                            else
+                            {
+                                hr = LocLocalizeString(m_pWixLoc, &sczUnformattedText);
+                                if (FAILED(hr))
+                                {
+                                    BalLogError(hr, "Failed to localize NET452WIN7RTMErrorMessage: %ls", sczUnformattedText);
+                                    ReleaseNullStr(sczUnformattedText);
+                                }
+                            }
+                        }
                         else // try to get the error message from the error code.
                         {
                             StrAllocFromError(&sczUnformattedText, m_hrFinal, NULL);
@@ -2116,7 +2198,17 @@ private: // privates
 
                         if (E_WIXSTDBA_CONDITION_FAILED == m_hrFinal)
                         {
-                            StrAllocString(&sczText, sczUnformattedText, 0);
+                            if (sczUnformattedText)
+                            {
+                                StrAllocString(&sczText, sczUnformattedText, 0);
+                            }
+                        }
+                        else if (E_MBAHOST_NET452_ON_WIN7RTM == m_hrFinal)
+                        {
+                            if (sczUnformattedText)
+                            {
+                                BalFormatString(sczUnformattedText, &sczText);
+                            }
                         }
                         else
                         {
@@ -2450,6 +2542,7 @@ private: // privates
         HRESULT hr = S_OK;
         LPWSTR sczUnformattedLaunchTarget = NULL;
         LPWSTR sczLaunchTarget = NULL;
+        LPWSTR sczLaunchTargetElevatedId = NULL;
         LPWSTR sczUnformattedArguments = NULL;
         LPWSTR sczArguments = NULL;
         int nCmdShow = SW_SHOWNORMAL;
@@ -2460,13 +2553,16 @@ private: // privates
         hr = BalFormatString(sczUnformattedLaunchTarget, &sczLaunchTarget);
         BalExitOnFailure1(hr, "Failed to format launch target variable: %ls", sczUnformattedLaunchTarget);
 
+        if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID))
+        {
+            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID, &sczLaunchTargetElevatedId);
+            BalExitOnFailure1(hr, "Failed to get launch target elevated id '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID);
+        }
+
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS))
         {
             hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS, &sczUnformattedArguments);
             BalExitOnFailure1(hr, "Failed to get launch arguments '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS);
-
-            hr = BalFormatString(sczUnformattedArguments, &sczArguments);
-            BalExitOnFailure1(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
         }
 
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_HIDDEN))
@@ -2474,14 +2570,36 @@ private: // privates
             nCmdShow = SW_HIDE;
         }
 
-        hr = ShelExec(sczLaunchTarget, sczArguments, L"open", NULL, nCmdShow, m_hWnd, NULL);
-        BalExitOnFailure1(hr, "Failed to launch target: %ls", sczLaunchTarget);
+        if (sczLaunchTargetElevatedId && !m_fTriedToLaunchElevated)
+        {
+            m_fTriedToLaunchElevated = TRUE;
+            hr = m_pEngine->LaunchApprovedExe(m_hWnd, sczLaunchTargetElevatedId, sczUnformattedArguments, 0);
+            if (FAILED(hr))
+            {
+                BalLogError(hr, "Failed to launch elevated target: %ls", sczLaunchTargetElevatedId);
 
-        ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+                //try with ShelExec next time
+                OnClickLaunchButton();
+            }
+        }
+        else
+        {
+            if (sczUnformattedArguments)
+            {
+                hr = BalFormatString(sczUnformattedArguments, &sczArguments);
+                BalExitOnFailure1(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
+            }
+
+            hr = ShelExec(sczLaunchTarget, sczArguments, L"open", NULL, nCmdShow, m_hWnd, NULL);
+            BalExitOnFailure1(hr, "Failed to launch target: %ls", sczLaunchTarget);
+
+            ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
+        }
 
     LExit:
         StrSecureZeroFreeString(sczArguments);
         ReleaseStr(sczUnformattedArguments);
+        ReleaseStr(sczLaunchTargetElevatedId);
         StrSecureZeroFreeString(sczLaunchTarget);
         ReleaseStr(sczUnformattedLaunchTarget);
 
@@ -2810,6 +2928,7 @@ public:
     CWixStandardBootstrapperApplication(
         __in HMODULE hModule,
         __in BOOL fPrereq,
+        __in HRESULT hrHostInitialization,
         __in IBootstrapperEngine* pEngine,
         __in const BOOTSTRAPPER_COMMAND* pCommand
         ) : CBalBaseBootstrapperApplication(pEngine, pCommand, 3, 3000)
@@ -2866,7 +2985,7 @@ public:
         m_hWnd = NULL;
 
         m_state = WIXSTDBA_STATE_INITIALIZING;
-        m_hrFinal = S_OK;
+        m_hrFinal = hrHostInitialization;
 
         m_fDowngrading = FALSE;
         m_restartResult = BOOTSTRAPPER_APPLY_RESTART_NONE;
@@ -2888,6 +3007,7 @@ public:
         m_uTaskbarButtonCreatedMessage = UINT_MAX;
         m_fTaskbarButtonOK = FALSE;
         m_fShowingInternalUiThisPackage = FALSE;
+        m_fTriedToLaunchElevated = FALSE;
 
         m_fPrereq = fPrereq;
         m_sczPrereqPackage = NULL;
@@ -2978,7 +3098,7 @@ private:
     STRINGDICT_HANDLE m_sdOverridableVariables;
 
     WIXSTDBA_PREREQ_PACKAGE* m_rgPrereqPackages;
-    UINT m_cPrereqPackages;
+    DWORD m_cPrereqPackages;
     STRINGDICT_HANDLE m_shPrereqSupportPackages;
 
     BOOL m_fPrereq;
@@ -2990,6 +3110,7 @@ private:
     UINT m_uTaskbarButtonCreatedMessage;
     BOOL m_fTaskbarButtonOK;
     BOOL m_fShowingInternalUiThisPackage;
+    BOOL m_fTriedToLaunchElevated;
 
     HMODULE m_hBAFModule;
     IBootstrapperBAFunction* m_pBAFunction;
@@ -2997,11 +3118,12 @@ private:
 
 
 //
-// CreateUserExperience - creates a new IBurnUserExperience object.
+// CreateBootstrapperApplication - creates a new IBootstrapperApplication object.
 //
 HRESULT CreateBootstrapperApplication(
     __in HMODULE hModule,
     __in BOOL fPrereq,
+    __in HRESULT hrHostInitialization,
     __in IBootstrapperEngine* pEngine,
     __in const BOOTSTRAPPER_COMMAND* pCommand,
     __out IBootstrapperApplication** ppApplication
@@ -3010,7 +3132,7 @@ HRESULT CreateBootstrapperApplication(
     HRESULT hr = S_OK;
     CWixStandardBootstrapperApplication* pApplication = NULL;
 
-    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, pEngine, pCommand);
+    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pEngine, pCommand);
     ExitOnNull(pApplication, hr, E_OUTOFMEMORY, "Failed to create new standard bootstrapper application object.");
 
     *ppApplication = pApplication;

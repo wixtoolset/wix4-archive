@@ -496,6 +496,7 @@ namespace WixToolset.Data
         private static ArrayList GetPatchUninstallBreakingTables()
         {
             ArrayList tables = new ArrayList();
+            tables.Add("AppId");
             tables.Add("BindImage");
             tables.Add("Class");
             tables.Add("Complus");
@@ -509,6 +510,9 @@ namespace WixToolset.Data
             tables.Add("LockPermissions");
             tables.Add("MIME");
             tables.Add("MoveFile");
+            tables.Add("MsiLockPermissionsEx");
+            tables.Add("MsiServiceConfig");
+            tables.Add("MsiServiceConfigFailureActions");
             tables.Add("ODBCAttribute");
             tables.Add("ODBCDataSource");
             tables.Add("ODBCDriver");

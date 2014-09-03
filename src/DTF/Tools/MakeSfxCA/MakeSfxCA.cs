@@ -516,7 +516,7 @@ namespace WixToolset.Dtf.Tools.MakeSfxCA
             }
 
             entryPoints.Keys.CopyTo(slotSort, slotCount - entryPoints.Count);
-            Array.Sort<string>(slotSort, slotCount - entryPoints.Count, entryPoints.Count);
+            Array.Sort<string>(slotSort, slotCount - entryPoints.Count, entryPoints.Count, StringComparer.Ordinal);
 
             for (int i = 0; ; i++)
             {

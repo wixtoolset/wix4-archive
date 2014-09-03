@@ -11,7 +11,6 @@ namespace WixToolset
 {
     using WixToolset.Data;
     using WixToolset.Extensibility;
-    using WixToolset.Msi;
 
     /// <summary>
     /// Core class for the binder.

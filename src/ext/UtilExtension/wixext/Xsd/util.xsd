@@ -661,7 +661,12 @@
       <xs:appinfo>
         <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
       </xs:appinfo>
-      <xs:documentation>Used to install Perfmon Counter Manifests.</xs:documentation>
+      <xs:documentation>
+        Used to install Perfmon Counter Manifests.
+        Note that this functionality cannot be used with major upgrades that are scheduled after the InstallExecute,
+        InstallExecuteAgain, or InstallFinalize actions. For more information on major upgrade scheduling, see
+        <html:a href="http://msdn.microsoft.com/en-us/library/aa371197.aspx">RemoveExistingProducts Action</html:a>.
+      </xs:documentation>
     </xs:annotation>
     <xs:complexType>
       <xs:attribute name="ResourceFileDirectory" type="xs:string" use="optional">
@@ -1272,6 +1277,11 @@
       <xs:attribute name="CreateUser" type="YesNoType">
         <xs:annotation>
           <xs:documentation>Indicates whether or not to create the user.  User creation can be skipped if all that is desired is to join a user to groups.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Vital" type="YesNoType" default="yes">
+        <xs:annotation>
+          <xs:documentation>Indicates whether failure to create the user or add the user to a group fails the installation. The default value is "yes".</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>

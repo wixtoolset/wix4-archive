@@ -63,6 +63,8 @@
 #include <dictutil.h>
 #include <deputil.h>
 #include <dlutil.h>
+#include <atomutil.h>
+#include <apuputil.h>
 
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
@@ -73,6 +75,7 @@
 #include "condition.h"
 #include "search.h"
 #include "section.h"
+#include "approvedexe.h"
 #include "container.h"
 #include "catalog.h"
 #include "payload.h"

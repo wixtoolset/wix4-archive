@@ -98,7 +98,7 @@ namespace WixToolset.Extensions
                     string packageId;
                     if (!context.TryGetValue("PackageId", out packageId) || String.IsNullOrEmpty(packageId))
                     {
-                        this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, parentElement.Name.LocalName, "Id"));
+                        this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, parentElement.Name.LocalName, "Id", attribute.Name.LocalName));
                     }
                     else
                     {
@@ -116,7 +116,7 @@ namespace WixToolset.Extensions
                                 break;
                         }
                     }
-                        break;
+                    break;
                 case "Variable":
                     // at the time the extension attribute is parsed, the compiler might not yet have
                     // parsed the Name attribute, so we need to get it directly from the parent element.
@@ -209,6 +209,9 @@ namespace WixToolset.Extensions
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string launchTarget = null;
+            string launchTargetElevatedId = null;
+            string launchArguments = null;
+            YesNoType launchHidden = YesNoType.NotSet;
             string licenseFile = null;
             string licenseUrl = null;
             string logoFile = null;
@@ -228,6 +231,15 @@ namespace WixToolset.Extensions
                     {
                         case "LaunchTarget":
                             launchTarget = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "LaunchTargetElevatedId":
+                            launchTargetElevatedId = this.Core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
+                            break;
+                        case "LaunchArguments":
+                            launchArguments = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "LaunchHidden":
+                            launchHidden = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseFile":
                             licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -284,6 +296,30 @@ namespace WixToolset.Extensions
                     VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
                     row.Id = "LaunchTarget";
                     row.Value = launchTarget;
+                    row.Type = "string";
+                }
+
+                if (!String.IsNullOrEmpty(launchTargetElevatedId))
+                {
+                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    row.Id = "LaunchTargetElevatedId";
+                    row.Value = launchTargetElevatedId;
+                    row.Type = "string";
+                }
+
+                if (!String.IsNullOrEmpty(launchArguments))
+                {
+                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    row.Id = "LaunchArguments";
+                    row.Value = launchArguments;
+                    row.Type = "string";
+                }
+
+                if (YesNoType.Yes == launchHidden)
+                {
+                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    row.Id = "LaunchHidden";
+                    row.Value = "yes";
                     row.Type = "string";
                 }
 
