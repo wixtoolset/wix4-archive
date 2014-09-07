@@ -58,20 +58,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("INSG", "Insignia.exe").Display += Insignia.DisplayMessage;
+            Messaging.Instance.InitializeAppName("INSG", "Insignia.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Insignia insignia = new Insignia();
             return insignia.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>

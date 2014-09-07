@@ -54,20 +54,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("RETI", "retina.exe").Display += Retina.DisplayMessage;
+            Messaging.Instance.InitializeAppName("RETI", "retina.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Retina retina = new Retina();
             return retina.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>

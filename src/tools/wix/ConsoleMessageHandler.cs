@@ -64,7 +64,16 @@ namespace WixToolset
 #if DEBUG
                 Debugger.Log((int)mea.Level, this.shortAppName, string.Concat(message, "\n"));
 #endif
-                Console.WriteLine(message);
+                switch (mea.Level)
+                {
+                case MessageLevel.Warning:
+                case MessageLevel.Error:
+                    Console.Error.WriteLine(message);
+                    break;
+                default:
+                    Console.WriteLine(message);
+                    break;
+                }
             }
         }
 

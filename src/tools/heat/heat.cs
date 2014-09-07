@@ -63,20 +63,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("HEAT", "heat.exe").Display += Heat.DisplayMessage;
+            Messaging.Instance.InitializeAppName("HEAT", "heat.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Heat heat = new Heat();
             return heat.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>

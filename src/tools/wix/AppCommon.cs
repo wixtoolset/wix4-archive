@@ -86,6 +86,25 @@ namespace WixToolset
         }
 
         /// <summary>
+        /// Handler for display message events.
+        /// </summary>
+        /// <param name="sender">Sender of message.</param>
+        /// <param name="e">Event arguments containing message to display.</param>
+        public static void ConsoleDisplayMessage(object sender, DisplayEventArgs e)
+        {
+            switch (e.Level)
+            {
+            case MessageLevel.Warning:
+            case MessageLevel.Error:
+                Console.Error.WriteLine(e.Message);
+                break;
+            default:
+                Console.WriteLine(e.Message);
+                break;
+            }
+        }
+
+        /// <summary>
         /// Creates and returns the string for CreatingApplication field (MSI Summary Information Stream).
         /// </summary>
         /// <remarks>It reads the AssemblyProductAttribute and AssemblyVersionAttribute of executing assembly
