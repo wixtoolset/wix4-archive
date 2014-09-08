@@ -16,8 +16,10 @@ namespace WixToolset.UX
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Net;
     using System.Reflection;
+    using System.Xml.Linq;
     using WixToolset.Bootstrapper;
 
     /// <summary>
@@ -25,7 +27,7 @@ namespace WixToolset.UX
     /// </summary>
     public class Model
     {
-        private Version version;
+        private static readonly XNamespace BootstrapperApplicationDataNamespace = "http://wixtoolset.org/schemas/v4/2010/BootstrapperApplicationData";
         private const string BurnBundleInstallDirectoryVariable = "InstallFolder";
         private const string BurnBundleLayoutDirectoryVariable = "WixBundleLayoutDirectory";
 
@@ -36,7 +38,30 @@ namespace WixToolset.UX
         public Model(BootstrapperApplication bootstrapper)
         {
             this.Bootstrapper = bootstrapper;
+            this.PackageDisplayNames = new Dictionary<string, string>();
             this.Telemetry = new List<KeyValuePair<string, string>>();
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string assemblyLocation = assembly.Location;
+            string folder = Path.GetDirectoryName(assemblyLocation);
+
+            try
+            {
+                XDocument document = XDocument.Load(Path.Combine(folder, "BootstrapperApplicationData.xml"));
+
+                foreach (var packageProperties in document.Root.Descendants(BootstrapperApplicationDataNamespace + "WixPackageProperties"))
+                {
+                    this.PackageDisplayNames.Add(packageProperties.Attribute("Package").Value, packageProperties.Attribute("DisplayName").Value);
+                }
+            }
+            catch
+            {
+                // Catching all exceptions is generally poor form but we **really** don't care if the package display names can't be loaded.
+            }
+
+            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(assemblyLocation);
+
+            this.Version = new Version(fileVersion.FileVersion);
         }
 
         /// <summary>
@@ -67,21 +92,7 @@ namespace WixToolset.UX
         /// <summary>
         /// Get the version of the install.
         /// </summary>
-        public Version Version
-        {
-            get
-            {
-                if (null == this.version)
-                {
-                    Assembly assembly = Assembly.GetExecutingAssembly();
-                    FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(assembly.Location);
-
-                    this.version = new Version(fileVersion.FileVersion);
-                }
-
-                return this.version;
-            }
-        }
+        public Version Version { get; set; }
 
         /// <summary>
         /// Get or set the path where the bundle is installed.
@@ -127,6 +138,8 @@ namespace WixToolset.UX
 
         public LaunchAction PlannedAction { get; set; }
 
+        private Dictionary<string, string> PackageDisplayNames { get; set; }
+
         /// <summary>
         /// Creates a correctly configured HTTP web request.
         /// </summary>
@@ -138,6 +151,18 @@ namespace WixToolset.UX
             request.UserAgent = String.Concat("WixInstall", this.Version.ToString());
 
             return request;
+        }
+
+        /// <summary>
+        /// Gets the display name for a pckage if possible.
+        /// </summary>
+        /// <param name="packageId">Identity of the package to find the display name.</param>
+        /// <returns>Display name of the package if found or the package id if not.</returns>
+        public string GetPackageName(string packageId)
+        {
+            string displayName;
+
+            return this.PackageDisplayNames.TryGetValue(packageId, out displayName) ? displayName : packageId;
         }
     }
 }

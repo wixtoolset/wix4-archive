@@ -11,12 +11,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using WixToolset.Bootstrapper;
 
 namespace WixToolset.UX
 {
     public class ProgressViewModel : PropertyNotifyBase
     {
+        private static readonly Regex TrimActionTimeFromMessage = new Regex(@"^\w+\s+\d+:\d+:\d+:\s+", RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+
         private RootViewModel root;
         private Dictionary<string, int> executingPackageOrderIndex;
 
@@ -24,6 +27,7 @@ namespace WixToolset.UX
         private int progress;
         private int cacheProgress;
         private int executeProgress;
+        private string package;
         private string message;
 
         public ProgressViewModel(RootViewModel root)
@@ -33,6 +37,7 @@ namespace WixToolset.UX
 
             this.root.PropertyChanged += this.RootPropertyChanged;
 
+            WixBA.Model.Bootstrapper.ExecutePackageBegin += this.ExecutePackageBegin;
             WixBA.Model.Bootstrapper.ExecuteMsiMessage += this.ExecuteMsiMessage;
             WixBA.Model.Bootstrapper.ExecuteProgress += this.ApplyExecuteProgress;
             WixBA.Model.Bootstrapper.PlanBegin += this.PlanBegin;
@@ -61,6 +66,23 @@ namespace WixToolset.UX
                 {
                     this.progress = value;
                     base.OnPropertyChanged("Progress");
+                }
+            }
+        }
+
+        public string Package
+        {
+            get
+            {
+                return this.package;
+            }
+
+            set
+            {
+                if (this.package != value)
+                {
+                    this.package = value;
+                    base.OnPropertyChanged("Package");
                 }
             }
         }
@@ -110,13 +132,21 @@ namespace WixToolset.UX
             }
         }
 
+        private void ExecutePackageBegin(object sender, ExecutePackageBeginEventArgs e)
+        {
+            this.Package = WixBA.Model.GetPackageName(e.PackageId);
+
+            e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+        }
+
         private void ExecuteMsiMessage(object sender, ExecuteMsiMessageEventArgs e)
         {
             lock (this)
             {
                 if (e.MessageType == InstallMessage.ActionStart)
                 {
-                    this.Message = e.Message;
+                    string message = TrimActionTimeFromMessage.Replace(e.Message, String.Empty);
+                    this.Message = message;
                 }
 
                 e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
@@ -159,7 +189,6 @@ namespace WixToolset.UX
         {
             lock (this)
             {
-
                 this.executeProgress = e.OverallPercentage;
                 this.Progress = (this.cacheProgress + this.executeProgress) / this.progressPhases;
 
