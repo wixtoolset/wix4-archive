@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4505 - WixHttpExtension for URL reservations.
+
 ## WixBuild: Version 4.0.2102.0
 
 * RobMen: Merge recent changes through WiX v3.9.901.0
