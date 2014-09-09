@@ -68,7 +68,10 @@
 
             <!-- Progress -->
             <ProgressBar Grid.Row="1" Grid.ColumnSpan="3" Margin="3" DataContext="{Binding ProgressViewModel}" Value="{Binding Path=Progress}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-            <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}"/>
+            <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
+                <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Package}"/>
+                <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}"/>
+            </StackPanel>
             <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <Image.RenderTransform>
                     <RotateTransform x:Name="ProgressRotateTransform" Angle="1"/>
