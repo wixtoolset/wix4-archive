@@ -69,20 +69,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("MELT", "melt.exe").Display += Melt.DisplayMessage;
+            Messaging.Instance.InitializeAppName("MELT", "melt.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Melt melt = new Melt();
             return melt.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -242,7 +232,7 @@ namespace WixToolset.Tools
                     {
                         if (!decompiler.DeleteTempFiles())
                         {
-                            Console.WriteLine(MeltStrings.WAR_FailedToDeleteTempDir, decompiler.TempFilesLocation);
+                            Console.Error.WriteLine(MeltStrings.WAR_FailedToDeleteTempDir, decompiler.TempFilesLocation);
                         }
                     }
                     else
@@ -257,7 +247,7 @@ namespace WixToolset.Tools
                     {
                         if (!unbinder.DeleteTempFiles())
                         {
-                            Console.WriteLine(MeltStrings.WAR_FailedToDeleteTempDir, unbinder.TempFilesLocation);
+                            Console.Error.WriteLine(MeltStrings.WAR_FailedToDeleteTempDir, unbinder.TempFilesLocation);
                         }
                     }
                     else

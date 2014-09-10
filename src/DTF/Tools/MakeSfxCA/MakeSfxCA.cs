@@ -76,17 +76,17 @@ namespace WixToolset.Dtf.Tools.MakeSfxCA
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine("Error: Invalid argument: " + ex.Message);
+                Console.Error.WriteLine("Error: Invalid argument: " + ex.Message);
                 return 1;
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine("Error: Cannot find file: " + ex.Message);
+                Console.Error.WriteLine("Error: Cannot find file: " + ex.Message);
                 return 1;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: Unexpected error: " + ex);
+                Console.Error.WriteLine("Error: Unexpected error: " + ex);
                 return 1;
             }
         }

@@ -264,7 +264,7 @@ namespace WixToolset.Msi
                         break;
                     }
 
-                    Console.WriteLine(String.Format("Failed to create the database. Info: {0}. Retrying ({1} of {2})", String.Join(", ", exception.ErrorInfo), i, retryLimit));
+                    Console.Error.WriteLine(String.Format("Failed to create the database. Info: {0}. Retrying ({1} of {2})", String.Join(", ", exception.ErrorInfo), i, retryLimit));
                     Thread.Sleep(retryWait);
                 }
             }

@@ -48,20 +48,10 @@ namespace WixToolset.Lux
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("LUX", "lux.exe").Display += Lux.DisplayMessage;
+            Messaging.Instance.InitializeAppName("LUX", "lux.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Lux lux = new Lux();
             return lux.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>

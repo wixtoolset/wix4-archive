@@ -186,7 +186,7 @@ namespace WixToolset.Shine
                             break;
 
                         default:
-                            Console.WriteLine("Unknown command line parameter: {0}", arg);
+                            Console.Error.WriteLine("Unknown command line parameter: {0}", arg);
                             cmdLine.ShowHelp = true;
                             break;
                     }
@@ -197,7 +197,7 @@ namespace WixToolset.Shine
                 }
                 else
                 {
-                    Console.WriteLine("Unknown command line parameter: {0}", arg);
+                    Console.Error.WriteLine("Unknown command line parameter: {0}", arg);
                     cmdLine.ShowHelp = true;
                 }
             }

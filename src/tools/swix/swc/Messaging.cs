@@ -94,10 +94,22 @@ namespace WixToolset.Simplified
             }
 
             string messageType = e.Message.Type.ToString().ToLowerInvariant();
-            Console.WriteLine(String.IsNullOrEmpty(fileName) ?
-                              "{1} {2}{3:0000}: {4}" :
-                              "{0} : {1} {2}{3:0000}: {4}",
-                              fileName, messageType, "SWIX", e.Message.Id, e.Message.Message);
+            System.IO.TextWriter stream = null;
+            switch (e.Message.Type)
+            {
+            case CompilerMessage.CompilerMessageType.Error:
+            case CompilerMessage.CompilerMessageType.Warning:
+                stream = Console.Error;
+                break;
+            default:
+                stream = Console.Out;
+                break;
+            }
+
+            stream.WriteLine(String.IsNullOrEmpty(fileName) ?
+                             "{1} {2}{3:0000}: {4}" :
+                             "{0} : {1} {2}{3:0000}: {4}",
+                             fileName, messageType, "SWIX", e.Message.Id, e.Message.Message);
 
             if (e.Message.Type == CompilerMessage.CompilerMessageType.Error)
             {

@@ -70,20 +70,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("SMOK", "smoke.exe").Display += Smoke.DisplayMessage;
+            Messaging.Instance.InitializeAppName("SMOK", "smoke.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Smoke smoke = new Smoke();
             return smoke.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -215,7 +205,7 @@ namespace WixToolset.Tools
                         {
                             if (!validator.DeleteTempFiles())
                             {
-                                Console.WriteLine(SmokeStrings.WAR_FailedToDeleteTempDir, validator.TempFilesLocation);
+                                Console.Error.WriteLine(SmokeStrings.WAR_FailedToDeleteTempDir, validator.TempFilesLocation);
                             }
                         }
                         else

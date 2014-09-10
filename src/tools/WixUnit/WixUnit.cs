@@ -292,7 +292,7 @@ namespace WixToolset.Unit
                         Console.WriteLine();
                         Console.WriteLine("Re-run the failed tests with the -rf option");
                         Console.WriteLine();
-                        Console.WriteLine("Failed {0} out of {1} unit test{2} ({3} seconds).", this.failedUnitTests.Count, this.totalUnitTests, (1 != this.completedUnitTests ? "s" : ""), elapsedTime);
+                        Console.Error.WriteLine("Failed {0} out of {1} unit test{2} ({3} seconds).", this.failedUnitTests.Count, this.totalUnitTests, (1 != this.completedUnitTests ? "s" : ""), elapsedTime);
 
                         using (XmlWriter writer = XmlWriter.Create(this.failedTestsFile))
                         {

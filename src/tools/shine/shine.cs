@@ -51,7 +51,7 @@ namespace WixToolset.Shine
 
             if (String.IsNullOrEmpty(cmdLine.Dgml))
             {
-                Console.WriteLine("Displaying graph to console is not supported yet. Use the -dgml switch.");
+                Console.Error.WriteLine("Displaying graph to console is not supported yet. Use the -dgml switch.");
             }
             else
             {
