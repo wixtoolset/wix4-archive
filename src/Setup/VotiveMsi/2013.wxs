@@ -20,11 +20,6 @@
         <PropertyRef Id="VS2013_ROOT_FOLDER" />
         <PropertyRef Id="VS2013_SCHEMAS_DIR" />
 
-        <CustomActionRef Id="VS2013Setup" />
-        <UI>
-            <ProgressText Action="VS2013Setup" Template="[1]">Updating Visual Studio 2013 registration</ProgressText>
-        </UI>
-
         <ComponentGroup Id="Votive2013Components">
             <ComponentGroupRef Id="Votive2010BinaryComponents"/>
             <ComponentGroupRef Id="Votive2013ExtensionComponents"/>
@@ -34,6 +29,8 @@
     </Fragment>
 
     <Fragment>
+        <PropertyRef Id="VS2013_EXTENSIONS_DIR" />
+
         <ComponentGroup Id="Votive$(var.VsVersion)ExtensionComponents" Directory="VsExtensions$(var.VsVersion)MicrosoftWix">
             <Component>
                 <File Id="extension$(var.VsVersion).vsixmanifest" Source="extension.vsixmanifest"/>
@@ -41,6 +38,7 @@
 
             <Component>
                 <File Id="Votive$(var.VsVersion).pkgdef" Source="votive2010.pkgdef"/>
+                <util:TouchFile OnInstall="yes" OnReinstall="yes" OnUninstall="yes" Path="[VS2013_EXTENSIONS_DIR]extensions.configurationchanged" />
             </Component>
 
             <Component>

@@ -1,3 +1,5 @@
+* RobMen: Replace devenv /setup call with fast extension update mechanism.
+
 * RobMen: Add TouchFile custom action.
 
 ## WixBuild: Version 4.0.2102.0

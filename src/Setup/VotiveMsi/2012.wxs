@@ -20,17 +20,16 @@
         <PropertyRef Id="VS2012_ROOT_FOLDER" />
         <PropertyRef Id="VS2012_SCHEMAS_DIR" />
 
-        <CustomActionRef Id="VS2012Setup" />
-        <UI>
-            <ProgressText Action="VS2012Setup" Template="[1]">Updating Visual Studio 2012 registration</ProgressText>
-        </UI>
-
-      <ComponentGroup Id="Votive2012Components">
+        <ComponentGroup Id="Votive2012Components">
             <ComponentGroupRef Id="Votive2010BinaryComponents"/>
             <ComponentGroupRef Id="Votive2012ExtensionComponents"/>
             <ComponentGroupRef Id="Votive2012ItemTemplateComponents" />
             <ComponentGroupRef Id="Votive2012ProjectTemplateComponents" />
         </ComponentGroup>
+    </Fragment>
+
+    <Fragment>
+        <PropertyRef Id="VS2012_EXTENSIONS_DIR" />
 
         <ComponentGroup Id="Votive$(var.VsVersion)ExtensionComponents" Directory="VsExtensions$(var.VsVersion)WixVersionFolder">
             <Component>
@@ -39,13 +38,16 @@
 
             <Component>
                 <File Id="Votive$(var.VsVersion).pkgdef" Source="votive2010.pkgdef"/>
+                <util:TouchFile OnInstall="yes" OnReinstall="yes" OnUninstall="yes" Path="[VS2012_EXTENSIONS_DIR]extensions.configurationchanged" />
             </Component>
 
             <Component>
                 <File Id="wix$(var.VsVersion).ico" Name="wix.ico" Source="Votive\Icons\ProjectFile.ico"/>
             </Component>
         </ComponentGroup>
+    </Fragment>
 
+    <Fragment>
         <ComponentGroup Id="Votive$(var.VsVersion)ItemTemplateComponents" Directory="VsItemTemplatesWix$(var.VsVersion)Folder">
             <Component>
                 <File Id="BlankFile$(var.VsVersion).zip" Source="templates\BlankFile.zip" />
@@ -60,7 +62,9 @@
                 <File Id="TextFile$(var.VsVersion).zip" Source="templates\TextFile.zip" />
             </Component>
         </ComponentGroup>
+    </Fragment>
 
+    <Fragment>
         <ComponentGroup Id="Votive$(var.VsVersion)ProjectTemplateComponents" Directory="VsProjectTemplatesWix$(var.VsVersion)Folder">
             <Component>
                 <File Id="WixLibrary$(var.VsVersion).zip" Source="templates\WixLibrary.zip" />
