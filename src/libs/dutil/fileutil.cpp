@@ -1505,7 +1505,7 @@ extern "C" HRESULT DAPI FileGetTime(
     HRESULT hr = S_OK;
     HANDLE hFile = NULL;
 
-    hFile = ::CreateFileW(wzFile, FILE_READ_ATTRIBUTES, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    hFile = ::CreateFileW(wzFile, FILE_READ_ATTRIBUTES, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
     ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open file. File = '%ls'", wzFile);
 
     if (!::GetFileTime(hFile, lpCreationTime, lpLastAccessTime, lpLastWriteTime))
@@ -1531,7 +1531,7 @@ extern "C" HRESULT DAPI FileSetTime(
     HRESULT hr = S_OK;
     HANDLE hFile = NULL;
 
-    hFile = ::CreateFileW(wzFile, FILE_WRITE_ATTRIBUTES, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    hFile = ::CreateFileW(wzFile, FILE_WRITE_ATTRIBUTES, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
     ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open file. File = '%ls'", wzFile);
 
     if (!::SetFileTime(hFile, lpCreationTime, lpLastAccessTime, lpLastWriteTime))
