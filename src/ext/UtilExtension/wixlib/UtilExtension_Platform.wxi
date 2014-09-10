@@ -144,6 +144,18 @@
   </Fragment>
 
   <Fragment>
+    <CustomAction Id="WixTouchFileDuringInstall" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixTouchFileDuringInstall" Execute="immediate" Return="check" SuppressModularization="yes" />
+    <CustomAction Id="WixTouchFileDuringUninstall" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixTouchFileDuringUninstall" Execute="immediate" Return="check" SuppressModularization="yes" />
+    <CustomAction Id="WixExecuteTouchFile" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixExecuteTouchFile" Execute="deferred" Impersonate="no" Return="check" SuppressModularization="yes" />
+    <CustomAction Id="WixRollbackTouchFile" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixExecuteTouchFile" Execute="rollback" Impersonate="no" Return="check" SuppressModularization="yes" />
+
+    <InstallExecuteSequence>
+      <Custom Action="WixTouchFileDuringUninstall" Before="RemoveFiles" Overridable="yes" />
+      <Custom Action="WixTouchFileDuringInstall" After="InstallFiles" Overridable="yes" />
+    </InstallExecuteSequence>
+  </Fragment>
+
+  <Fragment>
     <UIRef Id="XmlFileErrorsText" />
 
     <CustomAction Id="SchedXmlFile$(var.Suffix)" BinaryKey="WixCA$(var.Suffix)" DllEntry="SchedXmlFile" Execute="immediate" Return="check" SuppressModularization="yes" />

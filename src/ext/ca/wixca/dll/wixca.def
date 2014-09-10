@@ -49,6 +49,10 @@ EXPORTS
 ; test.cpp
     WixFailWhenDeferred
     WixWaitForEvent
+; TouchFile.cpp
+    WixTouchFileDuringInstall
+    WixTouchFileDuringUninstall
+    WixExecuteTouchFile
 ; exitearlywithsuccess.cpp
     WixExitEarlyWithSuccess
 ; xmlfile.cpp

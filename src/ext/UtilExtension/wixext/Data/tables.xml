@@ -168,7 +168,17 @@
         <columnDefinition name="RebootMessage" type="string" length="255" nullable="yes"
                 category="text" description="Message to show to users when rebooting if failure action is REBOOT."/>
     </tableDefinition>
-    <tableDefinition name="User" createSymbols="yes">
+  <tableDefinition name="WixTouchFile" createSymbols="yes">
+    <columnDefinition name="WixTouchFile" type="string" length="72" primaryKey="yes" modularize="column"
+            category="identifier" description="Identifier for the WixTouchFile row in the package."/>
+    <columnDefinition name="Component_" type="string" length="72" modularize="column"
+            keyTable="Component" keyColumn="1" category="identifier" description="Foreign key into the Component table used to determine install state"/>
+    <columnDefinition name="Path" type="string" length="255" modularize="property"
+            category="formatted" description="Formatted column that resolves to the path to touch."/>
+    <columnDefinition name="Attributes" type="number" length="2"
+            minValue="1" maxValue="63" description="1 == Touch only when the associated component is being installed, 2 == Touch only when the associated component is being repaired , 4 == Touch only when the associated component is being removed, 16 = path is in 64-bit location, 32 = touching the file is vital."/>
+  </tableDefinition>
+  <tableDefinition name="User" createSymbols="yes">
         <columnDefinition name="User" type="string" length="72" primaryKey="yes" modularize="column"
                 category="identifier" description="Primary key, non-localized token"/>
         <columnDefinition name="Component_" type="string" length="72" nullable="yes" modularize="column"

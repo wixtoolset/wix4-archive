@@ -1197,6 +1197,46 @@
       </xs:attribute>
     </xs:complexType>
   </xs:element>
+  <xs:element name="TouchFile">
+    <xs:annotation>
+      <xs:documentation>Updates the last modified date/time of a file.</xs:documentation>
+      <xs:appinfo>
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Component" />
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="Id" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Identifier for the touch file operation. If the identifier is not specified it will be generated.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Path" use="required" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>Path of the file to update. This value is formatted.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="OnInstall" type="YesNoType">
+        <xs:annotation>
+          <xs:documentation>Specifies whether or not the modified time of the file should be updated on install. If the OnInstall, OnReinstall and OnUninstall attributes are all absent the default is 'yes'.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="OnReinstall" type="YesNoType">
+        <xs:annotation>
+          <xs:documentation>Specifies whether or not the modified time of the file should be updated on reinstall. If the OnInstall, OnReinstall and OnUninstall attributes are all absent the default is 'yes'.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="OnUninstall" type="YesNoType">
+        <xs:annotation>
+          <xs:documentation>Specifies whether or not the modified time of the file should be updated on uninstall. If the OnInstall, OnReinstall and OnUninstall attributes are all absent the default is 'no'.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Nonvital" type="YesNoType">
+        <xs:annotation>
+          <xs:documentation>Indicates the installation will not fail if the modified time of the file cannot be updated. The default is 'no'.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="User">
     <xs:annotation>
       <xs:documentation>User for all kinds of things.  When it is not nested under a component it is included in the MSI so it can be referenced by other elements such as the User attribute in the AppPool element.  When it is nested under a Component element, the User will be created on install and can also be used for reference.</xs:documentation>

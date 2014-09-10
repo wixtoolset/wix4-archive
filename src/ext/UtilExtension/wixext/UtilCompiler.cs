@@ -189,6 +189,7 @@ namespace WixToolset.Extensions
                 case "Component":
                     string componentId = context["ComponentId"];
                     string directoryId = context["DirectoryId"];
+                    bool componentWin64 = Boolean.Parse(context["Win64"]);
 
                     switch (element.Name.LocalName)
                     {
@@ -212,6 +213,9 @@ namespace WixToolset.Extensions
                             break;
                         case "ServiceConfig":
                             this.ParseServiceConfigElement(element, componentId, "Component", null);
+                            break;
+                        case "TouchFile":
+                            this.ParseTouchFileElement(element, componentId, componentWin64);
                             break;
                         case "User":
                             this.ParseUserElement(element, componentId);
@@ -3057,6 +3061,93 @@ namespace WixToolset.Extensions
                 }
                 row[8] = programCommandLine;
                 row[9] = rebootMessage;
+            }
+        }
+
+        /// <summary>
+        /// Parses a touch file element.
+        /// </summary>
+        /// <param name="node">Element to parse.</param>
+        /// <param name="componentId">Identifier of parent component.</param>
+        /// <param name="win64">Indicates whether the path is a 64-bit path.</param>
+        private void ParseTouchFileElement(XElement node, string componentId, bool win64)
+        {
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            Identifier id = null;
+            string path = null;
+            YesNoType onInstall = YesNoType.NotSet;
+            YesNoType onReinstall = YesNoType.NotSet;
+            YesNoType onUninstall = YesNoType.NotSet;
+            YesNoType nonvital = YesNoType.NotSet;
+            int attributes = win64 ? 0x10 : 0;
+
+            foreach (XAttribute attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
+                {
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "Id":
+                            id = this.Core.GetAttributeIdentifier(sourceLineNumbers, attrib);
+                            break;
+                        case "Path":
+                            path = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "OnInstall":
+                            onInstall = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "OnReinstall":
+                            onReinstall = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "OnUninstall":
+                            onUninstall = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Nonvital":
+                            nonvital = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            this.Core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionAttribute(node, attrib);
+                }
+            }
+
+            if (null == path)
+            {
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Path"));
+            }
+
+            // If none of the scheduling actions are set, default to touching on install and reinstall.
+            if (YesNoType.NotSet == onInstall && YesNoType.NotSet == onReinstall && YesNoType.NotSet == onUninstall)
+            {
+                onInstall = YesNoType.Yes;
+                onReinstall = YesNoType.Yes;
+            }
+
+            attributes |= YesNoType.Yes == onInstall ? 0x1 : 0;
+            attributes |= YesNoType.Yes == onReinstall ? 0x2 : 0;
+            attributes |= YesNoType.Yes == onUninstall ? 0x4 : 0;
+            attributes |= YesNoType.Yes == nonvital ? 0 : 0x20;
+
+            if (null == id)
+            {
+                id = this.Core.CreateIdentifier("tf", path, attributes.ToString());
+            }
+
+            this.Core.ParseForExtensionElements(node);
+
+            if (!this.Core.EncounteredError)
+            {
+                Row row = this.Core.CreateRow(sourceLineNumbers, "WixTouchFile", id);
+                row[1] = componentId;
+                row[2] = path;
+                row[3] = attributes;
+
+                this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixTouchFileDuringInstall");
             }
         }
 
