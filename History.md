@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4505 - WixHttpExtension for URL reservations.
+
 * BMurri: Feature #3635: Write errors to StdErr
 
 ## WixBuild: Version 4.0.2102.0
