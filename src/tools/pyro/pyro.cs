@@ -41,20 +41,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("PYRO", "pyro.exe").Display += Pyro.DisplayMessage;
+            Messaging.Instance.InitializeAppName("PYRO", "pyro.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Pyro pyro = new Pyro();
             return pyro.Execute(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>

@@ -72,20 +72,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("TRCH", "torch.exe").Display += Torch.DisplayMessage;
+            Messaging.Instance.InitializeAppName("TRCH", "torch.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Torch torch = new Torch();
             return torch.Run(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         /// <summary>
@@ -370,7 +360,7 @@ namespace WixToolset.Tools
                     {
                         if (!binder.DeleteTempFiles())
                         {
-                            Console.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, binder.TempFilesLocation);
+                            Console.Error.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, binder.TempFilesLocation);
                         }
                     }
                     else
@@ -385,7 +375,7 @@ namespace WixToolset.Tools
                     {
                         if (!unbinder.DeleteTempFiles())
                         {
-                            Console.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, binder.TempFilesLocation);
+                            Console.Error.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, binder.TempFilesLocation);
                         }
                     }
                     else
@@ -408,7 +398,7 @@ namespace WixToolset.Tools
                         }
                         catch
                         {
-                            Console.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, tempFileCollection.BasePath);
+                            Console.Error.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, tempFileCollection.BasePath);
                         }
                     }
                     else

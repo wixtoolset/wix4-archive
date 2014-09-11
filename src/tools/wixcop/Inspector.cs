@@ -1079,13 +1079,13 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
 
             if (null != node)
             {
-                Console.WriteLine("{0}({1}) : {2} WXCP{3:0000} : {4} ({5})", this.sourceFile, ((IXmlLineInfo)node).LineNumber, warningError, (int)inspectorTestType, String.Format(CultureInfo.CurrentCulture, message, args), inspectorTestType.ToString());
+                Console.Error.WriteLine("{0}({1}) : {2} WXCP{3:0000} : {4} ({5})", this.sourceFile, ((IXmlLineInfo)node).LineNumber, warningError, (int)inspectorTestType, String.Format(CultureInfo.CurrentCulture, message, args), inspectorTestType.ToString());
             }
             else
             {
                 string source = (null == this.sourceFile ? "wixcop.exe" : this.sourceFile);
 
-                Console.WriteLine("{0} : {1} WXCP{2:0000} : {3} ({4})", source, warningError, (int)inspectorTestType, String.Format(CultureInfo.CurrentCulture, message, args), inspectorTestType.ToString());
+                Console.Error.WriteLine("{0} : {1} WXCP{2:0000} : {3} ({4})", source, warningError, (int)inspectorTestType, String.Format(CultureInfo.CurrentCulture, message, args), inspectorTestType.ToString());
             }
 
             return true;

@@ -35,20 +35,10 @@ namespace WixToolset.Tools
         public static int Main(string[] args)
         {
             AppCommon.PrepareConsoleForLocalization();
-            Messaging.Instance.InitializeAppName("LIT", "lit.exe").Display += Lit.DisplayMessage;
+            Messaging.Instance.InitializeAppName("LIT", "lit.exe").Display += AppCommon.ConsoleDisplayMessage;
 
             Lit lit = new Lit();
             return lit.Execute(args);
-        }
-
-        /// <summary>
-        /// Handler for display message events.
-        /// </summary>
-        /// <param name="sender">Sender of message.</param>
-        /// <param name="e">Event arguments containing message to display.</param>
-        private static void DisplayMessage(object sender, DisplayEventArgs e)
-        {
-            Console.WriteLine(e.Message);
         }
 
         private int Execute(string[] args)

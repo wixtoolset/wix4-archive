@@ -197,7 +197,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
                 {
                     if (!this.searchPatternResults.ContainsKey(searchPattern))
                     {
-                        Console.WriteLine("Could not find file \"{0}\"", searchPattern);
+                        Console.Error.WriteLine("Could not find file \"{0}\"", searchPattern);
                         errors++;
                     }
                 }
@@ -206,7 +206,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
             }
             catch (Exception e)
             {
-                Console.WriteLine("wixcop.exe : fatal error WXCP0001 : {0}\r\n\n\nStack Trace:\r\n{1}", e.Message, e.StackTrace);
+                Console.Error.WriteLine("wixcop.exe : fatal error WXCP0001 : {0}\r\n\n\nStack Trace:\r\n{1}", e.Message, e.StackTrace);
 
                 return 1;
             }
