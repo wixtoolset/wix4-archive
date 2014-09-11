@@ -302,7 +302,7 @@ extern "C" UINT WINAPI WixExecuteTouchFile(
             }
             else
             {
-                WcaLog(LOGMSG_STANDARD, "Could not to touch non-vital file: '%ls' for: %ls with error: 0x%x. Continuing...", sczPath, sczId, hr);
+                WcaLog(LOGMSG_STANDARD, "Could not touch non-vital file: '%ls' for: %ls with error: 0x%x. Continuing...", sczPath, sczId, hr);
                 hr = S_OK;
             }
         }

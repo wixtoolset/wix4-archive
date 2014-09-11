@@ -1232,7 +1232,7 @@
       </xs:attribute>
       <xs:attribute name="Nonvital" type="YesNoType">
         <xs:annotation>
-          <xs:documentation>Indicates the installation will not fail if the modified time of the file cannot be updated. The default is 'no'.</xs:documentation>
+          <xs:documentation>Indicates the installation will succeed even if the modified time of the file cannot be updated. The default is 'no'.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
     </xs:complexType>
