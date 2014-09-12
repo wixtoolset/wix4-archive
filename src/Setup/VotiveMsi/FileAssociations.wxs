@@ -28,7 +28,7 @@
             -->
             <Component>
                 <!-- Icons to use for WiX file types -->
-                <File Id='private ProjectFile.ico' Source="Votive\Icons\ProjectFile.ico" />
+                <File Id="private ProjectFile.ico" Source="Votive\Icons\ProjectFile.ico" />
 
                 <ProgId Id="WindowsInstallerXml.wixprojfile.$(var.WixMajorMinor)" Description="WiX Project File" Icon="ProjectFile.ico">
                     <Extension Id="wixproj" ContentType="text/plain">
@@ -38,7 +38,7 @@
             </Component>
 
             <Component>
-                <File Id='private ProductFile.ico' Source="Votive\Icons\ProductFile.ico" />
+                <File Id="private ProductFile.ico" Source="Votive\Icons\ProductFile.ico" />
 
                 <ProgId Id="WindowsInstallerXml.wxsfile.$(var.WixMajorMinor)" Description="WiX Source File" Icon="ProductFile.ico">
                     <Extension Id="wxs" ContentType="text/xml">
@@ -48,7 +48,7 @@
             </Component>
 
             <Component>
-                <File Id='private IncludeFile.ico' Source="Votive\Icons\IncludeFile.ico" />
+                <File Id="private IncludeFile.ico" Source="Votive\Icons\IncludeFile.ico" />
 
                 <ProgId Id="WindowsInstallerXml.wxifile.$(var.WixMajorMinor)" Description="WiX Include File" Icon="IncludeFile.ico">
                     <Extension Id="wxi" ContentType="text/xml">
@@ -58,7 +58,7 @@
             </Component>
 
             <Component>
-                <File Id='private LocalizationFile.ico' Source="Votive\Icons\LocalizationFile.ico" />
+                <File Id="private LocalizationFile.ico" Source="Votive\Icons\LocalizationFile.ico" />
 
                 <ProgId Id="WindowsInstallerXml.wxlfile.$(var.WixMajorMinor)" Description="WiX Localization File" Icon="LocalizationFile.ico">
                     <Extension Id="wxl" ContentType="text/xml">
@@ -68,7 +68,7 @@
             </Component>
 
             <Component>
-                <File Id='private WixLibraryFile.ico' Source="Votive\Icons\WixLibraryFile.ico" />
+                <File Id="private WixLibraryFile.ico" Source="Votive\Icons\WixLibraryFile.ico" />
 
                 <ProgId Id="WindowsInstallerXml.wixlibfile.$(var.WixMajorMinor)" Description="WiX Library File" Icon="WixLibraryFile.ico">
                     <Extension Id="wixlib" ContentType="text/xml" />
