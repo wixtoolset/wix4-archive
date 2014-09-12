@@ -3079,7 +3079,7 @@ namespace WixToolset.Extensions
             YesNoType onReinstall = YesNoType.NotSet;
             YesNoType onUninstall = YesNoType.NotSet;
             YesNoType nonvital = YesNoType.NotSet;
-            int attributes = win64 ? 0x10 : 0;
+            int attributes = 0;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -3131,6 +3131,7 @@ namespace WixToolset.Extensions
             attributes |= YesNoType.Yes == onInstall ? 0x1 : 0;
             attributes |= YesNoType.Yes == onReinstall ? 0x2 : 0;
             attributes |= YesNoType.Yes == onUninstall ? 0x4 : 0;
+            attributes |= win64 ? 0x10 : 0;
             attributes |= YesNoType.Yes == nonvital ? 0 : 0x20;
 
             if (null == id)

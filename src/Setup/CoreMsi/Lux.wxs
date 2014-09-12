@@ -35,8 +35,8 @@
             <ComponentGroupRef Id="LuxMsbuildComponents" />
         </ComponentGroup>
 
-        <Component Directory="DocFolder">
-            <File Id="private lux.xsd" Source="lux\wixext\Xsd\lux.xsd" />
+        <Component Id="private lux.xsd" Directory="DocFolder">
+            <File Source="lux\wixext\Xsd\lux.xsd" />
         </Component>
     </Fragment>
 

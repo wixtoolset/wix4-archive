@@ -92,7 +92,7 @@ namespace WixToolset.UX
         /// <summary>
         /// Get the version of the install.
         /// </summary>
-        public Version Version { get; set; }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Get or set the path where the bundle is installed.
