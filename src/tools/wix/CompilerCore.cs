@@ -552,17 +552,6 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Creates a WixCatalog row in the active section.
-        /// </summary>
-        /// <param name="sourceLineNumbers">Source and line number of current row.</param>
-        public void CreateWixCatalogRow(SourceLineNumber sourceLineNumbers, string id, string sourceFile)
-        {
-            WixCatalogRow wixCatalogRow = (WixCatalogRow)this.CreateRow(sourceLineNumbers, "WixCatalog");
-            wixCatalogRow.Id = id;
-            wixCatalogRow.SourceFile = sourceFile;
-        }
-
-        /// <summary>
         /// Creates a patch resource reference to the list of resoures to be filtered when producing a patch. This method should only be used when processing children of a patch family.
         /// </summary>
         /// <param name="sourceLineNumbers">Source and line number of current row.</param>

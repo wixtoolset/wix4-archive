@@ -3398,20 +3398,12 @@
           <xs:documentation>The localizable .ini file key within the section.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="LongName" type="LongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="Name" />
-          </xs:appinfo>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="Name" type="LongFileNameType" use="required">
         <xs:annotation>
           <xs:documentation>
                         In prior versions of the WiX toolset, this attribute specified the short name.
                         This attribute's value may now be either a short or long name.
                         If a short name is specified, the ShortName attribute may not be specified.
-                        If a long name is specified, the LongName attribute may not be specified.
                         Also, if this value is a long name, the ShortName attribute may be omitted to
                         allow WiX to attempt to generate a unique short name.
                         However, if this name collides with another file or you wish to manually specify
@@ -3607,17 +3599,9 @@
                         In prior versions of the WiX toolset, this attribute specified the short file name.
                         This attribute's value may now be either a short or long file name.
                         If a short file name is specified, the ShortName attribute may not be specified.
-                        If a long file name is specified, the LongName attribute may not be specified.
                         If you wish to manually specify the short file name, then the ShortName
                         attribute may be specified.
                     </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="LongName" type="LongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="Name" />
-          </xs:appinfo>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="ShortName" type="ShortFileNameType">
@@ -3852,20 +3836,12 @@
           <xs:documentation>The key value within the section.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="LongName" type="LongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="Name" />
-          </xs:appinfo>
-        </xs:annotation>
-      </xs:attribute>
       <xs:attribute name="Name" type="LongFileNameType" use="required">
         <xs:annotation>
           <xs:documentation>
                         In prior versions of the WiX toolset, this attribute specified the short name.
                         This attribute's value may now be either a short or long name.
                         If a short name is specified, the ShortName attribute may not be specified.
-                        If a long name is specified, the LongName attribute may not be specified.
                         Also, if this value is a long name, the ShortName attribute may be omitted to
                         allow WiX to attempt to generate a unique short name.
                         However, if you wish to manually specify the short name, then the ShortName
@@ -4239,19 +4215,11 @@
                         In prior versions of the WiX toolset, this attribute specified the short name.
                         This attribute's value may now be either a short or long name.
                         If a short name is specified, the ShortName attribute may not be specified.
-                        If a long name is specified, the LongName attribute may not be specified.
                         Also, if this value is a long name, the ShortName attribute may be omitted to
                         allow WiX to attempt to generate a unique short name.
                         However, if this name collides with another shortcut or you wish to manually specify
                         the short name, then the ShortName attribute may be specified.
                     </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="LongName" type="LongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="Name" />
-          </xs:appinfo>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="ShortName" type="ShortFileNameType">
@@ -4637,19 +4605,11 @@
                   Now set this value to the localizable name to be given to the original file after it is moved or copied.
                   If this attribute is not specified, then the destination file is given the same name as the source file.
                   If a short file name is specified, the DestinationShortName attribute may not be specified.
-                  If a long file name is specified, the DestinationLongName attribute may not be specified.
                   Also, if this value is a long file name, the DestinationShortName attribute may be omitted to
                   allow WiX to attempt to generate a unique short file name.
                   However, if this name collides with another file or you wish to manually specify
                   the short file name, then the DestinationShortName attribute may be specified.
                 </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="DestinationLongName" type="LongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="DestinationName" />
-          </xs:appinfo>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="DestinationShortName" type="ShortFileNameType">
@@ -4742,7 +4702,6 @@
                         In prior versions of the WiX toolset, this attribute specified the short file name.
                         This attribute's value may now be either a short or long file name.
                         If a short file name is specified, the ShortName attribute may not be specified.
-                        If a long file name is specified, the LongName attribute may not be specified.
                         Also, if this value is a long file name, the ShortName attribute may be omitted to
                         allow WiX to attempt to generate a unique short file name.
                         However, if this name collides with another file or you wish to manually specify
@@ -4751,13 +4710,6 @@
                         of the Source attribute, if one is specified, or the value of the Id attribute, if
                         the Source attribute is omitted or doesn't contain a file name.
                     </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="LongName" type="LongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="Name" />
-          </xs:appinfo>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="KeyPath" type="YesNoTypeUnion">
@@ -5631,18 +5583,10 @@
                     In prior versions of the WiX toolset, this attribute specified the short file name.
                     This attribute's value may now be either a short or long file name.
                     If a short file name is specified, the ShortName attribute may not be specified.
-                    If a long file name is specified, the LongName attribute may not be specified.
                     Also, if this value is a long file name, the ShortName attribute may be omitted to
                     allow WiX to attempt to generate a unique short file name.
                     However, if you wish to manually specify the short file name, then the ShortName attribute may be specified.
                 </xs:documentation>
-        </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="LongName" type="WildCardLongFileNameType">
-        <xs:annotation>
-          <xs:appinfo>
-            <xse:deprecated ref="Name" />
-          </xs:appinfo>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="ShortName" type="WildCardShortFileNameType">

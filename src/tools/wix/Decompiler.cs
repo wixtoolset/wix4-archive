@@ -8675,7 +8675,7 @@ namespace WixToolset
 
                 if (null != names[1])
                 {
-                    fileSearch.LongName = names[1];
+                    fileSearch.Name = names[1];
                 }
 
                 if (null != row[2])

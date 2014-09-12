@@ -1,3 +1,5 @@
+* FireGiant: WIXFEAT:4258 - complete introduction of access modifiers for identifiers.
+
 * RobMen: Replace devenv /setup call with fast extension update mechanism.
 
 * RobMen: Add TouchFile custom action.
