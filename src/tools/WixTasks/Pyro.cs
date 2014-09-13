@@ -17,8 +17,6 @@ namespace WixToolset.Build.Tasks
     using System.Collections.Generic;
     using System.IO;
     using Microsoft.Build.Framework;
-    using Microsoft.Build.Utilities;
-    using WixToolset.Build.Tasks;
 
     /// <summary>
     /// An MSBuild task to run the WiX patch builder.
@@ -34,7 +32,6 @@ namespace WixToolset.Build.Tasks
         public bool LeaveTemporaryFiles { get; set; }
         public string[] ReferencePaths { get; set; }
         public bool ReuseCabinetCache { get; set; }
-        public bool SetMsiAssemblyNameFileVersion { get; set; }
         public bool SuppressAssemblies { get; set; }
         public bool SuppressFiles { get; set; }
         public bool SuppressFileHashAndInfo { get; set; }
@@ -130,7 +127,6 @@ namespace WixToolset.Build.Tasks
             commandLineBuilder.AppendSwitchIfNotNull("-cc ", this.CabinetCachePath);
             commandLineBuilder.AppendIfTrue("-delta", this.BinaryDeltaPatch);
             commandLineBuilder.AppendExtensions(this.Extensions, this.ExtensionDirectory, this.ReferencePaths);
-            commandLineBuilder.AppendIfTrue("-fv", this.SetMsiAssemblyNameFileVersion);
             commandLineBuilder.AppendIfTrue("-notidy", this.LeaveTemporaryFiles);
             commandLineBuilder.AppendIfTrue("-reusecab", this.ReuseCabinetCache);
             commandLineBuilder.AppendIfTrue("-sa", this.SuppressAssemblies);

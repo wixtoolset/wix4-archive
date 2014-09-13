@@ -50,8 +50,6 @@ namespace WixToolset.Tools
 
         public bool SuppressValidation { get; private set; }
 
-        public bool SetMsiAssemblyNameFileVersion { get; private set; }
-
         public string OutputsFile { get; private set; }
 
         public string BuiltOutputsFile { get; private set; }
@@ -287,10 +285,6 @@ namespace WixToolset.Tools
                     else if (parameter.Equals("eav", StringComparison.Ordinal))
                     {
                         this.ExactAssemblyVersions = true;
-                    }
-                    else if (parameter.Equals("fv", StringComparison.Ordinal))
-                    {
-                        this.SetMsiAssemblyNameFileVersion = true;
                     }
                     else if (parameter.StartsWith("ice:", StringComparison.Ordinal))
                     {

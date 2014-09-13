@@ -133,7 +133,6 @@
    -cc <path> path to cache built cabinets
    -delta     create binary delta patch (instead of whole file patch)
    -ext <extension>  extension assembly or "class, assembly"
-   -fv        update 'fileVersion' entries in the MsiAssemblyName table
    -nologo    skip printing logo information
    -notidy    do not delete temporary files (useful for debugging)
    -o[ut]     specify output file
