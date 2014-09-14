@@ -76,7 +76,6 @@ namespace WixToolset.Tools {
         ///              values: x86, x64, or ia64 (default: x86)
         ///   -d&lt;name&gt;[=&lt;value&gt;]  define a parameter for the preprocessor
         ///   -ext &lt;extension&gt;  extension assembly or &quot;class, assembly&quot;
-        ///   -fips      enables FIPS compliant algorithms
         ///   -I&lt;dir&gt;    add to include search path
         ///   -nologo    skip printing candle logo information
         ///   -o[ut]     s [rest of string was truncated]&quot;;.
