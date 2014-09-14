@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<?define ProductMajorVersion="1"?>
+<?define ProductMinorVersion="2"?>
+<?define ProductVersion="$(fun.AutoVersion($(var.ProductMajorVersion).$(var.ProductMinorVersion)))"?>
+
+<Foo Bar="$(var.ProductVersion)" />

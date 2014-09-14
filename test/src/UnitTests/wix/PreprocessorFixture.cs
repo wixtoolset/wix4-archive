@@ -5,7 +5,7 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
+//
 // <summary>
 // Preprocessor of the WiX toolset.
 // </summary>
@@ -33,16 +33,19 @@ namespace WixTest.WixUnitTest
             XDocument d = p.Process(@"testdata\simple.wxs", new Dictionary<string, string>());
             SourceLineNumber s = Preprocessor.GetSourceLineNumbers(d.Descendants(WixNamespace + "Component").Single());
 
+            string expected = String.Join(Environment.NewLine,
+                "<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">",
+                "  <Fragment>",
+                "    <ComponentGroup Id=\"ComponentGroup\" Directory=\"InstallFolder\">",
+                "      <Component>",
+                "        <File Source=\"file.ext\" />",
+                "      </Component>",
+                "    </ComponentGroup>",
+                "  </Fragment>",
+                "</Wix>");
+
             Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>", d.Declaration.ToString());
-            Assert.Equal("<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">" + Environment.NewLine +
-                         "  <Fragment>" + Environment.NewLine +
-                         "    <ComponentGroup Id=\"ComponentGroup\" Directory=\"InstallFolder\">" + Environment.NewLine +
-                         "      <Component>" + Environment.NewLine +
-                         "        <File Source=\"file.ext\" />" + Environment.NewLine +
-                         "      </Component>" + Environment.NewLine +
-                         "    </ComponentGroup>" + Environment.NewLine +
-                         "  </Fragment>" + Environment.NewLine +
-                         "</Wix>", d.ToString());
+            Assert.Equal(expected, d.ToString());
             Assert.Equal(@"testdata\simple.wxs*5", s.QualifiedFileName);
         }
 
@@ -54,16 +57,19 @@ namespace WixTest.WixUnitTest
             XDocument d = p.Process(@"testdata\parent.wxs", new Dictionary<string, string>());
             SourceLineNumber s = d.Descendants(WixNamespace + "Component").Single().Annotation<SourceLineNumber>();
 
+            string expected = String.Join(Environment.NewLine,
+                "<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">",
+                "  <Fragment>",
+                "    <ComponentGroup Id=\"ComponentGroup\">",
+                "      <Component Directory=\"InstallFolder\">",
+                "        <File Source=\"file.ext\" />",
+                "      </Component>",
+                "    </ComponentGroup>",
+                "  </Fragment>",
+                "</Wix>");
+
             Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>", d.Declaration.ToString());
-            Assert.Equal("<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">" + Environment.NewLine +
-                         "  <Fragment>" + Environment.NewLine +
-                         "    <ComponentGroup Id=\"ComponentGroup\">" + Environment.NewLine +
-                         "      <Component Directory=\"InstallFolder\">" + Environment.NewLine +
-                         "        <File Source=\"file.ext\" />" + Environment.NewLine +
-                         "      </Component>" + Environment.NewLine +
-                         "    </ComponentGroup>" + Environment.NewLine +
-                         "  </Fragment>" + Environment.NewLine +
-                         "</Wix>", d.ToString());
+            Assert.Equal(expected, d.ToString());
             Assert.Equal(@"testdata\include.wxi*3", s.QualifiedFileName);
         }
 
@@ -75,22 +81,43 @@ namespace WixTest.WixUnitTest
             XDocument d = p.Process(@"testdata\double_fragment.wxs", new Dictionary<string, string>());
             SourceLineNumber s = Preprocessor.GetSourceLineNumbers(d.Descendants(WixNamespace + "Component").Single());
 
-            string expected = "<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">" + Environment.NewLine +
-                              "  <Fragment>" + Environment.NewLine +
-                              "    <ComponentGroup Id=\"ComponentGroup\">" + Environment.NewLine +
-                              "      <ComponentRef Id=\"file.ext\" />" + Environment.NewLine +
-                              "    </ComponentGroup>" + Environment.NewLine +
-                              "  </Fragment>" + Environment.NewLine +
-                              "  <Fragment>" + Environment.NewLine +
-                              "    <Component Directory=\"InstallFolder\">" + Environment.NewLine +
-                              "      <File Source=\"file.ext\" />" + Environment.NewLine +
-                              "    </Component>" + Environment.NewLine +
-                              "  </Fragment>" + Environment.NewLine +
-                              "</Wix>";
+            string expected = String.Join(Environment.NewLine,
+                "<Wix xmlns=\"http://wixtoolset.org/schemas/v4/wxs\">",
+                "  <Fragment>",
+                "    <ComponentGroup Id=\"ComponentGroup\">",
+                "      <ComponentRef Id=\"file.ext\" />",
+                "    </ComponentGroup>",
+                "  </Fragment>",
+                "  <Fragment>",
+                "    <Component Directory=\"InstallFolder\">",
+                "      <File Source=\"file.ext\" />",
+                "    </Component>",
+                "  </Fragment>",
+                "</Wix>");
 
             Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>", d.Declaration.ToString());
             Assert.Equal(expected, d.ToString());
             Assert.Equal(@"testdata\double_fragment.wxs*10", s.QualifiedFileName);
+        }
+
+        [Fact]
+        public void CanProcessAutoVersionFunction()
+        {
+            Preprocessor p = new Preprocessor();
+
+            DateTime now = DateTime.UtcNow;
+            int build = (int)(now - new DateTime(2000, 1, 1)).TotalDays;
+            int revision = (int)(now - new DateTime(now.Year, now.Month, now.Day)).TotalSeconds / 2;
+
+            XDocument d = p.Process(@"testdata\func_autoversion.wxs", new Dictionary<string, string>());
+            XElement fooElement = d.Descendants("Foo").Single();
+            string barValue = fooElement.Attribute("Bar").Value;
+            Version version = new Version(barValue);
+
+            Assert.Equal(1, version.Major);
+            Assert.Equal(2, version.Minor);
+            Assert.Equal(build, version.Build);
+            Assert.True(revision <= version.Revision);
         }
     }
 }
