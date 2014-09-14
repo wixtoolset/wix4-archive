@@ -57,7 +57,6 @@ namespace WixToolset.Build.Tasks
         private ITaskItem wixProjectFile;
         private bool pedantic;
         private bool reuseCabinetCache;
-        private bool setMsiAssemblyNameFileVersion;
         private bool suppressAclReset;
         private bool suppressAssemblies;
         private bool suppressDefaultAdminSequenceActions;
@@ -259,13 +258,6 @@ namespace WixToolset.Build.Tasks
         {
             get { return this.reuseCabinetCache; }
             set { this.reuseCabinetCache = value; }
-        }
-
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly")]
-        public bool SetMsiAssemblyNameFileVersion
-        {
-            get { return this.setMsiAssemblyNameFileVersion; }
-            set { this.setMsiAssemblyNameFileVersion = value; }
         }
 
         public bool SuppressAclReset
@@ -471,7 +463,6 @@ namespace WixToolset.Build.Tasks
             commandLineBuilder.AppendIfTrue("-dut", this.DropUnrealTables);
             commandLineBuilder.AppendIfTrue("-eav", this.ExactAssemblyVersions);
             commandLineBuilder.AppendExtensions(this.Extensions, this.ExtensionDirectory, this.referencePaths);
-            commandLineBuilder.AppendIfTrue("-fv", this.SetMsiAssemblyNameFileVersion);
             commandLineBuilder.AppendArrayIfNotNull("-ice:", this.Ices);
             commandLineBuilder.AppendArrayIfNotNull("-loc ", this.LocalizationFiles);
             commandLineBuilder.AppendIfTrue("-notidy", this.LeaveTemporaryFiles);

@@ -201,12 +201,6 @@ namespace WixToolset
         public List<string> SuppressIces { get; set; }
 
         /// <summary>
-        /// Gets and sets the option to set the file version in the MsiAssemblyName table.
-        /// </summary>
-        /// <value>The option to set the file version in the MsiAssemblyName table.</value>
-        public bool SetMsiAssemblyNameFileVersion { get; set; }
-
-        /// <summary>
         /// Gets and sets the option to suppress resetting ACLs by the binder.
         /// </summary>
         /// <value>The option to suppress resetting ACLs by the binder.</value>
@@ -6034,8 +6028,8 @@ namespace WixToolset
                 fileRow.FileSize = Convert.ToInt32(fileStream.Length, CultureInfo.InvariantCulture);
             }
 
-            string version;
-            string language;
+            string version = null;
+            string language = null;
             try
             {
                 Installer.GetFileVersion(fileInfo.FullName, out version, out language);
@@ -6221,16 +6215,12 @@ namespace WixToolset
                 Table assemblyNameTable = output.EnsureTable(this.core.TableDefinitions["MsiAssemblyName"]);
                 if (assemblyNameValues.ContainsKey("name"))
                 {
-                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "name", assemblyNameValues["name"], infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "name", assemblyNameValues["name"], infoCache, modularizationGuid);
                 }
 
-                string fileVersion = null;
-                if (this.SetMsiAssemblyNameFileVersion)
+                if (!String.IsNullOrEmpty(version))
                 {
-                    string ignored;
-
-                    Installer.GetFileVersion(fileInfo.FullName, out fileVersion, out ignored);
-                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "fileVersion", fileVersion, infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "fileVersion", version, infoCache, modularizationGuid);
                 }
 
                 if (assemblyNameValues.ContainsKey("version"))
@@ -6239,12 +6229,13 @@ namespace WixToolset
 
                     if (!this.ExactAssemblyVersions)
                     {
-                        // there is a bug in fusion that requires the assembly's "version" attribute
+                        // There is a bug in fusion that requires the assembly's "version" attribute
                         // to be equal to or longer than the "fileVersion" in length when its present;
-                        // the workaround is to prepend zeroes to the last version number in the assembly version
-                        if (this.SetMsiAssemblyNameFileVersion && null != fileVersion && fileVersion.Length > assemblyVersion.Length)
+                        // the workaround is to prepend zeroes to the last version number in the assembly
+                        // version.
+                        if (null != version && version.Length > assemblyVersion.Length)
                         {
-                            string padding = new string('0', fileVersion.Length - assemblyVersion.Length);
+                            string padding = new string('0', version.Length - assemblyVersion.Length);
                             string[] assemblyVersionNumbers = assemblyVersion.Split('.');
 
                             if (assemblyVersionNumbers.Length > 0)
@@ -6255,27 +6246,27 @@ namespace WixToolset
                         }
                     }
 
-                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "version", assemblyVersion, infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "version", assemblyVersion, infoCache, modularizationGuid);
                 }
 
                 if (assemblyNameValues.ContainsKey("culture"))
                 {
-                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "culture", assemblyNameValues["culture"], infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "culture", assemblyNameValues["culture"], infoCache, modularizationGuid);
                 }
 
                 if (assemblyNameValues.ContainsKey("publicKeyToken"))
                 {
-                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "publicKeyToken", assemblyNameValues["publicKeyToken"], infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "publicKeyToken", assemblyNameValues["publicKeyToken"], infoCache, modularizationGuid);
                 }
 
-                if (null != fileRow.ProcessorArchitecture && 0 < fileRow.ProcessorArchitecture.Length)
+                if (!String.IsNullOrEmpty(fileRow.ProcessorArchitecture))
                 {
-                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", fileRow.ProcessorArchitecture, infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", fileRow.ProcessorArchitecture, infoCache, modularizationGuid);
                 }
 
                 if (assemblyNameValues.ContainsKey("processorArchitecture"))
                 {
-                    SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", assemblyNameValues["processorArchitecture"], infoCache, modularizationGuid);
+                    this.SetMsiAssemblyName(output, assemblyNameTable, fileRow, "processorArchitecture", assemblyNameValues["processorArchitecture"], infoCache, modularizationGuid);
                 }
 
                 // add the assembly name to the information cache

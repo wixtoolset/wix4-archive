@@ -14,10 +14,7 @@
 namespace WixToolset.Tools
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -168,7 +165,6 @@ namespace WixToolset.Tools
             //binder.CabbingThreadCount = this.commandLine.CabbingThreadCount;
             //binder.DefaultCompressionLevel = this.commandLine.DefaultCompressionLevel;
             //binder.ExactAssemblyVersions = this.commandLine.ExactAssemblyVersions;
-            binder.SetMsiAssemblyNameFileVersion = this.commandLine.SetMsiAssemblyNameFileVersion;
             binder.SuppressAclReset = this.commandLine.SuppressAclReset;
             //binder.SuppressLayout = this.commandLine.SuppressLayout;
             binder.SuppressValidation = true;

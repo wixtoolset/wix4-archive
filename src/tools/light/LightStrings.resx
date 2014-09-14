@@ -129,8 +129,6 @@
    -dcl:level set default cabinet compression level
               (low, medium, high, none, mszip; mszip default)
    -eav       exact assembly versions (breaks .NET 1.1 RTM compatibility)
-   -fv        add a 'fileVersion' entry to the MsiAssemblyName table
-              (rarely needed)
    -ice:&lt;ICE&gt;   run a specific internal consistency evaluator (ICE)
    -pdbout &lt;output.wixpdb&gt;  save the WixPdb to a specific file
               (default: same name as output with wixpdb extension)

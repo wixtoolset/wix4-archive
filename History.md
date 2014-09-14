@@ -1,3 +1,5 @@
+* RobMen: WIXBUG:1705 - Include AssemblyFileVersion in MsiAssemblyName table.
+
 * FireGiant: WIXFEAT:4258 - complete introduction of access modifiers for identifiers.
 
 * RobMen: Replace devenv /setup call with fast extension update mechanism.

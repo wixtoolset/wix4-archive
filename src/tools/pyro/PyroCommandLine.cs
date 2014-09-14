@@ -29,8 +29,6 @@ namespace WixToolset.Tools
             this.Extensions = new List<string>();
         }
 
-        public bool SetMsiAssemblyNameFileVersion { get; private set; }
-
         public bool Delta { get; private set; }
 
         public bool ShowLogo { get; private set; }
@@ -129,10 +127,6 @@ namespace WixToolset.Tools
 
                         this.Extensions.Add(args[i]);
                     }
-                    else if ("fv" == parameter)
-                    {
-                        this.SetMsiAssemblyNameFileVersion = true;
-                    }
                     else if ("nologo" == parameter)
                     {
                         this.ShowLogo = false;
@@ -181,7 +175,7 @@ namespace WixToolset.Tools
                             break;
                         }
 
-                        baseline= args[i];
+                        baseline = args[i];
 
                         transformPath = CommandLine.GetFile(parameter, args, ++i);
 

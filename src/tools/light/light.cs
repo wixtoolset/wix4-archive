@@ -187,7 +187,6 @@ namespace WixToolset.Tools
             binder.ExactAssemblyVersions = this.commandLine.ExactAssemblyVersions;
             binder.Ices.AddRange(this.commandLine.Ices);
             binder.SuppressIces.AddRange(this.commandLine.SuppressIces);
-            binder.SetMsiAssemblyNameFileVersion = this.commandLine.SetMsiAssemblyNameFileVersion;
             binder.SuppressAclReset = this.commandLine.SuppressAclReset;
             binder.SuppressLayout = this.commandLine.SuppressLayout;
             binder.SuppressValidation = this.commandLine.SuppressValidation;
