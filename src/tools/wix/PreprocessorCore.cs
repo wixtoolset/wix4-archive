@@ -14,11 +14,9 @@
 namespace WixToolset
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using System.Xml;
     using System.Xml.Linq;
     using WixToolset.Data;
     using WixToolset.Extensibility;
@@ -335,7 +333,20 @@ namespace WixToolset
                 case "fun":
                     switch (function)
                     {
-                        // Add any core defined functions here
+                        case "AutoVersion":
+                            // Make sure the base version is specified
+                            if (args.Length == 0 || String.IsNullOrEmpty(args[0]))
+                            {
+                                throw new WixException(WixErrors.InvalidPreprocessorFunctionAutoVersion(sourceLineNumbers));
+                            }
+
+                            // Build = days since 1/1/2000; Revision = seconds since midnight / 2
+                            DateTime now = DateTime.UtcNow;
+                            TimeSpan build = now - new DateTime(2000, 1, 1);
+                            TimeSpan revision = now - new DateTime(now.Year, now.Month, now.Day);
+
+                            return String.Join(".", args[0], (int)build.TotalDays, (int)(revision.TotalSeconds / 2));
+
                         default:
                             return null;
                     }

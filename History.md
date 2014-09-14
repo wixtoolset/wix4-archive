@@ -1,3 +1,5 @@
+* RobMen: WIXBUG:4317 - Integrate preprocessor AutoVersion function lost in merges.
+
 * RobMen: WIXBUG:1705 - Include AssemblyFileVersion in MsiAssemblyName table.
 
 * FireGiant: WIXFEAT:4258 - complete introduction of access modifiers for identifiers.
