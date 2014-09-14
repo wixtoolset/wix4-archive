@@ -2456,11 +2456,6 @@
                 <Parameter Type="System.String" Name="exceptionMessage"/>
             </Instance>
         </Message>
-        <Message Id="UseFipsArgument" Number="308" SourceLineNumbers="no">
-            <Instance>
-                The Federal Information Processing Standard (FIPS) appears to be enabled on the machine. You must either disable FIPS or use FIPS-compliant security algorithms to generate IDs by passing the -fips command-line switch or by setting &lt;FipsCompliant&gt;true&lt;/FipsCompliant&gt; in your .wixproj project.
-            </Instance>
-        </Message>
         <Message Id="ValidationFailedDueToMultilanguageMergeModule" Number="309" SourceLineNumbers="no">
             <Instance>
                 Failed to open merge module for validation. The most common cause of this error is specifying that the merge module supports multiple languages (using the Package/@Languages attribute) but not including language-specific embedded transforms. To fix this error, make the merge module language-neutral, make it language-specific, embed language transforms as specified in the MSI SDK at http://msdn.microsoft.com/library/aa367799.aspx, or disable validation.
