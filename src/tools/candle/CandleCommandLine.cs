@@ -147,13 +147,8 @@ namespace WixToolset.Tools
                     {
                         this.ShowPedanticMessages = true;
                     }
-                    else if ("platform" == parameter || "arch" == parameter)
+                    else if ("arch" == parameter)
                     {
-                        if ("platform" == parameter)
-                        {
-                            Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("platform", "arch"));
-                        }
-
                         if (!CommandLine.IsValidArg(args, ++i))
                         {
                             Messaging.Instance.OnMessage(WixErrors.InvalidPlatformParameter(parameter, String.Empty));
@@ -186,11 +181,6 @@ namespace WixToolset.Tools
                         string file = parameter.Substring(1);
                         this.PreprocessFile = String.IsNullOrEmpty(file) ? "con:" : file;
                     }
-                    else if ("swall" == parameter)
-                    {
-                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("swall", "sw"));
-                        Messaging.Instance.SuppressAllWarnings = true;
-                    }
                     else if (parameter.StartsWith("sw", StringComparison.Ordinal))
                     {
                         string paramArg = parameter.Substring(2);
@@ -219,11 +209,6 @@ namespace WixToolset.Tools
                         {
                             Messaging.Instance.OnMessage(WixErrors.IllegalSuppressWarningId(paramArg));
                         }
-                    }
-                    else if ("wxall" == parameter)
-                    {
-                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch("wxall", "wx"));
-                        Messaging.Instance.WarningsAsError = true;
                     }
                     else if (parameter.StartsWith("wx", StringComparison.Ordinal))
                     {
