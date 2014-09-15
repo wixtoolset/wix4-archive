@@ -1,3 +1,5 @@
+## WixBuild: Version 4.0.2115.0
+
 * RobMen: WIXBUG:4317 - Integrate preprocessor AutoVersion function lost in merges.
 
 * RobMen: WIXBUG:1705 - Include AssemblyFileVersion in MsiAssemblyName table.
