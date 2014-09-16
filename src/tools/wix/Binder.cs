@@ -310,7 +310,7 @@ namespace WixToolset
             {
                 if (String.IsNullOrEmpty(this.validator.TempFilesLocation))
                 {
-                    this.validator.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
+                    this.validator.TempFilesLocation = this.TempFilesLocation;
                 }
 
                 // set the default cube file
@@ -325,13 +325,10 @@ namespace WixToolset
                 this.SuppressIces.Add("ICE66");
 
                 // set the ICEs
-                string[] iceArray = new string[this.Ices.Count];
-                this.Ices.CopyTo(iceArray, 0);
-                this.validator.ICEs = iceArray;
+                this.validator.ICEs = this.Ices.ToArray();
 
                 // set the suppressed ICEs
-                string[] suppressICEArray = this.SuppressIces.ToArray();
-                this.validator.SuppressedICEs = suppressICEArray;
+                this.validator.SuppressedICEs = this.SuppressIces.ToArray();
             }
             else
             {
@@ -1522,7 +1519,6 @@ namespace WixToolset
             //FileRowCollection fileRows = new FileRowCollection(OutputType.Patch == output.Type);
             bool longNames = false;
             HashSet<string> suppressedTableNames = new HashSet<string>();
-            Table propertyTable = output.Tables["Property"];
 
             this.WriteBuildInfoTable(output, databaseFile);
 
@@ -1602,7 +1598,7 @@ namespace WixToolset
             }
 
             // add binder variables for all properties
-            propertyTable = output.Tables["Property"];
+            Table propertyTable = output.Tables["Property"];
             if (null != propertyTable)
             {
                 foreach (PropertyRow propertyRow in propertyTable.Rows)
