@@ -15,12 +15,8 @@
 namespace WixToolset.Msi
 {
     using System;
-    using System.ComponentModel;
     using System.Diagnostics;
-    using System.Globalization;
-    using System.Reflection;
     using System.Text;
-    using System.Xml;
     using WixToolset.Msi.Interop;
 
     /// <summary>
