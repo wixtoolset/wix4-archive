@@ -57,6 +57,7 @@
     <Compile Include="IfDefEventHandler.cs" />
     <Compile Include="Inscriber.cs" />
     <Compile Include="InspectorCore.cs" />
+    <Compile Include="ICommand.cs" />
     <Compile Include="Link\ReportConflictingSymbolsCommand.cs" />
     <Compile Include="Localizer.cs" />
     <Compile Include="Patch.cs" />

@@ -9,12 +9,11 @@
 
 namespace WixToolset.Link
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using WixToolset.Data;
 
-    public class ReportConflictingSymbolsCommand
+    public class ReportConflictingSymbolsCommand : ICommand
     {
         private IEnumerable<Symbol> possibleConflicts;
         private IEnumerable<Section> resolvedSections;

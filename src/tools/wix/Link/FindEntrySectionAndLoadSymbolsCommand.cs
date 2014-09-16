@@ -14,7 +14,7 @@ namespace WixToolset.Link
     using System.Linq;
     using WixToolset.Data;
 
-    internal class FindEntrySectionAndLoadSymbolsCommand
+    internal class FindEntrySectionAndLoadSymbolsCommand : ICommand
     {
         private IEnumerable<Section> sections;
 
@@ -23,22 +23,23 @@ namespace WixToolset.Link
             this.sections = sections;
         }
 
-        public OutputType ExpectedOutputType { get; set;}
+        /// <summary>
+        /// Sets the expected entry output type, based on output file extension provided to the linker.
+        /// </summary>
+        public OutputType ExpectedOutputType { private get; set; }
 
+        /// <summary>
+        /// Gets the located entry section after the command is executed.
+        /// </summary>
         public Section EntrySection { get; private set; }
 
+        /// <summary>
+        /// Gest the collection of loaded symbols.
+        /// </summary>
         public IDictionary<string, Symbol> Symbols { get; private set; }
 
         public IEnumerable<Symbol> PossiblyConflictingSymbols { get; private set; }
 
-        /// <summary>
-        /// Finds the entry section and loads the symbols from an array of intermediates.
-        /// </summary>
-        /// <param name="allowIdenticalRows">Flag specifying whether identical rows are allowed or not.</param>
-        /// <param name="messageHandler">Message handler object to route all errors through.</param>
-        /// <param name="expectedOutputType">Expected entry output type, based on output file extension provided to the linker.</param>
-        /// <param name="entrySection">Located entry section.</param>
-        /// <param name="allSymbols">Collection of symbols loaded.</param>
         public void Execute()
         {
             Dictionary<string, Symbol> symbols = new Dictionary<string, Symbol>();
