@@ -15,13 +15,11 @@
 namespace WixToolset
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Collections.Specialized;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
-    using System.Linq;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
@@ -72,7 +70,7 @@ namespace WixToolset
                     {
                         targetReadLength = targetStream.Read(targetBuffer, 0, targetBuffer.Length);
                         updatedReadLength = updatedStream.Read(updatedBuffer, 0, updatedBuffer.Length);
-                        
+
                         if (targetReadLength != updatedReadLength)
                         {
                             return false;
@@ -196,38 +194,26 @@ namespace WixToolset
             // By default cabinet should be built and moved to the suggested location.
             ResolvedCabinet resolved = new ResolvedCabinet() { BuildOption = CabinetBuildOption.BuildAndMove, Path = cabinetPath };
 
-            // No special behavior specified, use the default.
-            if (null == this.Core.CabCachePath && !this.Core.ReuseCabinets)
-            {
-                return resolved;
-            }
-
             // If a cabinet cache path was provided, change the location for the cabinet
-            // to be built to.
-            if (null != this.Core.CabCachePath)
+            // to be built to and check if there is a cabinet that can be reused.
+            if (!String.IsNullOrEmpty(this.Core.CabCachePath))
             {
                 string cabinetName = Path.GetFileName(cabinetPath);
                 resolved.Path = Path.Combine(this.Core.CabCachePath, cabinetName);
-            }
-
-            // If we still think we're going to reuse the cabinet check to see if the cabinet exists first.
-            if (this.Core.ReuseCabinets)
-            {
-                bool cabinetValid = false;
 
                 if (BinderFileManager.CheckFileExists(resolved.Path))
                 {
-                    // check to see if
+                    // Assume that none of the following are true:
                     // 1. any files are added or removed
                     // 2. order of files changed or names changed
                     // 3. modified time changed
-                    cabinetValid = true;
+                    bool cabinetValid = true;
 
                     // Need to force garbage collection of WixEnumerateCab to ensure the handle
                     // associated with it is closed before it is reused.
                     using (Cab.WixEnumerateCab wixEnumerateCab = new Cab.WixEnumerateCab())
                     {
-                        ArrayList fileList = wixEnumerateCab.Enumerate(resolved.Path);
+                        List<CabinetFileInfo> fileList = wixEnumerateCab.Enumerate(resolved.Path);
 
                         if (fileRows.Count() != fileList.Count)
                         {
@@ -239,7 +225,7 @@ namespace WixToolset
                             foreach (FileRow fileRow in fileRows)
                             {
                                 // First check that the file identifiers match because that is quick and easy.
-                                CabinetFileInfo cabFileInfo = fileList[i] as CabinetFileInfo;
+                                CabinetFileInfo cabFileInfo = fileList[i];
                                 cabinetValid = (cabFileInfo.FileId == fileRow.File);
                                 if (cabinetValid)
                                 {
@@ -263,9 +249,9 @@ namespace WixToolset
                             }
                         }
                     }
-                }
 
-                resolved.BuildOption = cabinetValid ? CabinetBuildOption.Copy : CabinetBuildOption.BuildAndCopy;
+                    resolved.BuildOption = cabinetValid ? CabinetBuildOption.Copy : CabinetBuildOption.BuildAndCopy;
+                }
             }
 
             return resolved;

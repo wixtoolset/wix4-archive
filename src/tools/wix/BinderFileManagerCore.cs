@@ -17,17 +17,17 @@ namespace WixToolset
 
     public class BinderFileManagerCore : IBinderFileManagerCore
     {
-        private Dictionary<BindStage, Dictionary<string, List<string>>> bindPaths;
+        private Dictionary<string, List<string>>[] bindPaths;
 
         /// <summary>
         /// Instantiate a new BinderFileManager.
         /// </summary>
         public BinderFileManagerCore()
         {
-            this.bindPaths = new Dictionary<BindStage, Dictionary<string, List<string>>>();
-            this.bindPaths.Add(BindStage.Normal, new Dictionary<string, List<string>>());
-            this.bindPaths.Add(BindStage.Target, new Dictionary<string, List<string>>());
-            this.bindPaths.Add(BindStage.Updated, new Dictionary<string, List<string>>());
+            this.bindPaths = new Dictionary<string, List<string>>[3];
+            this.bindPaths[(int)BindStage.Normal] = new Dictionary<string, List<string>>();
+            this.bindPaths[(int)BindStage.Target] = new Dictionary<string, List<string>>();
+            this.bindPaths[(int)BindStage.Updated] = new Dictionary<string, List<string>>();
         }
 
         /// <summary>
@@ -35,12 +35,6 @@ namespace WixToolset
         /// </summary>
         /// <value>The path to cabinet cache.</value>
         public string CabCachePath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the option to reuse cabinets in the cache.
-        /// </summary>
-        /// <value>The option to reuse cabinets in the cache.</value>
-        public bool ReuseCabinets { get; set; }
 
         /// <summary>
         /// Gets or sets the active subStorage used for binding.
@@ -72,7 +66,7 @@ namespace WixToolset
         /// <value>It returns true if target bind path is to be replaced, otherwise false.</value>
         public bool RebaseTarget
         {
-            get { return this.bindPaths[BindStage.Target].Any(); }
+            get { return this.bindPaths[(int)BindStage.Target].Any(); }
         }
 
         /// <summary>
@@ -81,16 +75,12 @@ namespace WixToolset
         /// <value>It returns true if updated bind path is to be replaced, otherwise false.</value>
         public bool RebaseUpdated
         {
-            get { return this.bindPaths[BindStage.Updated].Any(); }
+            get { return this.bindPaths[(int)BindStage.Updated].Any(); }
         }
 
         public void AddBindPaths(IEnumerable<BindPath> paths, BindStage stage)
         {
-            Dictionary<string, List<string>> dict;
-            if (!this.bindPaths.TryGetValue(stage, out dict))
-            {
-                throw new ArgumentException("stage");
-            }
+            Dictionary<string, List<string>> dict = this.bindPaths[(int)stage];
 
             foreach (BindPath bindPath in paths)
             {
@@ -111,12 +101,12 @@ namespace WixToolset
         public IEnumerable<string> GetBindPaths(BindStage stage = BindStage.Normal, string name = null)
         {
             List<string> paths;
-            if (this.bindPaths[stage].TryGetValue(name ?? String.Empty, out paths))
+            if (this.bindPaths[(int)stage].TryGetValue(name ?? String.Empty, out paths))
             {
                 return paths;
             }
 
-            return new string[0];
+            return Enumerable.Empty<string>();
         }
 
         /// <summary>

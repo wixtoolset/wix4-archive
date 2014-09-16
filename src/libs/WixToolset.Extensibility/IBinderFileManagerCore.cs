@@ -9,7 +9,6 @@
 
 namespace WixToolset.Extensibility
 {
-    using System;
     using System.Collections.Generic;
     using WixToolset.Data;
 
@@ -20,12 +19,6 @@ namespace WixToolset.Extensibility
         /// </summary>
         /// <value>The path to cabinet cache.</value>
         string CabCachePath { get; }
-
-        /// <summary>
-        /// Gets or sets the option to reuse cabinets in the cache.
-        /// </summary>
-        /// <value>The option to reuse cabinets in the cache.</value>
-        bool ReuseCabinets { get; }
 
         /// <summary>
         /// Gets or sets the active subStorage used for binding.
