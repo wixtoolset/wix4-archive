@@ -97,8 +97,6 @@ namespace WixToolset
         private const string BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER = "WixBundleOriginalSourceFolder";
         private const string BURN_BUNDLE_LAST_USED_SOURCE = "WixBundleLastUsedSource";
 
-        private string emptyFile;
-
         private BinderCore core;
         private BinderFileManagerCore fileManagerCore;
         private List<IBinderExtension> extensions;
@@ -416,11 +414,6 @@ namespace WixToolset
         public bool DeleteTempFiles()
         {
             bool deleted = Common.DeleteTempFiles(this.TempFilesLocation, this.core);
-            if (deleted)
-            {
-                this.emptyFile = null;
-            }
-
             return deleted;
         }
 
@@ -431,246 +424,20 @@ namespace WixToolset
         /// <param name="databaseFile">The database file to create.</param>
         /// <param name="keepAddedColumns">Whether to keep columns added in a transform.</param>
         /// <param name="useSubdirectory">Whether to use a subdirectory based on the <paramref name="databaseFile"/> file name for intermediate files.</param>
-        internal void GenerateDatabase(Output output, string databaseFile, bool keepAddedColumns, bool useSubdirectory)
-        {
-            // add the _Validation rows
-            if (!this.SuppressAddingValidationRows)
-            {
-                Table validationTable = output.EnsureTable(this.core.TableDefinitions["_Validation"]);
-
-                foreach (Table table in output.Tables)
-                {
-                    if (!table.Definition.Unreal)
-                    {
-                        // add the validation rows for this table
-                        table.Definition.AddValidationRows(validationTable);
-                    }
-                }
-            }
-
-            // set the base directory
-            string baseDirectory = this.TempFilesLocation;
-            if (useSubdirectory)
-            {
-                string filename = Path.GetFileNameWithoutExtension(databaseFile);
-                baseDirectory = Path.Combine(baseDirectory, filename);
-
-                // make sure the directory exists
-                Directory.CreateDirectory(baseDirectory);
-            }
-
-            try
-            {
-                OpenDatabase type = OpenDatabase.CreateDirect;
-
-                // set special flag for patch files
-                if (OutputType.Patch == output.Type)
-                {
-                    type |= OpenDatabase.OpenPatchFile;
-                }
-
-                // try to create the database
-                using (Database db = new Database(databaseFile, type))
-                {
-                    // localize the codepage if a value was specified by the localizer
-                    if (null != this.Localizer && -1 != this.Localizer.Codepage)
-                    {
-                        output.Codepage = this.Localizer.Codepage;
-                    }
-
-                    // if we're not using the default codepage, import a new one into our
-                    // database before we add any tables (or the tables would be added
-                    // with the wrong codepage)
-                    if (0 != output.Codepage)
-                    {
-                        this.SetDatabaseCodepage(db, output);
-                    }
-
-                    foreach (Table table in output.Tables)
-                    {
-                        Table importTable = table;
-                        bool hasBinaryColumn = false;
-
-                        // skip all unreal tables other than _Streams
-                        if (table.Definition.Unreal && "_Streams" != table.Name)
-                        {
-                            continue;
-                        }
-
-                        // Do not put the _Validation table in patches, it is not needed
-                        if (OutputType.Patch == output.Type && "_Validation" == table.Name)
-                        {
-                            continue;
-                        }
-
-                        // The only way to import binary data is to copy it to a local subdirectory first.
-                        // To avoid this extra copying and perf hit, import an empty table with the same
-                        // definition and later import the binary data from source using records.
-                        foreach (ColumnDefinition columnDefinition in table.Definition.Columns)
-                        {
-                            if (ColumnType.Object == columnDefinition.Type)
-                            {
-                                importTable = new Table(table.Section, table.Definition);
-                                hasBinaryColumn = true;
-                                break;
-                            }
-                        }
-
-                        // create the table via IDT import
-                        if ("_Streams" != importTable.Name)
-                        {
-                            try
-                            {
-                                db.ImportTable(output.Codepage, importTable, baseDirectory, keepAddedColumns);
-                            }
-                            catch (WixInvalidIdtException)
-                            {
-                                // If ValidateRows finds anything it doesn't like, it throws
-                                importTable.ValidateRows();
-
-                                // Otherwise we rethrow the InvalidIdt
-                                throw;
-                            }
-                        }
-
-                        // insert the rows via SQL query if this table contains object fields
-                        if (hasBinaryColumn)
-                        {
-                            StringBuilder query = new StringBuilder("SELECT ");
-
-                            // build the query for the view
-                            bool firstColumn = true;
-                            foreach (ColumnDefinition columnDefinition in table.Definition.Columns)
-                            {
-                                if (!firstColumn)
-                                {
-                                    query.Append(",");
-                                }
-                                query.AppendFormat(" `{0}`", columnDefinition.Name);
-                                firstColumn = false;
-                            }
-                            query.AppendFormat(" FROM `{0}`", table.Name);
-
-                            using (View tableView = db.OpenExecuteView(query.ToString()))
-                            {
-                                // import each row containing a stream
-                                foreach (Row row in table.Rows)
-                                {
-                                    using (Record record = new Record(table.Definition.Columns.Count))
-                                    {
-                                        StringBuilder streamName = new StringBuilder();
-                                        bool needStream = false;
-
-                                        // the _Streams table doesn't prepend the table name (or a period)
-                                        if ("_Streams" != table.Name)
-                                        {
-                                            streamName.Append(table.Name);
-                                        }
-
-                                        for (int i = 0; i < table.Definition.Columns.Count; i++)
-                                        {
-                                            ColumnDefinition columnDefinition = table.Definition.Columns[i];
-
-                                            switch (columnDefinition.Type)
-                                            {
-                                                case ColumnType.Localized:
-                                                case ColumnType.Preserved:
-                                                case ColumnType.String:
-                                                    if (columnDefinition.PrimaryKey)
-                                                    {
-                                                        if (0 < streamName.Length)
-                                                        {
-                                                            streamName.Append(".");
-                                                        }
-                                                        streamName.Append((string)row[i]);
-                                                    }
-
-                                                    record.SetString(i + 1, (string)row[i]);
-                                                    break;
-                                                case ColumnType.Number:
-                                                    record.SetInteger(i + 1, Convert.ToInt32(row[i], CultureInfo.InvariantCulture));
-                                                    break;
-                                                case ColumnType.Object:
-                                                    if (null != row[i])
-                                                    {
-                                                        needStream = true;
-                                                        try
-                                                        {
-                                                            record.SetStream(i + 1, (string)row[i]);
-                                                        }
-                                                        catch (Win32Exception e)
-                                                        {
-                                                            if (0xA1 == e.NativeErrorCode) // ERROR_BAD_PATHNAME
+        private void GenerateDatabase(Output output, string databaseFile, bool keepAddedColumns, bool useSubdirectory)
                                                             {
-                                                                throw new WixException(WixErrors.FileNotFound(row.SourceLineNumbers, (string)row[i]));
-                                                            }
-                                                            else
-                                                            {
-                                                                throw new WixException(WixErrors.Win32Exception(e.NativeErrorCode, e.Message));
-                                                            }
-                                                        }
-                                                    }
-                                                    break;
-                                            }
-                                        }
-
-                                        // stream names are created by concatenating the name of the table with the values
-                                        // of the primary key (delimited by periods)
-                                        // check for a stream name that is more than 62 characters long (the maximum allowed length)
-                                        if (needStream && MsiInterop.MsiMaxStreamNameLength < streamName.Length)
-                                        {
-                                            this.core.OnMessage(WixErrors.StreamNameTooLong(row.SourceLineNumbers, table.Name, streamName.ToString(), streamName.Length));
-                                        }
-                                        else // add the row to the database
-                                        {
-                                            tableView.Modify(ModifyView.Assign, record);
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Remove rows from the _Streams table for wixpdbs.
-                            if ("_Streams" == table.Name)
-                            {
-                                table.Rows.Clear();
-                            }
-                        }
-                    }
-
-                    // insert substorages (like transforms inside a patch)
-                    if (0 < output.SubStorages.Count)
-                    {
-                        using (View storagesView = new View(db, "SELECT `Name`, `Data` FROM `_Storages`"))
-                        {
-                            foreach (SubStorage subStorage in output.SubStorages)
-                            {
-                                string transformFile = Path.Combine(this.TempFilesLocation, String.Concat(subStorage.Name, ".mst"));
-
-                                // Bind the transform.
-                                this.BindTransform(subStorage.Data, transformFile);
-                                if (!Messaging.Instance.EncounteredError)
-                                {
-                                    // add the storage
-                                    using (Record record = new Record(2))
-                                    {
-                                        record.SetString(1, subStorage.Name);
-                                        record.SetStream(2, transformFile);
-                                        storagesView.Modify(ModifyView.Assign, record);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // we're good, commit the changes to the new MSI
-                    db.Commit();
-                }
-            }
-            catch (IOException)
-            {
-                // TODO: this error message doesn't seem specific enough
-                throw new WixFileNotFoundException(new SourceLineNumber(databaseFile), databaseFile);
-            }
+            GenerateDatabaseCommand command = new GenerateDatabaseCommand();
+            command.Extensions = this.extensions;
+            command.FileManagers = this.fileManagers;
+            command.Output = output;
+            command.OutputPath = databaseFile;
+            command.KeepAddedColumns = keepAddedColumns;
+            command.UseSubDirectory = useSubdirectory;
+            command.SuppressAddingValidationRows = this.SuppressAddingValidationRows;
+            command.TableDefinitions = this.core.TableDefinitions;
+            command.TempFilesLocation = this.TempFilesLocation;
+            command.Codepage = this.Localizer == null ? -1 : this.Localizer.Codepage;
+            command.Execute();
         }
 
         /// <summary>
@@ -1379,7 +1146,6 @@ namespace WixToolset
             List<FileTransfer> fileTransfers = new List<FileTransfer>();
 
             bool compressed = false;
-            //FileRowCollection fileRows = new FileRowCollection(OutputType.Patch == output.Type);
             bool longNames = false;
             HashSet<string> suppressedTableNames = new HashSet<string>();
 
@@ -2772,6 +2538,23 @@ namespace WixToolset
             variableCache.Add(String.Concat("packageManufacturer.", id), package.Manufacturer);
             variableCache.Add(String.Concat("packageName.", id), package.DisplayName);
             variableCache.Add(String.Concat("packageVersion.", id), package.Version);
+        }
+
+        /// <summary>
+        /// Binds a transform.
+        /// </summary>
+        /// <param name="transform">The transform to bind.</param>
+        /// <param name="outputPath">The transform to create.</param>
+        private void BindTransform(Output transform, string outputPath)
+        {
+            BindTransformCommand command = new BindTransformCommand();
+            command.Extensions = this.extensions;
+            command.FileManagers = this.fileManagers;
+            command.TableDefinitions = this.core.TableDefinitions;
+            command.TempFilesLocation = this.TempFilesLocation;
+            command.Transform = transform;
+            command.OutputPath = outputPath;
+            command.Execute();
         }
 
         /// <summary>
@@ -4650,415 +4433,6 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Binds a transform.
-        /// </summary>
-        /// <param name="transform">The transform to bind.</param>
-        /// <param name="transformFile">The transform to create.</param>
-        /// <returns>true if binding completed successfully; false otherwise</returns>
-        private void BindTransform(Output transform, string transformFile)
-        {
-            foreach (BinderExtension extension in this.extensions)
-            {
-                extension.Initialize(transform);
-            }
-
-            int transformFlags = 0;
-
-            Output targetOutput = new Output(null);
-            Output updatedOutput = new Output(null);
-
-            // TODO: handle added columns
-
-            // to generate a localized transform, both the target and updated
-            // databases need to have the same code page. the only reason to
-            // set different code pages is to support localized primary key
-            // columns, but that would only support deleting rows. if this
-            // becomes necessary, define a PreviousCodepage property on the
-            // Output class and persist this throughout transform generation.
-            targetOutput.Codepage = transform.Codepage;
-            updatedOutput.Codepage = transform.Codepage;
-
-            // remove certain Property rows which will be populated from summary information values
-            string targetUpgradeCode = null;
-            string updatedUpgradeCode = null;
-
-            Table propertyTable = transform.Tables["Property"];
-            if (null != propertyTable)
-            {
-                for (int i = propertyTable.Rows.Count - 1; i >= 0; i--)
-                {
-                    Row row = propertyTable.Rows[i];
-
-                    if ("ProductCode" == (string)row[0] || "ProductLanguage" == (string)row[0] || "ProductVersion" == (string)row[0] || "UpgradeCode" == (string)row[0])
-                    {
-                        propertyTable.Rows.RemoveAt(i);
-
-                        if ("UpgradeCode" == (string)row[0])
-                        {
-                            updatedUpgradeCode = (string)row[1];
-                        }
-                    }
-                }
-            }
-
-            Table targetSummaryInfo = targetOutput.EnsureTable(this.core.TableDefinitions["_SummaryInformation"]);
-            Table updatedSummaryInfo = updatedOutput.EnsureTable(this.core.TableDefinitions["_SummaryInformation"]);
-            Table targetPropertyTable = targetOutput.EnsureTable(this.core.TableDefinitions["Property"]);
-            Table updatedPropertyTable = updatedOutput.EnsureTable(this.core.TableDefinitions["Property"]);
-
-            // process special summary information values
-            foreach (Row row in transform.Tables["_SummaryInformation"].Rows)
-            {
-                if ((int)SummaryInformation.Transform.CodePage == (int)row[0])
-                {
-                    // convert from a web name if provided
-                    string codePage = (string)row.Fields[1].Data;
-                    if (null == codePage)
-                    {
-                        codePage = "0";
-                    }
-                    else
-                    {
-                        codePage = Common.GetValidCodePage(codePage).ToString(CultureInfo.InvariantCulture);
-                    }
-
-                    string previousCodePage = (string)row.Fields[1].PreviousData;
-                    if (null == previousCodePage)
-                    {
-                        previousCodePage = "0";
-                    }
-                    else
-                    {
-                        previousCodePage = Common.GetValidCodePage(previousCodePage).ToString(CultureInfo.InvariantCulture);
-                    }
-
-                    Row targetCodePageRow = targetSummaryInfo.CreateRow(null);
-                    targetCodePageRow[0] = 1; // PID_CODEPAGE
-                    targetCodePageRow[1] = previousCodePage;
-
-                    Row updatedCodePageRow = updatedSummaryInfo.CreateRow(null);
-                    updatedCodePageRow[0] = 1; // PID_CODEPAGE
-                    updatedCodePageRow[1] = codePage;
-                }
-                else if ((int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ||
-                         (int)SummaryInformation.Transform.UpdatedPlatformAndLanguage == (int)row[0])
-                {
-                    // the target language
-                    string[] propertyData = ((string)row[1]).Split(';');
-                    string lang = 2 == propertyData.Length ? propertyData[1] : "0";
-
-                    Table tempSummaryInfo = (int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ? targetSummaryInfo : updatedSummaryInfo;
-                    Table tempPropertyTable = (int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ? targetPropertyTable : updatedPropertyTable;
-
-                    Row productLanguageRow = tempPropertyTable.CreateRow(null);
-                    productLanguageRow[0] = "ProductLanguage";
-                    productLanguageRow[1] = lang;
-
-                    // set the platform;language on the MSI to be generated
-                    Row templateRow = tempSummaryInfo.CreateRow(null);
-                    templateRow[0] = 7; // PID_TEMPLATE
-                    templateRow[1] = (string)row[1];
-                }
-                else if ((int)SummaryInformation.Transform.ProductCodes == (int)row[0])
-                {
-                    string[] propertyData = ((string)row[1]).Split(';');
-
-                    Row targetProductCodeRow = targetPropertyTable.CreateRow(null);
-                    targetProductCodeRow[0] = "ProductCode";
-                    targetProductCodeRow[1] = propertyData[0].Substring(0, 38);
-
-                    Row targetProductVersionRow = targetPropertyTable.CreateRow(null);
-                    targetProductVersionRow[0] = "ProductVersion";
-                    targetProductVersionRow[1] = propertyData[0].Substring(38);
-
-                    Row updatedProductCodeRow = updatedPropertyTable.CreateRow(null);
-                    updatedProductCodeRow[0] = "ProductCode";
-                    updatedProductCodeRow[1] = propertyData[1].Substring(0, 38);
-
-                    Row updatedProductVersionRow = updatedPropertyTable.CreateRow(null);
-                    updatedProductVersionRow[0] = "ProductVersion";
-                    updatedProductVersionRow[1] = propertyData[1].Substring(38);
-
-                    // UpgradeCode is optional and may not exists in the target
-                    // or upgraded databases, so do not include a null-valued
-                    // UpgradeCode property.
-
-                    targetUpgradeCode = propertyData[2];
-                    if (!String.IsNullOrEmpty(targetUpgradeCode))
-                    {
-                        Row targetUpgradeCodeRow = targetPropertyTable.CreateRow(null);
-                        targetUpgradeCodeRow[0] = "UpgradeCode";
-                        targetUpgradeCodeRow[1] = targetUpgradeCode;
-
-                        // If the target UpgradeCode is specified, an updated
-                        // UpgradeCode is required.
-                        if (String.IsNullOrEmpty(updatedUpgradeCode))
-                        {
-                            updatedUpgradeCode = targetUpgradeCode;
-                        }
-                    }
-
-                    if (!String.IsNullOrEmpty(updatedUpgradeCode))
-                    {
-                        Row updatedUpgradeCodeRow = updatedPropertyTable.CreateRow(null);
-                        updatedUpgradeCodeRow[0] = "UpgradeCode";
-                        updatedUpgradeCodeRow[1] = updatedUpgradeCode;
-                    }
-                }
-                else if ((int)SummaryInformation.Transform.ValidationFlags == (int)row[0])
-                {
-                    transformFlags = Convert.ToInt32(row[1], CultureInfo.InvariantCulture);
-                }
-                else if ((int)SummaryInformation.Transform.Reserved11 == (int)row[0])
-                {
-                    // PID_LASTPRINTED should be null for transforms
-                    row.Operation = RowOperation.None;
-                }
-                else
-                {
-                    // add everything else as is
-                    Row targetRow = targetSummaryInfo.CreateRow(null);
-                    targetRow[0] = row[0];
-                    targetRow[1] = row[1];
-
-                    Row updatedRow = updatedSummaryInfo.CreateRow(null);
-                    updatedRow[0] = row[0];
-                    updatedRow[1] = row[1];
-                }
-            }
-
-            // Validate that both databases have an UpgradeCode if the
-            // authoring transform will validate the UpgradeCode; otherwise,
-            // MsiCreateTransformSummaryinfo() will fail with 1620.
-            if (((int)TransformFlags.ValidateUpgradeCode & transformFlags) != 0 &&
-                (String.IsNullOrEmpty(targetUpgradeCode) || String.IsNullOrEmpty(updatedUpgradeCode)))
-            {
-                this.core.OnMessage(WixErrors.BothUpgradeCodesRequired());
-            }
-
-            foreach (Table table in transform.Tables)
-            {
-                // Ignore unreal tables when building transforms except the _Stream table.
-                // These tables are ignored when generating the database so there is no reason
-                // to process them here.
-                if (table.Definition.Unreal && "_Streams" != table.Name)
-                {
-                    continue;
-                }
-
-                // process table operations
-                switch (table.Operation)
-                {
-                    case TableOperation.Add:
-                        updatedOutput.EnsureTable(table.Definition);
-                        break;
-                    case TableOperation.Drop:
-                        targetOutput.EnsureTable(table.Definition);
-                        continue;
-                    default:
-                        targetOutput.EnsureTable(table.Definition);
-                        updatedOutput.EnsureTable(table.Definition);
-                        break;
-                }
-
-                // process row operations
-                foreach (Row row in table.Rows)
-                {
-                    switch (row.Operation)
-                    {
-                        case RowOperation.Add:
-                            Table updatedTable = updatedOutput.EnsureTable(table.Definition);
-                            updatedTable.Rows.Add(row);
-                            continue;
-                        case RowOperation.Delete:
-                            Table targetTable = targetOutput.EnsureTable(table.Definition);
-                            targetTable.Rows.Add(row);
-
-                            // fill-in non-primary key values
-                            foreach (Field field in row.Fields)
-                            {
-                                if (!field.Column.PrimaryKey)
-                                {
-                                    if (ColumnType.Number == field.Column.Type && !field.Column.IsLocalizable)
-                                    {
-                                        field.Data = field.Column.MinValue;
-                                    }
-                                    else if (ColumnType.Object == field.Column.Type)
-                                    {
-                                        if (null == this.emptyFile)
-                                        {
-                                            this.emptyFile = Path.Combine(this.fileManagerCore.TempFilesLocation, "empty");
-                                            using (FileStream fileStream = File.Create(this.emptyFile))
-                                            {
-                                            }
-                                        }
-
-                                        field.Data = emptyFile;
-                                    }
-                                    else
-                                    {
-                                        field.Data = "0";
-                                    }
-                                }
-                            }
-                            continue;
-                    }
-
-                    // Assure that the file table's sequence is populated
-                    if ("File" == table.Name)
-                    {
-                        foreach (Row fileRow in table.Rows)
-                        {
-                            if (null == fileRow[7])
-                            {
-                                if (RowOperation.Add == fileRow.Operation)
-                                {
-                                    this.core.OnMessage(WixErrors.InvalidAddedFileRowWithoutSequence(fileRow.SourceLineNumbers, (string)fileRow[0]));
-                                    break;
-                                }
-
-                                // Set to 1 to prevent invalid IDT file from being generated
-                                fileRow[7] = 1;
-                            }
-                        }
-                    }
-
-                    // process modified and unmodified rows
-                    bool modifiedRow = false;
-                    Row targetRow = new Row(null, table.Definition);
-                    Row updatedRow = row;
-                    for (int i = 0; i < row.Fields.Length; i++)
-                    {
-                        Field updatedField = row.Fields[i];
-
-                        if (updatedField.Modified)
-                        {
-                            // set a different value in the target row to ensure this value will be modified during transform generation
-                            if (ColumnType.Number == updatedField.Column.Type && !updatedField.Column.IsLocalizable)
-                            {
-                                if (null == updatedField.Data || 1 != (int)updatedField.Data)
-                                {
-                                    targetRow[i] = 1;
-                                }
-                                else
-                                {
-                                    targetRow[i] = 2;
-                                }
-                            }
-                            else if (ColumnType.Object == updatedField.Column.Type)
-                            {
-                                if (null == this.emptyFile)
-                                {
-                                    this.emptyFile = Path.Combine(this.fileManagerCore.TempFilesLocation, "empty");
-                                    using (FileStream fileStream = File.Create(emptyFile))
-                                    {
-                                    }
-                                }
-
-                                targetRow[i] = this.emptyFile;
-                            }
-                            else
-                            {
-                                if ("0" != (string)updatedField.Data)
-                                {
-                                    targetRow[i] = "0";
-                                }
-                                else
-                                {
-                                    targetRow[i] = "1";
-                                }
-                            }
-
-                            modifiedRow = true;
-                        }
-                        else if (ColumnType.Object == updatedField.Column.Type)
-                        {
-                            ObjectField objectField = (ObjectField)updatedField;
-
-                            // create an empty file for comparing against
-                            if (null == objectField.PreviousData)
-                            {
-                                if (null == this.emptyFile)
-                                {
-                                    this.emptyFile = Path.Combine(this.fileManagerCore.TempFilesLocation, "empty");
-                                    using (FileStream fileStream = File.Create(emptyFile))
-                                    {
-                                    }
-                                }
-
-                                targetRow[i] = emptyFile;
-                                modifiedRow = true;
-                            }
-                            else if (!this.CompareFiles(objectField.PreviousData, (string)objectField.Data))
-                            {
-                                targetRow[i] = objectField.PreviousData;
-                                modifiedRow = true;
-                            }
-                        }
-                        else // unmodified
-                        {
-                            if (null != updatedField.Data)
-                            {
-                                targetRow[i] = updatedField.Data;
-                            }
-                        }
-                    }
-
-                    // modified rows and certain special rows go in the target and updated msi databases
-                    if (modifiedRow ||
-                        ("Property" == table.Name &&
-                            ("ProductCode" == (string)row[0] ||
-                            "ProductLanguage" == (string)row[0] ||
-                            "ProductVersion" == (string)row[0] ||
-                            "UpgradeCode" == (string)row[0])))
-                    {
-                        Table targetTable = targetOutput.EnsureTable(table.Definition);
-                        targetTable.Rows.Add(targetRow);
-
-                        Table updatedTable = updatedOutput.EnsureTable(table.Definition);
-                        updatedTable.Rows.Add(updatedRow);
-                    }
-                }
-            }
-
-            foreach (BinderExtension extension in this.extensions)
-            {
-                extension.Finish(transform);
-            }
-
-            // Any errors encountered up to this point can cause errors during generation.
-            if (this.core.EncounteredError)
-            {
-                return;
-            }
-
-            string transformFileName = Path.GetFileNameWithoutExtension(transformFile);
-            string targetDatabaseFile = Path.Combine(this.TempFilesLocation, String.Concat(transformFileName, "_target.msi"));
-            string updatedDatabaseFile = Path.Combine(this.TempFilesLocation, String.Concat(transformFileName, "_updated.msi"));
-
-            this.SuppressAddingValidationRows = true;
-            this.GenerateDatabase(targetOutput, targetDatabaseFile, false, true);
-            this.GenerateDatabase(updatedOutput, updatedDatabaseFile, true, true);
-
-            // make sure the directory exists
-            Directory.CreateDirectory(Path.GetDirectoryName(transformFile));
-
-            // create the transform file
-            using (Database targetDatabase = new Database(targetDatabaseFile, OpenDatabase.ReadOnly))
-            {
-                using (Database updatedDatabase = new Database(updatedDatabaseFile, OpenDatabase.ReadOnly))
-                {
-                    if (!updatedDatabase.GenerateTransform(targetDatabase, transformFile))
-                    {
-                        throw new WixException(WixErrors.NoDifferencesInTransform(transform.SourceLineNumbers));
-                    }
-
-                    updatedDatabase.CreateTransformSummaryInfo(targetDatabase, transformFile, (TransformErrorConditions)(transformFlags & 0xFFFF), (TransformValidations)((transformFlags >> 16) & 0xFFFF));
-                }
-            }
-        }
-
-        /// <summary>
         /// Retrieve files and their information from merge modules.
         /// </summary>
         /// <param name="output">Internal representation of the msi database to operate upon.</param>
@@ -6614,35 +5988,6 @@ namespace WixToolset
                 }
 
                 db.Commit();
-            }
-        }
-
-        /// <summary>
-        /// Sets the codepage of a database.
-        /// </summary>
-        /// <param name="db">Database to set codepage into.</param>
-        /// <param name="output">Output with the codepage for the database.</param>
-        private void SetDatabaseCodepage(Database db, Output output)
-        {
-            // write out the _ForceCodepage IDT file
-            string idtPath = Path.Combine(this.TempFilesLocation, "_ForceCodepage.idt");
-            using (StreamWriter idtFile = new StreamWriter(idtPath, false, Encoding.ASCII))
-            {
-                idtFile.WriteLine(); // dummy column name record
-                idtFile.WriteLine(); // dummy column definition record
-                idtFile.Write(output.Codepage);
-                idtFile.WriteLine("\t_ForceCodepage");
-            }
-
-            // try to import the table into the MSI
-            try
-            {
-                db.Import(idtPath);
-            }
-            catch (WixInvalidIdtException)
-            {
-                // the IDT should be valid, so an invalid code page was given
-                throw new WixException(WixErrors.IllegalCodepage(output.Codepage));
             }
         }
 

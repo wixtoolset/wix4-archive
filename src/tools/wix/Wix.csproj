@@ -24,7 +24,9 @@
     <Compile Include="BinderCore.cs" />
     <Compile Include="BinderFileManagerCore.cs" />
     <Compile Include="BinderFileManager.cs" />
+    <Compile Include="Bind\BindTransformCommand.cs" />
     <Compile Include="Bind\CreateCabinetsCommand.cs" />
+    <Compile Include="Bind\GenerateDatabaseCommand.cs" />
     <Compile Include="Bind\TransferFilesCommand.cs" />
     <Compile Include="BundleChainAttributes.cs" />
     <Compile Include="BundlePackageAttributes.cs" />

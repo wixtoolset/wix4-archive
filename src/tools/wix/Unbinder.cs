@@ -23,6 +23,7 @@ namespace WixToolset
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using WixToolset.Bind;
     using WixToolset.Cab;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
@@ -1133,11 +1134,8 @@ namespace WixToolset
             Hashtable addedRows = new Hashtable();
             Table transformViewTable;
 
-            // bind the schema msi
-            Binder binder = new Binder();
-            binder.SuppressAddingValidationRows = true;
-            binder.WixVariableResolver = new WixVariableResolver();
-            binder.GenerateDatabase(schemaOutput, msiDatabaseFile, true, false);
+            // Bind the schema msi.
+            this.GenerateDatabase(schemaOutput, msiDatabaseFile);
 
             // apply the transform to the database and retrieve the modifications
             using (Database msiDatabase = new Database(msiDatabaseFile, OpenDatabase.Transact))
@@ -1153,9 +1151,9 @@ namespace WixToolset
                 Hashtable modifiedRows = new Hashtable();
                 foreach (Row row in transformViewTable.Rows)
                 {
-                    string tableName = (string) row[0];
-                    string columnName = (string) row[1];
-                    string primaryKeys = (string) row[2];
+                    string tableName = (string)row[0];
+                    string columnName = (string)row[1];
+                    string primaryKeys = (string)row[2];
 
                     if ("INSERT" == columnName)
                     {
@@ -1174,9 +1172,9 @@ namespace WixToolset
                 // create placeholder rows for modified rows to make the transform insert the updated values when its applied
                 foreach (Row row in modifiedRows.Values)
                 {
-                    string tableName = (string) row[0];
-                    string columnName = (string) row[1];
-                    string primaryKeys = (string) row[2];
+                    string tableName = (string)row[0];
+                    string columnName = (string)row[1];
+                    string primaryKeys = (string)row[2];
 
                     string index = String.Concat(tableName, ':', primaryKeys);
 
@@ -1189,8 +1187,8 @@ namespace WixToolset
                 }
             }
 
-            // re-bind the schema output with the placeholder rows
-            binder.GenerateDatabase(schemaOutput, msiDatabaseFile, true, false);
+            // Re-bind the schema output with the placeholder rows.
+            this.GenerateDatabase(schemaOutput, msiDatabaseFile);
 
             // apply the transform to the database and retrieve the modifications
             using (Database msiDatabase = new Database(msiDatabaseFile, OpenDatabase.Transact))
@@ -1295,6 +1293,22 @@ namespace WixToolset
             }
 
             return transform;
+        }
+
+        private void GenerateDatabase(Output output, string databaseFile)
+        {
+            GenerateDatabaseCommand command = new GenerateDatabaseCommand();
+            command.Extensions = Enumerable.Empty<IBinderExtension>();
+            command.FileManagers = Enumerable.Empty<IBinderFileManager>();
+            command.Output = output;
+            command.OutputPath = databaseFile;
+            command.KeepAddedColumns = true;
+            command.UseSubDirectory = false;
+            command.SuppressAddingValidationRows = true;
+            command.TableDefinitions = this.tableDefinitions;
+            command.TempFilesLocation = this.TempFilesLocation;
+            command.Codepage = -1;
+            command.Execute();
         }
 
         /// <summary>
@@ -1421,7 +1435,7 @@ namespace WixToolset
                 {
                     foreach (int diskId in embeddedCabinets.Keys)
                     {
-                        using(Record record = new Record(1))
+                        using (Record record = new Record(1))
                         {
                             record.SetString(1, (string)embeddedCabinets[diskId]);
                             streamsView.Execute(record);
