@@ -107,10 +107,6 @@ namespace WixToolset
 
         private Validator validator;
 
-        // Following object handles are needed by the NewCabNamesCallBack callback
-        private List<FileTransfer> fileTransfers; // File Transfers for BindDatabase Only and not the one for BindBundle
-        private Output output;
-
         /// <summary>
         /// Creates an MSI binder.
         /// </summary>
@@ -130,14 +126,14 @@ namespace WixToolset
             this.SuppressIces = new List<string>();
 
             this.validator = new Validator();
-
-            // Need fileTransfers handle for NewCabNamesCallBack callback
-            this.fileTransfers = new List<FileTransfer>();
         }
 
         public string ContentsFile { get; set; }
+
         public string OutputsFile { get; set; }
+
         public string BuiltOutputsFile { get; set; }
+
         public string WixprojectFile { get; set; }
 
         /// <summary>
@@ -296,9 +292,6 @@ namespace WixToolset
         /// <returns>true if binding completed successfully; false otherwise</returns>
         public bool Bind(Output output, string file)
         {
-            // Need output object handle for NewCabNamesCallBack callback
-            this.output = output;
-
             // Ensure the cabinet cache path exists if we are going to use it.
             if (!String.IsNullOrEmpty(this.CabCachePath))
             {
@@ -685,150 +678,18 @@ namespace WixToolset
         /// location in the source image
         /// </summary>
         /// <param name="fileTransfers">List of files to transfer.</param>
-        private void LayoutMedia(List<FileTransfer> fileTransfers)
+        private void LayoutMedia(IEnumerable<FileTransfer> transfers)
         {
-            if (this.core.EncounteredError)
+            if (Messaging.Instance.EncounteredError)
             {
                 return;
             }
 
-            List<string> destinationFiles = new List<string>();
-
-            for (int i = 0; i < fileTransfers.Count; ++i)
-            {
-                FileTransfer fileTransfer = fileTransfers[i];
-                string fileSource = this.ResolveFile(fileTransfer.Source, fileTransfer.Type, fileTransfer.SourceLineNumbers, BindStage.Normal);
-
-                // If the source and destination are identical, then there's nothing to do here
-                if (0 == String.Compare(fileSource, fileTransfer.Destination, StringComparison.OrdinalIgnoreCase))
-                {
-                    fileTransfer.Redundant = true;
-                    continue;
-                }
-
-                bool retry = false;
-                do
-                {
-                    try
-                    {
-                        if (fileTransfer.Move)
-                        {
-                            this.core.OnMessage(WixVerboses.MoveFile(fileSource, fileTransfer.Destination));
-                            this.TransferFile(true, fileSource, fileTransfer.Destination);
-                        }
-                        else
-                        {
-                            this.core.OnMessage(WixVerboses.CopyFile(fileSource, fileTransfer.Destination));
-                            this.TransferFile(false, fileSource, fileTransfer.Destination);
-                        }
-
-                        retry = false;
-                        destinationFiles.Add(fileTransfer.Destination);
-                    }
-                    catch (FileNotFoundException e)
-                    {
-                        throw new WixFileNotFoundException(e.FileName);
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        // if we already retried, give up
-                        if (retry)
-                        {
-                            throw;
-                        }
-
-                        string directory = Path.GetDirectoryName(fileTransfer.Destination);
-                        this.core.OnMessage(WixVerboses.CreateDirectory(directory));
-                        Directory.CreateDirectory(directory);
-                        retry = true;
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        // if we already retried, give up
-                        if (retry)
-                        {
-                            throw;
-                        }
-
-                        if (File.Exists(fileTransfer.Destination))
-                        {
-                            this.core.OnMessage(WixVerboses.RemoveDestinationFile(fileTransfer.Destination));
-
-                            // try to ensure the file is not read-only
-                            FileAttributes attributes = File.GetAttributes(fileTransfer.Destination);
-                            try
-                            {
-                                File.SetAttributes(fileTransfer.Destination, attributes & ~FileAttributes.ReadOnly);
-                            }
-                            catch (ArgumentException) // thrown for unauthorized access errors
-                            {
-                                throw new WixException(WixErrors.UnauthorizedAccess(fileTransfer.Destination));
-                            }
-
-                            // try to delete the file
-                            try
-                            {
-                                File.Delete(fileTransfer.Destination);
-                            }
-                            catch (IOException)
-                            {
-                                throw new WixException(WixErrors.FileInUse(null, fileTransfer.Destination));
-                            }
-
-                            retry = true;
-                        }
-                        else // no idea what just happened, bail
-                        {
-                            throw;
-                        }
-                    }
-                    catch (IOException)
-                    {
-                        // if we already retried, give up
-                        if (retry)
-                        {
-                            throw;
-                        }
-
-                        if (File.Exists(fileTransfer.Destination))
-                        {
-                            this.core.OnMessage(WixVerboses.RemoveDestinationFile(fileTransfer.Destination));
-
-                            // ensure the file is not read-only, then delete it
-                            FileAttributes attributes = File.GetAttributes(fileTransfer.Destination);
-                            File.SetAttributes(fileTransfer.Destination, attributes & ~FileAttributes.ReadOnly);
-                            try
-                            {
-                                File.Delete(fileTransfer.Destination);
-                            }
-                            catch (IOException)
-                            {
-                                throw new WixException(WixErrors.FileInUse(null, fileTransfer.Destination));
-                            }
-
-                            retry = true;
-                        }
-                        else // no idea what just happened, bail
-                        {
-                            throw;
-                        }
-                    }
-                } while (retry);
-            }
-
-            // Finally, if there were any files remove the ACL that may have been added to
-            // during the file transfer process.
-            if (0 < destinationFiles.Count && !this.SuppressAclReset)
-            {
-                try
-                {
-                    WixToolset.Cab.Interop.NativeMethods.ResetAcls(destinationFiles.ToArray(), (uint)destinationFiles.Count);
-                }
-                catch
-                {
-                    this.core.OnMessage(WixWarnings.UnableToResetAcls());
-                }
-            }
+            TransferFilesCommand command = new TransferFilesCommand();
+            command.FileManagers = this.fileManagers;
+            command.FileTransfers = transfers;
+            command.SuppressAclReset = this.SuppressAclReset;
+            command.Execute();
         }
 
         /// <summary>
@@ -848,6 +709,7 @@ namespace WixToolset
             {
                 throw new WixException(WixErrors.ExpectedDirectory(directory));
             }
+
             ResolvedDirectory resolvedDirectory = (ResolvedDirectory)directories[directory];
 
             if (null == resolvedDirectory.Path)
@@ -1031,7 +893,7 @@ namespace WixToolset
         /// Merge data from the unreal tables into the real tables.
         /// </summary>
         /// <param name="tables">Collection of all tables.</param>
-        private void MergeUnrealTables(TableIndexedCollection tables)
+        private void MergeUnrealTables(Output output, TableIndexedCollection tables)
         {
             // Merge data from the WixBBControl rows into the BBControl rows.
             Table wixBBControlTable = tables["WixBBControl"];
@@ -1087,7 +949,6 @@ namespace WixToolset
                 Table propertyTable = output.Tables["Property"];
                 if (0 < adminProperties.Count)
                 {
-
                     PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
                     row.Property = "AdminProperties";
                     row.Value = String.Join(";", adminProperties);
@@ -1515,6 +1376,8 @@ namespace WixToolset
                 extension.Initialize(output);
             }
 
+            List<FileTransfer> fileTransfers = new List<FileTransfer>();
+
             bool compressed = false;
             //FileRowCollection fileRows = new FileRowCollection(OutputType.Patch == output.Type);
             bool longNames = false;
@@ -1574,7 +1437,7 @@ namespace WixToolset
 
             // Merge unreal table data into the real tables
             // This must occur after all variables and source paths have been resolved and after modularization.
-            this.MergeUnrealTables(output.Tables);
+            this.MergeUnrealTables(output, output.Tables);
 
             if (this.core.EncounteredError)
             {
@@ -1587,7 +1450,7 @@ namespace WixToolset
                 {
                     Output transform = (Output)substorage.Data;
                     this.ResolveFields(transform.Tables, filesWithEmbeddedFiles, null);
-                    this.MergeUnrealTables(transform.Tables);
+                    this.MergeUnrealTables(output, transform.Tables);
                 }
             }
 
@@ -1736,7 +1599,7 @@ namespace WixToolset
                 command.DefaultCompressionLevel = this.DefaultCompressionLevel;
                 command.Output = output;
                 command.FileManagers = this.fileManagers;
-                command.FileTransfers = this.fileTransfers;
+                command.FileTransfers = fileTransfers;
                 command.LayoutDirectory = layoutDirectory;
                 command.Compressed = compressed;
                 command.AutoMediaAssigner = autoMediaAssigner;
@@ -1798,7 +1661,7 @@ namespace WixToolset
             if (FileTransfer.TryCreate(tempDatabaseFile, databaseFile, true, output.Type.ToString(), null, out transfer)) // note where this database needs to move in the future
             {
                 transfer.Built = true;
-                this.fileTransfers.Add(transfer);
+                fileTransfers.Add(transfer);
             }
 
             // stop processing if an error previously occurred
@@ -1869,14 +1732,14 @@ namespace WixToolset
             // process uncompressed files
             if (!this.SuppressLayout)
             {
-                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows.Values, this.fileTransfers, autoMediaAssigner.MediaRows, layoutDirectory, compressed, longNames);
+                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows.Values, fileTransfers, autoMediaAssigner.MediaRows, layoutDirectory, compressed, longNames);
             }
 
             // layout media
             try
             {
                 this.core.OnMessage(WixVerboses.LayingOutMedia());
-                this.LayoutMedia(this.fileTransfers);
+                this.LayoutMedia(fileTransfers);
             }
             finally
             {
@@ -1887,12 +1750,12 @@ namespace WixToolset
 
                 if (!String.IsNullOrEmpty(this.OutputsFile))
                 {
-                    this.CreateOutputsFile(this.OutputsFile, this.fileTransfers, this.PdbFile);
+                    this.CreateOutputsFile(this.OutputsFile, fileTransfers, this.PdbFile);
                 }
 
                 if (!String.IsNullOrEmpty(this.BuiltOutputsFile))
                 {
-                    this.CreateBuiltOutputsFile(this.BuiltOutputsFile, this.fileTransfers, this.PdbFile);
+                    this.CreateBuiltOutputsFile(this.BuiltOutputsFile, fileTransfers, this.PdbFile);
                 }
             }
 
@@ -2339,32 +2202,6 @@ namespace WixToolset
             }
 
             return compared.Value;
-        }
-
-        private void TransferFile(bool move, string source, string destination)
-        {
-            bool complete = false;
-            foreach (IBinderFileManager fileManager in this.fileManagers)
-            {
-                if (move)
-                {
-                    complete = fileManager.MoveFile(source, destination, true);
-                }
-                else
-                {
-                    complete = fileManager.CopyFile(source, destination, true);
-                }
-
-                if (complete)
-                {
-                    break;
-                }
-            }
-
-            if (!complete)
-            {
-                throw new InvalidOperationException(); // TODO: something needs to be said here that none of the binder file managers returned a result.
-            }
         }
 
         private string ResolveFile(string source, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage = BindStage.Normal)

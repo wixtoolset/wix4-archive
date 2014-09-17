@@ -25,6 +25,7 @@
     <Compile Include="BinderFileManagerCore.cs" />
     <Compile Include="BinderFileManager.cs" />
     <Compile Include="Bind\CreateCabinetsCommand.cs" />
+    <Compile Include="Bind\TransferFilesCommand.cs" />
     <Compile Include="BundleChainAttributes.cs" />
     <Compile Include="BundlePackageAttributes.cs" />
     <Compile Include="BurnCommon.cs" />
@@ -53,7 +54,7 @@
     <Compile Include="Extensibility\ValidatorExtension.cs" />
     <Compile Include="ExtensionManager.cs" />
     <Compile Include="ExtractEmbeddedFiles.cs" />
-    <Compile Include="FileTransfer.cs" />
+    <Compile Include="Bind\FileTransfer.cs" />
     <Compile Include="Link\FindEntrySectionAndLoadSymbolsCommand.cs" />
     <Compile Include="IfDefEventHandler.cs" />
     <Compile Include="Inscriber.cs" />
