@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4413 - Merge OnApplyNumberOfPhases into OnApplyBegin.
+
 ## WixBuild: Version 4.0.2115.0
 
 * RobMen: WIXBUG:4317 - Integrate preprocessor AutoVersion function lost in merges.

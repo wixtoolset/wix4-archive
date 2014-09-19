@@ -282,7 +282,9 @@ public: // IBootstrapperApplication
     {
     }
 
-    virtual STDMETHODIMP_(int) OnApplyBegin()
+    virtual STDMETHODIMP_(int) OnApplyBegin(
+        __in DWORD /*dwPhaseCount*/
+        )
     {
         m_fApplying = TRUE;
 
@@ -290,13 +292,6 @@ public: // IBootstrapperApplication
         m_dwOverallProgressPercentage = 0;
 
         return CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    // DEPRECATED: this will be merged with OnApplyBegin in wix4.
-    virtual STDMETHODIMP_(void) OnApplyPhaseCount(
-        __in DWORD /*dwPhaseCount*/
-        )
-    {
     }
 
     virtual STDMETHODIMP_(int) OnElevate()
