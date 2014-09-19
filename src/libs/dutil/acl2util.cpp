@@ -24,7 +24,8 @@ extern "C" HRESULT DAPI AclCalculateServiceSidString(
     __deref_out_z LPWSTR* psczSid
     )
 {
-    //TODO: use undocumented RtlCreateServiceSid function?
+    // TODO: use undocumented RtlCreateServiceSid function?
+    // http://blogs.technet.com/b/voy/archive/2007/03/22/per-service-sid.aspx
     // Assume little endian.
     HRESULT hr = S_OK;
     LPWSTR sczUpperServiceName = NULL;
@@ -104,6 +105,7 @@ extern "C" HRESULT DAPI AclGetAccountSidStringEx(
 
             if (11 < cchAccount && CSTR_EQUAL == CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, L"NT SERVICE\\", 11, wzAccount, 11))
             {
+                // If the service is not installed then LookupAccountName doesn't resolve the SID, but we can calculate it.
                 LPCWSTR wzServiceName = &wzAccount[11];
                 hr = AclCalculateServiceSidString(wzServiceName, cchAccount - 11, &sczSid);
                 ExitOnFailure1(hr, "Failed to calculate the service SID for %ls", wzServiceName);

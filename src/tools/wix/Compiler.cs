@@ -270,7 +270,7 @@ namespace WixToolset
         /// Lowercases the string if present.
         /// </summary>
         /// <param name="s">String to lowercase.</param>
-        /// <returns>Null if the string is null, otherwise returns the uppercase.</returns>
+        /// <returns>Null if the string is null, otherwise returns the lowercase.</returns>
         private static string LowercaseOrNull(string s)
         {
             return (null == s) ? s : s.ToLowerInvariant();

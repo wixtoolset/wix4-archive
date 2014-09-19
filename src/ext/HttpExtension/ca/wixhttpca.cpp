@@ -252,6 +252,7 @@ static HRESULT AppendUrlAce(
     Assert(wzSecurityPrincipal && *wzSecurityPrincipal);
     Assert(psczSDDL && *psczSDDL);
 
+    // As documented in the xsd, if the first char is '*', then the rest of the string is a SID string, e.g. *S-1-5-18.
     if (L'*' == wzSecurityPrincipal[0])
     {
         wzSid = &wzSecurityPrincipal[1];
@@ -489,6 +490,7 @@ static HRESULT GetUrlReservation(
 
         er = ::HttpQueryServiceConfiguration(NULL, HttpServiceConfigUrlAclInfo, &query, sizeof(query), pSet, cbSet, &cbSet, NULL);
     }
+    
     if (ERROR_SUCCESS == er)
     {
         hr = StrAllocString(psczSddl, pSet->ParamDesc.pStringSecurityDescriptor, 0);
