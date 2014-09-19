@@ -42,7 +42,7 @@ namespace WixToolset.UX
             WixBA.Model.Bootstrapper.ExecuteProgress += this.ApplyExecuteProgress;
             WixBA.Model.Bootstrapper.PlanBegin += this.PlanBegin;
             WixBA.Model.Bootstrapper.PlanPackageComplete += this.PlanPackageComplete;
-            WixBA.Model.Bootstrapper.ApplyPhaseCount += this.ApplyPhaseCount;
+            WixBA.Model.Bootstrapper.ApplyBegin += this.ApplyBegin;
             WixBA.Model.Bootstrapper.Progress += this.ApplyProgress;
             WixBA.Model.Bootstrapper.CacheAcquireProgress += this.CacheAcquireProgress;
             WixBA.Model.Bootstrapper.CacheComplete += this.CacheComplete;
@@ -153,7 +153,7 @@ namespace WixToolset.UX
             }
         }
 
-        private void ApplyPhaseCount(object sender, ApplyPhaseCountArgs e)
+        private void ApplyBegin(object sender, ApplyBeginEventArgs e)
         {
             this.progressPhases = e.PhaseCount;
         }

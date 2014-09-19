@@ -397,12 +397,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //  IDCANCEL instructs the engine to stop applying.
     //
     //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnApplyBegin)() = 0;
-
-    // DEPRECATED: In wix4, this will be merged with OnApplyBegin.
-    // OnApplyPhaseCount - called right after OnApplyBegin.
-    //
-    STDMETHOD_(void, OnApplyPhaseCount)(
+    STDMETHOD_(int, OnApplyBegin)(
         __in DWORD dwPhaseCount
         ) = 0;
 

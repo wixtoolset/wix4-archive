@@ -549,9 +549,8 @@ extern "C" HRESULT CoreApply(
     {
         ++dwPhaseCount;
     }
-    pEngineState->userExperience.pUserExperience->OnApplyPhaseCount(dwPhaseCount);
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin();
+    int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin(dwPhaseCount);
     hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
     ExitOnRootFailure(hr, "UX aborted apply begin.");
 
