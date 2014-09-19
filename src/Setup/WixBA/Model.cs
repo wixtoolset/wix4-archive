@@ -154,7 +154,7 @@ namespace WixToolset.UX
         }
 
         /// <summary>
-        /// Gets the display name for a pckage if possible.
+        /// Gets the display name for a package if possible.
         /// </summary>
         /// <param name="packageId">Identity of the package to find the display name.</param>
         /// <returns>Display name of the package if found or the package id if not.</returns>
