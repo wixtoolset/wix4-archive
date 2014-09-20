@@ -34,13 +34,9 @@ namespace WixToolset.Tools
             this.Variables = new Dictionary<string, string>();
         }
 
-        public bool ReuseCabinets { get; private set; }
-
         public string PdbFile { get; private set; }
 
         public CompressionLevel DefaultCompressionLevel { get; set; }
-
-        public bool ExactAssemblyVersions { get; set; }
 
         public bool SuppressAclReset { get; private set; }
 
@@ -284,7 +280,7 @@ namespace WixToolset.Tools
                     }
                     else if (parameter.Equals("eav", StringComparison.Ordinal))
                     {
-                        this.ExactAssemblyVersions = true;
+                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch(arg));
                     }
                     else if (parameter.StartsWith("ice:", StringComparison.Ordinal))
                     {
@@ -337,7 +333,7 @@ namespace WixToolset.Tools
                     }
                     else if (parameter.Equals("reusecab", StringComparison.Ordinal))
                     {
-                        this.ReuseCabinets = true;
+                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch(arg, "-cc"));
                     }
                     else if (parameter.StartsWith("sice:", StringComparison.Ordinal))
                     {

@@ -11,9 +11,8 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
-    using System;
     using System.Collections.Generic;
     using WixToolset.Data;
     using WixToolset.Data.Rows;

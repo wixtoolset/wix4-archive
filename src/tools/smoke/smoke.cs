@@ -14,7 +14,6 @@
 namespace WixToolset.Tools
 {
     using System;
-    using System.Collections;
     using System.Collections.Specialized;
     using System.Diagnostics;
     using System.Globalization;
@@ -22,7 +21,6 @@ namespace WixToolset.Tools
     using System.Reflection;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
-    using WixToolset.Extensibility;
 
     /// <summary>
     /// The main entry point for Smoke.
@@ -117,7 +115,8 @@ namespace WixToolset.Tools
                 }
                 this.invalidArgs = null;
 
-                validator.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
+                string tempFilesLocation = AppCommon.GetTempLocation();
+                validator.TempFilesLocation = tempFilesLocation;
 
                 // TODO: rename ValidatorExtensions to "ValidatorFilterExtension" or something like that. Actually,
                 //       revisit all of this as we try to build a more generic validation system around ICEs.
@@ -171,7 +170,7 @@ namespace WixToolset.Tools
 
                     if (this.addDefault)
                     {
-                           switch (Path.GetExtension(inputFile).ToLower(CultureInfo.InvariantCulture))
+                        switch (Path.GetExtension(inputFile).ToLower(CultureInfo.InvariantCulture))
                         {
                             case msm:
                                 validator.AddCubeFile(Path.Combine(appDirectory, "mergemod.cub"));
@@ -187,7 +186,7 @@ namespace WixToolset.Tools
                     // print friendly message saying what file is being validated
                     Console.WriteLine(Path.GetFileName(inputFile));
                     Stopwatch stopwatch = Stopwatch.StartNew();
-                    
+
                     try
                     {
                         validator.Validate(Path.GetFullPath(inputFile));
@@ -200,17 +199,17 @@ namespace WixToolset.Tools
                     {
                         stopwatch.Stop();
                         Messaging.Instance.OnMessage(WixVerboses.ValidatedDatabase(stopwatch.ElapsedMilliseconds));
-                      
+
                         if (this.tidy)
                         {
-                            if (!validator.DeleteTempFiles())
+                            if (!AppCommon.DeleteDirectory(tempFilesLocation, Messaging.Instance))
                             {
-                                Console.Error.WriteLine(SmokeStrings.WAR_FailedToDeleteTempDir, validator.TempFilesLocation);
+                                Console.Error.WriteLine(SmokeStrings.WAR_FailedToDeleteTempDir, tempFilesLocation);
                             }
                         }
                         else
                         {
-                            Console.WriteLine(SmokeStrings.INF_TempDirLocatedAt, validator.TempFilesLocation);
+                            Console.WriteLine(SmokeStrings.INF_TempDirLocatedAt, tempFilesLocation);
                         }
                     }
                 }

@@ -155,6 +155,33 @@ namespace WixToolset.Data
         }
 
         /// <summary>
+        /// Gets the field as an integer.
+        /// </summary>
+        /// <returns>Field's data as an integer.</returns>
+        public int FieldAsInteger(int field)
+        {
+            return this.fields[field].AsInteger();
+        }
+
+        /// <summary>
+        /// Gets the field as an integer that could be null.
+        /// </summary>
+        /// <returns>Field's data as an integer that could be null.</returns>
+        public int? FieldAsNullableInteger(int field)
+        {
+            return this.fields[field].AsNullableInteger();
+        }
+
+        /// <summary>
+        /// Gets the field as a string.
+        /// </summary>
+        /// <returns>Field's data as a string.</returns>
+        public string FieldAsString(int field)
+        {
+            return this.fields[field].AsString();
+        }
+
+        /// <summary>
         /// Sets the value of a particular field in the row without validating.
         /// </summary>
         /// <param name="field">field index.</param>

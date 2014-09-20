@@ -19,14 +19,21 @@ namespace WixToolset.Bind
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
 
+    /// <summary>
+    /// Creates cabinet files.
+    /// </summary>
     internal class CreateCabinetsCommand : ICommand
     {
-        internal FileSplitCabNamesCallback newCabNamesCallBack;
+        private List<FileTransfer> fileTransfers;
+
+        private FileSplitCabNamesCallback newCabNamesCallBack;
 
         private Dictionary<string, string> lastCabinetAddedToMediaTable; // Key is First Cabinet Name, Value is Last Cabinet Added in the Split Sequence
 
         public CreateCabinetsCommand()
         {
+            this.fileTransfers = new List<FileTransfer>();
+
             this.newCabNamesCallBack = NewCabNamesCallBack;
         }
 
@@ -47,21 +54,18 @@ namespace WixToolset.Bind
 
         public IEnumerable<IBinderFileManager> FileManagers { private get; set; }
 
-        public List<FileTransfer> FileTransfers { private get; set; }
-
         public string LayoutDirectory { private get; set; }
 
         public bool Compressed { private get; set; }
 
-        public AutoMediaAssigner AutoMediaAssigner { private get; set; }
+        public AutoMediaAssignerCommand AutoMediaAssigner { private get; set; }
 
         public TableDefinitionCollection TableDefinitions { private get; set; }
 
+        public IEnumerable<FileTransfer> FileTransfers { get { return this.fileTransfers; } }
+
         public RowDictionary<FileRow> UncompressedFileRows { get; private set; }
 
-        /// <summary>
-        /// Creates cabinet files.
-        /// </summary>
         /// <param name="output">Output to generate image for.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
         /// <param name="layoutDirectory">The directory in which the image should be layed out.</param>
@@ -90,7 +94,7 @@ namespace WixToolset.Bind
 
                 string cabinetDir = this.ResolveMedia(mediaRow, this.LayoutDirectory);
 
-                CabinetWorkItem cabinetWorkItem = this.CreateCabinetWorkItem(this.Output, cabinetDir, mediaRow, files, this.FileTransfers);
+                CabinetWorkItem cabinetWorkItem = this.CreateCabinetWorkItem(this.Output, cabinetDir, mediaRow, files, this.fileTransfers);
                 if (null != cabinetWorkItem)
                 {
                     cabinetBuilder.Enqueue(cabinetWorkItem);
@@ -322,7 +326,7 @@ namespace WixToolset.Bind
                         if (FileTransfer.TryCreate(newCabSourcePath, newCabTargetPath, transfer.Move, "Cabinet", transfer.SourceLineNumbers, out newTransfer))
                         {
                             newTransfer.Built = true;
-                            this.FileTransfers.Add(newTransfer);
+                            this.fileTransfers.Add(newTransfer);
                             transferAdded = true;
                             break;
                         }

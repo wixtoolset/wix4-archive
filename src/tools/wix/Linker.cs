@@ -1212,32 +1212,6 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Get a sorted property list as a semicolon-delimited string.
-        /// </summary>
-        /// <param name="properties">SortedList of the properties.</param>
-        /// <returns>Semicolon-delimited string representing the property list.</returns>
-        private static string GetPropertyListString(SortedList properties)
-        {
-            bool first = true;
-            StringBuilder propertiesString = new StringBuilder();
-
-            foreach (string propertyName in properties.Keys)
-            {
-                if (first)
-                {
-                    first = false;
-                }
-                else
-                {
-                    propertiesString.Append(';');
-                }
-                propertiesString.Append(propertyName);
-            }
-
-            return propertiesString.ToString();
-        }
-
-        /// <summary>
         /// Load the standard action symbols.
         /// </summary>
         /// <param name="allSymbols">Collection of symbols.</param>
