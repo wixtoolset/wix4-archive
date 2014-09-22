@@ -15,16 +15,13 @@
     <RootNamespace>WixToolset.Extensions</RootNamespace>
     <NoWarn>618</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="AssemblyHarvester.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="FeedBuilder.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="PayloadHarvester.cs" />
     <Compile Include="PerformanceCategoryHarvester.cs" />
     <Compile Include="RegFileHarvester.cs" />
-    <Compile Include="SetupExeBuilder.cs" />
     <Compile Include="TypeLibraryHarvester.cs" />
     <Compile Include="UtilBinder.cs" />
     <Compile Include="UtilCompiler.cs" />
