@@ -56,8 +56,6 @@
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerCore.cs" />
-    <Compile Include="ConsoleMessageHandler.cs" />
-    <Compile Include="Extensibility\AssemblyDefaultFabricatorExtensionAttribute.cs" />
     <Compile Include="Extensibility\AssemblyDefaultHeatExtensionAttribute.cs" />
     <Compile Include="Extensibility\HarvesterExtension.cs" />
     <Compile Include="Extensibility\HeatExtension.cs" />
@@ -82,8 +80,6 @@
     <Compile Include="Link\ResolveReferencesCommand.cs" />
     <Compile Include="Uuid.cs" />
     <Compile Include="Differ.cs" />
-    <Compile Include="FabricatorCore.cs" />
-    <Compile Include="Fabricator.cs" />
     <Compile Include="Ole32\Storage.cs" />
     <Compile Include="WixDistributionSpecificStrings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -124,7 +120,6 @@
     <Compile Include="Unbinder.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Validator.cs" />
-    <Compile Include="VerboseEventArgs.cs" />
     <Compile Include="VerifyInterop.cs" />
     <Compile Include="AppCommon.cs" />
     <Compile Include="WixGenericMessageEventArgs.cs" />

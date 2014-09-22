@@ -16,11 +16,8 @@ namespace WixToolset.Data
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
-    using System.Text;
-    using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
     using WixToolset.Msi;
@@ -552,10 +549,10 @@ namespace WixToolset.Data
             Hashtable keptFeatures = new Hashtable();
             Hashtable keptLockPermissions = new Hashtable();
             Hashtable keptMsiLockPermissionExs = new Hashtable();
-            
-            Dictionary<string, List<string>> componentCreateFolderIndex = new Dictionary<string,List<string>>();
-            Dictionary<string, List<Row>> directoryLockPermissionsIndex = new Dictionary<string,List<Row>>();
-            Dictionary<string, List<Row>> directoryMsiLockPermissionsExIndex = new Dictionary<string,List<Row>>();
+
+            Dictionary<string, List<string>> componentCreateFolderIndex = new Dictionary<string, List<string>>();
+            Dictionary<string, List<Row>> directoryLockPermissionsIndex = new Dictionary<string, List<Row>>();
+            Dictionary<string, List<Row>> directoryMsiLockPermissionsExIndex = new Dictionary<string, List<Row>>();
 
             foreach (Row patchRefRow in patchRefTable.Rows)
             {
@@ -604,7 +601,7 @@ namespace WixToolset.Data
             // throw away sections not referenced
             int keptRows = 0;
             Table directoryTable = null;
-            Table featureTable = null;;
+            Table featureTable = null; ;
             Table lockPermissionsTable = null;
             Table msiLockPermissionsTable = null;
 
