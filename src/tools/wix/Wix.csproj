@@ -51,7 +51,7 @@
     <Compile Include="Cab\WixCreateCab.cs" />
     <Compile Include="Cab\WixEnumerateCab.cs" />
     <Compile Include="Cab\WixExtractCab.cs" />
-    <Compile Include="CLR\Interop\CLRInterop.cs" />
+    <Compile Include="Clr\Interop\ClrInterop.cs" />
     <Compile Include="CommandLine.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
@@ -90,10 +90,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>WixDistributionSpecificStrings.resx</DependentUpon>
     </Compile>
-    <Compile Include="ConnectToFeature.cs" />
-    <Compile Include="ConnectToFeatureCollection.cs" />
-    <Compile Include="ConnectToModule.cs" />
-    <Compile Include="ConnectToModuleCollection.cs" />
+    <Compile Include="Link\ConnectToFeature.cs" />
+    <Compile Include="Link\ConnectToFeatureCollection.cs" />
+    <Compile Include="Link\ConnectToModule.cs" />
+    <Compile Include="Link\ConnectToModuleCollection.cs" />
     <Compile Include="Decompiler.cs" />
     <Compile Include="DecompilerCore.cs" />
     <Compile Include="Exceptions\WixFileNotFoundException.cs" />
@@ -128,7 +128,7 @@
     <Compile Include="VerifyInterop.cs" />
     <Compile Include="AppCommon.cs" />
     <Compile Include="WixGenericMessageEventArgs.cs" />
-    <Compile Include="WixGroupingOrdering.cs" />
+    <Compile Include="Link\WixGroupingOrdering.cs" />
     <Compile Include="WixStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -11,15 +11,8 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Link
 {
-    using System;
-    using System.Diagnostics;
-    using System.Collections;
-    using System.Collections.Specialized;
-    using System.Globalization;
-    using System.Xml;
-
     /// <summary>
     /// Object that connects things to modules.
     /// </summary>

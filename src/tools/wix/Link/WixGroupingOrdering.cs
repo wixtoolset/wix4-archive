@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Link
 {
     using System;
     using System.Collections;
@@ -26,7 +26,7 @@ namespace WixToolset
     /// <summary>
     /// Grouping and Ordering class of the WiX toolset.
     /// </summary>
-    public sealed class WixGroupingOrdering : IMessageHandler
+    internal sealed class WixGroupingOrdering : IMessageHandler
     {
         private Output output;
         private IMessageHandler messageHandler;
