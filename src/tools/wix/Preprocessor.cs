@@ -25,6 +25,7 @@ namespace WixToolset
     using System.Xml.Linq;
     using WixToolset.Data;
     using WixToolset.Extensibility;
+    using WixToolset.Preprocess;
 
     /// <summary>
     /// Preprocessor object
@@ -69,7 +70,7 @@ namespace WixToolset
             this.IncludeSearchPaths = new List<string>();
 
             this.extensions = new List<IPreprocessorExtension>();
-            this.extensionsByPrefix = new Dictionary<string,IPreprocessorExtension>();
+            this.extensionsByPrefix = new Dictionary<string, IPreprocessorExtension>();
             this.inspectorExtensions = new List<InspectorExtension>();
 
             this.sourceStack = new Stack<SourceLineNumber>();

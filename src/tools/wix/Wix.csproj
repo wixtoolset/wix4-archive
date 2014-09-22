@@ -101,7 +101,7 @@
     <Compile Include="Harvester.cs" />
     <Compile Include="HarvesterCore.cs" />
     <Compile Include="HeatCore.cs" />
-    <Compile Include="IfContext.cs" />
+    <Compile Include="Preprocess\IfContext.cs" />
     <Compile Include="IncludedFileEventHandler.cs" />
     <Compile Include="Librarian.cs" />
     <Compile Include="Linker.cs" />

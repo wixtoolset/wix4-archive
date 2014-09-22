@@ -11,14 +11,14 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Preprocess
 {
     using System;
 
     /// <summary>
     /// Current state of the if context.
     /// </summary>
-    public enum IfState
+    internal enum IfState
     {
         /// <summary>Context currently in unknown state.</summary>
         Unknown,
@@ -36,7 +36,7 @@ namespace WixToolset
     /// <summary>
     /// Context for an if statement in the preprocessor.
     /// </summary>
-    public sealed class IfContext
+    internal sealed class IfContext
     {
         private bool active;
         private bool keep;
