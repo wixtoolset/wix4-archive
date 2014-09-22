@@ -69,13 +69,13 @@ namespace WixToolset.Bind
 
         public string TempFilesLocation { private get; set; }
 
-        public IEnumerable<FileTransfer> FileTransfers { get; private set; }
-
-        public IEnumerable<string> ContentFilePaths { get; private set; }
-
         public Validator Validator { private get; set; }
 
         public WixVariableResolver WixVariableResolver { private get; set; }
+
+        public IEnumerable<FileTransfer> FileTransfers { get; private set; }
+
+        public IEnumerable<string> ContentFilePaths { get; private set; }
 
         public void Execute()
         {

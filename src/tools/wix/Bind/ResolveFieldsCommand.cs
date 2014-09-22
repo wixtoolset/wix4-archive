@@ -202,7 +202,6 @@ namespace WixToolset.Bind
             this.DelayedFields = delayedFields;
         }
 
-
         private string ResolveFile(string source, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage = BindStage.Normal)
         {
             string path = null;
