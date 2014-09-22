@@ -1322,7 +1322,7 @@ namespace WixToolset
             string uxExtractPath = Path.Combine(exportBasePath, "UX");
             string acExtractPath = Path.Combine(exportBasePath, "AttachedContainer");
 
-            using (BurnReader reader = BurnReader.Open(bundleFile, this))
+            using (BurnReader reader = BurnReader.Open(bundleFile))
             {
                 reader.ExtractUXContainer(uxExtractPath, this.tempFiles.BasePath);
                 reader.ExtractAttachedContainer(acExtractPath, this.tempFiles.BasePath);

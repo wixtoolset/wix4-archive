@@ -24,6 +24,7 @@
     <Compile Include="BinderCore.cs" />
     <Compile Include="BinderFileManagerCore.cs" />
     <Compile Include="BinderFileManager.cs" />
+    <Compile Include="Bind\BindBundleCommand.cs" />
     <Compile Include="Bind\BindDatabaseCommand.cs" />
     <Compile Include="Bind\BindSummaryInfoCommand.cs" />
     <Compile Include="Bind\BindTransformCommand.cs" />
@@ -36,12 +37,13 @@
     <Compile Include="Bind\ResolveDelayedFieldsCommand.cs" />
     <Compile Include="Bind\ResolveFieldsCommand.cs" />
     <Compile Include="Bind\TransferFilesCommand.cs" />
+    <Compile Include="Bind\VerifyPayloadsWithCatalogCommand.cs" />
     <Compile Include="Bind\WixPatchSymbolPathsComparer.cs" />
     <Compile Include="BundleChainAttributes.cs" />
     <Compile Include="BundlePackageAttributes.cs" />
-    <Compile Include="BurnCommon.cs" />
-    <Compile Include="BurnReader.cs" />
-    <Compile Include="BurnWriter.cs" />
+    <Compile Include="Bind\BurnCommon.cs" />
+    <Compile Include="Bind\BurnReader.cs" />
+    <Compile Include="Bind\BurnWriter.cs" />
     <Compile Include="Bind\CabinetBuilder.cs" />
     <Compile Include="Bind\CabinetWorkItem.cs" />
     <Compile Include="Cab\CabinetFileInfo.cs" />

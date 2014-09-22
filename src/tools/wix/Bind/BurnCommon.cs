@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
     using System;
     using System.Diagnostics;
@@ -90,7 +90,6 @@ namespace WixToolset
         protected const UInt32 BURN_SECTION_VERSION = 0x00000002;
 
         protected string fileExe;
-        protected IMessageHandler messageHandler;
         protected UInt32 peOffset = UInt32.MaxValue;
         protected UInt16 sections = UInt16.MaxValue;
         protected UInt32 firstSectionOffset = UInt32.MaxValue;
@@ -114,12 +113,10 @@ namespace WixToolset
         /// Creates a BurnCommon for re-writing a PE file.
         /// </summary>
         /// <param name="fileExe">File to modify in-place.</param>
-        /// <param name="messageHandler">The messagehandler to report warnings/errors to.</param>
         /// <param name="bundleGuid">GUID for the bundle.</param>
-        public BurnCommon(string fileExe, IMessageHandler messageHandler)
+        public BurnCommon(string fileExe)
         {
             this.fileExe = fileExe;
-            this.messageHandler = messageHandler;
         }
 
         public UInt32 Checksum { get; protected set; }
@@ -190,21 +187,21 @@ namespace WixToolset
             uint32 = BurnCommon.ReadUInt32(bytes, BURN_SECTION_OFFSET_MAGIC);
             if (BURN_SECTION_MAGIC != uint32)
             {
-                this.messageHandler.OnMessage(WixErrors.InvalidBundle(this.fileExe));
+                Messaging.Instance.OnMessage(WixErrors.InvalidBundle(this.fileExe));
                 return false;
             }
 
             this.Version = BurnCommon.ReadUInt32(bytes, BURN_SECTION_OFFSET_VERSION);
             if (BURN_SECTION_VERSION != this.Version)
             {
-                this.messageHandler.OnMessage(WixErrors.BundleTooNew(this.fileExe, this.Version));
+                Messaging.Instance.OnMessage(WixErrors.BundleTooNew(this.fileExe, this.Version));
                 return false;
             }
 
             uint32 = BurnCommon.ReadUInt32(bytes, BURN_SECTION_OFFSET_FORMAT); // We only know how to deal with CABs right now
             if (1 != uint32)
             {
-                this.messageHandler.OnMessage(WixErrors.InvalidBundle(this.fileExe));
+                Messaging.Instance.OnMessage(WixErrors.InvalidBundle(this.fileExe));
                 return false;
             }
 
@@ -271,7 +268,7 @@ namespace WixToolset
 
                 if (UInt32.MaxValue == wixburnSectionOffset)
                 {
-                    this.messageHandler.OnMessage(WixErrors.StubMissingWixburnSection(this.fileExe));
+                    Messaging.Instance.OnMessage(WixErrors.StubMissingWixburnSection(this.fileExe));
                     return false;
                 }
 
@@ -279,7 +276,7 @@ namespace WixToolset
                 // the smallest alignment (512 bytes), but just to be paranoid...
                 if (BURN_SECTION_SIZE > BurnCommon.ReadUInt32(bytes, IMAGE_SECTION_HEADER_OFFSET_SIZEOFRAWDATA))
                 {
-                    this.messageHandler.OnMessage(WixErrors.StubWixburnSectionTooSmall(this.fileExe));
+                    Messaging.Instance.OnMessage(WixErrors.StubWixburnSectionTooSmall(this.fileExe));
                     return false;
                 }
 
@@ -308,7 +305,7 @@ namespace WixToolset
                 // Verify the NT signature...
                 if (IMAGE_NT_SIGNATURE != BurnCommon.ReadUInt32(bytes, IMAGE_NT_HEADER_OFFSET_SIGNATURE))
                 {
-                    this.messageHandler.OnMessage(WixErrors.InvalidStubExe(this.fileExe));
+                    Messaging.Instance.OnMessage(WixErrors.InvalidStubExe(this.fileExe));
                     return false;
                 }
 
@@ -343,7 +340,7 @@ namespace WixToolset
                 // Verify the DOS 'MZ' signature.
                 if (IMAGE_DOS_SIGNATURE != BurnCommon.ReadUInt16(bytes, IMAGE_DOS_HEADER_OFFSET_MAGIC))
                 {
-                    this.messageHandler.OnMessage(WixErrors.InvalidStubExe(this.fileExe));
+                    Messaging.Instance.OnMessage(WixErrors.InvalidStubExe(this.fileExe));
                     return false;
                 }
 

@@ -22,6 +22,7 @@ namespace WixToolset
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
+    using WixToolset.Bind;
     using WixToolset.Data;
     using WixToolset.Extensibility;
     using WixToolset.Msi;
@@ -94,7 +95,7 @@ namespace WixToolset
         {
             string tempFile = Path.Combine(this.TempFilesLocation, "bundle_engine_unsigned.exe");
 
-            using (BurnReader reader = BurnReader.Open(bundleFile, this))
+            using (BurnReader reader = BurnReader.Open(bundleFile))
             using (FileStream writer = File.Open(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read | FileShare.Delete))
             {
                 reader.Stream.Seek(0, SeekOrigin.Begin);
@@ -143,7 +144,7 @@ namespace WixToolset
             bool inscribed = false;
             string tempFile = Path.Combine(this.TempFilesLocation, "bundle_engine_signed.exe");
 
-            using (BurnReader reader = BurnReader.Open(bundleFile, this))
+            using (BurnReader reader = BurnReader.Open(bundleFile))
             {
                 File.Copy(signedEngineFile, tempFile, true);
 
@@ -152,7 +153,7 @@ namespace WixToolset
                 {
                     reader.Stream.Seek(reader.AttachedContainerAddress, SeekOrigin.Begin);
 
-                    using (BurnWriter writer = BurnWriter.Open(tempFile, this))
+                    using (BurnWriter writer = BurnWriter.Open(tempFile))
                     {
                         writer.RememberThenResetSignature();
                         writer.AppendContainer(reader.Stream, reader.AttachedContainerSize, BurnCommon.Container.Attached);

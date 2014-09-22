@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
     using System;
     using System.Diagnostics;
@@ -40,10 +40,9 @@ namespace WixToolset
         /// Creates a BurnWriter for re-writing a PE file.
         /// </summary>
         /// <param name="fileExe">File to modify in-place.</param>
-        /// <param name="messageHandler">The messagehandler to report warnings/errors to.</param>
         /// <param name="bundleGuid">GUID for the bundle.</param>
-        private BurnWriter(string fileExe, IMessageHandler messageHandler)
-            : base(fileExe, messageHandler)
+        private BurnWriter(string fileExe)
+            : base(fileExe)
         {
         }
 
@@ -51,11 +50,10 @@ namespace WixToolset
         /// Opens a Burn writer.
         /// </summary>
         /// <param name="fileExe">Path to file.</param>
-        /// <param name="messageHandler">Message handler.</param>
         /// <returns>Burn writer.</returns>
-        public static BurnWriter Open(string fileExe, IMessageHandler messageHandler)
+        public static BurnWriter Open(string fileExe)
         {
-            BurnWriter writer = new BurnWriter(fileExe, messageHandler);
+            BurnWriter writer = new BurnWriter(fileExe);
 
             using (BinaryReader binaryReader = new BinaryReader(File.Open(fileExe, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)))
             {
@@ -89,7 +87,7 @@ namespace WixToolset
             this.WriteToBurnSectionOffset(BURN_SECTION_OFFSET_MAGIC, BURN_SECTION_MAGIC);
             this.WriteToBurnSectionOffset(BURN_SECTION_OFFSET_VERSION, BURN_SECTION_VERSION);
 
-            this.messageHandler.OnMessage(WixVerboses.BundleGuid(bundleId.ToString("B")));
+            Messaging.Instance.OnMessage(WixVerboses.BundleGuid(bundleId.ToString("B")));
             this.binaryWriter.BaseStream.Seek(this.wixburnDataOffset + BURN_SECTION_OFFSET_BUNDLEGUID, SeekOrigin.Begin);
             this.binaryWriter.Write(bundleId.ToByteArray());
 

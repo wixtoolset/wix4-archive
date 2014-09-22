@@ -39,7 +39,7 @@ namespace WixToolset
 
         private PayloadInfoRow packagePayload;
 
-        public ChainPackageInfo(Row chainPackageRow, Table wixGroupTable, Dictionary<string, PayloadInfoRow> allPayloads, Dictionary<string, ContainerInfo> containers, IBinderFileManager fileManager, IBinderCore core, Output bundle)
+        public ChainPackageInfo(Row chainPackageRow, Table wixGroupTable, Dictionary<string, PayloadInfoRow> allPayloads, Dictionary<string, ContainerInfo> containers, IBinderFileManager fileManager, Output bundle, TableDefinitionCollection tableDefinitions)
             : base(chainPackageRow.SourceLineNumbers, bundle.Tables["ChainPackageInfo"])
         {
             string id = (string)chainPackageRow[0];
@@ -139,7 +139,7 @@ namespace WixToolset
             PayloadInfoRow packagePayload;
             if (!allPayloads.TryGetValue(payloadId, out packagePayload))
             {
-                core.OnMessage(WixErrors.IdentifierNotFound("Payload", payloadId));
+                Messaging.Instance.OnMessage(WixErrors.IdentifierNotFound("Payload", payloadId));
                 return;
             }
             this.PackagePayload = packagePayload;
@@ -205,10 +205,10 @@ namespace WixToolset
             switch (this.ChainPackageType)
             {
                 case Compiler.ChainPackageType.Msi:
-                    this.ResolveMsiPackage(fileManager, core, allPayloads, containers, suppressLooseFilePayloadGeneration, enableFeatureSelection, forcePerMachine, bundle);
+                    this.ResolveMsiPackage(fileManager, allPayloads, containers, suppressLooseFilePayloadGeneration, enableFeatureSelection, forcePerMachine, bundle);
                     break;
                 case Compiler.ChainPackageType.Msp:
-                    this.ResolveMspPackage(core, bundle);
+                    this.ResolveMspPackage(bundle, tableDefinitions);
                     break;
                 case Compiler.ChainPackageType.Msu:
                     this.ResolveMsuPackage();
@@ -280,11 +280,11 @@ namespace WixToolset
         {
             get
             {
-                object cacheData = this.Fields[7].Data;
+                int? cacheData = this.Fields[7].AsNullableInteger();
 
-                if (null != cacheData)
+                if (cacheData.HasValue)
                 {
-                    switch ((int)cacheData)
+                    switch (cacheData)
                     {
                         case 0:
                             return YesNoAlwaysType.No;
@@ -580,7 +580,7 @@ namespace WixToolset
         /// Initializes package state from the MSI contents.
         /// </summary>
         /// <param name="core">BinderCore for messages.</param>
-        private void ResolveMsiPackage(IBinderFileManager fileManager, IBinderCore core, Dictionary<string, PayloadInfoRow> allPayloads, Dictionary<string, ContainerInfo> containers, YesNoType suppressLooseFilePayloadGeneration, YesNoType enableFeatureSelection, YesNoType forcePerMachine, Output bundle)
+        private void ResolveMsiPackage(IBinderFileManager fileManager, Dictionary<string, PayloadInfoRow> allPayloads, Dictionary<string, ContainerInfo> containers, YesNoType suppressLooseFilePayloadGeneration, YesNoType enableFeatureSelection, YesNoType forcePerMachine, Output bundle)
         {
             string sourcePath = this.PackagePayload.FullFileName;
             bool longNamesInImage = false;
@@ -613,7 +613,7 @@ namespace WixToolset
 
                     if (!Common.IsValidModuleOrBundleVersion(this.Version))
                     {
-                        core.OnMessage(WixErrors.InvalidProductVersion(this.PackagePayload.SourceLineNumbers, this.Version, sourcePath));
+                        Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.PackagePayload.SourceLineNumbers, this.Version, sourcePath));
                     }
 
                     if (String.IsNullOrEmpty(this.CacheId))
@@ -628,13 +628,13 @@ namespace WixToolset
 
                     this.Manufacturer = ChainPackageInfo.GetProperty(db, "Manufacturer");
 
-                    this.VerifyMsiProperties(core);
+                    this.VerifyMsiProperties();
 
                     if (YesNoType.Yes == forcePerMachine)
                     {
                         if (YesNoDefaultType.No == this.PerMachine)
                         {
-                            core.OnMessage(WixWarnings.PerUserButForcingPerMachine(this.PackagePayload.SourceLineNumbers, sourcePath));
+                            Messaging.Instance.OnMessage(WixWarnings.PerUserButForcingPerMachine(this.PackagePayload.SourceLineNumbers, sourcePath));
                             this.PerMachine = YesNoDefaultType.Yes; // ensure that we think the MSI is per-machine.
                         }
 
@@ -647,21 +647,21 @@ namespace WixToolset
                         {
                             if (YesNoDefaultType.No == this.PerMachine)
                             {
-                                core.OnMessage(WixErrors.PerUserButAllUsersEquals1(this.PackagePayload.SourceLineNumbers, sourcePath));
+                                Messaging.Instance.OnMessage(WixErrors.PerUserButAllUsersEquals1(this.PackagePayload.SourceLineNumbers, sourcePath));
                             }
                         }
                         else if (allusers.Equals("2", StringComparison.Ordinal))
                         {
-                            core.OnMessage(WixWarnings.DiscouragedAllUsersValue(this.PackagePayload.SourceLineNumbers, sourcePath, (YesNoDefaultType.Yes == this.PerMachine) ? "machine" : "user"));
+                            Messaging.Instance.OnMessage(WixWarnings.DiscouragedAllUsersValue(this.PackagePayload.SourceLineNumbers, sourcePath, (YesNoDefaultType.Yes == this.PerMachine) ? "machine" : "user"));
                         }
                         else
                         {
-                            core.OnMessage(WixErrors.UnsupportedAllUsersValue(this.PackagePayload.SourceLineNumbers, sourcePath, allusers));
+                            Messaging.Instance.OnMessage(WixErrors.UnsupportedAllUsersValue(this.PackagePayload.SourceLineNumbers, sourcePath, allusers));
                         }
                     }
                     else if (YesNoDefaultType.Yes == this.PerMachine) // not forced per-machine and no ALLUSERS property, flip back to per-user
                     {
-                        core.OnMessage(WixWarnings.ImplicitlyPerUser(this.PackagePayload.SourceLineNumbers, sourcePath));
+                        Messaging.Instance.OnMessage(WixWarnings.ImplicitlyPerUser(this.PackagePayload.SourceLineNumbers, sourcePath));
                         this.PerMachine = YesNoDefaultType.No;
                     }
 
@@ -989,7 +989,7 @@ namespace WixToolset
             }
             catch (WixToolset.Dtf.WindowsInstaller.InstallerException e)
             {
-                core.OnMessage(WixErrors.UnableToReadPackageInformation(this.PackagePayload.SourceLineNumbers, sourcePath, e.Message));
+                Messaging.Instance.OnMessage(WixErrors.UnableToReadPackageInformation(this.PackagePayload.SourceLineNumbers, sourcePath, e.Message));
             }
         }
 
@@ -1020,7 +1020,7 @@ namespace WixToolset
         /// <summary>
         /// Initializes package state from the MSP contents.
         /// </summary>
-        private void ResolveMspPackage(IBinderCore core, Output bundle)
+        private void ResolveMspPackage(Output bundle, TableDefinitionCollection tableDefinitions)
         {
             string sourcePath = this.PackagePayload.FullFileName;
 
@@ -1046,11 +1046,11 @@ namespace WixToolset
 
                     this.Manufacturer = ChainPackageInfo.GetPatchMetadataProperty(db, "ManufacturerName");
                 }
-                this.ProcessPatchXml(core, sourcePath, bundle);
+                this.ProcessPatchXml(sourcePath, bundle, tableDefinitions);
             }
             catch (WixToolset.Dtf.WindowsInstaller.InstallerException e)
             {
-                core.OnMessage(WixErrors.UnableToReadPackageInformation(this.PackagePayload.SourceLineNumbers, sourcePath, e.Message));
+                Messaging.Instance.OnMessage(WixErrors.UnableToReadPackageInformation(this.PackagePayload.SourceLineNumbers, sourcePath, e.Message));
                 return;
             }
 
@@ -1088,7 +1088,7 @@ namespace WixToolset
             // TODO: Future version could add Manufacturer to table definition.
         }
 
-        private void ProcessPatchXml(IBinderCore core, string sourcePath, Output bundle)
+        private void ProcessPatchXml(string sourcePath, Output bundle, TableDefinitionCollection tableDefinitions)
         {
             string patchXml = WixToolset.Dtf.WindowsInstaller.Installer.ExtractPatchXmlData(sourcePath);
 
@@ -1122,7 +1122,7 @@ namespace WixToolset
                     }
                 }
 
-                Table table = bundle.EnsureTable(core.TableDefinitions["WixBundlePatchTargetCode"]);
+                Table table = bundle.EnsureTable(tableDefinitions["WixBundlePatchTargetCode"]);
                 WixBundlePatchTargetCodeRow row = (WixBundlePatchTargetCodeRow)table.CreateRow(this.PackagePayload.SourceLineNumbers, false);
                 row.MspPackageId = this.PackagePayload.Id;
                 row.TargetCode = targetCode.InnerText;
@@ -1164,7 +1164,7 @@ namespace WixToolset
         /// <summary>
         /// Verifies that only allowed properties are passed to the MSI.
         /// </summary>
-        private void VerifyMsiProperties(IBinderCore core)
+        private void VerifyMsiProperties()
         {
             foreach (string disallowed in new string[] { "ACTION", "ALLUSERS", "REBOOT", "REINSTALL", "REINSTALLMODE" })
             {
@@ -1172,7 +1172,7 @@ namespace WixToolset
                 {
                     if (disallowed.Equals(propertyInfo.Name, StringComparison.Ordinal))
                     {
-                        core.OnMessage(WixErrors.DisallowedMsiProperty(this.PackagePayload.SourceLineNumbers, disallowed));
+                        Messaging.Instance.OnMessage(WixErrors.DisallowedMsiProperty(this.PackagePayload.SourceLineNumbers, disallowed));
                     }
                 }
             }
