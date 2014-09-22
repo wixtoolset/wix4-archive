@@ -11,10 +11,8 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
-    using System;
-
     /// <summary>
     /// Structure used for resolved directory information.
     /// </summary>

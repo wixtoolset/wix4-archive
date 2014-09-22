@@ -13,9 +13,7 @@
 
 namespace WixToolset
 {
-    using System;
     using System.IO;
-    using WixToolset.Data;
     using WixToolset.Data.Rows;
 
     /// <summary>
@@ -30,7 +28,7 @@ namespace WixToolset
             this.wixCatalogRow = wixCatalogRow;
             this.PayloadId = payloadId;
 
-            this.Initialize();            
+            this.Initialize();
         }
 
         private void Initialize()

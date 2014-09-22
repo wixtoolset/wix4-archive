@@ -11,11 +11,10 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
-    using System;
-    using System.IO;
     using System.Collections.Generic;
+    using System.IO;
     using WixToolset.Data;
 
     /// <summary>
@@ -25,20 +24,19 @@ namespace WixToolset
     {
         private List<PayloadInfoRow> payloads = new List<PayloadInfoRow>();
 
-        public ContainerInfo(Row row, string tempPath/* BinderFileManager fileManager*/)
-            : this((string)row[0], (string)row[1], (string)row[2], (string)row[3], tempPath /*fileManager*/)
+        public ContainerInfo(Row row, string tempPath)
+            : this((string)row[0], (string)row[1], (string)row[2], (string)row[3], tempPath)
         {
             this.SourceLineNumbers = row.SourceLineNumbers;
         }
 
-        public ContainerInfo(string id, string name, string type, string downloadUrl, string tempPath/* BinderFileManager fileManager*/)
+        public ContainerInfo(string id, string name, string type, string downloadUrl, string tempPath)
         {
             this.Id = id;
             this.Name = name;
             this.Type = type;
             this.DownloadUrl = downloadUrl;
-            //this.FileManager = fileManager;
-            this.TempPath = Path.Combine(tempPath/*fileManager.TempFilesLocation*/, name);
+            this.TempPath = Path.Combine(tempPath, name);
             this.FileInfo = new FileInfo(this.TempPath);
         }
 

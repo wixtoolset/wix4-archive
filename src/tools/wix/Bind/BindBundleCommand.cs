@@ -707,15 +707,7 @@ namespace WixToolset.Bind
 
             // Process WixApprovedExeForElevation rows.
             Table wixApprovedExeForElevationTable = this.Output.Tables["WixApprovedExeForElevation"];
-            List<ApprovedExeForElevation> approvedExesForElevation = new List<ApprovedExeForElevation>();
-            if (null != wixApprovedExeForElevationTable && 0 < wixApprovedExeForElevationTable.Rows.Count)
-            {
-                foreach (WixApprovedExeForElevationRow wixApprovedExeForElevationRow in wixApprovedExeForElevationTable.Rows)
-                {
-                    ApprovedExeForElevation approvedExeForElevation = new ApprovedExeForElevation(wixApprovedExeForElevationRow);
-                    approvedExesForElevation.Add(approvedExeForElevation);
-                }
-            }
+            IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation = (null == wixApprovedExeForElevationTable) ? Enumerable.Empty<WixApprovedExeForElevationRow>() : wixApprovedExeForElevationTable.Rows.Cast<WixApprovedExeForElevationRow>();
 
             // Set the overridable bundle provider key.
             this.SetBundleProviderKey(Output, bundleInfo);
@@ -1263,7 +1255,7 @@ namespace WixToolset.Bind
             resources.Save(bundleTempPath);
         }
 
-        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, Dictionary<string, CatalogInfo> catalogs, Table wixBundleTagTable, List<ApprovedExeForElevation> approvedExesForElevation)
+        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, Dictionary<string, CatalogInfo> catalogs, Table wixBundleTagTable, IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation)
         {
             string executableName = Path.GetFileName(outputPath);
 
@@ -1696,26 +1688,23 @@ namespace WixToolset.Bind
                 }
 
                 // write the ApprovedExeForElevation elements
-                if (0 < approvedExesForElevation.Count)
+                foreach (WixApprovedExeForElevationRow approvedExeForElevation in approvedExesForElevation)
                 {
-                    foreach (ApprovedExeForElevation approvedExeForElevation in approvedExesForElevation)
+                    writer.WriteStartElement("ApprovedExeForElevation");
+                    writer.WriteAttributeString("Id", approvedExeForElevation.Id);
+                    writer.WriteAttributeString("Key", approvedExeForElevation.Key);
+
+                    if (!String.IsNullOrEmpty(approvedExeForElevation.ValueName))
                     {
-                        writer.WriteStartElement("ApprovedExeForElevation");
-                        writer.WriteAttributeString("Id", approvedExeForElevation.Id);
-                        writer.WriteAttributeString("Key", approvedExeForElevation.Key);
-
-                        if (!String.IsNullOrEmpty(approvedExeForElevation.ValueName))
-                        {
-                            writer.WriteAttributeString("ValueName", approvedExeForElevation.ValueName);
-                        }
-
-                        if (approvedExeForElevation.Win64)
-                        {
-                            writer.WriteAttributeString("Win64", "yes");
-                        }
-
-                        writer.WriteEndElement();
+                        writer.WriteAttributeString("ValueName", approvedExeForElevation.ValueName);
                     }
+
+                    if (approvedExeForElevation.Win64)
+                    {
+                        writer.WriteAttributeString("Win64", "yes");
+                    }
+
+                    writer.WriteEndElement();
                 }
 
                 writer.WriteEndDocument(); // </BurnManifest>

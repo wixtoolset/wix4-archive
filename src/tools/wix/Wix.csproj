@@ -17,7 +17,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ApprovedExeForElevation.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Bind\AutoMediaAssignerCommand.cs" />
     <Compile Include="Binder.cs" />
@@ -64,7 +63,7 @@
     <Compile Include="Extensibility\MutatorExtension.cs" />
     <Compile Include="Extensibility\ValidatorExtension.cs" />
     <Compile Include="ExtensionManager.cs" />
-    <Compile Include="ExtractEmbeddedFiles.cs" />
+    <Compile Include="Bind\ExtractEmbeddedFiles.cs" />
     <Compile Include="Bind\FileTransfer.cs" />
     <Compile Include="Link\FindEntrySectionAndLoadSymbolsCommand.cs" />
     <Compile Include="IfDefEventHandler.cs" />
@@ -131,9 +130,9 @@
     </Compile>
     <Compile Include="WixVariableResolver.cs" />
     <Compile Include="CatalogInfo.cs" />
-    <Compile Include="ChainInfo.cs" />
-    <Compile Include="ChainPackageInfo.cs" />
-    <Compile Include="ContainerInfo.cs" />
+    <Compile Include="Bind\ChainInfo.cs" />
+    <Compile Include="Bind\ChainPackageInfo.cs" />
+    <Compile Include="Bind\ContainerInfo.cs" />
     <Compile Include="ExitCodeInfo.cs" />
     <Compile Include="MsiFeature.cs" />
     <Compile Include="MsiPropertyInfo.cs" />
@@ -142,7 +141,7 @@
     <Compile Include="RegistrationInfo.cs" />
     <Compile Include="RelatedBundleInfo.cs" />
     <Compile Include="RelatedPackage.cs" />
-    <Compile Include="ResolvedDirectory.cs" />
+    <Compile Include="Bind\ResolvedDirectory.cs" />
     <Compile Include="RollbackBoundaryInfo.cs" />
     <Compile Include="VariableInfo.cs" />
     <Compile Include="WixComponentSearchInfo.cs" />

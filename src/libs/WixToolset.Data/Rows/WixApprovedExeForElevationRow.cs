@@ -13,7 +13,6 @@
 
 namespace WixToolset.Data.Rows
 {
-    using System;
 
     /// <summary>
     /// Specialization of a row for the WixApprovedExeForElevation table.
@@ -78,6 +77,14 @@ namespace WixToolset.Data.Rows
         {
             get { return (BundleApprovedExeForElevationAttributes)this.Fields[3].Data; }
             set { this.Fields[3].Data = (int)value; }
+        }
+
+        /// <summary>
+        /// Gets whether this row is 64-bit.
+        /// </summary>
+        public bool Win64
+        {
+            get { return BundleApprovedExeForElevationAttributes.Win64 == (this.Attributes & BundleApprovedExeForElevationAttributes.Win64); }
         }
     }
 }
