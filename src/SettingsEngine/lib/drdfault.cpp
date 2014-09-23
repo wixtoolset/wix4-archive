@@ -28,6 +28,7 @@ HRESULT DirDefaultReadFile(
     SCE_ROW_HANDLE sceValueRow = NULL;
     BOOL fRet = FALSE;
     BOOL fIgnore = FALSE;
+    BOOL fShareWriteOnRead = FALSE;
     BYTE *pbBuffer = NULL;
     DWORD cbBuffer = 0;
     BOOL fRefreshTimestamp = FALSE;
@@ -38,7 +39,7 @@ HRESULT DirDefaultReadFile(
     hr = MapFileToCfgName(wzName, wzSubPath, &sczValueName);
     ExitOnFailure2(hr, "Failed to get cfg name for file at name %ls, subpath %ls", wzName, wzSubPath);
 
-    hr = FilterCheckValue(&pSyncProductSession->product, sczValueName, &fIgnore);
+    hr = FilterCheckValue(&pSyncProductSession->product, sczValueName, &fIgnore, &fShareWriteOnRead);
     ExitOnFailure1(hr, "Failed to check if cfg blob value should be ignored: %ls", sczValueName);
 
     if (fIgnore)
@@ -94,8 +95,19 @@ HRESULT DirDefaultReadFile(
         }
     }
 
-    hr = FileRead(&pbBuffer, &cbBuffer, wzFilePath);
-    ExitOnFailure1(hr, "Failed to read file into memory: %ls", wzFilePath);
+    // Only share write if we were explicitly told to by the UDM (typically for an app that holds its file open for write
+    // for the lifetime of the app, such as for a database file). If we were not told to, we're syncing a potentially corrupt file
+    // (one in the middle of being written), and so a sharing violation to abort (and later retry) is a good thing.
+    if (fShareWriteOnRead)
+    {
+        hr = FileReadEx(&pbBuffer, &cbBuffer, wzFilePath, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE);
+        ExitOnFailure1(hr, "Failed to read file into memory (with write sharing): %ls", wzFilePath);
+    }
+    else
+    {
+        hr = FileReadEx(&pbBuffer, &cbBuffer, wzFilePath, FILE_SHARE_DELETE | FILE_SHARE_READ);
+        ExitOnFailure1(hr, "Failed to read file into memory: %ls", wzFilePath);
+    }
 
     if (fRefreshTimestamp)
     {
@@ -146,6 +158,8 @@ HRESULT DirDefaultWriteFile(
     DWORD cbBuffer = 0;
     int iTimestampCompare = 0;
     BOOL fRet = FALSE;
+    BOOL fIgnore = FALSE;
+    BOOL fSharingViolation = FALSE;
     BOOL fFileExists = FALSE;
     HANDLE hFile = INVALID_HANDLE_VALUE;
     HANDLE hFileDelete = INVALID_HANDLE_VALUE; // A separate handle specifically for opening the file for "delete on close" behavior
@@ -168,9 +182,12 @@ HRESULT DirDefaultWriteFile(
 
     *pfHandled = TRUE;
 
-    // If it's not a valid cfg type for a file, or the file doesn't exist and we're intending to delete it, just exit with no error
+    hr = FilterCheckValue(pProduct, wzName, &fIgnore, NULL);
+    ExitOnFailure1(hr, "Failed to check if cfg value should be ignored: %ls", wzName);
+
+    // If it's ignored, or not a valid cfg type for a file, or the file doesn't exist and we're intending to delete it, just exit with no error
     // This doesn't need to be transactional because if a new file was written right after this, autosync will pick it up
-    if ((VALUE_BLOB != pcvValue->cvType && VALUE_DELETED != pcvValue->cvType) || (!FileExistsEx(sczPath, NULL) && VALUE_DELETED == pcvValue->cvType))
+    if (fIgnore || (VALUE_BLOB != pcvValue->cvType && VALUE_DELETED != pcvValue->cvType) || (!FileExistsEx(sczPath, NULL) && VALUE_DELETED == pcvValue->cvType))
     {
         ExitFunction1(hr = S_OK);
     }
@@ -198,24 +215,37 @@ HRESULT DirDefaultWriteFile(
     // This does carry with it a slight risk that an app could read the file while we're writing it or be denied permission to write to it
     // but this is brief, and it is not expected that we should need to write data to the local machine from another machine for an app while the app is writing data locally
     hFile = ::CreateFileW(sczPath, GENERIC_WRITE, FILE_SHARE_DELETE, NULL, OPEN_ALWAYS, 0, NULL);
-    if (INVALID_HANDLE_VALUE == hFile && ERROR_ACCESS_DENIED == ::GetLastError())
+    if (INVALID_HANDLE_VALUE == hFile)
     {
-        hr = UtilConvertToVirtualStorePath(sczPath, &sczVirtualStorePath);
-        ExitOnFailure1(hr, "Failed to convert file path to virtualstore path: %ls", sczPath);
+        if (ERROR_ACCESS_DENIED == ::GetLastError())
+        {
+            hr = UtilConvertToVirtualStorePath(sczPath, &sczVirtualStorePath);
+            ExitOnFailure1(hr, "Failed to convert file path to virtualstore path: %ls", sczPath);
 
-        // Switch path for the rest of the file to the virtualstore path
-        ReleaseStr(sczPath);
-        sczPath = sczVirtualStorePath;
-        ReleaseNullStr(sczVirtualStorePath);
+            // Switch path for the rest of the file to the virtualstore path
+            ReleaseStr(sczPath);
+            sczPath = sczVirtualStorePath;
+            ReleaseNullStr(sczVirtualStorePath);
 
-        hFile = ::CreateFileW(sczPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
+            hFile = ::CreateFileW(sczPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
+            ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open virtualstore file for write: %ls", sczPath);
+        }
+        else if (ERROR_SHARING_VIOLATION == ::GetLastError())
+        {
+            // If there is a sharing violation, it's not an error if the file is actually unchanged, so do our best to tolerate it
+            fSharingViolation = TRUE;
+        }
+        else
+        {
+            ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open file for write: %ls", sczPath);
+        }
     }
-    ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open file for write: %ls", sczPath);
     fFileExists = ::GetLastError() == ERROR_ALREADY_EXISTS;
 
-    if (fFileExists)
+    // If the file exists, and settings engine expects one to exist, check if it has the same timestamp
+    // if it does, no need to write it, or if it has newer timestamp, break out so we can re-do the whole sync
+    if (VALUE_BLOB == pcvValue->cvType && (fFileExists || fSharingViolation))
     {
-        // If the file exists, check if it has the same timestamp - if it does, don't write it, or if it has newer timestamp, break out so we can re-do the whole sync
         hr = FileGetTime(sczPath, NULL, NULL, &ftDisk);
         ExitOnFailure1(hr, "Failed to get time of file: %ls", sczPath);
 
@@ -238,6 +268,14 @@ HRESULT DirDefaultWriteFile(
             ExitOnFailure1(hr, "Found newer file on disk at path %ls while trying to write file from DB, file must have changed during sync, aborting", sczPath);
         }
 
+        // If there is a sharing violation but we actually want to write the file, we won't be able to do so, so it becomes an error at this point
+        if (fSharingViolation)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION);
+            ExitOnFailure1(hr, "Sharing violation while writing file %ls - file is apparently in the process of being written - this should be resolved on next autosync.", sczPath);
+        }
+
+        // Clear out any existing content we are about to overwrite
         fRet = ::SetEndOfFile(hFile);
         if (!fRet)
         {

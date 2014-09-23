@@ -125,8 +125,8 @@ struct LEGACY_VALUE_FILTER
     LPWSTR sczPrefix;
     LPWSTR sczPostfix;
 
-    // TODO: switch this to an enum to support per-machine, ignored, and normal settings
     BOOL fIgnore;
+    BOOL fShareWriteOnRead;
 };
 
 struct LEGACY_PRODUCT

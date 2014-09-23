@@ -1102,7 +1102,16 @@ HRESULT ParseFilter(
         ExitOnFailure(hr, "Failed to resize filter array");
         ++pProduct->cFilters;
 
-        if (0 == lstrcmpW(bstrElement, L"Ignore"))
+        if (0 == lstrcmpW(bstrElement, L"Normal"))
+        {
+            hr = XmlGetYesNoAttribute(pixnNode, L"ShareWrite", &pProduct->rgFilters[pProduct->cFilters-1].fShareWriteOnRead);
+            if (E_NOTFOUND == hr)
+            {
+                hr = S_OK;
+            }
+            ExitOnFailure(hr, "Failed to get Normal/@ShareWrite attribute");
+        }
+        else if (0 == lstrcmpW(bstrElement, L"Ignore"))
         {
             pProduct->rgFilters[pProduct->cFilters-1].fIgnore = TRUE;
         }
