@@ -28,12 +28,6 @@ namespace WixToolset.Bind
     /// </summary>
     internal class BindBundleCommand : ICommand
     {
-        // The following constants must stay in sync with src\burn\engine\core.h
-        private const string BURN_BUNDLE_NAME = "WixBundleName";
-        private const string BURN_BUNDLE_ORIGINAL_SOURCE = "WixBundleOriginalSource";
-        private const string BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER = "WixBundleOriginalSourceFolder";
-        private const string BURN_BUNDLE_LAST_USED_SOURCE = "WixBundleLastUsedSource";
-
         public CompressionLevel DefaultCompressionLevel { private get; set; }
 
         public IEnumerable<IBinderExtension> Extensions { private get; set; }
@@ -144,36 +138,6 @@ namespace WixToolset.Bind
             if (Messaging.Instance.EncounteredError)
             {
                 return;
-            }
-
-            // Ensure that the bundle has our well-known persisted values.
-            Table variableTable = this.Output.EnsureTable(this.TableDefinitions["Variable"]);
-            VariableRow bundleNameWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
-            bundleNameWellKnownVariable.Id = BindBundleCommand.BURN_BUNDLE_NAME;
-            bundleNameWellKnownVariable.Hidden = false;
-            bundleNameWellKnownVariable.Persisted = true;
-
-            VariableRow bundleOriginalSourceWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
-            bundleOriginalSourceWellKnownVariable.Id = BindBundleCommand.BURN_BUNDLE_ORIGINAL_SOURCE;
-            bundleOriginalSourceWellKnownVariable.Hidden = false;
-            bundleOriginalSourceWellKnownVariable.Persisted = true;
-
-            VariableRow bundleOriginalSourceFolderWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
-            bundleOriginalSourceFolderWellKnownVariable.Id = BindBundleCommand.BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER;
-            bundleOriginalSourceFolderWellKnownVariable.Hidden = false;
-            bundleOriginalSourceFolderWellKnownVariable.Persisted = true;
-
-            VariableRow bundleLastUsedSourceWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
-            bundleLastUsedSourceWellKnownVariable.Id = BindBundleCommand.BURN_BUNDLE_LAST_USED_SOURCE;
-            bundleLastUsedSourceWellKnownVariable.Hidden = false;
-            bundleLastUsedSourceWellKnownVariable.Persisted = true;
-
-            // To make lookups easier, we load the variable table bottom-up, so
-            // that we can index by ID.
-            List<VariableInfo> allVariables = new List<VariableInfo>(variableTable.Rows.Count);
-            foreach (VariableRow variableRow in variableTable.Rows)
-            {
-                allVariables.Add(new VariableInfo(variableRow));
             }
 
             // TODO: Although the WixSearch tables are defined in the Util extension,
@@ -669,10 +633,6 @@ namespace WixToolset.Bind
                 resolveDelayedFieldsCommand.Execute();
             }
 
-            // Process WixApprovedExeForElevation rows.
-            Table wixApprovedExeForElevationTable = this.Output.Tables["WixApprovedExeForElevation"];
-            IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation = (null == wixApprovedExeForElevationTable) ? Enumerable.Empty<WixApprovedExeForElevationRow>() : wixApprovedExeForElevationTable.Rows.Cast<WixApprovedExeForElevationRow>();
-
             // Set the overridable bundle provider key.
             this.SetBundleProviderKey(Output, bundleInfo);
 
@@ -740,7 +700,7 @@ namespace WixToolset.Bind
             }
 
             string manifestPath = Path.Combine(this.TempFilesLocation, "bundle-manifest.xml");
-            this.CreateBurnManifest(this.OutputPath, bundleInfo, bundleUpdateRow, updateRegistrationInfo, manifestPath, this.Output.Tables["RelatedBundle"], allVariables, orderedSearches, allPayloads, chain, containers, catalogs, this.Output.Tables["WixBundleTag"], approvedExesForElevation);
+            this.CreateBurnManifest(this.OutputPath, bundleInfo, bundleUpdateRow, updateRegistrationInfo, manifestPath, this.Output.Tables["RelatedBundle"], this.Output.Tables["Variable"], orderedSearches, allPayloads, chain, containers, catalogs, this.Output.Tables["WixBundleTag"], this.Output.Tables["WixApprovedExeForElevation"]);
 
             this.UpdateBurnResources(bundleTempPath, this.OutputPath, bundleInfo);
 
@@ -1219,7 +1179,7 @@ namespace WixToolset.Bind
             resources.Save(bundleTempPath);
         }
 
-        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, Table relatedBundlesTable, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, IEnumerable<WixCatalogRow> catalogs, Table wixBundleTagTable, IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation)
+        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, Table relatedBundlesTable, Table variableTable, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, IEnumerable<WixCatalogRow> catalogs, Table wixBundleTagTable, Table wixApprovedExeForElevationTable)
         {
             // For the related bundles with duplicated identifiers the second instance is ignored (i.e. the Duplicates
             // enumeration in the index row list is not used).
@@ -1233,14 +1193,14 @@ namespace WixToolset.Bind
             command.UpdateRegistrationInfo = updateRegistrationInfo;
             command.OutputPath = path;
             command.RelatedBundles = relatedBundles;
-            command.Variables = allVariables;
+            command.Variables = variableTable.RowsAs<VariableRow>();
             command.OrderedSearches = orderedSearches;
             command.Payloads = allPayloads;
             command.Chain = chain;
             command.Containers = containers;
             command.Catalogs = catalogs;
             command.BundleTags = (null == wixBundleTagTable) ? Enumerable.Empty<Row>() : wixBundleTagTable.Rows;
-            command.ApprovedExesForElevation = approvedExesForElevation;
+            command.ApprovedExesForElevation = (null == wixApprovedExeForElevationTable) ? Enumerable.Empty<WixApprovedExeForElevationRow>() : wixApprovedExeForElevationTable.Rows.Cast<WixApprovedExeForElevationRow>();
             command.Execute();
         }
 

@@ -36,7 +36,7 @@ namespace WixToolset.Bind
 
         public IEnumerable<RelatedBundleRow> RelatedBundles { private get; set; }
 
-        public IEnumerable<VariableInfo> Variables { private get; set; }
+        public IEnumerable<VariableRow> Variables { private get; set; }
 
         public IEnumerable<WixSearchInfo> OrderedSearches { private get; set; }
 
@@ -96,9 +96,18 @@ namespace WixToolset.Bind
                 }
 
                 // Write the variables
-                foreach (VariableInfo variable in this.Variables)
+                foreach (VariableRow variable in this.Variables)
                 {
-                    variable.WriteXml(writer);
+                    writer.WriteStartElement("Variable");
+                    writer.WriteAttributeString("Id", variable.Id);
+                    if (null != variable.Type)
+                    {
+                        writer.WriteAttributeString("Value", variable.Value);
+                        writer.WriteAttributeString("Type", variable.Type);
+                    }
+                    writer.WriteAttributeString("Hidden", variable.Hidden ? "yes" : "no");
+                    writer.WriteAttributeString("Persisted", variable.Persisted ? "yes" : "no");
+                    writer.WriteEndElement();
                 }
 
                 // Write the searches

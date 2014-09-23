@@ -141,7 +141,6 @@
     <Compile Include="RelatedPackage.cs" />
     <Compile Include="Bind\ResolvedDirectory.cs" />
     <Compile Include="RollbackBoundaryInfo.cs" />
-    <Compile Include="VariableInfo.cs" />
     <Compile Include="WixComponentSearchInfo.cs" />
     <Compile Include="WixFileSearchInfo.cs" />
     <Compile Include="WixProductSearchInfo.cs" />
