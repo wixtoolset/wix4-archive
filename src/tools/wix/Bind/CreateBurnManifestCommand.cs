@@ -13,7 +13,6 @@ namespace WixToolset.Bind
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
-    using System.IO;
     using System.Linq;
     using System.Text;
     using System.Xml;
@@ -35,7 +34,7 @@ namespace WixToolset.Bind
 
         public string OutputPath { private get; set; }
 
-        public IEnumerable<RelatedBundleInfo> RelatedBundles { private get; set; }
+        public IEnumerable<RelatedBundleRow> RelatedBundles { private get; set; }
 
         public IEnumerable<VariableInfo> Variables { private get; set; }
 
@@ -88,9 +87,12 @@ namespace WixToolset.Bind
                 }
 
                 // Write the RelatedBundle elements
-                foreach (RelatedBundleInfo relatedBundle in this.RelatedBundles)
+                foreach (RelatedBundleRow relatedBundle in this.RelatedBundles)
                 {
-                    relatedBundle.WriteXml(writer);
+                    writer.WriteStartElement("RelatedBundle");
+                    writer.WriteAttributeString("Id", relatedBundle.Id);
+                    writer.WriteAttributeString("Action", Convert.ToString(relatedBundle.Action, CultureInfo.InvariantCulture));
+                    writer.WriteEndElement();
                 }
 
                 // Write the variables
@@ -254,14 +256,14 @@ namespace WixToolset.Bind
                     writer.WriteEndElement(); // </Update>
                 }
 
-                    foreach (Row row in this.BundleTags)
-                    {
-                        writer.WriteStartElement("SoftwareTag");
-                        writer.WriteAttributeString("Filename", (string)row[0]);
-                        writer.WriteAttributeString("Regid", (string)row[1]);
-                        writer.WriteCData((string)row[4]);
-                        writer.WriteEndElement();
-                    }
+                foreach (Row row in this.BundleTags)
+                {
+                    writer.WriteStartElement("SoftwareTag");
+                    writer.WriteAttributeString("Filename", (string)row[0]);
+                    writer.WriteAttributeString("Regid", (string)row[1]);
+                    writer.WriteCData((string)row[4]);
+                    writer.WriteEndElement();
+                }
 
                 writer.WriteEndElement(); // </Register>
 

@@ -112,6 +112,9 @@ namespace WixToolset.Data
                 case "Property":
                     row = new PropertyRow(sourceLineNumbers, this);
                     break;
+                case "RelatedBundle":
+                    row = new RelatedBundleRow(sourceLineNumbers, this);
+                    break;
                 case "Upgrade":
                     row = new UpgradeRow(sourceLineNumbers, this);
                     break;

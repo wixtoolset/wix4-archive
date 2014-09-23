@@ -146,22 +146,6 @@ namespace WixToolset.Bind
                 return;
             }
 
-            Table relatedBundleTable = this.Output.Tables["RelatedBundle"];
-            List<RelatedBundleInfo> allRelatedBundles = new List<RelatedBundleInfo>();
-            if (null != relatedBundleTable && 0 < relatedBundleTable.Rows.Count)
-            {
-                Dictionary<string, bool> deduplicatedRelatedBundles = new Dictionary<string, bool>();
-                foreach (Row row in relatedBundleTable.Rows)
-                {
-                    string id = (string)row[0];
-                    if (!deduplicatedRelatedBundles.ContainsKey(id))
-                    {
-                        deduplicatedRelatedBundles[id] = true;
-                        allRelatedBundles.Add(new RelatedBundleInfo(row));
-                    }
-                }
-            }
-
             // Ensure that the bundle has our well-known persisted values.
             Table variableTable = this.Output.EnsureTable(this.TableDefinitions["Variable"]);
             VariableRow bundleNameWellKnownVariable = (VariableRow)variableTable.CreateRow(null);
@@ -756,7 +740,7 @@ namespace WixToolset.Bind
             }
 
             string manifestPath = Path.Combine(this.TempFilesLocation, "bundle-manifest.xml");
-            this.CreateBurnManifest(this.OutputPath, bundleInfo, bundleUpdateRow, updateRegistrationInfo, manifestPath, allRelatedBundles, allVariables, orderedSearches, allPayloads, chain, containers, catalogs, this.Output.Tables["WixBundleTag"], approvedExesForElevation);
+            this.CreateBurnManifest(this.OutputPath, bundleInfo, bundleUpdateRow, updateRegistrationInfo, manifestPath, this.Output.Tables["RelatedBundle"], allVariables, orderedSearches, allPayloads, chain, containers, catalogs, this.Output.Tables["WixBundleTag"], approvedExesForElevation);
 
             this.UpdateBurnResources(bundleTempPath, this.OutputPath, bundleInfo);
 
@@ -1235,8 +1219,12 @@ namespace WixToolset.Bind
             resources.Save(bundleTempPath);
         }
 
-        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, IEnumerable<WixCatalogRow> catalogs, Table wixBundleTagTable, IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation)
+        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, Table relatedBundlesTable, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, IEnumerable<WixCatalogRow> catalogs, Table wixBundleTagTable, IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation)
         {
+            // For the related bundles with duplicated identifiers the second instance is ignored (i.e. the Duplicates
+            // enumeration in the index row list is not used).
+            RowIndexedList<RelatedBundleRow> relatedBundles = new RowIndexedList<RelatedBundleRow>(relatedBundlesTable);
+
             CreateBurnManifestCommand command = new CreateBurnManifestCommand();
             command.FileManagers = this.FileManagers;
             command.ExecutableName = Path.GetFileName(outputPath);
@@ -1244,7 +1232,7 @@ namespace WixToolset.Bind
             command.UpdateRow = updateRow;
             command.UpdateRegistrationInfo = updateRegistrationInfo;
             command.OutputPath = path;
-            command.RelatedBundles = allRelatedBundles;
+            command.RelatedBundles = relatedBundles;
             command.Variables = allVariables;
             command.OrderedSearches = orderedSearches;
             command.Payloads = allPayloads;
