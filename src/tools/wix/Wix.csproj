@@ -29,6 +29,7 @@
     <Compile Include="Bind\BindTransformCommand.cs" />
     <Compile Include="Bind\ConfigurationCallback.cs" />
     <Compile Include="Bind\CopyTransformDataCommand.cs" />
+    <Compile Include="Bind\CreateBurnManifestCommand.cs" />
     <Compile Include="Bind\CreateCabinetsCommand.cs" />
     <Compile Include="Bind\DelayedField.cs" />
     <Compile Include="Bind\ExtractEmbeddedFilesCommand.cs" />
