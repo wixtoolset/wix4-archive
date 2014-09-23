@@ -557,7 +557,7 @@ static HRESULT ProductDbToMachine(
         hr = SceGetColumnString(sceRow, VALUE_COMMON_NAME, &sczName);
         ExitOnFailure(hr, "Failed to get name from row while querying VALUE_INDEX_TABLE table");
 
-        hr = FilterCheckValue(&pSyncProductSession->product, sczName, &fIgnore);
+        hr = FilterCheckValue(&pSyncProductSession->product, sczName, &fIgnore, NULL);
         ExitOnFailure1(hr, "Failed to check if cfg setting should be ignored: %ls", sczName);
 
         if (!fIgnore)

@@ -20,8 +20,9 @@ extern "C" {
 
 HRESULT FilterCheckValue(
     __in LEGACY_PRODUCT *pProduct,
-    __in LPWSTR wzName,
-    __out BOOL *pfIgnore
+    __in_z LPCWSTR wzName,
+    __out_opt BOOL *pfIgnore,
+    __out_opt BOOL *pfShareWriteOnRead
     );
 
 #ifdef __cplusplus

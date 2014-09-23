@@ -13,6 +13,7 @@
             <!-- TODO: suppport some settings from this INI file, like "enableReporting" and "disableFBOs" -->
             <Ignore Name="Data:\Config.ini"/>
             <Ignore Postfix=".zicrash"/>
+            <Normal Name="Data:\.locals" ShareWrite="yes"/>
         </Filter>
 
         <DisplayName LCID="1033">SpaceChem</DisplayName>

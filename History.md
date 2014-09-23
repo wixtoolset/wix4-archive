@@ -1,3 +1,5 @@
+* MikeGC: Feature #4355: Settings engine doesn't handle files that are always locked for write (such as database files) very well
+
 * SeanHall: WIXFEAT:4413 - Merge OnApplyNumberOfPhases into OnApplyBegin.
 
 ## WixBuild: Version 4.0.2115.0

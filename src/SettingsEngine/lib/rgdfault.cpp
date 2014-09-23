@@ -55,7 +55,7 @@ extern "C" HRESULT RegDefaultReadValue(
     hr = MapRegValueToCfgName(wzNamespace, wzRegKey, wzValueName, &sczCfgValueName);
     ExitOnFailure3(hr, "Failed to format default legacy value name from namespace: %ls, key: %ls, valuename: %ls", wzNamespace, wzRegKey, wzValueName);
 
-    hr = FilterCheckValue(&pSyncProductSession->product, sczCfgValueName, &fIgnore);
+    hr = FilterCheckValue(&pSyncProductSession->product, sczCfgValueName, &fIgnore, NULL);
     ExitOnFailure1(hr, "Failed to check if cfg value should be ignored: %ls", sczCfgValueName);
 
     if (fIgnore)

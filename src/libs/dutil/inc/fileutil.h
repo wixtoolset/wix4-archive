@@ -109,6 +109,12 @@ HRESULT DAPI FileRead(
     __out DWORD* pcbDest,
     __in_z LPCWSTR wzSrcPath
     );
+HRESULT DAPI FileReadEx(
+    __deref_out_bcount_full(*pcbDest) LPBYTE* ppbDest,
+    __out DWORD* pcbDest,
+    __in_z LPCWSTR wzSrcPath,
+    __in DWORD dwShareMode
+    );
 HRESULT DAPI FileReadUntil(
     __deref_out_bcount_full(*pcbDest) LPBYTE* ppbDest,
     __out_range(<=, cbMaxRead) DWORD* pcbDest,
@@ -123,6 +129,16 @@ HRESULT DAPI FileReadPartial(
     __in DWORD cbStartPosition,
     __in DWORD cbMaxRead,
     __in BOOL fPartialOK
+    );
+HRESULT DAPI FileReadPartialEx(
+    __deref_out_bcount_full(*pcbDest) LPBYTE* ppbDest,
+    __out_range(<=, cbMaxRead) DWORD* pcbDest,
+    __in_z LPCWSTR wzSrcPath,
+    __in BOOL fSeek,
+    __in DWORD cbStartPosition,
+    __in DWORD cbMaxRead,
+    __in BOOL fPartialOK,
+    __in DWORD dwShareMode
     );
 HRESULT DAPI FileWrite(
     __in_z LPCWSTR pwzFileName,

@@ -800,6 +800,20 @@ extern "C" HRESULT DAPI FileRead(
     return hr;
 }
 
+/*******************************************************************
+ FileRead - read a file into memory with specified share mode
+
+********************************************************************/
+extern "C" HRESULT DAPI FileReadEx(
+    __deref_out_bcount_full(*pcbDest) LPBYTE* ppbDest,
+    __out DWORD* pcbDest,
+    __in_z LPCWSTR wzSrcPath,
+    __in DWORD dwShareMode
+    )
+{
+    HRESULT hr = FileReadPartialEx(ppbDest, pcbDest, wzSrcPath, FALSE, 0, 0xFFFFFFFF, FALSE, dwShareMode);
+    return hr;
+}
 
 /*******************************************************************
  FileReadUntil - read a file into memory with a maximum size
@@ -831,6 +845,24 @@ extern "C" HRESULT DAPI FileReadPartial(
     __in BOOL fPartialOK
     )
 {
+    return FileReadPartialEx(ppbDest, pcbDest, wzSrcPath, fSeek, cbStartPosition, cbMaxRead, fPartialOK, FILE_SHARE_READ | FILE_SHARE_DELETE);
+}
+
+/*******************************************************************
+ FileReadPartial - read a portion of a file into memory
+                   (with specified share mode)
+********************************************************************/
+extern "C" HRESULT DAPI FileReadPartialEx(
+    __deref_out_bcount_full(*pcbDest) LPBYTE* ppbDest,
+    __out_range(<=, cbMaxRead) DWORD* pcbDest,
+    __in_z LPCWSTR wzSrcPath,
+    __in BOOL fSeek,
+    __in DWORD cbStartPosition,
+    __in DWORD cbMaxRead,
+    __in BOOL fPartialOK,
+    __in DWORD dwShareMode
+    )
+{
     HRESULT hr = S_OK;
 
     UINT er = ERROR_SUCCESS;
@@ -844,7 +876,7 @@ extern "C" HRESULT DAPI FileReadPartial(
     ExitOnNull(wzSrcPath, hr, E_INVALIDARG, "Invalid argument wzSrcPath");
     ExitOnNull(*wzSrcPath, hr, E_INVALIDARG, "*wzSrcPath is null");
 
-    hFile = ::CreateFileW(wzSrcPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+    hFile = ::CreateFileW(wzSrcPath, GENERIC_READ, dwShareMode, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
         er = ::GetLastError();

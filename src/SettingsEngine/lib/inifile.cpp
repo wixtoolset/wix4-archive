@@ -67,7 +67,7 @@ HRESULT IniFileRead(
         hr = MapFileToCfgName(pIniFile->sczNamespace, rgIniValues[i].wzName, &sczFullValueName);
         ExitOnFailure2(hr, "Failed ot map INI value name: %ls, %ls", pIniFile->sczNamespace, rgIniValues[i].wzName);
 
-        hr = FilterCheckValue(&pSyncProductSession->product, sczFullValueName, &fIgnore);
+        hr = FilterCheckValue(&pSyncProductSession->product, sczFullValueName, &fIgnore, NULL);
         ExitOnFailure1(hr, "Failed to check if ini value should be ignored: %ls", sczFullValueName);
 
         if (fIgnore)
