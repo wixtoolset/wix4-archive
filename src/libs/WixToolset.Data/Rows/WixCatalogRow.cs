@@ -45,23 +45,13 @@ namespace WixToolset.Data.Rows
         }
 
         /// <summary>
-        /// Gets or sets the source file (path).
-        /// </summary>
-        /// <value>The source file (path).</value>
-        public string SourceFile
-        {
-            get { return (string)this.Fields[1].Data; }
-            set { this.Fields[1].Data = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the payload identifier that represents this catalog set during binding.
+        /// Gets or sets the payload identifier.
         /// </summary>
         /// <value>The payload identifier.</value>
         public string PayloadId
         {
-            get { return (string)this.Fields[2].Data; }
-            set { this.Fields[2].Data = value; }
+            get { return (string)this.Fields[1].Data; }
+            set { this.Fields[1].Data = value; }
         }
     }
 }

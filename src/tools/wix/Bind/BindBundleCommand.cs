@@ -391,25 +391,6 @@ namespace WixToolset.Bind
                 throw new WixException(WixErrors.MissingBundleInformation("BootstrapperApplication"));
             }
 
-            // Get the catalog information
-            Table catalogTable = this.Output.Tables["WixCatalog"];
-            IEnumerable<WixCatalogRow> catalogs = (null == catalogTable) ? Enumerable.Empty<WixCatalogRow>() : catalogTable.Rows.Cast<WixCatalogRow>();
-
-            foreach (WixCatalogRow catalogRow in catalogs)
-            {
-                // Each catalog is also a payload
-                string payloadId = Common.GenerateIdentifier("pay", catalogRow.SourceFile);
-                string catalogFile = this.ResolveFile(catalogRow.SourceFile, "Catalog", catalogRow.SourceLineNumbers, BindStage.Normal);
-                PayloadInfoRow payloadInfo = PayloadInfoRow.Create(catalogRow.SourceLineNumbers, Output, payloadId, Path.GetFileName(catalogFile), catalogFile, true, false, null, burnUXContainer.Id, PackagingType.Embedded);
-
-                // Add the payload to the UX container
-                allPayloads.Add(payloadInfo.Id, payloadInfo);
-                burnUXContainer.Payloads.Add(payloadInfo);
-                payloadsAddedToContainers.Add(payloadInfo.Id, true);
-
-                catalogRow.PayloadId = payloadId;
-            }
-
             // Get the chain packages, this may add more payloads.
             Dictionary<string, ChainPackageInfo> allPackages = new Dictionary<string, ChainPackageInfo>();
             Dictionary<string, RollbackBoundaryInfo> allBoundaries = new Dictionary<string, RollbackBoundaryInfo>();
@@ -493,6 +474,9 @@ namespace WixToolset.Bind
             }
 
             // If catalog files exist, non-embedded payloads should validate with the catalogs.
+            Table catalogTable = this.Output.Tables["WixCatalog"];
+            IEnumerable<WixCatalogRow> catalogs = (null == catalogTable) ? Enumerable.Empty<WixCatalogRow>() : catalogTable.RowsAs<WixCatalogRow>();
+
             if (catalogs.Any())
             {
                 VerifyPayloadsWithCatalogCommand verifyPayloadsWithCatalogCommand = new VerifyPayloadsWithCatalogCommand();

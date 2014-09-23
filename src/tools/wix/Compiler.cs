@@ -18300,8 +18300,10 @@ namespace WixToolset
             // Create catalog row
             if (!this.core.EncounteredError)
             {
+                this.CreatePayloadRow(sourceLineNumbers, id, Path.GetFileName(sourceFile), sourceFile, null, ComplexReferenceParentType.Container, Compiler.BurnUXContainerId, ComplexReferenceChildType.Unknown, null, YesNoDefaultType.Yes, YesNoType.Yes, null, null);
+
                 WixCatalogRow wixCatalogRow = (WixCatalogRow)this.core.CreateRow(sourceLineNumbers, "WixCatalog", id);
-                wixCatalogRow.SourceFile = sourceFile;
+                wixCatalogRow.PayloadId = id.Id;
             }
         }
 

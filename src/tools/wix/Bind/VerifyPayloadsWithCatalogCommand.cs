@@ -12,6 +12,7 @@ namespace WixToolset.Bind
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
     using WixToolset.Data;
@@ -25,6 +26,13 @@ namespace WixToolset.Bind
 
         public void Execute()
         {
+            List<CatalogIdWithPath> catalogIdsWithPaths = this.Catalogs
+                .Join(this.Payloads,
+                    catalog => catalog.PayloadId,
+                    payload => payload.Id,
+                    (catalog, payload) => new CatalogIdWithPath() { Id = catalog.Id, FullPath = Path.GetFullPath(payload.SourceFile) })
+                .ToList();
+
             foreach (PayloadInfoRow payloadInfo in this.Payloads)
             {
                 // Payloads that are not embedded should be verfied.
@@ -32,7 +40,7 @@ namespace WixToolset.Bind
                 {
                     bool validated = false;
 
-                    foreach (WixCatalogRow catalog in this.Catalogs)
+                    foreach (CatalogIdWithPath catalog in catalogIdsWithPaths)
                     {
                         if (!validated)
                         {
@@ -87,7 +95,7 @@ namespace WixToolset.Bind
 
                                 // The file names need to be lower case for older OSes
                                 catalogData.pcwszMemberFilePath = payloadInfo.FullFileName.ToLowerInvariant();
-                                catalogData.pcwszCatalogFilePath = Path.GetFullPath(catalog.SourceFile).ToLowerInvariant();
+                                catalogData.pcwszCatalogFilePath = catalog.FullPath.ToLowerInvariant();
 
                                 // Create WINTRUST_DATA structure
                                 trustData.cbStruct = (uint)Marshal.SizeOf(trustData);
@@ -135,6 +143,13 @@ namespace WixToolset.Bind
                     }
                 }
             }
+        }
+
+        private class CatalogIdWithPath
+        {
+            public string Id { get; set; }
+
+            public string FullPath { get; set; }
         }
     }
 }
