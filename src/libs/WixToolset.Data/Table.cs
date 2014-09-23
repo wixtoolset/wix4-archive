@@ -15,6 +15,7 @@ namespace WixToolset.Data
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Xml;
     using WixToolset.Data.Rows;
@@ -68,6 +69,12 @@ namespace WixToolset.Data
         /// </summary>
         /// <value>Rows contained in the table.</value>
         public IList<Row> Rows { get; private set; }
+
+        /// <summary>
+        /// Gets the rows contained in the table as a particular row type.
+        /// </summary>
+        /// <value>Rows contained in the table as a particular type.</value>
+        public IEnumerable<T> RowsAs<T>() { return this.Rows.Cast<T>(); }
 
         /// <summary>
         /// Creates a new row in the table.
