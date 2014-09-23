@@ -242,9 +242,10 @@ HRESULT DirDefaultWriteFile(
     }
     fFileExists = ::GetLastError() == ERROR_ALREADY_EXISTS;
 
-    if (fFileExists || fSharingViolation)
+    // If the file exists, and settings engine expects one to exist, check if it has the same timestamp
+    // if it does, no need to write it, or if it has newer timestamp, break out so we can re-do the whole sync
+    if (VALUE_BLOB == pcvValue->cvType && (fFileExists || fSharingViolation))
     {
-        // If the file exists, check if it has the same timestamp - if it does, don't write it, or if it has newer timestamp, break out so we can re-do the whole sync
         hr = FileGetTime(sczPath, NULL, NULL, &ftDisk);
         ExitOnFailure1(hr, "Failed to get time of file: %ls", sczPath);
 
