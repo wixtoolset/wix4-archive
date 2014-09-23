@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Utility class for Burn RelatedBundle information.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset
@@ -43,8 +39,6 @@ namespace WixToolset
         /// <param name="writer"></param>
         public void WriteXml(XmlTextWriter writer)
         {
-            string actionString = this.Action.ToString();
-
             writer.WriteStartElement("RelatedBundle");
             writer.WriteAttributeString("Id", this.Id);
             writer.WriteAttributeString("Action", Convert.ToString(this.Action));
