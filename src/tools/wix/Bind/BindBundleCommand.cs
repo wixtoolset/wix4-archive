@@ -392,26 +392,22 @@ namespace WixToolset.Bind
             }
 
             // Get the catalog information
-            Dictionary<string, CatalogInfo> catalogs = new Dictionary<string, CatalogInfo>();
             Table catalogTable = this.Output.Tables["WixCatalog"];
-            if (null != catalogTable)
+            IEnumerable<WixCatalogRow> catalogs = (null == catalogTable) ? Enumerable.Empty<WixCatalogRow>() : catalogTable.Rows.Cast<WixCatalogRow>();
+
+            foreach (WixCatalogRow catalogRow in catalogs)
             {
-                foreach (WixCatalogRow catalogRow in catalogTable.Rows)
-                {
-                    // Each catalog is also a payload
-                    string payloadId = Common.GenerateIdentifier("pay", catalogRow.SourceFile);
-                    string catalogFile = this.ResolveFile(catalogRow.SourceFile, "Catalog", catalogRow.SourceLineNumbers, BindStage.Normal);
-                    PayloadInfoRow payloadInfo = PayloadInfoRow.Create(catalogRow.SourceLineNumbers, Output, payloadId, Path.GetFileName(catalogFile), catalogFile, true, false, null, burnUXContainer.Id, PackagingType.Embedded);
+                // Each catalog is also a payload
+                string payloadId = Common.GenerateIdentifier("pay", catalogRow.SourceFile);
+                string catalogFile = this.ResolveFile(catalogRow.SourceFile, "Catalog", catalogRow.SourceLineNumbers, BindStage.Normal);
+                PayloadInfoRow payloadInfo = PayloadInfoRow.Create(catalogRow.SourceLineNumbers, Output, payloadId, Path.GetFileName(catalogFile), catalogFile, true, false, null, burnUXContainer.Id, PackagingType.Embedded);
 
-                    // Add the payload to the UX container
-                    allPayloads.Add(payloadInfo.Id, payloadInfo);
-                    burnUXContainer.Payloads.Add(payloadInfo);
-                    payloadsAddedToContainers.Add(payloadInfo.Id, true);
+                // Add the payload to the UX container
+                allPayloads.Add(payloadInfo.Id, payloadInfo);
+                burnUXContainer.Payloads.Add(payloadInfo);
+                payloadsAddedToContainers.Add(payloadInfo.Id, true);
 
-                    // Create the catalog info
-                    CatalogInfo catalog = new CatalogInfo(catalogRow, payloadId);
-                    catalogs.Add(catalog.Id, catalog);
-                }
+                catalogRow.PayloadId = payloadId;
             }
 
             // Get the chain packages, this may add more payloads.
@@ -496,12 +492,12 @@ namespace WixToolset.Bind
                 return;
             }
 
-            // If catalog files exist, non-embedded payloads should validate with the catalog
-            if (catalogs.Count > 0)
+            // If catalog files exist, non-embedded payloads should validate with the catalogs.
+            if (catalogs.Any())
             {
-                VerifyPayloadsWithCatalogCommand verifyPayloadsWithCatalogsCommand = new VerifyPayloadsWithCatalogCommand();
-                verifyPayloadsWithCatalogsCommand.Catalogs = catalogs.Values;
-                verifyPayloadsWithCatalogsCommand.Payloads = allPayloads.Values;
+                VerifyPayloadsWithCatalogCommand verifyPayloadsWithCatalogCommand = new VerifyPayloadsWithCatalogCommand();
+                verifyPayloadsWithCatalogCommand.Catalogs = catalogs;
+                verifyPayloadsWithCatalogCommand.Payloads = allPayloads.Values;
             }
 
             if (Messaging.Instance.EncounteredError)
@@ -1255,7 +1251,7 @@ namespace WixToolset.Bind
             resources.Save(bundleTempPath);
         }
 
-        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, Dictionary<string, CatalogInfo> catalogs, Table wixBundleTagTable, IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation)
+        private void CreateBurnManifest(string outputPath, WixBundleRow bundleInfo, WixBundleUpdateRow updateRow, WixUpdateRegistrationRow updateRegistrationInfo, string path, List<RelatedBundleInfo> allRelatedBundles, List<VariableInfo> allVariables, List<WixSearchInfo> orderedSearches, Dictionary<string, PayloadInfoRow> allPayloads, ChainInfo chain, Dictionary<string, ContainerInfo> containers, IEnumerable<WixCatalogRow> catalogs, Table wixBundleTagTable, IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation)
         {
             string executableName = Path.GetFileName(outputPath);
 
@@ -1328,9 +1324,9 @@ namespace WixToolset.Bind
                 writer.WriteEndElement();
 
                 // write the catalog elements
-                if (catalogs.Count > 0)
+                if (catalogs.Any())
                 {
-                    foreach (CatalogInfo catalog in catalogs.Values)
+                    foreach (WixCatalogRow catalog in catalogs)
                     {
                         writer.WriteStartElement("Catalog");
                         writer.WriteAttributeString("Id", catalog.Id);

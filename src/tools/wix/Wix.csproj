@@ -129,7 +129,6 @@
       <DependentUpon>WixStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="WixVariableResolver.cs" />
-    <Compile Include="CatalogInfo.cs" />
     <Compile Include="Bind\ChainInfo.cs" />
     <Compile Include="Bind\ChainPackageInfo.cs" />
     <Compile Include="Bind\ContainerInfo.cs" />

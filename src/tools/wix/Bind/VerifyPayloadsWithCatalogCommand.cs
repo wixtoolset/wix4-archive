@@ -15,10 +15,11 @@ namespace WixToolset.Bind
     using System.Runtime.InteropServices;
     using System.Text;
     using WixToolset.Data;
+    using WixToolset.Data.Rows;
 
     internal class VerifyPayloadsWithCatalogCommand : ICommand
     {
-        public IEnumerable<CatalogInfo> Catalogs { private get; set; }
+        public IEnumerable<WixCatalogRow> Catalogs { private get; set; }
 
         public IEnumerable<PayloadInfoRow> Payloads { private get; set; }
 
@@ -31,7 +32,7 @@ namespace WixToolset.Bind
                 {
                     bool validated = false;
 
-                    foreach (CatalogInfo catalog in this.Catalogs)
+                    foreach (WixCatalogRow catalog in this.Catalogs)
                     {
                         if (!validated)
                         {
@@ -54,8 +55,7 @@ namespace WixToolset.Bind
                                     {
                                         error = 0;
                                         cryptHashBytes = new byte[cryptHashSize];
-                                        if (!VerifyInterop.CryptCATAdminCalcHashFromFileHandle(
-                                            fileHandle, ref cryptHashSize, cryptHashBytes, 0))
+                                        if (!VerifyInterop.CryptCATAdminCalcHashFromFileHandle(fileHandle, ref cryptHashSize, cryptHashBytes, 0))
                                         {
                                             error = Marshal.GetLastWin32Error();
                                         }
@@ -87,7 +87,7 @@ namespace WixToolset.Bind
 
                                 // The file names need to be lower case for older OSes
                                 catalogData.pcwszMemberFilePath = payloadInfo.FullFileName.ToLowerInvariant();
-                                catalogData.pcwszCatalogFilePath = catalog.FileInfo.FullName.ToLowerInvariant();
+                                catalogData.pcwszCatalogFilePath = Path.GetFullPath(catalog.SourceFile).ToLowerInvariant();
 
                                 // Create WINTRUST_DATA structure
                                 trustData.cbStruct = (uint)Marshal.SizeOf(trustData);

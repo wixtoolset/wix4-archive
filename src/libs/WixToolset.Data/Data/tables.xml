@@ -1701,6 +1701,8 @@
     <tableDefinition name="WixCatalog" createSymbols="yes" unreal="yes">
         <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="SourceFile" type="object" length="0"/>
+        <columnDefinition name="Payload_" type="string" length="0" category="identifier" nullable="yes"
+                          keyTable="Payload" keyColumn="1" description="Reference to a Payload entry in the Payload table set during binding." />
     </tableDefinition>
     <tableDefinition name="WixChain" unreal="yes">
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to the chain."/>
