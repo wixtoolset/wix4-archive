@@ -429,7 +429,7 @@ HRESULT ValueWrite(
         {
             ExitOnFailure1(hr, "Failed to check if value name is legacy manifest path: %ls", wzName);
 
-            if (VALUE_STRING == pcvValue->cvType)
+            if (VALUE_BLOB == pcvValue->cvType)
             {
                 hr = LogStringLine(REPORT_STANDARD, "Received new manifest for product %ls, %ls, %ls", sczProductName, wzLegacyVersion, wzLegacyPublicKey);
                 ExitOnFailure(hr, "Failed to log line");

@@ -112,9 +112,13 @@ HRESULT LegacySyncSetProduct(
     LEGACY_FILE_SPECIAL *pFileSpecial = NULL;
     LEGACY_INI_FILE *pIniFile = NULL;
     CONFIG_VALUE cvManifestContents = { };
+    CONFIG_VALUE cvManifestConvertedToBlob = { };
     SCE_ROW_HANDLE sceManifestValueRow = NULL;
     LPWSTR sczManifestValueName = NULL;
     BOOL fWasRegistered = FALSE;
+    BYTE *pbManifestBuffer = NULL;
+    SIZE_T iManifestBuffer = 0;
+    LPWSTR sczBlobManifestAsString = NULL;
 
     if (pSyncSession->fInSceTransaction)
     {
@@ -153,13 +157,45 @@ HRESULT LegacySyncSetProduct(
     hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
     ExitOnFailure(hr, "Failed to read manifest contents");
 
-    if (VALUE_STRING != cvManifestContents.cvType)
+    // TODO: someday remove this temporary conversion code when we feel confident nobody has old databases with old manifests laying around
+    if (VALUE_STRING == cvManifestContents.cvType)
     {
-        hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure(hr, "Stored manifest value was not of type string");
+        LogStringLine(REPORT_STANDARD, "Converting manifest value named %ls from string to blob value", sczManifestValueName);
+
+        hr = ValueSetBlob(reinterpret_cast<BYTE *>(cvManifestContents.string.sczValue), lstrlenW(cvManifestContents.string.sczValue) * sizeof(WCHAR), FALSE, NULL, pcdb->sczGuid, &cvManifestConvertedToBlob);
+        ExitOnFailure(hr, "Failed to set converted manifest value in memory");
+
+        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvManifestConvertedToBlob, TRUE);
+        ExitOnFailure1(hr, "Failed to set converted manifest blob: %ls", sczManifestValueName);
+
+        ReleaseNullSceRow(sceManifestValueRow);
+        ReleaseNullCfgValue(cvManifestContents);
+        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
+        ExitOnFailure2(hr, "Failed to find config value for legacy manifest after conversion (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
+
+        hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
+        ExitOnFailure(hr, "Failed to read converted manifest contents");
     }
 
-    hr = ParseManifest(cvManifestContents.string.sczValue, &pSyncProductSession->product);
+    if (VALUE_BLOB != cvManifestContents.cvType)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
+        ExitOnFailure(hr, "Stored manifest value was not of type blob");
+    }
+
+    if (CFG_BLOB_DB_STREAM != cvManifestContents.blob.cbType)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
+        ExitOnFailure(hr, "Stored manifest blob was not a database stream");
+    }
+
+    hr = StreamRead(pcdb, cvManifestContents.blob.dbstream.dwContentID, NULL, &pbManifestBuffer, &iManifestBuffer);
+    ExitOnFailure2(hr, "Failed to get binary content of blob named: %ls, with content ID: %u", sczManifestValueName, pcdb->dwCfgAppID);
+
+    hr = StrAllocString(&sczBlobManifestAsString, reinterpret_cast<LPWSTR>(pbManifestBuffer), iManifestBuffer / sizeof(WCHAR));
+    ExitOnFailure(hr, "Failed to add null terminator to manifest blob");
+
+    hr = ParseManifest(sczBlobManifestAsString, &pSyncProductSession->product);
     ExitOnFailure(hr, "Failed to parse manifest");
 
     hr = ProductSet(pcdb, wzName, wzLegacyVersion, wzLegacyPublicKey, FALSE, NULL);
@@ -231,7 +267,10 @@ HRESULT LegacySyncSetProduct(
 LExit:
     ReleaseSceRow(sceManifestValueRow);
     ReleaseCfgValue(cvManifestContents);
+    ReleaseCfgValue(cvManifestConvertedToBlob);
     ReleaseStr(sczManifestValueName);
+    ReleaseMem(pbManifestBuffer);
+    ReleaseStr(sczBlobManifestAsString);
 
     return hr;
 }
