@@ -84,7 +84,7 @@ struct MONITOR_ITEM
     BOOL fRemote;
 
     // If the last attempt to sync this monitor item failed, this is the current retry count
-    DWORD dwRetries;
+    DWORD cRetries;
 };
 
 struct MONITOR_CONTEXT
@@ -241,7 +241,7 @@ HRESULT BackgroundStartThread(
     )
 {
     HRESULT hr = S_OK;
-    DWORD dwRetries = 1000;
+    DWORD cRetries = 1000;
     const DWORD dwRetryPeriodInMs = 10;
 
     pcdb->hBackgroundThread = ::CreateThread(NULL, 0, BackgroundThread, pcdb, 0, &pcdb->dwBackgroundThreadId);
@@ -251,13 +251,13 @@ HRESULT BackgroundStartThread(
     }
 
     // Ensure the created thread initializes its message queue. It does this first thing, so if it doesn't within 10 seconds, there must be a huge problem.
-    while (!pcdb->fBackgroundThreadMessageQueueInitialized && 0 < dwRetries)
+    while (!pcdb->fBackgroundThreadMessageQueueInitialized && 0 < cRetries)
     {
         ::Sleep(dwRetryPeriodInMs);
-        --dwRetries;
+        --cRetries;
     }
 
-    if (0 == dwRetries)
+    if (0 == cRetries)
     {
         hr = E_UNEXPECTED;
         ExitOnFailure(hr, "Background thread apparently never initialized its message queue.");
@@ -920,7 +920,7 @@ static void MonRegKeyCallback(
     )
 {
     HRESULT hr = S_OK;
-    SYNC_REQUEST * pSyncRequest = NULL;
+    SYNC_REQUEST *pSyncRequest = NULL;
     MONITOR_CONTEXT *pContext = static_cast<MONITOR_CONTEXT *>(pvContext);
 
     if (FAILED(hrResult))
@@ -994,7 +994,7 @@ static HRESULT HandleSyncRequest(
     BOOL fLocked = FALSE;
     BOOL fReconnected = FALSE;
     BOOL fCheckDbTimestamp = FALSE;
-    MONITOR_ITEM * pMonitorItem = NULL;
+    MONITOR_ITEM *pMonitorItem = NULL;
 
     hr = FindSyncRequest(pContext, pSyncRequest, &dwMonitorIndex);
     if (E_NOTFOUND == hr)
@@ -1072,10 +1072,10 @@ static HRESULT HandleSyncRequest(
 LExit:
     if (NULL != pMonitorItem)
     {
-        if (FAILED(hr) && NUM_RETRIES > pMonitorItem->dwRetries)
+        if (FAILED(hr) && NUM_RETRIES > pMonitorItem->cRetries)
         {
-            ++pMonitorItem->dwRetries;
-            LogErrorString(hr, "Error while syncing path %ls, retrying %u of %u times (with %u ms interval between retries)", pSyncRequest->sczPath, pMonitorItem->dwRetries, NUM_RETRIES, RETRY_INTERVAL_IN_MS);
+            ++pMonitorItem->cRetries;
+            LogErrorString(hr, "Error while syncing path %ls, retrying %u of %u times (with %u ms interval between retries)", pSyncRequest->sczPath, pMonitorItem->cRetries, NUM_RETRIES, RETRY_INTERVAL_IN_MS);
             hr = S_OK;
             ::Sleep(RETRY_INTERVAL_IN_MS);
             if (!::PostThreadMessageW(pContext->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_MONITOR, reinterpret_cast<WPARAM>(pSyncRequest), 0))
@@ -1089,7 +1089,7 @@ LExit:
         }
         else 
         {
-            pMonitorItem->dwRetries = 0;
+            pMonitorItem->cRetries = 0;
         }
     }
     if (fSyncingProduct)
