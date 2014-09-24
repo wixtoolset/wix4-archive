@@ -601,7 +601,7 @@ namespace WixToolset.Data
             // throw away sections not referenced
             int keptRows = 0;
             Table directoryTable = null;
-            Table featureTable = null; ;
+            Table featureTable = null;
             Table lockPermissionsTable = null;
             Table msiLockPermissionsTable = null;
 

@@ -177,7 +177,7 @@ namespace WixToolset.Extensions
             string regid = null;
             string feature = "WixSwidTag";
             YesNoType licensed = YesNoType.NotSet;
-            string type = null; ;
+            string type = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
