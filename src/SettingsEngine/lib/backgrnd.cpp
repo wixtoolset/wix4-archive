@@ -1082,7 +1082,10 @@ LExit:
             {
                 LogErrorString(hr, "Failed to send message to worker thread to sync product");
             }
-            pSyncRequest = NULL;
+            else
+            {
+                pSyncRequest = NULL;
+            }
         }
         else 
         {
