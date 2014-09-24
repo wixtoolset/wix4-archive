@@ -85,7 +85,7 @@ HRESULT CfgLegacyImportProductFromXMLFile(
     hr = ProductGetLegacyManifestValueName(product.sczProductId, &sczManifestValueName);
     ExitOnFailure(hr, "Failed to get legacy manifest value name");
 
-    hr = ValueSetString(sczContent, FALSE, NULL, pcdb->sczGuid, &cvValue);
+    hr = ValueSetBlob(reinterpret_cast<BYTE *>(sczContent), lstrlenW(sczContent) * sizeof(WCHAR), FALSE, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvValue, TRUE);

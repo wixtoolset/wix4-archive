@@ -934,7 +934,7 @@ extern "C" HRESULT CFGAPI CfgSetBlob(
     }
 
     hr = ValueSetBlob(pbBuffer, cbBuffer, FALSE, NULL, pcdb->sczGuid, &cvValue);
-    ExitOnFailure(hr, "Failed to set delete value in memory");
+    ExitOnFailure(hr, "Failed to set blob value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
     ExitOnFailure1(hr, "Failed to set blob: %ls", wzName);
