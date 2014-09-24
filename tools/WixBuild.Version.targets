@@ -18,6 +18,7 @@
 
         <WixVersionPath>$(WixObjRoot)version\</WixVersionPath>
         <CppVersionFile>$(WixVersionPath)wixver.h</CppVersionFile>
+        <CppCliVersionFile>$(WixVersionPath)wixver.cpp</CppCliVersionFile>
         <CSharpVersionFile>$(WixVersionPath)wixver.cs</CSharpVersionFile>
         <SetupVersionFile>$(WixVersionPath)wixver.wxi</SetupVersionFile>
     </PropertyGroup>
@@ -91,6 +92,35 @@
                 Lines="@(CppVersionLines)" />
     <ItemGroup>
       <FileWrites Include="$(CppVersionFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ================================================================================================
+  WriteCppCliVersionFile
+
+    Creates the wixver.cpp version file for C++/CLI code.
+  ================================================================================================
+  -->
+  <Target Name="WriteCppCliVersionFile"
+          Condition="!Exists($(CppCliVersionFile))"
+          Returns="$(CppCliVersionFile)">
+    <ItemGroup>
+      <CppCliLines Include='
+// &lt;auto-generated/&gt;
+#include "precomp.h"
+using namespace System::Reflection%3B
+[assembly: AssemblyVersionAttribute("$(MajorBuildNumber).0.0.0")]%3B
+[assembly: AssemblyFileVersionAttribute("$(FullBuildVersionString)")]%3B
+'/>
+    </ItemGroup>
+
+    <MakeDir Directories="$(WixVersionPath)"/>
+    <WriteLinesToFile Overwrite="true"
+                File="$(CppCliVersionFile)"
+                Lines="@(CppCliLines)" />
+    <ItemGroup>
+      <FileWrites Include="$(CppCliVersionFile)" />
     </ItemGroup>
   </Target>
 
@@ -175,7 +205,7 @@ using System.Reflection%3B
   ================================================================================================
   -->
   <Target Name="WriteVersionFiles"
-          DependsOnTargets="WriteCppVersionFile;WriteCSharpVersionFile;WriteSetupVersionFile" />
+          DependsOnTargets="WriteCppVersionFile;WriteCppCliVersionFile;WriteCSharpVersionFile;WriteSetupVersionFile" />
 
   <!--
   ================================================================================================
@@ -185,7 +215,7 @@ using System.Reflection%3B
   ================================================================================================
   -->
   <Target Name="CleanVersionFiles">
-    <Delete Files="$(CppVersionFile);$(CSharpVersionFile);$(SetupVersionFile)"
+    <Delete Files="$(CppVersionFile);$(CppCliVersionFile);$(CSharpVersionFile);$(SetupVersionFile)"
             TreatErrorsAsWarnings="true" />
   </Target>
 

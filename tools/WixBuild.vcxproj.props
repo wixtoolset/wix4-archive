@@ -30,6 +30,7 @@
   <PropertyGroup>
     <MultiTargetDirSuffix Condition=" '$(PlatformToolset)'=='v100' ">2010</MultiTargetDirSuffix>
     <MultiTargetDirSuffix Condition=" '$(PlatformToolset)'=='v110_xp' ">2012</MultiTargetDirSuffix>
+    <MultiTargetDirSuffix Condition=" '$(PlatformToolset)'=='v120' ">2013</MultiTargetDirSuffix>
     <MultiTargetDirSuffix Condition=" '$(PlatformToolset)'=='v120_xp' ">2013</MultiTargetDirSuffix>
   </PropertyGroup>
 
@@ -146,6 +147,17 @@
   <ItemGroup Condition="!$(ResourceOnlyDll)">
     <ClCompile Include="$(WixRoot)src\common\precomp.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(CLRSupport)'=='true' and '$(VersionCppCli)' == '' ">
+    <VersionCppCli>wixver.cpp</VersionCppCli>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(CLRSupport)'=='true' ">
+    <ClCompile Include="$(WixVersionPath)$(VersionCppCli)">
+      <Link>$(VersionCppCli)</Link>
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+      <Visible>false</Visible>
     </ClCompile>
   </ItemGroup>
 </Project>
