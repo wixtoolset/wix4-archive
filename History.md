@@ -1,3 +1,5 @@
+* MikeGC: Bug #4435: Sync requests must be deduped to avoid the possibility of building up too many sync requests for the same location
+
 * MikeGC: Feature #4355: Settings engine doesn't handle files that are always locked for write (such as database files) very well
 
 * SeanHall: WIXFEAT:4413 - Merge OnApplyNumberOfPhases into OnApplyBegin.

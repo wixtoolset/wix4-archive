@@ -61,8 +61,6 @@ struct SYNC_REQUEST
 
     // Only applies to regkeys
     HKEY hkRoot;
-
-    DWORD dwRetries;
 };
 
 struct MONITOR_ITEM
@@ -84,6 +82,9 @@ struct MONITOR_ITEM
 
     // Whether there is a remote to sync at this monitor location
     BOOL fRemote;
+
+    // If the last attempt to sync this monitor item failed, this is the current retry count
+    DWORD dwRetries;
 };
 
 struct MONITOR_CONTEXT
@@ -993,6 +994,7 @@ static HRESULT HandleSyncRequest(
     BOOL fLocked = FALSE;
     BOOL fReconnected = FALSE;
     BOOL fCheckDbTimestamp = FALSE;
+    MONITOR_ITEM * pMonitorItem = NULL;
 
     hr = FindSyncRequest(pContext, pSyncRequest, &dwMonitorIndex);
     if (E_NOTFOUND == hr)
@@ -1004,11 +1006,13 @@ static HRESULT HandleSyncRequest(
     }
     ExitOnFailure(hr, "Failed to find sync request");
 
-    if (FAILED(pContext->rgMonitorItems[dwMonitorIndex].hrStatus))
+    pMonitorItem = pContext->rgMonitorItems + dwMonitorIndex;
+
+    if (FAILED(pMonitorItem->hrStatus))
     {
         fReconnected = TRUE;
     }
-    pContext->rgMonitorItems[dwMonitorIndex].hrStatus = S_OK;
+    pMonitorItem->hrStatus = S_OK;
 
     hr = LegacySyncInitializeSession(FALSE, FALSE, &syncSession);
     ExitOnFailure(hr, "Failed to initialize legacy sync session");
@@ -1020,16 +1024,16 @@ static HRESULT HandleSyncRequest(
 
     SceResetDatabaseChanged(pcdb->psceDb);
 
-    for (i = 0; i < pContext->rgMonitorItems[dwMonitorIndex].cProductName; ++i)
+    for (i = 0; i < pMonitorItem->cProductName; ++i)
     {
-        pcdb->vpfBackgroundStatus(S_OK, BACKGROUND_STATUS_SYNCING_PRODUCT, pContext->rgMonitorItems[dwMonitorIndex].rgsczProductName[i], wzLegacyVersion, wzLegacyPublicKey, pcdb->pvCallbackContext);
+        pcdb->vpfBackgroundStatus(S_OK, BACKGROUND_STATUS_SYNCING_PRODUCT, pMonitorItem->rgsczProductName[i], wzLegacyVersion, wzLegacyPublicKey, pcdb->pvCallbackContext);
         fSyncingProduct = TRUE;
-        wzSyncingProductName = pContext->rgMonitorItems[dwMonitorIndex].rgsczProductName[i];
+        wzSyncingProductName = pMonitorItem->rgsczProductName[i];
 
-        LogStringLine(REPORT_STANDARD, "Syncing legacy product %ls due to detected changes under %ls %ls", pContext->rgMonitorItems[dwMonitorIndex].rgsczProductName[i], MONITOR_DIRECTORY == pSyncRequest->type ? L"directory" : L"regkey", pSyncRequest->sczPath);
+        LogStringLine(REPORT_STANDARD, "Syncing legacy product %ls due to detected changes under %ls %ls", pMonitorItem->rgsczProductName[i], MONITOR_DIRECTORY == pSyncRequest->type ? L"directory" : L"regkey", pSyncRequest->sczPath);
 
         // Sync the product
-        hr = LegacySyncSetProduct(pcdb, &syncSession, pContext->rgMonitorItems[dwMonitorIndex].rgsczProductName[i]);
+        hr = LegacySyncSetProduct(pcdb, &syncSession, pMonitorItem->rgsczProductName[i]);
         ExitOnFailure(hr, "Failed to set product in legacy sync session");
 
         hr = LegacyProductMachineToDb(pcdb, &syncSession.syncProductSession);
@@ -1038,11 +1042,11 @@ static HRESULT HandleSyncRequest(
         hr = LegacySyncFinalizeProduct(pcdb, &syncSession);
         ExitOnFailure(hr, "Failed to finalize product in legacy sync session");
 
-        pcdb->vpfBackgroundStatus(S_OK, BACKGROUND_STATUS_SYNC_PRODUCT_FINISHED, pContext->rgMonitorItems[dwMonitorIndex].rgsczProductName[i], wzLegacyVersion, wzLegacyPublicKey, pcdb->pvCallbackContext);
+        pcdb->vpfBackgroundStatus(S_OK, BACKGROUND_STATUS_SYNC_PRODUCT_FINISHED, pMonitorItem->rgsczProductName[i], wzLegacyVersion, wzLegacyPublicKey, pcdb->pvCallbackContext);
         fSyncingProduct = FALSE;
     }
 
-    if (pContext->rgMonitorItems[dwMonitorIndex].fRemote)
+    if (pMonitorItem->fRemote)
     {
         hr = StrAllocString(&sczTemp, pSyncRequest->sczPath, 0);
         ExitOnFailure1(hr, "Failed to copy sync request string %ls", pSyncRequest->sczPath);
@@ -1066,17 +1070,27 @@ static HRESULT HandleSyncRequest(
     }
 
 LExit:
-    if (FAILED(hr) && NUM_RETRIES > pSyncRequest->dwRetries)
+    if (NULL != pMonitorItem)
     {
-        ++pSyncRequest->dwRetries;
-        LogErrorString(hr, "Error while syncing path %ls, retrying %u of %u times (with %u ms interval between retries)", pSyncRequest->sczPath, pSyncRequest->dwRetries, NUM_RETRIES, RETRY_INTERVAL_IN_MS);
-        hr = S_OK;
-        ::Sleep(RETRY_INTERVAL_IN_MS);
-        if (!::PostThreadMessageW(pContext->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_MONITOR, reinterpret_cast<WPARAM>(pSyncRequest), 0))
+        if (FAILED(hr) && NUM_RETRIES > pMonitorItem->dwRetries)
         {
-            LogErrorString(hr, "Failed to send message to worker thread to sync product");
+            ++pMonitorItem->dwRetries;
+            LogErrorString(hr, "Error while syncing path %ls, retrying %u of %u times (with %u ms interval between retries)", pSyncRequest->sczPath, pMonitorItem->dwRetries, NUM_RETRIES, RETRY_INTERVAL_IN_MS);
+            hr = S_OK;
+            ::Sleep(RETRY_INTERVAL_IN_MS);
+            if (!::PostThreadMessageW(pContext->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_MONITOR, reinterpret_cast<WPARAM>(pSyncRequest), 0))
+            {
+                LogErrorString(hr, "Failed to send message to worker thread to sync product");
+            }
+            else
+            {
+                pSyncRequest = NULL;
+            }
         }
-        pSyncRequest = NULL;
+        else 
+        {
+            pMonitorItem->dwRetries = 0;
+        }
     }
     if (fSyncingProduct)
     {
