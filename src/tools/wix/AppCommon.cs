@@ -14,15 +14,13 @@
 namespace WixToolset
 {
     using System;
-    using System.Collections;
     using System.Collections.Specialized;
     using System.Configuration;
-    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
+    using System.Reflection;
     using System.Text;
     using System.Threading;
-    using System.Reflection;
     using WixToolset.Data;
 
     /// <summary>
@@ -61,6 +59,26 @@ namespace WixToolset
         }
 
         /// <summary>
+        /// Gets a unique temporary location or uses the provided temporary location.
+        /// </summary>
+        /// <param name="tempLocation">Optional temporary location to use.</param>
+        /// <returns>Temporary location.</returns>
+        public static string GetTempLocation(string tempLocation = null)
+        {
+            if (String.IsNullOrEmpty(tempLocation))
+            {
+                tempLocation = Environment.GetEnvironmentVariable("WIX_TEMP") ?? Path.GetTempPath();
+
+                do
+                {
+                    tempLocation = Path.Combine(tempLocation, DateTime.Now.ToString("wixyyMMddTHHmmssffff"));
+                } while (Directory.Exists(tempLocation));
+            }
+
+            return tempLocation;
+        }
+
+        /// <summary>
         /// Delete a directory with retries and best-effort cleanup.
         /// </summary>
         /// <param name="path">The directory to delete.</param>
@@ -94,13 +112,13 @@ namespace WixToolset
         {
             switch (e.Level)
             {
-            case MessageLevel.Warning:
-            case MessageLevel.Error:
-                Console.Error.WriteLine(e.Message);
-                break;
-            default:
-                Console.WriteLine(e.Message);
-                break;
+                case MessageLevel.Warning:
+                case MessageLevel.Error:
+                    Console.Error.WriteLine(e.Message);
+                    break;
+                default:
+                    Console.WriteLine(e.Message);
+                    break;
             }
         }
 

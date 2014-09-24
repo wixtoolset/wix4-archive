@@ -16,15 +16,12 @@ namespace WixToolset.Tools
     using System;
     using System.CodeDom.Compiler;
     using System.Collections.Specialized;
-    using System.Diagnostics;
-    using System.IO;
     using System.Globalization;
-    using System.Reflection;
+    using System.IO;
     using System.Runtime.InteropServices;
-    using System.Xml;
     using WixToolset.Data;
-    using WixToolset.Msi;
     using WixToolset.Extensibility;
+    using WixToolset.Msi;
 
     /// <summary>
     /// The torch transform builder application.
@@ -241,7 +238,7 @@ namespace WixToolset.Tools
                     differ.AddExtension(extension);
                 }
 
-                binder.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
+                binder.TempFilesLocation = AppCommon.GetTempLocation();
                 unbinder.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP");
                 tempFileCollection = new TempFileCollection(Environment.GetEnvironmentVariable("WIX_TEMP"));
 
@@ -356,17 +353,7 @@ namespace WixToolset.Tools
             {
                 if (null != binder)
                 {
-                    if (this.tidy)
-                    {
-                        if (!binder.DeleteTempFiles())
-                        {
-                            Console.Error.WriteLine(TorchStrings.WAR_FailedToDeleteTempDir, binder.TempFilesLocation);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(TorchStrings.INF_BinderTempDirLocatedAt, binder.TempFilesLocation);
-                    }
+                    binder.Cleanup(tidy);
                 }
 
                 if (null != unbinder)

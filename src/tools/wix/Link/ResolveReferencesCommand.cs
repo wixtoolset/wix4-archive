@@ -19,7 +19,7 @@ namespace WixToolset.Link
     /// <summary>
     /// Resolves all the simple references in a section.
     /// </summary>
-    internal class ResolveReferencesCommand
+    internal class ResolveReferencesCommand : ICommand
     {
         private Section entrySection;
         private IDictionary<string, Symbol> symbols;
@@ -32,7 +32,7 @@ namespace WixToolset.Link
             this.symbols = symbols;
         }
 
-        public bool BuildingMergeModule { get; set; }
+        public bool BuildingMergeModule { private get; set; }
 
         public IEnumerable<Symbol> ReferencedSymbols { get { return this.referencedSymbols; } }
 

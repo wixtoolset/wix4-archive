@@ -14,18 +14,17 @@
 namespace WixToolset.Cab
 {
     using System;
-    using System.Collections;
-    using System.Runtime.InteropServices;
+    using System.Collections.Generic;
     using WixToolset.Cab.Interop;
     using Handle = System.Int32;
 
     /// <summary>
     /// Wrapper class around interop with wixcab.dll to enumerate files from a cabinet.
     /// </summary>
-    public sealed class WixEnumerateCab : IDisposable
+    internal sealed class WixEnumerateCab : IDisposable
     {
         private bool disposed;
-        private ArrayList fileInfoList;
+        private List<CabinetFileInfo> fileInfoList;
         private CabInterop.PFNNOTIFY pfnNotify;
 
         /// <summary>
@@ -33,7 +32,6 @@ namespace WixToolset.Cab
         /// </summary>
         public WixEnumerateCab()
         {
-            this.fileInfoList = new ArrayList();
             this.pfnNotify = new CabInterop.PFNNOTIFY(this.Notify);
             NativeMethods.EnumerateCabBegin();
         }
@@ -51,9 +49,9 @@ namespace WixToolset.Cab
         /// </summary>
         /// <param name="cabinetFile">path to cabinet</param>
         /// <returns>list of CabinetFileInfo</returns>
-        public ArrayList Enumerate(string cabinetFile)
+        internal List<CabinetFileInfo> Enumerate(string cabinetFile)
         {
-            this.fileInfoList.Clear(); // we need to clear the list before starting new one
+            this.fileInfoList = new List<CabinetFileInfo>();
 
             // the callback (this.Notify) will populate the list for each file in cabinet
             NativeMethods.EnumerateCab(cabinetFile, this.pfnNotify);
@@ -83,7 +81,7 @@ namespace WixToolset.Cab
         /// <returns>System.Int32</returns>
         internal Handle Notify(CabInterop.NOTIFICATIONTYPE fdint, CabInterop.NOTIFICATION pfdin)
         {
-            // This is FDI's way of notifying us of how many files total are in the cab, accurate even 
+            // This is FDI's way of notifying us of how many files total are in the cab, accurate even
             // if the files are split into multiple folders - use it to allocate the precise size we need
             if (CabInterop.NOTIFICATIONTYPE.ENUMERATE == fdint && 0 == this.fileInfoList.Count)
             {
@@ -95,7 +93,8 @@ namespace WixToolset.Cab
                 CabinetFileInfo fileInfo = new CabinetFileInfo(pfdin.Psz1, pfdin.Date, pfdin.Time, pfdin.Cb);
                 this.fileInfoList.Add(fileInfo);
             }
-            return 0; // tell cabinet api to skip this file
+
+            return 0; // tell cabinet api to skip this file.
         }
     }
 }

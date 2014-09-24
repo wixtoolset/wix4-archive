@@ -14,8 +14,6 @@
 namespace WixToolset
 {
     using System;
-    using System.CodeDom.Compiler;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.ComponentModel;
@@ -39,7 +37,6 @@ namespace WixToolset
         private string[] ices;
         private Output output;
         private string[] suppressedICEs;
-        private TempFileCollection tempFiles;
         private InstallUIHandler validationUIHandler;
         private bool validationSessionComplete;
 
@@ -97,29 +94,9 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Gets or sets the temporary path for the Binder.  If left null, the binder
-        /// will use %TEMP% environment variable.
+        /// Sets the temporary path for the Binder.
         /// </summary>
-        /// <value>Path to temp files.</value>
-        public string TempFilesLocation
-        {
-            get
-            {
-                return null == this.tempFiles ? String.Empty : this.tempFiles.BasePath;
-            }
-
-            set
-            {
-                if (null == value)
-                {
-                    this.tempFiles = new TempFileCollection();
-                }
-                else
-                {
-                    this.tempFiles = new TempFileCollection(value);
-                }
-            }
-        }
+        public string TempFilesLocation { private get; set; }
 
         /// <summary>
         /// Add a cube file to the validation run.
@@ -153,12 +130,8 @@ namespace WixToolset
             this.extension.Output = this.output;
             this.extension.InitializeValidator();
 
-            // if we don't have the temporary files object yet, get one
-            if (null == this.tempFiles)
-            {
-                this.tempFiles = new TempFileCollection();
-            }
-            Directory.CreateDirectory(this.TempFilesLocation); // ensure the base path is there
+            // Ensure the temporary files can be created.
+            Directory.CreateDirectory(this.TempFilesLocation);
 
             // index the ICEs
             if (null != this.ices)
@@ -395,29 +368,6 @@ namespace WixToolset
                 mutex.ReleaseMutex();
                 this.cubeFiles.Clear();
                 this.extension.FinalizeValidator();
-            }
-        }
-
-        /// <summary>
-        /// Cleans up the temp files used by the Validator.
-        /// </summary>
-        /// <returns>True if all files were deleted, false otherwise.</returns>
-        public bool DeleteTempFiles()
-        {
-            if (null == this.tempFiles)
-            {
-                return true; // no work to do
-            }
-            else
-            {
-                bool deleted = Common.DeleteTempFiles(this.tempFiles.BasePath, this);
-
-                if (deleted)
-                {
-                    this.tempFiles = null; // temp files have been deleted, no need to remember this now
-                }
-
-                return deleted;
             }
         }
 

@@ -55,8 +55,6 @@ namespace WixToolset.Tools
 
         public bool SuppressAclReset { get; private set; }
 
-        public bool ReuseCabinets { get; set; }
-
         public List<BindPath> TargetBindPaths { get; private set; }
 
         public List<BindPath> UpdatedBindPaths { get; private set; }
@@ -154,7 +152,7 @@ namespace WixToolset.Tools
                     }
                     else if (parameter.Equals("reusecab", StringComparison.Ordinal))
                     {
-                        this.ReuseCabinets = true;
+                        Messaging.Instance.OnMessage(WixWarnings.DeprecatedCommandLineSwitch(arg, "-cc"));
                     }
                     else if (parameter.Equals("spdb", StringComparison.Ordinal))
                     {

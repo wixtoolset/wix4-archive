@@ -14,7 +14,6 @@
 namespace WixToolset.CLR.Interop
 {
     using System;
-    using System.Text;
     using System.Runtime.InteropServices;
 
     /// <summary>
@@ -35,9 +34,9 @@ namespace WixToolset.CLR.Interop
         /// Represents a reference to the unique signature of a code object.
         /// </summary>
         [ComImport]
-            [Guid("6eaf5ace-7917-4f3c-b129-e046a9704766")]
-            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-            internal interface IReferenceIdentity
+        [Guid("6eaf5ace-7917-4f3c-b129-e046a9704766")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        internal interface IReferenceIdentity
         {
             /// <summary>
             /// Get an assembly attribute.
@@ -82,9 +81,9 @@ namespace WixToolset.CLR.Interop
         /// IEnumIDENTITY_ATTRIBUTE interface.
         /// </summary>
         [ComImport]
-            [Guid("9cdaae75-246e-4b00-a26d-b9aec137a3eb")]
-            [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-            internal interface IEnumIDENTITY_ATTRIBUTE
+        [Guid("9cdaae75-246e-4b00-a26d-b9aec137a3eb")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        internal interface IEnumIDENTITY_ATTRIBUTE
         {
             /// <summary>
             /// Gets the next attributes.
@@ -148,9 +147,12 @@ namespace WixToolset.CLR.Interop
         [StructLayout(LayoutKind.Sequential)]
         internal struct IDENTITY_ATTRIBUTE
         {
-            [MarshalAs(UnmanagedType.LPWStr)] public string AttributeNamespace;
-            [MarshalAs(UnmanagedType.LPWStr)] public string AttributeName;
-            [MarshalAs(UnmanagedType.LPWStr)] public string AttributeValue;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string AttributeNamespace;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string AttributeName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string AttributeValue;
         }
     }
 }

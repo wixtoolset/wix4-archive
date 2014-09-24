@@ -15,7 +15,6 @@ namespace WixToolset
 {
     using System;
     using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -25,8 +24,6 @@ namespace WixToolset
     using System.Xml;
     using System.Xml.Linq;
     using WixToolset.Data;
-    using WixToolset.Extensibility;
-    using Wix = WixToolset.Data.Serialize;
 
     /// <summary>
     /// Common Wix utility methods and types.
@@ -162,6 +159,7 @@ namespace WixToolset
                         messageHandler.OnMessage(WixWarnings.DirectoryInUse(null, path));
                         return false;
                     }
+
                     System.Threading.Thread.Sleep(300);  // sleep a bit before trying again
                 }
             }

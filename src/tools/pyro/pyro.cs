@@ -15,7 +15,6 @@ namespace WixToolset.Tools
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
     using WixToolset.Data;
@@ -153,7 +152,6 @@ namespace WixToolset.Tools
             // Initialize the binder from the command line.
             WixToolset.Binder binder = new WixToolset.Binder();
             binder.CabCachePath = this.commandLine.CabCachePath;
-            binder.ReuseCabinets = this.commandLine.ReuseCabinets;
             //binder.DeltaBinaryPatch = this.commandLine.Delta;
             //binder.ContentsFile = this.commandLine.ContentsFile;
             //binder.BuiltOutputsFile = this.commandLine.BuiltOutputsFile;
@@ -169,7 +167,7 @@ namespace WixToolset.Tools
             //binder.SuppressLayout = this.commandLine.SuppressLayout;
             binder.SuppressValidation = true;
             binder.PdbFile = this.commandLine.SuppressWixPdb ? null : this.commandLine.PdbFile;
-            binder.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP") ?? Path.GetTempPath();
+            binder.TempFilesLocation = AppCommon.GetTempLocation();
             binder.WixVariableResolver = wixVariableResolver;
 
             foreach (IBinderExtension extension in this.binderExtensions)

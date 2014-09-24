@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
     using System;
     using System.Collections;
@@ -19,7 +19,6 @@ namespace WixToolset
     using System.IO;
     using System.Xml;
     using WixToolset.Cab;
-    using WixToolset.Data;
 
     /// <summary>
     /// Burn PE reader for the WiX toolset.
@@ -44,9 +43,8 @@ namespace WixToolset
         /// Creates a BurnReader for reading a PE file.
         /// </summary>
         /// <param name="fileExe">File to read.</param>
-        /// <param name="messageHandler">The messagehandler to report warnings/errors to.</param>
-        private BurnReader(string fileExe, IMessageHandler messageHandler)
-            : base(fileExe, messageHandler)
+        private BurnReader(string fileExe)
+            : base(fileExe)
         {
             this.attachedContainerPayloadNames = new List<DictionaryEntry>();
         }
@@ -66,11 +64,10 @@ namespace WixToolset
         /// Opens a Burn reader.
         /// </summary>
         /// <param name="fileExe">Path to file.</param>
-        /// <param name="messageHandler">Message handler.</param>
         /// <returns>Burn reader.</returns>
-        public static BurnReader Open(string fileExe, IMessageHandler messageHandler)
+        public static BurnReader Open(string fileExe)
         {
-            BurnReader reader = new BurnReader(fileExe, messageHandler);
+            BurnReader reader = new BurnReader(fileExe);
 
             reader.binaryReader = new BinaryReader(File.Open(fileExe, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete));
             if (!reader.Initialize(reader.binaryReader))

@@ -49,7 +49,7 @@ namespace WixToolset.Data
 
             set
             {
-                // validate the value before setting it
+                // Validate the value before setting it.
                 this.Column.ValidateValue(value);
                 this.data = value;
             }
@@ -116,6 +116,33 @@ namespace WixToolset.Data
         /// </summary>
         /// <returns>Field's data as a string.</returns>
         public override string ToString()
+        {
+            return this.AsString();
+        }
+
+        /// <summary>
+        /// Gets the field as an integer.
+        /// </summary>
+        /// <returns>Field's data as an integer.</returns>
+        public int AsInteger()
+        {
+            return (this.data is int) ? (int)this.data : Convert.ToInt32(this.data, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Gets the field as an integer that could be null.
+        /// </summary>
+        /// <returns>Field's data as an integer that could be null.</returns>
+        public int? AsNullableInteger()
+        {
+            return (null == this.data) ? (int?)null : (this.data is int) ? (int)this.data : Convert.ToInt32(this.data, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Gets the field as a string.
+        /// </summary>
+        /// <returns>Field's data as a string.</returns>
+        public string AsString()
         {
             return (null == this.data) ? null : Convert.ToString(this.data, CultureInfo.InvariantCulture);
         }

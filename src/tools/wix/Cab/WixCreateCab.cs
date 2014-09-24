@@ -20,7 +20,6 @@ namespace WixToolset.Cab
     using WixToolset.Cab.Interop;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
-    using WixToolset.Msi;
     using WixToolset.Msi.Interop;
 
     /// <summary>
@@ -59,7 +58,7 @@ namespace WixToolset.Cab
             {
                 throw new WixException(WixErrors.IllegalEnvironmentVariable(CompressionLevelVariable, compressionLevelVariable));
             }
-        
+
             if (String.IsNullOrEmpty(cabDir))
             {
                 cabDir = Directory.GetCurrentDirectory();
@@ -213,7 +212,7 @@ namespace WixToolset.Cab
                     {
                         NativeMethods.CreateCabFinish(this.handle, IntPtr.Zero);
                     }
-                        
+
                     GC.SuppressFinalize(this);
                     this.disposed = true;
                 }

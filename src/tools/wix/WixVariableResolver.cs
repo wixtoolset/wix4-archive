@@ -96,7 +96,7 @@ namespace WixToolset
 
             return this.ResolveVariables(sourceLineNumbers, value, localizationOnly, ref isDefault, ref delayedResolve);
         }
-        
+
         /// <summary>
         /// Resolve the wix variables in a value.
         /// </summary>
@@ -323,8 +323,8 @@ namespace WixToolset
                                 sb.Insert(matches[i].Index, resolvedValue);
                             }
                             else
-                            { 
-                               throw new WixException(WixErrors.UnresolvedBindReference(sourceLineNumbers,value));
+                            {
+                                throw new WixException(WixErrors.UnresolvedBindReference(sourceLineNumbers, value));
                             }
                         }
                     }

@@ -11,14 +11,12 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Bind
 {
     using System;
+    using System.Collections;
     using System.IO;
     using System.Threading;
-    using System.Diagnostics;
-    using System.Collections;
-    using System.Globalization;
     using WixToolset.Cab;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
@@ -148,7 +146,7 @@ namespace WixToolset
             int maxCabinetSize = 0; // The value of 0 corresponds to default of 2GB which means no cabinet splitting
             ulong maxPreCompressedSizeInBytes = 0;
 
-            if (MaximumCabinetSizeForLargeFileSplitting != 0) 
+            if (MaximumCabinetSizeForLargeFileSplitting != 0)
             {
                 // User Specified Max Cab Size for File Splitting, So Check if this cabinet has a single file larger than MaximumUncompressedFileSize
                 // If a file is larger than MaximumUncompressedFileSize, then the cabinet containing it will have only this file
@@ -186,7 +184,8 @@ namespace WixToolset
                         Messaging.Instance.OnMessage(WixWarnings.RetainRangeMismatch(fileRow.SourceLineNumbers, fileRow.File));
                     }
                     cab.AddFile(fileRow);
-               }
+                }
+
                 cab.Complete(newCabNamesCallBackAddress);
             }
         }

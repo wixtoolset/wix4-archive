@@ -176,7 +176,6 @@ namespace WixToolset.Tools
             // Initialize the binder from the command line.
             WixToolset.Binder binder = new WixToolset.Binder();
             binder.CabCachePath = this.commandLine.CabCachePath;
-            binder.ReuseCabinets = this.commandLine.ReuseCabinets;
             binder.ContentsFile = this.commandLine.ContentsFile;
             binder.BuiltOutputsFile = this.commandLine.BuiltOutputsFile;
             binder.OutputsFile = this.commandLine.OutputsFile;
@@ -184,14 +183,13 @@ namespace WixToolset.Tools
             binder.BindPaths.AddRange(this.commandLine.BindPaths);
             binder.CabbingThreadCount = this.commandLine.CabbingThreadCount;
             binder.DefaultCompressionLevel = this.commandLine.DefaultCompressionLevel;
-            binder.ExactAssemblyVersions = this.commandLine.ExactAssemblyVersions;
             binder.Ices.AddRange(this.commandLine.Ices);
             binder.SuppressIces.AddRange(this.commandLine.SuppressIces);
             binder.SuppressAclReset = this.commandLine.SuppressAclReset;
             binder.SuppressLayout = this.commandLine.SuppressLayout;
             binder.SuppressValidation = this.commandLine.SuppressValidation;
             binder.PdbFile = this.commandLine.SuppressWixPdb ? null : this.commandLine.PdbFile;
-            binder.TempFilesLocation = Environment.GetEnvironmentVariable("WIX_TEMP") ?? Path.GetTempPath();
+            binder.TempFilesLocation = AppCommon.GetTempLocation();
             binder.WixVariableResolver = wixVariableResolver;
 
             foreach (IBinderExtension extension in this.binderExtensions)

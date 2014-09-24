@@ -112,36 +112,36 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="HelpMessage" xml:space="preserve">
-<value><![CDATA[ usage: torch.exe [-?] [options] targetInput updatedInput -out outputFile [@responseFile]
+    <value> usage: torch.exe [-?] [options] targetInput updatedInput -out outputFile [@responseFile]
 
    -a         admin image (generates source file information in the transform)
               (default with -ax)
-   -ax <path> admin image with extraction of binaries
+   -ax &lt;path&gt; admin image with extraction of binaries
               (combination of -a and -x)
-   -ext <extension>  extension assembly or "class, assembly"
+   -ext &lt;extension&gt;  extension assembly or "class, assembly"
    -nologo    skip printing logo information
    -notidy    do not delete temporary files (useful for debugging)
    -o[ut]     specify output file (default: write to current directory)
    -p         preserve unmodified content in the output
    -pedantic  show pedantic messages
-   -serr <L>  suppress error when applying transform; see Error flags below
+   -serr &lt;L&gt;  suppress error when applying transform; see Error flags below
    -sw[N]     suppress all warnings or a specific message ID
               (example: -sw1011 -sw1012)
    -swall     suppress all warnings (deprecated)
-   -t <type>  use default validation flags for the transform type
+   -t &lt;type&gt;  use default validation flags for the transform type
               (see Transform types below)
    -v         verbose output
-   -val <L>   validation flags for the transform; see Validation flags below
+   -val &lt;L&gt;   validation flags for the transform; see Validation flags below
    -wx[N]     treat all warnings or a specific message ID as an error
               (example: -wx1011 -wx1012)
    -wxall     treat all warnings as errors (deprecated)
-   -x <path>  extract binaries to the specified path
+   -x &lt;path&gt;  extract binaries to the specified path
    -xi        input WiX format instead of MSI format (.wixout or .wixpdb)
    -xo        output wixout instead of MST format
               (set by default if -xi is present)
@@ -162,11 +162,11 @@ Validation flags:
    s          Check major version only
    t          Check major and minor versions
    u          Check major, minor, and upgrade versions
-   v          Upgrade version < target version
-   w          Upgrade version <= target version
+   v          Upgrade version &lt; target version
+   w          Upgrade version &lt;= target version
    x          Upgrade version = target version
-   y          Upgrade version > target version
-   z          Upgrade version >= target version
+   y          Upgrade version &gt; target version
+   z          Upgrade version &gt;= target version
 
 Transform types:
    language   Default flags for a language transform
@@ -174,10 +174,7 @@ Transform types:
    patch      Default flags for a patch transform
 
 Environment variables:
-   WIX_TEMP   overrides the temporary directory used for cab extraction, binary extraction, ...]]></value>
-  </data>
-  <data name="INF_BinderTempDirLocatedAt" xml:space="preserve">
-    <value>Binder temporary directory located at '{0}'.</value>
+   WIX_TEMP   overrides the temporary directory used for cab extraction, binary extraction, ...</value>
   </data>
   <data name="INF_TorchTempDirLocatedAt" xml:space="preserve">
     <value>Torch temporary directory located at '{0}'.</value>
