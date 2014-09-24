@@ -13,7 +13,6 @@
 
 namespace WixToolset.Bind
 {
-    using System;
     using System.Collections.Generic;
     using WixToolset.Data;
 
@@ -31,7 +30,6 @@ namespace WixToolset.Bind
             this.ParallelCache = (BundleChainAttributes.ParallelCache == (attributes & BundleChainAttributes.ParallelCache));
             this.Packages = new List<ChainPackageInfo>();
             this.RollbackBoundaries = new List<RollbackBoundaryInfo>();
-            this.SourceLineNumbers = row.SourceLineNumbers;
         }
 
         public bool DisableRollback { get; private set; }
@@ -39,6 +37,5 @@ namespace WixToolset.Bind
         public bool ParallelCache { get; private set; }
         public List<ChainPackageInfo> Packages { get; private set; }
         public List<RollbackBoundaryInfo> RollbackBoundaries { get; private set; }
-        public SourceLineNumber SourceLineNumbers { get; private set; }
     }
 }
