@@ -389,6 +389,11 @@ namespace WixToolset.UX
             {
                 this.Downgrade = true;
             }
+
+            if (!WixBA.Model.Bootstrapper.BAManifest.Bundle.Packages.ContainsKey(e.ProductCode))
+            {
+                WixBA.Model.Bootstrapper.BAManifest.Bundle.AddRelatedBundleAsPackage(e);
+            }
         }
 
         private void DetectComplete(object sender, DetectCompleteEventArgs e)

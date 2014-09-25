@@ -27,9 +27,9 @@ namespace WixToolset.UX
     /// </summary>
     public class Model
     {
-        private static readonly XNamespace BootstrapperApplicationDataNamespace = "http://wixtoolset.org/schemas/v4/2010/BootstrapperApplicationData";
         private const string BurnBundleInstallDirectoryVariable = "InstallFolder";
         private const string BurnBundleLayoutDirectoryVariable = "WixBundleLayoutDirectory";
+        private const string BurnBundleVersionVariable = "WixBundleVersion";
 
         /// <summary>
         /// Creates a new model for the UX.
@@ -38,30 +38,8 @@ namespace WixToolset.UX
         public Model(BootstrapperApplication bootstrapper)
         {
             this.Bootstrapper = bootstrapper;
-            this.PackageDisplayNames = new Dictionary<string, string>();
             this.Telemetry = new List<KeyValuePair<string, string>>();
-
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string assemblyLocation = assembly.Location;
-            string folder = Path.GetDirectoryName(assemblyLocation);
-
-            try
-            {
-                XDocument document = XDocument.Load(Path.Combine(folder, "BootstrapperApplicationData.xml"));
-
-                foreach (var packageProperties in document.Root.Descendants(BootstrapperApplicationDataNamespace + "WixPackageProperties"))
-                {
-                    this.PackageDisplayNames.Add(packageProperties.Attribute("Package").Value, packageProperties.Attribute("DisplayName").Value);
-                }
-            }
-            catch
-            {
-                // Catching all exceptions is generally poor form but we **really** don't care if the package display names can't be loaded.
-            }
-
-            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(assemblyLocation);
-
-            this.Version = new Version(fileVersion.FileVersion);
+            this.Version = this.Engine.VersionVariables[BurnBundleVersionVariable];
         }
 
         /// <summary>
@@ -138,8 +116,6 @@ namespace WixToolset.UX
 
         public LaunchAction PlannedAction { get; set; }
 
-        private Dictionary<string, string> PackageDisplayNames { get; set; }
-
         /// <summary>
         /// Creates a correctly configured HTTP web request.
         /// </summary>
@@ -160,9 +136,9 @@ namespace WixToolset.UX
         /// <returns>Display name of the package if found or the package id if not.</returns>
         public string GetPackageName(string packageId)
         {
-            string displayName;
+            PackageInfo package;
 
-            return this.PackageDisplayNames.TryGetValue(packageId, out displayName) ? displayName : packageId;
+            return this.Bootstrapper.BAManifest.Bundle.Packages.TryGetValue(packageId, out package) ? package.DisplayName : packageId;
         }
     }
 }
