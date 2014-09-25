@@ -25,6 +25,7 @@ namespace WixToolset.Bootstrapper
     public abstract class BootstrapperApplication : MarshalByRefObject, IBootstrapperApplication
     {
         private Engine engine;
+        private BootstrapperApplicationData baManifest;
         private Command command;
         private bool applying;
 
@@ -326,6 +327,15 @@ namespace WixToolset.Bootstrapper
         public virtual bool AsyncExecution
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Gets the  the BA manifest.
+        /// </summary>
+        public BootstrapperApplicationData BAManifest
+        {
+            get { return this.baManifest; }
+            internal set { this.baManifest = value; }
         }
 
         /// <summary>

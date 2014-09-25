@@ -57,6 +57,7 @@ namespace WixToolset.Bootstrapper
             }
 
             ba.Engine = new Engine(pEngine);
+            ba.BAManifest = new BootstrapperApplicationData();
             ba.Command = command;
             return ba;
         }

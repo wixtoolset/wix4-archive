@@ -15,17 +15,18 @@
     <RootNamespace>WixToolset.Bootstrapper</RootNamespace>
     <NoWarn>0693;1591</NoWarn>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-
     <CreateDocumentationFile>true</CreateDocumentationFile>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <FxCopEnabled>true</FxCopEnabled>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="BootstrapperApplication.cs" />
     <Compile Include="BootstrapperApplicationAttribute.cs" />
+    <Compile Include="BootstrapperApplicationData.cs" />
     <Compile Include="BootstrapperApplicationFactory.cs" />
     <Compile Include="BootstrapperSectionGroup.cs" />
+    <Compile Include="BundleInfo.cs" />
+    <Compile Include="PackageInfo.cs" />
     <Compile Include="SupportedFrameworkElementCollection.cs" />
     <Compile Include="SupportedFrameworkElement.cs" />
     <Compile Include="Engine.cs" />
@@ -39,40 +40,33 @@
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="BootstrapperCore.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-
   <ItemGroup>
     <HeaderPath Include="$(IntermediateOutputPath)BootstrapperCore.h">
       <Visible>False</Visible>
     </HeaderPath>
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
-
   <PropertyGroup>
     <AfterBuildDependsOn>
       $(AfterBuildDependsOn);
       GenerateIdentityHeader
     </AfterBuildDependsOn>
   </PropertyGroup>
-
   <Target Name="GenerateIdentityHeader" Inputs="$(TargetPath)" Outputs="@(HeaderPath)">
     <GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
       <Output TaskParameter="Assemblies" ItemName="AssemblyIdentity" />
     </GetAssemblyIdentity>
-
     <ItemGroup>
       <Line Include="#define MUX_ASSEMBLY_FULL_NAME L&quot;%(AssemblyIdentity.Identity)&quot;" />
       <Line Include="#define MUX_ASSEMBLY_NAME L&quot;%(AssemblyIdentity.Name)&quot;" />
@@ -81,11 +75,10 @@
       <Line Include="#define MUX_ASSEMBLY_CULTURE L&quot;neutral&quot;" Condition="'%(AssemblyIdentity.Culture)'==''" />
       <Line Include="#define MUX_ASSEMBLY_PUBLICKEYTOKEN L&quot;%(AssemblyIdentity.PublicKeyToken)&quot;" />
     </ItemGroup>
-
     <Message Importance="normal" Text="Generating identity definitions into @(HeaderPath->'%(FullPath)')" />
     <WriteLinesToFile File="@(HeaderPath)" Lines="@(Line)" Overwrite="True" />
     <ItemGroup>
-        <FileWrites Include="@(HeaderPath)" />
+      <FileWrites Include="@(HeaderPath)" />
     </ItemGroup>
   </Target>
 </Project>
