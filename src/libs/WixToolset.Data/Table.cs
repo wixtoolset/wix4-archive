@@ -145,6 +145,9 @@ namespace WixToolset.Data
                 case "WixFile":
                     row = new WixFileRow(sourceLineNumbers, this);
                     break;
+                case "WixGroup":
+                    row = new WixGroupRow(sourceLineNumbers, this);
+                    break;
                 case "WixMedia":
                     row = new WixMediaRow(sourceLineNumbers, this);
                     break;

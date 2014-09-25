@@ -68,6 +68,7 @@
     <Compile Include="Rows\WixBundleRow.cs" />
     <Compile Include="Rows\WixBundleUpdateRow.cs" />
     <Compile Include="Rows\WixCatalogRow.cs" />
+    <Compile Include="Rows\WixGroupRow.cs" />
     <Compile Include="Rows\WixComplexReferenceRow.cs" />
     <Compile Include="Rows\WixFileRow.cs" />
     <Compile Include="Rows\WixMediaRow.cs" />

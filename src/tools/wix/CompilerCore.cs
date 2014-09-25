@@ -666,11 +666,11 @@ namespace WixToolset
                     throw new ArgumentNullException("childId");
                 }
 
-                Row WixGroupRow = this.CreateRow(sourceLineNumbers, "WixGroup");
-                WixGroupRow[0] = parentId;
-                WixGroupRow[1] = Enum.GetName(typeof(ComplexReferenceParentType), parentType);
-                WixGroupRow[2] = childId;
-                WixGroupRow[3] = Enum.GetName(typeof(ComplexReferenceChildType), childType);
+                WixGroupRow WixGroupRow = (WixGroupRow)this.CreateRow(sourceLineNumbers, "WixGroup");
+                WixGroupRow.ParentId = parentId;
+                WixGroupRow.ParentType = parentType;
+                WixGroupRow.ChildId = childId;
+                WixGroupRow.ChildType = childType;
             }
         }
 
@@ -1727,7 +1727,7 @@ namespace WixToolset
             if (!String.IsNullOrEmpty(value))
             {
                 int pathStartsAt = 0;
-                result = value.Split(new char[] { '\\'}, StringSplitOptions.RemoveEmptyEntries);
+                result = value.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
                 if (result[0].EndsWith(":", StringComparison.Ordinal))
                 {
                     string id = result[0].TrimEnd(':');

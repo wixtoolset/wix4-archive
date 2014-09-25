@@ -182,17 +182,12 @@ namespace WixToolset.Bind
             this.Size = this.PackagePayload.FileSize;
 
             // get all contained payloads...
-            foreach (Row row in wixGroupTable.Rows)
+            foreach (WixGroupRow row in wixGroupTable.RowsAs<WixGroupRow>())
             {
-                string rowParentName = (string)row[0];
-                string rowParentType = (string)row[1];
-                string rowChildName = (string)row[2];
-                string rowChildType = (string)row[3];
-
-                if ("Package" == rowParentType && this.Id == rowParentName &&
-                    "Payload" == rowChildType && this.PackagePayload.Id != rowChildName)
+                if (ComplexReferenceParentType.Package == row.ParentType && this.Id == row.ParentId &&
+                    ComplexReferenceChildType.Payload == row.ChildType && this.PackagePayload.Id != row.ChildId)
                 {
-                    PayloadInfoRow payload = allPayloads[rowChildName];
+                    PayloadInfoRow payload = allPayloads[row.ChildId];
                     this.Payloads.Add(payload);
 
                     this.Size += payload.FileSize; // add each payload to the total size of the package.
@@ -754,11 +749,11 @@ namespace WixToolset.Bind
                     // If feature selection is enabled, represent the Feature table in the manifest.
                     if (YesNoType.Yes == enableFeatureSelection && db.Tables.Contains("Feature"))
                     {
-                        using (WixToolset.Dtf.WindowsInstaller.View featureView = db.OpenView("SELECT `Component_` FROM `FeatureComponents` WHERE `Feature_` = ?"),
-                                    componentView = db.OpenView("SELECT `FileSize` FROM `File` WHERE `Component_` = ?"))
+                        using (WixToolset.Dtf.WindowsInstaller.View featureView = db.OpenView("SELECT `Component_` FROM `FeatureComponents` WHERE `Feature_` = ?"))
+                        using (WixToolset.Dtf.WindowsInstaller.View componentView = db.OpenView("SELECT `FileSize` FROM `File` WHERE `Component_` = ?"))
                         {
-                            using (WixToolset.Dtf.WindowsInstaller.Record featureRecord = new WixToolset.Dtf.WindowsInstaller.Record(1),
-                                          componentRecord = new WixToolset.Dtf.WindowsInstaller.Record(1))
+                            using (WixToolset.Dtf.WindowsInstaller.Record featureRecord = new WixToolset.Dtf.WindowsInstaller.Record(1))
+                            using (WixToolset.Dtf.WindowsInstaller.Record componentRecord = new WixToolset.Dtf.WindowsInstaller.Record(1))
                             {
                                 using (WixToolset.Dtf.WindowsInstaller.View allFeaturesView = db.OpenView("SELECT * FROM `Feature`"))
                                 {
@@ -818,7 +813,6 @@ namespace WixToolset.Bind
                                                             feature.Size += Convert.ToInt32(fileSize, CultureInfo.InvariantCulture.NumberFormat);
                                                         }
                                                     }
-
                                                 }
                                             }
                                         }

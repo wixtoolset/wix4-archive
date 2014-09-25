@@ -273,7 +273,7 @@ namespace WixToolset.Bind
             }
 
             Dictionary<string, ContainerInfo> containers = new Dictionary<string, ContainerInfo>();
-            Dictionary<string, bool> payloadsAddedToContainers = new Dictionary<string, bool>();
+            HashSet<string> payloadsAddedToContainers = new HashSet<string>(StringComparer.Ordinal);
 
             // Create the list of containers.
             Table containerTable = this.Output.Tables["Container"];
@@ -294,20 +294,15 @@ namespace WixToolset.Bind
             string baPayloadId = (string)baRow[0];
 
             // Create lists of which payloads go in each container or are layout only.
-            foreach (Row row in wixGroupTable.Rows)
+            foreach (WixGroupRow row in wixGroupTable.RowsAs<WixGroupRow>())
             {
-                string rowParentName = (string)row[0];
-                string rowParentType = (string)row[1];
-                string rowChildName = (string)row[2];
-                string rowChildType = (string)row[3];
-
-                if (Enum.GetName(typeof(ComplexReferenceChildType), ComplexReferenceChildType.Payload) == rowChildType)
+                if (ComplexReferenceChildType.Payload == row.ChildType)
                 {
-                    PayloadInfoRow payload = allPayloads[rowChildName];
+                    PayloadInfoRow payload = allPayloads[row.ChildId];
 
-                    if (Enum.GetName(typeof(ComplexReferenceParentType), ComplexReferenceParentType.Container) == rowParentType)
+                    if (ComplexReferenceParentType.Container == row.ParentType)
                     {
-                        ContainerInfo container = containers[rowParentName];
+                        ContainerInfo container = containers[row.ParentId];
 
                         // Make sure the BA DLL is the first payload.
                         if (payload.Id.Equals(baPayloadId))
@@ -320,9 +315,9 @@ namespace WixToolset.Bind
                         }
 
                         payload.Container = container.Id;
-                        payloadsAddedToContainers.Add(rowChildName, false);
+                        payloadsAddedToContainers.Add(row.ChildId);
                     }
-                    else if (Enum.GetName(typeof(ComplexReferenceParentType), ComplexReferenceParentType.Layout) == rowParentType)
+                    else if (ComplexReferenceParentType.Layout == row.ParentType)
                     {
                         payload.LayoutOnly = true;
                     }
@@ -378,7 +373,7 @@ namespace WixToolset.Bind
             // Handle any payloads not explicitly in a container.
             foreach (string payloadName in allPayloads.Keys)
             {
-                if (!payloadsAddedToContainers.ContainsKey(payloadName))
+                if (!payloadsAddedToContainers.Contains(payloadName))
                 {
                     PayloadInfoRow payload = allPayloads[payloadName];
                     if (PackagingType.Embedded == payload.Packaging)
@@ -448,17 +443,12 @@ namespace WixToolset.Bind
             // defined.
             ChainInfo chain = new ChainInfo(chainTable.Rows[0]); // WixChain table always has one and only row in it.
             RollbackBoundaryInfo previousRollbackBoundary = null;
-            foreach (Row row in wixGroupTable.Rows)
+            foreach (WixGroupRow row in wixGroupTable.RowsAs<WixGroupRow>())
             {
-                string rowParentName = (string)row[0];
-                string rowParentType = (string)row[1];
-                string rowChildName = (string)row[2];
-                string rowChildType = (string)row[3];
-
-                if ("PackageGroup" == rowParentType && "WixChain" == rowParentName && "Package" == rowChildType)
+                if (ComplexReferenceParentType.PackageGroup == row.ParentType && "WixChain" == row.ParentId && ComplexReferenceChildType.Package == row.ChildType)
                 {
                     ChainPackageInfo packageInfo = null;
-                    if (allPackages.TryGetValue(rowChildName, out packageInfo))
+                    if (allPackages.TryGetValue(row.ChildId, out packageInfo))
                     {
                         if (null != previousRollbackBoundary)
                         {
@@ -473,7 +463,7 @@ namespace WixToolset.Bind
                     else // must be a rollback boundary.
                     {
                         // Discard the next rollback boundary if we have a previously defined boundary.
-                        RollbackBoundaryInfo nextRollbackBoundary = allBoundaries[rowChildName];
+                        RollbackBoundaryInfo nextRollbackBoundary = allBoundaries[row.ChildId];
                         if (null != previousRollbackBoundary)
                         {
                             Messaging.Instance.OnMessage(WixWarnings.DiscardedRollbackBoundary(nextRollbackBoundary.SourceLineNumbers, nextRollbackBoundary.Id));
