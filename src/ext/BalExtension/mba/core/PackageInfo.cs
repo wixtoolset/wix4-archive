@@ -81,21 +81,21 @@ namespace WixToolset.Bootstrapper
                 bool? permanent = BootstrapperApplicationData.GetYesNoAttribute(node, "Permanent");
                 if (!permanent.HasValue)
                 {
-                    throw new Exception("Failed to get permanent settings for package");
+                    throw new Exception("Failed to get permanent settings for package.");
                 }
                 package.Permanent = permanent.Value;
 
                 bool? vital = BootstrapperApplicationData.GetYesNoAttribute(node, "Vital");
                 if (!vital.HasValue)
                 {
-                    throw new Exception("Failed to get vital setting for package");
+                    throw new Exception("Failed to get vital setting for package.");
                 }
                 package.Vital = vital.Value;
 
                 bool? displayInternalUI = BootstrapperApplicationData.GetYesNoAttribute(node, "DisplayInternalUI");
                 if (!displayInternalUI.HasValue)
                 {
-                    throw new Exception("Failed to get DisplayInternalUI setting for package");
+                    throw new Exception("Failed to get DisplayInternalUI setting for package.");
                 }
                 package.DisplayInternalUI = displayInternalUI.Value;
 

@@ -330,7 +330,7 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
-        /// Gets the  the BA manifest.
+        /// Gets the BA manifest.
         /// </summary>
         public BootstrapperApplicationData BAManifest
         {
