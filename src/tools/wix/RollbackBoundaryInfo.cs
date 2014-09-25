@@ -5,15 +5,10 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Rollback boundary info for binding Bundles.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset
 {
-    using System;
     using WixToolset.Data;
 
     /// <summary>
@@ -21,13 +16,6 @@ namespace WixToolset
     /// </summary>
     internal class RollbackBoundaryInfo
     {
-        public RollbackBoundaryInfo(string id)
-        {
-            this.Default = true;
-            this.Id = id;
-            this.Vital = YesNoType.Yes;
-        }
-
         public RollbackBoundaryInfo(Row row)
         {
             this.Id = row[0].ToString();
@@ -36,9 +24,10 @@ namespace WixToolset
             this.SourceLineNumbers = row.SourceLineNumbers;
         }
 
-        public bool Default { get; private set; }
         public string Id { get; private set; }
+
         public YesNoType Vital { get; private set; }
+
         public SourceLineNumber SourceLineNumbers { get; private set; }
     }
 }

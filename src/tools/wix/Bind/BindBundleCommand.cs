@@ -447,7 +447,7 @@ namespace WixToolset.Bind
             // we get these install/repair (aka: forward) rollback boundaries
             // defined.
             ChainInfo chain = new ChainInfo(chainTable.Rows[0]); // WixChain table always has one and only row in it.
-            RollbackBoundaryInfo previousRollbackBoundary = new RollbackBoundaryInfo("WixDefaultBoundary"); // ensure there is always a rollback boundary at the beginning of the chain.
+            RollbackBoundaryInfo previousRollbackBoundary = null;
             foreach (Row row in wixGroupTable.Rows)
             {
                 string rowParentName = (string)row[0];
@@ -472,10 +472,9 @@ namespace WixToolset.Bind
                     }
                     else // must be a rollback boundary.
                     {
-                        // Discard the next rollback boundary if we have a previously defined boundary. Of course,
-                        // a boundary specifically defined will override the default boundary.
+                        // Discard the next rollback boundary if we have a previously defined boundary.
                         RollbackBoundaryInfo nextRollbackBoundary = allBoundaries[rowChildName];
-                        if (null != previousRollbackBoundary && !previousRollbackBoundary.Default)
+                        if (null != previousRollbackBoundary)
                         {
                             Messaging.Instance.OnMessage(WixWarnings.DiscardedRollbackBoundary(nextRollbackBoundary.SourceLineNumbers, nextRollbackBoundary.Id));
                         }

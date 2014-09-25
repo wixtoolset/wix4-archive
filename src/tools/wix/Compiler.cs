@@ -19178,8 +19178,12 @@ namespace WixToolset
                 }
             }
 
-            ComplexReferenceChildType previousType = ComplexReferenceChildType.Unknown;
-            string previousId = null;
+            // Ensure there is always a rollback boundary at the beginning of the chain.
+            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
+
+            string previousId = "WixDefaultBoundary";
+            ComplexReferenceChildType previousType = ComplexReferenceChildType.Package;
+
             foreach (XElement child in node.Elements())
             {
                 if (CompilerCore.WixNamespace == child.Name.Namespace)
@@ -19360,7 +19364,7 @@ namespace WixToolset
                 }
             }
 
-            // Now that the package ID is known, we can parse the extension attributes...
+            // Now that the rollback identifier is known, we can parse the extension attributes...
             Dictionary<string, string> contextValues = new Dictionary<string, string>();
             contextValues["RollbackBoundaryId"] = id.Id;
             foreach (XAttribute attribute in extensionAttributes)
@@ -19372,15 +19376,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
-                row[1] = ChainPackageType.RollbackBoundary.ToString();
-
-                if (YesNoType.NotSet != vital)
-                {
-                    row[10] = (YesNoType.Yes == vital) ? 1 : 0;
-                }
-
-                this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
+                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, parentType, parentId, previousType, previousId);
             }
 
             return id.Id;
@@ -20036,6 +20032,29 @@ namespace WixToolset
             }
 
             return id;
+        }
+
+        /// <summary>
+        /// Creates rollback boundary.
+        /// </summary>
+        /// <param name="sourceLineNumbers">Source line numbers.</param>
+        /// <param name="id">Identifier for the rollback boundary.</param>
+        /// <param name="vital">Indicates whether the rollback boundary is vital or not.</param>
+        /// <param name="parentType">Type of parent group.</param>
+        /// <param name="parentId">Identifier of parent group.</param>
+        /// <param name="previousType">Type of previous item, if any.</param>
+        /// <param name="previousId">Identifier of previous item, if any.</param>
+        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        {
+            Row row = this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
+            row[1] = ChainPackageType.RollbackBoundary.ToString();
+
+            if (YesNoType.NotSet != vital)
+            {
+                row[10] = (YesNoType.Yes == vital) ? 1 : 0;
+            }
+
+            this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
         }
 
         /// <summary>
