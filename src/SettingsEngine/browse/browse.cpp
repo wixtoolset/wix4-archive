@@ -197,10 +197,7 @@ LExit:
             {
                 CfgAdminUninitialize(bdlDatabaseList.rgDatabases[i].cdb);
             }
-            else
-            {
-                CfgUninitialize(bdlDatabaseList.rgDatabases[i].cdb);
-            }
+            // Don't free local database here - we only have one open, it must be freed after all remotes, and is specifically freed below this loop
         }
 
         ReleaseDB(bdlDatabaseList.rgDatabases + i);
