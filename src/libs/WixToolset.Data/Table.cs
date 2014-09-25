@@ -15,6 +15,7 @@ namespace WixToolset.Data
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Xml;
     using WixToolset.Data.Rows;
@@ -70,6 +71,12 @@ namespace WixToolset.Data
         public IList<Row> Rows { get; private set; }
 
         /// <summary>
+        /// Gets the rows contained in the table as a particular row type.
+        /// </summary>
+        /// <value>Rows contained in the table as a particular type.</value>
+        public IEnumerable<T> RowsAs<T>() { return this.Rows.Cast<T>(); }
+
+        /// <summary>
         /// Creates a new row in the table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
@@ -104,6 +111,9 @@ namespace WixToolset.Data
                     break;
                 case "Property":
                     row = new PropertyRow(sourceLineNumbers, this);
+                    break;
+                case "RelatedBundle":
+                    row = new RelatedBundleRow(sourceLineNumbers, this);
                     break;
                 case "Upgrade":
                     row = new UpgradeRow(sourceLineNumbers, this);

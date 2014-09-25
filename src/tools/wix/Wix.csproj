@@ -17,7 +17,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ApprovedExeForElevation.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Bind\AutoMediaAssignerCommand.cs" />
     <Compile Include="Binder.cs" />
@@ -30,6 +29,7 @@
     <Compile Include="Bind\BindTransformCommand.cs" />
     <Compile Include="Bind\ConfigurationCallback.cs" />
     <Compile Include="Bind\CopyTransformDataCommand.cs" />
+    <Compile Include="Bind\CreateBurnManifestCommand.cs" />
     <Compile Include="Bind\CreateCabinetsCommand.cs" />
     <Compile Include="Bind\DelayedField.cs" />
     <Compile Include="Bind\ExtractEmbeddedFilesCommand.cs" />
@@ -51,13 +51,11 @@
     <Compile Include="Cab\WixCreateCab.cs" />
     <Compile Include="Cab\WixEnumerateCab.cs" />
     <Compile Include="Cab\WixExtractCab.cs" />
-    <Compile Include="CLR\Interop\CLRInterop.cs" />
+    <Compile Include="Clr\Interop\ClrInterop.cs" />
     <Compile Include="CommandLine.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerCore.cs" />
-    <Compile Include="ConsoleMessageHandler.cs" />
-    <Compile Include="Extensibility\AssemblyDefaultFabricatorExtensionAttribute.cs" />
     <Compile Include="Extensibility\AssemblyDefaultHeatExtensionAttribute.cs" />
     <Compile Include="Extensibility\HarvesterExtension.cs" />
     <Compile Include="Extensibility\HeatExtension.cs" />
@@ -66,7 +64,7 @@
     <Compile Include="Extensibility\MutatorExtension.cs" />
     <Compile Include="Extensibility\ValidatorExtension.cs" />
     <Compile Include="ExtensionManager.cs" />
-    <Compile Include="ExtractEmbeddedFiles.cs" />
+    <Compile Include="Bind\ExtractEmbeddedFiles.cs" />
     <Compile Include="Bind\FileTransfer.cs" />
     <Compile Include="Link\FindEntrySectionAndLoadSymbolsCommand.cs" />
     <Compile Include="IfDefEventHandler.cs" />
@@ -82,18 +80,16 @@
     <Compile Include="Link\ResolveReferencesCommand.cs" />
     <Compile Include="Uuid.cs" />
     <Compile Include="Differ.cs" />
-    <Compile Include="FabricatorCore.cs" />
-    <Compile Include="Fabricator.cs" />
     <Compile Include="Ole32\Storage.cs" />
     <Compile Include="WixDistributionSpecificStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>WixDistributionSpecificStrings.resx</DependentUpon>
     </Compile>
-    <Compile Include="ConnectToFeature.cs" />
-    <Compile Include="ConnectToFeatureCollection.cs" />
-    <Compile Include="ConnectToModule.cs" />
-    <Compile Include="ConnectToModuleCollection.cs" />
+    <Compile Include="Link\ConnectToFeature.cs" />
+    <Compile Include="Link\ConnectToFeatureCollection.cs" />
+    <Compile Include="Link\ConnectToModule.cs" />
+    <Compile Include="Link\ConnectToModuleCollection.cs" />
     <Compile Include="Decompiler.cs" />
     <Compile Include="DecompilerCore.cs" />
     <Compile Include="Exceptions\WixFileNotFoundException.cs" />
@@ -101,7 +97,7 @@
     <Compile Include="Harvester.cs" />
     <Compile Include="HarvesterCore.cs" />
     <Compile Include="HeatCore.cs" />
-    <Compile Include="IfContext.cs" />
+    <Compile Include="Preprocess\IfContext.cs" />
     <Compile Include="IncludedFileEventHandler.cs" />
     <Compile Include="Librarian.cs" />
     <Compile Include="Linker.cs" />
@@ -124,32 +120,27 @@
     <Compile Include="Unbinder.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Validator.cs" />
-    <Compile Include="VerboseEventArgs.cs" />
     <Compile Include="VerifyInterop.cs" />
     <Compile Include="AppCommon.cs" />
     <Compile Include="WixGenericMessageEventArgs.cs" />
-    <Compile Include="WixGroupingOrdering.cs" />
+    <Compile Include="Link\WixGroupingOrdering.cs" />
     <Compile Include="WixStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>WixStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="WixVariableResolver.cs" />
-    <Compile Include="CatalogInfo.cs" />
-    <Compile Include="ChainInfo.cs" />
-    <Compile Include="ChainPackageInfo.cs" />
-    <Compile Include="ContainerInfo.cs" />
+    <Compile Include="Bind\ChainInfo.cs" />
+    <Compile Include="Bind\ChainPackageInfo.cs" />
+    <Compile Include="Bind\ContainerInfo.cs" />
     <Compile Include="ExitCodeInfo.cs" />
     <Compile Include="MsiFeature.cs" />
     <Compile Include="MsiPropertyInfo.cs" />
     <Compile Include="ProvidesDependency.cs" />
     <Compile Include="ProvidesDependencyCollection.cs" />
-    <Compile Include="RegistrationInfo.cs" />
-    <Compile Include="RelatedBundleInfo.cs" />
     <Compile Include="RelatedPackage.cs" />
-    <Compile Include="ResolvedDirectory.cs" />
+    <Compile Include="Bind\ResolvedDirectory.cs" />
     <Compile Include="RollbackBoundaryInfo.cs" />
-    <Compile Include="VariableInfo.cs" />
     <Compile Include="WixComponentSearchInfo.cs" />
     <Compile Include="WixFileSearchInfo.cs" />
     <Compile Include="WixProductSearchInfo.cs" />

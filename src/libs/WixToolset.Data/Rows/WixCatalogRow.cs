@@ -5,17 +5,10 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Specialization of a row for the WixCatalog table.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Data.Rows
 {
-    using System;
-    using System.IO;
-
     /// <summary>
     /// Specialization of a row for the WixCatalog table.
     /// </summary>
@@ -52,10 +45,10 @@ namespace WixToolset.Data.Rows
         }
 
         /// <summary>
-        /// Gets or sets the source file (path).
+        /// Gets or sets the payload identifier.
         /// </summary>
-        /// <value>The source file (path).</value>
-        public string SourceFile
+        /// <value>The payload identifier.</value>
+        public string PayloadId
         {
             get { return (string)this.Fields[1].Data; }
             set { this.Fields[1].Data = value; }

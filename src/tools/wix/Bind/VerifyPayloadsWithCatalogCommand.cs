@@ -12,18 +12,27 @@ namespace WixToolset.Bind
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
     using WixToolset.Data;
+    using WixToolset.Data.Rows;
 
     internal class VerifyPayloadsWithCatalogCommand : ICommand
     {
-        public IEnumerable<CatalogInfo> Catalogs { private get; set; }
+        public IEnumerable<WixCatalogRow> Catalogs { private get; set; }
 
         public IEnumerable<PayloadInfoRow> Payloads { private get; set; }
 
         public void Execute()
         {
+            List<CatalogIdWithPath> catalogIdsWithPaths = this.Catalogs
+                .Join(this.Payloads,
+                    catalog => catalog.PayloadId,
+                    payload => payload.Id,
+                    (catalog, payload) => new CatalogIdWithPath() { Id = catalog.Id, FullPath = Path.GetFullPath(payload.SourceFile) })
+                .ToList();
+
             foreach (PayloadInfoRow payloadInfo in this.Payloads)
             {
                 // Payloads that are not embedded should be verfied.
@@ -31,7 +40,7 @@ namespace WixToolset.Bind
                 {
                     bool validated = false;
 
-                    foreach (CatalogInfo catalog in this.Catalogs)
+                    foreach (CatalogIdWithPath catalog in catalogIdsWithPaths)
                     {
                         if (!validated)
                         {
@@ -54,8 +63,7 @@ namespace WixToolset.Bind
                                     {
                                         error = 0;
                                         cryptHashBytes = new byte[cryptHashSize];
-                                        if (!VerifyInterop.CryptCATAdminCalcHashFromFileHandle(
-                                            fileHandle, ref cryptHashSize, cryptHashBytes, 0))
+                                        if (!VerifyInterop.CryptCATAdminCalcHashFromFileHandle(fileHandle, ref cryptHashSize, cryptHashBytes, 0))
                                         {
                                             error = Marshal.GetLastWin32Error();
                                         }
@@ -87,7 +95,7 @@ namespace WixToolset.Bind
 
                                 // The file names need to be lower case for older OSes
                                 catalogData.pcwszMemberFilePath = payloadInfo.FullFileName.ToLowerInvariant();
-                                catalogData.pcwszCatalogFilePath = catalog.FileInfo.FullName.ToLowerInvariant();
+                                catalogData.pcwszCatalogFilePath = catalog.FullPath.ToLowerInvariant();
 
                                 // Create WINTRUST_DATA structure
                                 trustData.cbStruct = (uint)Marshal.SizeOf(trustData);
@@ -135,6 +143,13 @@ namespace WixToolset.Bind
                     }
                 }
             }
+        }
+
+        private class CatalogIdWithPath
+        {
+            public string Id { get; set; }
+
+            public string FullPath { get; set; }
         }
     }
 }

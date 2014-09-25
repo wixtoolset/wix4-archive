@@ -39,6 +39,12 @@ namespace WixToolset
         public const string DefaultComponentIdPlaceholderWixVariable = "!(wix.OfficialWixComponentIdPlaceholder)";
         public const string BurnUXContainerId = "WixUXContainer";
 
+        // The following constants must stay in sync with src\burn\engine\core.h
+        private const string BURN_BUNDLE_NAME = "WixBundleName";
+        private const string BURN_BUNDLE_ORIGINAL_SOURCE = "WixBundleOriginalSource";
+        private const string BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER = "WixBundleOriginalSourceFolder";
+        private const string BURN_BUNDLE_LAST_USED_SOURCE = "WixBundleLastUsedSource";
+
         private TableDefinitionCollection tableDefinitions;
         private Dictionary<XNamespace, ICompilerExtension> extensions;
         private List<InspectorExtension> inspectorExtensions;
@@ -18202,6 +18208,31 @@ namespace WixToolset
                 row[17] = this.CurrentPlatform.ToString();
                 row[18] = parentName;
                 row[19] = upgradeCode;
+
+                // Ensure that the bundle stores the well-known persisted values.
+                VariableRow bundleNameWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                bundleNameWellKnownVariable.Access = AccessModifier.Public;
+                bundleNameWellKnownVariable.Id = Compiler.BURN_BUNDLE_NAME;
+                bundleNameWellKnownVariable.Hidden = false;
+                bundleNameWellKnownVariable.Persisted = true;
+
+                VariableRow bundleOriginalSourceWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                bundleOriginalSourceWellKnownVariable.Access = AccessModifier.Public;
+                bundleOriginalSourceWellKnownVariable.Id = Compiler.BURN_BUNDLE_ORIGINAL_SOURCE;
+                bundleOriginalSourceWellKnownVariable.Hidden = false;
+                bundleOriginalSourceWellKnownVariable.Persisted = true;
+
+                VariableRow bundleOriginalSourceFolderWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                bundleOriginalSourceFolderWellKnownVariable.Access = AccessModifier.Public;
+                bundleOriginalSourceFolderWellKnownVariable.Id = Compiler.BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER;
+                bundleOriginalSourceFolderWellKnownVariable.Hidden = false;
+                bundleOriginalSourceFolderWellKnownVariable.Persisted = true;
+
+                VariableRow bundleLastUsedSourceWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                bundleLastUsedSourceWellKnownVariable.Access = AccessModifier.Public;
+                bundleLastUsedSourceWellKnownVariable.Id = Compiler.BURN_BUNDLE_LAST_USED_SOURCE;
+                bundleLastUsedSourceWellKnownVariable.Hidden = false;
+                bundleLastUsedSourceWellKnownVariable.Persisted = true;
             }
         }
 
@@ -18300,8 +18331,10 @@ namespace WixToolset
             // Create catalog row
             if (!this.core.EncounteredError)
             {
+                this.CreatePayloadRow(sourceLineNumbers, id, Path.GetFileName(sourceFile), sourceFile, null, ComplexReferenceParentType.Container, Compiler.BurnUXContainerId, ComplexReferenceChildType.Unknown, null, YesNoDefaultType.Yes, YesNoType.Yes, null, null);
+
                 WixCatalogRow wixCatalogRow = (WixCatalogRow)this.core.CreateRow(sourceLineNumbers, "WixCatalog", id);
-                wixCatalogRow.SourceFile = sourceFile;
+                wixCatalogRow.PayloadId = id.Id;
             }
         }
 

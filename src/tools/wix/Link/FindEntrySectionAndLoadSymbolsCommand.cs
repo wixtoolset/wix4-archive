@@ -34,7 +34,7 @@ namespace WixToolset.Link
         public Section EntrySection { get; private set; }
 
         /// <summary>
-        /// Gest the collection of loaded symbols.
+        /// Gets the collection of loaded symbols.
         /// </summary>
         public IDictionary<string, Symbol> Symbols { get; private set; }
 

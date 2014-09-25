@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Bit flags for an ApprovedExeForElevation in the Windows Installer Xml toolset.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Data

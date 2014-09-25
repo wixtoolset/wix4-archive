@@ -11,7 +11,7 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.CLR.Interop
+namespace WixToolset.Clr.Interop
 {
     using System;
     using System.Runtime.InteropServices;
@@ -19,14 +19,14 @@ namespace WixToolset.CLR.Interop
     /// <summary>
     /// Interop class for mscorwks.dll assembly name APIs.
     /// </summary>
-    internal sealed class CLRInterop
+    internal sealed class ClrInterop
     {
         private static readonly Guid referenceIdentityGuid = new Guid("6eaf5ace-7917-4f3c-b129-e046a9704766");
 
         /// <summary>
         /// Protect the constructor.
         /// </summary>
-        private CLRInterop()
+        private ClrInterop()
         {
         }
 

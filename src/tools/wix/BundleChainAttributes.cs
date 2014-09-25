@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Bit flags for a bundle chain in the WiX toolset.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset

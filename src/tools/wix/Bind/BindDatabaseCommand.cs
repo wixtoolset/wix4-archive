@@ -23,7 +23,7 @@ namespace WixToolset.Bind
     using System.Xml;
     using System.Xml.XPath;
     using WixToolset.Cab;
-    using WixToolset.CLR.Interop;
+    using WixToolset.Clr.Interop;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
@@ -1703,9 +1703,9 @@ namespace WixToolset.Bind
                 bool targetNetfx1 = false;
                 StringDictionary assemblyNameValues = new StringDictionary();
 
-                CLRInterop.IReferenceIdentity referenceIdentity = null;
-                Guid referenceIdentityGuid = CLRInterop.ReferenceIdentityGuid;
-                uint result = CLRInterop.GetAssemblyIdentityFromFile(fileInfo.FullName, ref referenceIdentityGuid, out referenceIdentity);
+                ClrInterop.IReferenceIdentity referenceIdentity = null;
+                Guid referenceIdentityGuid = ClrInterop.ReferenceIdentityGuid;
+                uint result = ClrInterop.GetAssemblyIdentityFromFile(fileInfo.FullName, ref referenceIdentityGuid, out referenceIdentity);
                 if (0 == result && null != referenceIdentity)
                 {
                     string imageRuntimeVersion = referenceIdentity.GetAttribute(null, "ImageRuntimeVersion");
