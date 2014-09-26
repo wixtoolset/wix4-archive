@@ -106,6 +106,22 @@ typedef struct _BURN_DEPENDENT_REGISTRATION_ACTION
     LPWSTR sczDependentProviderKey;
 } BURN_DEPENDENT_REGISTRATION_ACTION;
 
+typedef struct _BURN_CACHE_CONTAINER_PROGRESS
+{
+    LPWSTR wzId;
+    DWORD iIndex;
+    BOOL fCachedDuringApply;
+    BURN_CONTAINER* pContainer;
+} BURN_CACHE_CONTAINER_PROGRESS;
+
+typedef struct _BURN_CACHE_PAYLOAD_PROGRESS
+{
+    LPWSTR wzId;
+    DWORD iIndex;
+    BOOL fCachedDuringApply;
+    BURN_PAYLOAD* pPayload;
+} BURN_CACHE_PAYLOAD_PROGRESS;
+
 typedef struct _BURN_CACHE_ACTION
 {
     BURN_CACHE_ACTION_TYPE type;
@@ -145,12 +161,12 @@ typedef struct _BURN_CACHE_ACTION
         struct
         {
             BURN_CONTAINER* pContainer;
+            DWORD iProgress;
             LPWSTR sczUnverifiedPath;
         } resolveContainer;
         struct
         {
             BURN_CONTAINER* pContainer;
-            DWORD64 qwTotalExtractSize;
             DWORD iSkipUntilAcquiredByAction;
             LPWSTR sczContainerUnverifiedPath;
 
@@ -161,6 +177,7 @@ typedef struct _BURN_CACHE_ACTION
         {
             BURN_PACKAGE* pPackage;
             BURN_CONTAINER* pContainer;
+            DWORD iProgress;
             DWORD iTryAgainAction;
             DWORD cTryAgainAttempts;
             LPWSTR sczLayoutDirectory;
@@ -171,12 +188,14 @@ typedef struct _BURN_CACHE_ACTION
         {
             BURN_PACKAGE* pPackage;
             BURN_PAYLOAD* pPayload;
+            DWORD iProgress;
             LPWSTR sczUnverifiedPath;
         } resolvePayload;
         struct
         {
             BURN_PACKAGE* pPackage;
             BURN_PAYLOAD* pPayload;
+            DWORD iProgress;
             DWORD iTryAgainAction;
             DWORD cTryAgainAttempts;
             LPWSTR sczUnverifiedPath;
@@ -186,6 +205,7 @@ typedef struct _BURN_CACHE_ACTION
         {
             BURN_PACKAGE* pPackage;
             BURN_PAYLOAD* pPayload;
+            DWORD iProgress;
             DWORD iTryAgainAction;
             DWORD cTryAgainAttempts;
             LPWSTR sczLayoutDirectory;
@@ -346,6 +366,14 @@ typedef struct _BURN_PLAN
 
     DEPENDENCY* rgPlannedProviders;
     UINT cPlannedProviders;
+
+    BURN_CACHE_CONTAINER_PROGRESS* rgContainerProgress;
+    DWORD cContainerProgress;
+    STRINGDICT_HANDLE shContainerProgress;
+
+    BURN_CACHE_PAYLOAD_PROGRESS* rgPayloadProgress;
+    DWORD cPayloadProgress;
+    STRINGDICT_HANDLE shPayloadProgress;
 } BURN_PLAN;
 
 
@@ -425,6 +453,14 @@ HRESULT PlanLayoutPackage(
     __in BURN_PLAN* pPlan,
     __in BURN_PACKAGE* pPackage,
     __in_z_opt LPCWSTR wzLayoutDirectory
+    );
+HRESULT PlanCachePackage(
+    __in BOOL fPerMachine,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage,
+    __in BURN_VARIABLES* pVariables,
+    __out HANDLE* phSyncpointEvent
     );
 HRESULT PlanExecutePackage(
     __in BOOL fPerMachine,

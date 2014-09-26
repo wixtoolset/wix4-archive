@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4412 - Improve cache progress.
+
 * MikeGC: Feature #4400: Store UDM Manifests as blobs instead of strings
 
 * MikeGC: Bug #4435: Sync requests must be deduped to avoid the possibility of building up too many sync requests for the same location
