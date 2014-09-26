@@ -35,7 +35,8 @@ static void FreeCommandLineRequest(
     __inout COMMANDLINE_REQUEST & commandLineRequest
     );
 static BOOL ProcessMessage(
-    MSG *msg
+    MSG *msg,
+    BrowseWindow *browser
     );
 static HRESULT CheckProductInstalledState(
     __in CFGDB_HANDLE pcdLocalHandle,
@@ -141,7 +142,7 @@ int WINAPI wWinMain(
         }
         else
         {
-            if (!ProcessMessage(&msg))
+            if (!ProcessMessage(&msg, browser))
             {
                 break; // If we can't communicate with the UI thread, get out of here!
             }
@@ -312,7 +313,8 @@ static void FreeCommandLineRequest(
 }
 
 BOOL ProcessMessage(
-    MSG *msg
+    MSG *msg,
+    BrowseWindow *browser
     )
 {
     HRESULT hr = S_OK;
@@ -808,6 +810,16 @@ BOOL ProcessMessage(
                 break;
             }
         }
+        break;
+
+    case WM_BROWSE_READ_SETTINGS:
+        // Ignore failure, it will be logged within the function
+        browser->ReadSettings();
+        break;
+
+    case WM_BROWSE_PERSIST_SETTINGS:
+        // Ignore failure, it will be logged within the function
+        browser->PersistSettings();
         break;
     }
 

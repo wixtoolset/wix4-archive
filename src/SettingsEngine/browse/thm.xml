@@ -21,11 +21,12 @@
   <Page Name="ProductList">
     <Text Name="ProductListDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
     <Text X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.ProductListHeader)</Text>
-    <ListView Name="ProductListView" TabStop="yes" X="10" Y="55" Width="-210" Height="-10" FontId="0" ImageListSmall="InstallState" HexStyle="0000000D" HexExtendedStyle="00000021">
+    <ListView Name="ProductListView" TabStop="yes" X="10" Y="55" Width="-210" Height="-35" FontId="0" ImageListSmall="InstallState" HexStyle="0000000D" HexExtendedStyle="00000021">
       <Column Width="354" Expands="yes">#(loc.ProductName)</Column>
       <Column Width="80">#(loc.ProductVersion)</Column>
       <Column Width="115">#(loc.ProductPublicKey)</Column>
     </ListView>
+    <Checkbox Name="ShowUninstalledProductsCheckBox" FontId="0" TabStop="yes" X="10" Y="-10" Width="200" Height="20">#(loc.ShowUninstalledProducts)</Checkbox>
     <Button Name="ProductListBackButton" X="-10" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
     <Button Name="ForgetProductButton" X="-10" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ProductForgetButton)</Button>
     <Button Name="ReadLegacySettingsButton" X="-10" Y="-30" Width="150" Height="20" FontId="0" TabStop="yes" HexStyle="00000000">#(loc.ReadLegacySettings)</Button>
@@ -39,12 +40,13 @@
     <Text X="10" Y="55" Width="185" Height="15" FontId="0">#(loc.SingleProductValuesHeader)</Text>
 
     <!-- Value display / buttons -->
-    <ListView Name="ValueListView" TabStop="yes" X="10" Y="70" Width="-210" Height="-10" FontId="0" HexStyle="00000009" HexExtendedStyle="00000021">
+    <ListView Name="ValueListView" TabStop="yes" X="10" Y="70" Width="-210" Height="-35" FontId="0" HexStyle="00000009" HexExtendedStyle="00000021">
       <Column Width="260" Expands="yes">#(loc.ValueNameColumn)</Column>
       <Column Width="60">#(loc.ValueTypeColumn)</Column>
       <Column Width="120" Expands="yes">#(loc.ValueColumn)</Column>
       <Column Width="150">#(loc.WhenColumn)</Column>
     </ListView>
+    <Checkbox Name="ShowDeletedValuesCheckBox" FontId="0" TabStop="yes" X="10" Y="-10" Width="200" Height="20">#(loc.ShowDeletedValues)</Checkbox>
     <Button Name="SingleProductBackButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
     <Button Name="NewValueButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.NewValueButton)</Button>
     <Button Name="SetValueButton" X="-20" Y="100" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.SetValueButton)</Button>

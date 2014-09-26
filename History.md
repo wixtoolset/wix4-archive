@@ -1,3 +1,5 @@
+* MikeGC: Feature #4351: Settings Browser now allows enabling/disabling the display or deleted values and uninstalled products
+
 * MikeGC: Feature #4400: Store UDM Manifests as blobs instead of strings
 
 * MikeGC: Bug #4435: Sync requests must be deduped to avoid the possibility of building up too many sync requests for the same location

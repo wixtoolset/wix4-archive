@@ -21,6 +21,13 @@ extern "C" {
 
 const LPCWSTR BROWSE_WINDOW_CLASS = L"Browse";
 
+const LPCWSTR wzBrowserProductId = L"WiX_Cfg";
+const LPCWSTR wzBrowserVersion = L"1.0.0.0";
+const LPCWSTR wzBrowserPublicKey = L"B77A5C561934E089";
+
+const LPCWSTR BROWSER_SETTING_SHOW_UNINSTALLED_PRODUCTS = L"Browser:\\ShowUninstalledProducts";
+const LPCWSTR BROWSER_SETTING_SHOW_DELETED_VALUES = L"Browser:\\ShowDeletedValues";
+
 enum BROWSE_TAB
 {
     BROWSE_TAB_MAIN,
@@ -85,6 +92,7 @@ enum BROWSE_CONTROL
     // Product List screen
     BROWSE_CONTROL_PRODUCT_LIST_DATABASE_NAME_TEXT,
     BROWSE_CONTROL_PRODUCT_LIST_VIEW,
+    BROWSE_CONTROL_PRODUCT_LIST_SHOW_UNINSTALLED_PRODUCTS_CHECKBOX,
     BROWSE_CONTROL_PRODUCT_LIST_BACK_BUTTON,
     BROWSE_CONTROL_PRODUCT_LIST_PRODUCT_FORGET_BUTTON,
 
@@ -92,6 +100,7 @@ enum BROWSE_CONTROL
     BROWSE_CONTROL_SINGLE_PRODUCT_DATABASE_NAME_TEXT,
     BROWSE_CONTROL_SINGLE_PRODUCT_NAME_TEXT,
     BROWSE_CONTROL_VALUE_LIST_VIEW,
+    BROWSE_CONTROL_PRODUCT_LIST_SHOW_DELETED_VALUES_CHECKBOX,
     BROWSE_CONTROL_SINGLE_PRODUCT_BACK_BUTTON,
     BROWSE_CONTROL_NEW_VALUE_BUTTON,
     BROWSE_CONTROL_SET_VALUE_BUTTON,
@@ -170,6 +179,7 @@ __declspec(selectany) THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
 
     { BROWSE_CONTROL_PRODUCT_LIST_DATABASE_NAME_TEXT, L"ProductListDatabaseName" },
     { BROWSE_CONTROL_PRODUCT_LIST_VIEW, L"ProductListView" },
+    { BROWSE_CONTROL_PRODUCT_LIST_SHOW_UNINSTALLED_PRODUCTS_CHECKBOX, L"ShowUninstalledProductsCheckBox" },
     { BROWSE_CONTROL_PRODUCT_LIST_BACK_BUTTON, L"ProductListBackButton" },
     { BROWSE_CONTROL_PRODUCT_LIST_PRODUCT_FORGET_BUTTON, L"ForgetProductButton" },
     { BROWSE_CONTROL_READ_LEGACY_SETTINGS_BUTTON, L"ReadLegacySettingsButton" },
@@ -178,6 +188,7 @@ __declspec(selectany) THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
     { BROWSE_CONTROL_SINGLE_PRODUCT_DATABASE_NAME_TEXT, L"SingleProductDatabaseName" },
     { BROWSE_CONTROL_SINGLE_PRODUCT_NAME_TEXT, L"SingleProductNameText" },
     { BROWSE_CONTROL_VALUE_LIST_VIEW, L"ValueListView" },
+    { BROWSE_CONTROL_PRODUCT_LIST_SHOW_DELETED_VALUES_CHECKBOX, L"ShowDeletedValuesCheckBox" },
     { BROWSE_CONTROL_SINGLE_PRODUCT_BACK_BUTTON, L"SingleProductBackButton" },
     { BROWSE_CONTROL_NEW_VALUE_BUTTON, L"NewValueButton" },
     { BROWSE_CONTROL_SET_VALUE_BUTTON, L"SetValueButton" },
@@ -265,6 +276,12 @@ public:
     void Bomb(
         HRESULT hr
         );
+
+    // These functions interact directly with the database, and thus should not be called from a UI thread,
+    // but instead from the worker thread. Use messages WM_BROWSE_READ_SETTINGS and WM_BROWSE_PERSIST_SETTINGS
+    // to tell worker thread to call them
+    HRESULT ReadSettings();
+    HRESULT PersistSettings();
 
     HRESULT EnumerateProducts(DWORD dwIndex);
     HRESULT EnumerateDatabases(DWORD dwIndex);
@@ -363,6 +380,10 @@ private:
 
     // Add / modify database in list
     BOOL m_fAdding;
+
+    // Browser settings
+    BOOL m_fShowUninstalledProducts;
+    BOOL m_fShowDeletedValues;
 };
 
 #ifdef __cplusplus

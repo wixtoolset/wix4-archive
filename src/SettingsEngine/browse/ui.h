@@ -39,7 +39,8 @@ HRESULT UISetListViewText(
 HRESULT UISetListViewToProductEnum(
     __in HWND hwnd,
     __in C_CFG_ENUMERATION_HANDLE cehProducts,
-    __in_opt const BOOL *rgfInstalled
+    __in const BOOL *rgfInstalled,
+    __in BOOL fShowUninstalledProducts
     );
 HRESULT UIForgetProductsFromListView(
     __in HWND hwnd,
@@ -48,7 +49,8 @@ HRESULT UIForgetProductsFromListView(
     );
 HRESULT UISetListViewToValueEnum(
     __in HWND hwnd,
-    __in_opt C_CFG_ENUMERATION_HANDLE cehValues
+    __in_opt C_CFG_ENUMERATION_HANDLE cehValues,
+    __in BOOL fShowDeletedValues
     );
 HRESULT UISetListViewToValueHistoryEnum(
     __in HWND hwnd,
