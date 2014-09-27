@@ -150,11 +150,14 @@ HRESULT BrowseWindow::ReadSettings()
     }
 
 LExit:
-    // Revert to prior product, even in case of some kind of failure
-    hrTemp = CfgSetProduct(cdbLocal, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczVersion, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczPublicKey);
-    if (FAILED(hrTemp))
+    // Revert to prior product if one was set, even in case of some kind of failure
+    if (NULL != DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName)
     {
-        LogErrorString(hrTemp, "Failed to revert to prior product when persisting settings");
+        hrTemp = CfgSetProduct(cdbLocal, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczVersion, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczPublicKey);
+        if (FAILED(hrTemp))
+        {
+            LogErrorString(hrTemp, "Failed to revert to prior product when persisting settings");
+        }
     }
     ::LeaveCriticalSection(&DATABASE(m_dwLocalDatabaseIndex).cs);
 
@@ -180,11 +183,14 @@ HRESULT BrowseWindow::PersistSettings()
     ExitOnFailure(hr, "Failed to set show deleted values setting");
 
 LExit:
-    // Revert to prior product, even in case of some kind of failure
-    hrTemp = CfgSetProduct(cdbLocal, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczVersion, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczPublicKey);
-    if (FAILED(hrTemp))
+    // Revert to prior product if one was set, even in case of some kind of failure
+    if (NULL != DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName)
     {
-        LogErrorString(hrTemp, "Failed to revert to prior product when persisting settings");
+        hrTemp = CfgSetProduct(cdbLocal, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczVersion, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczPublicKey);
+        if (FAILED(hrTemp))
+        {
+            LogErrorString(hrTemp, "Failed to revert to prior product when persisting settings");
+        }
     }
     ::LeaveCriticalSection(&DATABASE(m_dwLocalDatabaseIndex).cs);
 
