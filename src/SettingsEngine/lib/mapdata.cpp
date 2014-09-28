@@ -90,7 +90,7 @@ HRESULT MapRegValueToCfgName(
     else
     {
         hr = StrAllocString(&sczEscapedValueName, wzRawValueName, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of raw registry value name for escaping: %ls", wzRawValueName);
+        ExitOnFailure(hr, "Failed to allocate copy of raw registry value name for escaping: %ls", wzRawValueName);
 
         hr = StrReplaceStringAll(&sczEscapedValueName, L"\\", L"\\\\");
         ExitOnFailure(hr, "Failed to escape backslashes in registry value name");
@@ -203,15 +203,15 @@ HRESULT MapCfgNameToFile(
     {
         ExitFunction1(hr = E_INVALIDARG);
     }
-    ExitOnFailure1(hr, "Failed to lookup name %ls in file dictionary", wzName);
+    ExitOnFailure(hr, "Failed to lookup name %ls in file dictionary", wzName);
 
     hr = UtilExpandLegacyPath(pFile->sczLocation, &pProduct->detect, &sczExpandedPath);
-    ExitOnFailure1(hr, "Failed to expand legacy path: %ls", pFile->sczLocation);
+    ExitOnFailure(hr, "Failed to expand legacy path: %ls", pFile->sczLocation);
 
     if (NULL != wzFileName)
     {
         hr = PathConcat(sczExpandedPath, wzFileName, psczOutput);
-        ExitOnFailure2(hr, "Failed to concatenate base path '%ls' with name: %ls", sczExpandedPath, wzFileName);
+        ExitOnFailure(hr, "Failed to concatenate base path '%ls' with name: %ls", sczExpandedPath, wzFileName);
     }
     else
     {
@@ -268,7 +268,7 @@ HRESULT MapCfgNameToRegValue(
     {
         ExitFunction1(hr = E_INVALIDARG);
     }
-    ExitOnFailure1(hr, "Failed to lookup namespace %ls in regkey dictionary", wzNamespace);
+    ExitOnFailure(hr, "Failed to lookup namespace %ls in regkey dictionary", wzNamespace);
 
     *pdwRoot = pRegKey->dwRoot;
 

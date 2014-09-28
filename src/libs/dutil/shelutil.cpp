@@ -66,7 +66,7 @@ extern "C" HRESULT DAPI ShelExec(
 
     if (!vpfnShellExecuteExW(&shExecInfo))
     {
-        ExitWithLastError1(hr, "ShellExecEx failed with return code: %d", Dutil_er);
+        ExitWithLastError(hr, "ShellExecEx failed with return code: %d", Dutil_er);
     }
 
     if (phProcess)
@@ -141,7 +141,7 @@ extern "C" HRESULT DAPI ShelExecUnelevated(
     {
         hr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
     }
-    ExitOnRootFailure1(hr, "Failed to launch unelevate executable: %ls", bstrTargetPath);
+    ExitOnRootFailure(hr, "Failed to launch unelevate executable: %ls", bstrTargetPath);
 
 LExit:
     ReleaseObject(psd);
@@ -168,13 +168,13 @@ extern "C" HRESULT DAPI ShelGetFolder(
     WCHAR wzPath[MAX_PATH];
 
     hr = ::SHGetFolderPathW(NULL, csidlFolder | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_CURRENT, wzPath);
-    ExitOnFailure1(hr, "Failed to get folder path for CSIDL: %d", csidlFolder);
+    ExitOnFailure(hr, "Failed to get folder path for CSIDL: %d", csidlFolder);
 
     hr = StrAllocString(psczFolderPath, wzPath, 0);
-    ExitOnFailure1(hr, "Failed to copy shell folder path: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to copy shell folder path: %ls", wzPath);
 
     hr = PathBackslashTerminate(psczFolderPath);
-    ExitOnFailure1(hr, "Failed to backslash terminate shell folder path: %ls", *psczFolderPath);
+    ExitOnFailure(hr, "Failed to backslash terminate shell folder path: %ls", *psczFolderPath);
 
 LExit:
     return hr;
@@ -226,10 +226,10 @@ extern "C" HRESULT DAPI ShelGetKnownFolder(
     ExitOnFailure(hr, "Failed to get known folder path.");
 
     hr = StrAllocString(psczFolderPath, pwzPath, 0);
-    ExitOnFailure1(hr, "Failed to copy shell folder path: %ls", pwzPath);
+    ExitOnFailure(hr, "Failed to copy shell folder path: %ls", pwzPath);
 
     hr = PathBackslashTerminate(psczFolderPath);
-    ExitOnFailure1(hr, "Failed to backslash terminate shell folder path: %ls", *psczFolderPath);
+    ExitOnFailure(hr, "Failed to backslash terminate shell folder path: %ls", *psczFolderPath);
 
 LExit:
     if (pwzPath)

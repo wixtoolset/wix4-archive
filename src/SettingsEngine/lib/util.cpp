@@ -253,7 +253,7 @@ static HRESULT IsProductInDictAndAddToDict(
     if (E_NOTFOUND == hr)
     {
         hr = DictAddKey(shDictProductsSeen, sczProductKey);
-        ExitOnFailure1(hr, "Failed to add product key to dict: %ls", sczProductKey);
+        ExitOnFailure(hr, "Failed to add product key to dict: %ls", sczProductKey);
 
         *pfResult = FALSE;
 
@@ -261,7 +261,7 @@ static HRESULT IsProductInDictAndAddToDict(
     }
     else
     {
-        ExitOnFailure1(hr, "Failed to check if key exists in dict: %ls", sczProductKey);
+        ExitOnFailure(hr, "Failed to check if key exists in dict: %ls", sczProductKey);
     }
 
     *pfResult = TRUE;
@@ -292,7 +292,7 @@ HRESULT UtilExpandLegacyPath(
         if (wzFindResult == wzInput)
         {
             hr = PathGetKnownFolder(LEGACY_DIRECTORIES[i].nFolder, &sczExpandedPath);
-            ExitOnFailure1(hr, "Failed to get known folder with ID: %d", LEGACY_DIRECTORIES[i].nFolder);
+            ExitOnFailure(hr, "Failed to get known folder with ID: %d", LEGACY_DIRECTORIES[i].nFolder);
 
             if (NULL != LEGACY_DIRECTORIES[i].wzAppend)
             {
@@ -327,7 +327,7 @@ HRESULT UtilExpandLegacyPath(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to expand directory path from detection results: %ls", wzInput);
+    ExitOnFailure(hr, "Failed to expand directory path from detection results: %ls", wzInput);
 
 LExit:
     ReleaseStr(sczExpandedPath);
@@ -362,7 +362,7 @@ HRESULT UtilTestWriteAccess(
     genericMapping.GenericAll     = ACCESS_READ | ACCESS_WRITE;
 
     hr = PathGetDirectory(wzPath, &sczDir);
-    ExitOnFailure1(hr, "Failed to get directory portion of path: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to get directory portion of path: %ls", wzPath);
 
     if (!FileExistsEx(wzPath, NULL) && !DirExists(wzPath, NULL))
     {
@@ -378,12 +378,12 @@ HRESULT UtilTestWriteAccess(
     {
         ExitFunction1(hr = E_PATHNOTFOUND);
     }
-    ExitOnFailure1(hr, "Failed to get security descriptor for directory: %ls", sczDir);
+    ExitOnFailure(hr, "Failed to get security descriptor for directory: %ls", sczDir);
 
     fResult = ::AccessCheck(pSecurityDescriptor, hToken, ACCESS_WRITE, &genericMapping, &privilegeSet, &cbPrivilegeSetLength, &dwGrantedAccess, &fAccessStatus);
     if (!fResult)
     {
-        ExitWithLastError1(hr, "Failed to check for access to directory: %ls", wzPath);
+        ExitWithLastError(hr, "Failed to check for access to directory: %ls", wzPath);
     }
 
     if (fAccessStatus)
@@ -419,13 +419,13 @@ HRESULT UtilConvertToVirtualStorePath(
     LPWSTR sczFullPathToVirtual = NULL;
 
     hr = PathGetKnownFolder(CSIDL_LOCAL_APPDATA, &sczLocalAppData);
-    ExitOnFailure1(hr, "Failed to get known folder with ID: %d", CSIDL_LOCAL_APPDATA);
+    ExitOnFailure(hr, "Failed to get known folder with ID: %d", CSIDL_LOCAL_APPDATA);
 
     hr = PathConcat(sczLocalAppData, L"VirtualStore\\", &sczVirtualStore);
     ExitOnFailure(hr, "Failed to append VirtualStore to localappdata path");
 
     hr = PathConcat(sczVirtualStore, wzOriginalPath + 3, psczOutput);
-    ExitOnFailure1(hr, "Failed to append '%ls' to virtualstore directory", wzOriginalPath + 2);
+    ExitOnFailure(hr, "Failed to append '%ls' to virtualstore directory", wzOriginalPath + 2);
 
 LExit:
     ReleaseStr(sczTempFilePath);
@@ -574,7 +574,7 @@ static HRESULT UtilSyncAllProductsHelp(
         if (fLegacyProduct)
         {
             hr = LegacySyncFinalizeProduct(fFirstIsLocal ? pcdb1 : pcdb2, pSyncSession);
-            ExitOnFailure1(hr, "Failed to finalize product %u in legacy sync session", fFirstIsLocal ? pcdb1->dwAppID : pcdb2->dwAppID);
+            ExitOnFailure(hr, "Failed to finalize product %u in legacy sync session", fFirstIsLocal ? pcdb1->dwAppID : pcdb2->dwAppID);
         }
         else
         {

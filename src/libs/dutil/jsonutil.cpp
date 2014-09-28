@@ -438,7 +438,7 @@ static HRESULT DoEnd(
             (JSON_TOKEN_OBJECT_END == tokenEnd && JSON_TOKEN_OBJECT_START != token && JSON_TOKEN_OBJECT_VALUE != token))
         {
             hr = E_UNEXPECTED;
-            ExitOnRootFailure1(hr, "Failure to pop token because the stack did not match the expected token: %d", tokenEnd);
+            ExitOnRootFailure(hr, "Failure to pop token because the stack did not match the expected token: %d", tokenEnd);
         }
     }
 

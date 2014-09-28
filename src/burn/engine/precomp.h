@@ -15,9 +15,9 @@
 
 
 #define ExitTrace LogErrorString
-#define ExitTrace1 LogErrorString
-#define ExitTrace2 LogErrorString
-#define ExitTrace3 LogErrorString
+#define ExitTrace LogErrorString
+#define ExitTrace LogErrorString
+#define ExitTrace LogErrorString
 
 #include <wixver.h>
 

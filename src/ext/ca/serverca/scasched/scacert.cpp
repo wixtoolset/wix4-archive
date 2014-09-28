@@ -199,7 +199,7 @@ static HRESULT ConfigureCertificates(
 
         er = ::MsiGetComponentStateW(WcaGetInstallHandle(), pwzComponent, &isInstalled, &isAction);
         hr = HRESULT_FROM_WIN32(er);
-        ExitOnFailure1(hr, "failed to get state for component: %ls", pwzComponent);
+        ExitOnFailure(hr, "failed to get state for component: %ls", pwzComponent);
 
         if (!(WcaIsInstalling(isInstalled, isAction) && SCA_ACTION_INSTALL == saAction) &&
             !(WcaIsUninstalling(isInstalled, isAction) && SCA_ACTION_UNINSTALL == saAction) &&
@@ -226,7 +226,7 @@ static HRESULT ConfigureCertificates(
             break;
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Invalid store location value: %d", iData);
+            ExitOnFailure(hr, "Invalid store location value: %d", iData);
         }
 
         hr = WcaGetRecordString(hRecCertificate, cqStoreName, &pwzStoreName);
@@ -270,7 +270,7 @@ static HRESULT ConfigureCertificates(
         {
             // Find an existing certificate one (if there is one) to so we have it for rollback.
             hr = FindExistingCertificate(pwzName, dwStoreLocation, pwzStoreName, &pbCertificate, &cbCertificate);
-            ExitOnFailure1(hr, "Failed to search for existing certificate with friendly name: %ls", pwzName);
+            ExitOnFailure(hr, "Failed to search for existing certificate with friendly name: %ls", pwzName);
 
             if (pbCertificate)
             {
@@ -304,7 +304,7 @@ static HRESULT ConfigureCertificates(
         {
             // Actually get the certificate, resolve it to a blob, and get the blob's hash.
             hr = ResolveCertificate(pwzId, pwzName, dwStoreLocation, pwzStoreName, dwAttributes, pwzData, pwzPFXPassword, &pbCertificate, &cbCertificate);
-            ExitOnFailure1(hr, "Failed to resolve certificate: %ls", pwzId);
+            ExitOnFailure(hr, "Failed to resolve certificate: %ls", pwzId);
 
             hr = WcaWriteStreamToCaData(pbCertificate, cbCertificate, &pwzCaData);
             ExitOnFailure(hr, "Failed to pass Certificate.Data to deferred CustomAction.");
@@ -329,11 +329,11 @@ static HRESULT ConfigureCertificates(
         if (wzRollbackAction)
         {
             hr = WcaDoDeferredAction(wzRollbackAction, pwzRollbackCaData, dwCost);
-            ExitOnFailure2(hr, "Failed to schedule rollback certificate action '%ls' for: %ls", wzRollbackAction, pwzId);
+            ExitOnFailure(hr, "Failed to schedule rollback certificate action '%ls' for: %ls", wzRollbackAction, pwzId);
         }
 
         hr = WcaDoDeferredAction(wzAction, pwzCaData, dwCost);
-        ExitOnFailure2(hr, "Failed to schedule certificate action '%ls' for: %ls", wzAction, pwzId);
+        ExitOnFailure(hr, "Failed to schedule certificate action '%ls' for: %ls", wzAction, pwzId);
 
         // Clean up for the next certificate.
         ReleaseNullMem(pbCertificate);
@@ -502,7 +502,7 @@ static HRESULT ResolveCertificate(
 
         // Update the CertificateHash table.
         hr = WcaAddTempRecord(&hCertificateHashView, &hCertificateHashColumns, L"CertificateHash", NULL, 0, 2, wzId, wzEncodedCertificateHash);
-        ExitOnFailure1(hr, "Failed to add encoded has for certificate: %ls", wzId);
+        ExitOnFailure(hr, "Failed to add encoded has for certificate: %ls", wzId);
     }
 
     *ppbCertificate = pbData;
@@ -544,14 +544,14 @@ static HRESULT ReadCertificateFile(
 
     if (!::CryptQueryObject(CERT_QUERY_OBJECT_FILE, reinterpret_cast<LPCVOID>(wzPath), CERT_QUERY_CONTENT_FLAG_ALL, CERT_QUERY_FORMAT_FLAG_ALL, 0, NULL, &dwContentType, NULL, NULL, NULL, (LPCVOID*)&pCertContext))
     {
-        ExitOnFailure1(hr, "Failed to read certificate from file: %ls", wzPath);
+        ExitOnFailure(hr, "Failed to read certificate from file: %ls", wzPath);
     }
 
     if (pCertContext)
     {
         cbData = pCertContext->cbCertEncoded;
         pbData = static_cast<BYTE*>(MemAlloc(cbData, FALSE));
-        ExitOnNull1(pbData, hr, E_OUTOFMEMORY, "Failed to allocate memory to read certificate from file: %ls", wzPath);
+        ExitOnNull(pbData, hr, E_OUTOFMEMORY, "Failed to allocate memory to read certificate from file: %ls", wzPath);
 
         CopyMemory(pbData, pCertContext->pbCertEncoded, pCertContext->cbCertEncoded);
     }
@@ -561,7 +561,7 @@ static HRESULT ReadCertificateFile(
         if (dwContentType & CERT_QUERY_CONTENT_PFX)
         {
             hr = FileRead(&pbData, &cbData, wzPath);
-            ExitOnFailure1(hr, "Failed to read PFX file: %ls", wzPath);
+            ExitOnFailure(hr, "Failed to read PFX file: %ls", wzPath);
         }
         else
         {

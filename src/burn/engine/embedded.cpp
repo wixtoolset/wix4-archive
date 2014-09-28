@@ -86,7 +86,7 @@ extern "C" HRESULT EmbeddedRunBundle(
 
     if (!::CreateProcessW(wzExecutablePath, sczCommand, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
     {
-        ExitWithLastError1(hr, "Failed to create embedded process atpath: %ls", wzExecutablePath);
+        ExitWithLastError(hr, "Failed to create embedded process atpath: %ls", wzExecutablePath);
     }
 
     connection.dwProcessId = ::GetProcessId(pi.hProcess);
@@ -101,7 +101,7 @@ extern "C" HRESULT EmbeddedRunBundle(
 
     // Get the return code from the embedded process.
     hr = ProcWaitForCompletion(connection.hProcess, INFINITE, pdwExitCode);
-    ExitOnFailure1(hr, "Failed to wait for embedded executable: %ls", wzExecutablePath);
+    ExitOnFailure(hr, "Failed to wait for embedded executable: %ls", wzExecutablePath);
 
 LExit:
     ReleaseHandle(pi.hThread);
@@ -142,7 +142,7 @@ static HRESULT ProcessEmbeddedMessages(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Unexpected embedded message sent to child process, msg: %u", pMsg->dwMessage);
+        ExitOnRootFailure(hr, "Unexpected embedded message sent to child process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = dwResult;

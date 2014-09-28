@@ -150,13 +150,13 @@ extern "C" HRESULT CfgAdminRegisterProduct(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle while registering product per-machine");
@@ -236,13 +236,13 @@ extern "C" HRESULT CfgAdminUnregisterProduct(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle while unregistering product per-machine");
@@ -310,13 +310,13 @@ extern "C" HRESULT CfgAdminIsProductRegistered(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle while checking if product is registered per-machine");
@@ -328,7 +328,7 @@ extern "C" HRESULT CfgAdminIsProductRegistered(
         *pfRegistered = FALSE;
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure3(hr, "Failed to search for product in admin database with name: '%ls' version '%ls' public key '%ls'", wzProductName, wzVersion, sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to search for product in admin database with name: '%ls' version '%ls' public key '%ls'", wzProductName, wzVersion, sczLowPublicKey);
 
     *pfRegistered = TRUE;
 

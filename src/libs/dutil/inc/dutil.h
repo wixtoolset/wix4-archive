@@ -6,7 +6,7 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
+//
 // <summary>
 //    Header for utility layer that provides standard support for asserts, exit macros
 // </summary>
@@ -80,30 +80,9 @@ void DAPI Dutil_RootFailure(__in_z LPCSTR szFile, __in int iLine, __in HRESULT h
 
 #endif // DEBUG
 
-#define Trace1 Trace
-#define Trace2 Trace
-#define Trace3 Trace
-
-#define TraceError1 TraceError
-#define TraceError2 TraceError
-#define TraceError3 TraceError
-
-#define TraceErrorDebug1 TraceErrorDebug
-#define TraceErrorDebug2 TraceErrorDebug
-#define TraceErrorDebug3 TraceErrorDebug
-
 // ExitTrace can be overriden
 #ifndef ExitTrace
 #define ExitTrace TraceError
-#endif
-#ifndef ExitTrace1
-#define ExitTrace1 TraceError1
-#endif
-#ifndef ExitTrace2
-#define ExitTrace2 TraceError2
-#endif
-#ifndef ExitTrace3
-#define ExitTrace3 TraceError3
 #endif
 
 // Exit macros
@@ -113,49 +92,16 @@ void DAPI Dutil_RootFailure(__in_z LPCSTR szFile, __in int iLine, __in HRESULT h
 #define ExitFunctionWithLastError(x) { x = HRESULT_FROM_WIN32(::GetLastError()); goto LExit; }
 
 #define ExitOnLastError(x, s, ...) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (FAILED(x)) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__); goto LExit; } }
-#define ExitOnLastError1 ExitOnLastError
-#define ExitOnLastError2 ExitOnLastError
-
 #define ExitOnLastErrorDebugTrace(x, s, ...) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (FAILED(x)) { Dutil_RootFailure(__FILE__, __LINE__, x); TraceErrorDebug(x, s, __VA_ARGS__); goto LExit; } }
-#define ExitOnLastErrorDebugTrace1 ExitOnLastErrorDebugTrace
-#define ExitOnLastErrorDebugTrace2 ExitOnLastErrorDebugTrace
-
 #define ExitWithLastError(x, s, ...) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (!FAILED(x)) { x = E_FAIL; } Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__); goto LExit; }
-#define ExitWithLastError1 ExitWithLastError
-#define ExitWithLastError2 ExitWithLastError
-#define ExitWithLastError3 ExitWithLastError
-
 #define ExitOnFailure(x, s, ...)   if (FAILED(x)) { ExitTrace(x, s, __VA_ARGS__);  goto LExit; }
-#define ExitOnFailure1 ExitOnFailure
-#define ExitOnFailure2 ExitOnFailure
-#define ExitOnFailure3 ExitOnFailure
-
 #define ExitOnRootFailure(x, s, ...)   if (FAILED(x)) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__);  goto LExit; }
-#define ExitOnRootFailure1 ExitOnRootFailure
-#define ExitOnRootFailure2 ExitOnRootFailure
-#define ExitOnRootFailure3 ExitOnRootFailure
-
 #define ExitOnFailureDebugTrace(x, s, ...)   if (FAILED(x)) { TraceErrorDebug(x, s, __VA_ARGS__);  goto LExit; }
-#define ExitOnFailureDebugTrace1 ExitOnFailureDebugTrace
-#define ExitOnFailureDebugTrace2 ExitOnFailureDebugTrace
-#define ExitOnFailureDebugTrace3 ExitOnFailureDebugTrace
-
 #define ExitOnNull(p, x, e, s, ...)   if (NULL == p) { x = e; Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__);  goto LExit; }
-#define ExitOnNull1 ExitOnNull
-#define ExitOnNull2 ExitOnNull
-
 #define ExitOnNullWithLastError(p, x, s, ...) if (NULL == p) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (!FAILED(x)) { x = E_FAIL; } Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__); goto LExit; }
-#define ExitOnNullWithLastError1 ExitOnNullWithLastError
-
 #define ExitOnNullDebugTrace(p, x, e, s, ...)   if (NULL == p) { x = e; Dutil_RootFailure(__FILE__, __LINE__, x); TraceErrorDebug(x, s, __VA_ARGS__);  goto LExit; }
-#define ExitOnNullDebugTrace1 ExitOnNullDebugTrace
-
 #define ExitOnInvalidHandleWithLastError(p, x, s, ...) if (INVALID_HANDLE_VALUE == p) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (!FAILED(x)) { x = E_FAIL; } Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__); goto LExit; }
-#define ExitOnInvalidHandleWithLastError1 ExitOnInvalidHandleWithLastError
-
 #define ExitOnWin32Error(e, x, s, ...) if (ERROR_SUCCESS != e) { x = HRESULT_FROM_WIN32(e); if (!FAILED(x)) { x = E_FAIL; } Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__); goto LExit; }
-#define ExitOnWin32Error1 ExitOnWin32Error
-#define ExitOnWin32Error2 ExitOnWin32Error
 
 // release macros
 #define ReleaseObject(x) if (x) { x->Release(); }

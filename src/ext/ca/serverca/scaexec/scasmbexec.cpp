@@ -35,7 +35,7 @@ HRESULT AllocateAcl(SCA_SMBP* pssp, PACL* ppACL)
     cEA = pssp->dwUserPermissionCount + 1;
     if (cEA >= MAXSIZE_T / sizeof(EXPLICIT_ACCESSW))
     {
-        ExitOnFailure1(hr = E_OUTOFMEMORY, "Too many user permissions to allocate: %u", cEA);
+        ExitOnFailure(hr = E_OUTOFMEMORY, "Too many user permissions to allocate: %u", cEA);
     }
 
     pEA = static_cast<EXPLICIT_ACCESSW*>(MemAlloc(cEA * sizeof(EXPLICIT_ACCESSW), TRUE));
@@ -88,7 +88,7 @@ HRESULT AllocateAcl(SCA_SMBP* pssp, PACL* ppACL)
         {
             hr = AclGetAccountSid(NULL, wzUser, &psid);
         }
-        ExitOnFailure1(hr, "failed to get sid for account: %ls", wzUser);
+        ExitOnFailure(hr, "failed to get sid for account: %ls", wzUser);
 
         // we now have a valid pSid, fill in the EXPLICIT_ACCESS
 
@@ -238,7 +238,7 @@ HRESULT CreateShare(SCA_SMBP* pssp)
 
     // Fail if the directory doesn't exist
     if (!DirExists(pssp->wzDirectory, NULL))
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(ERROR_OBJECT_NOT_FOUND), "Can't create a file share on directory that doesn't exist: %ls.", pssp->wzDirectory);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(ERROR_OBJECT_NOT_FOUND), "Can't create a file share on directory that doesn't exist: %ls.", pssp->wzDirectory);
 
     WcaLog(LOGMSG_VERBOSE, "Creating file share on directory \'%ls\' named \'%ls\'.", pssp->wzDirectory, pssp->wzKey);
 
@@ -261,7 +261,7 @@ HRESULT CreateShare(SCA_SMBP* pssp)
             WcaLog(LOGMSG_VERBOSE, "Duplicate error when existence check failed.");
 
         // error codes listed above.
-        ExitOnFailure1(hr, "Failed to create/modify file share: Err: %d", s);
+        ExitOnFailure(hr, "Failed to create/modify file share: Err: %d", s);
     }
 
 LExit:
@@ -313,13 +313,13 @@ HRESULT ScaDropSmb(SCA_SMBP* pssp)
 
     }
 
-    ExitOnFailure1(hr, "Unable to detect share. (%ls)", pssp->wzKey);
+    ExitOnFailure(hr, "Unable to detect share. (%ls)", pssp->wzKey);
 
     s = ::NetShareDel(NULL, pssp->wzKey, 0);
     if (NERR_Success != s)
     {
         hr = E_FAIL;
-        ExitOnFailure1(hr, "Failed to remove file share: Err: %d", s);
+        ExitOnFailure(hr, "Failed to remove file share: Err: %d", s);
     }
 
 LExit:

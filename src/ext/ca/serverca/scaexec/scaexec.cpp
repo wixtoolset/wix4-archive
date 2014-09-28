@@ -83,7 +83,7 @@ extern "C" UINT __stdcall StartMetabaseTransaction(MSIHANDLE hInstall)
             WcaLog(LOGMSG_STANDARD, "Failed to save metabase before backing up - continuing");
             hr = S_OK;
         }
-        MessageExitOnFailure1(hr, msierrIISFailedStartTransaction, "failed to begin metabase transaction: '%ls'", pwzData);
+        MessageExitOnFailure(hr, msierrIISFailedStartTransaction, "failed to begin metabase transaction: '%ls'", pwzData);
     }
     hr = WcaProgressMessage(COST_IIS_TRANSACTIONS, FALSE);
 LExit:
@@ -136,10 +136,10 @@ extern "C" UINT __stdcall RollbackMetabaseTransaction(MSIHANDLE hInstall)
     ExitOnFailure(hr, "failed to get CustomActionData");
 
     hr = piMetabase->Restore(pwzData, MD_BACKUP_HIGHEST_VERSION, 0);
-    ExitOnFailure1(hr, "failed to rollback metabase transaction: '%ls'", pwzData);
+    ExitOnFailure(hr, "failed to rollback metabase transaction: '%ls'", pwzData);
 
     hr = piMetabase->DeleteBackup(pwzData, MD_BACKUP_HIGHEST_VERSION);
-    ExitOnFailure1(hr, "failed to cleanup metabase transaction '%ls', continuing", pwzData);
+    ExitOnFailure(hr, "failed to cleanup metabase transaction '%ls', continuing", pwzData);
 
 LExit:
     ReleaseStr(pwzData);
@@ -191,7 +191,7 @@ extern "C" UINT __stdcall CommitMetabaseTransaction(MSIHANDLE hInstall)
     ExitOnFailure(hr, "failed to get CustomActionData");
 
     hr = piMetabase->DeleteBackup(pwzData, MD_BACKUP_HIGHEST_VERSION);
-    ExitOnFailure1(hr, "failed to cleanup metabase transaction: '%ls'", pwzData);
+    ExitOnFailure(hr, "failed to cleanup metabase transaction: '%ls'", pwzData);
 
 LExit:
     ReleaseStr(pwzData);
@@ -235,7 +235,7 @@ static HRESULT CreateMetabaseKey(__in LPWSTR* ppwzCustomActionData, __in IMSAdmi
         WcaLog(LOGMSG_STANDARD, "failed to open root key, retrying %d time(s)...", i);
         hr = piMetabase->OpenKey(METADATA_MASTER_ROOT_HANDLE, L"/LM", METADATA_PERMISSION_WRITE, 10, &mhRoot);
     }
-    MessageExitOnFailure1(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", L"/LM");
+    MessageExitOnFailure(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", L"/LM");
 
     pwzKey = pwzData + 3;
 
@@ -247,7 +247,7 @@ static HRESULT CreateMetabaseKey(__in LPWSTR* ppwzCustomActionData, __in IMSAdmi
         WcaLog(LOGMSG_VERBOSE, "Key `%ls` already existed, continuing.", pwzData);
         hr = S_OK;
     }
-    MessageExitOnFailure1(hr, msierrIISFailedCreateKey, "failed to create metabase key: %ls", pwzKey);
+    MessageExitOnFailure(hr, msierrIISFailedCreateKey, "failed to create metabase key: %ls", pwzKey);
 
     hr = WcaProgressMessage(COST_IIS_CREATEKEY, FALSE);
 
@@ -342,11 +342,11 @@ static HRESULT WriteMetabaseValue(__in LPWSTR* ppwzCustomActionData, __in IMSAdm
         WcaLog(LOGMSG_STANDARD, "failed to open '%ls' key, retrying %d time(s)...", pwzKey, i);
         hr = piMetabase->OpenKey(METADATA_MASTER_ROOT_HANDLE, L"/LM", METADATA_PERMISSION_WRITE, 10, &mhKey);
     }
-    MessageExitOnFailure1(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", pwzKey);
+    MessageExitOnFailure(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", pwzKey);
 
     if (lstrlenW(pwzKey) < 3)
     {
-        ExitOnFailure1(hr = E_INVALIDARG, "Key didn't begin with \"/LM\" as expected - key value: %ls", pwzKey);
+        ExitOnFailure(hr = E_INVALIDARG, "Key didn't begin with \"/LM\" as expected - key value: %ls", pwzKey);
     }
 
     hr = piMetabase->SetData(mhKey, pwzKey + 3, &mr); // pwzKey + 3 to skip "/LM" that was used to open the key.
@@ -391,7 +391,7 @@ static HRESULT WriteMetabaseValue(__in LPWSTR* ppwzCustomActionData, __in IMSAdm
             hr = hrOldValue;
         }
     }
-    MessageExitOnFailure1(hr, msierrIISFailedWriteData, "failed to write data to metabase key: %ls", pwzKey);
+    MessageExitOnFailure(hr, msierrIISFailedWriteData, "failed to write data to metabase key: %ls", pwzKey);
 
     hr = WcaProgressMessage(COST_IIS_WRITEVALUE, FALSE);
 
@@ -448,11 +448,11 @@ static HRESULT DeleteMetabaseValue(__in LPWSTR* ppwzCustomActionData, __in IMSAd
         WcaLog(LOGMSG_STANDARD, "failed to open '%ls' key, retrying %d time(s)...", pwzKey, i);
         hr = piMetabase->OpenKey(METADATA_MASTER_ROOT_HANDLE, L"/LM", METADATA_PERMISSION_WRITE, 10, &mhKey);
     }
-    MessageExitOnFailure1(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", pwzKey);
+    MessageExitOnFailure(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", pwzKey);
 
     if (lstrlenW(pwzKey) < 3)
     {
-        ExitOnFailure1(hr = E_INVALIDARG, "Key didn't begin with \"/LM\" as expected - key value: %ls", pwzKey);
+        ExitOnFailure(hr = E_INVALIDARG, "Key didn't begin with \"/LM\" as expected - key value: %ls", pwzKey);
     }
 
     hr = piMetabase->DeleteData(mhKey, pwzKey + 3, dwIdentifier, dwDataType); // pwzKey + 3 to skip "/LM" that was used to open the key.
@@ -460,7 +460,7 @@ static HRESULT DeleteMetabaseValue(__in LPWSTR* ppwzCustomActionData, __in IMSAd
     {
         hr = S_OK;
     }
-    MessageExitOnFailure2(hr, msierrIISFailedDeleteValue, "failed to delete value %d from metabase key: %ls", dwIdentifier, pwzKey);
+    MessageExitOnFailure(hr, msierrIISFailedDeleteValue, "failed to delete value %d from metabase key: %ls", dwIdentifier, pwzKey);
 
     hr = WcaProgressMessage(COST_IIS_DELETEVALUE, FALSE);
 LExit:
@@ -518,7 +518,7 @@ static HRESULT DeleteAspApp(__in LPWSTR* ppwzCustomActionData, __in IMSAdminBase
         WcaLog(LOGMSG_VERBOSE, "No independent COM+ application found associated with %ls. It either doesn't exist, or was already removed - continuing", pwzRoot);
         ExitFunction1(hr = S_OK);
     }
-    MessageExitOnFailure1(hr, msierrIISFailedDeleteApp, "failed to get GUID for application at path: %ls", pwzRoot);
+    MessageExitOnFailure(hr, msierrIISFailedDeleteApp, "failed to get GUID for application at path: %ls", pwzRoot);
 
     WcaLog(LOGMSG_VERBOSE, "Deleting ASP App (used query: %ls) with GUID: %ls", pwzRoot, (LPWSTR)(mr.pbMDData));
 
@@ -630,7 +630,7 @@ static HRESULT CreateAspApp(__in LPWSTR* ppwzCustomActionData, __in IWamAdmin* p
     WcaLog(LOGMSG_VERBOSE, "Creating ASP App: %ls", pwzRoot);
 
     hr = piWam->AppCreate(pwzRoot, fInProc);
-    MessageExitOnFailure1(hr, msierrIISFailedCreateApp, "failed to create web application: %ls", pwzRoot);
+    MessageExitOnFailure(hr, msierrIISFailedCreateApp, "failed to create web application: %ls", pwzRoot);
 
     hr = WcaProgressMessage(COST_IIS_CREATEAPP, FALSE);
 LExit:
@@ -664,7 +664,7 @@ static HRESULT DeleteMetabaseKey(__in LPWSTR *ppwzCustomActionData, __in IMSAdmi
         WcaLog(LOGMSG_STANDARD, "failed to open root key, retrying %d time(s)...", i);
         hr = piMetabase->OpenKey(METADATA_MASTER_ROOT_HANDLE, L"/LM", METADATA_PERMISSION_WRITE, 10, &mhRoot);
     }
-    MessageExitOnFailure1(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", L"/LM");
+    MessageExitOnFailure(hr, msierrIISFailedOpenKey, "failed to open metabase key: %ls", L"/LM");
 
     pwzKey = pwzData + 3;
 
@@ -676,7 +676,7 @@ static HRESULT DeleteMetabaseKey(__in LPWSTR *ppwzCustomActionData, __in IMSAdmi
         WcaLog(LOGMSG_STANDARD, "Key `%ls` did not exist, continuing.", pwzData);
         hr = S_OK;
     }
-    MessageExitOnFailure1(hr, msierrIISFailedDeleteKey, "failed to delete metabase key: %ls", pwzData);
+    MessageExitOnFailure(hr, msierrIISFailedDeleteKey, "failed to delete metabase key: %ls", pwzData);
 
     hr = WcaProgressMessage(COST_IIS_DELETEKEY, FALSE);
 LExit:
@@ -821,7 +821,7 @@ extern "C" UINT __stdcall WriteMetabaseChanges(MSIHANDLE hInstall)
             ExitOnFailure(hr, "failed to delete metabase value");
             break;
         default:
-            ExitOnFailure1(hr = E_UNEXPECTED, "Unexpected metabase action specified: %d", maAction);
+            ExitOnFailure(hr = E_UNEXPECTED, "Unexpected metabase action specified: %d", maAction);
             break;
         }
     }
@@ -919,90 +919,90 @@ extern "C" UINT __stdcall CreateDatabase(MSIHANDLE hInstall)
 
     pwz = pwzData;
     hr = WcaReadStringFromCaData(&pwz, &pwzDatabaseKey); // SQL Server
-    ExitOnFailure1(hr, "failed to read database key from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read database key from custom action data: %ls", pwz);
     hr = WcaReadStringFromCaData(&pwz, &pwzServer); // SQL Server
-    ExitOnFailure1(hr, "failed to read server from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read server from custom action data: %ls", pwz);
     hr = WcaReadStringFromCaData(&pwz, &pwzInstance); // SQL Server Instance
-    ExitOnFailure1(hr, "failed to read server instance from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read server instance from custom action data: %ls", pwz);
     hr = WcaReadStringFromCaData(&pwz, &pwzDatabase); // SQL Database
-    ExitOnFailure1(hr, "failed to read server instance from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read server instance from custom action data: %ls", pwz);
     hr = WcaReadIntegerFromCaData(&pwz, &iAttributes);
-    ExitOnFailure1(hr, "failed to read attributes from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read attributes from custom action data: %ls", pwz);
     hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int *>(&fIntegratedAuth)); // Integrated Windows Authentication?
-    ExitOnFailure1(hr, "failed to read integrated auth flag from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read integrated auth flag from custom action data: %ls", pwz);
     hr = WcaReadStringFromCaData(&pwz, &pwzUser); // SQL User
-    ExitOnFailure1(hr, "failed to read user from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read user from custom action data: %ls", pwz);
     hr = WcaReadStringFromCaData(&pwz, &pwzPassword); // SQL User Password
-    ExitOnFailure1(hr, "failed to read user from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read user from custom action data: %ls", pwz);
 
     // db file spec
     hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int *>(&fHaveDbFileSpec));
-    ExitOnFailure1(hr, "failed to read db file spec from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read db file spec from custom action data: %ls", pwz);
 
     if (fHaveDbFileSpec)
     {
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read db file spec name from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read db file spec name from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfDb.wzName, countof(sfDb.wzName), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy db file spec name: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy db file spec name: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read db file spec filename from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read db file spec filename from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfDb.wzFilename, countof(sfDb.wzFilename), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy db file spec filename: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy db file spec filename: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read db file spec size from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read db file spec size from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfDb.wzSize, countof(sfDb.wzSize), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy db file spec size value: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy db file spec size value: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read db file spec max size from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read db file spec max size from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfDb.wzMaxSize, countof(sfDb.wzMaxSize), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy db file spec max size: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy db file spec max size: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read db file spec grow from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read db file spec grow from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfDb.wzGrow, countof(sfDb.wzGrow), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy db file spec grow value: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy db file spec grow value: %ls", pwzTemp);
     }
 
     // log file spec
     hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int *>(&fHaveLogFileSpec));
-    ExitOnFailure1(hr, "failed to read log file spec from custom action data: %ls", pwz);
+    ExitOnFailure(hr, "failed to read log file spec from custom action data: %ls", pwz);
     if (fHaveLogFileSpec)
     {
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read log file spec name from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read log file spec name from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfLog.wzName, countof(sfDb.wzName), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy log file spec name: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy log file spec name: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read log file spec filename from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read log file spec filename from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfLog.wzFilename, countof(sfDb.wzFilename), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy log file spec filename: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy log file spec filename: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read log file spec size from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read log file spec size from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfLog.wzSize, countof(sfDb.wzSize), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy log file spec size value: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy log file spec size value: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read log file spec max size from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read log file spec max size from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfLog.wzMaxSize, countof(sfDb.wzMaxSize), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy log file spec max size: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy log file spec max size: %ls", pwzTemp);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzTemp);
-        ExitOnFailure1(hr, "failed to read log file spec grow from custom action data: %ls", pwz);
+        ExitOnFailure(hr, "failed to read log file spec grow from custom action data: %ls", pwz);
         hr = ::StringCchCopyW(sfLog.wzGrow, countof(sfDb.wzGrow), pwzTemp);
-        ExitOnFailure1(hr, "failed to copy log file spec grow value: %ls", pwzTemp);
+        ExitOnFailure(hr, "failed to copy log file spec grow value: %ls", pwzTemp);
     }
 
     if (iAttributes & SCADB_CONFIRM_OVERWRITE)
     {
         // Check if the database already exists
         hr = SqlDatabaseExists(pwzServer, pwzInstance, pwzDatabase, fIntegratedAuth, pwzUser, pwzPassword, &bstrErrorDescription);
-        MessageExitOnFailure2(hr, msierrSQLFailedCreateDatabase, "failed to check if database exists: '%ls', error: %ls", pwzDatabase, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription);
+        MessageExitOnFailure(hr, msierrSQLFailedCreateDatabase, "failed to check if database exists: '%ls', error: %ls", pwzDatabase, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription);
 
         if (S_OK == hr) // found an existing database, confirm that they don't want to stop before it gets trampled, in no UI case just continue anyways
         {
@@ -1018,7 +1018,7 @@ extern "C" UINT __stdcall CreateDatabase(MSIHANDLE hInstall)
         WcaLog(LOGMSG_STANDARD, "Error 0x%x: failed to create SQL database but continuing, error: %ls, Database: %ls", hr, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription, pwzDatabase);
         hr = S_OK;
     }
-    MessageExitOnFailure2(hr, msierrSQLFailedCreateDatabase, "failed to create to database: '%ls', error: %ls", pwzDatabase, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription);
+    MessageExitOnFailure(hr, msierrSQLFailedCreateDatabase, "failed to create to database: '%ls', error: %ls", pwzDatabase, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription);
 
     hr = WcaProgressMessage(COST_SQL_CONNECTDB, FALSE);
 LExit:
@@ -1105,7 +1105,7 @@ extern "C" UINT __stdcall DropDatabase(MSIHANDLE hInstall)
         WcaLog(LOGMSG_STANDARD, "Error 0x%x: failed to drop SQL database but continuing, error: %ls, Database: %ls", hr, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription, pwzDatabase);
         hr = S_OK;
     }
-    MessageExitOnFailure2(hr, msierrSQLFailedDropDatabase, "failed to drop to database: '%ls', error: %ls", pwzDatabase, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription);
+    MessageExitOnFailure(hr, msierrSQLFailedDropDatabase, "failed to drop to database: '%ls', error: %ls", pwzDatabase, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription);
 
     hr = WcaProgressMessage(COST_SQL_CONNECTDB, FALSE);
 
@@ -1206,10 +1206,10 @@ extern "C" UINT __stdcall ExecuteSqlStrings(MSIHANDLE hInstall)
     while (S_OK == hr && S_OK == (hr = WcaReadStringFromCaData(&pwz, &pwzSqlKey)))
     {
         hr = WcaReadIntegerFromCaData(&pwz, &iAttributesSQL);
-        ExitOnFailure1(hr, "failed to read attributes for SQL string: %ls", pwzSqlKey);
+        ExitOnFailure(hr, "failed to read attributes for SQL string: %ls", pwzSqlKey);
 
         hr = WcaReadStringFromCaData(&pwz, &pwzSql);
-        ExitOnFailure1(hr, "failed to read SQL string for key: %ls", pwzSqlKey);
+        ExitOnFailure(hr, "failed to read SQL string for key: %ls", pwzSqlKey);
 
         // If the SqlString row is set to continue on error and the DB connection failed, skip attempting to execute
         if ((iAttributesSQL & SCASQL_CONTINUE_ON_ERROR) && FAILED(hrDB))
@@ -1219,7 +1219,7 @@ extern "C" UINT __stdcall ExecuteSqlStrings(MSIHANDLE hInstall)
         }
 
         // Now check if the DB connection succeeded
-        MessageExitOnFailure1(hr = hrDB, msierrSQLFailedConnectDatabase, "failed to connect to database: '%ls'", pwzDatabase);
+        MessageExitOnFailure(hr = hrDB, msierrSQLFailedConnectDatabase, "failed to connect to database: '%ls'", pwzDatabase);
 
         WcaLog(LOGMSG_VERBOSE, "Executing SQL string: %ls", pwzSql);
         hr = SqlSessionExecuteQuery(pidbSession, pwzSql, NULL, NULL, &bstrErrorDescription);
@@ -1228,7 +1228,7 @@ extern "C" UINT __stdcall ExecuteSqlStrings(MSIHANDLE hInstall)
             WcaLog(LOGMSG_STANDARD, "Error 0x%x: failed to execute SQL string but continuing, error: %ls, SQL key: %ls SQL string: %ls", hr, NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription, pwzSqlKey, pwzSql);
             hr = S_OK;
         }
-        MessageExitOnFailure3(hr, msierrSQLFailedExecString, "failed to execute SQL string, error: %ls, SQL key: %ls SQL string: %ls", NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription, pwzSqlKey, pwzSql);
+        MessageExitOnFailure(hr, msierrSQLFailedExecString, "failed to execute SQL string, error: %ls, SQL key: %ls SQL string: %ls", NULL == bstrErrorDescription ? L"unknown error" : bstrErrorDescription, pwzSqlKey, pwzSql);
 
         WcaProgressMessage(COST_SQL_STRING, FALSE);
     }
@@ -1342,7 +1342,7 @@ extern "C" UINT __stdcall CreateSmb(MSIHANDLE hInstall)
     ssp.pUserPerms = pUserPermsList;
 
     hr = ScaEnsureSmbExists(&ssp);
-    MessageExitOnFailure1(hr, msierrSMBFailedCreate, "failed to create share: '%ls'", pwzFsKey);
+    MessageExitOnFailure(hr, msierrSMBFailedCreate, "failed to create share: '%ls'", pwzFsKey);
 
     hr = WcaProgressMessage(COST_SMB_CREATESMB, FALSE);
 
@@ -1398,7 +1398,7 @@ extern "C" UINT __stdcall DropSmb(MSIHANDLE hInstall)
     ssp.wzKey = pwzFsKey;
 
     hr = ScaDropSmb(&ssp);
-    MessageExitOnFailure1(hr, msierrSMBFailedDrop, "failed to delete share: '%ls'", pwzFsKey);
+    MessageExitOnFailure(hr, msierrSMBFailedDrop, "failed to delete share: '%ls'", pwzFsKey);
 
     hr = WcaProgressMessage(COST_SMB_DROPSMB, FALSE);
 
@@ -1462,19 +1462,19 @@ static HRESULT AddUserToGroup(
         WcaLog(LOGMSG_VERBOSE, "Failed to add user: %ls, domain %ls to group: %ls, domain: %ls with error 0x%x.  Attempting to use Active Directory", wzUser, wzUserDomain, wzGroup, wzGroupDomain, hr);
 
         hr = UserCreateADsPath(wzUserDomain, wzUser, &bstrUser);
-        ExitOnFailure2(hr, "failed to create user ADsPath for user: %ls domain: %ls", wzUser, wzUserDomain);
+        ExitOnFailure(hr, "failed to create user ADsPath for user: %ls domain: %ls", wzUser, wzUserDomain);
 
         hr = UserCreateADsPath(wzGroupDomain, wzGroup, &bstrGroup);
-        ExitOnFailure2(hr, "failed to create group ADsPath for group: %ls domain: %ls", wzGroup, wzGroupDomain);
+        ExitOnFailure(hr, "failed to create group ADsPath for group: %ls domain: %ls", wzGroup, wzGroupDomain);
 
         hr = ::ADsGetObject(bstrGroup,IID_IADsGroup, reinterpret_cast<void**>(&pGroup));
-        ExitOnFailure1(hr, "Failed to get group '%ls'.", reinterpret_cast<WCHAR*>(bstrGroup) );
+        ExitOnFailure(hr, "Failed to get group '%ls'.", reinterpret_cast<WCHAR*>(bstrGroup) );
 
         hr = pGroup->Add(bstrUser);
         if ((HRESULT_FROM_WIN32(ERROR_OBJECT_ALREADY_EXISTS) == hr) || (HRESULT_FROM_WIN32(ERROR_MEMBER_IN_ALIAS) == hr))
             hr = S_OK;
 
-        ExitOnFailure2(hr, "Failed to add user %ls to group '%ls'.", reinterpret_cast<WCHAR*>(bstrUser), reinterpret_cast<WCHAR*>(bstrGroup) );
+        ExitOnFailure(hr, "Failed to add user %ls to group '%ls'.", reinterpret_cast<WCHAR*>(bstrUser), reinterpret_cast<WCHAR*>(bstrGroup) );
     }
 
 LExit:
@@ -1531,16 +1531,16 @@ static HRESULT RemoveUserFromGroup(
         WcaLog(LOGMSG_VERBOSE, "Failed to remove user: %ls, domain %ls from group: %ls, domain: %ls with error 0x%x.  Attempting to use Active Directory", wzUser, wzUserDomain, wzGroup, wzGroupDomain, hr);
 
         hr = UserCreateADsPath(wzUserDomain, wzUser, &bstrUser);
-        ExitOnFailure2(hr, "failed to create user ADsPath in order to remove user: %ls domain: %ls from a group", wzUser, wzUserDomain);
+        ExitOnFailure(hr, "failed to create user ADsPath in order to remove user: %ls domain: %ls from a group", wzUser, wzUserDomain);
 
         hr = UserCreateADsPath(wzGroupDomain, wzGroup, &bstrGroup);
-        ExitOnFailure2(hr, "failed to create group ADsPath in order to remove user from group: %ls domain: %ls", wzGroup, wzGroupDomain);
+        ExitOnFailure(hr, "failed to create group ADsPath in order to remove user from group: %ls domain: %ls", wzGroup, wzGroupDomain);
 
         hr = ::ADsGetObject(bstrGroup,IID_IADsGroup, reinterpret_cast<void**>(&pGroup));
-        ExitOnFailure1(hr, "Failed to get group '%ls'.", reinterpret_cast<WCHAR*>(bstrGroup) );
+        ExitOnFailure(hr, "Failed to get group '%ls'.", reinterpret_cast<WCHAR*>(bstrGroup) );
 
         hr = pGroup->Remove(bstrUser);
-        ExitOnFailure2(hr, "Failed to remove user %ls from group '%ls'.", reinterpret_cast<WCHAR*>(bstrUser), reinterpret_cast<WCHAR*>(bstrGroup) );
+        ExitOnFailure(hr, "Failed to remove user %ls from group '%ls'.", reinterpret_cast<WCHAR*>(bstrUser), reinterpret_cast<WCHAR*>(bstrGroup) );
     }
 
 LExit:
@@ -1579,7 +1579,7 @@ static HRESULT ModifyUserLocalServiceRight(
     }
 
     hr = AclGetAccountSid(NULL, pwzUser, &psid);
-    ExitOnFailure1(hr, "Failed to get SID for user: %ls", pwzUser);
+    ExitOnFailure(hr, "Failed to get SID for user: %ls", pwzUser);
 
     nt = ::LsaOpenPolicy(NULL, &ObjectAttributes, POLICY_ALL_ACCESS, &hPolicy);
     hr = HRESULT_FROM_WIN32(::LsaNtStatusToWinError(nt));
@@ -1593,13 +1593,13 @@ static HRESULT ModifyUserLocalServiceRight(
     {
         nt = ::LsaAddAccountRights(hPolicy, psid, &lucPrivilege, 1);
         hr = HRESULT_FROM_WIN32(::LsaNtStatusToWinError(nt));
-        ExitOnFailure1(hr, "Failed to add 'logon as service' bit to user: %ls", pwzUser);
+        ExitOnFailure(hr, "Failed to add 'logon as service' bit to user: %ls", pwzUser);
     }
     else
     {
         nt = ::LsaRemoveAccountRights(hPolicy, psid, FALSE, &lucPrivilege, 1);
         hr = HRESULT_FROM_WIN32(::LsaNtStatusToWinError(nt));
-        ExitOnFailure1(hr, "Failed to remove 'logon as service' bit from user: %ls", pwzUser);
+        ExitOnFailure(hr, "Failed to remove 'logon as service' bit from user: %ls", pwzUser);
     }
 
 LExit:
@@ -1641,7 +1641,7 @@ static HRESULT ModifyUserLocalBatchRight(
     }
 
     hr = AclGetAccountSid(NULL, pwzUser, &psid);
-    ExitOnFailure1(hr, "Failed to get SID for user: %ls", pwzUser);
+    ExitOnFailure(hr, "Failed to get SID for user: %ls", pwzUser);
 
     nt = ::LsaOpenPolicy(NULL, &ObjectAttributes, POLICY_ALL_ACCESS, &hPolicy);
     hr = HRESULT_FROM_WIN32(::LsaNtStatusToWinError(nt));
@@ -1655,13 +1655,13 @@ static HRESULT ModifyUserLocalBatchRight(
     {
         nt = ::LsaAddAccountRights(hPolicy, psid, &lucPrivilege, 1);
         hr = HRESULT_FROM_WIN32(::LsaNtStatusToWinError(nt));
-        ExitOnFailure1(hr, "Failed to add 'logon as batch job' bit to user: %ls", pwzUser);
+        ExitOnFailure(hr, "Failed to add 'logon as batch job' bit to user: %ls", pwzUser);
     }
     else
     {
         nt = ::LsaRemoveAccountRights(hPolicy, psid, FALSE, &lucPrivilege, 1);
         hr = HRESULT_FROM_WIN32(::LsaNtStatusToWinError(nt));
-        ExitOnFailure1(hr, "Failed to remove 'logon as batch job' bit from user: %ls", pwzUser);
+        ExitOnFailure(hr, "Failed to remove 'logon as batch job' bit from user: %ls", pwzUser);
     }
 
   LExit:
@@ -1838,21 +1838,21 @@ extern "C" UINT __stdcall CreateUser(
         }
         else if (NERR_PasswordTooShort == er || NERR_PasswordTooLong == er)
         {
-            MessageExitOnFailure1(hr = HRESULT_FROM_WIN32(er), msierrUSRFailedUserCreatePswd, "failed to create user: %ls due to invalid password.", pwzName);
+            MessageExitOnFailure(hr = HRESULT_FROM_WIN32(er), msierrUSRFailedUserCreatePswd, "failed to create user: %ls due to invalid password.", pwzName);
         }
-        MessageExitOnFailure1(hr = HRESULT_FROM_WIN32(er), msierrUSRFailedUserCreate, "failed to create user: %ls", pwzName);
+        MessageExitOnFailure(hr = HRESULT_FROM_WIN32(er), msierrUSRFailedUserCreate, "failed to create user: %ls", pwzName);
     }
 
     if (SCAU_ALLOW_LOGON_AS_SERVICE & iAttributes)
     {
         hr = ModifyUserLocalServiceRight(pwzDomain, pwzName, TRUE);
-        MessageExitOnFailure1(hr, msierrUSRFailedGrantLogonAsService, "Failed to grant logon as service rights to user: %ls", pwzName);
+        MessageExitOnFailure(hr, msierrUSRFailedGrantLogonAsService, "Failed to grant logon as service rights to user: %ls", pwzName);
     }
 
     if (SCAU_ALLOW_LOGON_AS_BATCH & iAttributes)
     {
         hr = ModifyUserLocalBatchRight(pwzDomain, pwzName, TRUE);
-        MessageExitOnFailure1(hr, msierrUSRFailedGrantLogonAsService, "Failed to grant logon as batch job rights to user: %ls", pwzName);
+        MessageExitOnFailure(hr, msierrUSRFailedGrantLogonAsService, "Failed to grant logon as batch job rights to user: %ls", pwzName);
     }
 
     //
@@ -1861,16 +1861,16 @@ extern "C" UINT __stdcall CreateUser(
     while (S_OK == (hr = WcaReadStringFromCaData(&pwz, &pwzGroup)))
     {
         hr = WcaReadStringFromCaData(&pwz, &pwzGroupDomain);
-        ExitOnFailure1(hr, "failed to get domain for group: %ls", pwzGroup);
+        ExitOnFailure(hr, "failed to get domain for group: %ls", pwzGroup);
 
         hr = AddUserToGroup(pwzName, pwzDomain, pwzGroup, pwzGroupDomain);
-        MessageExitOnFailure2(hr, msierrUSRFailedUserGroupAdd, "failed to add user: %ls to group %ls", pwzName, pwzGroup);
+        MessageExitOnFailure(hr, msierrUSRFailedUserGroupAdd, "failed to add user: %ls to group %ls", pwzName, pwzGroup);
     }
     if (E_NOMOREITEMS == hr) // if there are no more items, all is well
     {
         hr = S_OK;
     }
-    ExitOnFailure1(hr, "failed to get next group in which to include user:%ls", pwzName);
+    ExitOnFailure(hr, "failed to get next group in which to include user:%ls", pwzName);
 
 LExit:
     if (puserInfo)
@@ -2009,7 +2009,7 @@ extern "C" UINT __stdcall RemoveUser(
         {
             er = NERR_Success;
         }
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(er), "failed to delete user account: %ls", pwzName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(er), "failed to delete user account: %ls", pwzName);
     }
     else
     {
@@ -2039,7 +2039,7 @@ extern "C" UINT __stdcall RemoveUser(
             hr = S_OK;
         }
 
-        ExitOnFailure1(hr, "failed to get next group from which to remove user:%ls", pwzName);
+        ExitOnFailure(hr, "failed to get next group from which to remove user:%ls", pwzName);
     }
 
 LExit:
@@ -2287,7 +2287,7 @@ extern "C" UINT __stdcall StartIIS7ConfigTransaction(MSIHANDLE hInstall)
         }
         else
         {
-            ExitOnFailure2(hr, "Failed to copy config backup %ls -> %ls", wzConfigSource, wzConfigCopy);
+            ExitOnFailure(hr, "Failed to copy config backup %ls -> %ls", wzConfigSource, wzConfigCopy);
         }
     }
 

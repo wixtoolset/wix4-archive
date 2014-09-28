@@ -30,10 +30,10 @@ extern "C" HRESULT DAPI Iis7PutPropertyVariant(
     ExitOnNull(bstrPropName, hr, E_OUTOFMEMORY, "failed SysAllocString");
 
     hr = pElement->GetPropertyByName(bstrPropName, &pProperty);
-    ExitOnFailure1(hr, "Failed to get property object for %ls", wzPropName);
+    ExitOnFailure(hr, "Failed to get property object for %ls", wzPropName);
 
     hr = pProperty->put_Value(vtPut);
-    ExitOnFailure1(hr, "Failed to set property value for %ls", wzPropName);
+    ExitOnFailure(hr, "Failed to set property value for %ls", wzPropName);
 
 LExit:
     ReleaseBSTR(bstrPropName);
@@ -106,10 +106,10 @@ extern "C" HRESULT DAPI Iis7GetPropertyVariant(
     ExitOnNull(bstrPropName, hr, E_OUTOFMEMORY, "failed SysAllocString");
 
     hr = pElement->GetPropertyByName(bstrPropName, &pProperty);
-    ExitOnFailure1(hr, "Failed to get property object for %ls", wzPropName);
+    ExitOnFailure(hr, "Failed to get property object for %ls", wzPropName);
 
     hr = pProperty->get_Value(vtGet);
-    ExitOnFailure1(hr, "Failed to get property value for %ls", wzPropName);
+    ExitOnFailure(hr, "Failed to get property value for %ls", wzPropName);
 
 LExit:
     ReleaseBSTR(bstrPropName);
@@ -130,12 +130,12 @@ extern "C" HRESULT DAPI Iis7GetPropertyString(
 
     ::VariantInit(&vtGet);
     hr = Iis7GetPropertyVariant(pElement, wzPropName, &vtGet);
-    ExitOnFailure1(hr, "Failed to get iis7 property variant with name: %ls", wzPropName);
+    ExitOnFailure(hr, "Failed to get iis7 property variant with name: %ls", wzPropName);
 
     if (!ISSTRINGVARIANT(vtGet.vt))
     {
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "Tried to get property as a string, but type was %d instead.", vtGet.vt);
+        ExitOnFailure(hr, "Tried to get property as a string, but type was %d instead.", vtGet.vt);
     }
 
     hr = StrAllocString(psczGet, vtGet.bstrVal, 0);
@@ -209,13 +209,13 @@ BOOL CompareVariantPath(
     if (ISSTRINGVARIANT(pVariant1->vt))
     {
         hr = PathExpand(&wzValue1, pVariant1->bstrVal, PATH_EXPAND_ENVIRONMENT | PATH_EXPAND_FULLPATH);
-        ExitOnFailure1(hr, "Failed to expand path %ls", pVariant1->bstrVal);
+        ExitOnFailure(hr, "Failed to expand path %ls", pVariant1->bstrVal);
     }
 
     if (ISSTRINGVARIANT(pVariant2->vt))
     {
         hr = PathExpand(&wzValue2, pVariant2->bstrVal, PATH_EXPAND_ENVIRONMENT | PATH_EXPAND_FULLPATH);
-        ExitOnFailure1(hr, "Failed to expand path %ls", pVariant2->bstrVal);
+        ExitOnFailure(hr, "Failed to expand path %ls", pVariant2->bstrVal);
     }
 
     fEqual = CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, wzValue1, -1, wzValue2, -1);
@@ -260,7 +260,7 @@ extern "C" BOOL DAPI Iis7IsMatchingAppHostElement(
     }
 
     hr = Iis7GetPropertyVariant(pElement, pComparison->sczAttributeName, &vPropValue);
-    ExitOnFailure2(hr, "Failed to get value of %ls attribute of %ls element", pComparison->sczAttributeName, pComparison->sczElementName);
+    ExitOnFailure(hr, "Failed to get value of %ls attribute of %ls element", pComparison->sczAttributeName, pComparison->sczElementName);
 
     if (TRUE == pComparator(pComparison->pvAttributeValue, &vPropValue))
     {

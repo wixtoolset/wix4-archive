@@ -207,7 +207,7 @@ extern "C" HRESULT DetectReportRelatedBundles(
 
         default:
             hr = E_FAIL;
-            ExitOnRootFailure1(hr, "Unexpected relation type encountered: %d", pRelatedBundle->relationType);
+            ExitOnRootFailure(hr, "Unexpected relation type encountered: %d", pRelatedBundle->relationType);
             break;
         }
 
@@ -356,7 +356,7 @@ static HRESULT DownloadUpdateFeed(
     authenticationCallback.pfnAuthenticate = &AuthenticationRequired;
 
     hr = DownloadUrl(&downloadSource, qwDownloadSize, sczDestinationPath, &cacheCallback, &authenticationCallback);
-    ExitOnFailure2(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, sczDestinationPath);
+    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, sczDestinationPath);
 
     if (psczTempFile)
     {
@@ -401,7 +401,7 @@ static HRESULT DetectAtomFeedUpdate(
     ExitOnFailure(hr, "Failed to download update feed.");
 
     hr = AtomParseFromFile(sczUpdateFeedTempFile, &pAtomFeed);
-    ExitOnFailure1(hr, "Failed to parse update atom feed: %ls.", sczUpdateFeedTempFile);
+    ExitOnFailure(hr, "Failed to parse update atom feed: %ls.", sczUpdateFeedTempFile);
 
     hr = ApupAllocChainFromAtom(pAtomFeed, &pApupChain);
     ExitOnFailure(hr, "Failed to allocate update chain from atom feed.");

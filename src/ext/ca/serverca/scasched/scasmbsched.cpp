@@ -175,18 +175,18 @@ HRESULT ScaSmbRead(SCA_SMB** ppssList)
         ExitOnFailure(hr, "Failed to copy share name string to smb object");
 
         hr = WcaGetRecordString(hRec, ssqComponent, &pwzData);
-        ExitOnFailure1(hr, "Failed to get Component for FileShare: '%ls'", pss->wzShareName);
+        ExitOnFailure(hr, "Failed to get Component for FileShare: '%ls'", pss->wzShareName);
         hr = ::StringCchCopyW(pss->wzComponent, countof(pss->wzComponent), pwzData);
         ExitOnFailure(hr, "Failed to copy component string to smb object");
 
         hr = WcaGetRecordFormattedString(hRec, ssqDescription, &pwzData);
-        ExitOnFailure1(hr, "Failed to get Share Description for FileShare: '%ls'", pss->wzShareName);
+        ExitOnFailure(hr, "Failed to get Share Description for FileShare: '%ls'", pss->wzShareName);
         hr = ::StringCchCopyW(pss->wzDescription, countof(pss->wzDescription), pwzData);
         ExitOnFailure(hr, "Failed to copy description string to smb object");
 
         // get user info from the user table
         hr = WcaGetRecordFormattedString(hRec, ssqUser, &pwzData);
-        ExitOnFailure1(hr, "Failed to get User record for FileShare: '%ls'", pss->wzShareName);
+        ExitOnFailure(hr, "Failed to get User record for FileShare: '%ls'", pss->wzShareName);
 
         // get component install state
         er = ::MsiGetComponentStateW(WcaGetInstallHandle(), pss->wzComponent, &pss->isInstalled, &pss->isAction);
@@ -199,7 +199,7 @@ HRESULT ScaSmbRead(SCA_SMB** ppssList)
             pss->fUseIntegratedAuth = FALSE;
             pss->fLegacyUserProvided = TRUE;
             hr = ScaGetUser(pwzData, &pss->scau);
-            ExitOnFailure1(hr, "Failed to get user information for fileshare: '%ls'", pss->wzShareName);
+            ExitOnFailure(hr, "Failed to get user information for fileshare: '%ls'", pss->wzShareName);
         }
         else
         {
@@ -211,7 +211,7 @@ HRESULT ScaSmbRead(SCA_SMB** ppssList)
 
         // get the share's directory
         hr = WcaGetRecordString(hRec, ssqDirectory, &pwzData);
-        ExitOnFailure1(hr, "Failed to get directory for FileShare: '%ls'", pss->wzShareName);
+        ExitOnFailure(hr, "Failed to get directory for FileShare: '%ls'", pss->wzShareName);
 
         WCHAR wzPath[MAX_PATH];
         DWORD dwLen;
@@ -301,7 +301,7 @@ HRESULT RetrieveFileShareUserPerm(SCA_SMB* pss, SCA_SMB_EX_USER_PERMS** ppExUser
     else if (NERR_Success != s || psi == NULL)
     {
         hr = E_FAIL;
-        ExitOnFailure1(hr, "Failed to get share information with return code: %d", s);
+        ExitOnFailure(hr, "Failed to get share information with return code: %d", s);
     }
     if (!::GetSecurityDescriptorDacl(psi->shi502_security_descriptor, &bValid, &acl, &bDaclDefaulted) || !bValid)
     {
@@ -310,7 +310,7 @@ HRESULT RetrieveFileShareUserPerm(SCA_SMB* pss, SCA_SMB_EX_USER_PERMS** ppExUser
 
     er = ::GetExplicitEntriesFromAclW(acl, &nCount, &pEA);
     hr = HRESULT_FROM_WIN32(er);
-    ExitOnFailure1(hr, "Failed to get  access entries from acl for file share %ls", pss->wzShareName);
+    ExitOnFailure(hr, "Failed to get  access entries from acl for file share %ls", pss->wzShareName);
     for (dwCounter = 0; dwCounter < nCount; ++dwCounter)
     {
         if (TRUSTEE_IS_SID == pEA[dwCounter].Trustee.TrusteeForm)
@@ -454,7 +454,7 @@ HRESULT ScaSmbInstall(SCA_SMB* pssList)
         if (WcaIsInstalling(pss->isInstalled, pss->isAction) )
         {
             hr = SchedCreateSmb(pss);
-            ExitOnFailure1(hr, "Failed to schedule the creation of the fileshare: %ls", pss->wzShareName);
+            ExitOnFailure(hr, "Failed to schedule the creation of the fileshare: %ls", pss->wzShareName);
         }
     }
 
@@ -549,7 +549,7 @@ HRESULT ScaSmbUninstall(SCA_SMB* pssList)
         if (WcaIsUninstalling(pss->isInstalled, pss->isAction) )
         {
             hr = SchedDropSmb(pss);
-            ExitOnFailure1(hr, "Failed to remove file share %ls", pss->wzShareName);
+            ExitOnFailure(hr, "Failed to remove file share %ls", pss->wzShareName);
         }
     }
 
@@ -607,7 +607,7 @@ HRESULT ScaSmbExPermsRead(SCA_SMB* pss)
         hr = WcaGetRecordString(hRec, ssupqUser, &pwzData);
         ExitOnFailure(hr, "Failed to get FileSharePermissions.User");
         hr = ScaGetUser(pwzData, &pExUserPerms->scau);
-        ExitOnFailure1(hr, "Failed to get user information for fileshare: '%ls'", pss->wzShareName);
+        ExitOnFailure(hr, "Failed to get user information for fileshare: '%ls'", pss->wzShareName);
 
         hr = WcaGetRecordInteger(hRec, ssupqPermissions, &pExUserPerms->nPermissions);
         ExitOnFailure(hr, "Failed to get FileSharePermissions.Permissions");

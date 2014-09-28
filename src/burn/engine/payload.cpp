@@ -93,7 +93,7 @@ extern "C" HRESULT PayloadsParseFromXml(
         else
         {
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Invalid value for @Packaging: %ls", scz);
+            ExitOnFailure(hr, "Invalid value for @Packaging: %ls", scz);
         }
 
         // @Container
@@ -106,7 +106,7 @@ extern "C" HRESULT PayloadsParseFromXml(
 
                 // find container
                 hr = ContainerFindById(pContainers, scz, &pPayload->pContainer);
-                ExitOnFailure1(hr, "Failed to to find container: %ls", scz);
+                ExitOnFailure(hr, "Failed to to find container: %ls", scz);
             }
         }
 
@@ -246,7 +246,7 @@ extern "C" HRESULT PayloadExtractFromContainer(
 
         // find payload by stream name
         hr = FindEmbeddedBySourcePath(pPayloads, pContainer, sczStreamName, &pPayload);
-        ExitOnFailure1(hr, "Failed to find embedded payload: %ls", sczStreamName);
+        ExitOnFailure(hr, "Failed to find embedded payload: %ls", sczStreamName);
 
         // make file path
         hr = PathConcat(wzTargetDir, pPayload->sczFilePath, &pPayload->sczLocalFilePath);
@@ -278,7 +278,7 @@ extern "C" HRESULT PayloadExtractFromContainer(
             if (BURN_PAYLOAD_STATE_ACQUIRED > pPayload->state)
             {
                 hr = E_INVALIDDATA;
-                ExitOnRootFailure1(hr, "Payload was not found in container: %ls", pPayload->sczKey);
+                ExitOnRootFailure(hr, "Payload was not found in container: %ls", pPayload->sczKey);
             }
         }
     }

@@ -88,7 +88,7 @@ DAPI_(HRESULT) BalInfoAddRelatedBundleAsPackage(
         break;
 
     default:
-        ExitOnFailure1(hr = E_INVALIDARG, "Unknown related bundle type: %u", relationType);
+        ExitOnFailure(hr = E_INVALIDARG, "Unknown related bundle type: %u", relationType);
     }
 
     // Check to see if the bundle is already in the list of packages.

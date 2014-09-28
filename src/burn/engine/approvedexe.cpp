@@ -198,7 +198,7 @@ extern "C" HRESULT ApprovedExesLaunch(
     si.cb = sizeof(si);
     if (!::CreateProcessW(pLaunchApprovedExe->sczExecutablePath, sczCommand, NULL, NULL, FALSE, CREATE_NEW_PROCESS_GROUP, NULL, sczExecutableDirectory, &si, &pi))
     {
-        ExitWithLastError1(hr, "Failed to CreateProcess on path: %ls", pLaunchApprovedExe->sczExecutablePath);
+        ExitWithLastError(hr, "Failed to CreateProcess on path: %ls", pLaunchApprovedExe->sczExecutablePath);
     }
 
     *pdwProcessId = pi.dwProcessId;
@@ -249,7 +249,7 @@ extern "C" HRESULT ApprovedExesVerifySecureLocation(
         }
         else if (E_NOTFOUND != hr)
         {
-            ExitOnFailure1(hr, "Failed to get the variable: %ls", wzSecureFolderVariable);
+            ExitOnFailure(hr, "Failed to get the variable: %ls", wzSecureFolderVariable);
         }
     }
 

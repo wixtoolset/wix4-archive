@@ -340,22 +340,22 @@ HRESULT ScaUserRead(
             psu->isInstalled = isInstalled;
             psu->isAction = isAction;
             hr = ::StringCchCopyW(psu->wzComponent, countof(psu->wzComponent), pwzData);
-            ExitOnFailure1(hr, "failed to copy component name: %ls", pwzData);
+            ExitOnFailure(hr, "failed to copy component name: %ls", pwzData);
 
             hr = WcaGetRecordString(hRec, vaqUser, &pwzData);
             ExitOnFailure(hr, "failed to get User.User");
             hr = ::StringCchCopyW(psu->wzKey, countof(psu->wzKey), pwzData);
-            ExitOnFailure1(hr, "failed to copy user key: %ls", pwzData);
+            ExitOnFailure(hr, "failed to copy user key: %ls", pwzData);
 
             hr = WcaGetRecordFormattedString(hRec, vaqName, &pwzData);
             ExitOnFailure(hr, "failed to get User.Name");
             hr = ::StringCchCopyW(psu->wzName, countof(psu->wzName), pwzData);
-            ExitOnFailure1(hr, "failed to copy user name: %ls", pwzData);
+            ExitOnFailure(hr, "failed to copy user name: %ls", pwzData);
 
             hr = WcaGetRecordFormattedString(hRec, vaqDomain, &pwzData);
             ExitOnFailure(hr, "failed to get User.Domain");
             hr = ::StringCchCopyW(psu->wzDomain, countof(psu->wzDomain), pwzData);
-            ExitOnFailure1(hr, "failed to copy user domain: %ls", pwzData);
+            ExitOnFailure(hr, "failed to copy user domain: %ls", pwzData);
 
             hr = WcaGetRecordFormattedString(hRec, vaqPassword, &pwzData);
             ExitOnFailure(hr, "failed to get User.Password");
@@ -373,9 +373,9 @@ HRESULT ScaUserRead(
                 ExitOnFailure(hr, "Failed to create user record for querying UserGroup table");
 
                 hr = WcaOpenView(vcsUserGroupQuery, &hUserGroupView);
-                ExitOnFailure1(hr, "Failed to open view on UserGroup table for user %ls", psu->wzKey);
+                ExitOnFailure(hr, "Failed to open view on UserGroup table for user %ls", psu->wzKey);
                 hr = WcaExecuteView(hUserGroupView, hUserRec);
-                ExitOnFailure1(hr, "Failed to execute view on UserGroup table for user: %ls", psu->wzKey);
+                ExitOnFailure(hr, "Failed to execute view on UserGroup table for user: %ls", psu->wzKey);
 
                 while (S_OK == (hr = WcaFetchRecord(hUserGroupView, &hRec)))
                 {
@@ -386,7 +386,7 @@ HRESULT ScaUserRead(
                     ExitOnFailure(hr, "failed to add group to list");
 
                     hr = ScaGetGroup(pwzData, psu->psgGroups);
-                    ExitOnFailure1(hr, "failed to get information for group: %ls", pwzData);
+                    ExitOnFailure(hr, "failed to get information for group: %ls", pwzData);
                 }
 
                 if (E_NOMOREITEMS == hr)
@@ -421,10 +421,10 @@ static HRESULT WriteGroupInfo(
     for (SCA_GROUP* psg = psgList; psg; psg = psg->psgNext)
     {
         hr = WcaWriteStringToCaData(psg->wzName, ppwzActionData);
-        ExitOnFailure1(hr, "failed to add group name to custom action data: %ls", psg->wzName);
+        ExitOnFailure(hr, "failed to add group name to custom action data: %ls", psg->wzName);
 
         hr = WcaWriteStringToCaData(psg->wzDomain, ppwzActionData);
-        ExitOnFailure1(hr, "failed to add group domain to custom action data: %ls", psg->wzDomain);
+        ExitOnFailure(hr, "failed to add group domain to custom action data: %ls", psg->wzDomain);
     }
 
 LExit:
@@ -462,10 +462,10 @@ static HRESULT WriteGroupRollbackInfo(
         }
 
         hr = WcaWriteStringToCaData(psg->wzName, ppwzActionData);
-        ExitOnFailure1(hr, "failed to add group name to custom action data: %ls", psg->wzName);
+        ExitOnFailure(hr, "failed to add group name to custom action data: %ls", psg->wzName);
 
         hr = WcaWriteStringToCaData(psg->wzDomain, ppwzActionData);
-        ExitOnFailure1(hr, "failed to add group domain to custom action data: %ls", psg->wzDomain);
+        ExitOnFailure(hr, "failed to add group domain to custom action data: %ls", psg->wzDomain);
     }
 
 LExit:
@@ -498,18 +498,18 @@ HRESULT ScaUserExecute(
         // data.  Sometimes we'll add more data.
         Assert(psu->wzName);
         hr = WcaWriteStringToCaData(psu->wzName, &pwzActionData);
-        ExitOnFailure1(hr, "Failed to add user name to custom action data: %ls", psu->wzName);
+        ExitOnFailure(hr, "Failed to add user name to custom action data: %ls", psu->wzName);
         hr = WcaWriteStringToCaData(psu->wzDomain, &pwzActionData);
-        ExitOnFailure1(hr, "Failed to add user domain to custom action data: %ls", psu->wzDomain);
+        ExitOnFailure(hr, "Failed to add user domain to custom action data: %ls", psu->wzDomain);
         hr = WcaWriteIntegerToCaData(psu->iAttributes, &pwzActionData);
-        ExitOnFailure1(hr, "failed to add user attributes to custom action data for user: %ls", psu->wzKey);
+        ExitOnFailure(hr, "failed to add user attributes to custom action data for user: %ls", psu->wzKey);
 
         // Check to see if the user already exists since we have to be very careful when adding
         // and removing users.  Note: MSDN says that it is safe to call these APIs from any
         // user, so we should be safe calling it during immediate mode.
         er = ::NetApiBufferAllocate(sizeof(USER_INFO_0), reinterpret_cast<LPVOID*>(&pUserInfo));
         hr = HRESULT_FROM_WIN32(er);
-        ExitOnFailure1(hr, "Failed to allocate memory to check existence of user: %ls", psu->wzName);
+        ExitOnFailure(hr, "Failed to allocate memory to check existence of user: %ls", psu->wzName);
 
         LPCWSTR wzDomain = psu->wzDomain;
         if (wzDomain && *wzDomain)
@@ -557,7 +557,7 @@ HRESULT ScaUserExecute(
                 if ((SCAU_FAIL_IF_EXISTS & (psu->iAttributes)) && !(SCAU_UPDATE_IF_EXISTS & (psu->iAttributes)))
                 {
                     hr = HRESULT_FROM_WIN32(NERR_UserExists);
-                    MessageExitOnFailure1(hr, msierrUSRFailedUserCreateExists, "Failed to create user: %ls because user already exists.", psu->wzName);
+                    MessageExitOnFailure(hr, msierrUSRFailedUserCreateExists, "Failed to create user: %ls because user already exists.", psu->wzName);
                 }
             }
 
@@ -577,11 +577,11 @@ HRESULT ScaUserExecute(
                 }
 
                 hr = WcaWriteStringToCaData(psu->wzName, &pwzRollbackData);
-                ExitOnFailure1(hr, "Failed to add user name to rollback custom action data: %ls", psu->wzName);
+                ExitOnFailure(hr, "Failed to add user name to rollback custom action data: %ls", psu->wzName);
                 hr = WcaWriteStringToCaData(psu->wzDomain, &pwzRollbackData);
-                ExitOnFailure1(hr, "Failed to add user domain to rollback custom action data: %ls", psu->wzDomain);
+                ExitOnFailure(hr, "Failed to add user domain to rollback custom action data: %ls", psu->wzDomain);
                 hr = WcaWriteIntegerToCaData(iRollbackUserAttributes, &pwzRollbackData);
-                ExitOnFailure1(hr, "failed to add user attributes to rollback custom action data for user: %ls", psu->wzKey);
+                ExitOnFailure(hr, "failed to add user attributes to rollback custom action data for user: %ls", psu->wzKey);
 
                 // If the user already exists, add relevant group information to rollback data
                 if (USER_EXISTS_YES == ueUserExists || USER_EXISTS_INDETERMINATE == ueUserExists)
@@ -598,7 +598,7 @@ HRESULT ScaUserExecute(
             // Schedule the creation now.
             //
             hr = WcaWriteStringToCaData(psu->wzPassword, &pwzActionData);
-            ExitOnFailure1(hr, "failed to add user password to custom action data for user: %ls", psu->wzKey);
+            ExitOnFailure(hr, "failed to add user password to custom action data for user: %ls", psu->wzKey);
 
             // Add user's group information to custom action data
             hr = WriteGroupInfo(psu->psgGroups, &pwzActionData);

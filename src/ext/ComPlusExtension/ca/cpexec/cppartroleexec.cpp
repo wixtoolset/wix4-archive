@@ -91,11 +91,11 @@ HRESULT CpiConfigureUsersInPartitionRoles(
         {
         case atCreate:
             hr = CreateUserInPartitionRole(&attrs);
-            ExitOnFailure1(hr, "Failed to add user to partition role, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to add user to partition role, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemoveUserInPartitionRole(&attrs);
-            ExitOnFailure1(hr, "Failed to remove user from partition role, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove user from partition role, key: %S", attrs.pwzKey);
             break;
         }
 

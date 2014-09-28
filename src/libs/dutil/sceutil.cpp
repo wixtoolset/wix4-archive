@@ -249,10 +249,10 @@ extern "C" HRESULT DAPI SceCreateDatabase(
     ExitOnFailure(hr, "Failed to get IDBDataSourceAdmin interface");
 
     hr = PathGetDirectory(sczFile, &sczDirectory);
-    ExitOnFailure1(hr, "Failed to get directory portion of path: %ls", sczFile);
+    ExitOnFailure(hr, "Failed to get directory portion of path: %ls", sczFile);
 
     hr = DirEnsureExists(sczDirectory, NULL);
-    ExitOnFailure1(hr, "Failed to ensure directory exists: %ls", sczDirectory);
+    ExitOnFailure(hr, "Failed to ensure directory exists: %ls", sczDirectory);
 
     rgdbpDataSourceProp[0].dwPropertyID = DBPROP_INIT_DATASOURCE;
     rgdbpDataSourceProp[0].dwOptions = DBPROPOPTIONS_REQUIRED;
@@ -392,7 +392,7 @@ extern "C" HRESULT DAPI SceOpenDatabase(
     ExitOnFailure(hr, "Failed to set initial properties to open database");
 
     hr = pNewSceDatabaseInternal->pIDBInitialize->Initialize();
-    ExitOnFailure1(hr, "Failed to open database: %ls", sczFile);
+    ExitOnFailure(hr, "Failed to open database: %ls", sczFile);
 
     hr = pNewSceDatabaseInternal->pIDBInitialize->QueryInterface(IID_IDBCreateSession, reinterpret_cast<void **>(&pNewSceDatabaseInternal->pIDBCreateSession));
     ExitOnFailure(hr, "Failed to get IDBCreateSession interface");
@@ -415,12 +415,12 @@ extern "C" HRESULT DAPI SceOpenDatabase(
     if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, sczSchemaType, -1, wzExpectedSchemaType, -1))
     {
         hr = HRESULT_FROM_WIN32(ERROR_BAD_FILE_TYPE);
-        ExitOnRootFailure2(hr, "Tried to open wrong database type - expected type %ls, found type %ls", wzExpectedSchemaType, sczSchemaType);
+        ExitOnRootFailure(hr, "Tried to open wrong database type - expected type %ls, found type %ls", wzExpectedSchemaType, sczSchemaType);
     }
     else if (dwVersionFound != dwExpectedVersion)
     {
         hr = HRESULT_FROM_WIN32(ERROR_PRODUCT_VERSION);
-        ExitOnRootFailure2(hr, "Tried to open wrong database schema version - expected version %u, found version %u", dwExpectedVersion, dwVersionFound);
+        ExitOnRootFailure(hr, "Tried to open wrong database schema version - expected version %u, found version %u", dwExpectedVersion, dwVersionFound);
     }
 
     *ppDatabase = pNewSceDatabase;
@@ -449,19 +449,19 @@ extern "C" HRESULT DAPI SceEnsureDatabase(
     if (FileExistsEx(sczFile, NULL))
     {
         hr = SceOpenDatabase(sczFile, wzSqlCeDllPath, wzSchemaType, dwExpectedVersion, &pDatabase, FALSE);
-        ExitOnFailure1(hr, "Failed to open database while ensuring database exists: %ls", sczFile);
+        ExitOnFailure(hr, "Failed to open database while ensuring database exists: %ls", sczFile);
     }
     else
     {
         hr = SceCreateDatabase(sczFile, wzSqlCeDllPath, &pDatabase);
-        ExitOnFailure1(hr, "Failed to create database while ensuring database exists: %ls", sczFile);
+        ExitOnFailure(hr, "Failed to create database while ensuring database exists: %ls", sczFile);
 
         hr = SetDatabaseSchemaInfo(pDatabase, wzSchemaType, dwExpectedVersion);
         ExitOnFailure(hr, "Failed to set schema version of database");
     }
 
     hr = EnsureSchema(pDatabase, pdsSchema);
-    ExitOnFailure1(hr, "Failed to ensure schema is correct in database: %ls", sczFile);
+    ExitOnFailure(hr, "Failed to ensure schema is correct in database: %ls", sczFile);
 
     // Keep a pointer to the schema in the SCE_DATABASE object for future reference
     pDatabase->pdsSchema = pdsSchema;
@@ -667,7 +667,7 @@ extern "C" HRESULT DAPI SceDeleteRow(
     ExitOnFailure(hr, "Failed to get IRowsetChange interface");
 
     hr = pIRowsetChange->DeleteRows(DB_NULL_HCHAPTER, 1, &pRow->hRow, &rowStatus);
-    ExitOnFailure1(hr, "Failed to delete row with status: %u", rowStatus);
+    ExitOnFailure(hr, "Failed to delete row with status: %u", rowStatus);
 
     ReleaseNullSceRow(*pRowHandle);
 
@@ -784,7 +784,7 @@ extern "C" HRESULT DAPI SceSetColumnBinary(
     SCE_ROW *pRow = reinterpret_cast<SCE_ROW *>(rowHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set binary, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set binary, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -810,7 +810,7 @@ extern "C" HRESULT DAPI SceSetColumnDword(
     SCE_ROW *pRow = reinterpret_cast<SCE_ROW *>(rowHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set dword, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set dword, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -836,7 +836,7 @@ extern "C" HRESULT DAPI SceSetColumnQword(
     SCE_ROW *pRow = reinterpret_cast<SCE_ROW *>(rowHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set qword, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set qword, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -863,7 +863,7 @@ extern "C" HRESULT DAPI SceSetColumnBool(
     SCE_ROW *pRow = reinterpret_cast<SCE_ROW *>(rowHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set bool, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set bool, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -890,7 +890,7 @@ extern "C" HRESULT DAPI SceSetColumnString(
     SIZE_T cbSize = (NULL == wzValue) ? 0 : ((lstrlenW(wzValue) + 1) * sizeof(WCHAR));
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set string, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set string, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -899,7 +899,7 @@ extern "C" HRESULT DAPI SceSetColumnString(
     }
 
     hr = SetColumnValue(pRow->pTableSchema, dwColumnIndex, reinterpret_cast<const BYTE *>(wzValue), cbSize, &pRow->rgBinding[pRow->dwBindingIndex++], &pRow->cbOffset, &pRow->pbData);
-    ExitOnFailure1(hr, "Failed to set column value as string: %ls", wzValue);
+    ExitOnFailure(hr, "Failed to set column value as string: %ls", wzValue);
 
 LExit:
     return hr;
@@ -915,7 +915,7 @@ extern "C" HRESULT DAPI SceSetColumnNull(
     SCE_ROW *pRow = reinterpret_cast<SCE_ROW *>(rowHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set empty, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set empty, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -943,7 +943,7 @@ extern "C" HRESULT DAPI SceSetColumnSystemTime(
     SCE_ROW *pRow = reinterpret_cast<SCE_ROW *>(rowHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), pRow->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to set systemtime, columns: %u", pRow->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to set systemtime, columns: %u", pRow->pTableSchema->cColumns);
 
     if (NULL == pRow->rgBinding)
     {
@@ -1163,7 +1163,7 @@ extern "C" HRESULT DAPI SceBeginQuery(
     psq->pDatabaseInternal = reinterpret_cast<SCE_DATABASE_INTERNAL *>(pDatabase->sdbHandle);
 
     hr = ::SizeTMult(sizeof(DBBINDING), psq->pTableSchema->cColumns, &cbAllocSize);
-    ExitOnFailure1(hr, "Overflow while calculating allocation size for DBBINDING to begin query, columns: %u", psq->pTableSchema->cColumns);
+    ExitOnFailure(hr, "Overflow while calculating allocation size for DBBINDING to begin query, columns: %u", psq->pTableSchema->cColumns);
 
     psq->rgBinding = static_cast<DBBINDING *>(MemAlloc(cbAllocSize, TRUE));
     ExitOnNull(psq, hr, E_OUTOFMEMORY, "Failed to allocate DBBINDINGs for new sce query");
@@ -1187,7 +1187,7 @@ HRESULT DAPI SceSetQueryColumnBinary(
     SCE_QUERY *pQuery = reinterpret_cast<SCE_QUERY *>(sqhHandle);
 
     hr = SetColumnValue(pQuery->pTableSchema, pQuery->pIndexSchema->rgColumns[pQuery->dwBindingIndex], pbBuffer, cbBuffer, &pQuery->rgBinding[pQuery->dwBindingIndex], &pQuery->cbOffset, &pQuery->pbData);
-    ExitOnFailure1(hr, "Failed to set query column value as binary of size: %u", cbBuffer);
+    ExitOnFailure(hr, "Failed to set query column value as binary of size: %u", cbBuffer);
 
     ++(pQuery->dwBindingIndex);
 
@@ -1456,14 +1456,14 @@ static HRESULT CreateSqlCe(
     else
     {
         *phSqlCeDll = ::LoadLibraryW(wzSqlCeDllPath);
-        ExitOnNullWithLastError1(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", wzSqlCeDllPath);
+        ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", wzSqlCeDllPath);
 
         HRESULT (WINAPI *pfnGetFactory)(REFCLSID, REFIID, void**);
         pfnGetFactory = (HRESULT (WINAPI *)(REFCLSID, REFIID, void**))GetProcAddress(*phSqlCeDll, "DllGetClassObject");
 
         IClassFactory* pFactory = NULL;
         hr = pfnGetFactory(CLSID_SQLSERVERCE, IID_IClassFactory, (void**)&pFactory);
-        ExitOnFailure1(hr, "Failed to get factory for IID_IDBInitialize from DLL: %ls", wzSqlCeDllPath);
+        ExitOnFailure(hr, "Failed to get factory for IID_IDBInitialize from DLL: %ls", wzSqlCeDllPath);
         ExitOnNull(pFactory, hr, E_UNEXPECTED, "GetFactory returned success, but pFactory was NULL");
 
         hr = pFactory->CreateInstance(NULL, IID_IDBInitialize, (void**)ppIDBInitialize);
@@ -1711,13 +1711,13 @@ static HRESULT EnsureSchema(
             }
 
             hr = pTableDefinition->CreateTable(NULL, &tableID, pdsSchema->rgTables[dwTable].cColumns, rgColumnDescriptions, IID_IUnknown, _countof(rgdbpRowSetPropSet), rgdbpRowSetPropSet, NULL, NULL);
-            ExitOnFailure1(hr, "Failed to create table: %ls", pdsSchema->rgTables[dwTable].wzName);
+            ExitOnFailure(hr, "Failed to create table: %ls", pdsSchema->rgTables[dwTable].wzName);
 
 #pragma prefast(push)
 #pragma prefast(disable:26010)
             hr = EnsureLocalColumnConstraints(pTableDefinition, &tableID, pdsSchema->rgTables + dwTable);
 #pragma prefast(pop)
-            ExitOnFailure1(hr, "Failed to ensure local column constraints for table: %ls", pdsSchema->rgTables[dwTable].wzName);
+            ExitOnFailure(hr, "Failed to ensure local column constraints for table: %ls", pdsSchema->rgTables[dwTable].wzName);
 
             for (DWORD i = 0; i < pdsSchema->rgTables[dwTable].cColumns; ++i)
             {
@@ -1735,7 +1735,7 @@ static HRESULT EnsureSchema(
             // Close any rowset we opened
             ReleaseNullObject(pdsSchema->rgTables[dwTable].pIRowset);
 
-            ExitOnFailure1(hr, "Failed to open table %ls while ensuring schema", tableID.uName.pwszName);
+            ExitOnFailure(hr, "Failed to open table %ls while ensuring schema", tableID.uName.pwszName);
         }
 
         if (0 < pdsSchema->rgTables[dwTable].cIndexes)
@@ -1757,7 +1757,7 @@ static HRESULT EnsureSchema(
                 hr = S_OK;
 
                 hr = ::SizeTMult(sizeof(DBINDEXCOLUMNDESC), pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].cColumns, &cbAllocSize);
-                ExitOnFailure1(hr, "Overflow while calculating allocation size for DBINDEXCOLUMNDESC, columns: %u", pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].cColumns);
+                ExitOnFailure(hr, "Overflow while calculating allocation size for DBINDEXCOLUMNDESC, columns: %u", pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].cColumns);
 
                 rgIndexColumnDescriptions = reinterpret_cast<DBINDEXCOLUMNDESC *>(MemAlloc(cbAllocSize, TRUE));
                 ExitOnNull(rgIndexColumnDescriptions, hr, E_OUTOFMEMORY, "Failed to allocate structure to hold index column descriptions");
@@ -1777,7 +1777,7 @@ static HRESULT EnsureSchema(
                     // If the index already exists, no worries
                     hr = S_OK;
                 }
-                ExitOnFailure2(hr, "Failed to create index named %ls into table named %ls", pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].wzName, pdsSchema->rgTables[dwTable].wzName);
+                ExitOnFailure(hr, "Failed to create index named %ls into table named %ls", pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].wzName, pdsSchema->rgTables[dwTable].wzName);
 
                 for (DWORD i = 0; i < cIndexColumnDescriptions; ++i)
                 {
@@ -1800,7 +1800,7 @@ static HRESULT EnsureSchema(
 
             // Setup any constraints for the table's columns
             hr = EnsureForeignColumnConstraints(pTableDefinition, &tableID, pdsSchema->rgTables + dwTable, pdsSchema);
-            ExitOnFailure1(hr, "Failed to ensure foreign column constraints for table: %ls", pdsSchema->rgTables[dwTable].wzName);
+            ExitOnFailure(hr, "Failed to ensure foreign column constraints for table: %ls", pdsSchema->rgTables[dwTable].wzName);
         }
     }
 
@@ -1861,10 +1861,10 @@ static HRESULT OpenSchema(
 
         // And finally, open the table's standard interfaces
         hr = pDatabaseInternal->pIOpenRowset->OpenRowset(NULL, &tableID, NULL, IID_IRowset, _countof(rgdbpRowSetPropSet), rgdbpRowSetPropSet, reinterpret_cast<IUnknown **>(&pdsSchema->rgTables[dwTable].pIRowset));
-        ExitOnFailure2(hr, "Failed to open table %u named %ls after ensuring all indexes and constraints are created", dwTable, pdsSchema->rgTables[dwTable].wzName);
+        ExitOnFailure(hr, "Failed to open table %u named %ls after ensuring all indexes and constraints are created", dwTable, pdsSchema->rgTables[dwTable].wzName);
 
         hr = pdsSchema->rgTables[dwTable].pIRowset->QueryInterface(IID_IRowsetChange, reinterpret_cast<void **>(&pdsSchema->rgTables[dwTable].pIRowsetChange));
-        ExitOnFailure1(hr, "Failed to get IRowsetChange object for table: %ls", pdsSchema->rgTables[dwTable].wzName);
+        ExitOnFailure(hr, "Failed to get IRowsetChange object for table: %ls", pdsSchema->rgTables[dwTable].wzName);
     }
 
 LExit:
@@ -1896,7 +1896,7 @@ static HRESULT SetColumnValue(
     pBinding->obValue = cbNewOffset;
 
     hr = ::SizeTAdd(cbNewOffset, cbSize, &cbNewOffset);
-    ExitOnFailure1(hr, "Failed to add %u to alloc size while setting column value", cbSize);
+    ExitOnFailure(hr, "Failed to add %u to alloc size while setting column value", cbSize);
 
     pBinding->obStatus = cbNewOffset;
     pBinding->eParamIO = DBPARAMIO_INPUT;
@@ -1986,12 +1986,12 @@ static HRESULT GetColumnValue(
         if (DBTYPE_WSTR == dbBinding.wType)
         {
             hr = StrAlloc(reinterpret_cast<LPWSTR *>(&pvRawData), dwDataSize / sizeof(WCHAR));
-            ExitOnFailure1(hr, "Failed to allocate space for string data while reading column %u", dwColumnIndex);
+            ExitOnFailure(hr, "Failed to allocate space for string data while reading column %u", dwColumnIndex);
         }
         else
         {
             pvRawData = MemAlloc(dwDataSize, TRUE);
-            ExitOnNull1(pvRawData, hr, E_OUTOFMEMORY, "Failed to allocate space for data while reading column %u", dwColumnIndex);
+            ExitOnNull(pvRawData, hr, E_OUTOFMEMORY, "Failed to allocate space for data while reading column %u", dwColumnIndex);
         }
 
         hr = pRow->pIRowset->GetData(pRow->hRow, hAccessorValue, pvRawData);
@@ -2141,7 +2141,7 @@ static HRESULT EnsureLocalColumnConstraints(
             {
                 hr = S_OK;
             }
-            ExitOnFailure2(hr, "Failed to add primary key constraint for column %ls, table %ls", pCurrentColumn->wzName, pTableSchema->wzName);
+            ExitOnFailure(hr, "Failed to add primary key constraint for column %ls, table %ls", pCurrentColumn->wzName, pTableSchema->wzName);
         }
     }
 
@@ -2211,7 +2211,7 @@ static HRESULT EnsureForeignColumnConstraints(
             {
                 hr = S_OK;
             }
-            ExitOnFailure2(hr, "Failed to add constraint named: %ls to table: %ls", pCurrentColumn->wzRelationName, pTableSchema->wzName);
+            ExitOnFailure(hr, "Failed to add constraint named: %ls to table: %ls", pCurrentColumn->wzRelationName, pTableSchema->wzName);
         }
     }
 
@@ -2317,10 +2317,10 @@ static HRESULT SetDatabaseSchemaInfo(
     }
 
     hr = SceSetColumnString(sceRow, 0, wzSchemaType);
-    ExitOnFailure1(hr, "Failed to set internal schematype to: %ls", wzSchemaType);
+    ExitOnFailure(hr, "Failed to set internal schematype to: %ls", wzSchemaType);
 
     hr = SceSetColumnDword(sceRow, 1, dwVersion);
-    ExitOnFailure1(hr, "Failed to set internal version to: %u", dwVersion);
+    ExitOnFailure(hr, "Failed to set internal version to: %u", dwVersion);
 
     hr = SceFinishUpdate(sceRow);
     ExitOnFailure(hr, "Failed to insert first row in internal version schema table");
@@ -2402,7 +2402,7 @@ static void ReleaseDatabaseInternal(
         hr = FileEnsureDelete(pDatabaseInternal->sczTempDbFile);
         if (FAILED(hr))
         {
-            TraceError1(hr, "Failed to delete temporary database file (copied here because the database was opened as read-only): %ls", pDatabaseInternal->sczTempDbFile);
+            TraceError(hr, "Failed to delete temporary database file (copied here because the database was opened as read-only): %ls", pDatabaseInternal->sczTempDbFile);
         }
         ReleaseStr(pDatabaseInternal->sczTempDbFile);
     }

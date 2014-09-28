@@ -25,7 +25,7 @@ namespace CfgTests
             ExitOnFailure(hr, "Failed to concat CfgFileTest to my documents path");
 
             hr = DirEnsureExists(*psczFileSettingsDir, NULL);
-            ExitOnFailure1(hr, "Failed to ensure directory exists: %ls", *psczFileSettingsDir);
+            ExitOnFailure(hr, "Failed to ensure directory exists: %ls", *psczFileSettingsDir);
 
             hr = PathConcat(*psczFileSettingsDir, L"FileA.tst", psczFileA);
             ExitOnFailure(hr, "Failed to create path to file A");
@@ -34,7 +34,7 @@ namespace CfgTests
             ExitOnFailure(hr, "Failed to get path to subdir");
 
             hr = DirEnsureExists(sczSubDir, NULL);
-            ExitOnFailure1(hr, "Failed to ensure subdirectory exists: %ls", sczSubDir);
+            ExitOnFailure(hr, "Failed to ensure subdirectory exists: %ls", sczSubDir);
 
             hr = PathConcat(*psczFileSettingsDir, L"SubDir\\FileB.del", psczFileB);
             ExitOnFailure(hr, "Failed to create path to file B");
@@ -84,7 +84,7 @@ namespace CfgTests
             {
                 hr = S_OK;
             }
-            ExitOnFailure1(hr, "Failed to cleanup before main portion of test by deleting regkey:%ls", wzRegKey);
+            ExitOnFailure(hr, "Failed to cleanup before main portion of test by deleting regkey:%ls", wzRegKey);
 
             hr = GetFilePaths(&sczFileSettingsDir, &sczFileA, &sczFileB);
             ExitOnFailure(hr, "Failed to get file paths for test");
@@ -244,7 +244,7 @@ namespace CfgTests
             ExitOnFailure(hr, "Failed to set dword 2 from cfg db");
 
             hr = RegOpen(HKEY_CURRENT_USER, wzRegKey, KEY_SET_VALUE | KEY_QUERY_VALUE | KEY_WOW64_32KEY, &hk);
-            ExitOnFailure1(hr, "Failed to open registry key: %ls", wzRegKey);
+            ExitOnFailure(hr, "Failed to open registry key: %ls", wzRegKey);
             CheckCfgAndRegValueString(cdhLocal, hk, wzString2CfgName, wzString2RegValueName, L"ResurrectedbyCfg");
             CheckCfgAndRegValueDword(cdhLocal, hk, wzDword1CfgName, wzDword1RegValueName, 50);
             CheckCfgAndRegValueDword(cdhLocal, hk, wzDword2CfgName, wzDword2RegValueName, 0);
@@ -276,7 +276,7 @@ namespace CfgTests
             hr = RegDelete(HKEY_CURRENT_USER, wzRegKey, REG_KEY_32BIT, TRUE);
             if (E_FILENOTFOUND != hr)
             {
-                ExitOnFailure1(hr, "Failed to cleanup after test by deleting key: %ls", wzRegKey);
+                ExitOnFailure(hr, "Failed to cleanup after test by deleting key: %ls", wzRegKey);
             }
 
         LExit:

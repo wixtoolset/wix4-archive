@@ -77,7 +77,7 @@ extern "C" HRESULT DAPI ResWriteString(
     DWORD dwStringId = (dwDataId % RES_STRINGS_PER_BLOCK);
 
     hModule = LoadLibraryExW(wzResourceFile, NULL, DONT_RESOLVE_DLL_REFERENCES | LOAD_LIBRARY_AS_DATAFILE);
-    ExitOnNullWithLastError1(hModule, hr, "Failed to load library: %ls", wzResourceFile);
+    ExitOnNullWithLastError(hModule, hr, "Failed to load library: %ls", wzResourceFile);
 
     hr = StringBlockInitialize(hModule, dwBlockId, wLangId, &StrBlock);
     ExitOnFailure(hr, "Failed to get string block to update.");
@@ -188,23 +188,23 @@ extern "C" HRESULT DAPI ResImportDataFromFile(
     hFile = ::CreateFileW(wzSourceFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        ExitWithLastError1(hr, "Failed to CreateFileW for %ls.", wzSourceFile);
+        ExitWithLastError(hr, "Failed to CreateFileW for %ls.", wzSourceFile);
     }
 
     cbFile = ::GetFileSize(hFile, NULL);
     if (!cbFile)
     {
-        ExitWithLastError1(hr, "Failed to GetFileSize for %ls.", wzSourceFile);
+        ExitWithLastError(hr, "Failed to GetFileSize for %ls.", wzSourceFile);
     }
 
     hMap = ::CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-    ExitOnNullWithLastError1(hMap, hr, "Failed to CreateFileMapping for %ls.", wzSourceFile);
+    ExitOnNullWithLastError(hMap, hr, "Failed to CreateFileMapping for %ls.", wzSourceFile);
 
     pv = ::MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, cbFile);
-    ExitOnNullWithLastError1(pv, hr, "Failed to MapViewOfFile for %ls.", wzSourceFile);
+    ExitOnNullWithLastError(pv, hr, "Failed to MapViewOfFile for %ls.", wzSourceFile);
 
     hr = ResWriteData(wzTargetFile, szDataName, pv, cbFile);
-    ExitOnFailure2(hr, "Failed to ResSetData %s on file %ls.", szDataName, wzTargetFile);
+    ExitOnFailure(hr, "Failed to ResSetData %s on file %ls.", szDataName, wzTargetFile);
 
 LExit:
     if (pv)

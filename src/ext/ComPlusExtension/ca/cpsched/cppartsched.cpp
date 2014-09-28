@@ -138,7 +138,7 @@ HRESULT CpiPartitionsRead(
         if (pwzData && *pwzData)
         {
             hr = PcaGuidToRegFormat(pwzData, pItm->wzID, countof(pItm->wzID));
-            ExitOnFailure2(hr, "Failed to parse id guid value, key: %S, value: '%S'", pItm->wzKey, pwzData);
+            ExitOnFailure(hr, "Failed to parse id guid value, key: %S, value: '%S'", pItm->wzKey, pwzData);
         }
 
         // get name
@@ -148,11 +148,11 @@ HRESULT CpiPartitionsRead(
 
         // if partition is a locater, either an id or a name must be provided
         if (!pItm->fHasComponent && !*pItm->wzID && !*pItm->wzName)
-            ExitOnFailure1(hr = E_FAIL, "A partition locater must have either an id or a name associated, key: %S", pItm->wzKey);
+            ExitOnFailure(hr = E_FAIL, "A partition locater must have either an id or a name associated, key: %S", pItm->wzKey);
 
         // if partition is not a locater, an name must be provided
         if (pItm->fHasComponent && !*pItm->wzName)
-            ExitOnFailure1(hr = E_FAIL, "A partition must have a name associated, key: %S", pItm->wzKey);
+            ExitOnFailure(hr = E_FAIL, "A partition must have a name associated, key: %S", pItm->wzKey);
 
         // get properties
         if (CpiTableExists(cptComPlusPartitionProperty) && pItm->fHasComponent)
@@ -205,7 +205,7 @@ HRESULT CpiPartitionsVerifyInstall(
 
         // if the partition is referensed and is not a locater, it must be installed
         if (pItm->fReferencedForInstall && pItm->fHasComponent && !CpiWillBeInstalled(pItm->isInstalled, pItm->isAction))
-            MessageExitOnFailure1(hr = E_FAIL, msierrComPlusPartitionDependency, "A partition is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
+            MessageExitOnFailure(hr = E_FAIL, msierrComPlusPartitionDependency, "A partition is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
 
         // get partitions collection
         if (!piPartColl)
@@ -237,7 +237,7 @@ HRESULT CpiPartitionsVerifyInstall(
             {
                 // if the application is a locater, this is an error
                 if (!pItm->fHasComponent)
-                    MessageExitOnFailure1(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), msierrComPlusPartitionNotFound, "A partition required by this installation was not found, key: %S", pItm->wzKey);
+                    MessageExitOnFailure(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), msierrComPlusPartitionNotFound, "A partition required by this installation was not found, key: %S", pItm->wzKey);
 
                 // create a new id if one is missing
                 if (!*pItm->wzID)
@@ -292,7 +292,7 @@ HRESULT CpiPartitionsVerifyInstall(
                 {
                 case IDCANCEL:
                 case IDABORT:
-                    ExitOnFailure1(hr = E_FAIL, "A partition with a conflictiong name or id exists, key: %S", pItm->wzKey);
+                    ExitOnFailure(hr = E_FAIL, "A partition with a conflictiong name or id exists, key: %S", pItm->wzKey);
                     break;
                 case IDRETRY:
                     break;
@@ -441,7 +441,7 @@ HRESULT CpiPartitionsInstall(
 
         // add to action data
         hr = AddPartitionToActionData(pItm, iActionType, COST_PARTITION_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add partition to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add partition to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -488,7 +488,7 @@ HRESULT CpiPartitionsUninstall(
 
         // add to action data
         hr = AddPartitionToActionData(pItm, iActionType, COST_PARTITION_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add partition to custom action data, key:", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add partition to custom action data, key:", pItm->wzKey);
     }
 
     // add progress tics
@@ -686,7 +686,7 @@ HRESULT CpiPartitionUsersRead(
         hr = CpiPartitionFindByKey(pPartList, pwzData, &pItm->pPartition);
         if (S_FALSE == hr)
             hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-        ExitOnFailure1(hr, "Failed to find partition, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find partition, key: %S", pwzData);
 
         // get user domain
         hr = WcaGetRecordFormattedString(hRec, puqDomain, &pwzDomain);
@@ -773,7 +773,7 @@ HRESULT CpiPartitionUsersInstall(
 
         // add to action data
         hr = AddPartitionUserToActionData(pItm, iActionType, COST_PARTITION_USER_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add partition user to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add partition user to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -820,7 +820,7 @@ HRESULT CpiPartitionUsersUninstall(
 
         // add to action data
         hr = AddPartitionUserToActionData(pItm, iActionType, COST_PARTITION_USER_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add partition user to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add partition user to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics

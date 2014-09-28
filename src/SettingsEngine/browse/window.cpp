@@ -1298,19 +1298,19 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             for (DWORD i = 0; i < UXDATABASE(dwIndex).dwDatabaseListCount; ++i)
             {
                 hr = CfgEnumReadString(UXDATABASE(dwIndex).cehDatabaseList, i, ENUM_DATA_FRIENDLY_NAME, &wzText);
-                ExitOnFailure1(hr, "Failed to read friendly name from database enumeration at index: %u", i);
+                ExitOnFailure(hr, "Failed to read friendly name from database enumeration at index: %u", i);
 
                 hr = StrAllocString(&UXDATABASE(rgdwDwords[i]).sczName, wzText, 0);
                 ExitOnFailure(hr, "Failed to copy friendly name to database array");
 
                 hr = CfgEnumReadString(UXDATABASE(dwIndex).cehDatabaseList, i, ENUM_DATA_PATH, &wzText);
-                ExitOnFailure1(hr, "Failed to read path from database enumeration at index: %u", i);
+                ExitOnFailure(hr, "Failed to read path from database enumeration at index: %u", i);
 
                 hr = StrAllocString(&UXDATABASE(rgdwDwords[i]).sczPath, wzText, 0);
                 ExitOnFailure(hr, "Failed to copy path to database array");
 
                 hr = CfgEnumReadBool(UXDATABASE(dwIndex).cehDatabaseList, i, ENUM_DATA_SYNC_BY_DEFAULT, &UXDATABASE(rgdwDwords[i]).fSyncByDefault);
-                ExitOnFailure1(hr, "Failed to read sync by default flag from database enumeration at index: %u", i);
+                ExitOnFailure(hr, "Failed to read sync by default flag from database enumeration at index: %u", i);
 
                 UXDATABASE(rgdwDwords[i]).fChecked = UXDATABASE(rgdwDwords[i]).fSyncByDefault;
                 UXDATABASE(rgdwDwords[i]).fRemember = TRUE;
@@ -1318,7 +1318,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
                 if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_OPEN_REMOTE, static_cast<LPARAM>(rgdwDwords[i]), 0))
                 {
-                    ExitWithLastError1(hr, "Failed to send message to worker thread to open remote database (index %u)", rgdwDwords[i]);
+                    ExitWithLastError(hr, "Failed to send message to worker thread to open remote database (index %u)", rgdwDwords[i]);
                 }
             }
 
@@ -1520,13 +1520,13 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
         // And for the database we synced with
         hr = pUX->EnumerateProducts(dwIndex);
-        ExitOnFailure1(hr, "Failed to enumerate products in remote database index:%u", dwIndex);
+        ExitOnFailure(hr, "Failed to enumerate products in remote database index:%u", dwIndex);
 
         hr = pUX->EnumerateValues(dwIndex);
-        ExitOnFailure1(hr, "Failed to enumerate values in remote database index:%u", dwIndex);
+        ExitOnFailure(hr, "Failed to enumerate values in remote database index:%u", dwIndex);
 
         hr = pUX->EnumerateValueHistory(dwIndex);
-        ExitOnFailure1(hr, "Failed to enumerate value history in remote database index:%u", dwIndex);
+        ExitOnFailure(hr, "Failed to enumerate value history in remote database index:%u", dwIndex);
 
         ExitFunction();
 
@@ -1709,7 +1709,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 ListView_GetItem(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_PRODUCT_LIST_VIEW), &lvItem);
 
                 hr = pUX->SetSelectedProduct(lvItem.lParam);
-                ExitOnFailure1(hr, "Failed to set selected product to index: %u", lpnmitem->lParam);
+                ExitOnFailure(hr, "Failed to set selected product to index: %u", lpnmitem->lParam);
                 break;
             default:
                 break;
@@ -1777,7 +1777,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 {
                 case NM_DBLCLK:
                     hr = pUX->SetDatabaseIndex(dwIndex);
-                    ExitOnFailure1(hr, "Failed to set database index to: %u", dwIndex);
+                    ExitOnFailure(hr, "Failed to set database index to: %u", dwIndex);
 
                     pUX->m_dwOtherDatabaseIndex = pUX->m_dwDatabaseIndex;
 
@@ -1790,7 +1790,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     ListView_GetItem(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_OTHERDATABASES_VIEW), &lvItem);
 
                     hr = pUX->SetDatabaseIndex(dwIndex);
-                    ExitOnFailure1(hr, "Failed to set database index to: %u", static_cast<DWORD>(lvItem.lParam));
+                    ExitOnFailure(hr, "Failed to set database index to: %u", static_cast<DWORD>(lvItem.lParam));
 
                     pUX->m_dwOtherDatabaseIndex = pUX->m_dwDatabaseIndex;
                     break;
@@ -2466,7 +2466,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
                 if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_OPEN_REMOTE, static_cast<LPARAM>(pUX->m_dwOtherDatabaseIndex), 0))
                 {
-                    ExitWithLastError3(hr, "Failed to send message to worker thread to reconnect to remote database (index %u, name %ls, path %ls)", pUX->m_dwOtherDatabaseIndex, CURRENTUXDATABASE.sczName, CURRENTUXDATABASE.sczPath);
+                    ExitWithLastError(hr, "Failed to send message to worker thread to reconnect to remote database (index %u, name %ls, path %ls)", pUX->m_dwOtherDatabaseIndex, CURRENTUXDATABASE.sczName, CURRENTUXDATABASE.sczPath);
                 }
 
                 hr = pUX->SetPreviousScreen();
@@ -2485,7 +2485,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
                 if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_DISCONNECT, static_cast<LPARAM>(pUX->m_dwOtherDatabaseIndex), 0))
                 {
-                    ExitWithLastError3(hr, "Failed to send message to worker thread to disconnect remote database (index %u, name %ls, path %ls)", pUX->m_dwOtherDatabaseIndex, CURRENTUXDATABASE.sczName, CURRENTUXDATABASE.sczPath);
+                    ExitWithLastError(hr, "Failed to send message to worker thread to disconnect remote database (index %u, name %ls, path %ls)", pUX->m_dwOtherDatabaseIndex, CURRENTUXDATABASE.sczName, CURRENTUXDATABASE.sczPath);
                 }
 
                 hr = pUX->SetPreviousScreen();
@@ -2594,7 +2594,7 @@ HRESULT BrowseWindow::SetTab(
     else if (BROWSE_TAB_OTHERDATABASES == tab)
     {
         hr = SetDatabaseIndex(m_dwOtherDatabaseIndex);
-        ExitOnFailure1(hr, "Failed to set database index to %u", m_dwOtherDatabaseIndex);
+        ExitOnFailure(hr, "Failed to set database index to %u", m_dwOtherDatabaseIndex);
 
         hr = SetOtherDatabasesState(m_otherDatabasesState);
         ExitOnFailure(hr, "Failed while switching 'other databases' state");
@@ -2617,7 +2617,7 @@ HRESULT BrowseWindow::SetMainState(
     DWORD dwNewPageId = 0;
     DWORD dwOldPageId = 0;
 
-    Trace2(REPORT_STANDARD, "BrowseWindow::SetMainState() changing from state %d to %d", m_mainState, state);
+    Trace(REPORT_STANDARD, "BrowseWindow::SetMainState() changing from state %d to %d", m_mainState, state);
 
     if (state != m_mainState)
     {
@@ -2677,7 +2677,7 @@ HRESULT BrowseWindow::SetOtherDatabasesState(
     DWORD dwNewPageId = 0;
     DWORD dwOldPageId = 0;
 
-    Trace2(REPORT_STANDARD, "BrowseWindow::SetOtherDatabasesState() changing from state %d to %d", m_otherDatabasesState, state);
+    Trace(REPORT_STANDARD, "BrowseWindow::SetOtherDatabasesState() changing from state %d to %d", m_otherDatabasesState, state);
 
     if (state != m_otherDatabasesState)
     {

@@ -38,7 +38,7 @@ static BOOL SetExistingFileModifiedTime(
     if (f64Bit)
     {
         hr = WcaDisableWow64FSRedirection();
-        ExitOnFailure2(hr, "Failed to disable 64-bit file system redirection to path: '%ls' for: %ls", wzPath, wzId);
+        ExitOnFailure(hr, "Failed to disable 64-bit file system redirection to path: '%ls' for: %ls", wzPath, wzId);
 
         fReenableFileSystemRedirection = TRUE;
     }
@@ -98,7 +98,7 @@ static BOOL TryGetExistingFileModifiedTime(
     if (f64Bit)
     {
         hr = WcaDisableWow64FSRedirection();
-        ExitOnFailure2(hr, "Failed to disable 64-bit file system redirection to path: '%ls' for: %ls", wzPath, wzId);
+        ExitOnFailure(hr, "Failed to disable 64-bit file system redirection to path: '%ls' for: %ls", wzPath, wzId);
 
         fReenableFileSystemRedirection = TRUE;
     }
@@ -160,10 +160,10 @@ static HRESULT ProcessTouchFileTable(
         ExitOnFailure(hr, "Failed to get touch file identity.");
 
         hr = WcaGetRecordString(hRec, tfqComponent, &sczComponent);
-        ExitOnFailure1(hr, "Failed to get touch file component for: %ls", sczId);
+        ExitOnFailure(hr, "Failed to get touch file component for: %ls", sczId);
 
         hr = WcaGetRecordInteger(hRec, tfqTouchFileAttributes, &iTouchFileAttributes);
-        ExitOnFailure1(hr, "Failed to get touch file attributes for: %ls", sczId);
+        ExitOnFailure(hr, "Failed to get touch file attributes for: %ls", sczId);
 
         WCA_TODO todo = WcaGetComponentToDo(sczComponent);
 
@@ -174,16 +174,16 @@ static HRESULT ProcessTouchFileTable(
         if (fOnInstall || fOnReinstall || fOnUninstall)
         {
             hr = WcaGetRecordFormattedString(hRec, tfqPath, &sczPath);
-            ExitOnFailure1(hr, "Failed to get touch file path for: %ls", sczId);
+            ExitOnFailure(hr, "Failed to get touch file path for: %ls", sczId);
 
             if (TryGetExistingFileModifiedTime(sczId, sczPath, (iTouchFileAttributes & TOUCH_FILE_ATTRIBUTE_64BIT), &ftRollbackModified))
             {
                 hr = AddDataToCustomActionData(&sczRollbackData, sczId, sczPath, iTouchFileAttributes, ftRollbackModified);
-                ExitOnFailure1(hr, "Failed to add to rollback custom action data for: %ls", sczId);
+                ExitOnFailure(hr, "Failed to add to rollback custom action data for: %ls", sczId);
             }
 
             hr = AddDataToCustomActionData(&sczExecuteData, sczId, sczPath, iTouchFileAttributes, ftModified);
-            ExitOnFailure1(hr, "Failed to add to execute custom action data for: %ls", sczId);
+            ExitOnFailure(hr, "Failed to add to execute custom action data for: %ls", sczId);
         }
     }
 
@@ -282,23 +282,23 @@ extern "C" UINT WINAPI WixExecuteTouchFile(
         ExitOnFailure(hr, "Failed to get touch file identity from custom action data.");
 
         hr = WcaReadStringFromCaData(&pwz, &sczPath);
-        ExitOnFailure1(hr, "Failed to get touch file path from custom action data for: %ls", sczId);
+        ExitOnFailure(hr, "Failed to get touch file path from custom action data for: %ls", sczId);
 
         hr = WcaReadIntegerFromCaData(&pwz, &iTouchFileAttributes);
-        ExitOnFailure1(hr, "Failed to get touch file attributes from custom action data for: %ls", sczId);
+        ExitOnFailure(hr, "Failed to get touch file attributes from custom action data for: %ls", sczId);
 
         hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int*>(&ftModified.dwHighDateTime));
-        ExitOnFailure1(hr, "Failed to get touch file high date/time from custom action data for: %ls", sczId);
+        ExitOnFailure(hr, "Failed to get touch file high date/time from custom action data for: %ls", sczId);
 
         hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int*>(&ftModified.dwLowDateTime));
-        ExitOnFailure1(hr, "Failed to get touch file low date/time from custom action data for: %ls", sczId);
+        ExitOnFailure(hr, "Failed to get touch file low date/time from custom action data for: %ls", sczId);
 
         hr = SetExistingFileModifiedTime(sczId, sczPath, (iTouchFileAttributes & TOUCH_FILE_ATTRIBUTE_64BIT), &ftModified);
         if (FAILED(hr))
         {
             if (iTouchFileAttributes & TOUCH_FILE_ATTRIBUTE_VITAL)
             {
-                ExitOnFailure2(hr, "Failed to touch file: '%ls' for: %ls", &sczPath, sczId);
+                ExitOnFailure(hr, "Failed to touch file: '%ls' for: %ls", &sczPath, sczId);
             }
             else
             {

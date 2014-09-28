@@ -84,7 +84,7 @@ UINT __stdcall ScaFiltersRead(
         psf = *ppsfList;
 
         hr = ::StringCchCopyW(psf->wzComponent, countof(psf->wzComponent), pwzData);
-        ExitOnFailure1(hr, "failed to copy component name: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy component name: %ls", pwzData);
 
         psf->isInstalled = isInstalled;
         psf->isAction = isAction;
@@ -186,31 +186,31 @@ HRESULT ScaFiltersInstall(
             }
 
             hr = ScaCreateMetabaseKey(piMetabase, psf->wzFilterRoot, psf->wzKey);
-            ExitOnFailure1(hr, "Failed to create key for filter '%ls'", psf->wzKey);
+            ExitOnFailure(hr, "Failed to create key for filter '%ls'", psf->wzKey);
 
             hr = ScaWriteMetabaseValue(piMetabase, psf->wzFilterRoot, psf->wzKey, MD_KEY_TYPE, METADATA_NO_ATTRIBUTES, IIS_MD_UT_SERVER, STRING_METADATA, (LPVOID)L"IIsFilter");
-            ExitOnFailure1(hr, "Failed to write key type for filter '%ls'", psf->wzKey);
+            ExitOnFailure(hr, "Failed to write key type for filter '%ls'", psf->wzKey);
 
             // filter path
             hr = ScaWriteMetabaseValue(piMetabase, psf->wzFilterRoot, psf->wzKey, MD_FILTER_IMAGE_PATH, METADATA_NO_ATTRIBUTES, IIS_MD_UT_SERVER, STRING_METADATA, (LPVOID)psf->wzPath);
-            ExitOnFailure1(hr, "Failed to write Path for filter '%ls'", psf->wzKey);
+            ExitOnFailure(hr, "Failed to write Path for filter '%ls'", psf->wzKey);
 
             // filter description
             hr = ScaWriteMetabaseValue(piMetabase, psf->wzFilterRoot, psf->wzKey, MD_FILTER_DESCRIPTION, METADATA_NO_ATTRIBUTES, IIS_MD_UT_SERVER, STRING_METADATA, (LPVOID)psf->wzDescription);
-            ExitOnFailure1(hr, "Failed to write Description for filter '%ls'", psf->wzKey);
+            ExitOnFailure(hr, "Failed to write Description for filter '%ls'", psf->wzKey);
 
             // filter flags
             if (MSI_NULL_INTEGER != psf->iFlags)
             {
                 hr = ScaWriteMetabaseValue(piMetabase, psf->wzFilterRoot, psf->wzKey, MD_FILTER_FLAGS, METADATA_NO_ATTRIBUTES, IIS_MD_UT_SERVER, DWORD_METADATA, (LPVOID)((DWORD_PTR)psf->iFlags));
-                ExitOnFailure1(hr, "Failed to write Flags for filter '%ls'", psf->wzKey);
+                ExitOnFailure(hr, "Failed to write Flags for filter '%ls'", psf->wzKey);
             }
 
             // filter load order
             if (MSI_NULL_INTEGER != psf->iLoadOrder)
             {
                 hr = AddFilterToLoadOrder(psf->wzKey, psf->iLoadOrder, &pwzLoadOrder);
-                ExitOnFailure1(hr, "Failed to add filter '%ls' to load order.", psf->wzKey);
+                ExitOnFailure(hr, "Failed to add filter '%ls' to load order.", psf->wzKey);
             }
         }
 
@@ -262,13 +262,13 @@ HRESULT ScaFiltersUninstall(
             }
 
             hr = RemoveFilterFromLoadOrder(psf->wzKey, &pwzLoadOrder);
-            ExitOnFailure1(hr, "Failed to remove filter '%ls' from load order", psf->wzKey);
+            ExitOnFailure(hr, "Failed to remove filter '%ls' from load order", psf->wzKey);
 
             // remove the filter from the load order and remove the filter's key
             if (0 != lstrlenW(psf->wzFilterRoot))
             {
                 hr = ScaDeleteMetabaseKey(piMetabase, psf->wzFilterRoot, psf->wzKey);
-                ExitOnFailure1(hr, "Failed to remove web '%ls' from metabase", psf->wzKey);
+                ExitOnFailure(hr, "Failed to remove web '%ls' from metabase", psf->wzKey);
             }
         }
 

@@ -341,7 +341,7 @@ extern "C" HRESULT BitsDownloadUrl(
     if (8 > lstrlenW(pDownloadSource->sczUrl))
     {
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Invalid BITS engine URL: %ls", pDownloadSource->sczUrl);
+        ExitOnRootFailure(hr, "Invalid BITS engine URL: %ls", pDownloadSource->sczUrl);
     }
 
     // Fix the URL to be "http" instead of "bits".

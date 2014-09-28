@@ -62,7 +62,7 @@ HRESULT ValueCompare(
         break;
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Invalid value type compared (both left and right): %d", pcvValue1->cvType);
+        ExitOnFailure(hr, "Invalid value type compared (both left and right): %d", pcvValue1->cvType);
         break;
     }
 
@@ -110,7 +110,7 @@ HRESULT ValueCopy(
             break;
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Unexpected value type encountered while copying value: %d", pcvInput->cvType);
+            ExitOnFailure(hr, "Unexpected value type encountered while copying value: %d", pcvInput->cvType);
             break;
     }
 
@@ -162,7 +162,7 @@ HRESULT ValueSetBlob(
     SYSTEMTIME st;
 
     hr = CrypHashBuffer(pbValue, cbValue, PROV_RSA_FULL, CALG_SHA1, pcvValue->blob.rgbHash, sizeof(pcvValue->blob.rgbHash));
-    ExitOnFailure1(hr, "Failed to calculate hash while setting file of size %u", cbValue);
+    ExitOnFailure(hr, "Failed to calculate hash while setting file of size %u", cbValue);
 
     pcvValue->blob.cbValue = cbValue;
     pcvValue->cvType = VALUE_BLOB;
@@ -182,7 +182,7 @@ HRESULT ValueSetBlob(
     if (fCopy)
     {
         pcvValue->blob.pointer.pbValue = static_cast<BYTE *>(MemAlloc(cbValue, FALSE));
-        ExitOnNull1(pcvValue->blob.pointer.pbValue, hr, E_OUTOFMEMORY, "Failed to allocate space for blob of size %u", cbValue);
+        ExitOnNull(pcvValue->blob.pointer.pbValue, hr, E_OUTOFMEMORY, "Failed to allocate space for blob of size %u", cbValue);
         memcpy(const_cast<BYTE *>(pcvValue->blob.pointer.pbValue), pbValue, cbValue);
         pcvValue->blob.pointer.fRelease = true;
     }
@@ -371,20 +371,20 @@ HRESULT ValueWrite(
     {
         hr = S_OK;
     }
-    ExitOnFailure2(hr, "Failed to find value for AppID: %u, Value named: %ls", dwAppID, wzName);
+    ExitOnFailure(hr, "Failed to find value for AppID: %u, Value named: %ls", dwAppID, wzName);
 
     ::GetSystemTime(&stNow);
     if (NULL != sceRow)
     {
         hr = ValueRead(pcdb, sceRow, &cvExistingValue);
-        ExitOnFailure1(hr, "Failed to read existing value for value named: %ls", wzName);
+        ExitOnFailure(hr, "Failed to read existing value for value named: %ls", wzName);
 
         // If fIgnoreSameValue is set to true and we found an existing value row, check if we're setting to an identical value.
         // If we do, ignore it to avoid polluting history.
         if (fIgnoreSameValue)
         {
             hr = ValueCompare(pcvValue, &cvExistingValue, &fSameValue);
-            ExitOnFailure1(hr, "Failed to compare to existing value for value named: %ls", wzName);
+            ExitOnFailure(hr, "Failed to compare to existing value for value named: %ls", wzName);
 
             if (fSameValue)
             {
@@ -396,7 +396,7 @@ HRESULT ValueWrite(
         if (0 >= UtilCompareSystemTimes(&stNow, &cvExistingValue.stWhen))
         {
             hr = HRESULT_FROM_WIN32(ERROR_TIME_SKEW);
-            ExitOnFailure2(hr, "Found already-existing future value named %ls, appID %u! Please ensure all syncing desktop machines are set to use internet time.", wzName, dwAppID);
+            ExitOnFailure(hr, "Found already-existing future value named %ls, appID %u! Please ensure all syncing desktop machines are set to use internet time.", wzName, dwAppID);
         }
     }
 
@@ -404,7 +404,7 @@ HRESULT ValueWrite(
     if (0 > UtilCompareSystemTimes(&stNow, &pcvValue->stWhen))
     {
         hr = HRESULT_FROM_WIN32(ERROR_TIME_SKEW);
-        ExitOnFailure2(hr, "Cannot write a new value from the future named %ls, appID %u! Please ensure all syncing desktop machines are set to use internet time.", wzName, dwAppID);
+        ExitOnFailure(hr, "Cannot write a new value from the future named %ls, appID %u! Please ensure all syncing desktop machines are set to use internet time.", wzName, dwAppID);
     }
 
     hr = SceBeginTransaction(pcdb->psceDb);
@@ -427,7 +427,7 @@ HRESULT ValueWrite(
         }
         else
         {
-            ExitOnFailure1(hr, "Failed to check if value name is legacy manifest path: %ls", wzName);
+            ExitOnFailure(hr, "Failed to check if value name is legacy manifest path: %ls", wzName);
 
             if (VALUE_BLOB == pcvValue->cvType)
             {
@@ -436,12 +436,12 @@ HRESULT ValueWrite(
 
                 // If it's a string value, ensure the legacy product exists
                 hr = ProductEnsureCreated(pcdb, sczProductName, wzLegacyVersion, wzLegacyPublicKey, NULL, NULL);
-                ExitOnFailure1(hr, "Failed to set legacy product to product ID: %ls", sczProductName);
+                ExitOnFailure(hr, "Failed to set legacy product to product ID: %ls", sczProductName);
 
                 if (!pcdb->fRemote)
                 {
                     hr = BackgroundUpdateProduct(pcdb, sczProductName);
-                    ExitOnFailure1(hr, "Failed to notify background thread of updated manifest for product %ls", sczProductName);
+                    ExitOnFailure(hr, "Failed to notify background thread of updated manifest for product %ls", sczProductName);
                 }
             }
             else
@@ -451,7 +451,7 @@ HRESULT ValueWrite(
 
                 // Otherwise, ensure it is forgotten
                 hr = ProductForget(pcdb, sczProductName, wzLegacyVersion, wzLegacyPublicKey);
-                ExitOnFailure1(hr, "Failed to forget product ID: %ls", sczProductName);
+                ExitOnFailure(hr, "Failed to forget product ID: %ls", sczProductName);
             }
         }
     }
@@ -504,7 +504,7 @@ HRESULT ValueRead(
         if (cbBuffer != sizeof(pcvValue->blob.rgbHash))
         {
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Expected hash size %u, instead found hash size %u", sizeof(pcvValue->blob.rgbHash), cbBuffer);
+            ExitOnFailure(hr, "Expected hash size %u, instead found hash size %u", sizeof(pcvValue->blob.rgbHash), cbBuffer);
         }
         memcpy(pcvValue->blob.rgbHash, pbBuffer, cbBuffer);
 
@@ -531,7 +531,7 @@ HRESULT ValueRead(
         break;
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Invalid value type found in database: %d", pcvValue->cvType);
+        ExitOnFailure(hr, "Invalid value type found in database: %d", pcvValue->cvType);
         break;
     }
 
@@ -570,7 +570,7 @@ HRESULT ValueMatch(
     {
         ExitFunction();
     }
-    ExitOnFailure2(hr, "Failed to find value while checking for identical values for AppID: %u, name: %ls", pcdb2->dwAppID, sczName);
+    ExitOnFailure(hr, "Failed to find value while checking for identical values for AppID: %u, name: %ls", pcdb2->dwAppID, sczName);
 
     hr = ValueRead(pcdb1, sceRow1, &cvValue1);
     ExitOnFailure(hr, "Failed to read value from db 1");
@@ -671,20 +671,20 @@ HRESULT ValueFindRow(
     SCE_QUERY_HANDLE sqhHandle = NULL;
 
     hr = SceBeginQuery(pcdb->psceDb, dwTableIndex, 0, &sqhHandle);
-    ExitOnFailure1(hr, "Failed to begin query into table: %u", dwTableIndex);
+    ExitOnFailure(hr, "Failed to begin query into table: %u", dwTableIndex);
 
     hr = SceSetQueryColumnDword(sqhHandle, dwDword);
-    ExitOnFailure1(hr, "Failed to set query column dword to: %u", dwDword);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwDword);
 
     hr = SceSetQueryColumnString(sqhHandle, wzString);
-    ExitOnFailure1(hr, "Failed to set query column string to: %ls", wzString);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzString);
 
     hr = SceRunQueryExact(&sqhHandle, pRowHandle);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
     }
-    ExitOnFailure2(hr, "Failed to query for value appID: %u, named: %ls", dwDword, wzString);
+    ExitOnFailure(hr, "Failed to query for value appID: %u, named: %ls", dwDword, wzString);
 
 LExit:
     ReleaseSceQuery(sqhHandle);
@@ -720,13 +720,13 @@ HRESULT ValueWriteHelp(
     }
 
     hr = SceSetColumnDword(sceRowInput, VALUE_COMMON_APPID, dwAppID);
-    ExitOnFailure1(hr, "Failed to set AppID column to: %u", dwAppID);
+    ExitOnFailure(hr, "Failed to set AppID column to: %u", dwAppID);
 
     hr = SceSetColumnString(sceRowInput, VALUE_COMMON_NAME, wzName);
-    ExitOnFailure1(hr, "Failed to set name column to: %ls", wzName);
+    ExitOnFailure(hr, "Failed to set name column to: %ls", wzName);
 
     hr = SceSetColumnDword(sceRowInput, VALUE_COMMON_TYPE, pcvValue->cvType);
-    ExitOnFailure1(hr, "Failed to set type column to: %d", pcvValue->cvType);
+    ExitOnFailure(hr, "Failed to set type column to: %d", pcvValue->cvType);
 
     if (VALUE_BLOB == pcvValue->cvType)
     {
@@ -737,7 +737,7 @@ HRESULT ValueWriteHelp(
             {
             case CFG_BLOB_POINTER:
                 hr = StreamWrite(pcdb, static_cast<BYTE *>(pcvValue->blob.rgbHash), pcvValue->blob.pointer.pbValue, pcvValue->blob.cbValue, pdwContentID);
-                ExitOnFailure1(hr, "Failed to write stream while setting value %ls", wzName);
+                ExitOnFailure(hr, "Failed to write stream while setting value %ls", wzName);
                 break;
             case CFG_BLOB_DB_STREAM:
                 if (pcvValue->blob.dbstream.pcdb == pcdb)
@@ -745,17 +745,17 @@ HRESULT ValueWriteHelp(
                     // Same database, just refcount it
                     *pdwContentID = pcvValue->blob.dbstream.dwContentID;
                     hr = StreamIncreaseRefcount(pcdb, pcvValue->blob.dbstream.dwContentID, 1);
-                    ExitOnFailure2(hr, "Failed to increase refcount for stream ID %u while setting value %ls", pcvValue->blob.dbstream.dwContentID, wzName);
+                    ExitOnFailure(hr, "Failed to increase refcount for stream ID %u while setting value %ls", pcvValue->blob.dbstream.dwContentID, wzName);
                 }
                 else
                 {
                     hr = StreamCopy(pcvValue->blob.dbstream.pcdb, pcvValue->blob.dbstream.dwContentID, pcdb, pdwContentID);
-                    ExitOnFailure2(hr, "Failed to copy stream %u from one database to another while setting value %ls", pcvValue->blob.dbstream.dwContentID, wzName);
+                    ExitOnFailure(hr, "Failed to copy stream %u from one database to another while setting value %ls", pcvValue->blob.dbstream.dwContentID, wzName);
                 }
                 break;
             default:
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Invalid blob type encountered while writing value: %d", pcvValue->blob.cbType);
+                ExitOnFailure(hr, "Invalid blob type encountered while writing value: %d", pcvValue->blob.cbType);
                 break;
             }   
         }
@@ -784,7 +784,7 @@ HRESULT ValueWriteHelp(
     if (VALUE_STRING == pcvValue->cvType && NULL != pcvValue->string.sczValue)
     {
         hr = SceSetColumnString(sceRowInput, VALUE_COMMON_STRINGVALUE, pcvValue->string.sczValue);
-        ExitOnFailure1(hr, "Failed to set value column to: %ls", pcvValue->string.sczValue);
+        ExitOnFailure(hr, "Failed to set value column to: %ls", pcvValue->string.sczValue);
     }
     else
     {
@@ -795,7 +795,7 @@ HRESULT ValueWriteHelp(
     if (VALUE_DWORD == pcvValue->cvType)
     {
         hr = SceSetColumnDword(sceRowInput, VALUE_COMMON_LONGVALUE, pcvValue->dword.dwValue);
-        ExitOnFailure1(hr, "Failed to set value column to: %u", pcvValue->dword.dwValue);
+        ExitOnFailure(hr, "Failed to set value column to: %u", pcvValue->dword.dwValue);
     }
     else
     {
@@ -806,7 +806,7 @@ HRESULT ValueWriteHelp(
     if (VALUE_QWORD == pcvValue->cvType)
     {
         hr = SceSetColumnQword(sceRowInput, VALUE_COMMON_LONGLONGVALUE, pcvValue->qword.qwValue);
-        ExitOnFailure1(hr, "Failed to set value column to: %I64u", pcvValue->qword.qwValue);
+        ExitOnFailure(hr, "Failed to set value column to: %I64u", pcvValue->qword.qwValue);
     }
     else
     {
@@ -817,7 +817,7 @@ HRESULT ValueWriteHelp(
     if (VALUE_BOOL == pcvValue->cvType)
     {
         hr = SceSetColumnBool(sceRowInput, VALUE_COMMON_BOOLVALUE, pcvValue->boolean.fValue);
-        ExitOnFailure1(hr, "Failed to set value column to: %ls", pcvValue->boolean.fValue ? L"TRUE" : L"FALSE");
+        ExitOnFailure(hr, "Failed to set value column to: %ls", pcvValue->boolean.fValue ? L"TRUE" : L"FALSE");
     }
     else
     {
@@ -834,7 +834,7 @@ HRESULT ValueWriteHelp(
     if (!fHistory)
     {
         hr = SceSetColumnDword(sceRowInput, VALUE_LAST_HISTORY_ID, *pdwHistoryID);
-        ExitOnFailure1(hr, "Failed to set last history ID to value: %u", *pdwHistoryID);
+        ExitOnFailure(hr, "Failed to set last history ID to value: %u", *pdwHistoryID);
     }
 
     hr = SceFinishUpdate(sceRowInput);
@@ -878,10 +878,10 @@ HRESULT ValueForget(
     ExitOnFailure(hr, "Failed to begin query into value table");
 
     hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
-    ExitOnFailure1(hr, "Failed to set query column dword to: %u", dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
 
     hr = SceSetQueryColumnString(sqhHandle, sczValueName);
-    ExitOnFailure1(hr, "Failed to set query column string to: %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", sczValueName);
 
     hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
     if (E_NOTFOUND == hr)
@@ -891,7 +891,7 @@ HRESULT ValueForget(
     ExitOnFailure(hr, "Failed to run query");
 
     hr = SceDeleteRow(psceValueRow);
-    ExitOnFailure1(hr, "Failed to delete value row for value named: %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to delete value row for value named: %ls", sczValueName);
 
     hr = SceGetNextResultRow(sqrhResults, &sceValueHistoryRow);
     while (E_NOTFOUND != hr)
@@ -899,22 +899,22 @@ HRESULT ValueForget(
         ExitOnFailure(hr, "Failed to get next result row");
 
         hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_TYPE, reinterpret_cast<DWORD*>(&cvType));
-        ExitOnFailure1(hr, "Failed to get value type of value history for value named: %ls", sczValueName);
+        ExitOnFailure(hr, "Failed to get value type of value history for value named: %ls", sczValueName);
 
         if (VALUE_BLOB == cvType)
         {
             hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_BLOBCONTENTID, &dwContentID);
-            ExitOnFailure1(hr, "Failed to get content ID of value history for value named: %ls", sczValueName);
+            ExitOnFailure(hr, "Failed to get content ID of value history for value named: %ls", sczValueName);
         }
 
         hr = SceDeleteRow(&sceValueHistoryRow);
-        ExitOnFailure1(hr, "Failed to delete history row for value named: %ls", sczValueName);
+        ExitOnFailure(hr, "Failed to delete history row for value named: %ls", sczValueName);
 
         if (VALUE_BLOB == cvType)
         {
             // Refcounts are only counted for history entries
             hr = StreamDecreaseRefcount(pcdb, dwContentID, 1);
-            ExitOnFailure1(hr, "Failed to decrease refcount of content with ID: %u", dwContentID);
+            ExitOnFailure(hr, "Failed to decrease refcount of content with ID: %u", dwContentID);
         }
 
         ReleaseNullSceRow(sceValueHistoryRow);

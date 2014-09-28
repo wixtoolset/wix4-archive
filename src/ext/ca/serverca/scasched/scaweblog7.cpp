@@ -43,7 +43,7 @@ HRESULT ScaGetWebLog7(
     hr = WcaFetchWrappedRecordWhereString(hWebLogQuery, wlqLog, wzLog, &hRec);
     if (E_NOMOREITEMS == hr)
     {
-        ExitOnFailure1(hr, "cannot locate IIsWebLog.Log='%ls'", wzLog);
+        ExitOnFailure(hr, "cannot locate IIsWebLog.Log='%ls'", wzLog);
     }
     HRESULT hrTemp = WcaFetchWrappedRecordWhereString(hWebLogQuery, wlqLog, wzLog, &hRec);
 
@@ -56,43 +56,43 @@ HRESULT ScaGetWebLog7(
 
     // check that log key matches
     hr = WcaGetRecordString(hRec, wlqLog, &pwzData);
-    ExitOnFailure1(hr, "failed to get IIsWebLog.Log for Log: %ls", wzLog);
+    ExitOnFailure(hr, "failed to get IIsWebLog.Log for Log: %ls", wzLog);
     hr = ::StringCchCopyW(pswl->wzLog, countof(pswl->wzLog), pwzData);
-    ExitOnFailure1(hr, "failed to copy log name: %ls", pwzData);
+    ExitOnFailure(hr, "failed to copy log name: %ls", pwzData);
 
     hr = WcaGetRecordString(hRec, wlqFormat, &pwzData);
-    ExitOnFailure1(hr, "failed to get IIsWebLog.Format for Log:", wzLog);
+    ExitOnFailure(hr, "failed to get IIsWebLog.Format for Log:", wzLog);
 
     //translate WIX log format name strings to IIS7
     if (0 == lstrcmpW(pwzData, L"Microsoft IIS Log File Format"))
     {
         hr = ::StringCchCopyW(pswl->wzFormat, countof(pswl->wzFormat), L"IIS");
-        ExitOnFailure1(hr, "failed to copy log format: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy log format: %ls", pwzData);
     }
     else if (0 == lstrcmpW(pwzData, L"NCSA Common Log File Format"))
     {
         hr = ::StringCchCopyW(pswl->wzFormat, countof(pswl->wzFormat), L"NCSA");
-        ExitOnFailure1(hr, "failed to copy log format: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy log format: %ls", pwzData);
     }
     else if (0 == lstrcmpW(pwzData, L"none"))
     {
         hr = ::StringCchCopyW(pswl->wzFormat, countof(pswl->wzFormat), L"none");
-        ExitOnFailure1(hr, "failed to copy log format: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy log format: %ls", pwzData);
     }
     else if (0 == lstrcmpW(pwzData, L"ODBC Logging"))
     {
         hr = ::StringCchCopyW(pswl->wzFormat, countof(pswl->wzFormat), L"W3C");
-        ExitOnFailure1(hr, "failed to copy log format: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy log format: %ls", pwzData);
     }
     else if (0 == lstrcmpW(pwzData, L"W3C Extended Log File Format"))
     {
         hr = ::StringCchCopyW(pswl->wzFormat, countof(pswl->wzFormat), L"W3C");
-        ExitOnFailure1(hr, "failed to copy log format: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy log format: %ls", pwzData);
     }
     else
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_INDEX);
-        ExitOnFailure1(hr, "Invalid log file format: %ls", pwzData);
+        ExitOnFailure(hr, "Invalid log file format: %ls", pwzData);
     }
 
 LExit:

@@ -89,10 +89,10 @@ HRESULT DetectUpdateCache(
                 ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
                 hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvValue, TRUE);
-                ExitOnFailure2(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].arp.wzInstallLocationValue);
+                ExitOnFailure(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].arp.wzInstallLocationValue);
 
                 hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
-                ExitOnFailure1(hr, "Failed to add file to list of files seen: %ls", sczValueName);
+                ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
             }
             if (pDetect->rgDetects[i].arp.sczUninstallStringDirProperty && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzUninstallStringDirValue))
             {
@@ -106,10 +106,10 @@ HRESULT DetectUpdateCache(
                 ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
                 hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvValue, TRUE);
-                ExitOnFailure2(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].arp.wzUninstallStringDirValue);
+                ExitOnFailure(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].arp.wzUninstallStringDirValue);
 
                 hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
-                ExitOnFailure1(hr, "Failed to add file to list of files seen: %ls", sczValueName);
+                ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
             }
             if (pDetect->rgDetects[i].arp.sczDisplayIconDirProperty && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzDisplayIconDirValue))
             {
@@ -123,10 +123,10 @@ HRESULT DetectUpdateCache(
                 ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
                 hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvValue, TRUE);
-                ExitOnFailure2(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].arp.wzDisplayIconDirValue);
+                ExitOnFailure(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].arp.wzDisplayIconDirValue);
 
                 hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
-                ExitOnFailure1(hr, "Failed to add file to list of files seen: %ls", sczValueName);
+                ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
             }
             break;
 
@@ -143,16 +143,16 @@ HRESULT DetectUpdateCache(
                 ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
                 hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvValue, TRUE);
-                ExitOnFailure2(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].exe.sczDetectedFileDir);
+                ExitOnFailure(hr, "Failed to set cached value named '%ls' to '%ls'", sczValueName, pDetect->rgDetects[i].exe.sczDetectedFileDir);
 
                 hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
-                ExitOnFailure1(hr, "Failed to add file to list of files seen: %ls", sczValueName);
+                ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
             }
             break;
 
         default:
             hr = E_UNEXPECTED;
-            ExitOnFailure1(hr, "Unexpected detect type encountered while updating cache: %u", pDetect->rgDetects[i].ldtType);
+            ExitOnFailure(hr, "Unexpected detect type encountered while updating cache: %u", pDetect->rgDetects[i].ldtType);
             break;
         }
 
@@ -219,7 +219,7 @@ HRESULT DetectGetArpProducts(
     for (DWORD i = 0; i < pArpProducts->cProducts; ++i)
     {
         hr = DictAddValue(pArpProducts->shProductsFound, pArpProducts->rgProducts + i);
-        ExitOnFailure1(hr, "Failed to add to dictionary product named: %ls", pArpProducts->rgProducts[i].sczDisplayName);
+        ExitOnFailure(hr, "Failed to add to dictionary product named: %ls", pArpProducts->rgProducts[i].sczDisplayName);
     }
 
     hr = S_OK;
@@ -279,7 +279,7 @@ HRESULT DetectGetExeProducts(
     for (DWORD i = 0; i < pExeProducts->cProducts; ++i)
     {
         hr = DictAddValue(pExeProducts->shProductsFound, pExeProducts->rgProducts + i);
-        ExitOnFailure1(hr, "Failed to add to dictionary product with filename: %ls", pExeProducts->rgProducts[i].sczFilePath);
+        ExitOnFailure(hr, "Failed to add to dictionary product with filename: %ls", pExeProducts->rgProducts[i].sczFilePath);
     }
 
     hr = S_OK;
@@ -320,7 +320,7 @@ HRESULT DetectProduct(
                 }
                 else if (FAILED(hr))
                 {
-                    ExitOnFailure1(hr, "Failed to lookup display name %ls in arp dictionary", pDetect->rgDetects[i].arp.sczDisplayName);
+                    ExitOnFailure(hr, "Failed to lookup display name %ls in arp dictionary", pDetect->rgDetects[i].arp.sczDisplayName);
                 }
                 else
                 {
@@ -347,14 +347,14 @@ HRESULT DetectProduct(
                 if (NULL != pDetect->rgDetects[i].exe.wzFileDirValue)
                 {
                     hr = PathGetDirectory(pDetect->rgDetects[i].exe.wzFileDirValue, &pDetect->rgDetects[i].exe.sczDetectedFileDir);
-                    ExitOnFailure1(hr, "Failed to get directory from path: %ls", pDetect->rgDetects[i].exe.wzFileDirValue);
+                    ExitOnFailure(hr, "Failed to get directory from path: %ls", pDetect->rgDetects[i].exe.wzFileDirValue);
                 }
 
                 break;
 
             default:
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Unexpected detect type encountered: %d", pDetect->rgDetects[i].ldtType);
+                ExitOnFailure(hr, "Unexpected detect type encountered: %d", pDetect->rgDetects[i].ldtType);
                 break;
             }
 
@@ -375,21 +375,21 @@ HRESULT DetectProduct(
             case LEGACY_DETECT_TYPE_ARP:
                 // Read in any values from cache
                 hr = ReadCache(pcdb, pDetect->rgDetects[i].arp.sczInstallLocationProperty, pSyncProductSession->shDictValuesSeen, pDetect);
-                ExitOnFailure1(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].arp.sczInstallLocationProperty);
+                ExitOnFailure(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].arp.sczInstallLocationProperty);
 
                 hr = ReadCache(pcdb, pDetect->rgDetects[i].arp.sczUninstallStringDirProperty, pSyncProductSession->shDictValuesSeen, pDetect);
-                ExitOnFailure1(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].arp.sczUninstallStringDirProperty);
+                ExitOnFailure(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].arp.sczUninstallStringDirProperty);
 
                 hr = ReadCache(pcdb, pDetect->rgDetects[i].arp.sczDisplayIconDirProperty, pSyncProductSession->shDictValuesSeen, pDetect);
-                ExitOnFailure1(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].arp.sczDisplayIconDirProperty);
+                ExitOnFailure(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].arp.sczDisplayIconDirProperty);
                 break;
             case LEGACY_DETECT_TYPE_EXE:
                 hr = ReadCache(pcdb, pDetect->rgDetects[i].exe.sczFileDirProperty, pSyncProductSession->shDictValuesSeen, pDetect);
-                ExitOnFailure1(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].exe.sczFileDirProperty);
+                ExitOnFailure(hr, "Failed to read cached value %ls", pDetect->rgDetects[i].exe.sczFileDirProperty);
                 break;
             default:
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Unexpected detect type encountered in 2nd loop: %d", pDetect->rgDetects[i].ldtType);
+                ExitOnFailure(hr, "Unexpected detect type encountered in 2nd loop: %d", pDetect->rgDetects[i].ldtType);
                 break;
             }
         }
@@ -397,7 +397,7 @@ HRESULT DetectProduct(
     else if (!fJustReadCache)
     {
         hr = DetectUpdateCache(pcdb, pSyncProductSession);
-        ExitOnFailure1(hr, "Failed to update cached detection results for AppID: %u", pcdb->dwAppID);
+        ExitOnFailure(hr, "Failed to update cached detection results for AppID: %u", pcdb->dwAppID);
     }
 
 LExit:
@@ -438,7 +438,7 @@ HRESULT DetectExpandDirectoryPath(
                 && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzInstallLocationValue))
             {
                 hr = StrAllocString(&sczPropertyValue, pDetect->rgDetects[i].arp.wzInstallLocationValue, 0);
-                ExitOnFailure1(hr, "Failed to copy value of InstallLocation", pDetect->rgDetects[i].arp.wzInstallLocationValue);
+                ExitOnFailure(hr, "Failed to copy value of InstallLocation", pDetect->rgDetects[i].arp.wzInstallLocationValue);
 
                 hr = PathConcat(sczPropertyValue, wzPathAfterColon, psczOutput);
                 ExitOnFailure(hr, "Failed to concatenate paths while expanding detected arp path");
@@ -449,7 +449,7 @@ HRESULT DetectExpandDirectoryPath(
                 && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzUninstallStringDirValue))
             {
                 hr = StrAllocString(&sczPropertyValue, pDetect->rgDetects[i].arp.wzUninstallStringDirValue, 0);
-                ExitOnFailure1(hr, "Failed to copy value of InstallLocation", pDetect->rgDetects[i].arp.wzUninstallStringDirValue);
+                ExitOnFailure(hr, "Failed to copy value of InstallLocation", pDetect->rgDetects[i].arp.wzUninstallStringDirValue);
 
                 hr = PathConcat(sczPropertyValue, wzPathAfterColon, psczOutput);
                 ExitOnFailure(hr, "Failed to concatenate paths while expanding detected arp path");
@@ -460,7 +460,7 @@ HRESULT DetectExpandDirectoryPath(
                 && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzInstallLocationValue))
             {
                 hr = StrAllocString(&sczPropertyValue, pDetect->rgDetects[i].arp.wzDisplayIconDirValue, 0);
-                ExitOnFailure1(hr, "Failed to copy value of InstallLocation", pDetect->rgDetects[i].arp.wzDisplayIconDirValue);
+                ExitOnFailure(hr, "Failed to copy value of InstallLocation", pDetect->rgDetects[i].arp.wzDisplayIconDirValue);
 
                 hr = PathConcat(sczPropertyValue, wzPathAfterColon, psczOutput);
                 ExitOnFailure(hr, "Failed to concatenate paths while expanding detected arp path");
@@ -474,7 +474,7 @@ HRESULT DetectExpandDirectoryPath(
                 && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzInstallLocationValue))
             {
                 hr = StrAllocString(&sczPropertyValue, pDetect->rgDetects[i].exe.wzFileDirValue, 0);
-                ExitOnFailure1(hr, "Failed to copy value of file dir", pDetect->rgDetects[i].exe.wzFileDirValue);
+                ExitOnFailure(hr, "Failed to copy value of file dir", pDetect->rgDetects[i].exe.wzFileDirValue);
 
                 hr = PathConcat(sczPropertyValue, wzPathAfterColon, psczOutput);
                 ExitOnFailure(hr, "Failed to concatenate paths while expanding detected exe path");
@@ -485,7 +485,7 @@ HRESULT DetectExpandDirectoryPath(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "An invalid detect type %d was found while expanding legacy directory path", pDetect->rgDetects[i].ldtType);
+            ExitOnFailure(hr, "An invalid detect type %d was found while expanding legacy directory path", pDetect->rgDetects[i].ldtType);
             break;
         }
     }
@@ -499,7 +499,7 @@ HRESULT DetectExpandDirectoryPath(
     ExitOnFailure(hr, "Failed to lookup cached property value");
 
     hr = StrAllocString(&sczPropertyValue, pCacheLookupResult->sczPropertyValue, 0);
-    ExitOnFailure1(hr, "Failed to copy value of cached dir: %ls", pCacheLookupResult->sczPropertyValue);
+    ExitOnFailure(hr, "Failed to copy value of cached dir: %ls", pCacheLookupResult->sczPropertyValue);
 
     hr = PathConcat(sczPropertyValue, wzPathAfterColon, psczOutput);
     ExitOnFailure(hr, "Failed to concatenate paths while expanding detected exe path");
@@ -591,7 +591,7 @@ static HRESULT CorrectArpName(
     // TODO: allow some way (specified in manifest) of removing versions
 
     hr = StrAllocString(psczCorrectedName, sczOriginalName, 0);
-    ExitOnFailure1(hr, "Failed to allocate copy of string while correcting arp product name: %ls", sczOriginalName);
+    ExitOnFailure(hr, "Failed to allocate copy of string while correcting arp product name: %ls", sczOriginalName);
 
 LExit:
     return hr;
@@ -626,7 +626,7 @@ static HRESULT GetArpProducts(
             hr = S_OK;
             goto Skip;
         }
-        ExitOnFailure1(hr, "Failed to open arp subkey: %ls", sczSubkeyName);
+        ExitOnFailure(hr, "Failed to open arp subkey: %ls", sczSubkeyName);
 
         hr = RegReadString(hkSubkey, L"DisplayName", &sczDisplayName);
         if (FAILED(hr))
@@ -636,7 +636,7 @@ static HRESULT GetArpProducts(
         }
         else
         {
-            ExitOnFailure1(hr, "Failed to read DisplayName from registry for subkey: %ls", sczSubkeyName);
+            ExitOnFailure(hr, "Failed to read DisplayName from registry for subkey: %ls", sczSubkeyName);
 
             if (DWORD_MAX == pArpProducts->cProducts)
             {
@@ -649,21 +649,21 @@ static HRESULT GetArpProducts(
             ++pArpProducts->cProducts;
             
             hr = CorrectArpName(sczDisplayName, &pArpProducts->rgProducts[dwProductIndex].sczDisplayName);
-            ExitOnFailure1(hr, "Failed to correct displayname seen in arp: %ls", sczDisplayName);
+            ExitOnFailure(hr, "Failed to correct displayname seen in arp: %ls", sczDisplayName);
 
             hr = RegReadString(hkSubkey, L"InstallLocation", &pArpProducts->rgProducts[dwProductIndex].sczInstallLocation);
             if (E_FILENOTFOUND == hr)
             {
                 hr = S_OK;
             }
-            ExitOnFailure1(hr, "Failed to read registry string InstallLocation under subkey: %ls", sczSubkeyName);
+            ExitOnFailure(hr, "Failed to read registry string InstallLocation under subkey: %ls", sczSubkeyName);
 
             hr = RegReadString(hkSubkey, L"UninstallString", &sczUninstallString);
             if (E_FILENOTFOUND == hr)
             {
                 hr = S_OK;
             }
-            ExitOnFailure1(hr, "Failed to read registry string UninstallString under subkey: %ls", sczSubkeyName);
+            ExitOnFailure(hr, "Failed to read registry string UninstallString under subkey: %ls", sczSubkeyName);
 
             hr = PathGetDirectory(sczUninstallString, &pArpProducts->rgProducts[dwProductIndex].sczUninstallStringDir);
             ExitOnFailure(hr, "Failed to get directory portion of UninstallString");
@@ -673,7 +673,7 @@ static HRESULT GetArpProducts(
             {
                 hr = S_OK;
             }
-            ExitOnFailure1(hr, "Failed to read registry string DisplayIcon under subkey: %ls", sczSubkeyName);
+            ExitOnFailure(hr, "Failed to read registry string DisplayIcon under subkey: %ls", sczSubkeyName);
 
             hr = PathGetDirectory(sczDisplayIcon, &pArpProducts->rgProducts[dwProductIndex].sczDisplayIconDir);
             ExitOnFailure(hr, "Failed to get directory portion of DisplayIcon string");
@@ -767,7 +767,7 @@ static HRESULT GetExeProductsFromApplications(
                 if (NULL == wzSecondQuote)
                 {
                     // The quote never ended, so this is probably a bad command - skip it
-                    Trace1(REPORT_DEBUG, "Failed to find ending quote in applications path: %ls", sczRawCommand);
+                    Trace(REPORT_DEBUG, "Failed to find ending quote in applications path: %ls", sczRawCommand);
                     goto InnerSkip;
                 }
 
@@ -785,7 +785,7 @@ static HRESULT GetExeProductsFromApplications(
                     ++pExeProducts->cProducts;
             
                     hr = PathGetDirectory(sczFilePath, &pExeProducts->rgProducts[dwProductIndex].sczFileDir);
-                    ExitOnFailure1(hr, "Failed to get directory of file path: %ls", sczFilePath);
+                    ExitOnFailure(hr, "Failed to get directory of file path: %ls", sczFilePath);
 
                     hr = StrAllocString(&pExeProducts->rgProducts[dwProductIndex].sczFileName, sczSubkeyName, 0);
                     ExitOnFailure(hr, "Failed to copy subkey name");
@@ -797,7 +797,7 @@ static HRESULT GetExeProductsFromApplications(
             else
             {
                 // We don't support non-quoted file paths today - skip it.
-                Trace1(REPORT_DEBUG, "This applications path is not quoted, and is not yet supported: %ls", sczRawCommand);
+                Trace(REPORT_DEBUG, "This applications path is not quoted, and is not yet supported: %ls", sczRawCommand);
                 goto InnerSkip;
             }
 
@@ -853,15 +853,15 @@ static HRESULT ReadCache(
         {
             ExitFunction1(hr = S_OK);
         }
-        ExitOnFailure1(hr, "Failed to read cached value for property %ls", wzPropertyName);
+        ExitOnFailure(hr, "Failed to read cached value for property %ls", wzPropertyName);
 
         hr = MemEnsureArraySize(reinterpret_cast<void**>(&pDetection->rgCachedDetectionProperties), pDetection->cCachedDetectionProperties + 1, sizeof(LEGACY_CACHED_DETECTION_RESULT), 3);
-        ExitOnFailure1(hr, "Failed to resize cached detection property values array to size %u", pDetection->cCachedDetectionProperties + 1);
+        ExitOnFailure(hr, "Failed to resize cached detection property values array to size %u", pDetection->cCachedDetectionProperties + 1);
         dwInsertedIndex = pDetection->cCachedDetectionProperties;
         ++pDetection->cCachedDetectionProperties;
 
         hr = StrAllocString(&pDetection->rgCachedDetectionProperties[dwInsertedIndex].sczPropertyName, wzPropertyName, 0);
-        ExitOnFailure1(hr, "Failed to copy property name: %ls", wzPropertyName);
+        ExitOnFailure(hr, "Failed to copy property name: %ls", wzPropertyName);
 
         pDetection->rgCachedDetectionProperties[dwInsertedIndex].sczPropertyValue = sczPropertyValue;
         sczPropertyValue = NULL;
@@ -869,7 +869,7 @@ static HRESULT ReadCache(
         hr = DictAddValue(pDetection->shCachedDetectionPropertyValues, pDetection->rgCachedDetectionProperties + dwInsertedIndex);
         ExitOnFailure(hr, "Failed to add item to dictionary");
     }
-    ExitOnFailure1(hr, "Failed to lookup property name in cached detection property values dict: %ls", wzPropertyName);
+    ExitOnFailure(hr, "Failed to lookup property name in cached detection property values dict: %ls", wzPropertyName);
 
 LExit:
     ReleaseStr(sczPropertyValue);
@@ -900,7 +900,7 @@ static HRESULT ReadCachedValue(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to find config value for cached directory named: %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to find config value for cached directory named: %ls", sczValueName);
 
     hr = DictAddKey(shDictValuesSeen, sczValueName);
     ExitOnFailure(hr, "Failed to add cached value to values seen during sync");

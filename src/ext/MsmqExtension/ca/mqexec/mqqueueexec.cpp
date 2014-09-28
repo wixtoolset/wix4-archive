@@ -193,11 +193,11 @@ HRESULT MqiCreateMessageQueues(
 
         // progress message
         hr = PcaActionDataMessage(1, attrs.pwzPathName);
-        ExitOnFailure1(hr, "Failed to send progress messages, key: %S", attrs.pwzKey);
+        ExitOnFailure(hr, "Failed to send progress messages, key: %S", attrs.pwzKey);
 
         // create message queue
         hr = CreateMessageQueue(&attrs);
-        ExitOnFailure1(hr, "Failed to create message queue, key: %S", attrs.pwzKey);
+        ExitOnFailure(hr, "Failed to create message queue, key: %S", attrs.pwzKey);
 
         // progress tics
         hr = WcaProgressMessage(COST_MESSAGE_QUEUE_CREATE, FALSE);
@@ -272,7 +272,7 @@ HRESULT MqiDeleteMessageQueues(
 
         // progress message
         hr = PcaActionDataMessage(1, attrs.pwzPathName);
-        ExitOnFailure1(hr, "Failed to send progress messages, key: %S", attrs.pwzKey);
+        ExitOnFailure(hr, "Failed to send progress messages, key: %S", attrs.pwzKey);
 
         // create message queue
         hr = DeleteMessageQueue(&attrs);

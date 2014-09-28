@@ -367,7 +367,7 @@ extern "C" HRESULT DAPI MonAddDirectory(
         hr = S_OK;
 
         hr = StrAllocString(&sczDirectory, sczOriginalPathRequest, 0);
-        ExitOnFailure1(hr, "Failed to copy original path request: %ls", sczOriginalPathRequest);
+        ExitOnFailure(hr, "Failed to copy original path request: %ls", sczOriginalPathRequest);
     }
 
     pMessage->handle = INVALID_HANDLE_VALUE;
@@ -380,14 +380,14 @@ extern "C" HRESULT DAPI MonAddDirectory(
     sczOriginalPathRequest = NULL;
 
     hr = PathGetHierarchyArray(sczDirectory, &pMessage->request.rgsczPathHierarchy, reinterpret_cast<LPUINT>(&pMessage->request.cPathHierarchy));
-    ExitOnFailure1(hr, "Failed to get hierarchy array for path %ls", sczDirectory);
+    ExitOnFailure(hr, "Failed to get hierarchy array for path %ls", sczDirectory);
 
     if (0 < pMessage->request.cPathHierarchy)
     {
         pMessage->request.hrStatus = InitiateWait(&pMessage->request, &pMessage->handle);
         if (!::PostThreadMessageW(pm->dwCoordinatorThreadId, MON_MESSAGE_ADD, reinterpret_cast<WPARAM>(pMessage), 0))
         {
-            ExitWithLastError1(hr, "Failed to send message to worker thread to add directory wait for path %ls", sczDirectory);
+            ExitWithLastError(hr, "Failed to send message to worker thread to add directory wait for path %ls", sczDirectory);
         }
         pMessage = NULL;
     }
@@ -436,7 +436,7 @@ extern "C" HRESULT DAPI MonAddRegKey(
     pMessage->request.pvContext = pvRegKeyContext;
 
     hr = PathGetHierarchyArray(sczSubKey, &pMessage->request.rgsczPathHierarchy, reinterpret_cast<LPUINT>(&pMessage->request.cPathHierarchy));
-    ExitOnFailure1(hr, "Failed to get hierarchy array for subkey %ls", sczSubKey);
+    ExitOnFailure(hr, "Failed to get hierarchy array for subkey %ls", sczSubKey);
 
     if (0 < pMessage->request.cPathHierarchy)
     {
@@ -445,7 +445,7 @@ extern "C" HRESULT DAPI MonAddRegKey(
 
         if (!::PostThreadMessageW(pm->dwCoordinatorThreadId, MON_MESSAGE_ADD, reinterpret_cast<WPARAM>(pMessage), 0))
         {
-            ExitWithLastError1(hr, "Failed to send message to worker thread to add directory wait for regkey %ls", sczSubKey);
+            ExitWithLastError(hr, "Failed to send message to worker thread to add directory wait for regkey %ls", sczSubKey);
         }
         pMessage = NULL;
     }
@@ -485,7 +485,7 @@ extern "C" HRESULT DAPI MonRemoveDirectory(
 
     if (!::PostThreadMessageW(pm->dwCoordinatorThreadId, MON_MESSAGE_REMOVE, reinterpret_cast<WPARAM>(pMessage), 0))
     {
-        ExitWithLastError1(hr, "Failed to send message to worker thread to add directory wait for path %ls", sczDirectory);
+        ExitWithLastError(hr, "Failed to send message to worker thread to add directory wait for path %ls", sczDirectory);
     }
     pMessage = NULL;
 
@@ -527,7 +527,7 @@ extern "C" HRESULT DAPI MonRemoveRegKey(
 
     if (!::PostThreadMessageW(pm->dwCoordinatorThreadId, MON_MESSAGE_REMOVE, reinterpret_cast<WPARAM>(pMessage), 0))
     {
-        ExitWithLastError1(hr, "Failed to send message to worker thread to add directory wait for path %ls", sczSubKey);
+        ExitWithLastError(hr, "Failed to send message to worker thread to add directory wait for path %ls", sczSubKey);
     }
     pMessage = NULL;
 
@@ -1001,7 +1001,7 @@ static HRESULT InitiateWait(
                     {
                         continue;
                     }
-                    ExitOnWin32Error1(er, hr, "Failed to wait on path %ls", pRequest->rgsczPathHierarchy[dwIndex]);
+                    ExitOnWin32Error(er, hr, "Failed to wait on path %ls", pRequest->rgsczPathHierarchy[dwIndex]);
                 }
                 else
                 {
@@ -1016,7 +1016,7 @@ static HRESULT InitiateWait(
                 {
                     continue;
                 }
-                ExitOnFailure1(hr, "Failed to open regkey %ls", pRequest->rgsczPathHierarchy[dwIndex]);
+                ExitOnFailure(hr, "Failed to open regkey %ls", pRequest->rgsczPathHierarchy[dwIndex]);
 
                 er = ::RegNotifyChangeKeyValue(pRequest->regkey.hkSubKey, GetRecursiveFlag(pRequest, dwIndex), REG_NOTIFY_CHANGE_NAME | REG_NOTIFY_CHANGE_LAST_SET | REG_NOTIFY_CHANGE_SECURITY, *pHandle, TRUE);
                 ReleaseRegKey(hk);
@@ -1027,7 +1027,7 @@ static HRESULT InitiateWait(
                 }
                 else
                 {
-                    ExitOnWin32Error1(er, hr, "Failed to wait on subkey %ls", pRequest->rgsczPathHierarchy[dwIndex]);
+                    ExitOnWin32Error(er, hr, "Failed to wait on subkey %ls", pRequest->rgsczPathHierarchy[dwIndex]);
 
                     fHandleFound = TRUE;
                 }
@@ -1065,7 +1065,7 @@ static HRESULT InitiateWait(
         }
     } while (fRedo);
 
-    ExitOnFailure1(hr, "Didn't get a successful wait after looping through all available options %ls", pRequest->rgsczPathHierarchy[pRequest->cPathHierarchy - 1]);
+    ExitOnFailure(hr, "Didn't get a successful wait after looping through all available options %ls", pRequest->rgsczPathHierarchy[pRequest->cPathHierarchy - 1]);
 
     if (MON_DIRECTORY == pRequest->type)
     {
@@ -1394,7 +1394,7 @@ static DWORD WINAPI WaiterThread(
             // If there were no errors and we were already waiting on the right target, or if we weren't yet but are able to now, it's a successful notify
             if (SUCCEEDED(pWaiterContext->rgRequests[dwRequestIndex].hrStatus) && (fNotify || (pWaiterContext->rgRequests[dwRequestIndex].dwPathHierarchyIndex == pWaiterContext->rgRequests[dwRequestIndex].cPathHierarchy - 1)))
             {
-                Trace1(REPORT_DEBUG, "Changes detected, waiting for silence period index %u", dwRequestIndex);
+                Trace(REPORT_DEBUG, "Changes detected, waiting for silence period index %u", dwRequestIndex);
 
                 if (0 < pWaiterContext->rgRequests[dwRequestIndex].dwMaxSilencePeriodInMs)
                 {
@@ -1416,7 +1416,7 @@ static DWORD WINAPI WaiterThread(
         }
         else if (WAIT_TIMEOUT != dwRet)
         {
-            ExitWithLastError1(hr, "Failed to wait for multiple objects with return code %u", dwRet);
+            ExitWithLastError(hr, "Failed to wait for multiple objects with return code %u", dwRet);
         }
 
         // OK, now that we've checked all triggered handles (resetting silence period timers appropriately), check for any pending notifications that we can finally fire
@@ -1453,7 +1453,7 @@ static DWORD WINAPI WaiterThread(
                     // silence period has elapsed without further notifications, so reset pending-related variables, and finally fire a notify!
                     if (pWaiterContext->rgRequests[dwRequestIndex].dwSilencePeriodInMs >= pWaiterContext->rgRequests[dwRequestIndex].dwMaxSilencePeriodInMs)
                     {
-                        Trace1(REPORT_DEBUG, "Silence period surpassed, notifying %u ms late", pWaiterContext->rgRequests[dwRequestIndex].dwSilencePeriodInMs - pWaiterContext->rgRequests[dwRequestIndex].dwMaxSilencePeriodInMs);
+                        Trace(REPORT_DEBUG, "Silence period surpassed, notifying %u ms late", pWaiterContext->rgRequests[dwRequestIndex].dwSilencePeriodInMs - pWaiterContext->rgRequests[dwRequestIndex].dwMaxSilencePeriodInMs);
                         Notify(S_OK, pWaiterContext, pWaiterContext->rgRequests + dwRequestIndex);
                     }
                     else
@@ -1473,13 +1473,13 @@ static DWORD WINAPI WaiterThread(
             {
                 Assert(FALSE);
                 hr = HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA);
-                ExitOnFailure3(hr, "Missing %u pending fires! Total pending fires: %u, wait: %u", cRequestsPendingBeforeLoop, pWaiterContext->cRequestsPending, dwWait);
+                ExitOnFailure(hr, "Missing %u pending fires! Total pending fires: %u, wait: %u", cRequestsPendingBeforeLoop, pWaiterContext->cRequestsPending, dwWait);
             }
             if (0 < pWaiterContext->cRequestsPending && DWORD_MAX == dwWait)
             {
                 Assert(FALSE);
                 hr = HRESULT_FROM_WIN32(ERROR_CANT_WAIT);
-                ExitOnFailure1(hr, "Pending fires exist, but wait was infinite", cRequestsPendingBeforeLoop);
+                ExitOnFailure(hr, "Pending fires exist, but wait was infinite", cRequestsPendingBeforeLoop);
             }
         }
     } while (fContinue);
@@ -1767,7 +1767,7 @@ static LRESULT CALLBACK MonWndProc(
                         // This drive had a status update, so send it out to all threads
                         if (!::PostThreadMessageW(::GetCurrentThreadId(), MON_MESSAGE_DRIVE_STATUS_UPDATE, static_cast<WPARAM>(chDrive), static_cast<LPARAM>(fArrival)))
                         {
-                            ExitWithLastError2(hr, "Failed to send drive status update with drive %wc and arrival %ls", chDrive, fArrival ? L"TRUE" : L"FALSE");
+                            ExitWithLastError(hr, "Failed to send drive status update with drive %wc and arrival %ls", chDrive, fArrival ? L"TRUE" : L"FALSE");
                         }
                     }
                     dwUnitMask >>= 1;
@@ -1776,7 +1776,7 @@ static LRESULT CALLBACK MonWndProc(
                     if (chDrive == 'z')
                     {
                         hr = E_UNEXPECTED;
-                        ExitOnFailure1(hr, "UnitMask showed drives beyond z:. Remaining UnitMask at this point: %u", dwUnitMask);
+                        ExitOnFailure(hr, "UnitMask showed drives beyond z:. Remaining UnitMask at this point: %u", dwUnitMask);
                     }
                 }
             }
@@ -1926,7 +1926,7 @@ static HRESULT WaitForNetworkChanges(
         {
             hr = E_FAIL;
         }
-        ExitOnFailure2(hr, "WSANSPIoctl() failed with return code %i, wsa last error %u", nResult, ::WSAGetLastError());
+        ExitOnFailure(hr, "WSANSPIoctl() failed with return code %i, wsa last error %u", nResult, ::WSAGetLastError());
     }
 
 LExit:

@@ -132,12 +132,12 @@ extern "C" HRESULT DAPI LogOpen(
         ExitOnFailure(hr, "Failed to get log directory.");
 
         hr = DirEnsureExists(sczLogDirectory, NULL);
-        ExitOnFailure1(hr, "Failed to ensure log file directory exists: %ls", sczLogDirectory);
+        ExitOnFailure(hr, "Failed to ensure log file directory exists: %ls", sczLogDirectory);
 
         LogUtil_hLog = ::CreateFileW(LogUtil_sczLogPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, (fAppend) ? OPEN_ALWAYS : CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (INVALID_HANDLE_VALUE == LogUtil_hLog)
         {
-            ExitOnLastError1(hr, "failed to create log file: %ls", LogUtil_sczLogPath);
+            ExitOnLastError(hr, "failed to create log file: %ls", LogUtil_sczLogPath);
         }
 
         if (fAppend)
@@ -228,15 +228,15 @@ HRESULT DAPI LogRename(
     ReleaseFileHandle(LogUtil_hLog);
 
     hr = FileEnsureMove(LogUtil_sczLogPath, wzNewPath, TRUE, TRUE);
-    ExitOnFailure1(hr, "Failed to move logfile to new location: %ls", wzNewPath);
+    ExitOnFailure(hr, "Failed to move logfile to new location: %ls", wzNewPath);
 
     hr = StrAllocString(&LogUtil_sczLogPath, wzNewPath, 0);
-    ExitOnFailure1(hr, "Failed to store new logfile path: %ls", wzNewPath);
+    ExitOnFailure(hr, "Failed to store new logfile path: %ls", wzNewPath);
 
     LogUtil_hLog = ::CreateFileW(LogUtil_sczLogPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == LogUtil_hLog)
     {
-        ExitOnLastError1(hr, "failed to create log file: %ls", LogUtil_sczLogPath);
+        ExitOnLastError(hr, "failed to create log file: %ls", LogUtil_sczLogPath);
     }
 
     // Enable "append" mode by moving file pointer to the end
@@ -615,7 +615,7 @@ extern "C" HRESULT DAPI LogErrorStringArgs(
     // that the caller's "%s" is interpreted differently
     // (so callers should use %hs for LPSTR and %ls for LPWSTR)
     hr = StrAllocFormattedArgs(&sczMessage, sczFormat, args);
-    ExitOnFailure1(hr, "Failed to format error message: \"%ls\"", sczFormat);
+    ExitOnFailure(hr, "Failed to format error message: \"%ls\"", sczFormat);
 
     hr = LogLine(REPORT_ERROR, "Error 0x%x: %ls", hrError, sczMessage);
 
@@ -637,9 +637,9 @@ extern "C" HRESULT DAPI LogErrorIdModule(
     __in HRESULT hrError,
     __in DWORD dwLogId,
     __in_opt HMODULE hModule,
-    __in_z_opt LPCWSTR wzString1,
-    __in_z_opt LPCWSTR wzString2,
-    __in_z_opt LPCWSTR wzString3
+    __in_z_opt LPCWSTR wzString1 = NULL,
+    __in_z_opt LPCWSTR wzString2 = NULL,
+    __in_z_opt LPCWSTR wzString3 = NULL
     )
 {
     HRESULT hr = S_OK;
@@ -647,7 +647,7 @@ extern "C" HRESULT DAPI LogErrorIdModule(
     WORD cStrings = 1; // guaranteed wzError is in the list
 
     hr = ::StringCchPrintfW(wzError, countof(wzError), L"0x%08x", hrError);
-    ExitOnFailure1(hr, "failed to format error code: \"0%08x\"", hrError);
+    ExitOnFailure(hr, "failed to format error code: \"0%08x\"", hrError);
 
     cStrings += wzString1 ? 1 : 0;
     cStrings += wzString2 ? 1 : 0;
@@ -792,7 +792,7 @@ extern "C" HRESULT LogStringWorkRaw(
     {
         if (!::WriteFile(LogUtil_hLog, reinterpret_cast<const BYTE*>(szLogData) + cbTotal, cbLogData - cbTotal, &cbWrote, NULL))
         {
-            ExitOnLastError2(hr, "Failed to write output to log: %ls - %ls", LogUtil_sczLogPath, szLogData);
+            ExitOnLastError(hr, "Failed to write output to log: %ls - %ls", LogUtil_sczLogPath, szLogData);
         }
 
         cbTotal += cbWrote;
@@ -827,7 +827,7 @@ static HRESULT LogIdWork(
 
     if (0 == cch)
     {
-        ExitOnLastError1(hr, "failed to log id: %d", dwLogId);
+        ExitOnLastError(hr, "failed to log id: %d", dwLogId);
     }
 
     if (2 <= cch && L'\r' == pwz[cch-2] && L'\n' == pwz[cch-1])
@@ -865,10 +865,10 @@ static HRESULT LogStringWorkArgs(
 
     // format the string as a unicode string
     hr = StrAllocFormattedArgs(&sczMessage, sczFormat, args);
-    ExitOnFailure1(hr, "Failed to format message: \"%ls\"", sczFormat);
+    ExitOnFailure(hr, "Failed to format message: \"%ls\"", sczFormat);
 
     hr = LogStringWork(rl, 0, sczMessage, fLOGUTIL_NEWLINE);
-    ExitOnFailure1(hr, "Failed to write formatted string to log:%ls", sczMessage);
+    ExitOnFailure(hr, "Failed to write formatted string to log:%ls", sczMessage);
 
 LExit:
     ReleaseStr(sczFormat);
@@ -932,12 +932,12 @@ static HRESULT LogStringWork(
     if (s_vpfLogStringWorkRaw)
     {
         hr = s_vpfLogStringWorkRaw(sczMultiByte, s_vpvLogStringWorkRawContext);
-        ExitOnFailure1(hr, "Failed to write string to log using redirected function: %ls", sczString);
+        ExitOnFailure(hr, "Failed to write string to log using redirected function: %ls", sczString);
     }
     else
     {
         hr = LogStringWorkRaw(sczMultiByte);
-        ExitOnFailure1(hr, "Failed to write string to log using default function: %ls", sczString);
+        ExitOnFailure(hr, "Failed to write string to log using default function: %ls", sczString);
     }
 
 LExit:

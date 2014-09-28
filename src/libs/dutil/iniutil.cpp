@@ -105,7 +105,7 @@ extern "C" HRESULT DAPI IniSetOpenTag(
     if (wzOpenTagPrefix)
     {
         hr = StrAllocString(&pi->sczOpenTagPrefix, wzOpenTagPrefix, 0);
-        ExitOnFailure1(hr, "Failed to copy open tag prefix to ini struct: %ls", wzOpenTagPrefix);
+        ExitOnFailure(hr, "Failed to copy open tag prefix to ini struct: %ls", wzOpenTagPrefix);
     }
     else
     {
@@ -115,7 +115,7 @@ extern "C" HRESULT DAPI IniSetOpenTag(
     if (wzOpenTagPostfix)
     {
         hr = StrAllocString(&pi->sczOpenTagPostfix, wzOpenTagPostfix, 0);
-        ExitOnFailure1(hr, "Failed to copy open tag postfix to ini struct: %ls", wzOpenTagPostfix);
+        ExitOnFailure(hr, "Failed to copy open tag postfix to ini struct: %ls", wzOpenTagPostfix);
     }
     else
     {
@@ -139,7 +139,7 @@ extern "C" HRESULT DAPI IniSetValueStyle(
     if (wzValuePrefix)
     {
         hr = StrAllocString(&pi->sczValuePrefix, wzValuePrefix, 0);
-        ExitOnFailure1(hr, "Failed to copy value prefix to ini struct: %ls", wzValuePrefix);
+        ExitOnFailure(hr, "Failed to copy value prefix to ini struct: %ls", wzValuePrefix);
     }
     else
     {
@@ -149,7 +149,7 @@ extern "C" HRESULT DAPI IniSetValueStyle(
     if (wzValueSeparator)
     {
         hr = StrAllocString(&pi->sczValueSeparator, wzValueSeparator, 0);
-        ExitOnFailure1(hr, "Failed to copy value separator to ini struct: %ls", wzValueSeparator);
+        ExitOnFailure(hr, "Failed to copy value separator to ini struct: %ls", wzValueSeparator);
     }
     else
     {
@@ -194,7 +194,7 @@ extern "C" HRESULT DAPI IniSetCommentStyle(
     if (wzLinePrefix)
     {
         hr = StrAllocString(&pi->sczCommentLinePrefix, wzLinePrefix, 0);
-        ExitOnFailure1(hr, "Failed to copy comment line prefix to ini struct: %ls", wzLinePrefix);
+        ExitOnFailure(hr, "Failed to copy comment line prefix to ini struct: %ls", wzLinePrefix);
     }
     else
     {
@@ -235,10 +235,10 @@ extern "C" HRESULT DAPI IniParse(
     BOOL fValuePrefix = (NULL != pi->sczValuePrefix);
 
     hr = StrAllocString(&pi->sczPath, wzPath, 0);
-    ExitOnFailure1(hr, "Failed to copy path to ini struct: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to copy path to ini struct: %ls", wzPath);
 
     hr = FileToString(pi->sczPath, &sczContents, &pi->feEncoding);
-    ExitOnFailure1(hr, "Failed to convert file to string: %ls", pi->sczPath);
+    ExitOnFailure(hr, "Failed to convert file to string: %ls", pi->sczPath);
 
     if (pfeEncodingFound)
     {
@@ -333,7 +333,7 @@ extern "C" HRESULT DAPI IniParse(
         {
             // There is an section starting here, let's keep track of it and move on
             hr = StrAllocString(&sczCurrentSection, wzOpenTagPrefix + lstrlenW(pi->sczOpenTagPrefix), wzOpenTagPostfix - (wzOpenTagPrefix + lstrlenW(pi->sczOpenTagPrefix)));
-            ExitOnFailure2(hr, "Failed to record section name for line: %ls of INI file: %ls", pi->rgsczLines[i], pi->sczPath);
+            ExitOnFailure(hr, "Failed to record section name for line: %ls of INI file: %ls", pi->rgsczLines[i], pi->sczPath);
 
             // Sections will be calculated dynamically after any set operations, so don't include this in the list of lines to remember for output
             ReleaseNullStr(pi->rgsczLines[i]);
@@ -443,7 +443,7 @@ extern "C" HRESULT DAPI IniGetValue(
     if (NULL == pValue)
     {
         hr = E_NOTFOUND;
-        ExitOnFailure1(hr, "Failed to check for INI value: %ls", wzValueName);
+        ExitOnFailure(hr, "Failed to check for INI value: %ls", wzValueName);
     }
 
     if (NULL == pValue->wzValue)
@@ -452,7 +452,7 @@ extern "C" HRESULT DAPI IniGetValue(
     }
 
     hr = StrAllocString(psczValue, pValue->wzValue, 0);
-    ExitOnFailure1(hr, "Failed to make copy of value while looking up INI value named: %ls", wzValueName);
+    ExitOnFailure(hr, "Failed to make copy of value while looking up INI value named: %ls", wzValueName);
 
 LExit:
     return hr;
@@ -503,7 +503,7 @@ extern "C" HRESULT DAPI IniSetValue(
             {
                 pi->fModified = TRUE;
                 hr = StrAllocString(const_cast<LPWSTR *>(&pValue->wzValue), wzValue, 0);
-                ExitOnFailure1(hr, "Failed to update value INI value named: %ls", wzValueName);
+                ExitOnFailure(hr, "Failed to update value INI value named: %ls", wzValueName);
             }
 
             ExitFunction1(hr = S_OK);
@@ -513,7 +513,7 @@ extern "C" HRESULT DAPI IniSetValue(
             if (wzValueName)
             {
                 hr = GetSectionPrefixFromName(wzValueName, &sczSectionPrefix);
-                ExitOnFailure1(hr, "Failed to get section prefix from value name: %ls", wzValueName);
+                ExitOnFailure(hr, "Failed to get section prefix from value name: %ls", wzValueName);
             }
 
             // If we have a section prefix, figure out the index to insert it (at the end of the section it belongs in)
@@ -649,7 +649,7 @@ extern "C" HRESULT DAPI IniWriteFile(
 
         // First see if we need to write a section line
         hr = GetSectionPrefixFromName(pi->rgivValues[i].wzName, &sczNewSectionPrefix);
-        ExitOnFailure1(hr, "Failed to get section prefix from name: %ls", pi->rgivValues[i].wzName);
+        ExitOnFailure(hr, "Failed to get section prefix from name: %ls", pi->rgivValues[i].wzName);
 
         // If the new section prefix is different, write a section out for it
         if (fSections && sczNewSectionPrefix && (NULL == sczCurrentSectionPrefix || CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, sczNewSectionPrefix, -1, sczCurrentSectionPrefix, -1)))
@@ -722,7 +722,7 @@ extern "C" HRESULT DAPI IniWriteFile(
     }
 
     hr = FileFromString(wzPath, 0, sczContents, feEncoding);
-    ExitOnFailure1(hr, "Failed to write INI contents out to file: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to write INI contents out to file: %ls", wzPath);
 
 LExit:
     ReleaseStr(sczContents);

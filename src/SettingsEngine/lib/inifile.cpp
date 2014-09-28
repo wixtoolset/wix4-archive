@@ -38,14 +38,14 @@ HRESULT IniFileRead(
     CONFIG_VALUE cvValue = { };
 
     hr = DictGetValue(pSyncProductSession->shIniFilesByNamespace, pIniInfo->sczNamespace, reinterpret_cast<void **>(&pIniFile));
-    ExitOnFailure1(hr, "Error finding INI struct for namespace: %ls", pIniInfo->sczNamespace);
+    ExitOnFailure(hr, "Error finding INI struct for namespace: %ls", pIniInfo->sczNamespace);
 
     hr = IniParse(pIniFile->pIniHandle, wzFullPath, &feEncoding);
     if (E_PATHNOTFOUND == hr || E_FILENOTFOUND == hr)
     {
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to parse INI file: %ls", wzFullPath);
+    ExitOnFailure(hr, "Failed to parse INI file: %ls", wzFullPath);
 
     pIniFile->fetReadEncoding = FileEncodingToIniFileEncoding(feEncoding);
 
@@ -53,22 +53,22 @@ HRESULT IniFileRead(
     ExitOnFailure(hr, "Failed to get ini value list");
 
     hr = FileGetTime(wzFullPath, NULL, NULL, &ft);
-    ExitOnFailure1(hr, "failed to get modified time of file : %ls", wzFullPath);
+    ExitOnFailure(hr, "failed to get modified time of file : %ls", wzFullPath);
 
     fRet = FileTimeToSystemTime(&ft, &st);
     if (!fRet)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Failed to convert file time to system time for file: %ls", wzFullPath);
+        ExitOnFailure(hr, "Failed to convert file time to system time for file: %ls", wzFullPath);
     }
 
     for (DWORD i = 0; i < cIniValues; ++i)
     {
         hr = MapFileToCfgName(pIniFile->sczNamespace, rgIniValues[i].wzName, &sczFullValueName);
-        ExitOnFailure2(hr, "Failed ot map INI value name: %ls, %ls", pIniFile->sczNamespace, rgIniValues[i].wzName);
+        ExitOnFailure(hr, "Failed ot map INI value name: %ls, %ls", pIniFile->sczNamespace, rgIniValues[i].wzName);
 
         hr = FilterCheckValue(&pSyncProductSession->product, sczFullValueName, &fIgnore, NULL);
-        ExitOnFailure1(hr, "Failed to check if ini value should be ignored: %ls", sczFullValueName);
+        ExitOnFailure(hr, "Failed to check if ini value should be ignored: %ls", sczFullValueName);
 
         if (fIgnore)
         {
@@ -76,14 +76,14 @@ HRESULT IniFileRead(
         }
 
         hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczFullValueName);
-        ExitOnFailure1(hr, "Failed to add to dictionary value: %ls", sczFullValueName);
+        ExitOnFailure(hr, "Failed to add to dictionary value: %ls", sczFullValueName);
 
         ReleaseNullCfgValue(cvValue);
         hr = ValueSetString(rgIniValues[i].wzValue, FALSE, &st, pcdb->sczGuid, &cvValue);
-        ExitOnFailure1(hr, "Failed to set string in memory for value named %ls", sczFullValueName);
+        ExitOnFailure(hr, "Failed to set string in memory for value named %ls", sczFullValueName);
 
         hr = ValueWrite(pcdb, pcdb->dwAppID, sczFullValueName, &cvValue, TRUE);
-        ExitOnFailure1(hr, "Failed to set value from INI: %ls", sczFullValueName);
+        ExitOnFailure(hr, "Failed to set value from INI: %ls", sczFullValueName);
     }
 
 LExit:
@@ -120,7 +120,7 @@ HRESULT IniFileSetValue(
     }
     else
     {
-        ExitOnFailure1(hr, "Failed to lookup namespace in list of INI file namespaces: %ls", sczNamespace);
+        ExitOnFailure(hr, "Failed to lookup namespace in list of INI file namespaces: %ls", sczNamespace);
         *pfHandled = TRUE;
 
         if (VALUE_DELETED == pcvValue->cvType)
@@ -131,7 +131,7 @@ HRESULT IniFileSetValue(
         else if (VALUE_STRING == pcvValue->cvType)
         {
             hr = IniSetValue(pIniFile->pIniHandle, sczPlainValueName, pcvValue->string.sczValue);
-            ExitOnFailure1(hr, "Failed to set value %ls in INI", sczPlainValueName);
+            ExitOnFailure(hr, "Failed to set value %ls in INI", sczPlainValueName);
         }
         else
         {
@@ -176,7 +176,7 @@ HRESULT IniFileOpen(
 
     default:
         hr = E_FAIL;
-        ExitOnFailure1(hr, "Unexpected legacy file type encountered: %u", pFile->legacyFileType);
+        ExitOnFailure(hr, "Unexpected legacy file type encountered: %u", pFile->legacyFileType);
         break;
     }
 
@@ -195,7 +195,7 @@ HRESULT IniFileOpen(
     for (DWORD i = 0; i < pFileIniInfo->cValueSeparatorException; ++i)
     {
         hr = IniSetValueSeparatorException(pIniFile->pIniHandle, pFileIniInfo->rgsczValueSeparatorException[i]);
-        ExitOnFailure1(hr, "Failed to set value separator exception %ls", pFileIniInfo->rgsczValueSeparatorException[i]);
+        ExitOnFailure(hr, "Failed to set value separator exception %ls", pFileIniInfo->rgsczValueSeparatorException[i]);
     }
 
     hr = IniSetCommentStyle(pIniFile->pIniHandle, pFileIniInfo->sczCommentPrefix);
@@ -235,22 +235,22 @@ HRESULT IniFileWrite(
     if (fIniHasValues)
     {
         hr = PathGetDirectory(pIniFile->sczFullPath, &sczDirectoryToCreate);
-        ExitOnFailure1(hr, "Failed to get directory portion of path: %ls", pIniFile->sczFullPath);
+        ExitOnFailure(hr, "Failed to get directory portion of path: %ls", pIniFile->sczFullPath);
 
         hr = DirEnsureExists(sczDirectoryToCreate, NULL);
-        ExitOnFailure1(hr, "Failed to ensure directory exists: %ls", sczDirectoryToCreate);
+        ExitOnFailure(hr, "Failed to ensure directory exists: %ls", sczDirectoryToCreate);
 
         hr = IniWriteFile(pIniFile->pIniHandle, pIniFile->sczFullPath, IniFileEncodingToFileEncoding(pIniFile->fetManifestEncoding));
         if (E_ACCESSDENIED == hr)
         {
             hr = UtilConvertToVirtualStorePath(pIniFile->sczFullPath, &sczVirtualStorePath);
-            ExitOnFailure1(hr, "Failed to convert path to virtual store path: %ls", pIniFile->sczFullPath);
+            ExitOnFailure(hr, "Failed to convert path to virtual store path: %ls", pIniFile->sczFullPath);
 
             hr = PathGetDirectory(sczVirtualStorePath, &sczDirectoryToCreate);
-            ExitOnFailure1(hr, "Failed to get directory portion of path: %ls", pIniFile->sczFullPath);
+            ExitOnFailure(hr, "Failed to get directory portion of path: %ls", pIniFile->sczFullPath);
 
             hr = DirEnsureExists(sczDirectoryToCreate, NULL);
-            ExitOnFailure1(hr, "Failed to ensure directory exists: %ls", sczDirectoryToCreate);
+            ExitOnFailure(hr, "Failed to ensure directory exists: %ls", sczDirectoryToCreate);
 
             hr = IniWriteFile(pIniFile->pIniHandle, sczVirtualStorePath, IniFileEncodingToFileEncoding(pIniFile->fetManifestEncoding));
         }
@@ -262,11 +262,11 @@ HRESULT IniFileWrite(
         if (E_ACCESSDENIED == hr)
         {
             hr = UtilConvertToVirtualStorePath(pIniFile->sczFullPath, &sczVirtualStorePath);
-            ExitOnFailure1(hr, "Failed to convert path to virtual store path: %ls", pIniFile->sczFullPath);
+            ExitOnFailure(hr, "Failed to convert path to virtual store path: %ls", pIniFile->sczFullPath);
 
             hr = FileEnsureDelete(sczVirtualStorePath);
         }
-        ExitOnFailure1(hr, "Failed to delete empty INI file: %ls", pIniFile->sczFullPath);
+        ExitOnFailure(hr, "Failed to delete empty INI file: %ls", pIniFile->sczFullPath);
     }
 
 LExit:

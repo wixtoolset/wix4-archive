@@ -180,7 +180,7 @@ extern "C" HRESULT MspEngineDetectInitialize(
 
                     // Note that we do add superseded and obsolete MSP packages. Package Detect and Plan will sort them out later.
                     hr = AddDetectedTargetProduct(pPackages, pMspPackage, pPackages->rgPatchInfo[iPatchInfo].dwOrder, pPossibleTargetProduct->wzProductCode, pPossibleTargetProduct->context);
-                    ExitOnFailure1(hr, "Failed to add target product code to package: %ls", pMspPackage->sczId);
+                    ExitOnFailure(hr, "Failed to add target product code to package: %ls", pMspPackage->sczId);
                 }
                 // TODO: should we log something for this error case?
             }
@@ -257,7 +257,7 @@ extern "C" HRESULT MspEngineDetectPackage(
                 pTargetProduct->patchPackageState = BOOTSTRAPPER_PACKAGE_STATE_ABSENT;
                 hr = S_OK;
             }
-            ExitOnFailure2(hr, "Failed to get patch information for patch code: %ls, target product code: %ls", pPackage->Msp.sczPatchCode, pTargetProduct->wzTargetProductCode);
+            ExitOnFailure(hr, "Failed to get patch information for patch code: %ls, target product code: %ls", pPackage->Msp.sczPatchCode, pTargetProduct->wzTargetProductCode);
 
             if (pPackage->currentState > pTargetProduct->patchPackageState)
             {
@@ -489,7 +489,7 @@ extern "C" HRESULT MspEngineExecutePackage(
         if (BOOTSTRAPPER_ACTION_STATE_INSTALL == pExecuteAction->mspTarget.action)
         {
             hr = CacheGetCompletedPath(pMspPackage->fPerMachine, pMspPackage->sczCacheId, &sczCachedDirectory);
-            ExitOnFailure1(hr, "Failed to get cached path for MSP package: %ls", pMspPackage->sczId);
+            ExitOnFailure(hr, "Failed to get cached path for MSP package: %ls", pMspPackage->sczId);
 
             // Best effort to set the execute package cache folder variable.
             VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, sczCachedDirectory, TRUE);
@@ -526,7 +526,7 @@ extern "C" HRESULT MspEngineExecutePackage(
     if (pExecuteAction->mspTarget.sczLogPath && *pExecuteAction->mspTarget.sczLogPath)
     {
         hr = WiuEnableLog(dwLogMode, pExecuteAction->mspTarget.sczLogPath, 0);
-        ExitOnFailure2(hr, "Failed to enable logging for package: %ls to: %ls", pExecuteAction->mspTarget.pPackage->sczId, pExecuteAction->mspTarget.sczLogPath);
+        ExitOnFailure(hr, "Failed to enable logging for package: %ls to: %ls", pExecuteAction->mspTarget.pPackage->sczId, pExecuteAction->mspTarget.sczLogPath);
     }
 
     // set up properties
@@ -685,7 +685,7 @@ static HRESULT GetPossibleTargetProductCodes(
                 {
                     hr = S_OK;
                 }
-                ExitOnFailure1(hr, "Failed to enumerate all products to patch related to upgrade code: %ls", pTargetCode->sczTargetCode);
+                ExitOnFailure(hr, "Failed to enumerate all products to patch related to upgrade code: %ls", pTargetCode->sczTargetCode);
             }
             else
             {

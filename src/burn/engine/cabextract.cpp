@@ -431,7 +431,7 @@ static DWORD WINAPI ExtractThreadProc(
                 }
             }
         }
-        ExitOnFailure3(hr, "Failed to extract all files from container, erf: %d:%X:%d", erf.fError, erf.erfOper, erf.erfType);
+        ExitOnFailure(hr, "Failed to extract all files from container, erf: %d:%X:%d", erf.fError, erf.erfOper, erf.erfType);
     }
 
     // set operation complete event
@@ -554,7 +554,7 @@ static INT_PTR CopyFileCallback(
 
     // copy stream name
     hr = StrAllocStringAnsi(pContext->Cabinet.psczStreamName, pFDINotify->psz1, 0, CP_UTF8);
-    ExitOnFailure1(hr, "Failed to copy stream name: %ls", pFDINotify->psz1);
+    ExitOnFailure(hr, "Failed to copy stream name: %ls", pFDINotify->psz1);
 
     // set operation complete event
     if (!::SetEvent(pContext->Cabinet.hOperationCompleteEvent))
@@ -581,7 +581,7 @@ static INT_PTR CopyFileCallback(
         pContext->Cabinet.hTargetFile = ::CreateFileW(pContext->Cabinet.wzTargetFile, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (INVALID_HANDLE_VALUE == pContext->Cabinet.hTargetFile)
         {
-            ExitWithLastError1(hr, "Failed to create file: %ls", pContext->Cabinet.wzTargetFile);
+            ExitWithLastError(hr, "Failed to create file: %ls", pContext->Cabinet.wzTargetFile);
         }
 
         // set file size
@@ -676,7 +676,7 @@ static INT_PTR CloseFileInfoCallback(
     //if (pContext->pfnProgress)
     //{
     //    hr = StrAllocFormatted(&pwzPath, L"%s%ls", pContext->wzRootPath, pFDINotify->psz1);
-    //    ExitOnFailure2(hr, "Failed to calculate file path from: %ls and %s", pContext->wzRootPath, pFDINotify->psz1);
+    //    ExitOnFailure(hr, "Failed to calculate file path from: %ls and %s", pContext->wzRootPath, pFDINotify->psz1);
     //    if (SUCCEEDED(hr))
     //    {
     //        hr = pContext->pfnProgress(BOX_PROGRESS_DECOMPRESSION_END, pwzPath, 0, pContext->pvContext);
@@ -733,7 +733,7 @@ static INT_PTR FAR DIAMONDAPI CabOpen(
     else // open file requested. This is used in the rare cases where the CAB API wants to create a temp file.
     {
         hFile = ::CreateFileA(pszFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-        ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open cabinet file: %hs", pszFile);
+        ExitOnInvalidHandleWithLastError(hFile, hr, "Failed to open cabinet file: %hs", pszFile);
     }
 
 LExit:
@@ -845,7 +845,7 @@ static long FAR DIAMONDAPI CabSeek(
         // set file pointer
         if (!::SetFilePointerEx(hFile, liDistance, &liNewPointer, seektype))
         {
-            ExitWithLastError1(hr, "Failed to move file pointer 0x%x bytes.", dist);
+            ExitWithLastError(hr, "Failed to move file pointer 0x%x bytes.", dist);
         }
     }
 

@@ -43,7 +43,7 @@ HRESULT StreamRead(
     ExitOnFailure(hr, "Failed to begin query into binary content table");
 
     hr = SceSetQueryColumnDword(sqhHandle, dwContentID);
-    ExitOnFailure1(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentID);
 
     hr = SceRunQueryExact(&sqhHandle, &sceRow);
     if (E_NOTFOUND == hr)
@@ -53,29 +53,29 @@ HRESULT StreamRead(
     ExitOnFailure(hr, "Failed to run query into binary content table");
 
     hr = SceGetColumnDword(sceRow, BINARY_RAW_SIZE, &cbDbSize);
-    ExitOnFailure1(hr, "Failed to get raw size for binary content of ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to get raw size for binary content of ID: %u", dwContentID);
 
     hr = SceGetColumnBinary(sceRow, BINARY_HASH, &pbHashBuffer, &cbHashSize);
-    ExitOnFailure1(hr, "Failed to get hash for binary content of ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to get hash for binary content of ID: %u", dwContentID);
 
     if (CFG_HASH_LEN != cbHashSize)
     {
         hr = E_NOTFOUND;
-        ExitOnFailure2(hr, "Wrong size of hash encountered in database - expected %u, found %u", CFG_HASH_LEN, cbHashSize);
+        ExitOnFailure(hr, "Wrong size of hash encountered in database - expected %u, found %u", CFG_HASH_LEN, cbHashSize);
     }
 
     hr = SceGetColumnDword(sceRow, BINARY_COMPRESSION, reinterpret_cast<DWORD *>(&cfCompressionFormat));
-    ExitOnFailure1(hr, "Failed to get compression format for binary content of ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to get compression format for binary content of ID: %u", dwContentID);
 
     if (NULL != ppbFileBuffer)
     {
         hr = CompressReadStream(pcdb, pbHashBuffer, cfCompressionFormat, &pbContent, &cbDiskSize);
-        ExitOnFailure1(hr, "Failed to read stream file from disk for content ID %u", dwContentID);
+        ExitOnFailure(hr, "Failed to read stream file from disk for content ID %u", dwContentID);
 
         if (cbDiskSize != cbDbSize)
         {
             hr = E_FAIL;
-            ExitOnFailure2(hr, "Stream with ID %u has error - size mismatch - stream size on disk = %u, stream size in DB = %u", cbDiskSize, cbDbSize);
+            ExitOnFailure(hr, "Stream with ID %u has error - size mismatch - stream size on disk = %u, stream size in DB = %u", cbDiskSize, cbDbSize);
         }
 
         *ppbFileBuffer = pbContent;
@@ -140,7 +140,7 @@ HRESULT StreamWrite(
         ExitOnFailure(hr, "Failed to find file by hash while setting stream");
 
         hr = StreamIncreaseRefcount(pcdb, dwContentID, 1);
-        ExitOnFailure1(hr, "Failed to increase stream ref count of Content ID %u", dwContentID);
+        ExitOnFailure(hr, "Failed to increase stream ref count of Content ID %u", dwContentID);
 
         *pdwContentID = dwContentID;
         ExitFunction1(hr = S_OK);
@@ -216,7 +216,7 @@ HRESULT StreamCopy(
     ExitOnFailure(hr, "Failed to begin query into binary content table");
 
     hr = SceSetQueryColumnDword(sqhHandle, dwContentIDFrom);
-    ExitOnFailure1(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentIDFrom);
+    ExitOnFailure(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentIDFrom);
 
     hr = SceRunQueryExact(&sqhHandle, &sceRowRead);
     if (E_NOTFOUND == hr)
@@ -226,7 +226,7 @@ HRESULT StreamCopy(
     ExitOnFailure(hr, "Failed to run query into binary content table");
 
     hr = SceGetColumnBinary(sceRowRead, BINARY_HASH, &pbHashBuffer, reinterpret_cast<DWORD *>(&cbHashSize));
-    ExitOnFailure1(hr, "Failed to get hash for binary content of ID: %u", dwContentIDFrom);
+    ExitOnFailure(hr, "Failed to get hash for binary content of ID: %u", dwContentIDFrom);
 
     // If a file with this hash already exists, recycle the same row
     hr = FindByHash(pcdbTo, pbHashBuffer, &dwContentIDTemp, NULL);
@@ -239,22 +239,22 @@ HRESULT StreamCopy(
         ExitOnFailure(hr, "Failed to find file by hash while setting stream");
 
         hr = StreamIncreaseRefcount(pcdbTo, dwContentIDTemp, 1);
-        ExitOnFailure1(hr, "Failed to increase stream ref count of Content ID %u", dwContentIDTemp);
+        ExitOnFailure(hr, "Failed to increase stream ref count of Content ID %u", dwContentIDTemp);
 
         *pdwContentIDTo = dwContentIDTemp;
         ExitFunction1(hr = S_OK);
     }
 
     hr = SceGetColumnDword(sceRowRead, BINARY_COMPRESSION, reinterpret_cast<DWORD *>(&cfCompressionFormat));
-    ExitOnFailure1(hr, "Failed to get compression format for binary content of ID: %u", dwContentIDFrom);
+    ExitOnFailure(hr, "Failed to get compression format for binary content of ID: %u", dwContentIDFrom);
 
     hr = SceGetColumnDword(sceRowRead, BINARY_RAW_SIZE, reinterpret_cast<DWORD *>(&cbSize));
-    ExitOnFailure1(hr, "Failed to get compression format for binary content of ID: %u", dwContentIDFrom);
+    ExitOnFailure(hr, "Failed to get compression format for binary content of ID: %u", dwContentIDFrom);
 
     if (CFG_HASH_LEN != cbHashSize)
     {
         hr = E_NOTFOUND;
-        ExitOnFailure2(hr, "Wrong size of hash encountered in database - expected %u, found %u", CFG_HASH_LEN, cbHashSize);
+        ExitOnFailure(hr, "Wrong size of hash encountered in database - expected %u, found %u", CFG_HASH_LEN, cbHashSize);
     }
 
     hr = SceBeginTransaction(pcdbTo->psceDb);
@@ -285,7 +285,7 @@ HRESULT StreamCopy(
         LogStringLine(REPORT_STANDARD, "Stream %ls was missing. If syncing to a cloud-managed directory, this is normal, and autosync (when the file is downloaded to the machine) will automatically fix the situation.", sczStreamPathFrom);
         ExitFunction1(hr = HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA));
     }
-    ExitOnFailure2(hr, "Failed to copy file from %ls to %ls", sczStreamPathFrom, sczStreamPathTo);
+    ExitOnFailure(hr, "Failed to copy file from %ls to %ls", sczStreamPathFrom, sczStreamPathTo);
 
     hr = SceSetColumnDword(sceRowInsert, BINARY_COMPRESSION, static_cast<DWORD>(cfCompressionFormat));
     ExitOnFailure(hr, "Failed to set Compression column to 0");
@@ -330,7 +330,7 @@ HRESULT StreamIncreaseRefcount(
     ExitOnFailure(hr, "Failed to begin query into binary content table");
 
     hr = SceSetQueryColumnDword(sqhHandle, dwContentID);
-    ExitOnFailure1(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentID);
 
     hr = SceRunQueryExact(&sqhHandle, &sceRow);
     if (E_NOTFOUND == hr)
@@ -340,15 +340,15 @@ HRESULT StreamIncreaseRefcount(
     ExitOnFailure(hr, "Failed to run query into binary content table");
 
     hr = SceGetColumnDword(sceRow, BINARY_REFCOUNT, &dwRefCount);
-    ExitOnFailure1(hr, "Failed to get current refcount for binary ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to get current refcount for binary ID: %u", dwContentID);
 
     dwRefCount += dwAmount;
 
     hr = SceSetColumnDword(sceRow, BINARY_REFCOUNT, dwRefCount);
-    ExitOnFailure1(hr, "Failed to refcount binary of ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to refcount binary of ID: %u", dwContentID);
 
     hr = SceFinishUpdate(sceRow);
-    ExitOnFailure1(hr, "Failed to finish update while refcounting binary of ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to finish update while refcounting binary of ID: %u", dwContentID);
 
 LExit:
     ReleaseSceQuery(sqhHandle);
@@ -375,7 +375,7 @@ HRESULT StreamDecreaseRefcount(
     ExitOnFailure(hr, "Failed to begin query into binary content table");
 
     hr = SceSetQueryColumnDword(sqhHandle, dwContentID);
-    ExitOnFailure1(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to set query column dword for ContentID column while querying binary content table, ContentID: %u", dwContentID);
 
     hr = SceRunQueryExact(&sqhHandle, &sceRow);
     if (E_NOTFOUND == hr)
@@ -385,10 +385,10 @@ HRESULT StreamDecreaseRefcount(
     ExitOnFailure(hr, "Failed to run query into binary content table");
 
     hr = SceGetColumnDword(sceRow, BINARY_REFCOUNT, &dwRefCount);
-    ExitOnFailure1(hr, "Failed to get current refcount for binary ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to get current refcount for binary ID: %u", dwContentID);
 
     hr = SceGetColumnBinary(sceRow, BINARY_HASH, &pbHashBuffer, &cbHashSize);
-    ExitOnFailure1(hr, "Failed to get hash for binary content of ID: %u", dwContentID);
+    ExitOnFailure(hr, "Failed to get hash for binary content of ID: %u", dwContentID);
 
     // Don't let us do a negative overflow
     if (dwRefCount < dwAmount)
@@ -411,15 +411,15 @@ HRESULT StreamDecreaseRefcount(
         ExitOnFailure(hr, "Failed to get stream file path");
 
         hr = SceDeleteRow(&sceRow);
-        ExitOnFailure1(hr, "Failed to delete row of binary ID: %u", dwContentID);
+        ExitOnFailure(hr, "Failed to delete row of binary ID: %u", dwContentID);
     }
     else
     {
         hr = SceSetColumnDword(sceRow, BINARY_REFCOUNT, dwRefCount);
-        ExitOnFailure1(hr, "Failed to refcount binary of ID: %u", dwContentID);
+        ExitOnFailure(hr, "Failed to refcount binary of ID: %u", dwContentID);
 
         hr = SceFinishUpdate(sceRow);
-        ExitOnFailure1(hr, "Failed to finish update while de-refcounting binary of ID: %u", dwContentID);
+        ExitOnFailure(hr, "Failed to finish update while de-refcounting binary of ID: %u", dwContentID);
     }
 
 LExit:
@@ -467,7 +467,7 @@ HRESULT StreamGetFilePath(
     if (fCreateDirectory)
     {
         hr = DirEnsureExists(sczDirectory, NULL);
-        ExitOnFailure1(hr, "Failed to create directory: %ls", sczDirectory);
+        ExitOnFailure(hr, "Failed to create directory: %ls", sczDirectory);
     }
 
 LExit:

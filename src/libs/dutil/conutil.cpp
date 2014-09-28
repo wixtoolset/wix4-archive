@@ -189,14 +189,14 @@ extern "C" HRESULT DAPI ConsoleWrite(
     va_start(args, szFormat);
     hr = StrAnsiAllocFormattedArgs(&pszOutput, szFormat, args);
     va_end(args);
-    ExitOnFailure1(hr, "failed to format message: \"%s\"", szFormat);
+    ExitOnFailure(hr, "failed to format message: \"%s\"", szFormat);
 
     cchOutput = lstrlenA(pszOutput);
     while (cbTotal < (sizeof(*pszOutput) * cchOutput))
     {
         if (!::WriteFile(vhStdOut, reinterpret_cast<BYTE*>(pszOutput) + cbTotal, cchOutput * sizeof(*pszOutput) - cbTotal, &cbWrote, NULL))
         {
-            ExitOnLastError1(hr, "failed to write output to console: %s", pszOutput);
+            ExitOnLastError(hr, "failed to write output to console: %s", pszOutput);
         }
 
         cbTotal += cbWrote;
@@ -247,7 +247,7 @@ extern "C" HRESULT DAPI ConsoleWriteLine(
     va_start(args, szFormat);
     hr = StrAnsiAllocFormattedArgs(&pszOutput, szFormat, args);
     va_end(args);
-    ExitOnFailure1(hr, "failed to format message: \"%s\"", szFormat);
+    ExitOnFailure(hr, "failed to format message: \"%s\"", szFormat);
 
     //
     // write the string
@@ -256,7 +256,7 @@ extern "C" HRESULT DAPI ConsoleWriteLine(
     while (cbTotal < (sizeof(*pszOutput) * cchOutput))
     {
         if (!::WriteFile(vhStdOut, reinterpret_cast<BYTE*>(pszOutput) + cbTotal, cchOutput * sizeof(*pszOutput) - cbTotal, &cbWrote, NULL))
-            ExitOnLastError1(hr, "failed to write output to console: %s", pszOutput);
+            ExitOnLastError(hr, "failed to write output to console: %s", pszOutput);
 
         cbTotal += cbWrote;
     }
@@ -300,7 +300,7 @@ HRESULT ConsoleWriteError(
     va_start(args, szFormat);
     hr = StrAnsiAllocFormattedArgs(&pszMessage, szFormat, args);
     va_end(args);
-    ExitOnFailure1(hr, "failed to format error message: \"%s\"", szFormat);
+    ExitOnFailure(hr, "failed to format error message: \"%s\"", szFormat);
 
     if (FAILED(hrError))
     {

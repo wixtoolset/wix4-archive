@@ -116,11 +116,11 @@ HRESULT CpiConfigureApplicationRoles(
         {
         case atCreate:
             hr = CreateApplicationRole(&attrs);
-            ExitOnFailure1(hr, "Failed to create application role, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create application role, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemoveApplicationRole(&attrs);
-            ExitOnFailure1(hr, "Failed to remove application role, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove application role, key: %S", attrs.pwzKey);
             break;
         }
 
@@ -260,11 +260,11 @@ HRESULT CpiConfigureUsersInApplicationRoles(
         {
         case atCreate:
             hr = CreateUsersInApplicationRole(&attrs);
-            ExitOnFailure1(hr, "Failed to create user in application role, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create user in application role, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemoveUsersInApplicationRole(&attrs);
-            ExitOnFailure1(hr, "Failed to remove user from application role, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove user from application role, key: %S", attrs.pwzKey);
             break;
         }
 

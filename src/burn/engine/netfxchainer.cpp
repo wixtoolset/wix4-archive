@@ -49,20 +49,20 @@ static HRESULT CreateNetFxChainer(
     ExitOnNull(pChainer, hr, E_OUTOFMEMORY, "Failed to allocate memory for NetFxChainer struct.");
 
     pChainer->hEventChaineeSend = ::CreateEvent(NULL, FALSE, FALSE, wzEventName);
-    ExitOnNullWithLastError1(pChainer->hEventChaineeSend, hr, "Failed to create event: %ls", wzEventName);
+    ExitOnNullWithLastError(pChainer->hEventChaineeSend, hr, "Failed to create event: %ls", wzEventName);
 
     hr = StrAllocFormatted(&sczName, L"%ls_send", wzEventName);
     ExitOnFailure(hr, "failed to allocate memory for event name");
 
     pChainer->hEventChainerSend = ::CreateEvent(NULL, FALSE, FALSE, sczName);
-    ExitOnNullWithLastError1(pChainer->hEventChainerSend, hr, "Failed to create event: %ls", sczName);
+    ExitOnNullWithLastError(pChainer->hEventChainerSend, hr, "Failed to create event: %ls", sczName);
 
     hr = StrAllocFormatted(&sczName, L"%ls_mutex", wzEventName);
     ExitOnFailure(hr, "failed to allocate memory for mutex name");
 
     // Create the mutex, we initially own
     pChainer->hMutex = ::CreateMutex(NULL, TRUE, sczName);
-    ExitOnNullWithLastError1(pChainer->hMutex, hr, "Failed to create mutex: %ls", sczName);
+    ExitOnNullWithLastError(pChainer->hMutex, hr, "Failed to create mutex: %ls", sczName);
 
     pChainer->hSection = ::CreateFileMapping(INVALID_HANDLE_VALUE,
                                    NULL, // security attributes
@@ -70,14 +70,14 @@ static HRESULT CreateNetFxChainer(
                                    0, // high-order DWORD of maximum size
                                    NETFXDATA_SIZE, // low-order DWORD of maximum size
                                    wzSectionName);
-    ExitOnNullWithLastError1(pChainer->hSection, hr, "Failed to memory map cabinet file: %ls", wzSectionName);
+    ExitOnNullWithLastError(pChainer->hSection, hr, "Failed to memory map cabinet file: %ls", wzSectionName);
 
     pChainer->pData = reinterpret_cast<NetFxDataStructure*>(::MapViewOfFile(pChainer->hSection,
                                                                           FILE_MAP_WRITE,
                                                                           0, 0, // offsets
                                                                           0 // map entire file
                                                                           ));
-    ExitOnNullWithLastError1(pChainer->pData, hr, "Failed to MapViewOfFile for %ls.", wzSectionName);
+    ExitOnNullWithLastError(pChainer->pData, hr, "Failed to MapViewOfFile for %ls.", wzSectionName);
 
     // Initialize the shared memory
     hr = ::StringCchCopyW(pChainer->pData->szEventName, countof(pChainer->pData->szEventName), wzEventName);
@@ -388,7 +388,7 @@ extern "C" HRESULT NetFxRunChainer(
     si.cb = sizeof(si);
     if (!::CreateProcessW(wzExecutablePath, sczCommand, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
     {
-        ExitWithLastError1(hr, "Failed to CreateProcess on path: %ls", wzExecutablePath);
+        ExitWithLastError(hr, "Failed to CreateProcess on path: %ls", wzExecutablePath);
     }
 
     HANDLE handles[2] = { pi.hProcess, pNetfxChainer->hEventChaineeSend };

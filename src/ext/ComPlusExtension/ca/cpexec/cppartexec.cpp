@@ -113,11 +113,11 @@ HRESULT CpiConfigurePartitions(
         {
         case atCreate:
             hr = CreatePartition(&attrs);
-            ExitOnFailure1(hr, "Failed to create partition, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create partition, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemovePartition(&attrs);
-            ExitOnFailure1(hr, "Failed to remove partition, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove partition, key: %S", attrs.pwzKey);
             break;
         }
 
@@ -257,11 +257,11 @@ HRESULT CpiConfigurePartitionUsers(
         {
         case atCreate:
             hr = CreatePartitionUser(&attrs);
-            ExitOnFailure1(hr, "Failed to create partition user, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create partition user, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemovePartitionUser(&attrs);
-            ExitOnFailure1(hr, "Failed to remove partition user, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove partition user, key: %S", attrs.pwzKey);
             break;
         }
 
@@ -328,11 +328,11 @@ HRESULT CpiRollbackConfigurePartitionUsers(
         {
         case atCreate:
             hr = CreatePartitionUser(&attrs);
-            ExitOnFailure1(hr, "Failed to create partition user, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create partition user, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemovePartitionUser(&attrs);
-            ExitOnFailure1(hr, "Failed to remove partition user, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove partition user, key: %S", attrs.pwzKey);
             break;
         }
 
