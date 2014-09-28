@@ -69,7 +69,7 @@ extern "C" HRESULT DAPI TimeFromString(
             {
                 case DayOfWeek:
                     hr = DayFromString(pwzStart, &sysTime.wDayOfWeek);
-                    ExitOnFailure1(hr, "Failed to convert string to day: %ls", pwzStart);
+                    ExitOnFailure(hr, "Failed to convert string to day: %ls", pwzStart);
                     break;
 
                 case DayOfMonth:
@@ -78,7 +78,7 @@ extern "C" HRESULT DAPI TimeFromString(
 
                 case MonthOfYear:
                     hr = MonthFromString(pwzStart, &sysTime.wMonth);
-                    ExitOnFailure1(hr, "Failed to convert to month: %ls", pwzStart);
+                    ExitOnFailure(hr, "Failed to convert to month: %ls", pwzStart);
                     break;
 
                 case Year:

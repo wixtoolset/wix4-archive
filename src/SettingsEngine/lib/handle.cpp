@@ -70,10 +70,10 @@ HRESULT HandleLock(
         ExitOnFailure(hr, "Failed to copy remote database locally");
 
         hr = FileGetTime(pcdb->sczDbCopiedPath, NULL, NULL, &pcdb->ftBeforeModify);
-        ExitOnFailure1(hr, "Failed to get modified time of copied remote %ls", pcdb->sczDbCopiedPath);
+        ExitOnFailure(hr, "Failed to get modified time of copied remote %ls", pcdb->sczDbCopiedPath);
 
         hr = SceEnsureDatabase(pcdb->sczDbCopiedPath, wzSqlCeDllPath, L"CfgRemote", 1, &pcdb->dsSceDb, &pcdb->psceDb);
-        ExitOnFailure1(hr, "Failed to ensure SQL CE database at %ls exists", pcdb->sczDbPath);
+        ExitOnFailure(hr, "Failed to ensure SQL CE database at %ls exists", pcdb->sczDbPath);
 
         // If the remote wasn't up when we initialized, we couldn't get cfg app id or GUID, so get it now
         if (DWORD_MAX == pcdb->dwCfgAppID)
@@ -125,14 +125,14 @@ void HandleUnlock(
         if (fCopyRemoteBack)
         {
             hr = FileGetTime(pcdb->sczDbPath, NULL, NULL, &ftRemote);
-            ExitOnFailure1(hr, "Failed to get modified time of actual remote %ls", &ftRemote);
+            ExitOnFailure(hr, "Failed to get modified time of actual remote %ls", &ftRemote);
 
             // Since DB file wasn't locked, we have to verify that nobody changed it in the meantime.
             // Do it once before we try uploading to the remote (because uploading could be a lengthy operation on a slow connection to remote path)
             if (0 != ::CompareFileTime(&ftRemote, &pcdb->ftBeforeModify))
             {
                 hr = HRESULT_FROM_WIN32(ERROR_LOCK_VIOLATION);
-                ExitOnFailure1(hr, "database %ls was modified (before copy), we can't overwrite it!", pcdb->sczDbPath);
+                ExitOnFailure(hr, "database %ls was modified (before copy), we can't overwrite it!", pcdb->sczDbPath);
             }
 
             // Get it on the volume first which may take time
@@ -142,16 +142,16 @@ void HandleUnlock(
             ExitOnFailure(hr, "Failed to get temp path in remote directory");
 
             hr = FileEnsureCopy(pcdb->sczDbCopiedPath, sczTempRemotePath, TRUE);
-            ExitOnFailure2(hr, "Failed to copy remote database back to remote location (from %ls to %ls) due to changes", pcdb->sczDbCopiedPath, pcdb->sczDbPath);
+            ExitOnFailure(hr, "Failed to copy remote database back to remote location (from %ls to %ls) due to changes", pcdb->sczDbCopiedPath, pcdb->sczDbPath);
 
             // Now do it again after the upload right before we do the actual move
             hr = FileGetTime(pcdb->sczDbPath, NULL, NULL, &ftRemote);
-            ExitOnFailure1(hr, "Failed to get modified time of original remote (again) %ls", &ftRemote);
+            ExitOnFailure(hr, "Failed to get modified time of original remote (again) %ls", &ftRemote);
 
             if (0 != ::CompareFileTime(&ftRemote, &pcdb->ftBeforeModify))
             {
                 hr = HRESULT_FROM_WIN32(ERROR_LOCK_VIOLATION);
-                ExitOnFailure1(hr, "database %ls was modified (after copy), we can't overwrite it!", pcdb->sczDbPath);
+                ExitOnFailure(hr, "database %ls was modified (after copy), we can't overwrite it!", pcdb->sczDbPath);
             }
 
             // Use MoveFile to ensure it's done as an atomic operation, so remote can never be left not existing.
@@ -162,7 +162,7 @@ void HandleUnlock(
             // that the DB changed, re-sync it, at which time we will try again to re-propagate the changes.
             if (!::MoveFileExW(sczTempRemotePath, pcdb->sczDbPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
             {
-                ExitWithLastError1(hr, "Failed to move uploaded database path back to original remote location %ls", pcdb->sczDbPath);
+                ExitWithLastError(hr, "Failed to move uploaded database path back to original remote location %ls", pcdb->sczDbPath);
             }
         }
 
@@ -173,11 +173,11 @@ void HandleUnlock(
             {
                 hr = S_OK;
             }
-            ExitOnFailure1(hr, "Failed to get modified time of copied db: %ls", pcdb->sczDbCopiedPath);
+            ExitOnFailure(hr, "Failed to get modified time of copied db: %ls", pcdb->sczDbCopiedPath);
         }
 
         hr = FileEnsureDelete(pcdb->sczDbCopiedPath);
-        ExitOnFailure1(hr, "Failed to delete copied remote database from %ls", pcdb->sczDbCopiedPath);
+        ExitOnFailure(hr, "Failed to delete copied remote database from %ls", pcdb->sczDbCopiedPath);
 
         ReleaseNullStr(pcdb->sczDbCopiedPath);
     }
@@ -295,14 +295,14 @@ HRESULT DeleteStream(
     LPWSTR pwcLastBackslash = NULL;
 
     hr = FileEnsureDelete(sczStreamPath);
-    ExitOnFailure1(hr, "Failed to delete file: %ls", sczStreamPath);
+    ExitOnFailure(hr, "Failed to delete file: %ls", sczStreamPath);
 
     // Try to delete the two parent directories, in case they're empty
     pwcLastBackslash = wcsrchr(sczStreamPath, '\\');
     if (pwcLastBackslash == NULL)
     {
         hr = HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME);
-        ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
+        ExitOnFailure(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
     }
     *pwcLastBackslash = '\0';
 
@@ -319,7 +319,7 @@ HRESULT DeleteStream(
         if (pwcLastBackslash == NULL)
         {
             hr = E_FAIL;
-            ExitOnFailure1(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
+            ExitOnFailure(hr, "Stream path unexpectedly doesn't contain backslash: %ls", sczStreamPath);
         }
         *pwcLastBackslash = '\0';
 

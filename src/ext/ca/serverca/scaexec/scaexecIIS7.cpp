@@ -471,7 +471,7 @@ HRESULT IIS7ConfigChanges(MSIHANDLE /*hInstall*/, __inout LPWSTR pwzData)
                 break;
 
         default:
-            ExitOnFailure1(hr = E_UNEXPECTED, "IIS7ConfigChanges: Unexpected IIS Config action specified: %d", iAction);
+            ExitOnFailure(hr = E_UNEXPECTED, "IIS7ConfigChanges: Unexpected IIS Config action specified: %d", iAction);
             break;
         }
         if (S_OK == hr)
@@ -761,7 +761,7 @@ HRESULT IIS7WebDir(
             }
             // and delete location tag for this application
             hr = ClearLocationTag(pAdminMgr, pwzLocationPath);
-            ExitOnFailure1(hr, "failed to clear location tag for %ls", pwzLocationPath)
+            ExitOnFailure(hr, "failed to clear location tag for %ls", pwzLocationPath)
             break;
         }
         default:
@@ -1596,7 +1596,7 @@ static HRESULT DeleteGlobalFilter( __inout LPWSTR *ppwzCustomActionData, IAppHos
     ExitOnFailure(hr, "Failed to read filter site name");
 
     DeleteCollectionElement(pCollection, IIS_CONFIG_FILTER, IIS_CONFIG_NAME, pwzFilterName);
-    ExitOnFailure1(hr, "Failed to delete filter %ls", pwzFilterName);
+    ExitOnFailure(hr, "Failed to delete filter %ls", pwzFilterName);
 
 LExit:
     ReleaseStr(pwzFilterName);
@@ -1798,7 +1798,7 @@ static HRESULT DeleteSiteFilter(__inout LPWSTR *ppwzCustomActionData, IAppHostWr
     ExitOnFailure(hr, "Failed get filter collection");
 
     DeleteCollectionElement(pCollection, IIS_CONFIG_FILTER, IIS_CONFIG_NAME, pwzFilterName);
-    ExitOnFailure1(hr, "Failed to delete filter %ls", pwzFilterName);
+    ExitOnFailure(hr, "Failed to delete filter %ls", pwzFilterName);
 
 LExit:
     ReleaseStr(pwzFilterName);
@@ -2015,7 +2015,7 @@ HRESULT IIS7Application(
 
                     // and delete location tag for this application
                     hr = ClearLocationTag(pAdminMgr, pwzLocationPath);
-                    ExitOnFailure1(hr, "failed to clear location tag for %ls", pwzLocationPath);
+                    ExitOnFailure(hr, "failed to clear location tag for %ls", pwzLocationPath);
                 }
             }
             break;
@@ -3009,7 +3009,7 @@ static HRESULT GetSiteElement(
     ExitOnFailure(hr, "Failed get sites collection");
 
     hr = Iis7FindAppHostElementString(pCollection, IIS_CONFIG_SITE, IIS_CONFIG_NAME, swSiteName, ppSiteElement, NULL);
-    ExitOnFailure1(hr, "Failed to find site %ls", swSiteName);
+    ExitOnFailure(hr, "Failed to find site %ls", swSiteName);
 
     *fFound = ppSiteElement != NULL && *ppSiteElement != NULL;
 
@@ -3034,7 +3034,7 @@ static HRESULT GetApplicationElement( IAppHostElement *pSiteElement,
     ExitOnFailure(hr, "Failed get site app collection");
 
     hr = Iis7FindAppHostElementString(pCollection, IIS_CONFIG_APPLICATION, IIS_CONFIG_PATH, swAppPath, ppAppElement, NULL);
-    ExitOnFailure1(hr, "Failed to find app %ls", swAppPath);
+    ExitOnFailure(hr, "Failed to find app %ls", swAppPath);
 
     *fFound = ppAppElement != NULL && *ppAppElement != NULL;
 
@@ -3082,7 +3082,7 @@ static HRESULT GetApplicationElementForVDir( IAppHostElement *pSiteElement,
 
             // Try to find an app with the specified path
             hr = Iis7FindAppHostElementString(pCollection, IIS_CONFIG_APPLICATION, IIS_CONFIG_PATH, pwzAppSearchPath, ppAppElement, NULL);
-            ExitOnFailure1(hr, "Failed to search for app %ls", pwzAppSearchPath);
+            ExitOnFailure(hr, "Failed to search for app %ls", pwzAppSearchPath);
             *fFound = ppAppElement != NULL && *ppAppElement != NULL;
 
             if (*fFound)
@@ -3529,7 +3529,7 @@ static HRESULT DeleteAppPool( IAppHostWritableAdminManager *pAdminMgr,
     ExitOnFailure(hr, "Failed get AppPools collection");
 
     hr = DeleteCollectionElement(pCollection, IIS_CONFIG_ADD, IIS_CONFIG_NAME, swAppPoolName);
-    ExitOnFailure1(hr, "Failed to delete app pool %ls", swAppPoolName);
+    ExitOnFailure(hr, "Failed to delete app pool %ls", swAppPoolName);
 
 LExit:
     ReleaseObject(pAppPools);
@@ -4131,7 +4131,7 @@ static HRESULT ClearLocationTag(
         if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, swLocationPath, -1, bstrLocationPath, -1))
         {
             hr = pLocationCollection->DeleteLocation(vtIndex);
-            ExitOnFailure1(hr, "Failed to delete IIS location tag %ls",swLocationPath);
+            ExitOnFailure(hr, "Failed to delete IIS location tag %ls",swLocationPath);
             break;
         }
 
@@ -4164,14 +4164,14 @@ static HRESULT DeleteCollectionElement(
     VariantInit(&vtIndex);
 
     hr = Iis7FindAppHostElementString(pCollection, pwzElementName, pwzAttributeName, pwzAttributeValue, NULL, &dwIndex);
-    ExitOnFailure3(hr, "Failed while finding IAppHostElement %ls/@%ls=%ls", pwzElementName, pwzAttributeName, pwzAttributeValue);
+    ExitOnFailure(hr, "Failed while finding IAppHostElement %ls/@%ls=%ls", pwzElementName, pwzAttributeName, pwzAttributeValue);
 
     if (MAXDWORD != dwIndex)
     {
         vtIndex.vt = VT_UI4;
         vtIndex.ulVal = dwIndex;
         hr = pCollection->DeleteElement(vtIndex);
-        ExitOnFailure3(hr, "Failed to delete IAppHostElement %ls/@%ls=%ls", pwzElementName, pwzAttributeName, pwzAttributeValue);
+        ExitOnFailure(hr, "Failed to delete IAppHostElement %ls/@%ls=%ls", pwzElementName, pwzAttributeName, pwzAttributeValue);
     }
     // else : nothing to do, already deleted
 LExit:

@@ -239,7 +239,7 @@ DAPI_(HRESULT) PathExpand(
         cch = ::ExpandEnvironmentStringsW(wzRelativePath, sczExpandedPath, cchExpandedPath);
         if (0 == cch)
         {
-            ExitWithLastError1(hr, "Failed to expand environment variables in string: %ls", wzRelativePath);
+            ExitWithLastError(hr, "Failed to expand environment variables in string: %ls", wzRelativePath);
         }
         else if (cchExpandedPath < cch)
         {
@@ -250,7 +250,7 @@ DAPI_(HRESULT) PathExpand(
             cch = ::ExpandEnvironmentStringsW(wzRelativePath, sczExpandedPath, cchExpandedPath);
             if (0 == cch)
             {
-                ExitWithLastError1(hr, "Failed to expand environment variables in string: %ls", wzRelativePath);
+                ExitWithLastError(hr, "Failed to expand environment variables in string: %ls", wzRelativePath);
             }
             else if (cchExpandedPath < cch)
             {
@@ -288,7 +288,7 @@ DAPI_(HRESULT) PathExpand(
         cch = ::GetFullPathNameW(wzPath, cchFullPath, sczFullPath, &wzFileName);
         if (0 == cch)
         {
-            ExitWithLastError1(hr, "Failed to get full path for string: %ls", wzPath);
+            ExitWithLastError(hr, "Failed to get full path for string: %ls", wzPath);
         }
         else if (cchFullPath < cch)
         {
@@ -299,7 +299,7 @@ DAPI_(HRESULT) PathExpand(
             cch = ::GetFullPathNameW(wzPath, cchFullPath, sczFullPath, &wzFileName);
             if (0 == cch)
             {
-                ExitWithLastError1(hr, "Failed to get full path for string: %ls", wzPath);
+                ExitWithLastError(hr, "Failed to get full path for string: %ls", wzPath);
             }
             else if (cchFullPath < cch)
             {
@@ -366,7 +366,7 @@ DAPI_(HRESULT) PathPrefix(
     else
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Invalid path provided to prefix: %ls.", wzFullPath);
+        ExitOnFailure(hr, "Invalid path provided to prefix: %ls.", wzFullPath);
     }
 
 LExit:
@@ -539,7 +539,7 @@ DAPI_(HRESULT) PathCreateTempFile(
                 {
                     hr = S_OK;
                 }
-                ExitOnFailure1(hr, "Failed to create file: %ls", sczTempFile);
+                ExitOnFailure(hr, "Failed to create file: %ls", sczTempFile);
             }
         }
     }
@@ -559,7 +559,7 @@ DAPI_(HRESULT) PathCreateTempFile(
         hTempFile = ::CreateFileW(sczTempFile, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, dwFileAttributes, NULL);
         if (INVALID_HANDLE_VALUE == hTempFile)
         {
-            ExitWithLastError1(hr, "Failed to open new temp file: %ls", sczTempFile);
+            ExitWithLastError(hr, "Failed to open new temp file: %ls", sczTempFile);
         }
     }
 
@@ -629,7 +629,7 @@ DAPI_(HRESULT) PathCreateTimeBasedTempFile(
     if (S_OK == hr)
     {
         hr = DirEnsureExists(sczPrefixFolder, NULL);
-        ExitOnFailure1(hr, "Failed to ensure temp file path exists: %ls", sczPrefixFolder);
+        ExitOnFailure(hr, "Failed to ensure temp file path exists: %ls", sczPrefixFolder);
     }
 
     if (!wzPostfix)
@@ -661,7 +661,7 @@ DAPI_(HRESULT) PathCreateTimeBasedTempFile(
             }
 
             hr = HRESULT_FROM_WIN32(er);
-            ExitOnFailureDebugTrace1(hr, "Failed to create temp file: %ls", sczTempPath);
+            ExitOnFailureDebugTrace(hr, "Failed to create temp file: %ls", sczTempPath);
         }
     } while (fRetry);
 
@@ -710,7 +710,7 @@ DAPI_(HRESULT) PathCreateTempDirectory(
         ExitOnFailure(hr, "Failed to copy temp path.");
 
         hr = PathBackslashTerminate(&sczTempPath);
-        ExitOnFailure1(hr, "Failed to ensure path ends in backslash: %ls", wzDirectory);
+        ExitOnFailure(hr, "Failed to ensure path ends in backslash: %ls", wzDirectory);
     }
     else
     {
@@ -928,7 +928,7 @@ DAPI_(HRESULT) PathCompress(
     hPath = ::CreateFileW(wzPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
     if (INVALID_HANDLE_VALUE == hPath)
     {
-        ExitWithLastError1(hr, "Failed to open path %ls for compression.", wzPath);
+        ExitWithLastError(hr, "Failed to open path %ls for compression.", wzPath);
     }
 
     DWORD dwBytesReturned = 0;
@@ -939,7 +939,7 @@ DAPI_(HRESULT) PathCompress(
         DWORD er = ::GetLastError();
         if (ERROR_INVALID_FUNCTION != er)
         {
-            ExitOnWin32Error1(er, hr, "Failed to set compression state for path %ls.", wzPath);
+            ExitOnWin32Error(er, hr, "Failed to set compression state for path %ls.", wzPath);
         }
     }
 
@@ -981,7 +981,7 @@ DAPI_(HRESULT) PathGetHierarchyArray(
     Assert(cArraySpacesNeeded >= 1);
 
     hr = MemEnsureArraySize(reinterpret_cast<void **>(prgsczPathArray), cArraySpacesNeeded, sizeof(LPWSTR), 0);
-    ExitOnFailure1(hr, "Failed to allocate array of size %u for parent directories", cArraySpacesNeeded);
+    ExitOnFailure(hr, "Failed to allocate array of size %u for parent directories", cArraySpacesNeeded);
     *pcPathArray = cArraySpacesNeeded;
 
     hr = StrAllocString(&sczPathCopy, wzPath, 0);

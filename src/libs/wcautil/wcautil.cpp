@@ -96,7 +96,7 @@ extern "C" HRESULT WIXAPI WcaInitialize(
     s_hDatabase = ::MsiGetActiveDatabase(s_hInstall); // may return null if deferred CustomAction
 
     hr = ::StringCchCopy(s_szCustomActionLogName, countof(s_szCustomActionLogName), szCustomActionLogName);
-    ExitOnFailure1(hr, "Failed to copy CustomAction log name: %s", szCustomActionLogName);
+    ExitOnFailure(hr, "Failed to copy CustomAction log name: %s", szCustomActionLogName);
 
     // If we got the database handle IE: immediate CA
     if (s_hDatabase)

@@ -180,7 +180,7 @@ HRESULT CpiApplicationsRead(
             if (pwzData && *pwzData)
             {
                 hr = CpiPartitionFindByKey(pPartList, pwzData, &pItm->pPartition);
-                ExitOnFailure1(hr, "Failed to find partition, key: %S", pwzData);
+                ExitOnFailure(hr, "Failed to find partition, key: %S", pwzData);
             }
         }
 
@@ -191,7 +191,7 @@ HRESULT CpiApplicationsRead(
         if (pwzData && *pwzData)
         {
             hr = PcaGuidToRegFormat(pwzData, pItm->wzID, countof(pItm->wzID));
-            ExitOnFailure2(hr, "Failed to parse id guid value, key: %S, value: '%S'", pItm->wzKey, pwzData);
+            ExitOnFailure(hr, "Failed to parse id guid value, key: %S, value: '%S'", pItm->wzKey, pwzData);
         }
 
         // get name
@@ -201,11 +201,11 @@ HRESULT CpiApplicationsRead(
 
         // if application is a locater, either an id or a name must be provided
         if (!pItm->fHasComponent && !*pItm->wzID && !*pItm->wzName)
-            ExitOnFailure1(hr = E_FAIL, "An application locater must have either an id or a name associated, key: %S", pItm->wzKey);
+            ExitOnFailure(hr = E_FAIL, "An application locater must have either an id or a name associated, key: %S", pItm->wzKey);
 
         // if application is not a locater, an name must be provided
         if (pItm->fHasComponent && !*pItm->wzName)
-            ExitOnFailure1(hr = E_FAIL, "An application must have a name associated, key: %S", pItm->wzKey);
+            ExitOnFailure(hr = E_FAIL, "An application must have a name associated, key: %S", pItm->wzKey);
 
         // get properties
         if (CpiTableExists(cptComPlusApplicationProperty) && pItm->fHasComponent)
@@ -268,7 +268,7 @@ HRESULT CpiApplicationsVerifyInstall(
 
         // if the application is referensed and is not a locater, it must be installed
         if (pItm->fReferencedForInstall && pItm->fHasComponent && !CpiWillBeInstalled(pItm->isInstalled, pItm->isAction))
-            MessageExitOnFailure1(hr = E_FAIL, msierrComPlusApplicationDependency, "An application is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
+            MessageExitOnFailure(hr = E_FAIL, msierrComPlusApplicationDependency, "An application is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
 
         // application is supposed to exist
         if (!pItm->fHasComponent || CpiIsInstalled(pItm->isInstalled))
@@ -293,7 +293,7 @@ HRESULT CpiApplicationsVerifyInstall(
             {
                 // if the application is a locater, this is an error
                 if (!pItm->fHasComponent)
-                    MessageExitOnFailure1(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), msierrComPlusApplicationNotFound, "An application required by this installation was not found, key: %S", pItm->wzKey);
+                    MessageExitOnFailure(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), msierrComPlusApplicationNotFound, "An application required by this installation was not found, key: %S", pItm->wzKey);
 
                 // create a new id if one is missing
                 if (!*pItm->wzID)
@@ -348,7 +348,7 @@ HRESULT CpiApplicationsVerifyInstall(
                 {
                 case IDCANCEL:
                 case IDABORT:
-                    ExitOnFailure1(hr = E_FAIL, "An application with a conflictiong name or id exists, key: %S", pItm->wzKey);
+                    ExitOnFailure(hr = E_FAIL, "An application with a conflictiong name or id exists, key: %S", pItm->wzKey);
                     break;
                 case IDRETRY:
                     break;
@@ -491,7 +491,7 @@ HRESULT CpiApplicationsInstall(
 
         // add to action data
         hr = AddApplicationToActionData(pItm, iActionType, COST_APPLICATION_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add applicaton to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add applicaton to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -538,7 +538,7 @@ HRESULT CpiApplicationsUninstall(
 
         // add to action data
         hr = AddApplicationToActionData(pItm, iActionType, COST_APPLICATION_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add applicaton to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add applicaton to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics

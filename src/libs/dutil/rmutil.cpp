@@ -97,7 +97,7 @@ extern "C" HRESULT DAPI RmuJoinSession(
     ExitOnFailure(hr, "Failed to initialize Restart Manager.");
 
     er = vpfnRmJoinSession(&pSession->dwSessionHandle, wzSessionKey);
-    ExitOnWin32Error1(er, hr, "Failed to join Restart Manager session %ls.", wzSessionKey);
+    ExitOnWin32Error(er, hr, "Failed to join Restart Manager session %ls.", wzSessionKey);
 
     ::InitializeCriticalSection(&pSession->cs);
     pSession->fInitialized = TRUE;
@@ -159,11 +159,11 @@ extern "C" HRESULT DAPI RmuAddProcessById(
     BOOL fLocked = FALSE;
 
     hProcess = ::OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
-    ExitOnNullWithLastError1(hProcess, hr, "Failed to open the process ID %d.", dwProcessId);
+    ExitOnNullWithLastError(hProcess, hr, "Failed to open the process ID %d.", dwProcessId);
 
     if (!::GetProcessTimes(hProcess, &CreationTime, &ExitTime, &KernelTime, &UserTime))
     {
-        ExitWithLastError1(hr, "Failed to get the process times for process ID %d.", dwProcessId);
+        ExitWithLastError(hr, "Failed to get the process times for process ID %d.", dwProcessId);
     }
 
     ::EnterCriticalSection(&pSession->cs);
@@ -204,12 +204,12 @@ extern "C" HRESULT DAPI RmuAddProcessesByName(
     DWORD cProcessIds = 0;
 
     hr = ProcFindAllIdsFromExeName(wzProcessName, &pdwProcessIds, &cProcessIds);
-    ExitOnFailure1(hr, "Failed to enumerate all the processes by name %ls.", wzProcessName);
+    ExitOnFailure(hr, "Failed to enumerate all the processes by name %ls.", wzProcessName);
 
     for (DWORD i = 0; i < cProcessIds; ++i)
     {
         hr = RmuAddProcessById(pSession, pdwProcessIds[i]);
-        ExitOnFailure2(hr, "Failed to add process %ls (%d) to the Restart Manager session.", wzProcessName, pdwProcessIds[i]);
+        ExitOnFailure(hr, "Failed to add process %ls (%d) to the Restart Manager session.", wzProcessName, pdwProcessIds[i]);
     }
 
 LExit:

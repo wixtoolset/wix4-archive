@@ -608,7 +608,7 @@ HRESULT CpiPropertiesRead(
         ExitOnFailure(hr, "Failed to find property definition");
 
         if (S_FALSE == hr)
-            ExitOnFailure2(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "Unknown property, key: %S, property: %S", pwzKey, pItm->wzName);
+            ExitOnFailure(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "Unknown property, key: %S, property: %S", pwzKey, pItm->wzName);
 
         // check version, ignore if catalog version is too low
         if (iVersionNT < pPropDef->iMinVersionNT)
@@ -677,10 +677,10 @@ HRESULT CpiAddPropertiesToActionData(
         for (CPI_PROPERTY* pProp = pPropList; pProp; pProp = pProp->pNext)
         {
             hr = WcaWriteStringToCaData(pProp->wzName, ppwzActionData);
-            ExitOnFailure1(hr, "Failed to add property name to custom action data, name: %S", pProp->wzName);
+            ExitOnFailure(hr, "Failed to add property name to custom action data, name: %S", pProp->wzName);
 
             hr = WcaWriteStringToCaData(pProp->pwzValue, ppwzActionData);
-            ExitOnFailure1(hr, "Failed to add property value to custom action data, name: %S", pProp->wzName);
+            ExitOnFailure(hr, "Failed to add property value to custom action data, name: %S", pProp->wzName);
         }
     }
 
@@ -870,7 +870,7 @@ static HRESULT GetUserAccountName(
     // fetch record
     hr = WcaFetchSingleRecord(hView, &hRec);
     if (S_FALSE == hr)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "User not found, key: %S", pwzKey);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "User not found, key: %S", pwzKey);
     ExitOnFailure(hr, "Failed to fetch user record");
 
     // get user domain

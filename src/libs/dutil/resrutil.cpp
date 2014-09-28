@@ -44,7 +44,7 @@ extern "C" HRESULT DAPI ResGetStringLangId(
     if (wzPath && *wzPath)
     {
         hModule = LoadLibraryExW(wzPath, NULL, DONT_RESOLVE_DLL_REFERENCES | LOAD_LIBRARY_AS_DATAFILE);
-        ExitOnNullWithLastError1(hModule, hr, "Failed to open resource file: %ls", wzPath);
+        ExitOnNullWithLastError(hModule, hr, "Failed to open resource file: %ls", wzPath);
     }
 
 #pragma prefast(push)
@@ -87,12 +87,12 @@ extern "C" HRESULT DAPI ResReadString(
     do
     {
         hr = StrAlloc(ppwzString, cch);
-        ExitOnFailureDebugTrace1(hr, "Failed to allocate string for resource id: %d", uID);
+        ExitOnFailureDebugTrace(hr, "Failed to allocate string for resource id: %d", uID);
 
         cchReturned = ::LoadStringW(hinst, uID, *ppwzString, cch);
         if (0 == cchReturned)
         {
-            ExitWithLastError1(hr, "Failed to load string resource id: %d", uID);
+            ExitWithLastError(hr, "Failed to load string resource id: %d", uID);
         }
 
         // if the returned string count is one character too small, it's likely we have
@@ -103,7 +103,7 @@ extern "C" HRESULT DAPI ResReadString(
             hr = S_FALSE;
         }
     } while (S_FALSE == hr);
-    ExitOnFailure1(hr, "Failed to load string resource id: %d", uID);
+    ExitOnFailure(hr, "Failed to load string resource id: %d", uID);
 
 LExit:
     return hr;
@@ -130,7 +130,7 @@ extern "C" HRESULT DAPI ResReadStringAnsi(
     do
     {
         hr = StrAnsiAlloc(ppszString, cch);
-        ExitOnFailureDebugTrace1(hr, "Failed to allocate string for resource id: %d", uID);
+        ExitOnFailureDebugTrace(hr, "Failed to allocate string for resource id: %d", uID);
 
 #pragma prefast(push)
 #pragma prefast(disable:25068)
@@ -138,7 +138,7 @@ extern "C" HRESULT DAPI ResReadStringAnsi(
 #pragma prefast(pop)
         if (0 == cchReturned)
         {
-            ExitWithLastError1(hr, "Failed to load string resource id: %d", uID);
+            ExitWithLastError(hr, "Failed to load string resource id: %d", uID);
         }
 
         // if the returned string count is one character too small, it's likely we have
@@ -149,7 +149,7 @@ extern "C" HRESULT DAPI ResReadStringAnsi(
             hr = S_FALSE;
         }
     } while (S_FALSE == hr);
-    ExitOnFailure1(hr, "failed to load string resource id: %d", uID);
+    ExitOnFailure(hr, "failed to load string resource id: %d", uID);
 
 LExit:
     return hr;
@@ -218,18 +218,18 @@ extern "C" HRESULT DAPI ResExportDataToFile(
     BOOL bCreatedFile = FALSE;
 
     hr = ResReadData(NULL, szDataName, &pData, &cbData);
-    ExitOnFailure1(hr, "Failed to GetData from %s.", szDataName);
+    ExitOnFailure(hr, "Failed to GetData from %s.", szDataName);
 
     hFile = ::CreateFileW(wzTargetFile, GENERIC_WRITE, 0, NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        ExitWithLastError1(hr, "Failed to CreateFileW for %ls.", wzTargetFile);
+        ExitWithLastError(hr, "Failed to CreateFileW for %ls.", wzTargetFile);
     }
     bCreatedFile = TRUE;
 
     if (!::WriteFile(hFile, pData, cbData, &cbWritten, NULL))
     {
-        ExitWithLastError1(hr, "Failed to ::WriteFile for %ls.", wzTargetFile);
+        ExitWithLastError(hr, "Failed to ::WriteFile for %ls.", wzTargetFile);
     }
 
 LExit:

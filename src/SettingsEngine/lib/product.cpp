@@ -26,7 +26,7 @@ HRESULT ProductValidateName(
     if (0 == lstrlenW(wzProductName))
     {
         hr = HRESULT_FROM_WIN32(ERROR_CLUSTER_INVALID_STRING_FORMAT);
-        ExitOnFailure1(hr, "ProductName \"%ls\" wasn't in a valid format - expected a non-empty string", wzProductName);
+        ExitOnFailure(hr, "ProductName \"%ls\" wasn't in a valid format - expected a non-empty string", wzProductName);
     }
 
 LExit:
@@ -52,7 +52,7 @@ HRESULT ProductValidateVersion(
     if (4 != dwResult)
     {
         hr = HRESULT_FROM_WIN32(ERROR_CLUSTER_INVALID_STRING_FORMAT);
-        ExitOnFailure1(hr, "Version \"%ls\" wasn't in a valid format - expected version like: 1.0.0.0", wzVersion);
+        ExitOnFailure(hr, "Version \"%ls\" wasn't in a valid format - expected version like: 1.0.0.0", wzVersion);
     }
 
     // TODO: Any additional validation here? Is "0.*" accepted? What about a version component > 65535?
@@ -71,7 +71,7 @@ HRESULT ProductValidatePublicKey(
     if (16 != lstrlenW(wzPublicKey))
     {
         hr = HRESULT_FROM_WIN32(ERROR_CLUSTER_INVALID_STRING_FORMAT);
-        ExitOnFailure1(hr, "Public key wasn't in a valid format - expect 16 characters: %ls", wzPublicKey);
+        ExitOnFailure(hr, "Public key wasn't in a valid format - expect 16 characters: %ls", wzPublicKey);
     }
 
     for (dwIndex = 0; dwIndex < 16; ++dwIndex)
@@ -86,7 +86,7 @@ HRESULT ProductValidatePublicKey(
 
         // This wasn't a valid character - return false
         hr = HRESULT_FROM_WIN32(ERROR_CLUSTER_INVALID_STRING_FORMAT);
-        ExitOnFailure2(hr, "Public key wasn't in a valid format - found non-hex digit: %lc in string \"%ls\"", wzPublicKey[dwIndex], wzPublicKey);
+        ExitOnFailure(hr, "Public key wasn't in a valid format - found non-hex digit: %lc in string \"%ls\"", wzPublicKey[dwIndex], wzPublicKey);
     }
 
 LExit:
@@ -110,13 +110,13 @@ HRESULT ProductFindRow(
     ExitOnFailure(hr, "Failed to begin query into product index table");
 
     hr = SceSetQueryColumnString(sqhHandle, wzProductName);
-    ExitOnFailure1(hr, "Failed to set query column name string to: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to set query column name string to: %ls", wzProductName);
 
     hr = SceSetQueryColumnString(sqhHandle, wzVersion);
-    ExitOnFailure1(hr, "Failed to set query column version string to: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to set query column version string to: %ls", wzVersion);
 
     hr = SceSetQueryColumnString(sqhHandle, wzPublicKey);
-    ExitOnFailure1(hr, "Failed to set query column publickey string to: %ls", wzPublicKey);
+    ExitOnFailure(hr, "Failed to set query column publickey string to: %ls", wzPublicKey);
 
     hr = SceRunQueryExact(&sqhHandle, pSceRow);
     if (E_NOTFOUND == hr)
@@ -124,7 +124,7 @@ HRESULT ProductFindRow(
         // Don't pollute our log with unnecessary messages
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to find product: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to find product: %ls", wzProductName);
 
 LExit:
     ReleaseSceQuery(sqhHandle);
@@ -160,14 +160,14 @@ HRESULT ProductSyncValues(
     ExitOnFailure(hr, "Failed to begin query into value table");
 
     hr = SceSetQueryColumnDword(sqhHandle, pcdb1->dwAppID);
-    ExitOnFailure1(hr, "Failed to set query column dword to: %u", pcdb1->dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", pcdb1->dwAppID);
 
     hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
     if (E_NOTFOUND == hr)
     {
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to enumerate values for product %u", pcdb1->dwAppID);
+    ExitOnFailure(hr, "Failed to enumerate values for product %u", pcdb1->dwAppID);
 
     hr = SceGetNextResultRow(sqrhResults, &sceRow);
     while (E_NOTFOUND != hr)
@@ -188,11 +188,11 @@ HRESULT ProductSyncValues(
             if (E_NOTFOUND == hr)
             {
                 hr = DictAddKey(shDictValuesSeen, sczName);
-                ExitOnFailure1(hr, "Failed to add to dictionary value: %ls", sczName);
+                ExitOnFailure(hr, "Failed to add to dictionary value: %ls", sczName);
             }
             else
             {
-                ExitOnFailure1(hr, "Failed to check if key exists: %ls", sczName);
+                ExitOnFailure(hr, "Failed to check if key exists: %ls", sczName);
 
                 // This value was already synced; skip it!
                 goto Skip;
@@ -235,7 +235,7 @@ HRESULT ProductSyncValues(
                 for (DWORD i = 0; i < dwCfgCount1; ++i)
                 {
                     hr = EnumWriteValue(pcdb2, sczName, valueHistory1, i);
-                    ExitOnFailure2(hr, "Failed to write value %ls index %u", sczName, i);
+                    ExitOnFailure(hr, "Failed to write value %ls index %u", sczName, i);
                 }
             }
 
@@ -490,7 +490,7 @@ HRESULT ProductSet(
     else
     {
         hr = ProductEnsureCreated(pcdb, wzProductName, wzVersion, wzPublicKey, &pcdb->dwAppID, &pcdb->fProductIsLegacy);
-        ExitOnFailure1(hr, "Failed to ensure product exists: %ls", wzProductName);
+        ExitOnFailure(hr, "Failed to ensure product exists: %ls", wzProductName);
     }
 
     // Get the AppID (of either the found row, or the recently created row)
@@ -567,7 +567,7 @@ HRESULT ProductForget(
     ExitOnFailure(hr, "Failed to begin query into value table");
 
     hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
-    ExitOnFailure1(hr, "Failed to set query column dword to: %u", dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
 
     hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
     if (E_NOTFOUND == hr)
@@ -582,7 +582,7 @@ HRESULT ProductForget(
         ExitOnFailure(hr, "Failed to get next result row");
 
         hr = ValueForget(pcdb, dwAppID, &sceRowValue);
-        ExitOnFailure1(hr, "Failed to forget value for AppID %u", dwAppID);
+        ExitOnFailure(hr, "Failed to forget value for AppID %u", dwAppID);
 
         ReleaseNullSceRow(sceRowValue);
         hr = SceGetNextResultRow(sqrhResults, &sceRowValue);
@@ -602,7 +602,7 @@ HRESULT ProductForget(
         ExitOnFailure(hr, "Failed to set delete value in memory");
 
         hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczLegacyManifestValueName, &cvValue, TRUE);
-        ExitOnFailure1(hr, "Failed to tombstone legacy manifest for product %ls", wzProductName);
+        ExitOnFailure(hr, "Failed to tombstone legacy manifest for product %ls", wzProductName);
     }
 
     hr = SceCommitTransaction(pcdb->psceDb);
@@ -642,7 +642,7 @@ HRESULT ProductGetLegacyManifestValueName(
     ExitOnFailure(hr, "Failed to allocate legacy manifest value prefix");
 
     hr = StrAllocConcat(psczManifestValueName, wzProductName, 0);
-    ExitOnFailure1(hr, "Failed to concat product name %ls to manifest value name", wzProductName);
+    ExitOnFailure(hr, "Failed to concat product name %ls to manifest value name", wzProductName);
 
 LExit:
     return hr;

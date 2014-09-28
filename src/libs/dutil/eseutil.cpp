@@ -96,20 +96,13 @@ HRESULT HresultFromJetError(JET_ERR jEr)
     }
 
     // Log the actual Jet error code so we have record of it before it's morphed into an HRESULT to be compatible with the rest of our code
-    ExitTrace1(hr, "Encountered Jet Error: 0x%08x", jEr);
+    ExitTrace(hr, "Encountered Jet Error: 0x%08x", jEr);
 
     return hr;
 }
 
-#define ExitOnJetFailure(e, x, s) { x = HresultFromJetError(e); if (S_OK != x) { ExitTrace(x, s); goto LExit; }}
-#define ExitOnJetFailure1(e, x, f, s) { x = HresultFromJetError(e); if (S_OK != x) { ExitTrace1(x, f, s); goto LExit; }}
-#define ExitOnJetFailure2(e, x, f, s, t) { x = HresultFromJetError(e); if (S_OK != x) { ExitTrace(x, f, s, t); goto LExit; }}
-#define ExitOnJetFailure3(e, x, f, s, t, u) { x = HresultFromJetError(e); if (S_OK != x) { ExitTrace1(x, f, s, t, u); goto LExit; }}
-
-#define ExitOnRootJetFailure(e, x, s) { x = HresultFromJetError(e); if (S_OK != x) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s); goto LExit; }}
-#define ExitOnRootJetFailure1(e, x, f, s) { x = HresultFromJetError(e); if (S_OK != x) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace1(x, f, s); goto LExit; }}
-#define ExitOnRootJetFailure2(e, x, f, s, t) { x = HresultFromJetError(e); if (S_OK != x) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, f, s, t); goto LExit; }}
-#define ExitOnRootJetFailure3(e, x, f, s, t, u) { x = HresultFromJetError(e); if (S_OK != x) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace1(x, f, s, t, u); goto LExit; }}
+#define ExitOnJetFailure(e, x, s, ...) { x = HresultFromJetError(e); if (S_OK != x) { ExitTrace(x, s, __VA_ARGS__); goto LExit; }}
+#define ExitOnRootJetFailure(e, x, s, ...) { x = HresultFromJetError(e); if (S_OK != x) { Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, s, __VA_ARGS__); goto LExit; }}
 
 HRESULT DAPI EseBeginSession(
     __out JET_INSTANCE *pjiInstance,
@@ -138,11 +131,11 @@ HRESULT DAPI EseBeginSession(
     ExitOnJetFailure(jEr, hr, "Failed to create instance");
 
     jEr = JetSetSystemParameter(pjiInstance, NULL, JET_paramSystemPath, NULL, pszAnsiPath);
-    ExitOnJetFailure1(jEr, hr, "Failed to set jet system path to: %s", pszAnsiPath);
+    ExitOnJetFailure(jEr, hr, "Failed to set jet system path to: %s", pszAnsiPath);
 
     // This makes sure log files that are created are created next to the database, not next to our EXE (note they last after execution)
     jEr = JetSetSystemParameter(pjiInstance, NULL, JET_paramLogFilePath, NULL, pszAnsiPath);
-    ExitOnJetFailure1(jEr, hr, "Failed to set jet log file path to: %s", pszAnsiPath);
+    ExitOnJetFailure(jEr, hr, "Failed to set jet log file path to: %s", pszAnsiPath);
 
     jEr = JetSetSystemParameter(pjiInstance, NULL, JET_paramMaxOpenTables, 10, NULL);
     ExitOnJetFailure(jEr, hr, "Failed to set jet max open tables parameter");
@@ -201,7 +194,7 @@ HRESULT AllocColumnCreateStruct(
         (*ppjccColumnCreate)[i].cbStruct = sizeof(JET_COLUMNCREATE);
 
         hr = StrAnsiAllocString(&(*ppjccColumnCreate)[i].szColumnName, ptsSchema->pcsColumns[i].pszName, 0, CP_ACP);
-        ExitOnFailure1(hr, "Failed to allocate ansi column name: %ls", ptsSchema->pcsColumns[i].pszName);
+        ExitOnFailure(hr, "Failed to allocate ansi column name: %ls", ptsSchema->pcsColumns[i].pszName);
 
         (*ppjccColumnCreate)[i].coltyp = ptsSchema->pcsColumns[i].jcColumnType;
 
@@ -279,20 +272,20 @@ HRESULT AllocIndexCreateStruct(
         if (ptsSchema->pcsColumns[i].fKey)
         {
             hr = StrAnsiAllocString(&pszTempString, ptsSchema->pcsColumns[i].pszName, 0, CP_ACP);
-            ExitOnFailure1(hr, "Failed to convert string to ansi: %ls", ptsSchema->pcsColumns[i].pszName);
+            ExitOnFailure(hr, "Failed to convert string to ansi: %ls", ptsSchema->pcsColumns[i].pszName);
 
             hr = StrAnsiAllocConcat(&pszMultiSzKeys, "+", 0);
-            ExitOnFailure1(hr, "Failed to append plus sign to multisz string: %s", pszTempString);
+            ExitOnFailure(hr, "Failed to append plus sign to multisz string: %s", pszTempString);
 
             hr = StrAnsiAllocConcat(&pszMultiSzKeys, pszTempString, 0);
-            ExitOnFailure1(hr, "Failed to append column name to multisz string: %s", pszTempString);
+            ExitOnFailure(hr, "Failed to append column name to multisz string: %s", pszTempString);
 
             ReleaseNullStr(pszTempString);
 
             // All question marks will be converted to null characters later; this is just to trick dutil
             // into letting us create an ansi, double-null-terminated list of single-null-terminated strings
             hr = StrAnsiAllocConcat(&pszMultiSzKeys, "?", 0);
-            ExitOnFailure1(hr, "Failed to append placeholder character to multisz string: %ls", pszMultiSzKeys);
+            ExitOnFailure(hr, "Failed to append placeholder character to multisz string: %ls", pszMultiSzKeys);
 
             // Record that at least one key column was found
             fKeyColumns = TRUE;
@@ -306,10 +299,10 @@ HRESULT AllocIndexCreateStruct(
     }
 
     hr = StrAnsiAllocString(&pszIndexName, ptsSchema->pszName, 0, CP_ACP);
-    ExitOnFailure1(hr, "Failed to allocate ansi string version of %ls", ptsSchema->pszName);
+    ExitOnFailure(hr, "Failed to allocate ansi string version of %ls", ptsSchema->pszName);
 
     hr = StrAnsiAllocConcat(&pszIndexName, "_Index", 0);
-    ExitOnFailure1(hr, "Failed to append table name string version of %ls", ptsSchema->pszName);
+    ExitOnFailure(hr, "Failed to append table name string version of %ls", ptsSchema->pszName);
 
     *ppjicIndexCreate = static_cast<JET_INDEXCREATE*>(MemAlloc(sizeof(JET_INDEXCREATE), TRUE));
     ExitOnNull(*ppjicIndexCreate, hr, E_OUTOFMEMORY, "Failed to allocate index create structure for database");
@@ -395,7 +388,7 @@ HRESULT EnsureSchema(
             // TODO: Investigate why we can't create a table without a key column?
             // Actually create the table using our JET_TABLECREATE struct
             jEr = JetCreateTableColumnIndex(jsSession, jdbDb, &jtTableCreate);
-            ExitOnJetFailure1(jEr, hr, "Failed to create %ls table", pwzTableName);
+            ExitOnJetFailure(jEr, hr, "Failed to create %ls table", pwzTableName);
 
             // Record the table ID in our cache
             pdsSchema->ptsTables[dwTable].jtTable = jtTableCreate.tableid;
@@ -440,7 +433,7 @@ HRESULT EnsureSchema(
                 }
 
                 hr = EseEnsureColumn(jsSession, pdsSchema->ptsTables[dwTable].jtTable, pcsColumn->pszName, pcsColumn->jcColumnType, ulColumnSize, pcsColumn->fFixed, fNullable, &pcsColumn->jcColumn);
-                ExitOnFailure2(hr, "Failed to create column %u of %ls table", dwColumn, pwzTableName);
+                ExitOnFailure(hr, "Failed to create column %u of %ls table", dwColumn, pwzTableName);
             }
         }
     }
@@ -488,7 +481,7 @@ HRESULT DAPI EseEnsureDatabase(
     ExitOnFailure(hr, "Failed to get directory that will contain database file");
 
     hr = DirEnsureExists(pszDir, NULL);
-    ExitOnFailure1(hr, "Failed to ensure directory exists for database: %ls", pszDir);
+    ExitOnFailure(hr, "Failed to ensure directory exists for database: %ls", pszDir);
 
     if (FileExistsEx(pszFile, NULL))
     {
@@ -498,7 +491,7 @@ HRESULT DAPI EseEnsureDatabase(
         }
 
         jEr = JetAttachDatabaseA(jsSession, pszAnsiFile, jgrOptions);
-        ExitOnJetFailure1(jEr, hr, "Failed to attach to database %s", pszAnsiFile);
+        ExitOnJetFailure(jEr, hr, "Failed to attach to database %s", pszAnsiFile);
 
         // This flag doesn't apply to attach, only applies to Open, so only set it after the attach
         if (fExclusive)
@@ -507,12 +500,12 @@ HRESULT DAPI EseEnsureDatabase(
         }
 
         jEr = JetOpenDatabaseA(jsSession, pszAnsiFile, NULL, pjdbDb, jgrOptions);
-        ExitOnJetFailure1(jEr, hr, "Failed to open database %s", pszAnsiFile);
+        ExitOnJetFailure(jEr, hr, "Failed to open database %s", pszAnsiFile);
     }
     else
     {
         jEr = JetCreateDatabase2A(jsSession, pszAnsiFile, 0, pjdbDb, 0);
-        ExitOnJetFailure1(jEr, hr, "Failed to create database %ls", pszFile);
+        ExitOnJetFailure(jEr, hr, "Failed to create database %ls", pszFile);
     }
 
     hr = EnsureSchema(*pjdbDb, jsSession, pdsSchema);
@@ -556,7 +549,7 @@ HRESULT DAPI EseCreateTable(
     ExitOnFailure(hr, "Failed converting table name to ansi");
 
     jEr = JetCreateTableA(jsSession, jdbDb, pszAnsiTable, 100, 0, pjtTable);
-    ExitOnJetFailure1(jEr, hr, "Failed to create table %s", pszAnsiTable);
+    ExitOnJetFailure(jEr, hr, "Failed to create table %s", pszAnsiTable);
 
 LExit:
     ReleaseStr(pszAnsiTable);
@@ -579,7 +572,7 @@ HRESULT DAPI EseOpenTable(
     ExitOnFailure(hr, "Failed converting table name to ansi");
 
     jEr = JetOpenTableA(jsSession, jdbDb, pszAnsiTable, NULL, 0, 0, pjtTable);
-    ExitOnJetFailure1(jEr, hr, "Failed to open table %s", pszAnsiTable);
+    ExitOnJetFailure(jEr, hr, "Failed to open table %s", pszAnsiTable);
 
 LExit:
     ReleaseStr(pszAnsiTable);
@@ -637,7 +630,7 @@ HRESULT DAPI EseEnsureColumn(
     {
         jEr = JET_errSuccess;
     }
-    ExitOnJetFailure1(jEr, hr, "Failed to check if column exists: %s", pszAnsiColumnName);
+    ExitOnJetFailure(jEr, hr, "Failed to check if column exists: %s", pszAnsiColumnName);
 
     jcdColumnDef.columnid = 0;
     jcdColumnDef.coltyp = jcColumnType;
@@ -658,7 +651,7 @@ HRESULT DAPI EseEnsureColumn(
     }
 
     jEr = JetAddColumnA(jsSession, jtTable, pszAnsiColumnName, &jcdColumnDef, NULL, 0, pjcColumn);
-    ExitOnJetFailure1(jEr, hr, "Failed to add column %ls", pszColumnName);
+    ExitOnJetFailure(jEr, hr, "Failed to add column %ls", pszColumnName);
 
 LExit:
     ReleaseStr(pszAnsiColumnName);
@@ -692,7 +685,7 @@ HRESULT DAPI EseGetColumn(
 
         ExitFunction1(hr = S_OK);
     }
-    ExitOnJetFailure1(jEr, hr, "Failed to check if column exists: %s", pszAnsiColumnName);
+    ExitOnJetFailure(jEr, hr, "Failed to check if column exists: %s", pszAnsiColumnName);
 
 LExit:
     ReleaseStr(pszAnsiColumnName);
@@ -710,7 +703,7 @@ HRESULT DAPI EseMoveCursor(
     JET_ERR jEr = JET_errSuccess;
 
     jEr = JetMove(jsSession, jtTable, lRow, 0);
-    ExitOnJetFailure1(jEr, hr, "Failed to move jet cursor by amount: %d", lRow);
+    ExitOnJetFailure(jEr, hr, "Failed to move jet cursor by amount: %d", lRow);
 
 LExit:
     return hr;
@@ -784,7 +777,7 @@ HRESULT DAPI EsePrepareUpdate(
     JET_ERR jEr = JET_errSuccess;
 
     jEr = JetPrepareUpdate(jsSession, jtTable, ulPrep);
-    ExitOnJetFailure1(jEr, hr, "Failed to prepare for update of type: %ul", ulPrep);
+    ExitOnJetFailure(jEr, hr, "Failed to prepare for update of type: %ul", ulPrep);
 
 LExit:
     return hr;
@@ -854,7 +847,7 @@ HRESULT DAPI EseSetColumnDword(
     JET_ERR jEr = JET_errSuccess;
 
     jEr = JetSetColumn(jsSession, tsTable.jtTable, tsTable.pcsColumns[dwColumn].jcColumn, &dwValue, sizeof(DWORD), 0, NULL);
-    ExitOnJetFailure1(jEr, hr, "Failed to set dword value into column of database: %u", dwValue);
+    ExitOnJetFailure(jEr, hr, "Failed to set dword value into column of database: %u", dwValue);
 
 LExit:
     return hr;
@@ -890,7 +883,7 @@ HRESULT DAPI EseSetColumnString(
     ULONG cbValueSize = static_cast<ULONG>((wcslen(pwzValue) + 1) * sizeof(WCHAR)); // add 1 for null character, then multiply by size of WCHAR to get bytes
 
     jEr = JetSetColumn(jsSession, tsTable.jtTable, tsTable.pcsColumns[dwColumn].jcColumn, pwzValue, cbValueSize, 0, NULL);
-    ExitOnJetFailure1(jEr, hr, "Failed to set string value into column of database: %ls", pwzValue);
+    ExitOnJetFailure(jEr, hr, "Failed to set string value into column of database: %ls", pwzValue);
 
 LExit:
     return hr;
@@ -1068,7 +1061,7 @@ HRESULT DAPI SetQueryColumn(
     if (peqHandle->dwColumns == countof(peqHandle->pvData))
     {
         hr = E_NOTIMPL;
-        ExitOnFailure1(hr, "Dutil hasn't implemented support for queries of more than %d columns", countof(peqHandle->pvData));
+        ExitOnFailure(hr, "Dutil hasn't implemented support for queries of more than %d columns", countof(peqHandle->pvData));
     }
 
     if (0 == peqHandle->dwColumns) // If it's the first column, start a new key
@@ -1155,7 +1148,7 @@ HRESULT DAPI EseSetQueryColumnDword(
     }
 
     hr = SetQueryColumn(eqhHandle, (const void *)&dwData, sizeof(DWORD), jGrb);
-    ExitOnFailure1(hr, "Failed to set value of query colum (as dword) to: %u", dwData);
+    ExitOnFailure(hr, "Failed to set value of query colum (as dword) to: %u", dwData);
 
 LExit:
     return hr;
@@ -1185,7 +1178,7 @@ HRESULT DAPI EseSetQueryColumnBool(
     }
 
     hr = SetQueryColumn(eqhHandle, (const void *)&bByte, 1, jGrb);
-    ExitOnFailure1(hr, "Failed to set value of query colum (as bool) to: %s", fValue ? "TRUE" : "FALSE");
+    ExitOnFailure(hr, "Failed to set value of query colum (as bool) to: %s", fValue ? "TRUE" : "FALSE");
 
 LExit:
     return hr;
@@ -1218,7 +1211,7 @@ HRESULT DAPI EseSetQueryColumnString(
     }
 
     hr = SetQueryColumn(eqhHandle, (const void *)pszString, dwStringSize, jGrb);
-    ExitOnFailure1(hr, "Failed to set value of query colum (as string) to: %ls", pszString);
+    ExitOnFailure(hr, "Failed to set value of query colum (as string) to: %ls", pszString);
 
 LExit:
     return hr;

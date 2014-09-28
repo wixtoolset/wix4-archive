@@ -36,30 +36,30 @@ namespace DutilTests
                 ExitOnFailure(hr, "Failed to get current directory.");
 
                 hr = PathConcat(sczCurrentDir, sczGuid, &sczFolder);
-                ExitOnFailure2(hr, "Failed to combine current directory: '%ls' with Guid: '%ls'", sczCurrentDir, sczGuid);
+                ExitOnFailure(hr, "Failed to combine current directory: '%ls' with Guid: '%ls'", sczCurrentDir, sczGuid);
 
                 BOOL fExists = DirExists(sczFolder, NULL);
                 Assert::False(fExists);
 
                 hr = PathConcat(sczFolder, L"foo", &sczSubFolder);
-                ExitOnFailure1(hr, "Failed to combine folder: '%ls' with subfolder: 'foo'", sczFolder);
+                ExitOnFailure(hr, "Failed to combine folder: '%ls' with subfolder: 'foo'", sczFolder);
 
                 hr = DirEnsureExists(sczSubFolder, NULL);
-                ExitOnFailure1(hr, "Failed to create multiple directories: %ls", sczSubFolder);
+                ExitOnFailure(hr, "Failed to create multiple directories: %ls", sczSubFolder);
 
                 // Test failure to delete non-empty folder.
                 hr = DirEnsureDelete(sczFolder, FALSE, FALSE);
                 Assert::Equal<HRESULT>(0x80070091, hr);
 
                 hr = DirEnsureDelete(sczSubFolder, FALSE, FALSE);
-                ExitOnFailure1(hr, "Failed to delete single directory: %ls", sczSubFolder);
+                ExitOnFailure(hr, "Failed to delete single directory: %ls", sczSubFolder);
 
                 // Put the directory back and we'll test deleting tree.
                 hr = DirEnsureExists(sczSubFolder, NULL);
-                ExitOnFailure1(hr, "Failed to create single directory: %ls", sczSubFolder);
+                ExitOnFailure(hr, "Failed to create single directory: %ls", sczSubFolder);
 
                 hr = DirEnsureDelete(sczFolder, FALSE, TRUE);
-                ExitOnFailure1(hr, "Failed to delete directory tree: %ls", sczFolder);
+                ExitOnFailure(hr, "Failed to delete directory tree: %ls", sczFolder);
 
                 // Finally, try to create "C:\" which would normally fail, but we want success
                 hr = DirEnsureExists(L"C:\\", NULL);

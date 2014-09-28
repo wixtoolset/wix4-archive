@@ -91,12 +91,12 @@ namespace DutilTests
             LPWSTR sczOutput = NULL;
 
             hr = StrTrimWhitespace(&sczOutput, wzInput);
-            ExitOnFailure1(hr, "Failed to trim whitespace from string: %ls", wzInput);
+            ExitOnFailure(hr, "Failed to trim whitespace from string: %ls", wzInput);
 
             if (0 != wcscmp(wzExpectedResult, sczOutput))
             {
                 hr = E_FAIL;
-                ExitOnFailure3(hr, "Trimmed string \"%ls\", expected result \"%ls\", actual result \"%ls\"", wzInput, wzExpectedResult, sczOutput);
+                ExitOnFailure(hr, "Trimmed string \"%ls\", expected result \"%ls\", actual result \"%ls\"", wzInput, wzExpectedResult, sczOutput);
             }
 
         LExit:
@@ -109,12 +109,12 @@ namespace DutilTests
             LPSTR sczOutput = NULL;
 
             hr = StrAnsiTrimWhitespace(&sczOutput, szInput);
-            ExitOnFailure1(hr, "Failed to trim whitespace from string: \"%hs\"", szInput);
+            ExitOnFailure(hr, "Failed to trim whitespace from string: \"%hs\"", szInput);
 
             if (0 != strcmp(szExpectedResult, sczOutput))
             {
                 hr = E_FAIL;
-                ExitOnFailure3(hr, "Trimmed string \"%hs\", expected result \"%hs\", actual result \"%ls\"", szInput, szExpectedResult, sczOutput);
+                ExitOnFailure(hr, "Trimmed string \"%hs\", expected result \"%hs\", actual result \"%ls\"", szInput, szExpectedResult, sczOutput);
             }
 
         LExit:
@@ -127,12 +127,12 @@ namespace DutilTests
             LPWSTR sczOutput = NULL;
 
             hr = StrAllocStringAnsi(&sczOutput, szSource, cchSource, CP_UTF8);
-            ExitOnFailure1(hr, "Failed to call StrAllocStringAnsi on string: \"%hs\"", szSource);
+            ExitOnFailure(hr, "Failed to call StrAllocStringAnsi on string: \"%hs\"", szSource);
 
             if (0 != wcscmp(sczOutput, wzExpectedResult))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "String doesn't match, expected result \"%ls\", actual result \"%ls\"", wzExpectedResult, sczOutput);
+                ExitOnFailure(hr, "String doesn't match, expected result \"%ls\", actual result \"%ls\"", wzExpectedResult, sczOutput);
             }
 
         LExit:
@@ -145,12 +145,12 @@ namespace DutilTests
             LPSTR sczOutput = NULL;
 
             hr = StrAnsiAllocString(&sczOutput, wzSource, cchSource, CP_UTF8);
-            ExitOnFailure1(hr, "Failed to call StrAllocStringAnsi on string: \"%ls\"", wzSource);
+            ExitOnFailure(hr, "Failed to call StrAllocStringAnsi on string: \"%ls\"", wzSource);
 
             if (0 != strcmp(sczOutput, szExpectedResult))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "String doesn't match, expected result \"%hs\", actual result \"%hs\"", szExpectedResult, sczOutput);
+                ExitOnFailure(hr, "String doesn't match, expected result \"%hs\", actual result \"%hs\"", szExpectedResult, sczOutput);
             }
 
         LExit:

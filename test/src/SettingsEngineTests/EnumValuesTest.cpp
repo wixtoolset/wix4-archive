@@ -125,7 +125,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"File1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 'File1', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Value should have been 'File1', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadString(cehHandle, 1, ENUM_DATA_VALUENAME, &wzName);
@@ -134,7 +134,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"File2"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 'File2', found '%ls' instead", wzValue);
+                ExitOnFailure(hr, "Value should have been 'File2', found '%ls' instead", wzValue);
             }
 
             hr = CfgEnumReadDword(cehHandle, 0, ENUM_DATA_BLOBSIZE, &dwValue);
@@ -143,7 +143,7 @@ namespace CfgTests
             if (1000 != dwValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Size for file 1 should have been 1000, found %u instead", dwValue);
+                ExitOnFailure(hr, "Size for file 1 should have been 1000, found %u instead", dwValue);
             }
 
             hr = CfgEnumReadDword(cehHandle, 1, ENUM_DATA_BLOBSIZE, &dwValue);
@@ -152,7 +152,7 @@ namespace CfgTests
             if (500 != dwValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Size for file 1 should have been 500, found %u instead", dwValue);
+                ExitOnFailure(hr, "Size for file 1 should have been 500, found %u instead", dwValue);
             }
 
             CfgReleaseEnumeration(cehHandle);
@@ -173,7 +173,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"Test1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuename should have been 'Test1', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Valuename should have been 'Test1', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadDataType(cehHandle, 0, ENUM_DATA_VALUETYPE, &cvType);
@@ -181,7 +181,7 @@ namespace CfgTests
             if (VALUE_STRING != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuetype should have been VALUE_STRING, was %d instead", cvType);
+                ExitOnFailure(hr, "Valuetype should have been VALUE_STRING, was %d instead", cvType);
             }
 
             hr = CfgEnumReadString(cehHandle, 0, ENUM_DATA_VALUESTRING, &wzValue);
@@ -190,7 +190,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzValue, L"Value1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 'Test1', found '%ls' instead", wzValue);
+                ExitOnFailure(hr, "Value should have been 'Test1', found '%ls' instead", wzValue);
             }
 
             hr = CfgSetDword(cdhLocal, L"Test2", 200);
@@ -203,7 +203,7 @@ namespace CfgTests
             if (2 != dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected 2 values in enumeration, found: %u values", dwCount);
+                ExitOnFailure(hr, "Expected 2 values in enumeration, found: %u values", dwCount);
             }
 
             hr = CfgEnumReadString(cehHandle, 0, ENUM_DATA_VALUENAME, &wzName);
@@ -211,7 +211,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"Test1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuename should have been 'Test1', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Valuename should have been 'Test1', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadDataType(cehHandle, 0, ENUM_DATA_VALUETYPE, &cvType);
@@ -219,7 +219,7 @@ namespace CfgTests
             if (VALUE_STRING != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuetype should have been VALUE_STRING, was %d instead", cvType);
+                ExitOnFailure(hr, "Valuetype should have been VALUE_STRING, was %d instead", cvType);
             }
 
             hr = CfgEnumReadString(cehHandle, 0, ENUM_DATA_VALUESTRING, &wzValue);
@@ -228,7 +228,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzValue, L"Value1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 'Test1', found '%ls' instead", wzValue);
+                ExitOnFailure(hr, "Value should have been 'Test1', found '%ls' instead", wzValue);
             }
 
             hr = CfgEnumReadString(cehHandle, 1, ENUM_DATA_VALUENAME, &wzName);
@@ -236,7 +236,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"Test2"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuename should have been 'Test2', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Valuename should have been 'Test2', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadDataType(cehHandle, 1, ENUM_DATA_VALUETYPE, &cvType);
@@ -244,7 +244,7 @@ namespace CfgTests
             if (VALUE_DWORD != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuetype should have been VALUE_DWORD, was %d instead", cvType);
+                ExitOnFailure(hr, "Valuetype should have been VALUE_DWORD, was %d instead", cvType);
             }
 
             hr = CfgEnumReadDword(cehHandle, 1, ENUM_DATA_VALUEDWORD, &dwValue);
@@ -253,7 +253,7 @@ namespace CfgTests
             if (200 != dwValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 200, found %u instead", dwValue);
+                ExitOnFailure(hr, "Value should have been 200, found %u instead", dwValue);
             }
 
             hr = CfgSetBool(cdhLocal, L"Test3", TRUE);
@@ -266,7 +266,7 @@ namespace CfgTests
             if (3 != dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected 3 values in enumeration, found: %u values", dwCount);
+                ExitOnFailure(hr, "Expected 3 values in enumeration, found: %u values", dwCount);
             }
 
             hr = CfgEnumReadString(cehHandle, 0, ENUM_DATA_VALUENAME, &wzName);
@@ -274,7 +274,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"Test1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuename should have been 'Test1', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Valuename should have been 'Test1', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadDataType(cehHandle, 0, ENUM_DATA_VALUETYPE, &cvType);
@@ -282,7 +282,7 @@ namespace CfgTests
             if (VALUE_STRING != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuetype should have been VALUE_STRING, was %d instead", cvType);
+                ExitOnFailure(hr, "Valuetype should have been VALUE_STRING, was %d instead", cvType);
             }
 
             hr = CfgEnumReadString(cehHandle, 0, ENUM_DATA_VALUESTRING, &wzValue);
@@ -291,7 +291,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzValue, L"Value1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 'Test1', found '%ls' instead", wzValue);
+                ExitOnFailure(hr, "Value should have been 'Test1', found '%ls' instead", wzValue);
             }
 
             hr = CfgEnumReadString(cehHandle, 1, ENUM_DATA_VALUENAME, &wzName);
@@ -299,7 +299,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"Test2"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuename should have been 'Test2', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Valuename should have been 'Test2', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadDataType(cehHandle, 1, ENUM_DATA_VALUETYPE, &cvType);
@@ -307,7 +307,7 @@ namespace CfgTests
             if (VALUE_DWORD != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuetype should have been VALUE_DWORD, was %d instead", cvType);
+                ExitOnFailure(hr, "Valuetype should have been VALUE_DWORD, was %d instead", cvType);
             }
 
             hr = CfgEnumReadDword(cehHandle, 1, ENUM_DATA_VALUEDWORD, &dwValue);
@@ -316,7 +316,7 @@ namespace CfgTests
             if (200 != dwValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been 200, found %u instead", dwValue);
+                ExitOnFailure(hr, "Value should have been 200, found %u instead", dwValue);
             }
 
             hr = CfgEnumReadString(cehHandle, 2, ENUM_DATA_VALUENAME, &wzName);
@@ -324,7 +324,7 @@ namespace CfgTests
             if (0 != lstrcmpW(wzName, L"Test3"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuename should have been 'Test3', found '%ls' instead", wzName);
+                ExitOnFailure(hr, "Valuename should have been 'Test3', found '%ls' instead", wzName);
             }
 
             hr = CfgEnumReadDataType(cehHandle, 2, ENUM_DATA_VALUETYPE, &cvType);
@@ -332,7 +332,7 @@ namespace CfgTests
             if (VALUE_BOOL != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Valuetype should have been VALUE_BOOL, was %d instead", cvType);
+                ExitOnFailure(hr, "Valuetype should have been VALUE_BOOL, was %d instead", cvType);
             }
 
             hr = CfgEnumReadBool(cehHandle, 2, ENUM_DATA_VALUEBOOL, &fValue);
@@ -341,7 +341,7 @@ namespace CfgTests
             if (TRUE != fValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Value should have been TRUE, found %ls instead", fValue ? L"TRUE" : L"FALSE");
+                ExitOnFailure(hr, "Value should have been TRUE, found %ls instead", fValue ? L"TRUE" : L"FALSE");
             }
 
             ::Sleep(5);

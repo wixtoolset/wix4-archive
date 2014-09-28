@@ -16,15 +16,9 @@
 extern "C" {
 #endif
 
-#define LogExitOnFailure(x, i, f) if (FAILED(x)) { LogErrorId(x, i, NULL, NULL, NULL); ExitTrace(x, f); goto LExit; }
-#define LogExitOnFailure1(x, i, f, s) if (FAILED(x)) { LogErrorId(x, i, s, NULL, NULL); ExitTrace1(x, f, s); goto LExit; }
-#define LogExitOnFailure2(x, i, f, s, t) if (FAILED(x)) { LogErrorId(x, i, s, t, NULL); ExitTrace2(x, f, s, t); goto LExit; }
-#define LogExitOnFailure3(x, i, f, s, t, u) if (FAILED(x)) { LogErrorId(x, i, s, t, u); ExitTrace3(x, f, s, t, u); goto LExit; }
+#define LogExitOnFailure(x, i, f, ...) if (FAILED(x)) { LogErrorId(x, i, __VA_ARGS__); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
 
-#define LogExitOnRootFailure(x, i, f) if (FAILED(x)) { LogErrorId(x, i, NULL, NULL, NULL); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, f); goto LExit; }
-#define LogExitOnRootFailure1(x, i, f, s) if (FAILED(x)) { LogErrorId(x, i, s, NULL, NULL); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace1(x, f, s); goto LExit; }
-#define LogExitOnRootFailure2(x, i, f, s, t) if (FAILED(x)) { LogErrorId(x, i, s, t, NULL); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace2(x, f, s, t); goto LExit; }
-#define LogExitOnRootFailure3(x, i, f, s, t, u) if (FAILED(x)) { LogErrorId(x, i, s, t, u); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace3(x, f, s, t, u); goto LExit; }
+#define LogExitOnRootFailure(x, i, f, ...) if (FAILED(x)) { LogErrorId(x, i, __VA_ARGS__); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
 
 typedef HRESULT (DAPI *PFN_LOGSTRINGWORKRAW)(
     __in_z LPCSTR szString,
@@ -184,9 +178,9 @@ HRESULT DAPI LogErrorIdModule(
 inline HRESULT LogErrorId(
     __in HRESULT hrError,
     __in DWORD dwLogId,
-    __in_z_opt LPCWSTR wzString1,
-    __in_z_opt LPCWSTR wzString2,
-    __in_z_opt LPCWSTR wzString3
+    __in_z_opt LPCWSTR wzString1 = NULL,
+    __in_z_opt LPCWSTR wzString2 = NULL,
+    __in_z_opt LPCWSTR wzString3 = NULL
     )
 {
     return LogErrorIdModule(hrError, dwLogId, NULL, wzString1, wzString2, wzString3);

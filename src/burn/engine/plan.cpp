@@ -479,7 +479,7 @@ extern "C" HRESULT PlanPackages(
 
             // Add the compatible package to the list.
             hr = MsiEngineAddCompatiblePackage(pPackages, pPackage, &pCompatiblePackage);
-            ExitOnFailure1(hr, "Failed to add compatible package for package: %ls", pPackage->sczId);
+            ExitOnFailure(hr, "Failed to add compatible package for package: %ls", pPackage->sczId);
 
             // Plan to load the compatible package into the elevated engine before its needed.
             hr = PlanAppendExecuteAction(pPlan, &pAction);
@@ -882,7 +882,7 @@ static HRESULT ProcessPackage(
     {
         // Make sure the package is properly ref-counted even if no plan is requested.
         hr = DependencyPlanPackageBegin(fBundlePerMachine, pPackage, pPlan);
-        ExitOnFailure1(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
+        ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
 
         // All packages that have cacheType set to always should be cached if the bundle is going to be present.
         if (BURN_CACHE_TYPE_ALWAYS == pPackage->cacheType && BOOTSTRAPPER_ACTION_INSTALL <= pPlan->action)
@@ -904,7 +904,7 @@ static HRESULT ProcessPackage(
         ExitOnFailure(hr, "Failed to plan package dependency actions.");
 
         hr = DependencyPlanPackageComplete(pPackage, pPlan);
-        ExitOnFailure1(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
+        ExitOnFailure(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
     }
 
     // Add the checkpoint after each package and dependency registration action.
@@ -1045,11 +1045,11 @@ extern "C" HRESULT PlanExecutePackage(
         hr = E_UNEXPECTED;
         ExitOnFailure(hr, "Invalid package type.");
     }
-    ExitOnFailure1(hr, "Failed to calculate plan actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to calculate plan actions for package: %ls", pPackage->sczId);
 
     // Calculate package states based on reference count and plan certain dependency actions prior to planning the package execute action.
     hr = DependencyPlanPackageBegin(fPerMachine, pPackage, pPlan);
-    ExitOnFailure1(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
 
     // All packages that have cacheType set to always should be cached if the bundle is going to be present.
     if (BURN_CACHE_TYPE_ALWAYS == pPackage->cacheType && BOOTSTRAPPER_ACTION_INSTALL <= pPlan->action)
@@ -1135,11 +1135,11 @@ extern "C" HRESULT PlanExecutePackage(
         hr = E_UNEXPECTED;
         ExitOnFailure(hr, "Invalid package type.");
     }
-    ExitOnFailure1(hr, "Failed to add plan actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to add plan actions for package: %ls", pPackage->sczId);
 
     // Plan certain dependency actions after planning the package execute action.
     hr = DependencyPlanPackageComplete(pPackage, pPlan);
-    ExitOnFailure1(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
 
     // If we are going to take any action on this package, add progress for it.
     if (BOOTSTRAPPER_ACTION_STATE_NONE != pPackage->execute || BOOTSTRAPPER_ACTION_STATE_NONE != pPackage->rollback)
@@ -1270,7 +1270,7 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
             break;
         default:
             hr = E_UNEXPECTED;
-            ExitOnFailure1(hr, "Unexpected relation type encountered during plan: %d", pRelatedBundle->relationType);
+            ExitOnFailure(hr, "Unexpected relation type encountered during plan: %d", pRelatedBundle->relationType);
             break;
         }
 
@@ -1295,7 +1295,7 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
                 const BURN_DEPENDENCY_PROVIDER* pProvider = pRelatedBundle->package.rgDependencyProviders;
 
                 hr = DepDependencyArrayAlloc(&pPlan->rgPlannedProviders, &pPlan->cPlannedProviders, pProvider->sczKey, pProvider->sczDisplayName);
-                ExitOnFailure1(hr, "Failed to add the package provider key \"%ls\" to the planned list.", pProvider->sczKey);
+                ExitOnFailure(hr, "Failed to add the package provider key \"%ls\" to the planned list.", pProvider->sczKey);
             }
         }
     }
@@ -1378,7 +1378,7 @@ extern "C" HRESULT PlanRelatedBundlesComplete(
             hr = DictKeyExists(sdProviderKeys, pProvider->sczKey);
             if (E_NOTFOUND != hr)
             {
-                ExitOnFailure1(hr, "Failed to check the dictionary for a related bundle provider key: \"%ls\".", pProvider->sczKey);
+                ExitOnFailure(hr, "Failed to check the dictionary for a related bundle provider key: \"%ls\".", pProvider->sczKey);
                 // Key found, so there is an embedded bundle with the same provider key that will be executed.  So this related bundle should not be added to the plan
                 LogId(REPORT_STANDARD, MSG_PLAN_SKIPPED_RELATED_BUNDLE_EMBEDDED_BUNDLE_NEWER, pRelatedBundle->package.sczId, LoggingRelationTypeToString(pRelatedBundle->relationType), pProvider->sczKey);
                 continue;
@@ -1412,13 +1412,13 @@ extern "C" HRESULT PlanRelatedBundlesComplete(
         if (BOOTSTRAPPER_REQUEST_STATE_NONE != pRelatedBundle->package.requested)
         {
             hr = ExeEnginePlanCalculatePackage(&pRelatedBundle->package);
-            ExitOnFailure1(hr, "Failed to calcuate plan for related bundle: %ls", pRelatedBundle->package.sczId);
+            ExitOnFailure(hr, "Failed to calcuate plan for related bundle: %ls", pRelatedBundle->package.sczId);
 
             // Calculate package states based on reference count for addon and patch related bundles.
             if (BOOTSTRAPPER_RELATION_ADDON == pRelatedBundle->relationType || BOOTSTRAPPER_RELATION_PATCH == pRelatedBundle->relationType)
             {
                 hr = DependencyPlanPackageBegin(pRegistration->fPerMachine, &pRelatedBundle->package, pPlan);
-                ExitOnFailure1(hr, "Failed to begin plan dependency actions to  package: %ls", pRelatedBundle->package.sczId);
+                ExitOnFailure(hr, "Failed to begin plan dependency actions to  package: %ls", pRelatedBundle->package.sczId);
 
                 // If uninstalling a related bundle, make sure the bundle is uninstalled after removing registration.
                 if (pdwInsertIndex && BOOTSTRAPPER_ACTION_UNINSTALL == pPlan->action)
@@ -1428,13 +1428,13 @@ extern "C" HRESULT PlanRelatedBundlesComplete(
             }
 
             hr = ExeEnginePlanAddPackage(pdwInsertIndex, &pRelatedBundle->package, pPlan, pLog, pVariables, *phSyncpointEvent, FALSE);
-            ExitOnFailure1(hr, "Failed to add to plan related bundle: %ls", pRelatedBundle->package.sczId);
+            ExitOnFailure(hr, "Failed to add to plan related bundle: %ls", pRelatedBundle->package.sczId);
 
             // Calculate package states based on reference count for addon and patch related bundles.
             if (BOOTSTRAPPER_RELATION_ADDON == pRelatedBundle->relationType || BOOTSTRAPPER_RELATION_PATCH == pRelatedBundle->relationType)
             {
                 hr = DependencyPlanPackageComplete(&pRelatedBundle->package, pPlan);
-                ExitOnFailure1(hr, "Failed to complete plan dependency actions for related bundle package: %ls", pRelatedBundle->package.sczId);
+                ExitOnFailure(hr, "Failed to complete plan dependency actions for related bundle package: %ls", pRelatedBundle->package.sczId);
             }
 
             // If we are going to take any action on this package, add progress for it.
@@ -1456,13 +1456,13 @@ extern "C" HRESULT PlanRelatedBundlesComplete(
         {
             // Make sure the package is properly ref-counted even if no plan is requested.
             hr = DependencyPlanPackageBegin(pRegistration->fPerMachine, &pRelatedBundle->package, pPlan);
-            ExitOnFailure1(hr, "Failed to begin plan dependency actions for related bundle package: %ls", pRelatedBundle->package.sczId);
+            ExitOnFailure(hr, "Failed to begin plan dependency actions for related bundle package: %ls", pRelatedBundle->package.sczId);
 
             hr = DependencyPlanPackage(pdwInsertIndex, &pRelatedBundle->package, pPlan);
             ExitOnFailure(hr, "Failed to plan related bundle package provider actions.");
 
             hr = DependencyPlanPackageComplete(&pRelatedBundle->package, pPlan);
-            ExitOnFailure1(hr, "Failed to complete plan dependency actions for related bundle package: %ls", pRelatedBundle->package.sczId);
+            ExitOnFailure(hr, "Failed to complete plan dependency actions for related bundle package: %ls", pRelatedBundle->package.sczId);
         }
     }
 
@@ -2123,7 +2123,7 @@ static HRESULT AddCacheSlipstreamMsps(
         AssertSz(BURN_PACKAGE_TYPE_MSP == pMspPackage->type, "Only MSP packages can be slipstream patches.");
 
         hr = AddCachePackage(pPlan, pMspPackage, &hIgnored);
-        ExitOnFailure1(hr, "Failed to plan slipstream MSP: %ls", pMspPackage->sczId);
+        ExitOnFailure(hr, "Failed to plan slipstream MSP: %ls", pMspPackage->sczId);
     }
 
 LExit:

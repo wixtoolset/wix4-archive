@@ -36,7 +36,7 @@ static HRESULT RecursePath(
 
     // First recurse down to all the child directories.
     hr = StrAllocFormatted(&sczSearch, L"%s*", wzPath);
-    ExitOnFailure1(hr, "Failed to allocate file search string in path: %S", wzPath);
+    ExitOnFailure(hr, "Failed to allocate file search string in path: %S", wzPath);
 
     hFind = ::FindFirstFileW(sczSearch, &wfd);
     if (INVALID_HANDLE_VALUE == hFind)
@@ -50,7 +50,7 @@ static HRESULT RecursePath(
         {
             hr = HRESULT_FROM_WIN32(er);
         }
-        ExitOnFailure1(hr, "Failed to find all files in path: %S", wzPath);
+        ExitOnFailure(hr, "Failed to find all files in path: %S", wzPath);
     }
 
     do
@@ -62,10 +62,10 @@ static HRESULT RecursePath(
         }
 
         hr = StrAllocFormatted(&sczNext, L"%s%s\\", wzPath, wfd.cFileName);
-        ExitOnFailure2(hr, "Failed to concat filename '%S' to string: %S", wfd.cFileName, wzPath);
+        ExitOnFailure(hr, "Failed to concat filename '%S' to string: %S", wfd.cFileName, wzPath);
 
         hr = RecursePath(sczNext, wzId, wzComponent, wzProperty, iMode, pdwCounter, phTable, phColumns);
-        ExitOnFailure1(hr, "Failed to recurse path: %S", sczNext);
+        ExitOnFailure(hr, "Failed to recurse path: %S", sczNext);
     } while (::FindNextFileW(hFind, &wfd));
 
     er = ::GetLastError();
@@ -76,24 +76,24 @@ static HRESULT RecursePath(
     else
     {
         hr = HRESULT_FROM_WIN32(er);
-        ExitOnFailure1(hr, "Failed while looping through files in directory: %S", wzPath);
+        ExitOnFailure(hr, "Failed while looping through files in directory: %S", wzPath);
     }
 
     // Finally, set a property that points at our path.
     hr = StrAllocFormatted(&sczProperty, L"_%s_%u", wzProperty, *pdwCounter);
-    ExitOnFailure1(hr, "Failed to allocate Property for RemoveFile table with property: %S.", wzProperty);
+    ExitOnFailure(hr, "Failed to allocate Property for RemoveFile table with property: %S.", wzProperty);
 
     ++(*pdwCounter);
 
     hr = WcaSetProperty(sczProperty, wzPath);
-    ExitOnFailure2(hr, "Failed to set Property: %S with path: %S", sczProperty, wzPath);
+    ExitOnFailure(hr, "Failed to set Property: %S with path: %S", sczProperty, wzPath);
 
     // Add the row to remove any files and another row to remove the folder.
     hr = WcaAddTempRecord(phTable, phColumns, L"RemoveFile", NULL, 1, 5, L"RfxFiles", wzComponent, L"*.*", sczProperty, iMode);
-    ExitOnFailure2(hr, "Failed to add row to remove all files for WixRemoveFolderEx row: %S under path:", wzId, wzPath);
+    ExitOnFailure(hr, "Failed to add row to remove all files for WixRemoveFolderEx row: %S under path:", wzId, wzPath);
 
     hr = WcaAddTempRecord(phTable, phColumns, L"RemoveFile", NULL, 1, 5, L"RfxFolder", wzComponent, NULL, sczProperty, iMode);
-    ExitOnFailure2(hr, "Failed to add row to remove folder for WixRemoveFolderEx row: %S under path: %S", wzId, wzPath);
+    ExitOnFailure(hr, "Failed to add row to remove folder for WixRemoveFolderEx row: %S under path: %S", wzId, wzPath);
 
 LExit:
     if (INVALID_HANDLE_VALUE != hFind)
@@ -156,25 +156,25 @@ extern "C" UINT WINAPI WixRemoveFoldersEx(
         ExitOnFailure(hr, "Failed to get remove folder mode");
 
         hr = WcaGetProperty(sczProperty, &sczPath);
-        ExitOnFailure2(hr, "Failed to resolve remove folder property: %S for row: %S", sczProperty, sczId);
+        ExitOnFailure(hr, "Failed to resolve remove folder property: %S for row: %S", sczProperty, sczId);
 
         // fail early if the property isn't set as you probably don't want your installers trying to delete SystemFolder
         // StringCchLengthW succeeds only if the string is zero characters plus 1 for the terminating null
         hr = ::StringCchLengthW(sczPath, 1, reinterpret_cast<UINT_PTR*>(&cchLen));
         if (SUCCEEDED(hr))
         {
-            ExitOnFailure2(hr = E_INVALIDARG, "Missing folder property: %S for row: %S", sczProperty, sczId);
+            ExitOnFailure(hr = E_INVALIDARG, "Missing folder property: %S for row: %S", sczProperty, sczId);
         }
 
         hr = PathExpand(&sczExpandedPath, sczPath, PATH_EXPAND_ENVIRONMENT);
-        ExitOnFailure2(hr, "Failed to expand path: %S for row: %S", sczPath, sczId);
+        ExitOnFailure(hr, "Failed to expand path: %S for row: %S", sczPath, sczId);
         
         hr = PathBackslashTerminate(&sczExpandedPath);
-        ExitOnFailure1(hr, "Failed to backslash-terminate path: %S", sczExpandedPath);
+        ExitOnFailure(hr, "Failed to backslash-terminate path: %S", sczExpandedPath);
     
         WcaLog(LOGMSG_STANDARD, "Recursing path: %S for row: %S.", sczExpandedPath, sczId);
         hr = RecursePath(sczExpandedPath, sczId, sczComponent, sczProperty, iMode, &dwCounter, &hTable, &hColumns);
-        ExitOnFailure2(hr, "Failed while navigating path: %S for row: %S", sczPath, sczId);
+        ExitOnFailure(hr, "Failed while navigating path: %S for row: %S", sczPath, sczId);
     }
 
     // reaching the end of the list is actually a good thing, not an error

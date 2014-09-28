@@ -304,7 +304,7 @@ extern "C" HRESULT MsuEngineExecutePackage(
     case BOOTSTRAPPER_ACTION_STATE_INSTALL:
         // get cached MSU path
         hr = CacheGetCompletedPath(TRUE, pExecuteAction->msuPackage.pPackage->sczCacheId, &sczCachedDirectory);
-        ExitOnFailure1(hr, "Failed to get cached path for package: %ls", pExecuteAction->msuPackage.pPackage->sczId);
+        ExitOnFailure(hr, "Failed to get cached path for package: %ls", pExecuteAction->msuPackage.pPackage->sczId);
 
         // Best effort to set the execute package cache folder variable.
         VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, sczCachedDirectory, TRUE);
@@ -346,7 +346,7 @@ extern "C" HRESULT MsuEngineExecutePackage(
     si.cb = sizeof(si);
     if (!::CreateProcessW(sczWusaPath, sczCommand, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
     {
-        ExitWithLastError1(hr, "Failed to CreateProcess on path: %ls", sczWusaPath);
+        ExitWithLastError(hr, "Failed to CreateProcess on path: %ls", sczWusaPath);
     }
 
     do
@@ -362,7 +362,7 @@ extern "C" HRESULT MsuEngineExecutePackage(
         hr = ProcWaitForCompletion(pi.hProcess, 500, &dwExitCode);
         if (HRESULT_FROM_WIN32(WAIT_TIMEOUT) != hr)
         {
-            ExitOnFailure1(hr, "Failed to wait for executable to complete: %ls", sczWusaPath);
+            ExitOnFailure(hr, "Failed to wait for executable to complete: %ls", sczWusaPath);
         }
     } while (HRESULT_FROM_WIN32(WAIT_TIMEOUT) == hr);
 

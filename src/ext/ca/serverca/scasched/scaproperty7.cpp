@@ -25,7 +25,7 @@ HRESULT ScaPropertyInstall7(
         if (WcaIsInstalling(psp->isInstalled, psp->isAction))
         {
             hr = ScaWriteProperty7(psp);
-            ExitOnFailure1(hr, "failed to write Property '%ls' ", psp->wzProperty);
+            ExitOnFailure(hr, "failed to write Property '%ls' ", psp->wzProperty);
         }
     }
 
@@ -46,7 +46,7 @@ HRESULT ScaPropertyUninstall7(
         if (WcaIsUninstalling(psp->isInstalled, psp->isAction))
         {
             hr = ScaRemoveProperty7(psp);
-            ExitOnFailure1(hr, "Failed to remove Property '%ls'", psp->wzProperty);
+            ExitOnFailure(hr, "Failed to remove Property '%ls'", psp->wzProperty);
         }
     }
 

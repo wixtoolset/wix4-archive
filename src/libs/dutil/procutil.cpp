@@ -166,7 +166,7 @@ extern "C" HRESULT DAPI ProcExec(
     si.wShowWindow = static_cast<WORD>(nCmdShow);
     if (!::CreateProcessW(wzExecutablePath, sczFullCommandLine, NULL, NULL, FALSE, 0, 0, NULL, &si, &pi))
     {
-        ExitWithLastError1(hr, "Failed to create process: %ls", sczFullCommandLine);
+        ExitWithLastError(hr, "Failed to create process: %ls", sczFullCommandLine);
     }
 
     *phProcess = pi.hProcess;

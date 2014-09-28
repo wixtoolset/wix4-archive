@@ -351,7 +351,7 @@ HRESULT BackgroundMarkRemoteChanged(
 
         if (!::PostThreadMessageW(pcdbRemote->pcdbLocal->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_REMOTE, reinterpret_cast<WPARAM>(sczDirectory), static_cast<LPARAM>(FALSE)))
         {
-            ExitWithLastError1(hr, "Failed to send message to background thread to sync from remote at directory %ls", sczDirectory);
+            ExitWithLastError(hr, "Failed to send message to background thread to sync from remote at directory %ls", sczDirectory);
         }
         sczDirectory = NULL;
     }
@@ -565,7 +565,7 @@ static DWORD WINAPI BackgroundThread(
                 // Intentionally don't log here, because MonUtil will occasionally send false positive "ping" notifications
 
                 hr = PropagateRemotes(pcdb, sczString1, static_cast<BOOL>(msg.lParam));
-                ExitOnFailure2(hr, "Failed to propagate remotes with from value of %ls, fCheckDbTimestamp=%ls", sczString1, static_cast<BOOL>(msg.lParam) ? L"TRUE" : L"FALSE");
+                ExitOnFailure(hr, "Failed to propagate remotes with from value of %ls, fCheckDbTimestamp=%ls", sczString1, static_cast<BOOL>(msg.lParam) ? L"TRUE" : L"FALSE");
                 break;
 
             case BACKGROUND_THREAD_UPDATE_PRODUCT:
@@ -707,7 +707,7 @@ static HRESULT BeginMonitoring(
     hr = SceGetFirstRow(pcdb->psceDb, PRODUCT_INDEX_TABLE, &sceRow);
     while (E_NOTFOUND != hr)
     {
-        ExitOnFailure1(hr, "Failed to get row from table: %u", PRODUCT_INDEX_TABLE);
+        ExitOnFailure(hr, "Failed to get row from table: %u", PRODUCT_INDEX_TABLE);
 
         hr = SceGetColumnBool(sceRow, PRODUCT_IS_LEGACY, &fIsLegacy);
         ExitOnFailure(hr, "Failed to check if product is legacy");
@@ -780,7 +780,7 @@ static HRESULT BeginMonitoringProduct(
     ExitOnFailure(hr, "Failed to set product in legacy sync session");
 
     hr = AddProductToMonitorList(pcdb, &pSyncSession->syncProductSession.product, sczName, pContext);
-    ExitOnFailure1(hr, "Failed to add product %ls to monitor list", sczName);
+    ExitOnFailure(hr, "Failed to add product %ls to monitor list", sczName);
 
     pcdb->vpfBackgroundStatus(S_OK, BACKGROUND_STATUS_SYNCING_PRODUCT, sczName, wzLegacyVersion, wzLegacyPublicKey, pcdb->pvCallbackContext);
     fSyncingProduct = TRUE;
@@ -792,7 +792,7 @@ static HRESULT BeginMonitoringProduct(
     if (pSyncSession->syncProductSession.fRegistered && !pSyncSession->syncProductSession.fNewlyRegistered)
     {
         hr = LegacySyncPullDeletedValues(pcdb, &pSyncSession->syncProductSession);
-        ExitOnFailure1(hr, "Failed to check for deleted registry values for product %u", dwAppID);
+        ExitOnFailure(hr, "Failed to check for deleted registry values for product %u", dwAppID);
     }
 
     hr = LegacySyncFinalizeProduct(pcdb, pSyncSession);
@@ -883,7 +883,7 @@ static void MonDirectoryCallback(
     {
         if (!::PostThreadMessageW(pContext->dwBackgroundThreadId, BACKGROUND_THREAD_ERROR_MONITORING, static_cast<WPARAM>(hrResult), reinterpret_cast<LPARAM>(pSyncRequest)))
         {
-            ExitWithLastError1(hr, "Failed to send message to worker thread to notify MonUtil cannot watch directory %ls", wzPath);
+            ExitWithLastError(hr, "Failed to send message to worker thread to notify MonUtil cannot watch directory %ls", wzPath);
         }
     }
     else
@@ -932,7 +932,7 @@ static void MonRegKeyCallback(
     {
         if (!::PostThreadMessageW(pContext->dwBackgroundThreadId, BACKGROUND_THREAD_DETECT, static_cast<WPARAM>(hrResult), 0))
         {
-            ExitWithLastError1(hr, "Failed to send message to worker thread to notify MonUtil to re-detect", wzSubKey);
+            ExitWithLastError(hr, "Failed to send message to worker thread to notify MonUtil to re-detect", wzSubKey);
         }
         ExitFunction1(hr = S_OK);
     }
@@ -951,7 +951,7 @@ static void MonRegKeyCallback(
     {
         if (!::PostThreadMessageW(pContext->dwBackgroundThreadId, BACKGROUND_THREAD_ERROR_MONITORING, static_cast<WPARAM>(hrResult), reinterpret_cast<LPARAM>(pSyncRequest)))
         {
-            ExitWithLastError1(hr, "Failed to send message to worker thread to notify MonUtil cannot watch subkey %ls", wzSubKey);
+            ExitWithLastError(hr, "Failed to send message to worker thread to notify MonUtil cannot watch subkey %ls", wzSubKey);
         }
     }
     else
@@ -1049,14 +1049,14 @@ static HRESULT HandleSyncRequest(
     if (pMonitorItem->fRemote)
     {
         hr = StrAllocString(&sczTemp, pSyncRequest->sczPath, 0);
-        ExitOnFailure1(hr, "Failed to copy sync request string %ls", pSyncRequest->sczPath);
+        ExitOnFailure(hr, "Failed to copy sync request string %ls", pSyncRequest->sczPath);
 
         // If we previously failed to connect to this remote and now we can again, don't check timestamp, because we need to both push and pull changes
         fCheckDbTimestamp = !fReconnected;
 
         if (!::PostThreadMessageW(pcdb->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_REMOTE, reinterpret_cast<WPARAM>(sczTemp), static_cast<LPARAM>(fCheckDbTimestamp)))
         {
-            ExitWithLastError1(hr, "Failed to send message to background thread to sync from remote %ls", sczTemp);
+            ExitWithLastError(hr, "Failed to send message to background thread to sync from remote %ls", sczTemp);
         }
         sczTemp = NULL;
     }
@@ -1134,7 +1134,7 @@ static HRESULT HandleDriveStatusUpdate(
                 // we should check that the DB guid matches expected value!
                 if (!::PostThreadMessageW(pcdb->dwBackgroundThreadId, BACKGROUND_THREAD_SYNC_FROM_REMOTE, reinterpret_cast<WPARAM>(sczDirectory), static_cast<LPARAM>(FALSE)))
                 {
-                    ExitWithLastError1(hr, "Failed to send message to background thread to sync from remote %ls", sczDirectory);
+                    ExitWithLastError(hr, "Failed to send message to background thread to sync from remote %ls", sczDirectory);
                 }
                 sczDirectory = NULL;
             }
@@ -1268,7 +1268,7 @@ static HRESULT FindSyncRequest(
     if (DWORD_MAX == *pdwIndex)
     {
         hr = E_NOTFOUND;
-        ExitOnFailure2(hr, "Monitor of type %u for path %ls wasn't found", pSyncRequest->type, pSyncRequest->sczPath);
+        ExitOnFailure(hr, "Monitor of type %u for path %ls wasn't found", pSyncRequest->type, pSyncRequest->sczPath);
     }
 
 LExit:
@@ -1317,7 +1317,7 @@ static HRESULT AddProductToMonitorList(
             }
 
             hr = MemEnsureArraySize(reinterpret_cast<void **>(&pContext->rgMonitorItems), pContext->cMonitorItems + 1, sizeof(MONITOR_ITEM), BACKGROUND_ARRAY_GROWTH);
-            ExitOnFailure1(hr, "Failed to increase space after %u monitor items", pContext->cMonitorItems);
+            ExitOnFailure(hr, "Failed to increase space after %u monitor items", pContext->cMonitorItems);
             ++pContext->cMonitorItems;
 
             pItem = pContext->rgMonitorItems + pContext->cMonitorItems - 1;
@@ -1346,7 +1346,7 @@ static HRESULT AddProductToMonitorList(
         if (NULL != pProduct->rgFiles[i].sczExpandedPath)
         {
             hr = PathGetDirectory(pProduct->rgFiles[i].sczExpandedPath, &sczDirectory);
-            ExitOnFailure1(hr, "Failed to get directory portion of path %ls", pProduct->rgFiles[i].sczExpandedPath);
+            ExitOnFailure(hr, "Failed to get directory portion of path %ls", pProduct->rgFiles[i].sczExpandedPath);
 
             BOOL fRecursive = (LEGACY_FILE_PLAIN == pProduct->rgFiles[i].legacyFileType) ? FALSE : TRUE;
 
@@ -1372,7 +1372,7 @@ static HRESULT AddProductToMonitorList(
                 }
 
                 hr = MemEnsureArraySize(reinterpret_cast<void **>(&pContext->rgMonitorItems), pContext->cMonitorItems + 1, sizeof(MONITOR_ITEM), BACKGROUND_ARRAY_GROWTH);
-                ExitOnFailure1(hr, "Failed to increase space after %u monitor items", pContext->cMonitorItems);
+                ExitOnFailure(hr, "Failed to increase space after %u monitor items", pContext->cMonitorItems);
                 ++pContext->cMonitorItems;
 
                 pItem = pContext->rgMonitorItems + pContext->cMonitorItems - 1;
@@ -1475,10 +1475,10 @@ static HRESULT UpdateProductInMonitorList(
     dwOriginalAppIDLocal = pcdb->dwAppID;
 
     hr = ProductFindRow(pcdb, PRODUCT_INDEX_TABLE, wzProductName, wzLegacyVersion, wzLegacyPublicKey, &sceRow);
-    ExitOnFailure1(hr, "Failed to find row for legacy product %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to find row for legacy product %ls", wzProductName);
 
     hr = BeginMonitoringProduct(pcdb, sceRow, &syncSession, pContext);
-    ExitOnFailure1(hr, "Failed to begin monitoring product %ls while updating product in monitor list", wzProductName);
+    ExitOnFailure(hr, "Failed to begin monitoring product %ls while updating product in monitor list", wzProductName);
 
     hr = BackgroundSyncRemotes(pcdb);
     ExitOnFailure(hr, "Failed to send message to background thread to sync to remotes");
@@ -1512,13 +1512,13 @@ static HRESULT AddRemoteToMonitorList(
     BOOL fLocked = FALSE;
 
     hr = PathGetDirectory(wzPath, &sczDirectory);
-    ExitOnFailure1(hr, "Failed to get directory portion of remote path %ls", wzPath);
+    ExitOnFailure(hr, "Failed to get directory portion of remote path %ls", wzPath);
 
     // If this directory is already watched by some other product, add our product ID to the appID list for that monitor
     if (!FindDirectoryMonitorIndex(pContext, sczDirectory, FALSE, &dwIndex))
     {
         hr = MemEnsureArraySize(reinterpret_cast<void **>(&pContext->rgMonitorItems), pContext->cMonitorItems + 1, sizeof(MONITOR_ITEM), BACKGROUND_ARRAY_GROWTH);
-        ExitOnFailure1(hr, "Failed to increase space after %u monitor items", pContext->cMonitorItems);
+        ExitOnFailure(hr, "Failed to increase space after %u monitor items", pContext->cMonitorItems);
         ++pContext->cMonitorItems;
 
         pItem = pContext->rgMonitorItems + pContext->cMonitorItems - 1;
@@ -1537,10 +1537,10 @@ static HRESULT AddRemoteToMonitorList(
         dwOriginalAppIDLocal = pcdb->dwAppID;
 
         hr = MonAddDirectory(pContext->monitorHandle, pItem->sczPath, TRUE, REMOTEDB_SILENCE_PERIOD, NULL);
-        ExitOnFailure1(hr, "Failed to add directory %ls for monitoring", pItem->sczPath);
+        ExitOnFailure(hr, "Failed to add directory %ls for monitoring", pItem->sczPath);
 
         hr = SyncRemotes(pcdb, pItem->sczPath, FALSE);
-        ExitOnFailure1(hr, "Failed to sync remotes starting with the one under directory %ls", pItem->sczPath);
+        ExitOnFailure(hr, "Failed to sync remotes starting with the one under directory %ls", pItem->sczPath);
     }
     else
     {
@@ -1571,7 +1571,7 @@ static HRESULT RemoveRemoteFromMonitorList(
     LPWSTR sczDirectory = NULL;
 
     hr = PathGetDirectory(wzPath, &sczDirectory);
-    ExitOnFailure1(hr, "Failed to get directory portion of remote path %ls", wzPath);
+    ExitOnFailure(hr, "Failed to get directory portion of remote path %ls", wzPath);
 
     for (DWORD i = 0; i < pContext->cMonitorItems; ++i)
     {
@@ -1621,7 +1621,7 @@ static HRESULT PropagateRemotes(
     BOOL fLocked = FALSE;
 
     hr = HandleLock(pcdb);
-    ExitOnFailure1(hr, "Failed to lock handle while propagating remotes from %ls", wzFrom);
+    ExitOnFailure(hr, "Failed to lock handle while propagating remotes from %ls", wzFrom);
     fLocked = TRUE;
     dwOriginalAppIDLocal = pcdb->dwAppID;
 
@@ -1767,7 +1767,7 @@ static HRESULT SyncRemote(
     if (fCheckDbTimestamp)
     {
         hr = FileGetTime(pcdb->sczDbPath, NULL, NULL, &ftLastModified);
-        ExitOnFailure1(hr, "Failed to get file time of remote db: %ls", pcdb->sczDbPath);
+        ExitOnFailure(hr, "Failed to get file time of remote db: %ls", pcdb->sczDbPath);
 
         if (0 == ::CompareFileTime(&ftLastModified, &pcdb->ftLastModified))
         {

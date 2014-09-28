@@ -74,12 +74,12 @@ namespace DutilTests
             LPWSTR sczValue = NULL;
 
             hr = IniGetValue(iniHandle, wzValueName, &sczValue);
-            ExitOnFailure1(hr, "Failed to get ini value: %ls", wzValueName);
+            ExitOnFailure(hr, "Failed to get ini value: %ls", wzValueName);
 
             if (0 != wcscmp(sczValue, wzValue))
             {
                 hr = E_FAIL;
-                ExitOnFailure3(hr, "Expected to find value in INI: '%ls'='%ls' - but found value '%ls' instead", wzValueName, wzValue, sczValue);
+                ExitOnFailure(hr, "Expected to find value in INI: '%ls'='%ls' - but found value '%ls' instead", wzValueName, wzValue, sczValue);
             }
 
         LExit:
@@ -98,7 +98,7 @@ namespace DutilTests
                 {
                     hr = E_FAIL;
                 }
-                ExitOnFailure1(hr, "INI value shouldn't have been found: %ls", wzValueName);
+                ExitOnFailure(hr, "INI value shouldn't have been found: %ls", wzValueName);
             }
         LExit:
             ReleaseStr(sczValue);
@@ -158,7 +158,7 @@ namespace DutilTests
             if (cValues != 5)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 5 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure(hr, "Expected to find 5 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle, L"PlainValue", L"Blah");
@@ -184,7 +184,7 @@ namespace DutilTests
             if (cValues != 7)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 7 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure(hr, "Expected to find 7 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle, L"PlainValue", L"Blah");
@@ -220,7 +220,7 @@ namespace DutilTests
             if (cValues != 6)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 6 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure(hr, "Expected to find 6 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle2, L"PlainValue", L"Blah");
@@ -260,7 +260,7 @@ namespace DutilTests
             if (cValues != 0)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 0 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure(hr, "Expected to find 0 values in INI file, but found %u instead!", cValues);
             }
 
             hr = IniSetValue(iniHandle, L"Value1", L"BlahTypo");
@@ -299,7 +299,7 @@ namespace DutilTests
             if (cValues != 8)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 8 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure(hr, "Expected to find 8 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle, L"Value1", L"Blah1");
@@ -331,7 +331,7 @@ namespace DutilTests
             if (cValues != 7)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find 7 values in INI file, but found %u instead!", cValues);
+                ExitOnFailure(hr, "Expected to find 7 values in INI file, but found %u instead!", cValues);
             }
 
             AssertValue(iniHandle2, L"Value1", L"Blah1");

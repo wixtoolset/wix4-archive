@@ -265,10 +265,10 @@ HRESULT ProcessCommandLine(
                 ++i;
 
                 hr = MemEnsureArraySize((LPVOID *)&pCommandLineRequest->rgsczLegacyManifests, pCommandLineRequest->cLegacyManifests + 1, sizeof(LPWSTR), 10);
-                ExitOnFailure1(hr, "Failed to resize legacy manifest array to size %u", pCommandLineRequest->cLegacyManifests + 1);
+                ExitOnFailure(hr, "Failed to resize legacy manifest array to size %u", pCommandLineRequest->cLegacyManifests + 1);
 
                 hr = PathExpand(&pCommandLineRequest->rgsczLegacyManifests[pCommandLineRequest->cLegacyManifests], argv[i], PATH_EXPAND_FULLPATH);
-                ExitOnFailure1(hr, "Failed to expand legacy manifest path %ls", argv[i]);
+                ExitOnFailure(hr, "Failed to expand legacy manifest path %ls", argv[i]);
 
                 ++(pCommandLineRequest->cLegacyManifests);
             }
@@ -887,7 +887,7 @@ static HRESULT CheckProductInstalledState(
         }
 
         hr = CfgIsProductRegistered(pcdLocalHandle, wzProductName, wzVersion, wzPublicKey, *prgfInstalled + i);
-        ExitOnFailure3(hr, "Failed to check if product is registered: %ls, %ls, %ls", wzProductName, wzVersion, (NULL == wzPublicKey) ? L"NULL" : wzPublicKey);
+        ExitOnFailure(hr, "Failed to check if product is registered: %ls, %ls, %ls", wzProductName, wzVersion, (NULL == wzPublicKey) ? L"NULL" : wzPublicKey);
     }
 
 LExit:

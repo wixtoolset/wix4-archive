@@ -117,7 +117,7 @@ static HRESULT LoadIfRelatedBundle(
     BOOTSTRAPPER_RELATION_TYPE relationType = BOOTSTRAPPER_RELATION_NONE;
 
     hr = RegOpen(hkUninstallKey, sczRelatedBundleId, KEY_READ, &hkBundleId);
-    ExitOnFailure1(hr, "Failed to open uninstall key for potential related bundle: %ls", sczRelatedBundleId);
+    ExitOnFailure(hr, "Failed to open uninstall key for potential related bundle: %ls", sczRelatedBundleId);
 
     hr = DetermineRelationType(hkBundleId, pRegistration, &relationType);
     if (FAILED(hr) || BOOTSTRAPPER_RELATION_NONE == relationType)
@@ -133,7 +133,7 @@ static HRESULT LoadIfRelatedBundle(
         BURN_RELATED_BUNDLE* pRelatedBundle = pRelatedBundles->rgRelatedBundles + pRelatedBundles->cRelatedBundles;
 
         hr = LoadRelatedBundleFromKey(sczRelatedBundleId, hkBundleId, fPerMachine, relationType, pRelatedBundle);
-        ExitOnFailure1(hr, "Failed to initialize package from related bundle id: %ls", sczRelatedBundleId);
+        ExitOnFailure(hr, "Failed to initialize package from related bundle id: %ls", sczRelatedBundleId);
 
         ++pRelatedBundles->cRelatedBundles;
     }
@@ -186,7 +186,7 @@ static HRESULT DetermineRelationType(
     if (SUCCEEDED(hr))
     {
         hr = DictCreateStringListFromArray(&sdUpgradeCodes, rgsczUpgradeCodes, cUpgradeCodes, DICT_FLAG_CASEINSENSITIVE);
-        ExitOnFailure1(hr, "Failed to create string dictionary for %hs.", "upgrade codes");
+        ExitOnFailure(hr, "Failed to create string dictionary for %hs.", "upgrade codes");
 
         // Upgrade relationship: when their upgrade codes match our upgrade codes.
         hr = DictCompareStringListToArray(sdUpgradeCodes, const_cast<LPCWSTR*>(pRegistration->rgsczUpgradeCodes), pRegistration->cUpgradeCodes);
@@ -253,7 +253,7 @@ static HRESULT DetermineRelationType(
     if (SUCCEEDED(hr))
     {
         hr = DictCreateStringListFromArray(&sdAddonCodes, rgsczAddonCodes, cAddonCodes, DICT_FLAG_CASEINSENSITIVE);
-        ExitOnFailure1(hr, "Failed to create string dictionary for %hs.", "addon codes");
+        ExitOnFailure(hr, "Failed to create string dictionary for %hs.", "addon codes");
 
         // Addon relationship: when their addon codes match our detect codes.
         hr = DictCompareStringListToArray(sdAddonCodes, const_cast<LPCWSTR*>(pRegistration->rgsczDetectCodes), pRegistration->cDetectCodes);
@@ -292,7 +292,7 @@ static HRESULT DetermineRelationType(
     if (SUCCEEDED(hr))
     {
         hr = DictCreateStringListFromArray(&sdPatchCodes, rgsczPatchCodes, cPatchCodes, DICT_FLAG_CASEINSENSITIVE);
-        ExitOnFailure1(hr, "Failed to create string dictionary for %hs.", "patch codes");
+        ExitOnFailure(hr, "Failed to create string dictionary for %hs.", "patch codes");
 
         // Patch relationship: when their patch codes match our detect codes.
         hr = DictCompareStringListToArray(sdPatchCodes, const_cast<LPCWSTR*>(pRegistration->rgsczDetectCodes), pRegistration->cDetectCodes);
@@ -331,7 +331,7 @@ static HRESULT DetermineRelationType(
     if (SUCCEEDED(hr))
     {
         hr = DictCreateStringListFromArray(&sdDetectCodes, rgsczDetectCodes, cDetectCodes, DICT_FLAG_CASEINSENSITIVE);
-        ExitOnFailure1(hr, "Failed to create string dictionary for %hs.", "detect codes");
+        ExitOnFailure(hr, "Failed to create string dictionary for %hs.", "detect codes");
 
         // Detect relationship: when their detect codes match our detect codes.
         hr = DictCompareStringListToArray(sdDetectCodes, const_cast<LPCWSTR*>(pRegistration->rgsczDetectCodes), pRegistration->cDetectCodes);
@@ -419,28 +419,28 @@ static HRESULT LoadRelatedBundleFromKey(
     }
 
     hr = RegReadVersion(hkBundleId, BURN_REGISTRATION_REGISTRY_BUNDLE_VERSION, &pRelatedBundle->qwVersion);
-    ExitOnFailure1(hr, "Failed to read version from registry for bundle: %ls", wzRelatedBundleId);
+    ExitOnFailure(hr, "Failed to read version from registry for bundle: %ls", wzRelatedBundleId);
 
     hr = RegReadString(hkBundleId, BURN_REGISTRATION_REGISTRY_BUNDLE_CACHE_PATH, &sczCachePath);
-    ExitOnFailure1(hr, "Failed to read cache path from registry for bundle: %ls", wzRelatedBundleId);
+    ExitOnFailure(hr, "Failed to read cache path from registry for bundle: %ls", wzRelatedBundleId);
 
     hr = FileSize(sczCachePath, reinterpret_cast<LONGLONG *>(&qwFileSize));
-    ExitOnFailure1(hr, "Failed to get size of pseudo bundle: %ls", sczCachePath);
+    ExitOnFailure(hr, "Failed to get size of pseudo bundle: %ls", sczCachePath);
 
     hr = RegReadString(hkBundleId, BURN_REGISTRATION_REGISTRY_BUNDLE_PROVIDER_KEY, &dependencyProvider.sczKey);
     if (E_FILENOTFOUND != hr)
     {
-        ExitOnFailure1(hr, "Failed to read provider key from registry for bundle: %ls", wzRelatedBundleId);
+        ExitOnFailure(hr, "Failed to read provider key from registry for bundle: %ls", wzRelatedBundleId);
 
         dependencyProvider.fImported = TRUE;
 
         hr = FileVersionToStringEx(pRelatedBundle->qwVersion, &dependencyProvider.sczVersion);
-        ExitOnFailure1(hr, "Failed to copy version for bundle: %ls", wzRelatedBundleId);
+        ExitOnFailure(hr, "Failed to copy version for bundle: %ls", wzRelatedBundleId);
 
         hr = RegReadString(hkBundleId, BURN_REGISTRATION_REGISTRY_BUNDLE_DISPLAY_NAME, &dependencyProvider.sczDisplayName);
         if (E_FILENOTFOUND != hr)
         {
-            ExitOnFailure1(hr, "Failed to copy display name for bundle: %ls", wzRelatedBundleId);
+            ExitOnFailure(hr, "Failed to copy display name for bundle: %ls", wzRelatedBundleId);
         }
     }
 
@@ -449,7 +449,7 @@ static HRESULT LoadRelatedBundleFromKey(
     {
         hr = S_OK;
     }
-    ExitOnFailure1(hr, "Failed to read tag from registry for bundle: %ls", wzRelatedBundleId);
+    ExitOnFailure(hr, "Failed to read tag from registry for bundle: %ls", wzRelatedBundleId);
 
     pRelatedBundle->relationType = relationType;
 
@@ -458,7 +458,7 @@ static HRESULT LoadRelatedBundleFromKey(
                                 L"-quiet", L"-repair -quiet", L"-uninstall -quiet",
                                 (dependencyProvider.sczKey && *dependencyProvider.sczKey) ? &dependencyProvider : NULL,
                                 NULL, 0);
-    ExitOnFailure1(hr, "Failed to initialize related bundle to represent bundle: %ls", wzRelatedBundleId);
+    ExitOnFailure(hr, "Failed to initialize related bundle to represent bundle: %ls", wzRelatedBundleId);
 
 LExit:
     DependencyUninitialize(&dependencyProvider);

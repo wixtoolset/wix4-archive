@@ -258,7 +258,7 @@ HRESULT ScaWebsRead7(
                 pwzData[dwLen-1] = 0;
             }
             hr = ::StringCchCopyW(psw->wzDirectory, countof(psw->wzDirectory), pwzData);
-            ExitOnFailure1(hr, "Failed to copy web dir: '%ls'", pwzData);
+            ExitOnFailure(hr, "Failed to copy web dir: '%ls'", pwzData);
 
         }
 
@@ -617,7 +617,7 @@ HRESULT ScaWebsInstall7(
         if (psw->fHasComponent && WcaIsInstalling(psw->isInstalled, psw->isAction))
         {
             hr = ScaWebWrite7(psw, psapList);
-            ExitOnFailure1(hr, "failed to write web '%ls' to metabase", psw->wzKey);
+            ExitOnFailure(hr, "failed to write web '%ls' to metabase", psw->wzKey);
         }
 
         psw = psw->pswNext;
@@ -641,7 +641,7 @@ HRESULT ScaWebsUninstall7(
         {
             // If someone
             hr = ScaWebRemove7(psw);
-            ExitOnFailure1(hr, "Failed to remove web '%ls' ", psw->wzKey);
+            ExitOnFailure(hr, "Failed to remove web '%ls' ", psw->wzKey);
         }
 
         psw = psw->pswNext;
@@ -751,7 +751,7 @@ static HRESULT ScaWebWrite7(
     {
         // Check if site already exists.
         hr = ScaWebSearch7(psw, NULL, &fExists);
-        ExitOnFailure1(hr, "Failed to search for web: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to search for web: %ls", psw->wzKey);
 
         if (fExists)
         {
@@ -916,21 +916,21 @@ static HRESULT ScaWebWrite7(
     if (psw->pswscList)
     {
         hr = ScaSslCertificateWrite7(psw->wzDescription, psw->pswscList);
-        ExitOnFailure1(hr, "Failed to write SSL certificates for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write SSL certificates for Web site: %ls", psw->wzKey);
     }
 
     // write the headers
     if (psw->pshhList)
     {
         hr = ScaWriteHttpHeader7(psw->wzDescription, L"/", psw->pshhList);
-        ExitOnFailure1(hr, "Failed to write custom HTTP headers for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write custom HTTP headers for Web site: %ls", psw->wzKey);
     }
 
     // write the errors
     if (psw->psweList)
     {
         hr = ScaWriteWebError7(psw->wzDescription, L"/", psw->psweList);
-        ExitOnFailure1(hr, "Failed to write custom web errors for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write custom web errors for Web site: %ls", psw->wzKey);
     }
 
     // write the log information to the metabase

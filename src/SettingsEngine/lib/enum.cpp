@@ -151,7 +151,7 @@ HRESULT EnumResize(
             break;
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Unexpected enumeration type encountered while initially allocating enumeration struct to %u size", dwNewSize);
+            ExitOnFailure(hr, "Unexpected enumeration type encountered while initially allocating enumeration struct to %u size", dwNewSize);
         }
     }
     else // else MemReAlloc
@@ -194,7 +194,7 @@ HRESULT EnumResize(
             break;
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Unexpected enumeration type encountered while initially allocating enumeration struct to %u size", dwNewSize);
+            ExitOnFailure(hr, "Unexpected enumeration type encountered while initially allocating enumeration struct to %u size", dwNewSize);
         }
     }
 
@@ -237,13 +237,13 @@ HRESULT EnumCopy(
         for (i = 0; i < dwNewCount; ++i)
         {
             hr = ValueCopy(&pcesInput->valueHistory.rgcValues[dwStartIndex+i], &(*ppcesEnumOut)->valueHistory.rgcValues[i]);
-            ExitOnFailure1(hr, "Failed to copy value at index %u while copying value history enum", i);
+            ExitOnFailure(hr, "Failed to copy value at index %u while copying value history enum", i);
         }
         break;
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "EnumCopy received enumType %d, this function only supports ENUMERATION_VALUE_HISTORY", pcesInput->enumType);
+        ExitOnFailure(hr, "EnumCopy received enumType %d, this function only supports ENUMERATION_VALUE_HISTORY", pcesInput->enumType);
         break;
     }
 
@@ -279,7 +279,7 @@ HRESULT EnumValues(
     ExitOnFailure(hr, "Failed to begin query into value table");
 
     hr = SceSetQueryColumnDword(sqhHandle, pcdb->dwAppID);
-    ExitOnFailure1(hr, "Failed to set query column dword to: %u", pcdb->dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", pcdb->dwAppID);
 
     hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
     if (E_NOTFOUND == hr)
@@ -396,10 +396,10 @@ HRESULT EnumPastValues(
     ExitOnFailure(hr, "Failed to begin query into value table");
 
     hr = SceSetQueryColumnDword(sqhHandle, pcdb->dwAppID);
-    ExitOnFailure1(hr, "Failed to set query column dword to: %u", pcdb->dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", pcdb->dwAppID);
 
     hr = SceSetQueryColumnString(sqhHandle, wzName);
-    ExitOnFailure1(hr, "Failed to set query column string to: %ls", wzName);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzName);
 
     hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
     if (E_NOTFOUND == hr)
@@ -487,7 +487,7 @@ HRESULT EnumDatabaseList(
     hr = SceGetFirstRow(pcdb->psceDb, DATABASE_INDEX_TABLE, &sceRow);
     while (E_NOTFOUND != hr)
     {
-        ExitOnFailure1(hr, "Failed to get row from table: %u", DATABASE_INDEX_TABLE);
+        ExitOnFailure(hr, "Failed to get row from table: %u", DATABASE_INDEX_TABLE);
 
         hr = SceGetColumnString(sceRow, DATABASE_INDEX_FRIENDLY_NAME, &(pcesEnum->databaseList.rgsczFriendlyName[pcesEnum->dwNumValues]));
         ExitOnFailure(hr, "Failed to get friendly name from database index table");

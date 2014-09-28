@@ -42,7 +42,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_SESSIONSTATE);
         ExitOnFailure(hr, "Failed to write WebApp ASP sessionstate id");
         hr = ScaWriteConfigInteger(pswapp->fAllowSessionState);
-        ExitOnFailure1(hr, "Failed to write allow session information for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write allow session information for App: '%ls'", pswapp->wzName);
     }
 
     // session timeout
@@ -52,7 +52,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_SESSIONTIMEOUT);
         ExitOnFailure(hr, "Failed to write WebApp ASP sessiontimepot id");
         hr = ScaWriteConfigInteger(pswapp->iSessionTimeout);
-        ExitOnFailure1(hr, "Failed to write session timeout for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write session timeout for App: '%ls'", pswapp->wzName);
     }
 
     // asp buffering
@@ -62,7 +62,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_BUFFER);
         ExitOnFailure(hr, "Failed to write WebApp ASP buffer id");
         hr = ScaWriteConfigInteger(pswapp->fBuffer);
-        ExitOnFailure1(hr, "Failed to write buffering flag for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write buffering flag for App: '%ls'", pswapp->wzName);
     }
 
     // asp parent paths
@@ -72,7 +72,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_PARENTPATHS);
         ExitOnFailure(hr, "Failed to write WebApp ASP parentpaths id");
         hr = ScaWriteConfigInteger(pswapp->fParentPaths);
-        ExitOnFailure1(hr, "Failed to write parent paths flag for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write parent paths flag for App: '%ls'", pswapp->wzName);
     }
 
     // default scripting language
@@ -82,7 +82,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_SCRIPTLANG);
         ExitOnFailure(hr, "Failed to write WebApp ASP script lang id");
         hr = ScaWriteConfigString(pswapp->wzDefaultScript);
-        ExitOnFailure1(hr, "Failed to write default scripting language for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write default scripting language for App: '%ls'", pswapp->wzName);
     }
 
     // asp script timeout
@@ -92,7 +92,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_SCRIPTTIMEOUT);
         ExitOnFailure(hr, "Failed to write WebApp ASP script timeout id");
         hr = ScaWriteConfigInteger(pswapp->iScriptTimeout);
-        ExitOnFailure1(hr, "Failed to write script timeout for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write script timeout for App: '%ls'", pswapp->wzName);
     }
 
     // asp server-side script debugging
@@ -102,7 +102,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_SCRIPTSERVERDEBUG);
         ExitOnFailure(hr, "Failed to write WebApp ASP script debug id");
         hr = ScaWriteConfigInteger(pswapp->fServerDebugging);
-        ExitOnFailure1(hr, "Failed to write ASP server-side script debugging flag for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write ASP server-side script debugging flag for App: '%ls'", pswapp->wzName);
     }
 
     // asp client-side script debugging
@@ -112,7 +112,7 @@ HRESULT ScaWriteWebApplication7(
         hr = ScaWriteConfigID(IIS_ASP_SCRIPTCLIENTDEBUG);
         ExitOnFailure(hr, "Failed to write WebApp ASP script debug id");
         hr = ScaWriteConfigInteger(pswapp->fClientDebugging);
-        ExitOnFailure1(hr, "Failed to write ASP client-side script debugging flag for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write ASP client-side script debugging flag for App: '%ls'", pswapp->wzName);
     }
 
     //done with ASP application properties
@@ -123,7 +123,7 @@ HRESULT ScaWriteWebApplication7(
     if (pswapp->pswappextList)
     {
         hr = ScaWebAppExtensionsWrite7(wzWebName, wzRootOfWeb, pswapp->pswappextList);
-        ExitOnFailure1(hr, "Failed to write AppExtensions for App: '%ls'", pswapp->wzName);
+        ExitOnFailure(hr, "Failed to write AppExtensions for App: '%ls'", pswapp->wzName);
     }
 
 LExit:

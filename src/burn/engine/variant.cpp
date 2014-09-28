@@ -431,7 +431,7 @@ static HRESULT BVariantEncryptString(
     if ((MAXDWORD - extraNeeded) < cbData)
     {
         hr = E_INVALIDDATA;
-        ExitOnFailure1(hr, "The string is too big: size %u", cbData);
+        ExitOnFailure(hr, "The string is too big: size %u", cbData);
     }
     else if (0 < extraNeeded)
     {

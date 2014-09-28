@@ -107,7 +107,7 @@ extern "C" HRESULT LoggingOpen(
                 hr = HRESULT_FROM_WIN32(ERROR_INSTALL_LOG_FAILURE);
                 SplashScreenDisplayError(display, wzBundleName, hr);
 
-                ExitOnFailure1(hrOriginal, "Failed to open log: %ls", pLog->sczPath);
+                ExitOnFailure(hrOriginal, "Failed to open log: %ls", pLog->sczPath);
             }
         }
         else

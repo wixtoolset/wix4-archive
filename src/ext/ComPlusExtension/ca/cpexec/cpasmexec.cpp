@@ -321,11 +321,11 @@ HRESULT CpiConfigureAssemblies(
         {
         case atCreate:
             hr = RegisterAssembly(&attrs);
-            ExitOnFailure1(hr, "Failed to register assembly, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to register assembly, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = UnregisterAssembly(&attrs);
-            ExitOnFailure1(hr, "Failed to unregister assembly, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to unregister assembly, key: %S", attrs.pwzKey);
             break;
         default:
             hr = S_OK;
@@ -1557,7 +1557,7 @@ static HRESULT ConfigureRoleAssignments(
         {
             // find existing role
             hr = CpiFindCollectionObjectByName(piRoleColl, pItm->wzRoleName, NULL);
-            ExitOnFailure1(hr, "Failed to find role, key: %S", pItm->wzKey);
+            ExitOnFailure(hr, "Failed to find role, key: %S", pItm->wzKey);
 
             if (S_OK == hr)
                 continue; // role already exists
@@ -1568,7 +1568,7 @@ static HRESULT ConfigureRoleAssignments(
 
             // role name
             hr = CpiPutCollectionObjectValue(piRoleObj, L"Name", pItm->wzRoleName);
-            ExitOnFailure1(hr, "Failed to set role name property, key: %S", pItm->wzKey);
+            ExitOnFailure(hr, "Failed to set role name property, key: %S", pItm->wzKey);
 
             // clean up
             ReleaseNullObject(piRoleObj);
@@ -1577,7 +1577,7 @@ static HRESULT ConfigureRoleAssignments(
         {
             // remove role
             hr = CpiRemoveCollectionObject(piRoleColl, NULL, pItm->wzRoleName, FALSE);
-            ExitOnFailure1(hr, "Failed to remove role, key: %S", pItm->wzKey);
+            ExitOnFailure(hr, "Failed to remove role, key: %S", pItm->wzKey);
         }
     }
 

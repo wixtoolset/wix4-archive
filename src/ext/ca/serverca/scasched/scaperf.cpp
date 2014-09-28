@@ -255,11 +255,11 @@ static HRESULT ProcessPerformanceCategory(
         // Check to see if the Component is being installed or uninstalled
         // when we are processing the same.
         hr = WcaGetRecordString(hRec, pcdqComponent, &pwzComponent);
-        ExitOnFailure1(hr, "Failed to get Component for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to get Component for PerformanceCategory: %ls", pwzId);
 
         er = ::MsiGetComponentStateW(hInstall, pwzComponent, &isInstalled, &isAction);
         hr = HRESULT_FROM_WIN32(er);
-        ExitOnFailure1(hr, "Failed to get Component state for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to get Component state for PerformanceCategory: %ls", pwzId);
 
         if ((fInstall && !WcaIsInstalling(isInstalled, isAction)) ||
             (!fInstall && !WcaIsUninstalling(isInstalled, isAction)))
@@ -268,19 +268,19 @@ static HRESULT ProcessPerformanceCategory(
         }
 
         hr = WcaGetRecordString(hRec, pcdqName, &pwzName);
-        ExitOnFailure1(hr, "Failed to get Name for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to get Name for PerformanceCategory: %ls", pwzId);
         hr = WcaWriteStringToCaData(pwzName, &pwzCustomActionData);
-        ExitOnFailure1(hr, "Failed to add Name to CustomActionData for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to add Name to CustomActionData for PerformanceCategory: %ls", pwzId);
 
         hr = WcaGetRecordString(hRec, pcdqIniData, &pwzData);
-        ExitOnFailure1(hr, "Failed to get IniData for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to get IniData for PerformanceCategory: %ls", pwzId);
         hr = WcaWriteStringToCaData(pwzData, &pwzCustomActionData);
-        ExitOnFailure1(hr, "Failed to add IniData to CustomActionData for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to add IniData to CustomActionData for PerformanceCategory: %ls", pwzId);
 
         hr = WcaGetRecordString(hRec, pcdqConstantData, &pwzData);
-        ExitOnFailure1(hr, "Failed to get ConstantData for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to get ConstantData for PerformanceCategory: %ls", pwzId);
         hr = WcaWriteStringToCaData(pwzData, &pwzCustomActionData);
-        ExitOnFailure1(hr, "Failed to add ConstantData to CustomActionData for PerformanceCategory: %ls", pwzId);
+        ExitOnFailure(hr, "Failed to add ConstantData to CustomActionData for PerformanceCategory: %ls", pwzId);
     }
 
     if (hr == E_NOMOREITEMS)
@@ -295,18 +295,18 @@ static HRESULT ProcessPerformanceCategory(
         if (fInstall)
         {
             hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"RollbackRegisterPerfCounterData"), pwzCustomActionData, COST_PERFMON_UNREGISTER);
-            ExitOnFailure1(hr, "Failed to schedule RollbackRegisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
+            ExitOnFailure(hr, "Failed to schedule RollbackRegisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
 
             hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"RegisterPerfCounterData"), pwzCustomActionData, COST_PERFMON_REGISTER);
-            ExitOnFailure1(hr, "Failed to schedule RegisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
+            ExitOnFailure(hr, "Failed to schedule RegisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
         }
         else
         {
             hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"RollbackUnregisterPerfCounterData"), pwzCustomActionData, COST_PERFMON_REGISTER);
-            ExitOnFailure1(hr, "Failed to schedule RollbackUnregisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
+            ExitOnFailure(hr, "Failed to schedule RollbackUnregisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
 
             hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"UnregisterPerfCounterData"), pwzCustomActionData, COST_PERFMON_UNREGISTER);
-            ExitOnFailure1(hr, "Failed to schedule UnregisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
+            ExitOnFailure(hr, "Failed to schedule UnregisterPerfCounterData action for PerformanceCategory: %ls", pwzId);
         }
     }
 

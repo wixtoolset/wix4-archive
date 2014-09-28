@@ -72,7 +72,7 @@ HRESULT __stdcall ScaVirtualDirsRead7(
 
         // get vdir properties
         hr = ::StringCchCopyW(pvdir->wzComponent, countof(pvdir->wzComponent), pwzData);
-        ExitOnFailure1(hr, "failed to copy vdir component name: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy vdir component name: %ls", pwzData);
 
         hr = WcaGetRecordString(hRec, vdqWeb, &pwzData);
         ExitOnFailure(hr, "Failed to get Web for VirtualDir");
@@ -152,13 +152,13 @@ HRESULT __stdcall ScaVirtualDirsRead7(
         if (*pwzData && *ppshhList)
         {
             hr = ScaGetHttpHeader(hhptVDir, pwzData, ppshhList, &pvdir->pshh);
-            ExitOnFailure1(hr, "Failed to get custom HTTP headers for VirtualDir: %ls", pwzData);
+            ExitOnFailure(hr, "Failed to get custom HTTP headers for VirtualDir: %ls", pwzData);
         }
 
         if (*pwzData && *ppsweList)
         {
             hr = ScaGetWebError(weptVDir, pwzData, ppsweList, &pvdir->pswe);
-            ExitOnFailure1(hr, "Failed to get custom web errors for VirtualDir: %ls", pwzData);
+            ExitOnFailure(hr, "Failed to get custom web errors for VirtualDir: %ls", pwzData);
         }
     }
 
@@ -337,7 +337,7 @@ HRESULT ScaVirtualDirsUninstall7(
                 ExitOnFailure(hr, "Failed to write vdir path");
             }
 
-            ExitOnFailure1(hr, "Failed to remove VirtualDir '%ls' from config", psvd->wzKey);
+            ExitOnFailure(hr, "Failed to remove VirtualDir '%ls' from config", psvd->wzKey);
         }
 
         psvd = psvd->psvdNext;

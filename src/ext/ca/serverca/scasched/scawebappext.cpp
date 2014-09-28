@@ -55,13 +55,13 @@ HRESULT ScaWebAppExtensionsRead(
 
         // application extension verbs
         hr = WcaGetRecordString(hRec, wappextqVerbs, &pwzData);
-        ExitOnFailure1(hr, "Failed to get Verbs for Application: '%ls'", wzApplication);
+        ExitOnFailure(hr, "Failed to get Verbs for Application: '%ls'", wzApplication);
         hr = ::StringCchCopyW(pswappext->wzVerbs, countof(pswappext->wzVerbs), pwzData);
         ExitOnFailure(hr, "Failed to copy verbs string to webappext object");
 
         // extension executeable
         hr = WcaGetRecordString(hRec, wappextqExecutable, &pwzData);
-        ExitOnFailure1(hr, "Failed to get Executable for Application: '%ls'", wzApplication);
+        ExitOnFailure(hr, "Failed to get Executable for Application: '%ls'", wzApplication);
         hr = ::StringCchCopyW(pswappext->wzExecutable, countof(pswappext->wzExecutable), pwzData);
         ExitOnFailure(hr, "Failed to copy executable string to webappext object");
 
@@ -153,7 +153,7 @@ HRESULT ScaWebAppExtensionsWrite(
     if (*wzAppExtensions)
     {
         hr = ScaWriteMetabaseValue(piMetabase, wzRootOfWeb, NULL, MD_SCRIPT_MAPS, METADATA_INHERIT, IIS_MD_UT_FILE, MULTISZ_METADATA, wzAppExtensions);
-        ExitOnFailure1(hr, "Failed to write AppExtension: '%ls'", wzAppExtension);
+        ExitOnFailure(hr, "Failed to write AppExtension: '%ls'", wzAppExtension);
     }
 
 LExit:

@@ -39,11 +39,11 @@ extern "C" HRESULT CFGAPI CfgCreateRemoteDatabase(
     if (FileExistsEx(wzPath, NULL))
     {
         hr = HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS);
-        ExitOnFailure1(hr, "Tried to create remote database %ls, but it already exists!", wzPath);
+        ExitOnFailure(hr, "Tried to create remote database %ls, but it already exists!", wzPath);
     }
 
     hr = RemoteDatabaseInitialize(wzPath, TRUE, FALSE, FALSE, pcdHandle);
-    ExitOnFailure1(hr, "Failed to create remote database at path: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to create remote database at path: %ls", wzPath);
 
 LExit:
     return hr;
@@ -62,11 +62,11 @@ extern "C" HRESULT CFGAPI CfgOpenRemoteDatabase(
     if (!FileExistsEx(wzPath, NULL))
     {
         hr = E_NOTFOUND;
-        ExitOnFailure1(hr, "Tried to open remote database %ls, but it doesn't exist!", wzPath);
+        ExitOnFailure(hr, "Tried to open remote database %ls, but it doesn't exist!", wzPath);
     }
 
     hr = RemoteDatabaseInitialize(wzPath, FALSE, FALSE, FALSE, pcdHandle);
-    ExitOnFailure1(hr, "Failed to open remote database at path: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to open remote database at path: %ls", wzPath);
 
 LExit:
     return hr;
@@ -92,7 +92,7 @@ extern "C" HRESULT CFGAPI CfgRememberDatabase(
     hr = DatabaseListFind(pcdbLocal, wzFriendlyName, &sceRow);
     if (E_NOTFOUND != hr)
     {
-        ExitOnFailure1(hr, "Failed to find database index row for friendly name '%ls'", wzFriendlyName);
+        ExitOnFailure(hr, "Failed to find database index row for friendly name '%ls'", wzFriendlyName);
 
         hr = SceBeginTransaction(pcdbLocal->psceDb);
         ExitOnFailure(hr, "Failed to begin transaction");
@@ -112,20 +112,20 @@ extern "C" HRESULT CFGAPI CfgRememberDatabase(
         {
             pcdbRemote->fSyncByDefault = fSyncByDefault;
             hr = BackgroundRemoveRemote(pcdbLocal, pcdbRemote->sczOriginalDbPath);
-            ExitOnFailure1(hr, "Failed to remove remote path to background thread for automatic synchronization: %ls", pcdbRemote->sczOriginalDbPath);
+            ExitOnFailure(hr, "Failed to remove remote path to background thread for automatic synchronization: %ls", pcdbRemote->sczOriginalDbPath);
         }
         else if (!pcdbRemote->fSyncByDefault && fSyncByDefault)
         {
             pcdbRemote->fSyncByDefault = fSyncByDefault;
             hr = BackgroundAddRemote(pcdbLocal, pcdbRemote->sczOriginalDbPath);
-            ExitOnFailure1(hr, "Failed to add remote path to background thread for automatic synchronization: %ls", pcdbRemote->sczOriginalDbPath);
+            ExitOnFailure(hr, "Failed to add remote path to background thread for automatic synchronization: %ls", pcdbRemote->sczOriginalDbPath);
         }
     }
     else
     {
         pcdbRemote->fSyncByDefault = fSyncByDefault;
         hr = DatabaseListInsert(pcdbLocal, wzFriendlyName, fSyncByDefault, pcdbRemote->sczOriginalDbPath);
-        ExitOnFailure1(hr, "Failed to remember database '%ls' in database list", wzFriendlyName);
+        ExitOnFailure(hr, "Failed to remember database '%ls' in database list", wzFriendlyName);
     }
 
     pcdbRemote->fSyncByDefault = fSyncByDefault;
@@ -162,16 +162,16 @@ extern "C" HRESULT CFGAPI CfgOpenKnownRemoteDatabase(
     fLocked = TRUE;
 
     hr = DatabaseListFind(pcdbLocal, wzFriendlyName, &sceRow);
-    ExitOnFailure1(hr, "Failed to find database index row for friendly name '%ls'", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to find database index row for friendly name '%ls'", wzFriendlyName);
 
     hr = SceGetColumnString(sceRow, DATABASE_INDEX_PATH, &sczPath);
-    ExitOnFailure1(hr, "Failed to get path from database list for database '%ls'", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to get path from database list for database '%ls'", wzFriendlyName);
 
     hr = SceGetColumnBool(sceRow, DATABASE_INDEX_SYNC_BY_DEFAULT, &fSyncByDefault);
     ExitOnFailure(hr, "Failed to get 'sync by default' column for existing database in list");
 
     hr = RemoteDatabaseInitialize(sczPath, FALSE, fSyncByDefault, TRUE, pcdHandle);
-    ExitOnFailure2(hr, "Failed to open known database '%ls' at path '%ls'", wzFriendlyName, sczPath);
+    ExitOnFailure(hr, "Failed to open known database '%ls' at path '%ls'", wzFriendlyName, sczPath);
 
 LExit:
     ReleaseSceRow(sceRow);
@@ -206,13 +206,13 @@ extern "C" HRESULT CFGAPI CfgForgetDatabase(
     if (pcdbRemote->fSyncByDefault)
     {
         hr = BackgroundRemoveRemote(pcdbLocal, pcdbRemote->sczDbPath);
-        ExitOnFailure1(hr, "Failed to remove remote path to background thread for automatic synchronization: %ls", pcdbRemote->sczDbPath);
+        ExitOnFailure(hr, "Failed to remove remote path to background thread for automatic synchronization: %ls", pcdbRemote->sczDbPath);
 
         pcdbRemote->fSyncByDefault = FALSE;
     }
 
     hr = DatabaseListDelete(pcdbLocal, wzFriendlyName);
-    ExitOnFailure1(hr, "Failed to delete database '%ls' from database list", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to delete database '%ls' from database list", wzFriendlyName);
 
 LExit:
     if (fLocked)
@@ -322,10 +322,10 @@ static HRESULT RemoteDatabaseInitialize(
     pcdb->fRemote = TRUE;
 
     hr = StrAllocString(&pcdb->sczOriginalDbPath, wzPath, 0);
-    ExitOnFailure1(hr, "Failed to copy original path: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to copy original path: %ls", wzPath);
 
     hr = PathGetDirectory(wzPath, &pcdb->sczOriginalDbDir);
-    ExitOnFailure1(hr, "Failed to get directory of original path: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to get directory of original path: %ls", wzPath);
 
     if (wzPath[0] != L'\\' || wzPath[1] != L'\\')
     {
@@ -335,7 +335,7 @@ static HRESULT RemoteDatabaseInitialize(
             ReleaseNullStr(pcdb->sczDbPath);
             hr = S_OK;
         }
-        ExitOnFailure1(hr, "Failed to convert remote path %ls to unc path", wzPath);
+        ExitOnFailure(hr, "Failed to convert remote path %ls to unc path", wzPath);
     }
     if (NULL == pcdb->sczDbPath)
     {
@@ -343,7 +343,7 @@ static HRESULT RemoteDatabaseInitialize(
         hr = S_OK;
 
         hr = StrAllocString(&pcdb->sczDbPath, wzPath, 0);
-        ExitOnFailure1(hr, "Failed to copy path request: %ls", wzPath);
+        ExitOnFailure(hr, "Failed to copy path request: %ls", wzPath);
     }
     else
     {
@@ -354,7 +354,7 @@ static HRESULT RemoteDatabaseInitialize(
     {
         // database file doesn't exist, error out
         hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-        ExitOnFailure1(hr, "Tried to open remote database that doesn't exist at path: %ls", pcdb->sczDbPath);
+        ExitOnFailure(hr, "Tried to open remote database that doesn't exist at path: %ls", pcdb->sczDbPath);
     }
 
     hr = PathGetDirectory(pcdb->sczDbPath, &pcdb->sczDbDir);
@@ -399,7 +399,7 @@ static HRESULT RemoteDatabaseInitialize(
     if (fSyncByDefault)
     {
         hr = BackgroundAddRemote(pcdbLocal, pcdb->sczOriginalDbPath);
-        ExitOnFailure1(hr, "Failed to add remote path to background thread for automatic synchronization: %ls", pcdb->sczDbDir);
+        ExitOnFailure(hr, "Failed to add remote path to background thread for automatic synchronization: %ls", pcdb->sczDbDir);
     }
     pcdb->pcdbLocal = pcdbLocal;
     pcdb->fSyncByDefault = fSyncByDefault;

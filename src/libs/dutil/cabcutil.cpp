@@ -207,7 +207,7 @@ extern "C" HRESULT DAPI CabCBegin(
         if((MAX_PATH - 1) <= cchPathBuffer || 0 == cchPathBuffer)
         {
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Cab directory had invalid length: %u", cchPathBuffer);
+            ExitOnFailure(hr, "Cab directory had invalid length: %u", cchPathBuffer);
         }
 
         hr = ::StringCchCopyW(wzPathBuffer, countof(wzPathBuffer), wzCabDir);
@@ -292,10 +292,10 @@ extern "C" HRESULT DAPI CabCBegin(
 
     // Remember the path to the cabinet.
     hr= ::StringCchCopyW(pcd->wzCabinetPath, countof(pcd->wzCabinetPath), wzPathBuffer);
-    ExitOnFailure1(hr, "Failed to copy cabinet path from path: %ls", wzPathBuffer);
+    ExitOnFailure(hr, "Failed to copy cabinet path from path: %ls", wzPathBuffer);
 
     hr = ::StringCchCatW(pcd->wzCabinetPath, countof(pcd->wzCabinetPath), wzCab);
-    ExitOnFailure1(hr, "Failed to concat to cabinet path cabinet name: %ls", wzCab);
+    ExitOnFailure(hr, "Failed to concat to cabinet path cabinet name: %ls", wzCab);
 
     // Get the empty file to use as the blank marker for duplicates.
     if (!::GetTempPathW(countof(wzTempPath), wzTempPath))
@@ -342,12 +342,12 @@ extern "C" HRESULT DAPI CabCBegin(
         }
         else
         {
-            ExitWithLastError2(hr, "failed to create FCI object Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);
+            ExitWithLastError(hr, "failed to create FCI object Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);
         }
 
         pcd->fGoodCab = FALSE;
 
-        ExitOnFailure2(hr, "failed to create FCI object Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);  // TODO: can these be converted to HRESULTS?
+        ExitOnFailure(hr, "failed to create FCI object Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);  // TODO: can these be converted to HRESULTS?
     }
 
     *phContext = pcd;
@@ -399,7 +399,7 @@ extern "C" HRESULT DAPI CabCAddFile(
     PMSIFILEHASHINFO pmfLocalHash = pmfHash;
 
     hr = StrAllocString(&sczUpperCaseFile, wzFile, 0);
-    ExitOnFailure1(hr, "Failed to allocate new string for file %ls", wzFile);
+    ExitOnFailure(hr, "Failed to allocate new string for file %ls", wzFile);
 
     // Modifies the string in-place
     StrStringToUpper(sczUpperCaseFile);
@@ -410,25 +410,25 @@ extern "C" HRESULT DAPI CabCAddFile(
     {
         // Store file size, primarily used to determine which files to hash for duplicates
         hr = FileSize(wzFile, &llFileSize);
-        ExitOnFailure1(hr, "Failed to check size of file %ls", wzFile);
+        ExitOnFailure(hr, "Failed to check size of file %ls", wzFile);
 
         hr = CheckForDuplicateFile(pcd, &pcfDuplicate, sczUpperCaseFile, &pmfLocalHash, llFileSize);
-        ExitOnFailure1(hr, "Failed while checking for duplicate of file: %ls", wzFile);
+        ExitOnFailure(hr, "Failed while checking for duplicate of file: %ls", wzFile);
     }
 
     if (pcfDuplicate) // This will be null for smart cabbing case
     {
         DWORD index;
         hr = ::PtrdiffTToDWord(pcfDuplicate - pcd->prgFiles, &index);
-        ExitOnFailure1(hr, "Failed to calculate index of file name: %ls", pcfDuplicate->pwzSourcePath);
+        ExitOnFailure(hr, "Failed to calculate index of file name: %ls", pcfDuplicate->pwzSourcePath);
 
         hr = AddDuplicateFile(pcd, index, sczUpperCaseFile, wzToken, pcd->dwLastFileIndex);
-        ExitOnFailure1(hr, "Failed to add duplicate of file name: %ls", pcfDuplicate->pwzSourcePath);
+        ExitOnFailure(hr, "Failed to add duplicate of file name: %ls", pcfDuplicate->pwzSourcePath);
     }
     else
     {
         hr = AddNonDuplicateFile(pcd, sczUpperCaseFile, wzToken, pmfLocalHash, llFileSize, pcd->dwLastFileIndex);
-        ExitOnFailure1(hr, "Failed to add non-duplicated file: %ls", wzFile);
+        ExitOnFailure(hr, "Failed to add non-duplicated file: %ls", wzFile);
     }
 
     ++pcd->dwLastFileIndex;
@@ -503,13 +503,13 @@ extern "C" HRESULT DAPI CabCFinish(
             {
                 LPCWSTR pwzTemp = pcd->prgFiles[dwArrayFileIndex].pwzToken;
                 hr = StrAnsiAllocString(&pszFileToken, pwzTemp, 0, CP_ACP);
-                ExitOnFailure1(hr, "failed to convert file token to ANSI: %ls", pwzTemp);
+                ExitOnFailure(hr, "failed to convert file token to ANSI: %ls", pwzTemp);
             }
             else
             {
                 LPCWSTR pwzTemp = FileFromPath(fileInfo.wzSourcePath);
                 hr = StrAnsiAllocString(&pszFileToken, pwzTemp, 0, CP_ACP);
-                ExitOnFailure1(hr, "failed to convert file name to ANSI: %ls", pwzTemp);
+                ExitOnFailure(hr, "failed to convert file name to ANSI: %ls", pwzTemp);
             }
 
             if (pcd->prgFiles[dwArrayFileIndex].fHasDuplicates)
@@ -538,13 +538,13 @@ extern "C" HRESULT DAPI CabCFinish(
             {
                 LPCWSTR pwzTemp = pcd->prgDuplicates[dwDupeArrayFileIndex].pwzToken;
                 hr = StrAnsiAllocString(&pszFileToken, pwzTemp, 0, CP_ACP);
-                ExitOnFailure1(hr, "failed to convert duplicate file token to ANSI: %ls", pwzTemp);
+                ExitOnFailure(hr, "failed to convert duplicate file token to ANSI: %ls", pwzTemp);
             }
             else
             {
                 LPCWSTR pwzTemp = FileFromPath(fileInfo.wzSourcePath);
                 hr = StrAnsiAllocString(&pszFileToken, pwzTemp, 0, CP_ACP);
-                ExitOnFailure1(hr, "failed to convert duplicate file name to ANSI: %ls", pwzTemp);
+                ExitOnFailure(hr, "failed to convert duplicate file name to ANSI: %ls", pwzTemp);
             }
 
             // Flush afterward only if this isn't a duplicate of the previous file, and at least one non-duplicate file remains to be added to the cab
@@ -570,7 +570,7 @@ extern "C" HRESULT DAPI CabCFinish(
         {
             if (!::FCIFlushFolder(pcd->hfci, CabCGetNextCabinet, CabCStatus))
             {
-                ExitWithLastError2(hr, "failed to flush FCI folder before adding file, Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);
+                ExitWithLastError(hr, "failed to flush FCI folder before adding file, Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);
             }
             pcd->llBytesSinceLastFlush = 0;
         }
@@ -594,10 +594,10 @@ extern "C" HRESULT DAPI CabCFinish(
             }
             else
             {
-                ExitWithLastError3(hr, "failed to add file to FCI object Oper: 0x%x Type: 0x%x File: %ls", pcd->erf.erfOper, pcd->erf.erfType, fileInfo.wzSourcePath);
+                ExitWithLastError(hr, "failed to add file to FCI object Oper: 0x%x Type: 0x%x File: %ls", pcd->erf.erfOper, pcd->erf.erfType, fileInfo.wzSourcePath);
             }
 
-            ExitOnFailure3(hr, "failed to add file to FCI object Oper: 0x%x Type: 0x%x File: %ls", pcd->erf.erfOper, pcd->erf.erfType, fileInfo.wzSourcePath);  // TODO: can these be converted to HRESULTS?
+            ExitOnFailure(hr, "failed to add file to FCI object Oper: 0x%x Type: 0x%x File: %ls", pcd->erf.erfOper, pcd->erf.erfType, fileInfo.wzSourcePath);  // TODO: can these be converted to HRESULTS?
         }
 
         // For Cabinet Splitting case, check for pcd->hrLastError that may be set as result of Error in CabCGetNextCabinet
@@ -612,7 +612,7 @@ extern "C" HRESULT DAPI CabCFinish(
         {
             if (!::FCIFlushFolder(pcd->hfci, CabCGetNextCabinet, CabCStatus))
             {
-                ExitWithLastError2(hr, "failed to flush FCI folder after adding file, Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);
+                ExitWithLastError(hr, "failed to flush FCI folder after adding file, Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);
             }
             pcd->llBytesSinceLastFlush = 0;
         }
@@ -630,10 +630,10 @@ extern "C" HRESULT DAPI CabCFinish(
         }
         else
         {
-            ExitWithLastError2(hr, "failed while creating CAB FCI object Oper: 0x%x Type: 0x%x File: %s", pcd->erf.erfOper, pcd->erf.erfType);
+            ExitWithLastError(hr, "failed while creating CAB FCI object Oper: 0x%x Type: 0x%x File: %s", pcd->erf.erfOper, pcd->erf.erfType);
         }
 
-        ExitOnFailure2(hr, "failed while creating CAB FCI object Oper: 0x%x Type: 0x%x File: %s", pcd->erf.erfOper, pcd->erf.erfType);  // TODO: can these be converted to HRESULTS?
+        ExitOnFailure(hr, "failed while creating CAB FCI object Oper: 0x%x Type: 0x%x File: %s", pcd->erf.erfOper, pcd->erf.erfType);  // TODO: can these be converted to HRESULTS?
     }
 
     // Only flush the cabinet if we actually succeeded in previous calls - otherwise we just waste time (a lot on big cabs)
@@ -641,13 +641,13 @@ extern "C" HRESULT DAPI CabCFinish(
     {
         // If we have a last error, use that, otherwise return the useless error
         hr = FAILED(pcd->hrLastError) ? pcd->hrLastError : E_FAIL;
-        ExitOnFailure2(hr, "failed to flush FCI object Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);  // TODO: can these be converted to HRESULTS?
+        ExitOnFailure(hr, "failed to flush FCI object Oper: 0x%x Type: 0x%x", pcd->erf.erfOper, pcd->erf.erfType);  // TODO: can these be converted to HRESULTS?
     }
 
     if (pcd->fGoodCab && pcd->cDuplicates)
     {
         hr = UpdateDuplicateFiles(pcd);
-        ExitOnFailure1(hr, "Failed to update duplicates in cabinet: %ls", pcd->wzCabinetPath);
+        ExitOnFailure(hr, "Failed to update duplicates in cabinet: %ls", pcd->wzCabinetPath);
     }
 
 LExit:
@@ -747,7 +747,7 @@ static HRESULT CheckForDuplicateFile(
 
                 pcd->prgFiles[i].pmfHash->dwFileHashInfoSize = sizeof(MSIFILEHASHINFO);
                 er = ::MsiGetFileHashW(pcd->prgFiles[i].pwzSourcePath, 0, pcd->prgFiles[i].pmfHash);
-                ExitOnWin32Error1(er, hr, "Failed while getting MSI file hash of candidate duplicate file: %ls", pcd->prgFiles[i].pwzSourcePath);
+                ExitOnWin32Error(er, hr, "Failed while getting MSI file hash of candidate duplicate file: %ls", pcd->prgFiles[i].pwzSourcePath);
             }
 
             // If our own file hasn't yet been hashed, hash it
@@ -758,7 +758,7 @@ static HRESULT CheckForDuplicateFile(
 
                 (*ppmfHash)->dwFileHashInfoSize = sizeof(MSIFILEHASHINFO);
                 er = ::MsiGetFileHashW(wzFileName, 0, *ppmfHash);
-                ExitOnWin32Error1(er, hr, "Failed while getting MSI file hash of file: %ls", pcd->prgFiles[i].pwzSourcePath);
+                ExitOnWin32Error(er, hr, "Failed while getting MSI file hash of file: %ls", pcd->prgFiles[i].pwzSourcePath);
             }
 
             // If the two file hashes are both of the expected size, and they match, we've got a match, so return it!
@@ -824,12 +824,12 @@ static HRESULT AddDuplicateFile(
     pcd->prgFiles[dwFileArrayIndex].fHasDuplicates = TRUE; // Mark original file as having duplicates
 
     hr = StrAllocString(&pcd->prgDuplicates[pcd->cDuplicates].pwzSourcePath, wzSourcePath, 0);
-    ExitOnFailure1(hr, "Failed to copy duplicate file path: %ls", wzSourcePath);
+    ExitOnFailure(hr, "Failed to copy duplicate file path: %ls", wzSourcePath);
 
     if (wzToken && *wzToken)
     {
         hr = StrAllocString(&pcd->prgDuplicates[pcd->cDuplicates].pwzToken, wzToken, 0);
-        ExitOnFailure1(hr, "Failed to copy duplicate file token: %ls", wzToken);
+        ExitOnFailure(hr, "Failed to copy duplicate file token: %ls", wzToken);
     }
 
     ++pcd->cDuplicates;
@@ -889,12 +889,12 @@ static HRESULT AddNonDuplicateFile(
     }
 
     hr = StrAllocString(&pcf->pwzSourcePath, wzFile, 0);
-    ExitOnFailure1(hr, "Failed to copy file path: %ls", wzFile);
+    ExitOnFailure(hr, "Failed to copy file path: %ls", wzFile);
 
     if (wzToken && *wzToken)
     {
         hr = StrAllocString(&pcf->pwzToken, wzToken, 0);
-        ExitOnFailure1(hr, "Failed to copy file token: %ls", wzToken);
+        ExitOnFailure(hr, "Failed to copy file token: %ls", wzToken);
     }
 
     ++pcd->cFilePaths;
@@ -923,14 +923,14 @@ static HRESULT UpdateDuplicateFiles(
     hCabinet = ::CreateFileW(pcd->wzCabinetPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hCabinet)
     {
-        ExitWithLastError1(hr, "Failed to open cabinet: %ls", pcd->wzCabinetPath);
+        ExitWithLastError(hr, "Failed to open cabinet: %ls", pcd->wzCabinetPath);
     }
 
     // Shouldn't need more than 16 MB to get the whole cabinet header into memory so use that as
     // the upper bound for the memory map.
     if (!::GetFileSizeEx(hCabinet, &liCabinetSize))
     {
-        ExitWithLastError1(hr, "Failed to get size of cabinet: %ls", pcd->wzCabinetPath);
+        ExitWithLastError(hr, "Failed to get size of cabinet: %ls", pcd->wzCabinetPath);
     }
 
     if (0 == liCabinetSize.HighPart && liCabinetSize.LowPart < MAX_CABINET_HEADER_SIZE)
@@ -946,11 +946,11 @@ static HRESULT UpdateDuplicateFiles(
     hCabinetMapping = ::CreateFileMappingW(hCabinet, NULL, PAGE_READWRITE | SEC_COMMIT, 0, cbCabinet, NULL);
     if (NULL == hCabinetMapping || INVALID_HANDLE_VALUE == hCabinetMapping)
     {
-        ExitWithLastError1(hr, "Failed to memory map cabinet file: %ls", pcd->wzCabinetPath);
+        ExitWithLastError(hr, "Failed to memory map cabinet file: %ls", pcd->wzCabinetPath);
     }
 
     pv = ::MapViewOfFile(hCabinetMapping, FILE_MAP_WRITE, 0, 0, 0);
-    ExitOnNullWithLastError1(pv, hr, "Failed to map view of cabinet file: %ls", pcd->wzCabinetPath);
+    ExitOnNullWithLastError(pv, hr, "Failed to map view of cabinet file: %ls", pcd->wzCabinetPath);
 
     pCabinetHeader = static_cast<MS_CABINET_HEADER*>(pv);
 
@@ -959,7 +959,7 @@ static HRESULT UpdateDuplicateFiles(
         const CABC_DUPLICATEFILE *pDuplicateFile = pcd->prgDuplicates + i;
 
         hr = DuplicateFile(pCabinetHeader, pcd, pDuplicateFile);
-        ExitOnFailure2(hr, "Failed to find cabinet file items at index: %d and %d", pDuplicateFile->dwFileArrayIndex, pDuplicateFile->dwDuplicateCabFileIndex);
+        ExitOnFailure(hr, "Failed to find cabinet file items at index: %d and %d", pDuplicateFile->dwFileArrayIndex, pDuplicateFile->dwDuplicateCabFileIndex);
     }
 
 LExit:
@@ -994,7 +994,7 @@ static HRESULT DuplicateFile(
         pDuplicate->dwDuplicateCabFileIndex <= pcd->prgFiles[pDuplicate->dwFileArrayIndex].dwCabFileIndex)
     {
         hr = E_UNEXPECTED;
-        ExitOnFailure3(hr, "Unexpected duplicate file indices, header cFiles: %d, file index: %d, duplicate index: %d", pHeader->cFiles, pcd->prgFiles[pDuplicate->dwFileArrayIndex].dwCabFileIndex, pDuplicate->dwDuplicateCabFileIndex);
+        ExitOnFailure(hr, "Unexpected duplicate file indices, header cFiles: %d, file index: %d, duplicate index: %d", pHeader->cFiles, pcd->prgFiles[pDuplicate->dwFileArrayIndex].dwCabFileIndex, pDuplicate->dwDuplicateCabFileIndex);
     }
 
     // Step through each cabinet items until we get to the original
@@ -1022,7 +1022,7 @@ static HRESULT DuplicateFile(
     if (0 != pDuplicateItem->cbFile)
     {
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "Failed because duplicate file does not have a file size of zero: %d", pDuplicateItem->cbFile);
+        ExitOnFailure(hr, "Failed because duplicate file does not have a file size of zero: %d", pDuplicateItem->cbFile);
     }
 
     pDuplicateItem->cbFile = pOriginalItem->cbFile;
@@ -1159,7 +1159,7 @@ static __callback INT_PTR DIAMONDAPI CabCOpen(
 
     if (INVALID_HANDLE_VALUE == reinterpret_cast<HANDLE>(pFile))
     {
-        ExitOnLastError1(hr, "failed to open file: %s", pszFile);
+        ExitOnLastError(hr, "failed to open file: %s", pszFile);
     }
 
 LExit:
@@ -1253,7 +1253,7 @@ static __callback long FAR DIAMONDAPI CabCSeek(
     default :
         dwMoveMethod = 0;
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "unexpected seektype in FCISeek(): %d", seektype);
+        ExitOnFailure(hr, "unexpected seektype in FCISeek(): %d", seektype);
     }
 
     // SetFilePointer returns -1 if it fails (this will cause FDI to quit with an FDIERROR_USER_ABORT error.
@@ -1263,7 +1263,7 @@ static __callback long FAR DIAMONDAPI CabCSeek(
     if (DWORD_MAX == lMove)
     {
         *err = ::GetLastError();
-        ExitOnLastError1(hr, "failed to move file pointer %d bytes", dist);
+        ExitOnLastError(hr, "failed to move file pointer %d bytes", dist);
     }
 
 LExit:
@@ -1498,7 +1498,7 @@ static __callback INT_PTR DIAMONDAPI CabCGetOpenInfo(
 
     if (!::GetFileAttributesExW(pFileInfo->wzSourcePath, GetFileExInfoStandard, &fad))
     {
-        ExitWithLastError1(hr, "Failed to get file attributes on '%s'.", pFileInfo->wzSourcePath);
+        ExitWithLastError(hr, "Failed to get file attributes on '%s'.", pFileInfo->wzSourcePath);
     }
 
     // Set the attributes but only allow the few attributes that CAB supports.
@@ -1512,7 +1512,7 @@ static __callback INT_PTR DIAMONDAPI CabCGetOpenInfo(
         // found. This would create further problems if the file was written to the CAB without this value. Windows
         // Installer would then fail to extract the file.
         hr = UtcFileTimeToLocalDosDateTime(&fad.ftCreationTime, pdate, ptime);
-        ExitOnFailure1(hr, "Filed to read a valid file time stucture on file '%s'.", pszName);
+        ExitOnFailure(hr, "Filed to read a valid file time stucture on file '%s'.", pszName);
     }
 
     iResult = CabCOpen(pszFilePlusMagic, _O_BINARY|_O_RDONLY, 0, err, pv);

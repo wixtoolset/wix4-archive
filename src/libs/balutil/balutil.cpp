@@ -45,10 +45,10 @@ DAPI_(HRESULT) BalManifestLoad(
     LPWSTR sczPath = NULL;
 
     hr = PathRelativeToModule(&sczPath, BAL_MANIFEST_FILENAME, hBootstrapperApplicationModule);
-    ExitOnFailure1(hr, "Failed to get path to bootstrapper application manifest: %ls", BAL_MANIFEST_FILENAME);
+    ExitOnFailure(hr, "Failed to get path to bootstrapper application manifest: %ls", BAL_MANIFEST_FILENAME);
 
     hr = XmlLoadDocumentFromFile(sczPath, ppixdManifest);
-    ExitOnFailure2(hr, "Failed to load bootstrapper application manifest '%ls' from path: %ls", BAL_MANIFEST_FILENAME, sczPath);
+    ExitOnFailure(hr, "Failed to load bootstrapper application manifest '%ls' from path: %ls", BAL_MANIFEST_FILENAME, sczPath);
 
 LExit:
     ReleaseStr(sczPath);
