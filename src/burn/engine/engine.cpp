@@ -549,7 +549,7 @@ static HRESULT RunRunOnce(
     ExitOnFailure(hr, "Failed to get current process path.");
 
     hr = ProcExec(sczBurnPath, 0 < sczNewCommandLine ? sczNewCommandLine : L"", nCmdShow, &hProcess);
-    ExitOnFailure1(hr, "Failed to re-launch bundle process after RunOnce: %ls", sczBurnPath);
+    ExitOnFailure(hr, "Failed to re-launch bundle process after RunOnce: %ls", sczBurnPath);
 
 LExit:
     ReleaseHandle(hProcess);

@@ -20,17 +20,8 @@ extern "C" {
 #endif
 
 #define BalExitOnFailure(x, f, ...) if (FAILED(x)) { BalLogError(x, f, __VA_ARGS__); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
-#define BalExitOnFailure1 BalExitOnFailure
-#define BalExitOnFailure2 BalExitOnFailure
-#define BalExitOnFailure3 BalExitOnFailure
-
 #define BalExitOnRootFailure(x, f, ...) if (FAILED(x)) { BalLogError(x, f, __VA_ARGS__); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
-#define BalExitOnRootFailure1 BalExitOnRootFailure
-#define BalExitOnRootFailure2 BalExitOnRootFailure
-#define BalExitOnRootFailure3 BalExitOnRootFailure
-
 #define BalExitOnNullWithLastError(p, x, f, ...) if (NULL == p) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (!FAILED(x)) { x = E_FAIL; } BalLogError(x, f, __VA_ARGS__); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
-#define BalExitOnNullWithLastError1 BalExitOnNullWithLastError
 
 #define FACILITY_WIX 500
 

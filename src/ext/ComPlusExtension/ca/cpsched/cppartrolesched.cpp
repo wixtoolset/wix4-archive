@@ -97,7 +97,7 @@ HRESULT CpiPartitionRolesRead(
         hr = CpiPartitionFindByKey(pPartList, pwzData, &pItm->pPartition);
         if (S_FALSE == hr)
             hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-        ExitOnFailure1(hr, "Failed to find partition, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find partition, key: %S", pwzData);
 
         // get name
         hr = WcaGetRecordFormattedString(hRec, prqName, &pwzData);
@@ -222,7 +222,7 @@ HRESULT CpiUsersInPartitionRolesInstall(
 
         // add to action data
         hr = AddUserInPartitionRoleToActionData(pItm, iActionType, COST_USER_IN_APPLICATION_ROLE_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add user in partition role to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add user in partition role to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -269,7 +269,7 @@ HRESULT CpiUsersInPartitionRolesUninstall(
 
         // add to action data
         hr = AddUserInPartitionRoleToActionData(pItm, iActionType, COST_USER_IN_APPLICATION_ROLE_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add user in partition role to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add user in partition role to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -340,7 +340,7 @@ static HRESULT TrusteesInPartitionRolesRead(
         ExitOnFailure(hr, "Failed to get partition role");
 
         hr = CpiPartitionRoleFindByKey(pPartRoleList, pwzData, &pItm->pPartitionRole);
-        ExitOnFailure1(hr, "Failed to find partition role, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find partition role, key: %S", pwzData);
 
         // get user domain
         hr = WcaGetRecordFormattedString(hRec, tiprqDomain, &pwzDomain);

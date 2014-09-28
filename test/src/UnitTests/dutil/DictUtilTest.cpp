@@ -60,7 +60,7 @@ namespace DutilTests
                 ExitOnFailure(hr, "Failed to grow value array");
 
                 hr = StrAllocFormatted(&rgValues[i].sczKey, L"%u_a_%u", i, i);
-                ExitOnFailure2(hr, "Failed to allocate key for value %u", i, i);
+                ExitOnFailure(hr, "Failed to allocate key for value %u", i, i);
 
                 hr = DictAddValue(sdValues, rgValues + i);
                 ExitOnFailure(hr, "Failed to add item to dict");
@@ -72,7 +72,7 @@ namespace DutilTests
                 ExitOnFailure(hr, "Failed to alloc expected key");
 
                 hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
-                ExitOnFailure1(hr, "Failed to find value %ls", sczExpectedKey);
+                ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
 
                 if (0 != wcscmp(sczExpectedKey, valueFound->sczKey))
                 {
@@ -86,7 +86,7 @@ namespace DutilTests
 
                 if (dfFlags & DICT_FLAG_CASEINSENSITIVE)
                 {
-                    ExitOnFailure1(hr, "Failed to find value %ls", sczExpectedKey);
+                    ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
 
                     if (0 != _wcsicmp(sczExpectedKey, valueFound->sczKey))
                     {
@@ -99,7 +99,7 @@ namespace DutilTests
                     if (E_NOTFOUND != hr)
                     {
                         hr = E_FAIL;
-                        ExitOnFailure1(hr, "This embedded key is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
+                        ExitOnFailure(hr, "This embedded key is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
                     }
                 }
 
@@ -110,7 +110,7 @@ namespace DutilTests
                 if (E_NOTFOUND != hr)
                 {
                     hr = E_FAIL;
-                    ExitOnFailure1(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
+                    ExitOnFailure(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
                 }
             }
 
@@ -137,7 +137,7 @@ namespace DutilTests
             for (DWORD i = 0; i < dwNumIterations; ++i)
             {
                 hr = StrAllocFormatted(&sczKey, L"%u_a_%u", i, i);
-                ExitOnFailure2(hr, "Failed to allocate key for value %u", i, i);
+                ExitOnFailure(hr, "Failed to allocate key for value %u", i, i);
 
                 hr = DictAddKey(sdValues, sczKey);
                 ExitOnFailure(hr, "Failed to add key to dict");
@@ -149,7 +149,7 @@ namespace DutilTests
                 ExitOnFailure(hr, "Failed to alloc expected key");
 
                 hr = DictKeyExists(sdValues, sczExpectedKey);
-                ExitOnFailure1(hr, "Failed to find value %ls", sczExpectedKey);
+                ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
 
                 hr = StrAllocFormatted(&sczExpectedKey, L"%u_A_%u", i, i);
                 ExitOnFailure(hr, "Failed to alloc expected key");
@@ -157,14 +157,14 @@ namespace DutilTests
                 hr = DictKeyExists(sdValues, sczExpectedKey);
                 if (dfFlags & DICT_FLAG_CASEINSENSITIVE)
                 {
-                    ExitOnFailure1(hr, "Failed to find value %ls", sczExpectedKey);
+                    ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
                 }
                 else
                 {
                     if (E_NOTFOUND != hr)
                     {
                         hr = E_FAIL;
-                        ExitOnFailure1(hr, "This stringlist dict is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
+                        ExitOnFailure(hr, "This stringlist dict is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
                     }
                 }
 
@@ -175,7 +175,7 @@ namespace DutilTests
                 if (E_NOTFOUND != hr)
                 {
                     hr = E_FAIL;
-                    ExitOnFailure1(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
+                    ExitOnFailure(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
                 }
             }
 

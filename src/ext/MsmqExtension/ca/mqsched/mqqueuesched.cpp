@@ -525,7 +525,7 @@ static HRESULT MessageQueueTrusteePermissionsRead(
         hr = MqiMessageQueueFindByKey(pMessageQueueList, pwzData, &pItm->pMessageQueue);
         if (S_FALSE == hr)
             hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-        ExitOnFailure1(hr, "Failed to find message queue, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find message queue, key: %S", pwzData);
 
         // get user domain
         hr = WcaGetRecordFormattedString(hRec, mqpqDomain, &pwzData);

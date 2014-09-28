@@ -161,41 +161,41 @@ static HRESULT ReadXmlFileTable(
 
         // Get component name
         hr = WcaGetRecordString(hRec, xfqComponent, &pwzData);
-        ExitOnFailure1(hr, "failed to get component name for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get component name for XmlFile: %ls", (*ppxfcTail)->wzId);
 
         // Get the component's state
         er = ::MsiGetComponentStateW(WcaGetInstallHandle(), pwzData, &(*ppxfcTail)->isInstalled, &(*ppxfcTail)->isAction);
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(er), "failed to get install state for Component: %ls", pwzData);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(er), "failed to get install state for Component: %ls", pwzData);
 
         // Get the xml file
         hr = WcaGetRecordFormattedString(hRec, xfqFile, &pwzData);
-        ExitOnFailure1(hr, "failed to get xml file for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get xml file for XmlFile: %ls", (*ppxfcTail)->wzId);
         hr = StringCchCopyW((*ppxfcTail)->wzFile, countof((*ppxfcTail)->wzFile), pwzData);
         ExitOnFailure(hr, "failed to copy xml file path");
 
         // Get the XmlFile table flags
         hr = WcaGetRecordInteger(hRec, xfqXmlFlags, &(*ppxfcTail)->iXmlFlags);
-        ExitOnFailure1(hr, "failed to get XmlFile flags for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get XmlFile flags for XmlFile: %ls", (*ppxfcTail)->wzId);
 
         // Get the XPath
         hr = WcaGetRecordFormattedString(hRec, xfqXPath, &(*ppxfcTail)->pwzElementPath);
-        ExitOnFailure1(hr, "failed to get XPath for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get XPath for XmlFile: %ls", (*ppxfcTail)->wzId);
 
         // Get the name
         hr = WcaGetRecordFormattedString(hRec, xfqName, &pwzData);
-        ExitOnFailure1(hr, "failed to get Name for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get Name for XmlFile: %ls", (*ppxfcTail)->wzId);
         hr = StringCchCopyW((*ppxfcTail)->wzName, countof((*ppxfcTail)->wzName), pwzData);
         ExitOnFailure(hr, "failed to copy name of element");
 
         // Get the value
         hr = WcaGetRecordFormattedString(hRec, xfqValue, &pwzData);
-        ExitOnFailure1(hr, "failed to get Value for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get Value for XmlFile: %ls", (*ppxfcTail)->wzId);
         hr = StrAllocString(&(*ppxfcTail)->pwzValue, pwzData, 0);
         ExitOnFailure(hr, "failed to allocate buffer for value");
 
         // Get the component attributes
         hr = WcaGetRecordInteger(hRec, xfqCompAttributes, &(*ppxfcTail)->iCompAttributes);
-        ExitOnFailure1(hr, "failed to get component attributes for XmlFile: %ls", (*ppxfcTail)->wzId);
+        ExitOnFailure(hr, "failed to get component attributes for XmlFile: %ls", (*ppxfcTail)->wzId);
     }
 
     // if we looped through all records all is well
@@ -247,26 +247,26 @@ static HRESULT BeginChangeFile(
         ExitOnFailure(hr, "failed to write XSLPattern selectionlanguage indicator to custom action data");
     }
     hr = WcaWriteStringToCaData(pwzFile, ppwzCustomActionData);
-    ExitOnFailure1(hr, "failed to write file to custom action data: %ls", pwzFile);
+    ExitOnFailure(hr, "failed to write file to custom action data: %ls", pwzFile);
 
     // If the file already exits, then we have to put it back the way it was on failure
     if (FileExistsEx(pwzFile, NULL))
     {
         hr = FileRead(&pbData, &cbData, pwzFile);
-        ExitOnFailure1(hr, "failed to read file: %ls", pwzFile);
+        ExitOnFailure(hr, "failed to read file: %ls", pwzFile);
 
         // Set up the rollback for this file
         hr = WcaWriteIntegerToCaData((int)fIs64Bit, &pwzRollbackCustomActionData);
         ExitOnFailure(hr, "failed to write component bitness to rollback custom action data");
 
         hr = WcaWriteStringToCaData(pwzFile, &pwzRollbackCustomActionData);
-        ExitOnFailure1(hr, "failed to write file name to rollback custom action data: %ls", pwzFile);
+        ExitOnFailure(hr, "failed to write file name to rollback custom action data: %ls", pwzFile);
 
         hr = WcaWriteStreamToCaData(pbData, cbData, &pwzRollbackCustomActionData);
         ExitOnFailure(hr, "failed to write file contents to rollback custom action data.");
 
         hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"ExecXmlFileRollback"), pwzRollbackCustomActionData, COST_XMLFILE);
-        ExitOnFailure1(hr, "failed to schedule ExecXmlFileRollback for file: %ls", pwzFile);
+        ExitOnFailure(hr, "failed to schedule ExecXmlFileRollback for file: %ls", pwzFile);
 
         ReleaseStr(pwzRollbackCustomActionData);
     }
@@ -287,13 +287,13 @@ static HRESULT WriteChangeData(
     HRESULT hr = S_OK;
 
     hr = WcaWriteStringToCaData(pxfc->pwzElementPath, ppwzCustomActionData);
-    ExitOnFailure1(hr, "failed to write ElementPath to custom action data: %ls", pxfc->pwzElementPath);
+    ExitOnFailure(hr, "failed to write ElementPath to custom action data: %ls", pxfc->pwzElementPath);
 
     hr = WcaWriteStringToCaData(pxfc->wzName, ppwzCustomActionData);
-    ExitOnFailure1(hr, "failed to write Name to custom action data: %ls", pxfc->wzName);
+    ExitOnFailure(hr, "failed to write Name to custom action data: %ls", pxfc->wzName);
 
     hr = WcaWriteStringToCaData(pxfc->pwzValue, ppwzCustomActionData);
-    ExitOnFailure1(hr, "failed to write Value to custom action data: %ls", pxfc->pwzValue);
+    ExitOnFailure(hr, "failed to write Value to custom action data: %ls", pxfc->pwzValue);
 
 LExit:
     return hr;
@@ -363,7 +363,7 @@ extern "C" UINT __stdcall SchedXmlFile(
                             if (!fCurrentFileChanged)
                             {
                                 hr = BeginChangeFile(pwzCurrentFile, pxfcUninstall, &pwzCustomActionData);
-                                ExitOnFailure1(hr, "failed to begin file change for file: %ls", pwzCurrentFile);
+                                ExitOnFailure(hr, "failed to begin file change for file: %ls", pwzCurrentFile);
 
                                 fCurrentFileChanged = TRUE;
                                 ++cFiles;
@@ -412,7 +412,7 @@ extern "C" UINT __stdcall SchedXmlFile(
             if (!fCurrentFileChanged)
             {
                 hr = BeginChangeFile(pwzCurrentFile, pxfc, &pwzCustomActionData);
-                ExitOnFailure1(hr, "failed to begin file change for file: %ls", pwzCurrentFile);
+                ExitOnFailure(hr, "failed to begin file change for file: %ls", pwzCurrentFile);
                 fCurrentFileChanged = TRUE;
                 ++cFiles;
             }
@@ -643,7 +643,7 @@ extern "C" UINT __stdcall ExecXmlFile(
             {
                 if (xaCreateElement == xa || xaWriteValue == xa || xaBulkWriteValue == xa)
                 {
-                    MessageExitOnFailure1(hr = hrOpenFailure, msierrXmlFileFailedOpen, "failed to load XML file: %ls", pwzFile);
+                    MessageExitOnFailure(hr = hrOpenFailure, msierrXmlFileFailedOpen, "failed to load XML file: %ls", pwzFile);
                 }
                 else
                 {
@@ -662,7 +662,7 @@ extern "C" UINT __stdcall ExecXmlFile(
                     hr = HRESULT_FROM_WIN32(ERROR_OBJECT_NOT_FOUND);
                 }
 
-                MessageExitOnFailure2(hr, msierrXmlFileFailedSelect, "failed to find any nodes: %ls in XML file: %ls", pwzXPath, pwzFile);
+                MessageExitOnFailure(hr, msierrXmlFileFailedSelect, "failed to find any nodes: %ls in XML file: %ls", pwzXPath, pwzFile);
                 for (;;)
                 {
                     pixNodes->nextNode(&pixn);
@@ -673,13 +673,13 @@ extern "C" UINT __stdcall ExecXmlFile(
                     {
                         // We're setting an attribute
                         hr = XmlSetAttribute(pixn, pwzName, pwzValue);
-                        ExitOnFailure2(hr, "failed to set attribute: %ls to value %ls", pwzName, pwzValue);
+                        ExitOnFailure(hr, "failed to set attribute: %ls to value %ls", pwzName, pwzValue);
                     }
                     else
                     {
                         // We're setting the text of the node
                         hr = XmlSetText(pixn, pwzValue);
-                        ExitOnFailure2(hr, "failed to set text to: %ls for element %ls.  Make sure that XPath points to an element.", pwzValue, pwzXPath);
+                        ExitOnFailure(hr, "failed to set text to: %ls for element %ls.  Make sure that XPath points to an element.", pwzValue, pwzXPath);
                     }
                     ReleaseNullObject(pixn);
                 }
@@ -689,7 +689,7 @@ extern "C" UINT __stdcall ExecXmlFile(
                 hr = XmlSelectSingleNode(pixd, pwzXPath, &pixn);
                 if (S_FALSE == hr)
                     hr = HRESULT_FROM_WIN32(ERROR_OBJECT_NOT_FOUND);
-                MessageExitOnFailure2(hr, msierrXmlFileFailedSelect, "failed to find node: %ls in XML file: %ls", pwzXPath, pwzFile);
+                MessageExitOnFailure(hr, msierrXmlFileFailedSelect, "failed to find node: %ls in XML file: %ls", pwzXPath, pwzFile);
 
                 // Make the modification
                 if (xaWriteValue == xa)
@@ -698,24 +698,24 @@ extern "C" UINT __stdcall ExecXmlFile(
                     {
                         // We're setting an attribute
                         hr = XmlSetAttribute(pixn, pwzName, pwzValue);
-                        ExitOnFailure2(hr, "failed to set attribute: %ls to value %ls", pwzName, pwzValue);
+                        ExitOnFailure(hr, "failed to set attribute: %ls to value %ls", pwzName, pwzValue);
                     }
                     else
                     {
                         // We're setting the text of the node
                         hr = XmlSetText(pixn, pwzValue);
-                        ExitOnFailure2(hr, "failed to set text to: %ls for element %ls.  Make sure that XPath points to an element.", pwzValue, pwzXPath);
+                        ExitOnFailure(hr, "failed to set text to: %ls for element %ls.  Make sure that XPath points to an element.", pwzValue, pwzXPath);
                     }
                 }
                 else if (xaCreateElement == xa)
                 {
                     hr = XmlCreateChild(pixn, pwzName, &pixnNewNode);
-                    ExitOnFailure1(hr, "failed to create child element: %ls", pwzName);
+                    ExitOnFailure(hr, "failed to create child element: %ls", pwzName);
 
                     if (pwzValue && *pwzValue)
                     {
                         hr = XmlSetText(pixnNewNode, pwzValue);
-                        ExitOnFailure2(hr, "failed to set text to: %ls for node: %ls", pwzValue, pwzName);
+                        ExitOnFailure(hr, "failed to set text to: %ls for node: %ls", pwzValue, pwzName);
                     }
 
                     ReleaseNullObject(pixnNewNode);
@@ -726,7 +726,7 @@ extern "C" UINT __stdcall ExecXmlFile(
                     {
                         // Delete the attribute
                         hr = XmlRemoveAttribute(pixn, pwzName);
-                        ExitOnFailure1(hr, "failed to remove attribute: %ls", pwzName);
+                        ExitOnFailure(hr, "failed to remove attribute: %ls", pwzName);
                     }
                     else
                     {
@@ -739,7 +739,7 @@ extern "C" UINT __stdcall ExecXmlFile(
                 {
                     // TODO: This may be a little heavy handed
                     hr = XmlRemoveChildren(pixn, pwzName);
-                    ExitOnFailure1(hr, "failed to delete child node: %ls", pwzName);
+                    ExitOnFailure(hr, "failed to delete child node: %ls", pwzName);
                 }
                 else
                 {
@@ -754,7 +754,7 @@ extern "C" UINT __stdcall ExecXmlFile(
             if (fPreserveDate)
             {
                 hr = FileGetTime(pwzFile, NULL, NULL, &ft);
-                ExitOnFailure1(hr, "failed to get modified time of file : %ls", pwzFile);
+                ExitOnFailure(hr, "failed to get modified time of file : %ls", pwzFile);
             }
 
             int iSaveAttempt = 0;
@@ -768,7 +768,7 @@ extern "C" UINT __stdcall ExecXmlFile(
                     switch (id)
                     {
                     case IDABORT:
-                        ExitOnFailure1(hr, "Failed to save changes to XML file: %ls", pwzFile);
+                        ExitOnFailure(hr, "Failed to save changes to XML file: %ls", pwzFile);
                     case IDRETRY:
                         hr = S_FALSE;   // hit me, baby, one more time
                         break;
@@ -788,12 +788,12 @@ extern "C" UINT __stdcall ExecXmlFile(
                             }
                             else
                             {
-                                ExitOnFailure1(hr, "Failed to save changes to XML file: %ls", pwzFile);
+                                ExitOnFailure(hr, "Failed to save changes to XML file: %ls", pwzFile);
                             }
                         }
                         break;
                     default: // Unknown error
-                        ExitOnFailure1(hr, "Failed to save changes to XML file: %ls", pwzFile);
+                        ExitOnFailure(hr, "Failed to save changes to XML file: %ls", pwzFile);
                     }
                 }
             } while (S_FALSE == hr);
@@ -801,7 +801,7 @@ extern "C" UINT __stdcall ExecXmlFile(
             if (fPreserveDate)
             {
                 hr = FileSetTime(pwzFile, NULL, NULL, &ft);
-                ExitOnFailure1(hr, "failed to set modified time of file : %ls", pwzFile);
+                ExitOnFailure(hr, "failed to set modified time of file : %ls", pwzFile);
             }
 
             if (fIsFSRedirectDisabled)
@@ -914,15 +914,15 @@ extern "C" UINT __stdcall ExecXmlFileRollback(
 
     // Always preserve the modified date on rollback
     hr = FileGetTime(pwzFileName, NULL, NULL, &ft);
-    ExitOnFailure1(hr, "Failed to get modified date of file %ls.", pwzFileName);
+    ExitOnFailure(hr, "Failed to get modified date of file %ls.", pwzFileName);
 
     // Open the file
     hFile = ::CreateFileW(pwzFileName, GENERIC_WRITE, NULL, NULL, TRUNCATE_EXISTING, NULL, NULL);
-    ExitOnInvalidHandleWithLastError1(hFile, hr, "failed to open file: %ls", pwzFileName);
+    ExitOnInvalidHandleWithLastError(hFile, hr, "failed to open file: %ls", pwzFileName);
 
     // Write out the old data
     if (!::WriteFile(hFile, pbData, (DWORD)cbData, &cbDataWritten, NULL))
-        ExitOnLastError1(hr, "failed to write to file: %ls", pwzFileName);
+        ExitOnLastError(hr, "failed to write to file: %ls", pwzFileName);
 
     Assert(cbData == cbDataWritten);
 
@@ -930,7 +930,7 @@ extern "C" UINT __stdcall ExecXmlFileRollback(
 
     // Always preserve the modified date on rollback
     hr = FileSetTime(pwzFileName, NULL, NULL, &ft);
-    ExitOnFailure1(hr, "Failed to set modified date of file %ls.", pwzFileName);
+    ExitOnFailure(hr, "Failed to set modified date of file %ls.", pwzFileName);
 
 LExit:
     ReleaseStr(pwzCustomActionData);

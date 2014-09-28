@@ -140,7 +140,7 @@ HRESULT CpiSubscriptionsRead(
         if (S_FALSE == hr)
         {
             // component not found
-            ExitOnFailure1(hr = E_FAIL, "Failed to find component, key: %S", pwzData);
+            ExitOnFailure(hr = E_FAIL, "Failed to find component, key: %S", pwzData);
         }
 
         // get id
@@ -150,7 +150,7 @@ HRESULT CpiSubscriptionsRead(
         if (pwzData && *pwzData)
         {
             hr = PcaGuidToRegFormat(pwzData, pItm->wzID, countof(pItm->wzID));
-            ExitOnFailure2(hr, "Failed to parse id guid value, key: %S, value: '%S'", pItm->wzKey, pwzData);
+            ExitOnFailure(hr, "Failed to parse id guid value, key: %S, value: '%S'", pItm->wzKey, pwzData);
         }
 
         // get name
@@ -298,7 +298,7 @@ HRESULT CpiSubscriptionsVerifyInstall(
                 {
                 case IDCANCEL:
                 case IDABORT:
-                    ExitOnFailure1(hr = E_FAIL, "A subscription with a conflictiong name or id exists, key: %S", pItm->wzKey);
+                    ExitOnFailure(hr = E_FAIL, "A subscription with a conflictiong name or id exists, key: %S", pItm->wzKey);
                     break;
                 case IDRETRY:
                     break;
@@ -439,7 +439,7 @@ HRESULT CpiSubscriptionsInstall(
 
         // add to action data
         hr = AddSubscriptionToActionData(pItm, iActionType, COST_SUBSCRIPTION_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add subscription to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add subscription to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -486,7 +486,7 @@ HRESULT CpiSubscriptionsUninstall(
 
         // add to action data
         hr = AddSubscriptionToActionData(pItm, iActionType, COST_SUBSCRIPTION_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add subscription to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add subscription to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics

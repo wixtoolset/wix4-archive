@@ -154,14 +154,14 @@ extern "C" HRESULT DAPI DownloadUrl(
 
     // Get the resource size and creation time from the internet.
     hr = GetResourceMetadata(hSession, &sczUrl, pDownloadSource->sczUser, pDownloadSource->sczPassword, pAuthenticate, &dw64Size, &ftCreated);
-    ExitOnFailure1(hr, "Failed to get size and time for URL: %ls", sczUrl);
+    ExitOnFailure(hr, "Failed to get size and time for URL: %ls", sczUrl);
 
     // Ignore failure to initialize resume because we will fall back to full download then
     // download.
     InitializeResume(wzDestinationPath, &sczResumePath, &hResumeFile, &dw64ResumeOffset);
 
     hr = DownloadResource(hSession, &sczUrl, pDownloadSource->sczUser, pDownloadSource->sczPassword, wzDestinationPath, dw64AuthoredDownloadSize, dw64Size, dw64ResumeOffset, hResumeFile, pCache, pAuthenticate);
-    ExitOnFailure1(hr, "Failed to download URL: %ls", sczUrl);
+    ExitOnFailure(hr, "Failed to download URL: %ls", sczUrl);
 
     // Cleanup the resume file because we successfully downloaded the whole file.
     if (sczResumePath && *sczResumePath)
@@ -196,19 +196,19 @@ static HRESULT InitializeResume(
     *pdw64ResumeOffset = 0;
 
     hr = DownloadGetResumePath(wzDestinationPath, psczResumePath);
-    ExitOnFailure1(hr, "Failed to calculate resume path from working path: %ls", wzDestinationPath);
+    ExitOnFailure(hr, "Failed to calculate resume path from working path: %ls", wzDestinationPath);
 
     hResumeFile = ::CreateFileW(*psczResumePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_DELETE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hResumeFile)
     {
-        ExitWithLastError1(hr, "Failed to create resume file: %ls", *psczResumePath);
+        ExitWithLastError(hr, "Failed to create resume file: %ls", *psczResumePath);
     }
 
     do
     {
         if (!::ReadFile(hResumeFile, reinterpret_cast<BYTE*>(pdw64ResumeOffset) + cbTotalReadResumeData, sizeof(DWORD64) - cbTotalReadResumeData, &cbReadData, NULL))
         {
-            ExitWithLastError1(hr, "Failed to read resume file: %ls", *psczResumePath);
+            ExitWithLastError(hr, "Failed to read resume file: %ls", *psczResumePath);
         }
         cbTotalReadResumeData += cbReadData;
     } while (cbReadData && sizeof(DWORD64) > cbTotalReadResumeData);
@@ -244,7 +244,7 @@ static HRESULT GetResourceMetadata(
     LONGLONG llLength = 0;
 
     hr = MakeRequest(hSession, psczUrl, L"HEAD", NULL, wzUser, wzPassword, pAuthenticate, &hConnect, &hUrl, &fRangeRequestsAccepted);
-    ExitOnFailure1(hr, "Failed to connect to URL: %ls", *psczUrl);
+    ExitOnFailure(hr, "Failed to connect to URL: %ls", *psczUrl);
 
     hr = InternetGetSizeByHandle(hUrl, &llLength);
     if (FAILED(hr))
@@ -297,7 +297,7 @@ static HRESULT DownloadResource(
     hPayloadFile = ::CreateFileW(wzDestinationPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_DELETE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hPayloadFile)
     {
-        ExitWithLastError1(hr, "Failed to create download destination file: %ls", wzDestinationPath);
+        ExitWithLastError(hr, "Failed to create download destination file: %ls", wzDestinationPath);
     }
 
     // Allocate a memory block on a page boundary in case we want to do optimal writing.
@@ -317,7 +317,7 @@ static HRESULT DownloadResource(
         ReleaseNullInternet(hUrl);
 
         hr = MakeRequest(hSession, psczUrl, L"GET", sczRangeRequestHeader, wzUser, wzPassword, pAuthenticate, &hConnect, &hUrl, &fRangeRequestsAccepted);
-        ExitOnFailure1(hr, "Failed to request URL for download: %ls", *psczUrl);
+        ExitOnFailure(hr, "Failed to request URL for download: %ls", *psczUrl);
 
         // If we didn't get the size of the resource from the initial "HEAD" request
         // then let's try to get the size from this "GET" request.
@@ -346,7 +346,7 @@ static HRESULT DownloadResource(
         }
 
         hr = WriteToFile(hUrl, hPayloadFile, &dw64ResumeOffset, hResumeFile, dw64ResourceLength, pbData, cbMaxData, pCache);
-        ExitOnFailure1(hr, "Failed while reading from internet and writing to: %ls", wzDestinationPath);
+        ExitOnFailure(hr, "Failed while reading from internet and writing to: %ls", wzDestinationPath);
     }
 
 LExit:
@@ -518,7 +518,7 @@ static HRESULT MakeRequest(
         ExitOnFailure(hr, "Failed to break URL into server and resource parts.");
 
         hConnect = ::InternetConnectW(hSession, uri.sczHostName, uri.port, (wzUser && *wzUser) ? wzUser : uri.sczUser, (wzPassword && *wzPassword) ? wzPassword : uri.sczPassword, INTERNET_SCHEME_FTP == uri.scheme ? INTERNET_SERVICE_FTP : INTERNET_SERVICE_HTTP, 0, 0);
-        ExitOnNullWithLastError1(hConnect, hr, "Failed to connect to URL: %ls", *psczSourceUrl);
+        ExitOnNullWithLastError(hConnect, hr, "Failed to connect to URL: %ls", *psczSourceUrl);
 
         // Best effort set the proxy username and password, if they were provided.
         if ((wzUser && *wzUser) && (wzPassword && *wzPassword))
@@ -530,10 +530,10 @@ static HRESULT MakeRequest(
         }
 
         hr = OpenRequest(hConnect, wzMethod, uri.scheme, uri.sczPath, uri.sczQueryString, wzHeaders, &hUrl);
-        ExitOnFailure1(hr, "Failed to open internet URL: %ls", *psczSourceUrl);
+        ExitOnFailure(hr, "Failed to open internet URL: %ls", *psczSourceUrl);
 
         hr = SendRequest(hUrl, psczSourceUrl, pAuthenticate, &fRetry, pfRangeRequestsAccepted);
-        ExitOnFailure1(hr, "Failed to send request to URL: %ls", *psczSourceUrl);
+        ExitOnFailure(hr, "Failed to send request to URL: %ls", *psczSourceUrl);
     } while (fRetry);
 
     // Okay, we're all ready to start downloading. Update the connection information.
@@ -625,12 +625,12 @@ static HRESULT SendRequest(
             // Try to get the HTTP status code and, if good, handle via the switch statement below but if it
             // fails return the error code from the send request above as the result of the function.
             HRESULT hrQueryStatusCode = InternetQueryInfoNumber(hUrl, HTTP_QUERY_STATUS_CODE, &lCode);
-            ExitOnFailure1(hrQueryStatusCode, "Failed to get HTTP status code for failed request to URL: %ls", *psczUrl);
+            ExitOnFailure(hrQueryStatusCode, "Failed to get HTTP status code for failed request to URL: %ls", *psczUrl);
         }
         else // get the http status code.
         {
             hr = InternetQueryInfoNumber(hUrl, HTTP_QUERY_STATUS_CODE, &lCode);
-            ExitOnFailure1(hr, "Failed to get HTTP status code for request to URL: %ls", *psczUrl);
+            ExitOnFailure(hr, "Failed to get HTTP status code for request to URL: %ls", *psczUrl);
         }
 
         switch (lCode)
@@ -650,7 +650,7 @@ static HRESULT SendRequest(
         case 302: __fallthrough; // temporary
         case 303: // redirect method
             hr = InternetQueryInfoString(hUrl, HTTP_QUERY_CONTENT_LOCATION, psczUrl);
-            ExitOnFailure1(hr, "Failed to get redirect url: %ls", *psczUrl);
+            ExitOnFailure(hr, "Failed to get redirect url: %ls", *psczUrl);
 
             *pfRetry = TRUE;
             break;

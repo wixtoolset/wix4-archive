@@ -35,7 +35,7 @@ extern "C" HRESULT DAPI AclCheckAccess(
     if (paa->pwzAccountName)
     {
         hr = AclGetAccountSid(NULL, paa->pwzAccountName, &psid);
-        ExitOnFailure1(hr, "failed to get SID for account: %ls", paa->pwzAccountName);
+        ExitOnFailure(hr, "failed to get SID for account: %ls", paa->pwzAccountName);
     }
     else
     {
@@ -171,19 +171,19 @@ extern "C" HRESULT DAPI AclGetWellKnownSid(
         break;
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "unknown well known SID: %d", wkst);
+        ExitOnFailure(hr, "unknown well known SID: %d", wkst);
     }
 
     if (!fSuccess)
-        ExitOnLastError1(hr, "failed to allocate well known SID: %d", wkst);
+        ExitOnLastError(hr, "failed to allocate well known SID: %d", wkst);
 
     if (!::CopySid(cbSid, psid, psidTemp))
-        ExitOnLastError1(hr, "failed to create well known SID: %d", wkst);
+        ExitOnLastError(hr, "failed to create well known SID: %d", wkst);
 #else
     Assert(NULL == psidTemp);
     if (!::CreateWellKnownSid(wkst, NULL, psid, &cbSid))
     {
-        ExitWithLastError1(hr, "failed to create well known SID: %d", wkst);
+        ExitWithLastError(hr, "failed to create well known SID: %d", wkst);
     }
 #endif 
 
@@ -243,7 +243,7 @@ extern "C" HRESULT DAPI AclGetAccountSid(
             if (SECURITY_MAX_SID_SIZE < cbSid)
             {
                 PSID psidNew = static_cast<PSID>(MemReAlloc(psid, cbSid, TRUE));
-                ExitOnNullWithLastError1(psidNew, hr, "failed to allocate memory for account: %ls", wzAccount);
+                ExitOnNullWithLastError(psidNew, hr, "failed to allocate memory for account: %ls", wzAccount);
 
                 psid = psidNew;
             }
@@ -255,12 +255,12 @@ extern "C" HRESULT DAPI AclGetAccountSid(
 
             if (!::LookupAccountNameW(wzSystem, wzAccount, psid, &cbSid, pwzDomainName, &cbDomainName, &peUse))
             {
-                ExitWithLastError1(hr, "failed to lookup account: %ls", wzAccount);
+                ExitWithLastError(hr, "failed to lookup account: %ls", wzAccount);
             }
         }
         else
         {
-            ExitOnWin32Error1(er, hr, "failed to lookup account: %ls", wzAccount);
+            ExitOnWin32Error(er, hr, "failed to lookup account: %ls", wzAccount);
         }
     }
 
@@ -295,12 +295,12 @@ extern "C" HRESULT DAPI AclGetAccountSidString(
     *ppwzSid = NULL;
 
     hr = AclGetAccountSid(wzSystem, wzAccount, &psid);
-    ExitOnFailure1(hr, "failed to get SID for account: %ls", wzAccount);
+    ExitOnFailure(hr, "failed to get SID for account: %ls", wzAccount);
     Assert(::IsValidSid(psid));
 
     if (!::ConvertSidToStringSidW(psid, &pwz))
     {
-        ExitWithLastError1(hr, "failed to convert SID to string for Account: %ls", wzAccount);
+        ExitWithLastError(hr, "failed to convert SID to string for Account: %ls", wzAccount);
     }
 
     hr = StrAllocString(ppwzSid, pwz, 0);
@@ -376,7 +376,7 @@ extern "C" HRESULT DAPI AclCreateDacl(
         if (!::AddAccessDeniedAceEx(pAcl, ACL_REVISION, rgaaDeny[i].dwFlags, rgaaDeny[i].dwMask, rgaaDeny[i].psid))
 #pragma prefast(pop)
         {
-            ExitWithLastError1(hr, "failed to add access denied ACE #%d to ACL", i);
+            ExitWithLastError(hr, "failed to add access denied ACE #%d to ACL", i);
         }
     }
     for (i = 0; i < cAllow; ++i)
@@ -386,7 +386,7 @@ extern "C" HRESULT DAPI AclCreateDacl(
         if (!::AddAccessAllowedAceEx(pAcl, ACL_REVISION, rgaaAllow[i].dwFlags, rgaaAllow[i].dwMask, rgaaAllow[i].psid))
 #pragma prefast(pop)
         {
-            ExitWithLastError1(hr, "failed to add access allowed ACE #$d to ACL", i);
+            ExitWithLastError(hr, "failed to add access allowed ACE #$d to ACL", i);
         }
     }
 
@@ -441,7 +441,7 @@ extern "C" HRESULT DAPI AclAddToDacl(
         (asi.AceCount + cDeny) >= MAXSIZE_T / sizeof(ACL_ACE))
     {
         hr = E_OUTOFMEMORY;
-        ExitOnFailure1(hr, "Not enough memory to allocate %d ACEs", (asi.AceCount + cDeny));
+        ExitOnFailure(hr, "Not enough memory to allocate %d ACEs", (asi.AceCount + cDeny));
     }
 
     paaNewDeny = static_cast<ACL_ACE*>(MemAlloc(sizeof(ACL_ACE) * (asi.AceCount + cDeny), TRUE));
@@ -452,7 +452,7 @@ extern "C" HRESULT DAPI AclAddToDacl(
         (asi.AceCount + cAllow) >= MAXSIZE_T / sizeof(ACL_ACE))
     {
         hr = E_OUTOFMEMORY;
-        ExitOnFailure1(hr, "Not enough memory to allocate %d ACEs", (asi.AceCount + cAllow));
+        ExitOnFailure(hr, "Not enough memory to allocate %d ACEs", (asi.AceCount + cAllow));
     }
 
     paaNewAllow = static_cast<ACL_ACE*>(MemAlloc(sizeof(ACL_ACE) * (asi.AceCount + cAllow), TRUE));
@@ -463,7 +463,7 @@ extern "C" HRESULT DAPI AclAddToDacl(
     {
         if (!::GetAce(pAcl, i, reinterpret_cast<LPVOID*>(&pada)))
         {
-            ExitWithLastError1(hr, "failed to get ACE #%d from ACL", i);
+            ExitWithLastError(hr, "failed to get ACE #%d from ACL", i);
         }
 
         if (ACCESS_DENIED_ACE_TYPE != pada->Header.AceType)
@@ -485,7 +485,7 @@ extern "C" HRESULT DAPI AclAddToDacl(
     {
         if (!::GetAce(pAcl, i, reinterpret_cast<LPVOID*>(&paaa)))
         {
-            ExitWithLastError1(hr, "failed to get ACE #%d from ACL", i);
+            ExitWithLastError(hr, "failed to get ACE #%d from ACL", i);
         }
 
         if (ACCESS_ALLOWED_ACE_TYPE != paaa->Header.AceType)
@@ -572,7 +572,7 @@ extern "C" HRESULT DAPI AclCreateDaclOld(
         if (paa[i].pwzAccountName)
         {
             hr = AclGetAccountSid(NULL, paa[i].pwzAccountName, ppsid + i);
-            ExitOnFailure1(hr, "failed to get SID for account: %ls", paa[i].pwzAccountName);
+            ExitOnFailure(hr, "failed to get SID for account: %ls", paa[i].pwzAccountName);
         }
         else
         {
@@ -583,7 +583,7 @@ extern "C" HRESULT DAPI AclCreateDaclOld(
                 paa[i].nSubAuthority[6], paa[i].nSubAuthority[7], 
                 (void**)(ppsid + i))))
             {
-                ExitWithLastError1(hr, "failed to initialize SIDs #%u", i);
+                ExitWithLastError(hr, "failed to initialize SIDs #%u", i);
             }
         }
 
@@ -781,11 +781,11 @@ extern "C" HRESULT DAPI AclCreateSecurityDescriptorFromString(
     va_start(args, wzSddlFormat);
     hr = StrAllocFormattedArgs(&pwzSddl, wzSddlFormat, args);
     va_end(args);
-    ExitOnFailure1(hr, "failed to create SDDL string for format: %ls", wzSddlFormat);
+    ExitOnFailure(hr, "failed to create SDDL string for format: %ls", wzSddlFormat);
 
     if (!::ConvertStringSecurityDescriptorToSecurityDescriptorW(pwzSddl, SDDL_REVISION_1, &psd, &cbSD))
     {
-        ExitWithLastError1(hr, "failed to create security descriptor from SDDL: %ls", pwzSddl);
+        ExitWithLastError(hr, "failed to create security descriptor from SDDL: %ls", pwzSddl);
     }
 
     *ppsd = static_cast<SECURITY_DESCRIPTOR*>(MemAlloc(cbSD, FALSE));
@@ -872,7 +872,7 @@ extern "C" HRESULT DAPI AclGetSecurityDescriptor(
 
     // get the security descriptor for the object
     er = ::GetNamedSecurityInfoW(const_cast<LPWSTR>(wzObject), sot, securityInformation, NULL, NULL, NULL, NULL, &psd);
-    ExitOnWin32Error1(er, hr, "failed to get security info from object: %ls", wzObject);
+    ExitOnWin32Error(er, hr, "failed to get security info from object: %ls", wzObject);
     Assert(::IsValidSecurityDescriptor(psd));
 
     // copy the self-relative security descriptor
@@ -929,7 +929,7 @@ extern "C" HRESULT DAPI AclSetSecurityWithRetry(
         DWORD er = ::SetNamedSecurityInfoW(sczObject, sot, securityInformation, psidOwner, psidGroup, pDacl, pSacl);
         hr = HRESULT_FROM_WIN32(er);
     }
-    ExitOnRootFailure2(hr, "Failed to set security on object '%ls' after %u retries.", wzObject, i);
+    ExitOnRootFailure(hr, "Failed to set security on object '%ls' after %u retries.", wzObject, i);
 
 LExit:
     ReleaseStr(sczObject);

@@ -95,7 +95,7 @@ static HRESULT AllocHelper(
     if (cch >= MAXDWORD / sizeof(WCHAR))
     {
         hr = E_OUTOFMEMORY;
-        ExitOnFailure1(hr, "Not enough memory to allocate string of size: %u", cch);
+        ExitOnFailure(hr, "Not enough memory to allocate string of size: %u", cch);
     }
 
     if (*ppwz)
@@ -117,7 +117,7 @@ static HRESULT AllocHelper(
         pwz = static_cast<LPWSTR>(MemAlloc(sizeof(WCHAR) * cch, TRUE));
     }
 
-    ExitOnNull1(pwz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
+    ExitOnNull(pwz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
 
     *ppwz = pwz;
 LExit:
@@ -223,7 +223,7 @@ extern "C" HRESULT DAPI StrAnsiAlloc(
     if (cch >= MAXDWORD / sizeof(WCHAR))
     {
         hr = E_OUTOFMEMORY;
-        ExitOnFailure1(hr, "Not enough memory to allocate string of size: %u", cch);
+        ExitOnFailure(hr, "Not enough memory to allocate string of size: %u", cch);
     }
 
     if (*ppsz)
@@ -235,7 +235,7 @@ extern "C" HRESULT DAPI StrAnsiAlloc(
         psz = static_cast<LPSTR>(MemAlloc(sizeof(CHAR) * cch, TRUE));
     }
 
-    ExitOnNull1(psz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
+    ExitOnNull(psz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
 
     *ppsz = psz;
 LExit:
@@ -452,7 +452,7 @@ extern "C" HRESULT DAPI StrAnsiAllocString(
         cchDest = ::WideCharToMultiByte(uiCodepage, 0, wzSource, -1, NULL, 0, NULL, NULL);
         if (0 == cchDest)
         {
-            ExitWithLastError1(hr, "failed to get required size for conversion to ANSI: %ls", wzSource);
+            ExitWithLastError(hr, "failed to get required size for conversion to ANSI: %ls", wzSource);
         }
 
         --cchDest; // subtract one because WideChageToMultiByte includes space for the NULL terminator that we track below
@@ -468,7 +468,7 @@ extern "C" HRESULT DAPI StrAnsiAllocString(
         if (cch >= MAXDWORD / sizeof(WCHAR))
         {
             hr = E_OUTOFMEMORY;
-            ExitOnFailure1(hr, "Not enough memory to allocate string of size: %u", cch);
+            ExitOnFailure(hr, "Not enough memory to allocate string of size: %u", cch);
         }
 
         if (*ppsz)
@@ -479,14 +479,14 @@ extern "C" HRESULT DAPI StrAnsiAllocString(
         {
             psz = static_cast<LPSTR>(MemAlloc(sizeof(CHAR) * cch, TRUE));
         }
-        ExitOnNull1(psz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
+        ExitOnNull(psz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
 
         *ppsz = psz;
     }
 
     if (0 == ::WideCharToMultiByte(uiCodepage, 0, wzSource, 0 == cchSource ? -1 : (int)cchSource, *ppsz, (int)cch, NULL, NULL))
     {
-        ExitWithLastError1(hr, "failed to convert to ansi: %ls", wzSource);
+        ExitWithLastError(hr, "failed to convert to ansi: %ls", wzSource);
     }
     (*ppsz)[cchDest] = L'\0';
 
@@ -532,7 +532,7 @@ extern "C" HRESULT DAPI StrAllocStringAnsi(
         cchDest = ::MultiByteToWideChar(uiCodepage, 0, szSource, -1, NULL, 0);
         if (0 == cchDest)
         {
-            ExitWithLastError1(hr, "failed to get required size for conversion to unicode: %s", szSource);
+            ExitWithLastError(hr, "failed to get required size for conversion to unicode: %s", szSource);
         }
 
         --cchDest; //subtract one because MultiByteToWideChar includes space for the NULL terminator that we track below
@@ -548,7 +548,7 @@ extern "C" HRESULT DAPI StrAllocStringAnsi(
         if (cch >= MAXDWORD / sizeof(WCHAR))
         {
             hr = E_OUTOFMEMORY;
-            ExitOnFailure1(hr, "Not enough memory to allocate string of size: %u", cch);
+            ExitOnFailure(hr, "Not enough memory to allocate string of size: %u", cch);
         }
 
         if (*ppwz)
@@ -560,14 +560,14 @@ extern "C" HRESULT DAPI StrAllocStringAnsi(
             pwz = static_cast<LPWSTR>(MemAlloc(sizeof(WCHAR) * cch, TRUE));
         }
 
-        ExitOnNull1(pwz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
+        ExitOnNull(pwz, hr, E_OUTOFMEMORY, "failed to allocate string, len: %u", cch);
 
         *ppwz = pwz;
     }
 
     if (0 == ::MultiByteToWideChar(uiCodepage, 0, szSource, 0 == cchSource ? -1 : (int)cchSource, *ppwz, (int)cch))
     {
-        ExitWithLastError1(hr, "failed to convert to unicode: %s", szSource);
+        ExitWithLastError(hr, "failed to convert to unicode: %s", szSource);
     }
     (*ppwz)[cchDest] = L'\0';
 
@@ -678,7 +678,7 @@ extern "C" HRESULT DAPI StrAllocPrefix(
     {
         cch = cchPrefix + cchLen + 1;
         hr = StrAlloc(ppwz, cch);
-        ExitOnFailure1(hr, "failed to allocate string from string: %ls", wzPrefix);
+        ExitOnFailure(hr, "failed to allocate string from string: %ls", wzPrefix);
     }
 
     if (*ppwz)
@@ -784,7 +784,7 @@ static HRESULT AllocConcatHelper(
     {
         cch = (cchSource + cchLen + 1) * 2;
         hr = AllocHelper(ppwz, cch, fZeroOnRealloc);
-        ExitOnFailure1(hr, "failed to allocate string from string: %ls", wzSource);
+        ExitOnFailure(hr, "failed to allocate string from string: %ls", wzSource);
     }
 
     if (*ppwz)
@@ -853,7 +853,7 @@ extern "C" HRESULT DAPI StrAnsiAllocConcat(
     {
         cch = (cchSource + cchLen + 1) * 2;
         hr = StrAnsiAlloc(ppz, cch);
-        ExitOnFailure1(hr, "failed to allocate string from string: %ls", pzSource);
+        ExitOnFailure(hr, "failed to allocate string from string: %ls", pzSource);
     }
 
     if (*ppz)
@@ -1025,7 +1025,7 @@ static HRESULT AllocFormattedArgsHelper(
         cch = 256;
 
         hr = AllocHelper(ppwz, cch, fZeroOnRealloc);
-        ExitOnFailure1(hr, "failed to allocate string to format: %ls", wzFormat);
+        ExitOnFailure(hr, "failed to allocate string to format: %ls", wzFormat);
     }
 
     // format the message (grow until it fits or there is a failure)
@@ -1049,7 +1049,7 @@ static HRESULT AllocFormattedArgsHelper(
             cch *= 2;
 
             hr = AllocHelper(ppwz, cch, fZeroOnRealloc);
-            ExitOnFailure1(hr, "failed to allocate string to format: %ls", wzFormat);
+            ExitOnFailure(hr, "failed to allocate string to format: %ls", wzFormat);
 
             hr = S_FALSE;
         }
@@ -1104,7 +1104,7 @@ extern "C" HRESULT DAPI StrAnsiAllocFormattedArgs(
     {
         cch = 256;
         hr = StrAnsiAlloc(ppsz, cch);
-        ExitOnFailure1(hr, "failed to allocate string to format: %s", szFormat);
+        ExitOnFailure(hr, "failed to allocate string to format: %s", szFormat);
     }
 
     // format the message (grow until it fits or there is a failure)
@@ -1128,7 +1128,7 @@ extern "C" HRESULT DAPI StrAnsiAllocFormattedArgs(
             }
             cch *= 2;
             hr = StrAnsiAlloc(ppsz, cch);
-            ExitOnFailure1(hr, "failed to allocate string to format: %ls", szFormat);
+            ExitOnFailure(hr, "failed to allocate string to format: %ls", szFormat);
             hr = S_FALSE;
         }
     } while (S_FALSE == hr);
@@ -1169,7 +1169,7 @@ extern "C" HRESULT DAPI StrAllocFromError(
 
     if (0 == cchMessage)
     {
-        ExitWithLastError1(hr, "Failed to format message for error: 0x%x", hrError);
+        ExitWithLastError(hr, "Failed to format message for error: 0x%x", hrError);
     }
 
     hr = StrAllocString(ppwzMessage, reinterpret_cast<LPCWSTR>(pvMessage), cchMessage);
@@ -1425,7 +1425,7 @@ extern "C" HRESULT DAPI StrHexDecode(
     if (cbDest < cchSource / 2)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
-        ExitOnRootFailure3(hr, "Insufficient buffer to decode string '%ls' len: %u into %u bytes.", wzSource, cchSource, cbDest);
+        ExitOnRootFailure(hr, "Insufficient buffer to decode string '%ls' len: %u into %u bytes.", wzSource, cchSource, cbDest);
     }
 
     for (i = 0; i < cchSource / 2; ++i)
@@ -1843,7 +1843,7 @@ extern "C" HRESULT DAPI MultiSzPrepend(
  
     // Prepend
     hr = ::StringCchCopyW(pwzResult, cchResult, pwzInsert);
-    ExitOnFailure1(hr, "failed to copy prepend string: %ls", pwzInsert);
+    ExitOnFailure(hr, "failed to copy prepend string: %ls", pwzInsert);
 
     // If there was no MULTISZ, double null terminate our result, otherwise, copy the MULTISZ in
     if (0 == cchMultiSz)
@@ -2136,7 +2136,7 @@ extern "C" HRESULT DAPI MultiSzInsertString(
         if ((dwCurrentIndex + 1 != dwIndex && L'\0' == *(wz + 1)) || cchProgress >= cchMultiSz)
         {
             hr = HRESULT_FROM_WIN32(ERROR_OBJECT_NOT_FOUND);
-            ExitOnRootFailure1(hr, "requested to insert into an invalid index: %u in a MULTISZ", dwIndex);
+            ExitOnRootFailure(hr, "requested to insert into an invalid index: %u in a MULTISZ", dwIndex);
         }
 
         // Move on to the next string
@@ -2197,10 +2197,10 @@ extern "C" HRESULT DAPI MultiSzReplaceString(
     HRESULT hr = S_OK;
 
     hr = MultiSzRemoveString(ppwzMultiSz, dwIndex);
-    ExitOnFailure1(hr, "failed to remove string from MULTISZ at the specified index: %u", dwIndex);
+    ExitOnFailure(hr, "failed to remove string from MULTISZ at the specified index: %u", dwIndex);
 
     hr = MultiSzInsertString(ppwzMultiSz, NULL, dwIndex, pwzString);
-    ExitOnFailure1(hr, "failed to insert string into MULTISZ at the specified index: %u", dwIndex);
+    ExitOnFailure(hr, "failed to insert string into MULTISZ at the specified index: %u", dwIndex);
 
 LExit:
     return hr;
@@ -2555,7 +2555,7 @@ extern "C" HRESULT DAPI StrArrayFree(
         if (NULL != rgsczStrArray[i])
         {
             hr = StrFree(rgsczStrArray[i]);
-            ExitOnFailure1(hr, "Failed to free the string at index %u.", i);
+            ExitOnFailure(hr, "Failed to free the string at index %u.", i);
         }
     }
 

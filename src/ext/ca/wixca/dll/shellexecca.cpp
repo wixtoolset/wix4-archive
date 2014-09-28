@@ -23,7 +23,7 @@ HRESULT ShellExec(
 
     // a reasonable working directory (not the system32 default from MSI) is the directory where the target lives
     hr = PathGetDirectory(wzTarget, &sczWorkingDirectory);
-    ExitOnFailure1(hr, "failed to get directory for target: %ls", wzTarget);
+    ExitOnFailure(hr, "failed to get directory for target: %ls", wzTarget);
     
     if (!DirExists(sczWorkingDirectory, NULL))
     {
@@ -33,7 +33,7 @@ HRESULT ShellExec(
     if (fUnelevated)
     {
         hr = ShelExecUnelevated(wzTarget, NULL, NULL, sczWorkingDirectory, SW_SHOWDEFAULT);
-        ExitOnFailure1(hr, "ShelExecUnelevated failed with target %ls", wzTarget);
+        ExitOnFailure(hr, "ShelExecUnelevated failed with target %ls", wzTarget);
     }
     else
     {
@@ -73,7 +73,7 @@ HRESULT ShellExec(
                 hr = E_FAIL;
             }
 
-            ExitOnFailure1(hr, "ShellExec failed with return code %d", int(hinst));
+            ExitOnFailure(hr, "ShellExec failed with return code %d", int(hinst));
         }
     }
 
@@ -247,13 +247,13 @@ extern "C" UINT __stdcall WixShellExecBinary(
     hFile = ::CreateFileW(pwzFilename, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        ExitWithLastError1(hr, "Failed to open new temp file: %ls", pwzFilename);
+        ExitWithLastError(hr, "Failed to open new temp file: %ls", pwzFilename);
     }
 
     DWORD cbWritten = 0;
     if (!::WriteFile(hFile, pbData, cbData, &cbWritten, NULL))
     {
-        ExitWithLastError1(hr, "Failed to write data to new temp file: %ls", pwzFilename);
+        ExitWithLastError(hr, "Failed to write data to new temp file: %ls", pwzFilename);
     }
 
     // close it
@@ -262,7 +262,7 @@ extern "C" UINT __stdcall WixShellExecBinary(
 
     // and run it
     hr = ShellExec(pwzFilename, FALSE);
-    ExitOnFailure1(hr, "failed to launch target: %ls", pwzFilename);
+    ExitOnFailure(hr, "failed to launch target: %ls", pwzFilename);
 
 LExit:
     ReleaseStr(pwzBinary);

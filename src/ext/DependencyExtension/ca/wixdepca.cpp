@@ -199,7 +199,7 @@ static HRESULT EnsureRequiredDependencies(
         hr = DepCheckDependency(hkHive, sczProviderKey, sczMinVersion, sczMaxVersion, iAttributes, sdDependencies, &rgDependencies, &cDependencies);
         if (E_NOTFOUND != hr)
         {
-            ExitOnFailure1(hr, "Failed dependency check for %ls.", sczId);
+            ExitOnFailure(hr, "Failed dependency check for %ls.", sczId);
         }
     }
 
@@ -216,7 +216,7 @@ static HRESULT EnsureRequiredDependencies(
     if (0 < cDependencies)
     {
         hr = CreateDependencyRecord(msierrDependencyMissingDependencies, rgDependencies, cDependencies, &hDependencyRec);
-        ExitOnFailure1(hr, "Failed to create the dependency record for message %d.", msierrDependencyMissingDependencies);
+        ExitOnFailure(hr, "Failed to create the dependency record for message %d.", msierrDependencyMissingDependencies);
 
         // Send a yes/no message with a warning icon since continuing could be detrimental.
         // This is sent as a USER message to better detect whether a user or dependency-aware bootstrapper is responding
@@ -247,7 +247,7 @@ static HRESULT EnsureRequiredDependencies(
             ExitFunction1(hr = S_OK);
 
         default:
-            ExitOnFailure1(hr = E_UNEXPECTED, "Unexpected message response %d from user or bootstrapper application.", er);
+            ExitOnFailure(hr = E_UNEXPECTED, "Unexpected message response %d from user or bootstrapper application.", er);
         }
     }
 
@@ -349,7 +349,7 @@ static HRESULT EnsureAbsentDependents(
 
         // Check the registry to see if the provider has any dependents registered.
         hr = DepCheckDependents(hkHive, sczProviderKey, iAttributes, sdIgnoredDependents, &rgDependents, &cDependents);
-        ExitOnFailure1(hr, "Failed dependents check for %ls.", sczId);
+        ExitOnFailure(hr, "Failed dependents check for %ls.", sczId);
     }
 
     if (E_NOMOREITEMS != hr)
@@ -365,7 +365,7 @@ static HRESULT EnsureAbsentDependents(
     if (0 < cDependents)
     {
         hr = CreateDependencyRecord(msierrDependencyHasDependents, rgDependents, cDependents, &hDependencyRec);
-        ExitOnFailure1(hr, "Failed to create the dependency record for message %d.", msierrDependencyHasDependents);
+        ExitOnFailure(hr, "Failed to create the dependency record for message %d.", msierrDependencyHasDependents);
 
         // Send a yes/no message with a warning icon since continuing could be detrimental.
         // This is sent as a USER message to better detect whether a user or dependency-aware bootstrapper is responding
@@ -397,7 +397,7 @@ static HRESULT EnsureAbsentDependents(
 
         default:
             hr = E_UNEXPECTED;
-            ExitOnFailure1(hr, "Unexpected message response %d from user or bootstrapper application.", er);
+            ExitOnFailure(hr, "Unexpected message response %d from user or bootstrapper application.", er);
         }
     }
 
@@ -433,7 +433,7 @@ static HRESULT SplitIgnoredDependents(
     for (LPCWSTR wzToken = ::wcstok_s(sczIgnoreDependencies, wzDelim, &wzContext); wzToken; wzToken = ::wcstok_s(NULL, wzDelim, &wzContext))
     {
         hr = DictAddKey(*psdIgnoredDependents, wzToken);
-        ExitOnFailure1(hr, "Failed to ignored dependency \"%ls\" to the string dictionary.", wzToken);
+        ExitOnFailure(hr, "Failed to ignored dependency \"%ls\" to the string dictionary.", wzToken);
     }
 
 LExit:
@@ -496,10 +496,10 @@ static HRESULT CreateDependencyRecord(
         }
 
         er = ::MsiRecordSetStringW(hRec, ++iParam, pDependency->sczKey);
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(er), "Failed to set the dependency key \"%ls\" into the message record.", pDependency->sczKey);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(er), "Failed to set the dependency key \"%ls\" into the message record.", pDependency->sczKey);
 
         er = ::MsiRecordSetStringW(hRec, ++iParam, pDependency->sczName);
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(er), "Failed to set the dependency name \"%ls\" into the message record.", pDependency->sczName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(er), "Failed to set the dependency name \"%ls\" into the message record.", pDependency->sczName);
     }
 
     // Only assign the out parameter if successful to this point.

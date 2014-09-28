@@ -313,11 +313,11 @@ static HRESULT SetPropertyWellKnownSID(
     DWORD size = MAX_PATH;
 
     hr = AclGetWellKnownSid(sidType, &psid);
-    ExitOnFailure1(hr, "Failed to get SID; skipping account %ls", wzPropertyName);
+    ExitOnFailure(hr, "Failed to get SID; skipping account %ls", wzPropertyName);
 
     if (!::LookupAccountSidW(NULL, psid, wzName, &size, wzRefDomain, &refSize, &nameUse))
     {
-        ExitWithLastError1(hr, "Failed to look up account for SID; skipping account %ls.", wzPropertyName);
+        ExitWithLastError(hr, "Failed to look up account for SID; skipping account %ls.", wzPropertyName);
     }
 
     hr = StrAllocFormatted(&pwzPropertyValue, L"%s\\%s", wzRefDomain, wzName);

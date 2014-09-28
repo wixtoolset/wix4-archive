@@ -30,24 +30,24 @@ namespace CfgTests
             SYSTEMTIME st;
 
             hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure1(hr, "Failed to get value type: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
 
             if (VALUE_STRING != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find string value, found type: %d", cvType);
+                ExitOnFailure(hr, "Expected to find string value, found type: %d", cvType);
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_VALUESTRING, &wzValueFromEnum);
-            ExitOnFailure1(hr, "Failed to enumerate string value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to enumerate string value: %u", dwIndex);
             if (0 != lstrcmpW(wzValue, wzValueFromEnum))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected value '%ls', found value '%ls'", wzValue, wzValueFromEnum);
+                ExitOnFailure(hr, "Expected value '%ls', found value '%ls'", wzValue, wzValueFromEnum);
             }
 
             hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure1(hr, "Failed to read when value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
             if (0 == st.wYear || 0 == st.wMonth)
             {
                 hr = E_FAIL;
@@ -55,7 +55,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzByFromEnum);
-            ExitOnFailure1(hr, "Failed to read by value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
             if (0 == lstrlenW(wzByFromEnum))
             {
                 hr = E_FAIL;
@@ -75,24 +75,24 @@ namespace CfgTests
             SYSTEMTIME st;
 
             hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure1(hr, "Failed to get value type: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
 
             if (VALUE_DWORD != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find dword value, found type: %d", cvType);
+                ExitOnFailure(hr, "Expected to find dword value, found type: %d", cvType);
             }
 
             hr = CfgEnumReadDword(cehHandle, dwIndex, ENUM_DATA_VALUEDWORD, &dwValue);
-            ExitOnFailure1(hr, "Failed to enumerate dword value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to enumerate dword value: %u", dwIndex);
             if (dwValue != dwInValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected value %u, found value %u", dwInValue, dwValue);
+                ExitOnFailure(hr, "Expected value %u, found value %u", dwInValue, dwValue);
             }
 
             hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure1(hr, "Failed to read when value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
             if (0 == st.wYear || 0 == st.wMonth)
             {
                 hr = E_FAIL;
@@ -100,7 +100,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure1(hr, "Failed to read by value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
             if (0 == lstrlenW(wzBy))
             {
                 hr = E_FAIL;
@@ -120,24 +120,24 @@ namespace CfgTests
             SYSTEMTIME st;
 
             hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure1(hr, "Failed to get value type: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
 
             if (VALUE_BOOL != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find bool value, found type: %d", cvType);
+                ExitOnFailure(hr, "Expected to find bool value, found type: %d", cvType);
             }
 
             hr = CfgEnumReadBool(cehHandle, dwIndex, ENUM_DATA_VALUEBOOL, &fValue);
-            ExitOnFailure1(hr, "Failed to enumerate bool value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to enumerate bool value: %u", dwIndex);
             if (fValue != fInValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected value %ls, found value %ls", fInValue ? L"TRUE" : L"FALSE", fValue ? L"TRUE" : L"FALSE");
+                ExitOnFailure(hr, "Expected value %ls, found value %ls", fInValue ? L"TRUE" : L"FALSE", fValue ? L"TRUE" : L"FALSE");
             }
 
             hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure1(hr, "Failed to read when value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
             if (0 == st.wYear || 0 == st.wMonth)
             {
                 hr = E_FAIL;
@@ -145,7 +145,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure1(hr, "Failed to read by value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
             if (0 == lstrlenW(wzBy))
             {
                 hr = E_FAIL;
@@ -166,20 +166,20 @@ namespace CfgTests
             SYSTEMTIME st;
 
             hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure1(hr, "Failed to get value type: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
 
             if (VALUE_BLOB != cvType)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Expected to find blob value, found type: %d", cvType);
+                ExitOnFailure(hr, "Expected to find blob value, found type: %d", cvType);
             }
 
             hr = CfgEnumReadBinary(cdhLocal, cehHandle, dwIndex, ENUM_DATA_BLOBCONTENT, &pbValue, &cbValue);
-            ExitOnFailure1(hr, "Failed to enumerate blob value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to enumerate blob value: %u", dwIndex);
             if (cbValue != cbExpected)
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected blob of size %u, found blob of size %u", cbExpected, cbValue);
+                ExitOnFailure(hr, "Expected blob of size %u, found blob of size %u", cbExpected, cbValue);
             }
             if (0 != memcmp(pbValue, pbExpected, cbExpected))
             {
@@ -188,7 +188,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure1(hr, "Failed to read when value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
             if (0 == st.wYear || 0 == st.wMonth)
             {
                 hr = E_FAIL;
@@ -196,7 +196,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure1(hr, "Failed to read by value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
             if (0 == lstrlenW(wzBy))
             {
                 hr = E_FAIL;
@@ -217,7 +217,7 @@ namespace CfgTests
             SYSTEMTIME st;
 
             hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure1(hr, "Failed to read deleted value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read deleted value: %u", dwIndex);
             if (VALUE_DELETED != cvType)
             {
                 hr = E_FAIL;
@@ -225,7 +225,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure1(hr, "Failed to read when value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
             if (0 == st.wYear || 0 == st.wMonth)
             {
                 hr = E_FAIL;
@@ -233,7 +233,7 @@ namespace CfgTests
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure1(hr, "Failed to read by value: %u", dwIndex);
+            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
             if (0 == lstrlenW(wzBy))
             {
                 hr = E_FAIL;
@@ -308,7 +308,7 @@ namespace CfgTests
             if (dwCount < 9)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "There should be at least 9 values in Test1's history - there were only %u found", dwCount);
+                ExitOnFailure(hr, "There should be at least 9 values in Test1's history - there were only %u found", dwCount);
             }
 
             VerifyHistoryString(cehHandle, dwCount - 1, L"LatestValue");

@@ -88,7 +88,7 @@ extern "C" HRESULT MsiEngineParsePackageFromXml(
     ExitOnFailure(hr, "Failed to get @Version.");
 
     hr = FileVersionFromStringEx(scz, 0, &pPackage->Msi.qwVersion);
-    ExitOnFailure1(hr, "Failed to parse @Version: %ls", scz);
+    ExitOnFailure(hr, "Failed to parse @Version: %ls", scz);
 
     // @DisplayInternalUI
     hr = XmlGetYesNoAttribute(pixnMsiPackage, L"DisplayInternalUI", &pPackage->Msi.fDisplayInternalUI);
@@ -400,7 +400,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
     __in BURN_USER_EXPERIENCE* pUserExperience
     )
 {
-    Trace1(REPORT_STANDARD, "Detecting MSI package 0x%p", pPackage);
+    Trace(REPORT_STANDARD, "Detecting MSI package 0x%p", pPackage);
 
     HRESULT hr = S_OK;
     LPWSTR sczInstalledVersion = NULL;
@@ -422,7 +422,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
     if (SUCCEEDED(hr))
     {
         hr = FileVersionFromStringEx(sczInstalledVersion, 0, &pPackage->Msi.qwInstalledVersion);
-        ExitOnFailure2(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, pPackage->Msi.sczProductCode);
+        ExitOnFailure(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, pPackage->Msi.sczProductCode);
 
         // compare versions
         if (pPackage->Msi.qwVersion < pPackage->Msi.qwInstalledVersion)
@@ -460,7 +460,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
             if (SUCCEEDED(hr))
             {
                 hr = FileVersionFromStringEx(sczInstalledVersion, 0, &qwVersion);
-                ExitOnFailure2(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, sczInstalledProductCode);
+                ExitOnFailure(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, sczInstalledProductCode);
 
                 if (pPackage->Msi.qwVersion < qwVersion)
                 {
@@ -484,7 +484,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
     }
     else
     {
-        ExitOnFailure1(hr, "Failed to get product information for ProductCode: %ls", pPackage->Msi.sczProductCode);
+        ExitOnFailure(hr, "Failed to get product information for ProductCode: %ls", pPackage->Msi.sczProductCode);
     }
 
     // detect related packages by upgrade code
@@ -513,7 +513,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
             hr = WiuGetProductInfoEx(wzProductCode, NULL, MSIINSTALLCONTEXT_USERUNMANAGED, INSTALLPROPERTY_VERSIONSTRING, &sczInstalledVersion);
             if (HRESULT_FROM_WIN32(ERROR_UNKNOWN_PRODUCT) != hr && HRESULT_FROM_WIN32(ERROR_UNKNOWN_PROPERTY) != hr)
             {
-                ExitOnFailure1(hr, "Failed to get version for product in user unmanaged context: %ls", wzProductCode);
+                ExitOnFailure(hr, "Failed to get version for product in user unmanaged context: %ls", wzProductCode);
                 fPerMachine = FALSE;
             }
             else
@@ -521,7 +521,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 hr = WiuGetProductInfoEx(wzProductCode, NULL, MSIINSTALLCONTEXT_MACHINE, INSTALLPROPERTY_VERSIONSTRING, &sczInstalledVersion);
                 if (HRESULT_FROM_WIN32(ERROR_UNKNOWN_PRODUCT) != hr && HRESULT_FROM_WIN32(ERROR_UNKNOWN_PROPERTY) != hr)
                 {
-                    ExitOnFailure1(hr, "Failed to get version for product in machine context: %ls", wzProductCode);
+                    ExitOnFailure(hr, "Failed to get version for product in machine context: %ls", wzProductCode);
                     fPerMachine = TRUE;
                 }
                 else
@@ -532,7 +532,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
             }
 
             hr = FileVersionFromStringEx(sczInstalledVersion, 0, &qwVersion);
-            ExitOnFailure2(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, wzProductCode);
+            ExitOnFailure(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, wzProductCode);
 
             // compare versions
             if (pRelatedMsi->fMinProvided && (pRelatedMsi->fMinInclusive ? (qwVersion < pRelatedMsi->qwMinVersion) : (qwVersion <= pRelatedMsi->qwMinVersion)))
@@ -689,7 +689,7 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
     __in BURN_USER_EXPERIENCE* pUserExperience
     )
 {
-    Trace1(REPORT_STANDARD, "Planning MSI package 0x%p", pPackage);
+    Trace(REPORT_STANDARD, "Planning MSI package 0x%p", pPackage);
 
     HRESULT hr = S_OK;
     DWORD64 qwVersion = pPackage->Msi.qwVersion;
@@ -794,7 +794,7 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Invalid package current state result encountered during plan: %d", pPackage->currentState);
+        ExitOnRootFailure(hr, "Invalid package current state result encountered during plan: %d", pPackage->currentState);
     }
 
     // Calculate the rollback action if there is an execute action.
@@ -1003,7 +1003,7 @@ extern "C" HRESULT MsiEngineAddCompatiblePackage(
         ExitOnFailure(hr, "Failed to read version from compatible package.");
 
         hr = FileVersionFromStringEx(sczInstalledVersion, 0, &pCompatiblePackage->Msi.qwVersion);
-        ExitOnFailure2(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, pCompatiblePackage->Msi.sczProductCode);
+        ExitOnFailure(hr, "Failed to convert version: %ls to DWORD64 for ProductCode: %ls", sczInstalledVersion, pCompatiblePackage->Msi.sczProductCode);
     }
 
     // For now, copy enough information to support uninstalling the newer, compatible package.
@@ -1130,7 +1130,7 @@ extern "C" HRESULT MsiEngineExecutePackage(
     {
         // get cached MSI path
         hr = CacheGetCompletedPath(pExecuteAction->msiPackage.pPackage->fPerMachine, pExecuteAction->msiPackage.pPackage->sczCacheId, &sczCachedDirectory);
-        ExitOnFailure1(hr, "Failed to get cached path for package: %ls", pExecuteAction->msiPackage.pPackage->sczId);
+        ExitOnFailure(hr, "Failed to get cached path for package: %ls", pExecuteAction->msiPackage.pPackage->sczId);
 
         // Best effort to set the execute package cache folder variable.
         VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, sczCachedDirectory, TRUE);
@@ -1146,7 +1146,7 @@ extern "C" HRESULT MsiEngineExecutePackage(
     if (pExecuteAction->msiPackage.sczLogPath && *pExecuteAction->msiPackage.sczLogPath)
     {
         hr = WiuEnableLog(dwLogMode, pExecuteAction->msiPackage.sczLogPath, 0);
-        ExitOnFailure2(hr, "Failed to enable logging for package: %ls to: %ls", pExecuteAction->msiPackage.pPackage->sczId, pExecuteAction->msiPackage.sczLogPath);
+        ExitOnFailure(hr, "Failed to enable logging for package: %ls to: %ls", pExecuteAction->msiPackage.pPackage->sczId, pExecuteAction->msiPackage.sczLogPath);
     }
 
     // set up properties
@@ -1381,7 +1381,7 @@ static HRESULT ParseRelatedMsiFromXml(
         ExitOnFailure(hr, "Failed to get @MinVersion.");
 
         hr = FileVersionFromStringEx(scz, 0, &pRelatedMsi->qwMinVersion);
-        ExitOnFailure1(hr, "Failed to parse @MinVersion: %ls", scz);
+        ExitOnFailure(hr, "Failed to parse @MinVersion: %ls", scz);
 
         // flag that we have a min version
         pRelatedMsi->fMinProvided = TRUE;
@@ -1398,7 +1398,7 @@ static HRESULT ParseRelatedMsiFromXml(
         ExitOnFailure(hr, "Failed to get @MaxVersion.");
 
         hr = FileVersionFromStringEx(scz, 0, &pRelatedMsi->qwMaxVersion);
-        ExitOnFailure1(hr, "Failed to parse @MaxVersion: %ls", scz);
+        ExitOnFailure(hr, "Failed to parse @MaxVersion: %ls", scz);
 
         // flag that we have a max version
         pRelatedMsi->fMaxProvided = TRUE;
@@ -1812,7 +1812,7 @@ static HRESULT ConcatPatchProperty(
             if (BOOTSTRAPPER_ACTION_STATE_UNINSTALL < patchExecuteAction)
             {
                 hr = CacheGetCompletedPath(pMspPackage->fPerMachine, pMspPackage->sczCacheId, &sczCachedDirectory);
-                ExitOnFailure1(hr, "Failed to get cached path for MSP package: %ls", pMspPackage->sczId);
+                ExitOnFailure(hr, "Failed to get cached path for MSP package: %ls", pMspPackage->sczId);
 
                 hr = PathConcat(sczCachedDirectory, pMspPackage->rgPayloads[0].pPayload->sczFilePath, &sczMspPath);
                 ExitOnFailure(hr, "Failed to build MSP path.");
@@ -1860,7 +1860,7 @@ static void RegisterSourceDirectory(
     MSIINSTALLCONTEXT dwContext = pPackage->fPerMachine ? MSIINSTALLCONTEXT_MACHINE : MSIINSTALLCONTEXT_USERUNMANAGED;
 
     hr = PathGetDirectory(wzMsiPath, &sczMsiDirectory);
-    ExitOnFailure1(hr, "Failed to get directory for path: %ls", wzMsiPath);
+    ExitOnFailure(hr, "Failed to get directory for path: %ls", wzMsiPath);
 
     hr = WiuSourceListAddSourceEx(pPackage->Msi.sczProductCode, NULL, dwContext, MSICODE_PRODUCT, sczMsiDirectory, 1);
     if (FAILED(hr))

@@ -458,12 +458,12 @@ public: // IBootstrapperEngine
         else if (wzPayloadId && * wzPayloadId)
         {
             hr = PayloadFindById(&m_pEngineState->payloads, wzPayloadId, &pPayload);
-            ExitOnFailure1(hr, "UX requested unknown payload with id: %ls", wzPayloadId);
+            ExitOnFailure(hr, "UX requested unknown payload with id: %ls", wzPayloadId);
 
             if (BURN_PAYLOAD_PACKAGING_EMBEDDED == pPayload->packaging)
             {
                 hr = HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION);
-                ExitOnFailure1(hr, "UX denied while trying to set source on embedded payload: %ls", wzPayloadId);
+                ExitOnFailure(hr, "UX denied while trying to set source on embedded payload: %ls", wzPayloadId);
             }
 
             hr = StrAllocString(&pPayload->sczSourcePath, wzPath, 0);
@@ -472,7 +472,7 @@ public: // IBootstrapperEngine
         else if (wzPackageOrContainerId && *wzPackageOrContainerId)
         {
             hr = ContainerFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
-            ExitOnFailure1(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
+            ExitOnFailure(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
 
             hr = StrAllocString(&pContainer->sczSourcePath, wzPath, 0);
             ExitOnFailure(hr, "Failed to set source path for container.");
@@ -507,12 +507,12 @@ public: // IBootstrapperEngine
         if (wzPayloadId && * wzPayloadId)
         {
             hr = PayloadFindById(&m_pEngineState->payloads, wzPayloadId, &pPayload);
-            ExitOnFailure1(hr, "UX requested unknown payload with id: %ls", wzPayloadId);
+            ExitOnFailure(hr, "UX requested unknown payload with id: %ls", wzPayloadId);
 
             if (BURN_PAYLOAD_PACKAGING_EMBEDDED == pPayload->packaging)
             {
                 hr = HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION);
-                ExitOnFailure1(hr, "UX denied while trying to set download URL on embedded payload: %ls", wzPayloadId);
+                ExitOnFailure(hr, "UX denied while trying to set download URL on embedded payload: %ls", wzPayloadId);
             }
 
             pDownloadSource = &pPayload->downloadSource;
@@ -520,7 +520,7 @@ public: // IBootstrapperEngine
         else if (wzPackageOrContainerId && *wzPackageOrContainerId)
         {
             hr = ContainerFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
-            ExitOnFailure1(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
+            ExitOnFailure(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
 
             pDownloadSource = &pContainer->downloadSource;
         }
@@ -747,7 +747,7 @@ public: // IBootstrapperEngine
         }
 
         hr = ApprovedExesFindById(&m_pEngineState->approvedExes, wzApprovedExeForElevationId, &pApprovedExe);
-        ExitOnFailure1(hr, "UX requested unknown approved exe with id: %ls", wzApprovedExeForElevationId);
+        ExitOnFailure(hr, "UX requested unknown approved exe with id: %ls", wzApprovedExeForElevationId);
 
         ::LeaveCriticalSection(&m_pEngineState->csActive);
         fLeaveCriticalSection = FALSE;

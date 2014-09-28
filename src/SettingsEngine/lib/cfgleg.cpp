@@ -69,10 +69,10 @@ HRESULT CfgLegacyImportProductFromXMLFile(
     ExitOnFailure(hr, "Failed to log line");
 
     hr = FileToString(wzXmlFilePath, &sczContent, NULL);
-    ExitOnFailure1(hr, "Failed to load string out of file contents from file at path: %ls", wzXmlFilePath);
+    ExitOnFailure(hr, "Failed to load string out of file contents from file at path: %ls", wzXmlFilePath);
 
     hr = ParseManifest(sczContent, &product);
-    ExitOnFailure1(hr, "Failed to parse XML manifest file from path: %ls", wzXmlFilePath);
+    ExitOnFailure(hr, "Failed to parse XML manifest file from path: %ls", wzXmlFilePath);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle while importing legacy manifest");
@@ -92,7 +92,7 @@ HRESULT CfgLegacyImportProductFromXMLFile(
     ExitOnFailure(hr, "Failed to write manifest contents to database");
 
     hr = ProductSet(pcdb, product.sczProductId, wzLegacyVersion, wzLegacyPublicKey, FALSE, NULL);
-    ExitOnFailure1(hr, "Failed to set legacy product to product ID: %ls", product.sczProductId);
+    ExitOnFailure(hr, "Failed to set legacy product to product ID: %ls", product.sczProductId);
 
     hr = SceCommitTransaction(pcdb->psceDb);
     ExitOnFailure(hr, "Failed to commit transaction");

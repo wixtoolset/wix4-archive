@@ -138,7 +138,7 @@ extern "C" HRESULT PackagesParseFromXml(
             else
             {
                 hr = E_UNEXPECTED;
-                ExitOnFailure1(hr, "Invalid cache type: %ls", scz);
+                ExitOnFailure(hr, "Invalid cache type: %ls", scz);
             }
         }
         ExitOnFailure(hr, "Failed to get @Cache.");
@@ -196,7 +196,7 @@ extern "C" HRESULT PackagesParseFromXml(
             ExitOnFailure(hr, "Failed to get @RollbackBoundaryForward.");
 
             hr =  FindRollbackBoundaryById(pPackages, scz, &pPackage->pRollbackBoundaryForward);
-            ExitOnFailure1(hr, "Failed to find forward transaction boundary: %ls", scz);
+            ExitOnFailure(hr, "Failed to find forward transaction boundary: %ls", scz);
         }
 
         // @RollbackBoundaryBackward
@@ -206,7 +206,7 @@ extern "C" HRESULT PackagesParseFromXml(
             ExitOnFailure(hr, "Failed to get @RollbackBoundaryBackward.");
 
             hr =  FindRollbackBoundaryById(pPackages, scz, &pPackage->pRollbackBoundaryBackward);
-            ExitOnFailure1(hr, "Failed to find backward transaction boundary: %ls", scz);
+            ExitOnFailure(hr, "Failed to find backward transaction boundary: %ls", scz);
         }
 
         // read type specific attributes

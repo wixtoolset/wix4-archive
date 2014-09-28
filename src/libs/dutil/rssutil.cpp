@@ -313,7 +313,7 @@ static HRESULT ParseRssChannel(
         else
         {
             hr = ParseRssUnknownElement(pNode, &pNewChannel->pUnknownElements);
-            ExitOnFailure1(hr, "Failed to parse unknown RSS channel element: %ls", bstrNodeName);
+            ExitOnFailure(hr, "Failed to parse unknown RSS channel element: %ls", bstrNodeName);
         }
 
         ReleaseNullBSTR(bstrNodeValue);
@@ -433,7 +433,7 @@ static HRESULT ParseRssItem(
         else
         {
             hr = ParseRssUnknownElement(pNode, &pItem->pUnknownElements);
-            ExitOnFailure1(hr, "Failed to parse unknown RSS item element: %ls", bstrNodeName);
+            ExitOnFailure(hr, "Failed to parse unknown RSS item element: %ls", bstrNodeName);
         }
 
         ReleaseNullBSTR(bstrNodeValue);

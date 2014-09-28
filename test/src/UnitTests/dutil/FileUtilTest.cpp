@@ -33,7 +33,7 @@ namespace DutilTests
             ExitOnFailure(hr, "Failed to get path to encodings file dir");
 
             hr = DirEnsureExists(sczTempDir, NULL);
-            ExitOnFailure1(hr, "Failed to ensure directory exists: %ls", sczTempDir);
+            ExitOnFailure(hr, "Failed to ensure directory exists: %ls", sczTempDir);
 
             TestFile(sczFileDir, sczTempDir, L"ANSI.txt", 32, FILE_ENCODING_UTF8);
             // Big endian not supported today!
@@ -66,27 +66,27 @@ namespace DutilTests
             DWORD cbFile2 = 0;
 
             hr = PathConcat(wzDir, wzFileName, &sczFullPath);
-            ExitOnFailure1(hr, "Failed to create path to test file: %ls", sczFullPath);
+            ExitOnFailure(hr, "Failed to create path to test file: %ls", sczFullPath);
 
             hr = FileToString(sczFullPath, &sczContents, &feEncodingFound);
-            ExitOnFailure1(hr, "Failed to read text from file: %ls", sczFullPath);
+            ExitOnFailure(hr, "Failed to read text from file: %ls", sczFullPath);
 
             if (NULL == sczContents)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "FileToString() returned NULL for file: %ls", sczFullPath);
+                ExitOnFailure(hr, "FileToString() returned NULL for file: %ls", sczFullPath);
             }
 
             if ((DWORD)lstrlenW(sczContents) != dwExpectedStringLength)
             {
                 hr = E_FAIL;
-                ExitOnFailure3(hr, "FileToString() returned wrong size for file: %ls (expected size %u, found size %u)", sczFullPath, dwExpectedStringLength, lstrlenW(sczContents));
+                ExitOnFailure(hr, "FileToString() returned wrong size for file: %ls (expected size %u, found size %u)", sczFullPath, dwExpectedStringLength, lstrlenW(sczContents));
             }
 
             if (feEncodingFound != feExpectedEncoding)
             {
                 hr = E_FAIL;
-                ExitOnFailure3(hr, "FileToString() returned unexpected encoding type for file: %ls (expected type %u, found type %u)", sczFullPath, feExpectedEncoding, feEncodingFound);
+                ExitOnFailure(hr, "FileToString() returned unexpected encoding type for file: %ls (expected type %u, found type %u)", sczFullPath, feExpectedEncoding, feEncodingFound);
             }
 
             hr = PathConcat(wzTempDir, wzFileName, &sczOutputPath);
@@ -104,7 +104,7 @@ namespace DutilTests
             if (cbFile1 != cbFile2 || 0 != memcmp(pbFile1, pbFile2, cbFile1))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Outputted file doesn't match input file: \"%ls\" and \"%ls\"", sczFullPath, sczOutputPath);
+                ExitOnFailure(hr, "Outputted file doesn't match input file: \"%ls\" and \"%ls\"", sczFullPath, sczOutputPath);
             }
 
         LExit:

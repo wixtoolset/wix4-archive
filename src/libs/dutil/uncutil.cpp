@@ -36,7 +36,7 @@ DAPI_(HRESULT) UncConvertFromMountedDrive(
         er = ERROR_SUCCESS;
 
         hr = StrAlloc(psczUNCPath, dwLength);
-        ExitOnFailure1(hr, "Failed to allocate string to get raw UNC path of length %u", dwLength);
+        ExitOnFailure(hr, "Failed to allocate string to get raw UNC path of length %u", dwLength);
 
         er = ::WNetGetConnectionW(sczDrive, *psczUNCPath, &dwLength);
         if (ERROR_CONNECTION_UNAVAIL == er)
@@ -44,7 +44,7 @@ DAPI_(HRESULT) UncConvertFromMountedDrive(
             // This means the drive is remembered but not currently connected, this can mean the location is accessible via UNC path but not via mounted drive path
             er = ERROR_SUCCESS;
         }
-        ExitOnWin32Error1(er, hr, "::WNetGetConnectionW() failed with buffer provided on drive %ls", sczDrive);
+        ExitOnWin32Error(er, hr, "::WNetGetConnectionW() failed with buffer provided on drive %ls", sczDrive);
 
         // Skip drive letter and colon
         hr = StrAllocConcat(psczUNCPath, sczMountedDrivePath + 2, 0);
@@ -57,7 +57,7 @@ DAPI_(HRESULT) UncConvertFromMountedDrive(
             er = ERROR_NO_DATA;
         }
 
-        ExitOnWin32Error1(er, hr, "::WNetGetConnectionW() failed on drive %ls", sczDrive);
+        ExitOnWin32Error(er, hr, "::WNetGetConnectionW() failed on drive %ls", sczDrive);
     }
 
 LExit:

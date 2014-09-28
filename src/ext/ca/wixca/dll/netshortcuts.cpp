@@ -212,14 +212,14 @@ static HRESULT CreateUrl(
 
     // set shortcut target
     hr = piURL->SetURL(wzTarget, 0);
-    ExitOnFailure2(hr, "failed to set shortcut '%ls' target '%ls'", wzShortcutPath, wzTarget);
+    ExitOnFailure(hr, "failed to set shortcut '%ls' target '%ls'", wzShortcutPath, wzTarget);
 
     // get an IPersistFile and save the shortcut
     hr = piURL->QueryInterface(IID_IPersistFile, (void**)&piPersistFile);
-    ExitOnFailure1(hr, "failed to get IPersistFile for shortcut '%ls'", wzShortcutPath);
+    ExitOnFailure(hr, "failed to get IPersistFile for shortcut '%ls'", wzShortcutPath);
 
     hr = piPersistFile->Save(wzShortcutPath, TRUE);
-    ExitOnFailure1(hr, "failed to save shortcut '%ls'", wzShortcutPath);
+    ExitOnFailure(hr, "failed to save shortcut '%ls'", wzShortcutPath);
 
 LExit:
     ReleaseObject(piPersistFile);
@@ -249,14 +249,14 @@ static HRESULT CreateLink(
 
     // set shortcut target
     hr = piShellLink->SetPath(wzTarget);
-    ExitOnFailure2(hr, "failed to set shortcut '%ls' target '%ls'", wzShortcutPath, wzTarget);
+    ExitOnFailure(hr, "failed to set shortcut '%ls' target '%ls'", wzShortcutPath, wzTarget);
 
     // get an IPersistFile and save the shortcut
     hr = piShellLink->QueryInterface(IID_IPersistFile, (void**)&piPersistFile);
-    ExitOnFailure1(hr, "failed to get IPersistFile for shortcut '%ls'", wzShortcutPath);
+    ExitOnFailure(hr, "failed to get IPersistFile for shortcut '%ls'", wzShortcutPath);
 
     hr = piPersistFile->Save(wzShortcutPath, TRUE);
-    ExitOnFailure1(hr, "failed to save shortcut '%ls'", wzShortcutPath);
+    ExitOnFailure(hr, "failed to save shortcut '%ls'", wzShortcutPath);
 
 LExit:
     ReleaseObject(piPersistFile);
@@ -320,7 +320,7 @@ extern "C" UINT __stdcall WixCreateInternetShortcuts(
 
         // tick the progress bar
         hr = WcaProgressMessage(COST_INTERNETSHORTCUT, FALSE);
-        ExitOnFailure1(hr, "failed to tick progress bar for shortcut: %ls", pwzShortcutPath);
+        ExitOnFailure(hr, "failed to tick progress bar for shortcut: %ls", pwzShortcutPath);
     }
 
 LExit:
@@ -372,7 +372,7 @@ extern "C" UINT __stdcall WixRollbackInternetShortcuts(
 
         // delete file
         hr = FileEnsureDelete(pwzShortcutPath);
-        ExitOnFailure1(hr, "failed to delete file '%ls'", pwzShortcutPath);
+        ExitOnFailure(hr, "failed to delete file '%ls'", pwzShortcutPath);
 
         // skip over the shortcut target and attributes
         hr = WcaReadStringFromCaData(&pwz, &pwzShortcutPath);

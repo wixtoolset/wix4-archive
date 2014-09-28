@@ -67,7 +67,7 @@ extern "C" HRESULT ExtractXMLFromGDFBinary(
 
     // HGLOBAL from LoadResource() needs to be copied for CreateStreamOnHGlobal() to work
     hgResourceCopy = ::GlobalAlloc(GMEM_MOVEABLE, dwGDFXMLSize);
-    ExitOnNullDebugTrace1(hgResourceCopy, hr, E_OUTOFMEMORY, "failed to GlobalAlloc %ls", sczGDFBinPath);
+    ExitOnNullDebugTrace(hgResourceCopy, hr, E_OUTOFMEMORY, "failed to GlobalAlloc %ls", sczGDFBinPath);
 
     LPVOID pCopy = ::GlobalLock(hgResourceCopy);
     ExitOnNullWithLastError(pCopy, hr, "failed to global lock");
@@ -245,7 +245,7 @@ extern "C" HRESULT SaveShortcut(
         cch = ::GetFullPathNameW(sczLaunchPath, countof(strFullPath), strFullPath, &strExePart);
         if (0 == cch)
         {
-            ExitWithLastError1(hr, "Failed to get full path for string: %ls", sczLaunchPath);
+            ExitWithLastError(hr, "Failed to get full path for string: %ls", sczLaunchPath);
         }
 
         if (strExePart) 
@@ -687,13 +687,13 @@ extern "C" HRESULT __stdcall SchedGameExplorer(
 
         // turn that into the path to the target file
         hr = StrAllocFormatted(&pwzFormattedFile, L"[#%s]", pwzFileId);
-        ExitOnFailure1(hr, "failed to format file string for file: %ls", pwzFileId);
+        ExitOnFailure(hr, "failed to format file string for file: %ls", pwzFileId);
         hr = WcaGetFormattedString(pwzFormattedFile, &pwzGamePath);
-        ExitOnFailure1(hr, "failed to get formatted string for file: %ls", pwzFileId);
+        ExitOnFailure(hr, "failed to get formatted string for file: %ls", pwzFileId);
 
         // and then get the directory part of the path
         hr = PathGetDirectory(pwzGamePath, &pwzGameDir);
-        ExitOnFailure1(hr, "failed to get path for file: %ls", pwzGamePath);
+        ExitOnFailure(hr, "failed to get path for file: %ls", pwzGamePath);
 
         // get component and its install/action states
         hr = WcaGetRecordString(hRec, egqComponent, &pwzComponentId);
@@ -720,21 +720,21 @@ extern "C" HRESULT __stdcall SchedGameExplorer(
         {
             // write custom action data: operation, instance guid, path, directory
             hr = WcaWriteIntegerToCaData(todo, &pwzCustomActionData);
-            ExitOnFailure1(hr, "failed to write Game Explorer operation to custom action data for instance id: %ls", pwzInstanceId);
+            ExitOnFailure(hr, "failed to write Game Explorer operation to custom action data for instance id: %ls", pwzInstanceId);
 
             hr = WcaWriteStringToCaData(pwzInstanceId, &pwzCustomActionData);
-            ExitOnFailure1(hr, "failed to write custom action data for instance id: %ls", pwzInstanceId);
+            ExitOnFailure(hr, "failed to write custom action data for instance id: %ls", pwzInstanceId);
 
             hr = WcaWriteStringToCaData(pwzGamePath, &pwzCustomActionData);
-            ExitOnFailure1(hr, "failed to write game path to custom action data for instance id: %ls", pwzInstanceId);
+            ExitOnFailure(hr, "failed to write game path to custom action data for instance id: %ls", pwzInstanceId);
 
             hr = WcaWriteStringToCaData(pwzGameDir, &pwzCustomActionData);
-            ExitOnFailure1(hr, "failed to write game install directory to custom action data for instance id: %ls", pwzInstanceId);
+            ExitOnFailure(hr, "failed to write game install directory to custom action data for instance id: %ls", pwzInstanceId);
         }
         else
         {
             hr = WriteGameExplorerRegistry(pwzInstanceId, pwzComponentId, pwzGamePath, pwzGameDir);
-            ExitOnFailure1(hr, "failed to write registry rows for game id: %ls", pwzInstanceId);
+            ExitOnFailure(hr, "failed to write registry rows for game id: %ls", pwzInstanceId);
         }
     }
 
@@ -875,7 +875,7 @@ extern "C" UINT __stdcall ExecGameExplorer(
 
             // convert from LPWSTRs to BSTRs and GUIDs, which are what IGameExplorer wants
             hr = ::CLSIDFromString(pwzInstanceId, &guidInstanceId);
-            ExitOnFailure1(hr, "couldn't convert invalid GUID string '%ls'", pwzInstanceId);
+            ExitOnFailure(hr, "couldn't convert invalid GUID string '%ls'", pwzInstanceId);
 
             bstrGamePath = ::SysAllocString(pwzGamePath);
             ExitOnNull(bstrGamePath, hr, E_OUTOFMEMORY, "failed SysAllocString for bstrGamePath");
@@ -907,11 +907,11 @@ extern "C" UINT __stdcall ExecGameExplorer(
                 case WCA_TODO_INSTALL:
                 case WCA_TODO_REINSTALL:
                     hr = piGameExplorer2->InstallGame(bstrGamePath, bstrGameDir, GIS_ALL_USERS);
-                    ExitOnFailure1(hr, "failed to install game: %ls", bstrGamePath);
+                    ExitOnFailure(hr, "failed to install game: %ls", bstrGamePath);
                     break;
                 case WCA_TODO_UNINSTALL:
                     hr = piGameExplorer2->UninstallGame(bstrGamePath);
-                    ExitOnFailure1(hr, "failed to remove game instance: %ls", pwzInstanceId);
+                    ExitOnFailure(hr, "failed to remove game instance: %ls", pwzInstanceId);
                     break;
                 }
             }
@@ -921,14 +921,14 @@ extern "C" UINT __stdcall ExecGameExplorer(
                 {
                 case WCA_TODO_INSTALL:
                     hr = piGameExplorer->VerifyAccess(bstrGamePath, &fHasAccess);
-                    ExitOnFailure1(hr, "failed to verify game access: %ls", pwzInstanceId);
+                    ExitOnFailure(hr, "failed to verify game access: %ls", pwzInstanceId);
 
                     if (SUCCEEDED(hr) && fHasAccess)
                     {
                         WcaLog(LOGMSG_STANDARD, "Adding game: %ls, %ls", bstrGamePath, bstrGameDir);
                         hr = piGameExplorer->AddGame(bstrGamePath, bstrGameDir, GIS_ALL_USERS, &guidInstanceId);
                     }
-                    ExitOnFailure1(hr, "failed to add game instance: %ls", pwzInstanceId);
+                    ExitOnFailure(hr, "failed to add game instance: %ls", pwzInstanceId);
 
                     if (fIsV2GDF)
                     {
@@ -938,11 +938,11 @@ extern "C" UINT __stdcall ExecGameExplorer(
                     break;
                 case WCA_TODO_REINSTALL:
                     hr = piGameExplorer->UpdateGame(guidInstanceId);
-                    ExitOnFailure1(hr, "failed to update game instance: %ls", pwzInstanceId);
+                    ExitOnFailure(hr, "failed to update game instance: %ls", pwzInstanceId);
                     break;
                 case WCA_TODO_UNINSTALL:
                     hr = piGameExplorer->RemoveGame(guidInstanceId);
-                    ExitOnFailure1(hr, "failed to remove game instance: %ls", pwzInstanceId);
+                    ExitOnFailure(hr, "failed to remove game instance: %ls", pwzInstanceId);
                     if (fIsV2GDF)
                     {
                         hr = RemoveShorcuts(pwzInstanceId, GIS_ALL_USERS);
@@ -954,7 +954,7 @@ extern "C" UINT __stdcall ExecGameExplorer(
 
             // Tick the progress bar along for this game
             hr = WcaProgressMessage(COST_GAMEEXPLORER, FALSE);
-            ExitOnFailure1(hr, "failed to tick progress bar for game instance: %ls", pwzInstanceId);
+            ExitOnFailure(hr, "failed to tick progress bar for game instance: %ls", pwzInstanceId);
         }
     }
 

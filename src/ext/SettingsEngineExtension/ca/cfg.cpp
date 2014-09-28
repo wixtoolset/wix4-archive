@@ -261,13 +261,13 @@ extern "C" UINT __stdcall ExecCfgProducts(
         case WCA_TODO_REINSTALL:
             WcaLog(LOGMSG_STANDARD, "Installing cfg product %ls version %ls, public key %ls", sczName, sczVersion, sczPublicKey);
             hr = CfgAdminRegisterProduct(cdhAdmin, sczName, sczVersion, sczPublicKey);
-            ExitOnFailure3(hr, "failed to install cfg product: name '%ls' version %ls, public key %ls", sczName, sczVersion, sczPublicKey);
+            ExitOnFailure(hr, "failed to install cfg product: name '%ls' version %ls, public key %ls", sczName, sczVersion, sczPublicKey);
             break;
 
         case WCA_TODO_UNINSTALL:
             WcaLog(LOGMSG_STANDARD, "Uninstalling cfg product %ls version %ls, public key %d", sczName, sczVersion, sczPublicKey);
             hr = CfgAdminUnregisterProduct(cdhAdmin, sczName, sczVersion, sczPublicKey);
-            ExitOnFailure3(hr, "failed to remove cfg product: name '%ls' version %ls, public key %ls", sczName, sczVersion, sczPublicKey);
+            ExitOnFailure(hr, "failed to remove cfg product: name '%ls' version %ls, public key %ls", sczName, sczVersion, sczPublicKey);
             break;
         }
     }

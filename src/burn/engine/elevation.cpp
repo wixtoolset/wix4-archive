@@ -1263,7 +1263,7 @@ static HRESULT ProcessGenericExecuteMessages(
         for (DWORD i = 0; i < cFiles; ++i)
         {
             hr = BuffReadString((BYTE*)pMsg->pvData, pMsg->cbData, &iData, &rgwzFiles[i]);
-            ExitOnFailure1(hr, "Failed to read file name: %u", i);
+            ExitOnFailure(hr, "Failed to read file name: %u", i);
         }
 
         message.filesInUse.cFiles = cFiles;
@@ -1319,7 +1319,7 @@ static HRESULT ProcessMsiPackageMessages(
         for (DWORD i = 0; i < cMsiData; ++i)
         {
             hr = BuffReadString((BYTE*)pMsg->pvData, pMsg->cbData, &iData, &rgwzMsiData[i]);
-            ExitOnFailure1(hr, "Failed to read MSI data: %u", i);
+            ExitOnFailure(hr, "Failed to read MSI data: %u", i);
         }
 
         message.cData = cMsiData;
@@ -1507,7 +1507,7 @@ static HRESULT ProcessElevatedChildMessage(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Unexpected elevated message sent to child process, msg: %u", pMsg->dwMessage);
+        ExitOnRootFailure(hr, "Unexpected elevated message sent to child process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = dwPid ? dwPid : (DWORD)hrResult;
@@ -1547,7 +1547,7 @@ static HRESULT ProcessElevatedChildCacheMessage(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Unexpected elevated cache message sent to child process, msg: %u", pMsg->dwMessage);
+        ExitOnRootFailure(hr, "Unexpected elevated cache message sent to child process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = (DWORD)hrResult;
@@ -1820,7 +1820,7 @@ static HRESULT OnLayoutBundle(
 
     // Layout the bundle.
     hr = CacheLayoutBundle(wzExecutableName, sczLayoutDirectory, sczUnverifiedPath);
-    ExitOnFailure1(hr, "Failed to layout bundle from: %ls", sczUnverifiedPath);
+    ExitOnFailure(hr, "Failed to layout bundle from: %ls", sczUnverifiedPath);
 
 LExit:
     ReleaseStr(sczUnverifiedPath);
@@ -1854,7 +1854,7 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
     if (scz && *scz)
     {
         hr = ContainerFindById(pContainers, scz, &pContainer);
-        ExitOnFailure1(hr, "Failed to find container: %ls", scz);
+        ExitOnFailure(hr, "Failed to find container: %ls", scz);
     }
 
     hr = BuffReadString(pbData, cbData, &iData, &scz);
@@ -1863,7 +1863,7 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
     if (scz && *scz)
     {
         hr = PackageFindById(pPackages, scz, &pPackage);
-        ExitOnFailure1(hr, "Failed to find package: %ls", scz);
+        ExitOnFailure(hr, "Failed to find package: %ls", scz);
     }
 
     hr = BuffReadString(pbData, cbData, &iData, &scz);
@@ -1872,7 +1872,7 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
     if (scz && *scz)
     {
         hr = PayloadFindById(pPayloads, scz, &pPayload);
-        ExitOnFailure1(hr, "Failed to find payload: %ls", scz);
+        ExitOnFailure(hr, "Failed to find payload: %ls", scz);
     }
 
     hr = BuffReadString(pbData, cbData, &iData, &sczLayoutDirectory);
@@ -1893,12 +1893,12 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
             Assert(!pPayload);
 
             hr = CacheLayoutContainer(pContainer, sczLayoutDirectory, sczUnverifiedPath, fMove);
-            ExitOnFailure2(hr, "Failed to layout container from: %ls to %ls", sczUnverifiedPath, sczLayoutDirectory);
+            ExitOnFailure(hr, "Failed to layout container from: %ls to %ls", sczUnverifiedPath, sczLayoutDirectory);
         }
         else
         {
             hr = CacheLayoutPayload(pPayload, sczLayoutDirectory, sczUnverifiedPath, fMove);
-            ExitOnFailure2(hr, "Failed to layout payload from: %ls to %ls", sczUnverifiedPath, sczLayoutDirectory);
+            ExitOnFailure(hr, "Failed to layout payload from: %ls to %ls", sczUnverifiedPath, sczLayoutDirectory);
         }
     }
     else if (pPackage) // complete payload.
@@ -1906,7 +1906,7 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
         Assert(!pContainer);
 
         hr = CacheCompletePayload(pPackage->fPerMachine, pPayload, pPackage->sczCacheId, sczUnverifiedPath, fMove);
-        ExitOnFailure1(hr, "Failed to cache payload: %ls", pPayload->sczKey);
+        ExitOnFailure(hr, "Failed to cache payload: %ls", pPayload->sczKey);
     }
     else
     {
@@ -1951,7 +1951,7 @@ static HRESULT OnProcessDependentRegistration(
 
     // Execute the registration action.
     hr = DependencyProcessDependentRegistration(pRegistration, &action);
-    ExitOnFailure1(hr, "Failed to execute dependent registration action for provider key: %ls", action.sczDependentProviderKey);
+    ExitOnFailure(hr, "Failed to execute dependent registration action for provider key: %ls", action.sczDependentProviderKey);
 
 LExit:
     // TODO: do the right thing here.
@@ -2006,7 +2006,7 @@ static HRESULT OnExecuteExePackage(
     {
         hr = PackageFindRelatedById(pRelatedBundles, sczPackage, &executeAction.exePackage.pPackage);
     }
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     // Pass the list of dependencies to ignore, if any, to the related bundle.
     if (sczIgnoreDependencies && *sczIgnoreDependencies)
@@ -2070,7 +2070,7 @@ static HRESULT OnExecuteMsiPackage(
     ExitOnFailure(hr, "Failed to read action.");
 
     hr = PackageFindById(pPackages, sczPackage, &executeAction.msiPackage.pPackage);
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&hwndParent);
     ExitOnFailure(hr, "Failed to read parent hwnd.");
@@ -2162,7 +2162,7 @@ static HRESULT OnExecuteMspPackage(
     ExitOnFailure(hr, "Failed to read action.");
 
     hr = PackageFindById(pPackages, sczPackage, &executeAction.mspTarget.pPackage);
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&hwndParent);
     ExitOnFailure(hr, "Failed to read parent hwnd.");
@@ -2198,7 +2198,7 @@ static HRESULT OnExecuteMspPackage(
             ExitOnFailure(hr, "Failed to read ordered patch package id.");
 
             hr = PackageFindById(pPackages, sczPackage, &executeAction.mspTarget.rgOrderedPatches[i].pPackage);
-            ExitOnFailure1(hr, "Failed to find ordered patch package: %ls", sczPackage);
+            ExitOnFailure(hr, "Failed to find ordered patch package: %ls", sczPackage);
         }
     }
 
@@ -2266,7 +2266,7 @@ static HRESULT OnExecuteMsuPackage(
     ExitOnFailure(hr, "Failed to read StopWusaService.");
 
     hr = PackageFindById(pPackages, sczPackage, &executeAction.msuPackage.pPackage);
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     // execute MSU package
     hr = MsuEngineExecutePackage(&executeAction, pVariables, static_cast<BOOL>(dwRollback), static_cast<BOOL>(dwStopWusaService), GenericExecuteMessageHandler, hPipe, &restart);
@@ -2318,7 +2318,7 @@ static HRESULT OnExecutePackageProviderAction(
     {
         hr = PackageFindRelatedById(pRelatedBundles, sczPackage, &executeAction.packageProvider.pPackage);
     }
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     // Execute the package provider action.
     hr = DependencyExecutePackageProviderAction(&executeAction);
@@ -2361,7 +2361,7 @@ static HRESULT OnExecutePackageDependencyAction(
     {
         hr = PackageFindRelatedById(pRelatedBundles, sczPackage, &executeAction.packageDependency.pPackage);
     }
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     // Execute the package dependency action.
     hr = DependencyExecutePackageDependencyAction(TRUE, &executeAction);
@@ -2393,7 +2393,7 @@ static HRESULT OnLoadCompatiblePackage(
 
     // Find the reference package.
     hr = PackageFindById(pPackages, sczPackage, &executeAction.compatiblePackage.pReferencePackage);
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     hr = BuffReadString(pbData, cbData, &iData, &executeAction.compatiblePackage.sczInstalledProductCode);
     ExitOnFailure(hr, "Failed to read installed ProductCode from message buffer.");
@@ -2547,7 +2547,7 @@ static int MsiExecuteMessageHandler(
 
     default:
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "Invalid message type: %d", pMessage->type);
+        ExitOnFailure(hr, "Invalid message type: %d", pMessage->type);
     }
 
     // send message
@@ -2576,11 +2576,11 @@ static HRESULT OnCleanPackage(
     ExitOnFailure(hr, "Failed to read package id.");
 
     hr = PackageFindById(pPackages, sczPackage, &pPackage);
-    ExitOnFailure1(hr, "Failed to find package: %ls", sczPackage);
+    ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
 
     // Remove the package from the cache.
     hr = CacheRemovePackage(TRUE, pPackage->sczId, pPackage->sczCacheId);
-    ExitOnFailure1(hr, "Failed to remove from cache package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to remove from cache package: %ls", pPackage->sczId);
 
 LExit:
     ReleaseStr(sczPackage);
@@ -2619,7 +2619,7 @@ static HRESULT OnLaunchApprovedExe(
     ExitOnFailure(hr, "Failed to read approved exe WaitForInputIdle timeout.");
 
     hr = ApprovedExesFindById(pApprovedExes, pLaunchApprovedExe->sczId, &pApprovedExe);
-    ExitOnFailure1(hr, "The per-user process requested unknown approved exe with id: %ls", pLaunchApprovedExe->sczId);
+    ExitOnFailure(hr, "The per-user process requested unknown approved exe with id: %ls", pLaunchApprovedExe->sczId);
 
     LogId(REPORT_STANDARD, MSG_LAUNCH_APPROVED_EXE_SEARCH, pApprovedExe->sczKey, pApprovedExe->sczValueName ? pApprovedExe->sczValueName : L"", pApprovedExe->fWin64 ? L"yes" : L"no");
 
@@ -2635,7 +2635,7 @@ static HRESULT OnLaunchApprovedExe(
     ExitOnFailure(hr, "Failed to read the value for the approved exe path.");
 
     hr = ApprovedExesVerifySecureLocation(pVariables, pLaunchApprovedExe);
-    ExitOnFailure1(hr, "Failed to verify the executable path is in a secure location: %ls", pLaunchApprovedExe->sczExecutablePath);
+    ExitOnFailure(hr, "Failed to verify the executable path is in a secure location: %ls", pLaunchApprovedExe->sczExecutablePath);
     if (S_FALSE == hr)
     {
         LogStringLine(REPORT_STANDARD, "The executable path is not in a secure location: %ls", pLaunchApprovedExe->sczExecutablePath);
@@ -2643,7 +2643,7 @@ static HRESULT OnLaunchApprovedExe(
     }
 
     hr = ApprovedExesLaunch(pVariables, pLaunchApprovedExe, &dwProcessId);
-    ExitOnFailure1(hr, "Failed to launch approved exe: %ls", pLaunchApprovedExe->sczExecutablePath);
+    ExitOnFailure(hr, "Failed to launch approved exe: %ls", pLaunchApprovedExe->sczExecutablePath);
 
     //send process id over pipe
     hr = BuffWriteNumber(&pbSendData, &cbSendData, dwProcessId);

@@ -98,7 +98,7 @@ extern "C" HRESULT SplashScreenDisplayError(
     hr = StrAllocFromError(&sczDisplayString, hrError, NULL);
     ExitOnFailure(hr, "Failed to allocate string to display error message");
 
-    Trace1(REPORT_STANDARD, "Error message displayed because: %ls", sczDisplayString);
+    Trace(REPORT_STANDARD, "Error message displayed because: %ls", sczDisplayString);
 
     if (BOOTSTRAPPER_DISPLAY_NONE == display || BOOTSTRAPPER_DISPLAY_PASSIVE == display || BOOTSTRAPPER_DISPLAY_EMBEDDED == display)
     {

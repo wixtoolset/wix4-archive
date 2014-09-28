@@ -191,7 +191,7 @@ extern "C" HRESULT DAPI CrypHashFile(
     }
 
     hr = CrypHashFileHandle(hFile, dwProvType, algid, pbHash, cbHash, pqwBytesHashed);
-    ExitOnFailure1(hr, "Failed to hash file: %ls", wzFilePath);
+    ExitOnFailure(hr, "Failed to hash file: %ls", wzFilePath);
 
 LExit:
     ReleaseFileHandle(hFile);

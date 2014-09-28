@@ -405,7 +405,7 @@ static HRESULT ParseAtomFeed(
         else
         {
             hr = ParseAtomUnknownElement(pNode, &pNewFeed->pUnknownElements);
-            ExitOnFailure1(hr, "Failed to parse unknown ATOM feed element: %ls", bstrNodeName);
+            ExitOnFailure(hr, "Failed to parse unknown ATOM feed element: %ls", bstrNodeName);
         }
 
         ReleaseNullBSTR(bstrNodeName);
@@ -461,12 +461,12 @@ template<class T> static HRESULT AllocateAtomType(
     T* prgT = NULL;
 
     hr = XmlSelectNodes(pixnParent, wzT, &pNodeList);
-    ExitOnFailure1(hr, "Failed to select all ATOM %ls.", wzT);
+    ExitOnFailure(hr, "Failed to select all ATOM %ls.", wzT);
 
     if (S_OK == hr)
     {
         hr = pNodeList->get_length(&cT);
-        ExitOnFailure1(hr, "Failed to count the number of ATOM %ls.", wzT);
+        ExitOnFailure(hr, "Failed to count the number of ATOM %ls.", wzT);
 
         if (cT == 0)
         {
@@ -596,7 +596,7 @@ static HRESULT ParseAtomCategory(
     while (S_OK == (hr = XmlNextElement(pNodeList, &pNode, &bstrNodeName)))
     {
         hr = ParseAtomUnknownElement(pNode, &pCategory->pUnknownElements);
-        ExitOnFailure1(hr, "Failed to parse unknown ATOM category element: %ls", bstrNodeName);
+        ExitOnFailure(hr, "Failed to parse unknown ATOM category element: %ls", bstrNodeName);
 
         ReleaseNullBSTR(bstrNodeName);
         ReleaseNullObject(pNode);
@@ -660,7 +660,7 @@ static HRESULT ParseAtomContent(
     while (S_OK == (hr = XmlNextElement(pNodeList, &pNode, &bstrNodeName)))
     {
         hr = ParseAtomUnknownElement(pNode, &pContent->pUnknownElements);
-        ExitOnFailure1(hr, "Failed to parse unknown ATOM content element: %ls", bstrNodeName);
+        ExitOnFailure(hr, "Failed to parse unknown ATOM content element: %ls", bstrNodeName);
 
         ReleaseNullBSTR(bstrNodeName);
         ReleaseNullObject(pNode);
@@ -782,7 +782,7 @@ static HRESULT ParseAtomEntry(
         else
         {
             hr = ParseAtomUnknownElement(pNode, &pEntry->pUnknownElements);
-            ExitOnFailure1(hr, "Failed to parse unknown ATOM entry element: %ls", bstrNodeName);
+            ExitOnFailure(hr, "Failed to parse unknown ATOM entry element: %ls", bstrNodeName);
         }
 
         ReleaseNullBSTR(bstrNodeName);
@@ -872,7 +872,7 @@ static HRESULT ParseAtomLink(
         else
         {
             hr = ParseAtomUnknownAttribute(pNode, &pLink->pUnknownAttributes);
-            ExitOnFailure1(hr, "Failed to parse unknown ATOM link attribute: %ls", bstrNodeName);
+            ExitOnFailure(hr, "Failed to parse unknown ATOM link attribute: %ls", bstrNodeName);
         }
 
         ReleaseNullBSTR(bstrNodeName);
@@ -887,7 +887,7 @@ static HRESULT ParseAtomLink(
     while (S_OK == (hr = XmlNextElement(pNodeList, &pNode, &bstrNodeName)))
     {
         hr = ParseAtomUnknownElement(pNode, &pLink->pUnknownElements);
-        ExitOnFailure1(hr, "Failed to parse unknown ATOM link element: %ls", bstrNodeName);
+        ExitOnFailure(hr, "Failed to parse unknown ATOM link element: %ls", bstrNodeName);
 
         ReleaseNullBSTR(bstrNodeName);
         ReleaseNullObject(pNode);

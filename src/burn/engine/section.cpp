@@ -69,7 +69,7 @@ extern "C" HRESULT SectionInitialize(
     ExitOnFailure(hr, "Failed to get path to engine process.");
 
     pSection->hEngineFile = ::CreateFileW(sczPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    ExitOnInvalidHandleWithLastError1(pSection->hEngineFile, hr, "Failed to open handle to engine process path: %ls", sczPath);
+    ExitOnInvalidHandleWithLastError(pSection->hEngineFile, hr, "Failed to open handle to engine process path: %ls", sczPath);
 
     //
     // First, make sure we have a valid DOS signature.
@@ -150,12 +150,12 @@ extern "C" HRESULT SectionInitialize(
         // read section
         if (!::ReadFile(pSection->hEngineFile, &sectionHeader, sizeof(IMAGE_SECTION_HEADER), &cbRead, NULL))
         {
-            ExitWithLastError1(hr, "Failed to read image section header, index: %u", i);
+            ExitWithLastError(hr, "Failed to read image section header, index: %u", i);
         }
         if (sizeof(IMAGE_SECTION_HEADER) > cbRead)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure1(hr, "Failed to read complete image section header, index: %u", i);
+            ExitOnRootFailure(hr, "Failed to read complete image section header, index: %u", i);
         }
 
         // compare header name
@@ -181,7 +181,7 @@ extern "C" HRESULT SectionInitialize(
     if (sizeof(BURN_SECTION_HEADER) > sectionHeader.SizeOfRawData)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        ExitOnRootFailure1(hr, "Failed to read section info, data to short: %u", sectionHeader.SizeOfRawData);
+        ExitOnRootFailure(hr, "Failed to read section info, data to short: %u", sectionHeader.SizeOfRawData);
     }
 
     // allocate buffer for section info
@@ -213,7 +213,7 @@ extern "C" HRESULT SectionInitialize(
     if (BURN_SECTION_VERSION != pBurnSectionHeader->dwVersion)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        ExitOnRootFailure1(hr, "Failed to read section info, unsupported version: %08x", pBurnSectionHeader->dwVersion);
+        ExitOnRootFailure(hr, "Failed to read section info, unsupported version: %08x", pBurnSectionHeader->dwVersion);
     }
 
     hr = FileSizeByHandle(pSection->hEngineFile, &llSize);
@@ -283,7 +283,7 @@ extern "C" HRESULT SectionGetAttachedContainerInfo(
     if (iContainerIndex >= pSection->cContainers)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        ExitOnRootFailure1(hr, "Failed to find container info, too few elements: %u", pSection->cContainers);
+        ExitOnRootFailure(hr, "Failed to find container info, too few elements: %u", pSection->cContainers);
     }
     else if (dwExpectedType != pSection->dwFormat)
     {

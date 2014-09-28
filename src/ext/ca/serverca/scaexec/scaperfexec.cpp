@@ -139,7 +139,7 @@ extern "C" UINT __stdcall RegisterPerfmon(
 
     if (0 == cchShortPathLength)
     {
-        ExitOnLastError1(hr, "failed to get short path format of path: %ls", pwzData);
+        ExitOnLastError(hr, "failed to get short path format of path: %ls", pwzData);
     }
 
     hr = StrAllocFormatted(&pwzCommand, L"lodctr \"%s\"", pwzShortPath);
@@ -150,7 +150,7 @@ extern "C" UINT __stdcall RegisterPerfmon(
     if (dwRet != ERROR_SUCCESS && dwRet != ERROR_ALREADY_EXISTS)
     {
         hr = HRESULT_FROM_WIN32(dwRet);
-        MessageExitOnFailure1(hr, msierrPERFMONFailedRegisterDLL, "failed to register with PerfMon, DLL: %ls", pwzData);
+        MessageExitOnFailure(hr, msierrPERFMONFailedRegisterDLL, "failed to register with PerfMon, DLL: %ls", pwzData);
     }
 
     hr = S_OK;
@@ -197,14 +197,14 @@ extern "C" UINT __stdcall UnregisterPerfmon(
     ExitOnNullWithLastError(pfnPerfCounterTextString, hr, "failed to get DLL function for PerfMon");
 
     hr = ::StringCchPrintfW(wz, countof(wz), L"unlodctr \"%s\"", pwzData);
-    ExitOnFailure1(hr, "Failed to format unlodctr string with: %ls", pwzData);
+    ExitOnFailure(hr, "Failed to format unlodctr string with: %ls", pwzData);
     WcaLog(LOGMSG_VERBOSE, "UnregisterPerfmon running command: '%ls'", wz);
     dwRet = (*pfnPerfCounterTextString)(wz, TRUE);
     // if the counters aren't registered, then OK to continue
     if (dwRet != ERROR_SUCCESS && dwRet != ERROR_FILE_NOT_FOUND && dwRet != ERROR_BADKEY)
     {
         hr = HRESULT_FROM_WIN32(dwRet);
-        MessageExitOnFailure1(hr, msierrPERFMONFailedUnregisterDLL, "failed to unregsister with PerfMon, DLL: %ls", pwzData);
+        MessageExitOnFailure(hr, msierrPERFMONFailedUnregisterDLL, "failed to unregsister with PerfMon, DLL: %ls", pwzData);
     }
 
     hr = S_OK;
@@ -282,10 +282,10 @@ static HRESULT ExecutePerfCounterData(
             ExitOnFailure(hr, "Failed to create temp directory.");
 
             hr = CreateDataFile(pwzTempFolder, pwzIniData, TRUE, &hIniData, &pwzIniFile);
-            ExitOnFailure1(hr, "Failed to create .ini file for performance counter category: %ls", pwzName);
+            ExitOnFailure(hr, "Failed to create .ini file for performance counter category: %ls", pwzName);
 
             hr = CreateDataFile(pwzTempFolder, pwzConstantData, FALSE, &hConstantData, NULL);
-            ExitOnFailure1(hr, "Failed to create .h file for performance counter category: %ls", pwzName);
+            ExitOnFailure(hr, "Failed to create .h file for performance counter category: %ls", pwzName);
 
             hr = StrAllocFormatted(&pwzExecute, L"%s \"%s\"", wzPrefix, pwzIniFile);
             ExitOnFailure(hr, "Failed to allocate string to execute.");
@@ -293,7 +293,7 @@ static HRESULT ExecutePerfCounterData(
             // Execute the install.
             er = (*pfnPerfCounterTextString)(pwzExecute, TRUE);
             hr = HRESULT_FROM_WIN32(er);
-            ExitOnFailure1(hr, "Failed to execute install of performance counter category: %ls", pwzName);
+            ExitOnFailure(hr, "Failed to execute install of performance counter category: %ls", pwzName);
 
             if (INVALID_HANDLE_VALUE != hIniData)
             {
@@ -322,7 +322,7 @@ static HRESULT ExecutePerfCounterData(
                 er = ERROR_SUCCESS;
             }
             hr = HRESULT_FROM_WIN32(er);
-            ExitOnFailure1(hr, "Failed to execute uninstall of performance counter category: %ls", pwzName);
+            ExitOnFailure(hr, "Failed to execute uninstall of performance counter category: %ls", pwzName);
         }
     }
 
@@ -398,12 +398,12 @@ static HRESULT CreateDataFile(
     hFile = ::CreateFileW(pwzFile, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE == hFile)
     {
-        ExitWithLastError1(hr, "Failed to open new temp file: %ls", pwzFile);
+        ExitWithLastError(hr, "Failed to open new temp file: %ls", pwzFile);
     }
 
     if (!::WriteFile(hFile, pszData, cbData, &cbWritten, NULL))
     {
-        ExitWithLastError1(hr, "Failed to write data to new temp file: %ls", pwzFile);
+        ExitWithLastError(hr, "Failed to write data to new temp file: %ls", pwzFile);
     }
 
     if (INVALID_HANDLE_VALUE != hFile)

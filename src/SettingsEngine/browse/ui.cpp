@@ -187,19 +187,19 @@ HRESULT UISetListViewText(
     for (DWORD i = 1; i < uNumColumns; ++i)
     {
         hr = UIListViewSetItemText(hwnd, dwTopIndex, i, L"");
-        ExitOnFailure1(hr, "Failed to clear text on sub item %u", i);
+        ExitOnFailure(hr, "Failed to clear text on sub item %u", i);
     }
 
     // Now do so for all remaining rows of the listview that are visible
     for (DWORD i = dwTopIndex + 1; i < dwNumRows; ++i)
     {
         hr = UIListViewSetItem(hwnd, i, L"", 0, DWORD_MAX);
-        ExitOnFailure1(hr, "Failed to set row %u first column", i);
+        ExitOnFailure(hr, "Failed to set row %u first column", i);
 
         for (DWORD j = 1; j < uNumColumns; ++j)
         {
             hr = UIListViewSetItemText(hwnd, i, j, L"");
-            ExitOnFailure1(hr, "Failed to clear text on sub item %u", j);
+            ExitOnFailure(hr, "Failed to clear text on sub item %u", j);
         }
     }
 
@@ -687,7 +687,7 @@ HRESULT UISetValueConflictsFromListView(
             if (0 > lvItem.lParam || pcpProductConflict->cValues <= static_cast<DWORD>(lvItem.lParam))
             {
                 hr = E_UNEXPECTED;
-                ExitOnFailure1(hr, "Invalid param %d stored in listview!", lvItem.lParam);
+                ExitOnFailure(hr, "Invalid param %d stored in listview!", lvItem.lParam);
             }
 
             pcpProductConflict->rgrcValueChoices[lvItem.lParam] = rcChoice;
@@ -735,7 +735,7 @@ HRESULT UISetProductConflictsFromListView(
             if (0 > lvItem.lParam || cProductCount <= static_cast<DWORD>(lvItem.lParam))
             {
                 hr = E_UNEXPECTED;
-                ExitOnFailure1(hr, "Invalid param %d stored in listview!", lvItem.lParam);
+                ExitOnFailure(hr, "Invalid param %d stored in listview!", lvItem.lParam);
             }
 
             for (DWORD j = 0; j < pcplProductConflictList[lvItem.lParam].cValues; ++j)
@@ -940,7 +940,7 @@ HRESULT UIListViewSetItemText(
 
     if (-1 == ::SendMessageW(hwnd, LVM_SETITEMTEXTW, static_cast<LPARAM>(dwIndex), reinterpret_cast<LPARAM>(&lvi)))
     {
-        ExitWithLastError2(hr, "Failed to set field in listview - row %u, column %u", dwIndex, dwColumnIndex);
+        ExitWithLastError(hr, "Failed to set field in listview - row %u, column %u", dwIndex, dwColumnIndex);
     }
 
 LExit:
@@ -967,7 +967,7 @@ HRESULT UIListViewSetItem(
 
     if (-1 == ::SendMessageW(hwnd, LVM_SETITEMW, static_cast<LPARAM>(dwIndex), reinterpret_cast<LPARAM>(&lvi)))
     {
-        ExitWithLastError1(hr, "Failed to set first column item in listview - row %u", dwIndex);
+        ExitWithLastError(hr, "Failed to set first column item in listview - row %u", dwIndex);
     }
 
 LExit:

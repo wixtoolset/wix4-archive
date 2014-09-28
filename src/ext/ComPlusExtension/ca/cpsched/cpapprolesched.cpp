@@ -152,7 +152,7 @@ HRESULT CpiApplicationRolesRead(
         hr = CpiApplicationFindByKey(pAppList, pwzData, &pItm->pApplication);
         if (S_FALSE == hr)
             hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-        ExitOnFailure1(hr, "Failed to find application, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find application, key: %S", pwzData);
 
         // get name
         hr = WcaGetRecordFormattedString(hRec, arqName, &pwzData);
@@ -218,7 +218,7 @@ HRESULT CpiApplicationRolesVerifyInstall(
 
         // if the role is referensed and is not a locater, it must be installed
         if (pItm->fReferencedForInstall && pItm->fHasComponent && !CpiWillBeInstalled(pItm->isInstalled, pItm->isAction))
-            MessageExitOnFailure1(hr = E_FAIL, msierrComPlusApplicationRoleDependency, "An application role is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
+            MessageExitOnFailure(hr = E_FAIL, msierrComPlusApplicationRoleDependency, "An application role is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
 
         // role is a locater
         if (!pItm->fHasComponent)
@@ -229,7 +229,7 @@ HRESULT CpiApplicationRolesVerifyInstall(
 
             // if the role was not found
             if (S_FALSE == hr)
-                MessageExitOnFailure1(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), msierrComPlusApplicationRoleNotFound, "An application role required by this installation was not found, key: %S", pItm->wzKey);
+                MessageExitOnFailure(hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND), msierrComPlusApplicationRoleNotFound, "An application role required by this installation was not found, key: %S", pItm->wzKey);
         }
 
         // role is supposed to be created
@@ -246,7 +246,7 @@ HRESULT CpiApplicationRolesVerifyInstall(
                     switch (er)
                     {
                     case IDABORT:
-                        ExitOnFailure1(hr = E_FAIL, "An application with a conflictiong name exists, key: %S", pItm->wzKey);
+                        ExitOnFailure(hr = E_FAIL, "An application with a conflictiong name exists, key: %S", pItm->wzKey);
                         break;
                     case IDRETRY:
                         break;
@@ -357,7 +357,7 @@ HRESULT CpiApplicationRolesInstall(
 
         // add to action data
         hr = AddApplicationRoleToActionData(pItm, iActionType, COST_APPLICATION_ROLE_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add application role to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add application role to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -404,7 +404,7 @@ HRESULT CpiApplicationRolesUninstall(
 
         // add to action data
         hr = AddApplicationRoleToActionData(pItm, iActionType, COST_APPLICATION_ROLE_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add application role to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add application role to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -515,7 +515,7 @@ HRESULT CpiUsersInApplicationRolesInstall(
 
         // add to action data
         hr = AddUserInApplicationRoleToActionData(pItm, iActionType, COST_USER_IN_APPLICATION_ROLE_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add user in application role to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add user in application role to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -562,7 +562,7 @@ HRESULT CpiUsersInApplicationRolesUninstall(
 
         // add to action data
         hr = AddUserInApplicationRoleToActionData(pItm, iActionType, COST_USER_IN_APPLICATION_ROLE_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add user in application role to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add user in application role to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -635,7 +635,7 @@ static HRESULT TrusteesInApplicationRolesRead(
         hr = CpiApplicationRoleFindByKey(pAppRoleList, pwzData, &pItm->pApplicationRole);
         if (S_FALSE == hr)
             hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-        ExitOnFailure1(hr, "Failed to find application role, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find application role, key: %S", pwzData);
 
         // get user domain
         hr = WcaGetRecordFormattedString(hRec, tiarqDomain, &pwzDomain);

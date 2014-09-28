@@ -40,7 +40,7 @@ namespace CfgTests
             {
                 hr = S_OK;
             }
-            ExitOnFailure1(hr, "Failed to cleanup before main portion of test by deleting regkey:%ls", wzRegKey);
+            ExitOnFailure(hr, "Failed to cleanup before main portion of test by deleting regkey:%ls", wzRegKey);
 
             hr = CfgInitialize(&cdhLocal, BackgroundStatusCallback, BackgroundConflictsFoundCallback, reinterpret_cast<LPVOID>(m_pContext));
             ExitOnFailure(hr, "Failed to initialize user settings engine");
@@ -201,7 +201,7 @@ namespace CfgTests
 
             // Only cleanup the key if the test succeeded
             hr = RegDelete(HKEY_CURRENT_USER, wzRegKey, REG_KEY_32BIT, TRUE);
-            ExitOnFailure1(hr, "Failed to cleanup after test by deleting key: %ls", wzRegKey);
+            ExitOnFailure(hr, "Failed to cleanup after test by deleting key: %ls", wzRegKey);
 
 LExit:
             ReleaseRegKey(hk);

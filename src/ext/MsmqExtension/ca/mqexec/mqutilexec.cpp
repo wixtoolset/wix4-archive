@@ -335,14 +335,14 @@ static HRESULT CreateSidFromDomainRidPair(
         if (ccb < dwLengthRequired)
         {
             pSid = (PSID)::HeapReAlloc(::GetProcessHeap(), HEAP_ZERO_MEMORY, *ppSid, dwLengthRequired);
-            ExitOnNull1(pSid, hr, E_OUTOFMEMORY, "Failed to reallocate buffer for SID, len: %d", dwLengthRequired);
+            ExitOnNull(pSid, hr, E_OUTOFMEMORY, "Failed to reallocate buffer for SID, len: %d", dwLengthRequired);
             *ppSid = pSid;
         }
     }
     else
     {
         *ppSid = (PSID)::HeapAlloc(::GetProcessHeap(), HEAP_ZERO_MEMORY, dwLengthRequired);
-        ExitOnNull1(*ppSid, hr, E_OUTOFMEMORY, "Failed to allocate buffer for SID, len: %d", dwLengthRequired);
+        ExitOnNull(*ppSid, hr, E_OUTOFMEMORY, "Failed to allocate buffer for SID, len: %d", dwLengthRequired);
     }
 
     ::InitializeSid(*ppSid, ::GetSidIdentifierAuthority(pDomainSid), ucSubAuthorityCount + (UCHAR)1);

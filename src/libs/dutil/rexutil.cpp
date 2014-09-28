@@ -151,7 +151,7 @@ extern "C" HRESULT RexExtract(
     //
     //if (!::WideCharToMultiByte(CP_ACP, 0, wzResource, -1, vszResource, countof(vszResource), NULL, NULL))
     //{
-    //    ExitOnLastError1(hr, "failed to convert cabinet resource name to ASCII: %ls", wzResource);
+    //    ExitOnLastError(hr, "failed to convert cabinet resource name to ASCII: %ls", wzResource);
     //}
 
     hr = ::StringCchCopyA(vszResource, countof(vszResource), szResource);
@@ -236,7 +236,7 @@ static __callback INT_PTR FAR DIAMONDAPI RexOpen(__in_z char FAR *pszFile, int o
         hFile = ::CreateFileA(pszFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (INVALID_HANDLE_VALUE == hFile)
         {
-            ExitWithLastError1(hr, "failed to open file: %s", pszFile);
+            ExitWithLastError(hr, "failed to open file: %s", pszFile);
         }
 
         vrgffFileTable[i].fUsed = TRUE;
@@ -344,7 +344,7 @@ static __callback long FAR DIAMONDAPI RexSeek(INT_PTR hf, long dist, int seektyp
     default :
         dwMoveMethod = 0;
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "unexpected seektype in FDISeek(): %d", seektype);
+        ExitOnFailure(hr, "unexpected seektype in FDISeek(): %d", seektype);
     }
 
     if (MEMORY_FILE == vrgffFileTable[hf].fftType)
@@ -373,7 +373,7 @@ static __callback long FAR DIAMONDAPI RexSeek(INT_PTR hf, long dist, int seektyp
         lMove = ::SetFilePointer(vrgffFileTable[hf].hFile, dist, NULL, dwMoveMethod);
         if (0xFFFFFFFF == lMove)
         {
-            ExitWithLastError1(hr, "failed to move file pointer %d bytes", dist);
+            ExitWithLastError(hr, "failed to move file pointer %d bytes", dist);
         }
     }
 
@@ -451,7 +451,7 @@ static __callback INT_PTR DIAMONDAPI RexCallback(FDINOTIFICATIONTYPE iNotificati
         sz = static_cast<LPCSTR>(pFDINotify->psz1);
         if (!::MultiByteToWideChar(CP_ACP, 0, sz, -1, wz, countof(wz)))
         {
-            ExitWithLastError1(hr, "failed to convert cabinet file id to unicode: %s", sz);
+            ExitWithLastError(hr, "failed to convert cabinet file id to unicode: %s", sz);
         }
 
         if (prcs->pfnProgress)
@@ -468,25 +468,25 @@ static __callback INT_PTR DIAMONDAPI RexCallback(FDINOTIFICATIONTYPE iNotificati
             // get the created date for the resource in the cabinet
             if (!::DosDateTimeToFileTime(pFDINotify->date, pFDINotify->time, &ft))
             {
-                ExitWithLastError1(hr, "failed to get time for resource: %ls", wz);
+                ExitWithLastError(hr, "failed to get time for resource: %ls", wz);
             }
 
             WCHAR wzPath[MAX_PATH];
 
             hr = ::StringCchCopyW(wzPath, countof(wzPath), prcs->pwzExtractDir);
-            ExitOnFailure2(hr, "failed to copy extract directory: %ls for file: %ls", prcs->pwzExtractDir, wz);
+            ExitOnFailure(hr, "failed to copy extract directory: %ls for file: %ls", prcs->pwzExtractDir, wz);
 
             if (L'*' == *prcs->pwzExtract)
             {
                 hr = ::StringCchCatW(wzPath, countof(wzPath), wz);
-                ExitOnFailure2(hr, "failed to concat onto path: %ls file: %ls", wzPath, wz);
+                ExitOnFailure(hr, "failed to concat onto path: %ls file: %ls", wzPath, wz);
             }
             else
             {
                 Assert(*prcs->pwzExtractName);
 
                 hr = ::StringCchCatW(wzPath, countof(wzPath), prcs->pwzExtractName);
-                ExitOnFailure2(hr, "failed to concat onto path: %ls file: %ls", wzPath, prcs->pwzExtractName);
+                ExitOnFailure(hr, "failed to concat onto path: %ls file: %ls", wzPath, prcs->pwzExtractName);
             }
 
             // Quickly chop off the file name part of the path to ensure the path exists
@@ -497,7 +497,7 @@ static __callback INT_PTR DIAMONDAPI RexCallback(FDINOTIFICATIONTYPE iNotificati
             *wzFile = L'\0';
 
             hr = DirEnsureExists(wzPath, NULL);
-            ExitOnFailure1(hr, "failed to ensure directory: %ls", wzPath);
+            ExitOnFailure(hr, "failed to ensure directory: %ls", wzPath);
 
             hr = S_OK;
 
@@ -523,7 +523,7 @@ static __callback INT_PTR DIAMONDAPI RexCallback(FDINOTIFICATIONTYPE iNotificati
             hFile = ::CreateFileW(wzPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
             if (INVALID_HANDLE_VALUE == hFile)
             {
-                ExitWithLastError1(hr, "failed to open file: %ls", wzPath);
+                ExitWithLastError(hr, "failed to open file: %ls", wzPath);
             }
 
             vrgffFileTable[i].fUsed = TRUE;
@@ -556,7 +556,7 @@ static __callback INT_PTR DIAMONDAPI RexCallback(FDINOTIFICATIONTYPE iNotificati
         sz = static_cast<LPCSTR>(pFDINotify->psz1);
         if (!::MultiByteToWideChar(CP_ACP, 0, sz, -1, wz, countof(wz)))
         {
-            ExitWithLastError1(hr, "failed to convert cabinet file id to unicode: %s", sz);
+            ExitWithLastError(hr, "failed to convert cabinet file id to unicode: %s", sz);
         }
 
         RexClose(pFDINotify->hf);

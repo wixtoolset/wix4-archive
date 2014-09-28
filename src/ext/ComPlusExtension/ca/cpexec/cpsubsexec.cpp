@@ -96,11 +96,11 @@ HRESULT CpiConfigureSubscriptions(
         {
         case atCreate:
             hr = CreateSubscription(&attrs);
-            ExitOnFailure1(hr, "Failed to create subscription, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create subscription, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemoveSubscription(&attrs);
-            ExitOnFailure1(hr, "Failed to remove subscription, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove subscription, key: %S", attrs.pwzKey);
             break;
         }
 
@@ -331,7 +331,7 @@ static HRESULT CreateSubscription(
                         }
                     }
                     else
-                        ExitOnFailure1(hr, "Failed to get SID for account, account: '%S'", pItm->pwzValue);
+                        ExitOnFailure(hr, "Failed to get SID for account, account: '%S'", pItm->pwzValue);
                 }
                 else if (FAILED(hr))
                 {
@@ -350,7 +350,7 @@ static HRESULT CreateSubscription(
 
         // set property
         hr = CpiPutCollectionObjectValue(piSubsObj, pItm->wzName, pItm->pwzValue);
-        ExitOnFailure1(hr, "Failed to set object property value, name: %S", pItm->wzName);
+        ExitOnFailure(hr, "Failed to set object property value, name: %S", pItm->wzName);
     }
 
     // save changes

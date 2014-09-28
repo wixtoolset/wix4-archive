@@ -40,7 +40,7 @@ extern "C" HRESULT DatabaseListInsert(
     if (fSyncByDefault)
     {
         hr = BackgroundAddRemote(pcdb, wzPath);
-        ExitOnFailure1(hr, "Failed to add remote path to background thread for automatic synchronization: %ls", wzPath);
+        ExitOnFailure(hr, "Failed to add remote path to background thread for automatic synchronization: %ls", wzPath);
     }
 
     hr = SceSetColumnString(sceRow, DATABASE_INDEX_PATH, wzPath);
@@ -76,7 +76,7 @@ HRESULT DatabaseListFind(
     ExitOnFailure(hr, "Failed to begin query into database index table");
 
     hr = SceSetQueryColumnString(sqhHandle, wzFriendlyName);
-    ExitOnFailure1(hr, "Failed to set query column name string to: %ls", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to set query column name string to: %ls", wzFriendlyName);
 
     hr = SceRunQueryExact(&sqhHandle, pSceRow);
     if (E_NOTFOUND == hr)
@@ -84,7 +84,7 @@ HRESULT DatabaseListFind(
         // Don't pollute our log with unnecessary messages
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to query for database '%ls' in database list", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to query for database '%ls' in database list", wzFriendlyName);
 
 LExit:
     ReleaseSceQuery(sqhHandle);
@@ -106,10 +106,10 @@ extern "C" HRESULT DatabaseListDelete(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to search for database '%ls' in database list", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to search for database '%ls' in database list", wzFriendlyName);
 
     hr = SceDeleteRow(&sceRow);
-    ExitOnFailure1(hr, "Failed to delete database '%ls' from database list", wzFriendlyName);
+    ExitOnFailure(hr, "Failed to delete database '%ls' from database list", wzFriendlyName);
 
 LExit:
     ReleaseSceRow(sceRow);

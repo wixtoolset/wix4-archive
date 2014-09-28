@@ -72,13 +72,13 @@ extern "C" HRESULT RegSpecialValueRead(
     if (0 < pRegKeySpecial->cFlagsInfo)
     {
         hr = RegSpecialValueReadFlags(pcdb, pSyncProductSession, pRegKey, pRegKeySpecial, hkKey, wzValueName, dwValueType);
-        ExitOnFailure2(hr, "Failed to handle registry special type flags on read for value name: %ls, type: %u", wzValueName, dwValueType);
+        ExitOnFailure(hr, "Failed to handle registry special type flags on read for value name: %ls, type: %u", wzValueName, dwValueType);
     }
 
     if (pRegKeySpecial->fHandleNonTypecasted)
     {
         hr = RegSpecialValueReadNonTypecasted(pcdb, pSyncProductSession, pRegKey, pRegKeySpecial, hkKey, wzValueName);
-        ExitOnFailure2(hr, "Failed to handle registry special basic on read for value name: %ls, type: %u", wzValueName, dwValueType);
+        ExitOnFailure(hr, "Failed to handle registry special basic on read for value name: %ls, type: %u", wzValueName, dwValueType);
     }
     
 LExit:
@@ -127,7 +127,7 @@ extern "C" HRESULT RegSpecialsProductWrite(
                 // Don't create it here, because it may not need to be created at all. Delay creation until a value needs to be written.
                 hr = S_OK;
             }
-            ExitOnFailure2(hr, "Failed to open or create registry key at root: %u, key: %ls", pRegKey->dwRoot, wzRegKey);
+            ExitOnFailure(hr, "Failed to open or create registry key at root: %u, key: %ls", pRegKey->dwRoot, wzRegKey);
 
             switch (pRegKeySpecial->dwRegValueType)
             {
@@ -137,7 +137,7 @@ extern "C" HRESULT RegSpecialsProductWrite(
                 break;
             default:
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Registry value type unhandled in RegSpecialsProductWrite(): %u", pRegKeySpecial->dwRegValueType);
+                ExitOnFailure(hr, "Registry value type unhandled in RegSpecialsProductWrite(): %u", pRegKeySpecial->dwRegValueType);
                 break;
 
             }
@@ -222,7 +222,7 @@ static HRESULT RegSpecialValueReadFlags(
             ExitOnFailure(hr, "Failed to format Cfg Value name with namespace");
 
             hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczCfgValueName);
-            ExitOnFailure1(hr, "Failed to add to dictionary value: %ls", sczCfgValueName);
+            ExitOnFailure(hr, "Failed to add to dictionary value: %ls", sczCfgValueName);
 
             dwOffset = pRegKeySpecial->rgFlagsInfo[i].dwOffset;
 
@@ -288,10 +288,10 @@ static HRESULT RegSpecialValueReadNonTypecasted(
         ExitOnFailure(hr, "Failed to read dword value from registry");
 
         hr = ValueSetDword(dwValue, NULL, pcdb->sczGuid, &cvNewValue);
-        ExitOnFailure1(hr, "Failed to set dword value %ls in memory", sczCfgValueName);
+        ExitOnFailure(hr, "Failed to set dword value %ls in memory", sczCfgValueName);
 
         hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
-        ExitOnFailure1(hr, "Failed to set dword value: %ls", sczCfgValueName);
+        ExitOnFailure(hr, "Failed to set dword value: %ls", sczCfgValueName);
         break;
     case REG_NONE:
         fFound = FALSE;
@@ -301,7 +301,7 @@ static HRESULT RegSpecialValueReadNonTypecasted(
     if (fFound)
     {
         hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczCfgValueName);
-        ExitOnFailure1(hr, "Failed to add to dictionary value: %ls", sczCfgValueName);
+        ExitOnFailure(hr, "Failed to add to dictionary value: %ls", sczCfgValueName);
     }
 
 LExit:
@@ -345,11 +345,11 @@ static HRESULT RegSpecialProductWriteBinary(
             hr = S_OK;
             continue;
         }
-        ExitOnFailure2(hr, "Failed to find value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, sczCfgValueName);
+        ExitOnFailure(hr, "Failed to find value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, sczCfgValueName);
 
         ReleaseNullCfgValue(cvExistingValue);
         hr = ValueRead(pcdb, sceRow, &cvExistingValue);
-        ExitOnFailure1(hr, "Failed to read value: %ls", sczCfgValueName);
+        ExitOnFailure(hr, "Failed to read value: %ls", sczCfgValueName);
 
         if (VALUE_BOOL != cvExistingValue.cvType)
         {
@@ -364,7 +364,7 @@ static HRESULT RegSpecialProductWriteBinary(
         {
             cbBuffer = (pFlagsInfo->dwOffset / 8) + 1;
             hr = MemEnsureArraySize(reinterpret_cast<void **>(&rgbBuffer), cbBuffer, sizeof(BYTE), 0);
-            ExitOnFailure1(hr, "Failed to ensure byte array is of size: %u", cbBuffer);
+            ExitOnFailure(hr, "Failed to ensure byte array is of size: %u", cbBuffer);
 
             if (cvExistingValue.boolean.fValue)
             {
@@ -394,7 +394,7 @@ static HRESULT RegSpecialProductWriteBinary(
         if (NULL != *phkKey)
         {
             hr = RegWriteString(*phkKey, wzRegValueName, NULL);
-            ExitOnFailure1(hr, "Failed to delete binary value: %ls", wzRegValueName);
+            ExitOnFailure(hr, "Failed to delete binary value: %ls", wzRegValueName);
         }
     }
     else
@@ -402,11 +402,11 @@ static HRESULT RegSpecialProductWriteBinary(
         if (NULL == *phkKey)
         {
             hr = RegCreate(ManifestConvertToRootKey(pRegKey->dwRoot), wzRegKey, KEY_SET_VALUE | KEY_CREATE_SUB_KEY, phkKey);
-            ExitOnFailure2(hr, "Failed to create registry key in root: %u, key %ls", pRegKey->dwRoot, wzRegKey);
+            ExitOnFailure(hr, "Failed to create registry key in root: %u, key %ls", pRegKey->dwRoot, wzRegKey);
         }
 
         hr = RegWriteBinary(*phkKey, wzRegValueName, rgbBuffer, cbBuffer);
-        ExitOnFailure2(hr, "Failed to write binary value: %ls with %u bytes", wzRegValueName, cbBuffer);
+        ExitOnFailure(hr, "Failed to write binary value: %ls with %u bytes", wzRegValueName, cbBuffer);
     }
 
 LExit:

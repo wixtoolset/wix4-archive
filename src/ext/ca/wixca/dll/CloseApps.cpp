@@ -320,7 +320,7 @@ extern "C" UINT __stdcall WixCloseApplications(
             if (MSICONDITION_ERROR == condition)
             {
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "failed to process condition for WixCloseApplication '%ls'", pwzId);
+                ExitOnFailure(hr, "failed to process condition for WixCloseApplication '%ls'", pwzId);
             }
             else if (MSICONDITION_FALSE == condition)
             {

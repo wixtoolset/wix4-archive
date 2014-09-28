@@ -305,7 +305,7 @@ extern "C" HRESULT DependencyAddIgnoreDependencies(
         else
         {
             hr = DictAddKey(sdIgnoreDependencies, wzToken);
-            ExitOnFailure1(hr, "Failed to add \"%ls\" to the string dictionary.", wzToken);
+            ExitOnFailure(hr, "Failed to add \"%ls\" to the string dictionary.", wzToken);
         }
     }
 
@@ -377,7 +377,7 @@ extern "C" HRESULT DependencyPlanPackageBegin(
                 hr = DepCheckDependents(hkHive, pProvider->sczKey, 0, sdIgnoredDependents, &rgDependents, &cDependents);
                 if (E_FILENOTFOUND != hr)
                 {
-                    ExitOnFailure1(hr, "Failed dependents check on package provider: %ls", pProvider->sczKey);
+                    ExitOnFailure(hr, "Failed dependents check on package provider: %ls", pProvider->sczKey);
                 }
                 else
                 {
@@ -436,7 +436,7 @@ extern "C" HRESULT DependencyPlanPackageBegin(
             const BURN_DEPENDENCY_PROVIDER* pProvider = &pPackage->rgDependencyProviders[i];
 
             hr = DepDependencyArrayAlloc(&pPlan->rgPlannedProviders, &pPlan->cPlannedProviders, pProvider->sczKey, NULL);
-            ExitOnFailure1(hr, "Failed to add the package provider key \"%ls\" to the planned list.", pProvider->sczKey);
+            ExitOnFailure(hr, "Failed to add the package provider key \"%ls\" to the planned list.", pProvider->sczKey);
         }
     }
 
@@ -464,7 +464,7 @@ extern "C" HRESULT DependencyPlanPackage(
     if (BURN_DEPENDENCY_ACTION_UNREGISTER == pPackage->dependencyExecute)
     {
         hr = AddPackageDependencyActions(pdwInsertSequence, pPackage, pPlan, pPackage->dependencyExecute, pPackage->dependencyRollback);
-        ExitOnFailure1(hr, "Failed to plan the dependency actions for package: %ls", pPackage->sczId);
+        ExitOnFailure(hr, "Failed to plan the dependency actions for package: %ls", pPackage->sczId);
     }
 
     // Add the provider rollback plan.
@@ -530,7 +530,7 @@ extern "C" HRESULT DependencyPlanPackageComplete(
         if (BURN_DEPENDENCY_ACTION_REGISTER == pPackage->dependencyExecute)
         {
             hr = AddPackageDependencyActions(NULL, pPackage, pPlan, pPackage->dependencyExecute, pPackage->dependencyRollback);
-            ExitOnFailure1(hr, "Failed to plan the dependency actions for package: %ls", pPackage->sczId);
+            ExitOnFailure(hr, "Failed to plan the dependency actions for package: %ls", pPackage->sczId);
         }
     }
 
@@ -630,17 +630,17 @@ extern "C" HRESULT DependencyProcessDependentRegistration(
     {
     case BURN_DEPENDENT_REGISTRATION_ACTION_TYPE_REGISTER:
         hr = DepRegisterDependent(pRegistration->hkRoot, pRegistration->sczProviderKey, pAction->sczDependentProviderKey, NULL, NULL, 0);
-        ExitOnFailure1(hr, "Failed to register dependent: %ls", pAction->sczDependentProviderKey);
+        ExitOnFailure(hr, "Failed to register dependent: %ls", pAction->sczDependentProviderKey);
         break;
 
     case BURN_DEPENDENT_REGISTRATION_ACTION_TYPE_UNREGISTER:
         hr = DepUnregisterDependent(pRegistration->hkRoot, pRegistration->sczProviderKey, pAction->sczDependentProviderKey);
-        ExitOnFailure1(hr, "Failed to unregister dependent: %ls", pAction->sczDependentProviderKey);
+        ExitOnFailure(hr, "Failed to unregister dependent: %ls", pAction->sczDependentProviderKey);
         break;
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Unrecognized registration action type: %d", pAction->type);
+        ExitOnRootFailure(hr, "Unrecognized registration action type: %d", pAction->type);
     }
 
 LExit:
@@ -697,10 +697,10 @@ static HRESULT SplitIgnoreDependencies(
         else
         {
             hr = DepDependencyArrayAlloc(prgDependencies, pcDependencies, wzToken, NULL);
-            ExitOnFailure1(hr, "Failed to add \"%ls\" to the list of dependencies to ignore.", wzToken);
+            ExitOnFailure(hr, "Failed to add \"%ls\" to the list of dependencies to ignore.", wzToken);
 
             hr = DictAddKey(sdIgnoreDependencies, wzToken);
-            ExitOnFailure1(hr, "Failed to add \"%ls\" to the string dictionary.", wzToken);
+            ExitOnFailure(hr, "Failed to add \"%ls\" to the string dictionary.", wzToken);
         }
     }
 
@@ -752,10 +752,10 @@ static HRESULT JoinIgnoreDependencies(
             }
 
             hr = StrAllocConcat(psczIgnoreDependencies, pDependency->sczKey, 0);
-            ExitOnFailure1(hr, "Failed to append the key \"%ls\".", pDependency->sczKey);
+            ExitOnFailure(hr, "Failed to append the key \"%ls\".", pDependency->sczKey);
 
             hr = DictAddKey(sdIgnoreDependencies, pDependency->sczKey);
-            ExitOnFailure1(hr, "Failed to add \"%ls\" to the string dictionary.", pDependency->sczKey);
+            ExitOnFailure(hr, "Failed to add \"%ls\" to the string dictionary.", pDependency->sczKey);
         }
     }
 
@@ -786,7 +786,7 @@ static HRESULT GetIgnoredDependents(
     ExitOnFailure(hr, "Failed to create the string dictionary.");
 
     hr = DictAddKey(*psdIgnoredDependents, pPlan->wzBundleProviderKey);
-    ExitOnFailure1(hr, "Failed to add the bundle provider key \"%ls\" to the list of ignored dependencies.", pPlan->wzBundleProviderKey);
+    ExitOnFailure(hr, "Failed to add the bundle provider key \"%ls\" to the list of ignored dependencies.", pPlan->wzBundleProviderKey);
 
     // Add previously planned package providers to the dictionary.
     for (DWORD i = 0; i < pPlan->cPlannedProviders; ++i)
@@ -794,14 +794,14 @@ static HRESULT GetIgnoredDependents(
         const DEPENDENCY* pDependency = &pPlan->rgPlannedProviders[i];
 
         hr = DictAddKey(*psdIgnoredDependents, pDependency->sczKey);
-        ExitOnFailure1(hr, "Failed to add the package provider key \"%ls\" to the list of ignored dependencies.", pDependency->sczKey);
+        ExitOnFailure(hr, "Failed to add the package provider key \"%ls\" to the list of ignored dependencies.", pDependency->sczKey);
     }
 
     // Get the IGNOREDEPENDENCIES property if defined.
     hr = PackageGetProperty(pPackage, DEPENDENCY_IGNOREDEPENDENCIES, &sczIgnoreDependencies);
     if (E_NOTFOUND != hr)
     {
-        ExitOnFailure1(hr, "Failed to get the package property: %ls", DEPENDENCY_IGNOREDEPENDENCIES);
+        ExitOnFailure(hr, "Failed to get the package property: %ls", DEPENDENCY_IGNOREDEPENDENCIES);
 
         hr = DependencyAddIgnoreDependencies(*psdIgnoredDependents, sczIgnoreDependencies);
         ExitOnFailure(hr, "Failed to add the authored ignored dependencies to the cumulative list of ignored dependencies.");
@@ -1062,7 +1062,7 @@ static HRESULT RegisterPackageProvider(
                 LogId(REPORT_VERBOSE, MSG_DEPENDENCY_PACKAGE_REGISTER, pProvider->sczKey, pProvider->sczVersion, pPackage->sczId);
 
                 hr = DepRegisterDependency(hkRoot, pProvider->sczKey, pProvider->sczVersion, pProvider->sczDisplayName, wzId, 0);
-                ExitOnFailure1(hr, "Failed to register the package dependency provider: %ls", pProvider->sczKey);
+                ExitOnFailure(hr, "Failed to register the package dependency provider: %ls", pProvider->sczKey);
             }
         }
     }
@@ -1143,7 +1143,7 @@ static HRESULT RegisterPackageDependency(
             hr = DepRegisterDependent(hkRoot, pProvider->sczKey, wzDependentProviderKey, NULL, NULL, 0);
             if (E_FILENOTFOUND != hr || pPackage->fVital)
             {
-                ExitOnFailure1(hr, "Failed to register the dependency on package dependency provider: %ls", pProvider->sczKey);
+                ExitOnFailure(hr, "Failed to register the dependency on package dependency provider: %ls", pProvider->sczKey);
             }
             else
             {

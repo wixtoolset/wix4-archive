@@ -189,7 +189,7 @@ static HRESULT ProcessParentMessages(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Unexpected elevated message sent to parent process, msg: %u", pMsg->dwMessage);
+        ExitOnRootFailure(hr, "Unexpected elevated message sent to parent process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = static_cast<DWORD>(hrResult);
@@ -219,7 +219,7 @@ static HRESULT ProcessChildMessages(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Unexpected elevated message sent to child process, msg: %u", pMsg->dwMessage);
+        ExitOnRootFailure(hr, "Unexpected elevated message sent to child process, msg: %u", pMsg->dwMessage);
     }
 
     *pdwResult = dwResult;
