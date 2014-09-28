@@ -1,3 +1,5 @@
+* HeathS: WIXBUG:4541 - Add support for high DPI to the Burn engine
+
 * MikeGC: Feature #4400: Store UDM Manifests as blobs instead of strings
 
 * MikeGC: Bug #4435: Sync requests must be deduped to avoid the possibility of building up too many sync requests for the same location
