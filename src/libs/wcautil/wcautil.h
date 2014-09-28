@@ -24,17 +24,17 @@ extern "C" {
 
 #include "dutil.h"
 
-#define MessageExitOnLastError(x, e, s)      { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace(x, "%s", s); WcaErrorMessage(e, x, MB_OK, 0);  goto LExit; } }
-#define MessageExitOnLastError1(x, e, f, s)  { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace1(x, f, s); WcaErrorMessage(e, x, MB_OK, 1, s);  goto LExit; } }
+#define MessageExitOnLastError(x, e, s, ...)      { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, 0, __VA_ARGS__);  goto LExit; } }
+#define MessageExitOnLastError1 MessageExitOnLastError
 
-#define MessageExitOnFailure(x, e, s)           if (FAILED(x)) { ExitTrace(x, "%s", s); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 0);  goto LExit; }
-#define MessageExitOnFailure1(x, e, f, s)       if (FAILED(x)) { ExitTrace1(x, f, s); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 1, s);  goto LExit; }
-#define MessageExitOnFailure2(x, e, f, s, t)    if (FAILED(x)) { ExitTrace2(x, f, s, t); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 2, s, t);  goto LExit; }
-#define MessageExitOnFailure3(x, e, f, s, t, u) if (FAILED(x)) { ExitTrace2(x, f, s, t, u); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 3, s, t, u);  goto LExit; }
+#define MessageExitOnFailure(x, e, s, ...)           if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 0, __VA_ARGS__);  goto LExit; }
+#define MessageExitOnFailure1 MessageExitOnFailure
+#define MessageExitOnFailure2 MessageExitOnFailure
+#define MessageExitOnFailure3 MessageExitOnFailure
 
-#define MessageExitOnNullWithLastError(p, x, e, s) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, "%s", s); WcaErrorMessage(e, x, MB_OK, 0);  goto LExit; }
-#define MessageExitOnNullWithLastError1(p, x, e, f, s) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, f, s); WcaErrorMessage(e, x, MB_OK, 1, s);  goto LExit; }
-#define MessageExitOnNullWithLastError2(p, x, e, f, s, t) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, f, s, t); WcaErrorMessage(e, x, MB_OK, 2, s, t);  goto LExit; }
+#define MessageExitOnNullWithLastError(p, x, e, s, ...) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, 0, __VA_ARGS__);  goto LExit; }
+#define MessageExitOnNullWithLastError1 MessageExitOnNullWithLastError
+#define MessageExitOnNullWithLastError2 MessageExitOnNullWithLastError
 
 // Generic action enum.
 typedef enum WCA_ACTION
