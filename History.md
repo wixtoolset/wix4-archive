@@ -1,3 +1,5 @@
+* HeathS: Add Windows "Threshold" supported to burn stub.
+
 * MikeGC: Feature #4351: Settings Browser now allows enabling/disabling the display or deleted values and uninstalled products
 
 * HeathS: Add logging for hash verification and registration issues.
