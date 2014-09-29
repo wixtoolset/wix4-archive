@@ -24,6 +24,7 @@
 #include <windows.h>
 #include <aclapi.h>
 #include <Bits.h>
+#include <gdiplus.h>
 #include <math.h>
 #include <msiquery.h>
 #include <sddl.h>
@@ -44,6 +45,7 @@
 #include <cryputil.h>
 #include <dirutil.h>
 #include <fileutil.h>
+#include <gdiputil.h>
 #include <logutil.h>
 #include <memutil.h>
 #include <osutil.h>
