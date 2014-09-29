@@ -1733,11 +1733,11 @@ static HRESULT VerifyHash(
         if (SUCCEEDED(StrAllocHexEncode(pbHash, cbHash, &pszExpected)) &&
             SUCCEEDED(StrAllocHexEncode(rgbActualHash, SHA1_HASH_LEN, &pszActual)))
         {
-            ExitOnFailure3(hr, "Hash mismatch for path: %ls, expected: %ls, actual: %ls", wzUnverifiedPayloadPath, pszExpected, pszActual);
+            ExitOnFailure(hr, "Hash mismatch for path: %ls, expected: %ls, actual: %ls", wzUnverifiedPayloadPath, pszExpected, pszActual);
         }
         else
         {
-            ExitOnFailure1(hr, "Hash mismatch for path: %ls", wzUnverifiedPayloadPath);
+            ExitOnFailure(hr, "Hash mismatch for path: %ls", wzUnverifiedPayloadPath);
         }
     }
 
