@@ -38,9 +38,9 @@ enum HISTORY_MODE
 
 struct PRODUCT
 {
-    LPCWSTR wzName;
-    LPCWSTR wzVersion;
-    LPCWSTR wzPublicKey;
+    LPWSTR sczName;
+    LPWSTR sczVersion;
+    LPWSTR sczPublicKey;
 };
 
 struct BROWSE_DATABASE

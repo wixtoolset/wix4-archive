@@ -5,7 +5,7 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
+//
 // <summary>
 //    Main window functionality
 // </summary>
@@ -29,7 +29,7 @@ STDMETHODIMP BrowseWindow::Initialize(
     HRESULT hr = S_OK;
 
     m_dwWorkThreadId = ::GetCurrentThreadId();
-    
+
     // create UI thread
     m_hUiThread = ::CreateThread(NULL, 0, UiThreadProc, this, 0, pdwUIThread);
     if (!m_hUiThread)
@@ -56,19 +56,29 @@ HRESULT BrowseWindow::SetSelectedProduct(
     )
 {
     HRESULT hr = S_OK;
+    LPCWSTR wzTemp = NULL;
     CURRENTDATABASE.dwSetProductIndex = dwIndex;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
 
-    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PRODUCTNAME, &CURRENTDATABASE.prodCurrent.wzName);
+    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PRODUCTNAME, &wzTemp);
     ExitOnFailure(hr, "Failed to read product name from enumeration");
 
-    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_VERSION, &CURRENTDATABASE.prodCurrent.wzVersion);
+    hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczName, wzTemp, 0);
+    ExitOnFailure(hr, "Failed to copy name");
+
+    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_VERSION, &wzTemp);
     ExitOnFailure(hr, "Failed to read product version from enumeration");
 
-    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PUBLICKEY, &CURRENTDATABASE.prodCurrent.wzPublicKey);
+    hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczVersion, wzTemp, 0);
+    ExitOnFailure(hr, "Failed to copy name");
+
+    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PUBLICKEY, &wzTemp);
     ExitOnFailure(hr, "Failed to read product public key from enumeration");
 
-    hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.wzName, CURRENTDATABASE.prodCurrent.wzVersion, CURRENTDATABASE.prodCurrent.wzPublicKey);
+    hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczPublicKey, wzTemp, 0);
+    ExitOnFailure(hr, "Failed to copy name");
+
+    hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
     ExitOnFailure(hr, "Failed to allocate product display name with public key");
 
 LExit:
@@ -86,6 +96,106 @@ void BrowseWindow::Bomb(
     ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
 }
 
+HRESULT BrowseWindow::ReadSettings()
+{
+    HRESULT hr = S_OK;
+    HRESULT hrTemp = S_OK;
+    CFGDB_HANDLE cdbLocal = NULL;
+    BOOL fTemp = FALSE;
+    BOOL fSettingsChanged = FALSE;
+
+    ::EnterCriticalSection(&DATABASE(m_dwLocalDatabaseIndex).cs);
+    cdbLocal = DATABASE(m_dwLocalDatabaseIndex).cdb;
+
+    hr = CfgSetProduct(cdbLocal, wzBrowserProductId, wzBrowserVersion, wzBrowserPublicKey);
+    ExitOnFailure(hr, "Failed to set product id to browser");
+
+    hr = CfgGetBool(cdbLocal, BROWSER_SETTING_SHOW_UNINSTALLED_PRODUCTS, &fTemp);
+    if (E_NOTFOUND == hr)
+    {
+        m_fShowUninstalledProducts = false;
+        hr = S_OK;
+    }
+    else
+    {
+        ExitOnFailure(hr, "Failed to read show uninstalled products setting");
+
+        if (fTemp != m_fShowUninstalledProducts)
+        {
+            m_fShowUninstalledProducts = fTemp;
+            fSettingsChanged = TRUE;
+        }
+    }
+
+    hr = CfgGetBool(cdbLocal, BROWSER_SETTING_SHOW_DELETED_VALUES, &fTemp);
+    if (E_NOTFOUND == hr)
+    {
+        m_fShowDeletedValues = false;
+        hr = S_OK;
+    }
+    else
+    {
+        ExitOnFailure(hr, "Failed to read show deleted values setting");
+
+        if (fTemp != m_fShowDeletedValues)
+        {
+            m_fShowDeletedValues = fTemp;
+            fSettingsChanged = TRUE;
+        }
+    }
+
+    if (fSettingsChanged && !::PostMessageW(m_hWnd, WM_BROWSE_SETTINGS_CHANGED, 0, 0))
+    {
+        ExitWithLastError(hr, "Failed to send WM_BROWSE_SETTINGS_CHANGED message");
+    }
+
+LExit:
+    // Revert to prior product if one was set, even in case of some kind of failure
+    if (NULL != DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName)
+    {
+        hrTemp = CfgSetProduct(cdbLocal, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczVersion, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczPublicKey);
+        if (FAILED(hrTemp))
+        {
+            LogErrorString(hrTemp, "Failed to revert to prior product when persisting settings");
+        }
+    }
+    ::LeaveCriticalSection(&DATABASE(m_dwLocalDatabaseIndex).cs);
+
+    return hr;
+}
+
+HRESULT BrowseWindow::PersistSettings()
+{
+    HRESULT hr = S_OK;
+    HRESULT hrTemp = S_OK;
+    CFGDB_HANDLE cdbLocal = NULL;
+
+    ::EnterCriticalSection(&DATABASE(m_dwLocalDatabaseIndex).cs);
+    cdbLocal = DATABASE(m_dwLocalDatabaseIndex).cdb;
+
+    hr = CfgSetProduct(cdbLocal, wzBrowserProductId, wzBrowserVersion, wzBrowserPublicKey);
+    ExitOnFailure(hr, "Failed to set product id to browser");
+
+    hr = CfgSetBool(cdbLocal, BROWSER_SETTING_SHOW_UNINSTALLED_PRODUCTS, m_fShowUninstalledProducts);
+    ExitOnFailure(hr, "Failed to set show uninstalled products setting");
+
+    hr = CfgSetBool(cdbLocal, BROWSER_SETTING_SHOW_DELETED_VALUES, m_fShowDeletedValues);
+    ExitOnFailure(hr, "Failed to set show deleted values setting");
+
+LExit:
+    // Revert to prior product if one was set, even in case of some kind of failure
+    if (NULL != DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName)
+    {
+        hrTemp = CfgSetProduct(cdbLocal, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczName, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczVersion, DATABASE(m_dwLocalDatabaseIndex).prodCurrent.sczPublicKey);
+        if (FAILED(hrTemp))
+        {
+            LogErrorString(hrTemp, "Failed to revert to prior product when persisting settings");
+        }
+    }
+    ::LeaveCriticalSection(&DATABASE(m_dwLocalDatabaseIndex).cs);
+
+    return hr;
+}
 
 HRESULT BrowseWindow::EnumerateProducts(
     DWORD dwIndex
@@ -142,7 +252,7 @@ HRESULT BrowseWindow::EnumerateValues(
     hr = RefreshValueList(dwIndex);
     ExitOnFailure(hr, "Failed to update value list");
 
-    if (!::PostThreadMessageW(m_dwWorkThreadId, WM_BROWSE_ENUMERATE_VALUES, static_cast<WPARAM>(dwIndex), static_cast<LPARAM>(VALUE_ANY_TYPE)))
+    if (!::PostThreadMessageW(m_dwWorkThreadId, WM_BROWSE_ENUMERATE_VALUES, static_cast<WPARAM>(dwIndex), static_cast<LPARAM>(VALUE_ANY_TYPE | VALUE_DELETED)))
     {
         ExitWithLastError(hr, "Failed to send message to worker thread to enumerate values");
     }
@@ -279,7 +389,7 @@ HRESULT BrowseWindow::RefreshProductList(DWORD dwDatabaseIndex)
     }
     else
     {
-        hr = UISetListViewToProductEnum(hwnd, DATABASE(dwDatabaseIndex).cehProductList, DATABASE(dwDatabaseIndex).rgfProductInstalled);
+        hr = UISetListViewToProductEnum(hwnd, DATABASE(dwDatabaseIndex).cehProductList, DATABASE(dwDatabaseIndex).rgfProductInstalled, m_fShowUninstalledProducts);
         ExitOnFailure(hr, "Failed to set listview to product enum for product list screen");
     }
 
@@ -482,7 +592,7 @@ HRESULT BrowseWindow::RefreshValueList(DWORD dwDatabaseIndex)
     }
     else
     {
-        hr = UISetListViewToValueEnum(hwnd, DATABASE(dwDatabaseIndex).cehValueList);
+        hr = UISetListViewToValueEnum(hwnd, DATABASE(dwDatabaseIndex).cehValueList, m_fShowDeletedValues);
         ExitOnFailure(hr, "Failed to set listview to value enum for product settings screen");
     }
 
@@ -860,7 +970,7 @@ DWORD WINAPI BrowseWindow::UiThreadProc(
 
     hr = UtilGrowDatabaseList(pThis->m_pbdlDatabaseList, &dwDatabaseIndex);
     ExitOnFailure(hr, "Failed to grow database list");
-    
+
     hr = StrAllocString(&(pThis->m_pbdlDatabaseList->rgDatabases[dwDatabaseIndex].sczName), L"(Local Database)", 0);
     ExitOnFailure(hr, "Failed to copy name of local database to database list entry");
 
@@ -1160,7 +1270,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 LogErrorString(hr, "Failed to switch to main page of other databases tab during balloon click");
                 hr = S_OK;
             }
-            
+
             pUX->m_fVisible = TRUE;
             ::ShowWindow(pUX->m_hWnd, pUX->m_fVisible ? SW_SHOW : SW_HIDE);
             break;
@@ -1231,6 +1341,12 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             UXDATABASE(dwIndex).fInitialized = TRUE;
             UXDATABASE(dwIndex).fInitializing = FALSE;
 
+            // Read browser settings
+            if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_READ_SETTINGS, 0, 0))
+            {
+                ExitWithLastError(hr, "Failed to send message to worker thread to read latest settings");
+            }
+
             if (DATABASE_LOCAL == UXDATABASE(dwIndex).dtType)
             {
                 hr = pUX->EnumerateDatabases(dwIndex);
@@ -1262,7 +1378,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
 
         UXDATABASE(dwIndex).hrProductListResult = static_cast<HRESULT>(wParam);
         UXDATABASE(dwIndex).fProductListLoading = FALSE;
-        
+
         hr = pUX->RefreshProductList(dwIndex);
         ExitOnFailure(hr, "Failed to refresh product list");
 
@@ -1502,6 +1618,12 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             }
         }
 
+        // Read latest browser settings, in case they changed
+        if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_READ_SETTINGS, 0, 0))
+        {
+            ExitWithLastError(hr, "Failed to send message to worker thread to read latest settings");
+        }
+
         hr = pUX->RefreshSingleDatabaseConflictList(dwIndex);
         ExitOnFailure(hr, "Failed to refresh single database conflict display");
 
@@ -1543,7 +1665,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_SYNC, static_cast<WPARAM>(dwIndex), 0))
             {
                 ExitWithLastError(hr, "Failed to send message to worker thread to sync");
-            }        
+            }
         }
 
         hr = pUX->RefreshOtherDatabaseList();
@@ -1566,7 +1688,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_REMEMBER, static_cast<WPARAM>(dwIndex), 0))
             {
                 ExitWithLastError(hr, "Failed to send message to worker thread to remember database");
-            }        
+            }
         }
 
         hr = pUX->RefreshOtherDatabaseList();
@@ -1586,7 +1708,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_REMEMBER, static_cast<WPARAM>(dwIndex), 0))
             {
                 ExitWithLastError(hr, "Failed to send message to worker thread to remember database");
-            }        
+            }
         }
 
         hr = pUX->RefreshOtherDatabaseList();
@@ -1656,6 +1778,18 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         // Nothing to do. MonUtil will automatically remonitor it when it's possible to do so.
         break;
 
+    case WM_BROWSE_SETTINGS_CHANGED:
+        // one or more browser settings have changed, update UI accordingly
+        ::SendMessageW(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_PRODUCT_LIST_SHOW_UNINSTALLED_PRODUCTS_CHECKBOX), BM_SETCHECK, static_cast<WPARAM>(pUX->m_fShowUninstalledProducts ? BST_CHECKED : BST_UNCHECKED), 0);
+        ::SendMessageW(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_PRODUCT_LIST_SHOW_DELETED_VALUES_CHECKBOX), BM_SETCHECK, static_cast<WPARAM>(pUX->m_fShowDeletedValues ? BST_CHECKED : BST_UNCHECKED), 0);
+
+        hr = pUX->RefreshProductList(pUX->m_dwDatabaseIndex);
+        ExitOnFailure(hr, "Failed to refresh product list");
+
+        hr = pUX->RefreshValueList(pUX->m_dwDatabaseIndex);
+        ExitOnFailure(hr, "Failed to refresh value list");
+        break;
+
     case WM_NOTIFY:
         switch (LOWORD(wParam))
         {
@@ -1675,7 +1809,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     ExitOnFailure(hr, "Failed while switching to 'other databases' tab");
                 }
                 break;
-            }            
+            }
             break;
         case BROWSE_CONTROL_PRODUCT_LIST_VIEW:
             lpnmitem = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
@@ -1700,7 +1834,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     ExitOnFailure(hr, "Failed while switching other databases state to single product screen");
                 }
 
-                hr = SendStringTriplet(pUX->m_dwWorkThreadId, WM_BROWSE_SET_PRODUCT, pUX->m_dwDatabaseIndex, CURRENTUXDATABASE.prodCurrent.wzName, CURRENTUXDATABASE.prodCurrent.wzVersion, CURRENTUXDATABASE.prodCurrent.wzPublicKey);
+                hr = SendStringTriplet(pUX->m_dwWorkThreadId, WM_BROWSE_SET_PRODUCT, pUX->m_dwDatabaseIndex, CURRENTUXDATABASE.prodCurrent.sczName, CURRENTUXDATABASE.prodCurrent.sczVersion, CURRENTUXDATABASE.prodCurrent.sczPublicKey);
                 ExitOnFailure(hr, "Failed to send WM_BROWSE_SET_PRODUCT message");
             break;
             case NM_CLICK:
@@ -1822,6 +1956,36 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         case WM_BROWSE_TRAY_ICON_EXIT:
             LogStringLine(REPORT_STANDARD, "User closed main browser via tray exit menu - exiting.");
             ::PostMessageW(hWnd, WM_CLOSE, 0, 0);
+            break;
+
+        case BROWSE_CONTROL_PRODUCT_LIST_SHOW_UNINSTALLED_PRODUCTS_CHECKBOX:
+            if (BN_CLICKED == HIWORD(wParam))
+            {
+                pUX->m_fShowUninstalledProducts = ThemeIsControlChecked(pUX->m_pTheme, BROWSE_CONTROL_PRODUCT_LIST_SHOW_UNINSTALLED_PRODUCTS_CHECKBOX);
+
+                hr = pUX->RefreshProductList(pUX->m_dwDatabaseIndex);
+                ExitOnFailure(hr, "Failed to refresh product list");
+
+                if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_PERSIST_SETTINGS, 0, 0))
+                {
+                    ExitWithLastError(hr, "Failed to send WM_BROWSE_PERSIST_SETTINGS message");
+                }
+            }
+            break;
+
+        case BROWSE_CONTROL_PRODUCT_LIST_SHOW_DELETED_VALUES_CHECKBOX:
+            if (BN_CLICKED == HIWORD(wParam))
+            {
+                pUX->m_fShowDeletedValues = ThemeIsControlChecked(pUX->m_pTheme, BROWSE_CONTROL_PRODUCT_LIST_SHOW_DELETED_VALUES_CHECKBOX);
+
+                hr = pUX->RefreshValueList(pUX->m_dwDatabaseIndex);
+                ExitOnFailure(hr, "Failed to refresh value list");
+
+                if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_PERSIST_SETTINGS, 0, 0))
+                {
+                    ExitWithLastError(hr, "Failed to send WM_BROWSE_PERSIST_SETTINGS message");
+                }
+            }
             break;
 
         case BROWSE_CONTROL_DELETE_SETTINGS_BUTTON:
@@ -2442,14 +2606,14 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_REMEMBER, static_cast<WPARAM>(dwIndex), 0))
                     {
                         ExitWithLastError(hr, "Failed to send message to worker thread to remember database");
-                    }        
+                    }
                 }
                 else if (UXDATABASE(dwIndex).fForgetting)
                 {
                     if (!::PostThreadMessageW(pUX->m_dwWorkThreadId, WM_BROWSE_FORGET, static_cast<WPARAM>(dwIndex), 0))
                     {
                         ExitWithLastError(hr, "Failed to send message to worker thread to forget database");
-                    }        
+                    }
                 }
 
                 hr = pUX->SetPreviousScreen();

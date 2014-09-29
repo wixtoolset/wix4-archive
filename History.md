@@ -1,3 +1,5 @@
+* MikeGC: Feature #4351: Settings Browser now allows enabling/disabling the display or deleted values and uninstalled products
+
 * HeathS: Add logging for hash verification and registration issues.
 
 * HeathS: WIXBUG:4542 - Pad package sequence number log file names for proper sorting

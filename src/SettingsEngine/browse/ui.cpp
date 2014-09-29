@@ -212,7 +212,8 @@ LExit:
 HRESULT UISetListViewToProductEnum(
     __in HWND hwnd,
     __in C_CFG_ENUMERATION_HANDLE cehProducts,
-    __in_opt const BOOL *rgfInstalled
+    __in const BOOL *rgfInstalled,
+    __in BOOL fShowUninstalledProducts
     )
 {
     HRESULT hr = S_OK;
@@ -238,24 +239,29 @@ HRESULT UISetListViewToProductEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    UIListViewTrimSize(hwnd, dwCount);
+    dwInsertIndex = 0;
     for (DWORD i = 0; i < dwCount; ++i)
     {
-        dwInsertIndex = i;
-
         hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
         ExitOnFailure(hr, "Failed to read product name from enum");
 
 #pragma prefast(push)
 #pragma prefast(disable:26007)
-        if (NULL != rgfInstalled && rgfInstalled[i])
+        if (rgfInstalled[i])
 #pragma prefast(pop)
         {
             dwInsertImage = 1;
         }
         else
         {
-            dwInsertImage = 0;
+            if (!fShowUninstalledProducts)
+            {
+                continue;
+            }
+            else
+            {
+                dwInsertImage = 0;
+            }
         }
 
         if (dwInsertIndex >= dwListViewRowCount)
@@ -280,7 +286,10 @@ HRESULT UISetListViewToProductEnum(
 
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
         ExitOnFailure(hr, "Failed to set public key as listview subitem");
+
+        ++dwInsertIndex;
     }
+    UIListViewTrimSize(hwnd, dwInsertIndex);
 
     hr = ListViewSort(hwnd);
     ExitOnFailure(hr, "Failed to sort listview");
@@ -342,7 +351,8 @@ LExit:
 
 HRESULT UISetListViewToValueEnum(
     __in HWND hwnd,
-    __in_opt C_CFG_ENUMERATION_HANDLE cehValues
+    __in_opt C_CFG_ENUMERATION_HANDLE cehValues,
+    __in BOOL fShowDeletedValues
     )
 {
     HRESULT hr = S_OK;
@@ -382,11 +392,9 @@ HRESULT UISetListViewToValueEnum(
         ExitWithLastError(hr, "Failed to get time zone information");
     }
 
-    UIListViewTrimSize(hwnd, dwCount);
+    dwInsertIndex = 0;
     for (i = 0; i < dwCount; ++i)
     {
-        dwInsertIndex = i;
-
         hr = CfgEnumReadString(cehValues, i, ENUM_DATA_VALUENAME, &wzText);
         ExitOnFailure(hr, "Failed to read value enumeration");
 
@@ -446,6 +454,16 @@ HRESULT UISetListViewToValueEnum(
 
             wzText = fValue ? L"True" : L"False";
             break;
+
+        case VALUE_DELETED:
+            if (fShowDeletedValues)
+            {
+                wzText = L"[Deleted]";
+            }
+            else
+            {
+                continue;
+            }
         }
 
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
@@ -464,7 +482,11 @@ HRESULT UISetListViewToValueEnum(
 
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 3, sczText);
         ExitOnFailure(hr, "Failed to set when string as listview subitem");
+
+        ++dwInsertIndex;
     }
+
+    UIListViewTrimSize(hwnd, dwInsertIndex);
 
     hr = ListViewSort(hwnd);
     ExitOnFailure(hr, "Failed to sort listview");

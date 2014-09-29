@@ -19,6 +19,10 @@ void UtilFreeDatabase(
 {
     ::DeleteCriticalSection(&pDatabase->cs);
 
+    ReleaseStr(pDatabase->prodCurrent.sczName);
+    ReleaseStr(pDatabase->prodCurrent.sczVersion);
+    ReleaseStr(pDatabase->prodCurrent.sczPublicKey);
+
     ReleaseStr(pDatabase->sczPath);
     ReleaseStr(pDatabase->sczName);
     ReleaseStr(pDatabase->sczStatusMessage);

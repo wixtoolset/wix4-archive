@@ -1710,7 +1710,7 @@ static HRESULT SyncRemotes(
                 }
                 else if (HRESULT_FROM_WIN32(PEERDIST_ERROR_MISSING_DATA) == hr)
                 {
-                    LogErrorString(hr, "Stream file not (yet) present for database %ls. Autosync will not retry now, but will automatically retry if file later becomes present.", pcdb->rgpcdbOpenDatabases[dwFirstSyncedIndex]->sczDbDir);
+                    LogErrorString(hr, "Stream file not (yet) present for database %ls. Autosync will not retry now, but will automatically retry if file later becomes present.", pcdb->rgpcdbOpenDatabases[i]->sczDbDir);
                     hr = S_OK;
                 }
                 ExitOnFailure(hr, "Failed to sync another remote");
