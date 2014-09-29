@@ -33,7 +33,7 @@ namespace CfgTests
             if (0 != dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure(hr, L"Enum shouldn't have found any values!");
+                ExitOnFailure(hr, "Enum shouldn't have found any values!");
             }
 
         LExit:
@@ -52,7 +52,7 @@ namespace CfgTests
             if (0 != dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure(hr, L"Enum shouldn't have found any files!");
+                ExitOnFailure(hr, "Enum shouldn't have found any files!");
             }
 
         LExit:
@@ -165,7 +165,7 @@ namespace CfgTests
             if (1 != dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure(hr, L"Enum should have found 1 value!");
+                ExitOnFailure(hr, "Enum should have found 1 value!");
             }
 
             hr = CfgEnumReadString(cehHandle, 0, ENUM_DATA_VALUENAME, &wzName);
