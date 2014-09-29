@@ -1,3 +1,5 @@
+* HeathS: WIXBUG:4542 - Pad package sequence number log file names for proper sorting
+
 * HeathS: Redefine Exit\* macros as variadic macros
 
 * MikeGC: Feature #4400: Store UDM Manifests as blobs instead of strings
