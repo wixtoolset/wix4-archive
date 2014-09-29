@@ -12,6 +12,7 @@
   <ItemGroup>
     <TestAssembly Include="$(WixToolPath)\WixTest.BurnIntegrationTests.dll" />
     <TestAssembly Include="$(WixToolPath)\WixTest.MsbuildIntegrationTests.dll" />
+    <TestAssembly Include="$(WixToolPath)\SettingsEngineTest.dll" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IntegrationTests)' == '' ">
