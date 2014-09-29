@@ -93,7 +93,7 @@ HRESULT ScaDeleteApp(IMSAdminBase* piMetabase, LPCWSTR wzWebRoot)
     ExitOnFailure(hr, "Failed to add metabase key to CustomActionData");
 
     hr = ScaAddToIisConfiguration(pwzCustomActionData, COST_IIS_DELETEAPP);
-    ExitOnFailure2(hr, "Failed to add ScaDeleteApp action data: %ls cost: %d", pwzCustomActionData, COST_IIS_DELETEAPP);
+    ExitOnFailure(hr, "Failed to add ScaDeleteApp action data: %ls cost: %d", pwzCustomActionData, COST_IIS_DELETEAPP);
 
 LExit:
     ReleaseStr(pwzCustomActionData);
@@ -131,7 +131,7 @@ HRESULT ScaCreateApp(IMSAdminBase* piMetabase, LPCWSTR wzWebRoot,
     ExitOnFailure(hr, "Failed to add isolation value to CustomActionData");
 
     hr = ScaAddToIisConfiguration(pwzCustomActionData, COST_IIS_CREATEAPP);
-    ExitOnFailure2(hr, "Failed to add ScaCreateApp action data: %ls cost: %d", pwzCustomActionData, COST_IIS_CREATEAPP);
+    ExitOnFailure(hr, "Failed to add ScaCreateApp action data: %ls cost: %d", pwzCustomActionData, COST_IIS_CREATEAPP);
 
 LExit:
     ReleaseStr(pwzCustomActionData);
@@ -178,7 +178,7 @@ HRESULT ScaCreateMetabaseKey(IMSAdminBase* piMetabase, LPCWSTR wzRootKey,
     ExitOnFailure(hr, "Failed to add metabase key to CustomActionData");
 
     hr = ScaAddToIisConfiguration(pwzCustomActionData, COST_IIS_CREATEKEY);
-    ExitOnFailure2(hr, "Failed to add ScaCreateMetabaseKey action data: %ls cost: %d", pwzCustomActionData, COST_IIS_CREATEKEY);
+    ExitOnFailure(hr, "Failed to add ScaCreateMetabaseKey action data: %ls cost: %d", pwzCustomActionData, COST_IIS_CREATEKEY);
 
 LExit:
     ReleaseStr(pwzCustomActionData);
@@ -225,7 +225,7 @@ HRESULT ScaDeleteMetabaseKey(IMSAdminBase* piMetabase, LPCWSTR wzRootKey,
     ExitOnFailure(hr, "Failed to add metabase key to CustomActionData");
 
     hr = ScaAddToIisConfiguration(pwzCustomActionData, COST_IIS_DELETEKEY);
-    ExitOnFailure2(hr, "Failed to add ScaDeleteMetabaseKey action data: %ls cost: %d", pwzCustomActionData, COST_IIS_DELETEKEY);
+    ExitOnFailure(hr, "Failed to add ScaDeleteMetabaseKey action data: %ls cost: %d", pwzCustomActionData, COST_IIS_DELETEKEY);
 
 LExit:
     ReleaseStr(pwzCustomActionData);
@@ -280,7 +280,7 @@ HRESULT ScaDeleteMetabaseValue(IMSAdminBase* piMetabase, LPCWSTR wzRootKey,
     ExitOnFailure(hr, "Failed to add metabase data type to CustomActionData");
 
     hr = ScaAddToIisConfiguration(pwzCustomActionData, COST_IIS_DELETEVALUE);
-    ExitOnFailure2(hr, "Failed to add ScaDeleteMetabaseValue action data: %ls, cost: %d", pwzCustomActionData, COST_IIS_DELETEVALUE);
+    ExitOnFailure(hr, "Failed to add ScaDeleteMetabaseValue action data: %ls, cost: %d", pwzCustomActionData, COST_IIS_DELETEVALUE);
 
 LExit:
     ReleaseStr(pwzCustomActionData);
@@ -387,7 +387,7 @@ HRESULT ScaWriteMetabaseValue(IMSAdminBase* piMetabase, LPCWSTR wzRootKey,
     // TODO: maybe look the key up and make sure we're not just writing the same value that already there
 
     hr = ScaAddToIisConfiguration(pwzCustomActionData, COST_IIS_WRITEVALUE);
-    ExitOnFailure2(hr, "Failed to add ScaWriteMetabaseValue action data: %ls, cost: %d", pwzCustomActionData, COST_IIS_WRITEVALUE);
+    ExitOnFailure(hr, "Failed to add ScaWriteMetabaseValue action data: %ls, cost: %d", pwzCustomActionData, COST_IIS_WRITEVALUE);
 
 LExit:
     ReleaseStr(pwzCustomActionData);
@@ -401,7 +401,7 @@ HRESULT ScaAddToIisConfiguration(LPCWSTR pwzData, DWORD dwCost)
     HRESULT hr = S_OK;
 
     hr = WcaWriteStringToCaData(pwzData, &vpwzCustomActionData);
-    ExitOnFailure1(hr, "failed to add to metabase configuration data string: %ls", pwzData);
+    ExitOnFailure(hr, "failed to add to metabase configuration data string: %ls", pwzData);
 
     vdwCustomActionCost += dwCost;
 

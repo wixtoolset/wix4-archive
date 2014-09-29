@@ -92,11 +92,11 @@ HRESULT CpiConfigureApplications(
         {
         case atCreate:
             hr = CreateApplication(&attrs);
-            ExitOnFailure1(hr, "Failed to create application, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to create application, key: %S", attrs.pwzKey);
             break;
         case atRemove:
             hr = RemoveApplication(&attrs);
-            ExitOnFailure1(hr, "Failed to remove application, key: %S", attrs.pwzKey);
+            ExitOnFailure(hr, "Failed to remove application, key: %S", attrs.pwzKey);
             break;
         }
 

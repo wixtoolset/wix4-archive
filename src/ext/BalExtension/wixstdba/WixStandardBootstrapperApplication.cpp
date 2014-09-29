@@ -1154,10 +1154,10 @@ private: // privates
         LPCWSTR wzLocFileName = m_fPrereq ? L"mbapreq.wxl" : L"thm.wxl";
 
         hr = LocProbeForFile(wzModulePath, wzLocFileName, wzLanguage, &sczLocPath);
-        BalExitOnFailure2(hr, "Failed to probe for loc file: %ls in path: %ls", wzLocFileName, wzModulePath);
+        BalExitOnFailure(hr, "Failed to probe for loc file: %ls in path: %ls", wzLocFileName, wzModulePath);
 
         hr = LocLoadFromFile(sczLocPath, &m_pWixLoc);
-        BalExitOnFailure1(hr, "Failed to load loc file from path: %ls", sczLocPath);
+        BalExitOnFailure(hr, "Failed to load loc file from path: %ls", sczLocPath);
 
         if (WIX_LOCALIZATION_LANGUAGE_NOT_SET != m_pWixLoc->dwLangId)
         {
@@ -1168,7 +1168,7 @@ private: // privates
         ExitOnFailure(hr, "Failed to initialize confirm message loc identifier.");
 
         hr = LocLocalizeString(m_pWixLoc, &m_sczConfirmCloseMessage);
-        BalExitOnFailure1(hr, "Failed to localize confirm close message: %ls", m_sczConfirmCloseMessage);
+        BalExitOnFailure(hr, "Failed to localize confirm close message: %ls", m_sczConfirmCloseMessage);
 
     LExit:
         ReleaseStr(sczLocPath);
@@ -1188,13 +1188,13 @@ private: // privates
         LPWSTR sczCaption = NULL;
 
         hr = LocProbeForFile(wzModulePath, wzThemeFileName, wzLanguage, &sczThemePath);
-        BalExitOnFailure2(hr, "Failed to probe for theme file: %ls in path: %ls", wzThemeFileName, wzModulePath);
+        BalExitOnFailure(hr, "Failed to probe for theme file: %ls in path: %ls", wzThemeFileName, wzModulePath);
 
         hr = ThemeLoadFromFile(sczThemePath, &m_pTheme);
-        BalExitOnFailure1(hr, "Failed to load theme from path: %ls", sczThemePath);
+        BalExitOnFailure(hr, "Failed to load theme from path: %ls", sczThemePath);
 
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
-        BalExitOnFailure1(hr, "Failed to localize theme: %ls", sczThemePath);
+        BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
 
         // Update the caption if there are any formatted strings in it.
         // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
@@ -1249,7 +1249,7 @@ private: // privates
                 ExitOnFailure(hr, "Failed to get @Name.");
 
                 hr = DictAddKey(m_sdOverridableVariables, scz);
-                ExitOnFailure1(hr, "Failed to add \"%ls\" to the string dictionary.", scz);
+                ExitOnFailure(hr, "Failed to add \"%ls\" to the string dictionary.", scz);
 
                 // prepare next iteration
                 ReleaseNullObject(pNode);
@@ -1321,7 +1321,7 @@ private: // privates
         pPrereqPackage->sczPackageId = m_sczPrereqPackage;
         pPrereqPackage->fAlwaysInstall = TRUE;
         hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
-        ExitOnFailure1(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
+        ExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
 
         for (DWORD i = 0; i < cNodes; ++i)
         {
@@ -1344,7 +1344,7 @@ private: // privates
             }
             else if (E_NOTFOUND != hr)
             {
-                ExitOnFailure1(hr, "Failed to check if \"%ls\" was in the prerequisite package dictionary.", scz);
+                ExitOnFailure(hr, "Failed to check if \"%ls\" was in the prerequisite package dictionary.", scz);
             }
 
             hr = BalInfoFindPackageById(&m_Bundle.packages, scz, &pPackage);
@@ -1353,7 +1353,7 @@ private: // privates
                 pPrereqPackage = &m_rgPrereqPackages[i + 1];
                 pPrereqPackage->sczPackageId = pPackage->sczId;
                 hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
-                ExitOnFailure1(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
+                ExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
             }
             else
             {
@@ -2496,15 +2496,15 @@ private: // privates
         URI_PROTOCOL protocol = URI_PROTOCOL_UNKNOWN;
 
         hr = StrAllocString(&sczLicenseUrl, m_sczLicenseUrl, 0);
-        BalExitOnFailure1(hr, "Failed to copy license URL: %ls", m_sczLicenseUrl);
+        BalExitOnFailure(hr, "Failed to copy license URL: %ls", m_sczLicenseUrl);
 
         hr = LocLocalizeString(m_pWixLoc, &sczLicenseUrl);
-        BalExitOnFailure1(hr, "Failed to localize license URL: %ls", m_sczLicenseUrl);
+        BalExitOnFailure(hr, "Failed to localize license URL: %ls", m_sczLicenseUrl);
         
         // Assume there is no hidden variables to be formatted
         // so don't worry about securely freeing it.
         hr = BalFormatString(sczLicenseUrl, &sczLicenseUrl);
-        BalExitOnFailure1(hr, "Failed to get formatted license URL: %ls", m_sczLicenseUrl);
+        BalExitOnFailure(hr, "Failed to get formatted license URL: %ls", m_sczLicenseUrl);
 
         hr = UriProtocol(sczLicenseUrl, &protocol);
         if (FAILED(hr) || URI_PROTOCOL_UNKNOWN == protocol)
@@ -2548,21 +2548,21 @@ private: // privates
         int nCmdShow = SW_SHOWNORMAL;
 
         hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH, &sczUnformattedLaunchTarget);
-        BalExitOnFailure1(hr, "Failed to get launch target variable '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH);
+        BalExitOnFailure(hr, "Failed to get launch target variable '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH);
 
         hr = BalFormatString(sczUnformattedLaunchTarget, &sczLaunchTarget);
-        BalExitOnFailure1(hr, "Failed to format launch target variable: %ls", sczUnformattedLaunchTarget);
+        BalExitOnFailure(hr, "Failed to format launch target variable: %ls", sczUnformattedLaunchTarget);
 
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID))
         {
             hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID, &sczLaunchTargetElevatedId);
-            BalExitOnFailure1(hr, "Failed to get launch target elevated id '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID);
+            BalExitOnFailure(hr, "Failed to get launch target elevated id '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID);
         }
 
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS))
         {
             hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS, &sczUnformattedArguments);
-            BalExitOnFailure1(hr, "Failed to get launch arguments '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS);
+            BalExitOnFailure(hr, "Failed to get launch arguments '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS);
         }
 
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_HIDDEN))
@@ -2587,11 +2587,11 @@ private: // privates
             if (sczUnformattedArguments)
             {
                 hr = BalFormatString(sczUnformattedArguments, &sczArguments);
-                BalExitOnFailure1(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
+                BalExitOnFailure(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
             }
 
             hr = ShelExec(sczLaunchTarget, sczArguments, L"open", NULL, nCmdShow, m_hWnd, NULL);
-            BalExitOnFailure1(hr, "Failed to launch target: %ls", sczLaunchTarget);
+            BalExitOnFailure(hr, "Failed to launch target: %ls", sczLaunchTarget);
 
             ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
         }
@@ -2630,10 +2630,10 @@ private: // privates
         LPWSTR sczLogFile = NULL;
 
         hr = BalGetStringVariable(m_Bundle.sczLogVariable, &sczLogFile);
-        BalExitOnFailure1(hr, "Failed to get log file variable '%ls'.", m_Bundle.sczLogVariable);
+        BalExitOnFailure(hr, "Failed to get log file variable '%ls'.", m_Bundle.sczLogVariable);
 
         hr = ShelExec(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
-        BalExitOnFailure1(hr, "Failed to open log file target: %ls", sczLogFile);
+        BalExitOnFailure(hr, "Failed to open log file target: %ls", sczLogFile);
 
     LExit:
         ReleaseStr(sczLogFile);
@@ -2784,7 +2784,7 @@ private: // privates
 
                 hr = E_WIXSTDBA_CONDITION_FAILED;
                 // todo: remove in WiX v4, in case people are relying on v3.x logging behavior
-                BalExitOnFailure1(hr, "Bundle condition evaluated to false: %ls", pCondition->sczCondition);
+                BalExitOnFailure(hr, "Bundle condition evaluated to false: %ls", pCondition->sczCondition);
             }
         }
 
@@ -2804,7 +2804,7 @@ private: // privates
         if (m_fTaskbarButtonOK)
         {
             hr = m_pTaskbarList->SetProgressValue(m_hWnd, dwOverallPercentage, 100UL);
-            BalExitOnFailure1(hr, "Failed to set taskbar button progress to: %d%%.", dwOverallPercentage);
+            BalExitOnFailure(hr, "Failed to set taskbar button progress to: %d%%.", dwOverallPercentage);
         }
 
     LExit:
@@ -2821,7 +2821,7 @@ private: // privates
         if (m_fTaskbarButtonOK)
         {
             hr = m_pTaskbarList->SetProgressState(m_hWnd, tbpFlags);
-            BalExitOnFailure1(hr, "Failed to set taskbar button state.", tbpFlags);
+            BalExitOnFailure(hr, "Failed to set taskbar button state.", tbpFlags);
         }
 
     LExit:
@@ -2864,7 +2864,7 @@ private: // privates
         if (m_hBAFModule)
         {
             PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE pfnBAFunctionCreate = reinterpret_cast<PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE>(::GetProcAddress(m_hBAFModule, "CreateBootstrapperBAFunction"));
-            BalExitOnNullWithLastError1(pfnBAFunctionCreate, hr, "Failed to get CreateBootstrapperBAFunction entry-point from: %ls", sczBafPath);
+            BalExitOnNullWithLastError(pfnBAFunctionCreate, hr, "Failed to get CreateBootstrapperBAFunction entry-point from: %ls", sczBafPath);
 
             hr = pfnBAFunctionCreate(m_pEngine, m_hBAFModule, &m_pBAFunction);
             BalExitOnFailure(hr, "Failed to create BA function.");

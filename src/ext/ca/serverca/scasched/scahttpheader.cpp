@@ -194,7 +194,7 @@ HRESULT ScaWriteHttpHeader(
         // TODO: Make it configurable to not inherit HTTP Headers
         //
         hr = StrAllocConcat(&pwzSearchKey, wzRoot, 0);
-        ExitOnFailure1(hr, "Failed to copy root string: %ls", wzRoot);
+        ExitOnFailure(hr, "Failed to copy root string: %ls", wzRoot);
 
         pwz = pwzSearchKey + lstrlenW(pwzSearchKey);
         while (NULL == pwzHeaders)
@@ -218,7 +218,7 @@ HRESULT ScaWriteHttpHeader(
             {
                 hr = S_FALSE;
             }
-            ExitOnFailure1(hr, "Failed to find search for HTTP headers for web root: %ls while walking up the tree", wzRoot);
+            ExitOnFailure(hr, "Failed to find search for HTTP headers for web root: %ls while walking up the tree", wzRoot);
 
             if (S_OK == hr)
             {
@@ -233,7 +233,7 @@ HRESULT ScaWriteHttpHeader(
         hr = StrAllocString(&pwzHeaders, reinterpret_cast<LPWSTR>(mr.pbMDData), 0);
         ExitOnFailure(hr, "Failed to allocate HTTP header string");
     }
-    ExitOnFailure1(hr, "Failed while searching for default HTTP headers to start with for web root: %ls", wzRoot);
+    ExitOnFailure(hr, "Failed while searching for default HTTP headers to start with for web root: %ls", wzRoot);
 
     // Loop through the HTTP headers
     for (SCA_HTTP_HEADER* pshh = pshhList; pshh; pshh = pshh->pshhNext)

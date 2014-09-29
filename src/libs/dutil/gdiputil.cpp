@@ -105,7 +105,7 @@ extern "C" HRESULT DAPI GdipBitmapFromFile(
     ExitOnNull(pBitmap, hr, E_OUTOFMEMORY, "Failed to allocate bitmap from file.");
 
     gs = pBitmap->GetLastStatus();
-    ExitOnGdipFailure1(gs, hr, "Failed to load bitmap from file: %ls", wzFileName);
+    ExitOnGdipFailure(gs, hr, "Failed to load bitmap from file: %ls", wzFileName);
 
     *ppBitmap = pBitmap;
     pBitmap = NULL;

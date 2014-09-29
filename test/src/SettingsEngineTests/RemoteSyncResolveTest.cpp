@@ -127,7 +127,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"StringValue1"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "String1's value in Remote1 is incorrect - should be: StringValue1, instead is: %ls", sczValue);
+                ExitOnFailure(hr, "String1's value in Remote1 is incorrect - should be: StringValue1, instead is: %ls", sczValue);
             }
 
             hr = CfgSetProduct(cdhRemote1, L"TestRemoteSyncNoResolve", L"1.0.0.0", L"abcdabcdabcdabcd");
@@ -139,7 +139,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"StringValue2"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "String2's value in Remote2 is incorrect - should be: StringValue2, instead is: %ls", sczValue);
+                ExitOnFailure(hr, "String2's value in Remote2 is incorrect - should be: StringValue2, instead is: %ls", sczValue);
             }
 
             hr = CfgGetDword(cdhRemote1, L"Dword1", &dwValue);
@@ -148,7 +148,7 @@ namespace CfgTests
             if (100 != dwValue)
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Dword1's value in Remote1 is incorrect - should be: 100, instead is: %u", dwValue);
+                ExitOnFailure(hr, "Dword1's value in Remote1 is incorrect - should be: 100, instead is: %u", dwValue);
             }
 
             hr = CfgGetBool(cdhRemote2, L"Bool1", &fValue);
@@ -216,7 +216,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"StringValueLocal"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Local db's string1 value should be StringValueLocal, was instead: %ls", sczValue);
+                ExitOnFailure(hr, "Local db's string1 value should be StringValueLocal, was instead: %ls", sczValue);
             }
 
             hr = CfgGetString(cdhRemote2, L"String1", &sczValue);
@@ -225,7 +225,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"StringValueLocal"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Remote db 2's string1 value should be StringValueLocal, was instead: %ls", sczValue);
+                ExitOnFailure(hr, "Remote db 2's string1 value should be StringValueLocal, was instead: %ls", sczValue);
             }
 
             hr = CfgSetString(cdhLocal, L"String1", L"StringValueLocalNew");
@@ -242,7 +242,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"StringValueRemote3"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Remote db 2's string1 value should be StringValueRemote3, was instead: %ls", sczValue);
+                ExitOnFailure(hr, "Remote db 2's string1 value should be StringValueRemote3, was instead: %ls", sczValue);
             }
 
             hr = CfgGetString(cdhLocal, L"String1", &sczValue);
@@ -251,7 +251,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"StringValueRemote3"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Local db's string1 value should be StringValueRemote3, was instead: %ls", sczValue);
+                ExitOnFailure(hr, "Local db's string1 value should be StringValueRemote3, was instead: %ls", sczValue);
             }
 
             hr = CfgDeleteValue(cdhLocal, L"String1");
@@ -268,7 +268,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"Resurrected"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Remote db 2's string1 value should be Resurrected, was instead: %ls", sczValue);
+                ExitOnFailure(hr, "Remote db 2's string1 value should be Resurrected, was instead: %ls", sczValue);
             }
 
             hr = CfgGetString(cdhLocal, L"String1", &sczValue);
@@ -277,7 +277,7 @@ namespace CfgTests
             if (0 != lstrcmpW(sczValue, L"Resurrected"))
             {
                 hr = E_FAIL;
-                ExitOnFailure1(hr, "Local db's string1 value should be Resurrected, was instead: %ls", sczValue);
+                ExitOnFailure(hr, "Local db's string1 value should be Resurrected, was instead: %ls", sczValue);
             }
 
             hr = CfgDeleteValue(cdhLocal, L"String1");

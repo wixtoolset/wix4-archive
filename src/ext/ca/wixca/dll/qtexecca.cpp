@@ -40,9 +40,9 @@ HRESULT BuildCommandLine(
     else if (WcaIsPropertySet(szProperty))
     {
         hr = WcaGetFormattedProperty(wzProperty, ppwzCommand);
-        ExitOnFailure1(hr, "failed to get %ls", wzProperty);
+        ExitOnFailure(hr, "failed to get %ls", wzProperty);
         hr = WcaSetProperty(wzProperty, L""); // clear out the property now that we've read it
-        ExitOnFailure1(hr, "failed to set %ls", wzProperty);
+        ExitOnFailure(hr, "failed to set %ls", wzProperty);
     }
 
     if (!*ppwzCommand)

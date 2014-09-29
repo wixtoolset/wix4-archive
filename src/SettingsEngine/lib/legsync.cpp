@@ -152,7 +152,7 @@ HRESULT LegacySyncSetProduct(
     ExitOnFailure(hr, "Failed to create cached detection property values dictionary");
 
     hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
-    ExitOnFailure2(hr, "Failed to find config value for legacy manifest (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
+    ExitOnFailure(hr, "Failed to find config value for legacy manifest (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
 
     hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
     ExitOnFailure(hr, "Failed to read manifest contents");
@@ -166,12 +166,12 @@ HRESULT LegacySyncSetProduct(
         ExitOnFailure(hr, "Failed to set converted manifest value in memory");
 
         hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvManifestConvertedToBlob, TRUE);
-        ExitOnFailure1(hr, "Failed to set converted manifest blob: %ls", sczManifestValueName);
+        ExitOnFailure(hr, "Failed to set converted manifest blob: %ls", sczManifestValueName);
 
         ReleaseNullSceRow(sceManifestValueRow);
         ReleaseNullCfgValue(cvManifestContents);
         hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
-        ExitOnFailure2(hr, "Failed to find config value for legacy manifest after conversion (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
+        ExitOnFailure(hr, "Failed to find config value for legacy manifest after conversion (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
 
         hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
         ExitOnFailure(hr, "Failed to read converted manifest contents");
@@ -190,7 +190,7 @@ HRESULT LegacySyncSetProduct(
     }
 
     hr = StreamRead(pcdb, cvManifestContents.blob.dbstream.dwContentID, NULL, &pbManifestBuffer, &iManifestBuffer);
-    ExitOnFailure2(hr, "Failed to get binary content of blob named: %ls, with content ID: %u", sczManifestValueName, pcdb->dwCfgAppID);
+    ExitOnFailure(hr, "Failed to get binary content of blob named: %ls, with content ID: %u", sczManifestValueName, pcdb->dwCfgAppID);
 
     hr = StrAllocString(&sczBlobManifestAsString, reinterpret_cast<LPWSTR>(pbManifestBuffer), iManifestBuffer / sizeof(WCHAR));
     ExitOnFailure(hr, "Failed to add null terminator to manifest blob");
@@ -205,7 +205,7 @@ HRESULT LegacySyncSetProduct(
     ExitOnFailure(hr, "Failed to check if product is registered");
 
     hr = DetectProduct(pcdb, !pSyncSession->fDetect, &pSyncSession->arpProducts, &pSyncSession->exeProducts, pSyncProductSession);
-    ExitOnFailure1(hr, "Failed to detect product with AppID: %u", pcdb->dwAppID);
+    ExitOnFailure(hr, "Failed to detect product with AppID: %u", pcdb->dwAppID);
 
     // Don't bother writing new registration state data to the database if detect is disabled
     if (pSyncSession->fDetect)
@@ -246,7 +246,7 @@ HRESULT LegacySyncSetProduct(
                     ExitOnFailure(hr, "Failed to parse INI file");
 
                     hr = DictAddValue(pSyncProductSession->shIniFilesByNamespace, pIniFile);
-                    ExitOnFailure1(hr, "Failed to add INI file to dict for namespace: %ls", pIniFile->sczNamespace);
+                    ExitOnFailure(hr, "Failed to add INI file to dict for namespace: %ls", pIniFile->sczNamespace);
 
                     ++pSyncProductSession->cIniFiles;
                 }
@@ -289,7 +289,7 @@ HRESULT LegacyProductMachineToDb(
     {
         pRegKey = pSyncProductSession->product.rgRegKeys + i;
         hr = ReadRegKeyWriteLegacyDb(pcdb, pSyncProductSession, pRegKey, pRegKey->sczKey);
-        ExitOnFailure2(hr, "Failed to write data to settings engine from registry key: %u, %ls", pRegKey->dwRoot, pRegKey->sczKey);
+        ExitOnFailure(hr, "Failed to write data to settings engine from registry key: %u, %ls", pRegKey->dwRoot, pRegKey->sczKey);
     }
 
     for (DWORD i = 0; i < pSyncProductSession->product.cFiles; ++i)
@@ -297,14 +297,14 @@ HRESULT LegacyProductMachineToDb(
         pFile = pSyncProductSession->product.rgFiles + i;
         if (NULL != pFile->sczExpandedPath)
         {
-            ExitOnFailure1(hr, "Failed to expand legacy directory paths for directory: %ls", pFile->sczLocation);
+            ExitOnFailure(hr, "Failed to expand legacy directory paths for directory: %ls", pFile->sczLocation);
 
             dwExpandedPathLen = lstrlenW(pFile->sczExpandedPath);
 
             if (0 == dwExpandedPathLen)
             {
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Empty expanded path encountered while processing files for appID: %u", pcdb->dwAppID);
+                ExitOnFailure(hr, "Empty expanded path encountered while processing files for appID: %u", pcdb->dwAppID);
             }
             else if (LEGACY_FILE_DIRECTORY == pFile->legacyFileType)
             {
@@ -313,7 +313,7 @@ HRESULT LegacyProductMachineToDb(
                 {
                     hr = S_OK;
                 }
-                ExitOnFailure1(hr, "Failed to write files to settings engine from directory: %ls", pFile->sczExpandedPath);
+                ExitOnFailure(hr, "Failed to write files to settings engine from directory: %ls", pFile->sczExpandedPath);
             }
             else if (LEGACY_FILE_PLAIN == pFile->legacyFileType)
             {
@@ -322,7 +322,7 @@ HRESULT LegacyProductMachineToDb(
                 {
                     hr = S_OK;
                 }
-                ExitOnFailure1(hr, "Failed to write individual file to settings engine from path: %ls", pFile->sczExpandedPath);
+                ExitOnFailure(hr, "Failed to write individual file to settings engine from path: %ls", pFile->sczExpandedPath);
             }
         }
     }
@@ -506,7 +506,7 @@ HRESULT LegacySyncPullDeletedValues(
     {
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to run query into VALUE_INDEX_TABLE table for AppID: %u", pcdb->dwAppID);
+    ExitOnFailure(hr, "Failed to run query into VALUE_INDEX_TABLE table for AppID: %u", pcdb->dwAppID);
 
     hr = SceGetNextResultRow(sqrhResults, &sceRow);
     while (E_NOTFOUND != hr)
@@ -531,7 +531,7 @@ HRESULT LegacySyncPullDeletedValues(
                 ExitOnFailure(hr, "Failed to set deleted value in memory");
 
                 hr = ValueWrite(pcdb, pcdb->dwAppID, sczName, &cvNewValue, TRUE);
-                ExitOnFailure1(hr, "Failed to write deleted value to db: %ls", sczName);
+                ExitOnFailure(hr, "Failed to write deleted value to db: %ls", sczName);
             }
         }
         ExitOnFailure(hr, "Failed to check if registry value exists in reg values seen database");
@@ -586,7 +586,7 @@ static HRESULT ProductDbToMachine(
     {
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to run query into VALUE_INDEX_TABLE table for AppID: %u", pcdb->dwAppID);
+    ExitOnFailure(hr, "Failed to run query into VALUE_INDEX_TABLE table for AppID: %u", pcdb->dwAppID);
 
     hr = SceGetNextResultRow(sqrhResults, &sceRow);
     while (E_NOTFOUND != hr)
@@ -597,7 +597,7 @@ static HRESULT ProductDbToMachine(
         ExitOnFailure(hr, "Failed to get name from row while querying VALUE_INDEX_TABLE table");
 
         hr = FilterCheckValue(&pSyncProductSession->product, sczName, &fIgnore, NULL);
-        ExitOnFailure1(hr, "Failed to check if cfg setting should be ignored: %ls", sczName);
+        ExitOnFailure(hr, "Failed to check if cfg setting should be ignored: %ls", sczName);
 
         if (!fIgnore)
         {
@@ -617,24 +617,24 @@ static HRESULT ProductDbToMachine(
 
             ReleaseNullCfgValue(cvValue);
             hr = ValueRead(pcdb, sceRow, &cvValue);
-            ExitOnFailure1(hr, "Failed to read value %ls", sczName);
+            ExitOnFailure(hr, "Failed to read value %ls", sczName);
 
             if (!fHandled)
             {
                 hr = RegDefaultWriteValue(&pSyncProductSession->product, sczName, &cvValue, &fHandled);
-                ExitOnFailure1(hr, "Failed to write value through registry default handler: %ls", sczName);
+                ExitOnFailure(hr, "Failed to write value through registry default handler: %ls", sczName);
             }
 
             if (!fHandled)
             {
                 hr = IniFileSetValue(pSyncProductSession, sczName, &cvValue, &fHandled);
-                ExitOnFailure1(hr, "Failed to write registry value through ini handler: %ls", sczName);
+                ExitOnFailure(hr, "Failed to write registry value through ini handler: %ls", sczName);
             }
 
             if (!fHandled)
             {
                 hr = DirDefaultWriteFile(&pSyncProductSession->product, sczName, &cvValue, &fHandled);
-                ExitOnFailure1(hr, "Failed to write file through default handler: %ls", sczName);
+                ExitOnFailure(hr, "Failed to write file through default handler: %ls", sczName);
             }
         }
 
@@ -688,7 +688,7 @@ static HRESULT DeleteEmptyRegistryKeyChildren(
     {
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to open regkey: %ls", wzSubKey);
+    ExitOnFailure(hr, "Failed to open regkey: %ls", wzSubKey);
 
     if (E_NOMOREITEMS == RegValueEnum(hkKey, dwIndex, &sczValueName, NULL))
     {
@@ -699,7 +699,7 @@ static HRESULT DeleteEmptyRegistryKeyChildren(
     dwIndex = 0;
     while (E_NOMOREITEMS != (hr = RegKeyEnum(hkKey, dwIndex, &sczSubkeyName)))
     {
-        ExitOnFailure1(hr, "Failed to enumerate key %u", dwIndex);
+        ExitOnFailure(hr, "Failed to enumerate key %u", dwIndex);
 
         hr = StrAllocString(&sczSubkeyPath, wzSubKey, 0);
         ExitOnFailure(hr, "Failed to allocate copy of subkey name");
@@ -709,7 +709,7 @@ static HRESULT DeleteEmptyRegistryKeyChildren(
         if (0 == dwSubKeyPathLen)
         {
             hr = E_INVALIDARG;
-            ExitOnFailure1(hr, "Encountered empty keyname while enumerating subkeys under key: %ls", wzSubKey);
+            ExitOnFailure(hr, "Encountered empty keyname while enumerating subkeys under key: %ls", wzSubKey);
         }
         else if (L'\\' != sczSubkeyPath[dwSubKeyPathLen - 1])
         {
@@ -727,14 +727,14 @@ static HRESULT DeleteEmptyRegistryKeyChildren(
             ++dwIndex;
             hr = S_OK;
         }
-        ExitOnFailure2(hr, "Failed to read regkey and write settings for root: %u, subkey: %ls", dwRoot, sczSubkeyPath);
+        ExitOnFailure(hr, "Failed to read regkey and write settings for root: %u, subkey: %ls", dwRoot, sczSubkeyPath);
     }
 
     // If there are no keys and no values under it, delete it
     if (fNoValues && 0 == dwIndex)
     {
         hr = RegDelete(ManifestConvertToRootKey(dwRoot), wzSubKey, REG_KEY_DEFAULT, FALSE);
-        ExitOnFailure2(hr, "Failed to delete registry key at root: %u, subkey: %ls", dwRoot, wzSubKey);
+        ExitOnFailure(hr, "Failed to delete registry key at root: %u, subkey: %ls", dwRoot, wzSubKey);
 
         ExitFunction1(hr = S_OK);
     }
@@ -772,7 +772,7 @@ static HRESULT DeleteEmptyRegistryKeys(
             hr = S_OK;
             continue;
         }
-        ExitOnFailure2(hr, "Failed to check for empty keys and delete them at root: %u, subkey: %ls", rgRegKeys[i].dwRoot, rgRegKeys[i].sczKey);
+        ExitOnFailure(hr, "Failed to check for empty keys and delete them at root: %u, subkey: %ls", rgRegKeys[i].dwRoot, rgRegKeys[i].sczKey);
 
         hr = StrAllocString(&sczParentKey, rgRegKeys[i].sczKey, 0);
         ExitOnFailure(hr, "Failed to allocate copy of subkey");
@@ -843,7 +843,7 @@ static HRESULT DeleteEmptyDirectoryChildren(
         {
             ExitFunction();
         }
-        ExitWithLastError1(hr, "Failed to find first file with query: %ls", sczSubDirWithWildcard);
+        ExitWithLastError(hr, "Failed to find first file with query: %ls", sczSubDirWithWildcard);
     }
 
     do
@@ -862,13 +862,13 @@ static HRESULT DeleteEmptyDirectoryChildren(
         }
 
         hr = PathConcat(wzPath, wfd.cFileName, &sczPath);
-        ExitOnFailure2(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzPath);
+        ExitOnFailure(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzPath);
 
         // If we found a directory, recurse!
         if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
             hr = PathBackslashTerminate(&sczPath);
-            ExitOnFailure1(hr, "Failed to ensure path is backslash terminated: %ls", sczPath);
+            ExitOnFailure(hr, "Failed to ensure path is backslash terminated: %ls", sczPath);
 
             hr = DeleteEmptyDirectoryChildren(sczPath);
             if (HRESULT_FROM_WIN32(ERROR_DIR_NOT_EMPTY) == hr)
@@ -877,14 +877,14 @@ static HRESULT DeleteEmptyDirectoryChildren(
             }
             else
             {
-                ExitOnFailure1(hr, "Failed to recurse to directory: %ls", sczPath);
+                ExitOnFailure(hr, "Failed to recurse to directory: %ls", sczPath);
 
                 hr = DirEnsureDelete(sczPath, FALSE, FALSE);
                 if (HRESULT_FROM_WIN32(ERROR_DIR_NOT_EMPTY) == hr)
                 {
                     hr = S_OK;
                 }
-                ExitOnFailure1(hr, "Failed to delete directory: %ls", sczPath);
+                ExitOnFailure(hr, "Failed to delete directory: %ls", sczPath);
             }
         }
         else
@@ -901,7 +901,7 @@ static HRESULT DeleteEmptyDirectoryChildren(
     }
     else
     {
-        ExitWithLastError1(hr, "Failed while looping through files in directory: %ls", wzPath);
+        ExitWithLastError(hr, "Failed while looping through files in directory: %ls", wzPath);
     }
 
 LExit:
@@ -948,7 +948,7 @@ static HRESULT DeleteEmptyDirectory(
         {
             ExitFunction1(hr = S_OK);
         }
-        ExitOnFailure1(hr, "Failed to check for empty directories and delete them at path: %ls", wzPath);
+        ExitOnFailure(hr, "Failed to check for empty directories and delete them at path: %ls", wzPath);
     }
 
     hr = StrAllocString(&sczParentDirectory, wzPath, 0);
@@ -1012,14 +1012,14 @@ static HRESULT DeleteEmptyDirectories(
         }
 
         hr = DeleteEmptyDirectory(rgFiles[i].legacyFileType, rgFiles[i].sczExpandedPath);
-        ExitOnFailure1(hr, "Failed to scan for and delete empty directories for %ls", rgFiles[i].sczExpandedPath);
+        ExitOnFailure(hr, "Failed to scan for and delete empty directories for %ls", rgFiles[i].sczExpandedPath);
 
         // Delete the virtual store file as well
         hr = UtilConvertToVirtualStorePath(rgFiles[i].sczExpandedPath, &sczVirtualStorePath);
-        ExitOnFailure1(hr, "Failed to convert to virtualstore path: %ls", rgFiles[i].sczExpandedPath);
+        ExitOnFailure(hr, "Failed to convert to virtualstore path: %ls", rgFiles[i].sczExpandedPath);
 
         hr = DeleteEmptyDirectory(rgFiles[i].legacyFileType, sczVirtualStorePath);
-        ExitOnFailure1(hr, "Falied to delete scan for and delete empty virtual store directories for %ls", sczVirtualStorePath);
+        ExitOnFailure(hr, "Falied to delete scan for and delete empty virtual store directories for %ls", sczVirtualStorePath);
     }
 
 LExit:
@@ -1062,7 +1062,7 @@ static HRESULT UpdateProductRegistrationState(
     }
 
     hr = ProductRegister(pcdb, wzName, wzVersion, wzLegacyPublicKey, fRegistered);
-    ExitOnFailure3(hr, "Failed to update product registration state for product: '%ls', '%ls', '%ls'", wzName, wzVersion, wzLegacyPublicKey);
+    ExitOnFailure(hr, "Failed to update product registration state for product: '%ls', '%ls', '%ls'", wzName, wzVersion, wzLegacyPublicKey);
 
 LExit:
     return hr;
@@ -1094,7 +1094,7 @@ static HRESULT ReadDirWriteLegacyDbHelp(
         {
             ExitFunction();
         }
-        ExitWithLastError1(hr, "Failed to find first file with query: %ls", sczSubDirWithWildcard);
+        ExitWithLastError(hr, "Failed to find first file with query: %ls", sczSubDirWithWildcard);
     }
 
     do
@@ -1113,21 +1113,21 @@ static HRESULT ReadDirWriteLegacyDbHelp(
         }
 
         hr = PathConcat(wzSubDir, wfd.cFileName, &sczFileName);
-        ExitOnFailure2(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzSubDir);
+        ExitOnFailure(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzSubDir);
 
         // If we found a directory, recurse!
         if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
             hr = PathBackslashTerminate(&sczFileName);
-            ExitOnFailure1(hr, "Failed to ensure path is backslash terminated: %ls", sczFileName);
+            ExitOnFailure(hr, "Failed to ensure path is backslash terminated: %ls", sczFileName);
 
             hr = ReadDirWriteLegacyDb(pcdb, pSyncProductSession, pFile, sczFileName);
-            ExitOnFailure1(hr, "Failed to recurse to directory: %ls", sczFileName);
+            ExitOnFailure(hr, "Failed to recurse to directory: %ls", sczFileName);
         }
         else
         {
             hr = ReadFileWriteLegacyDb(pcdb, pSyncProductSession, pFile, sczFileName, FALSE);
-            ExitOnFailure1(hr, "Failed while processing file: %ls", sczFileName);
+            ExitOnFailure(hr, "Failed while processing file: %ls", sczFileName);
         }
     }
     while (::FindNextFileW(hFind, &wfd));
@@ -1139,7 +1139,7 @@ static HRESULT ReadDirWriteLegacyDbHelp(
     }
     else
     {
-        ExitWithLastError1(hr, "Failed while looping through files in directory: %ls", wzSubDir);
+        ExitWithLastError(hr, "Failed while looping through files in directory: %ls", wzSubDir);
     }
 
 LExit:
@@ -1174,7 +1174,7 @@ static HRESULT ReadRegValueWriteLegacyDb(
     if (lstrlenW(pRegKey->sczKey) > lstrlenW(wzRegKey))
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Legacy registry key %ls was longer than the registry key sent to ReadRegValueWriteLegacyDb, %ls", pRegKey->sczKey, wzRegKey);
+        ExitOnFailure(hr, "Legacy registry key %ls was longer than the registry key sent to ReadRegValueWriteLegacyDb, %ls", pRegKey->sczKey, wzRegKey);
     }
 
     // Make the key reflect only the sub-portion under the original base key path
@@ -1186,7 +1186,7 @@ static HRESULT ReadRegValueWriteLegacyDb(
     
     // Pass the value up to check for special handling first
     hr = RegSpecialValueRead(pcdb, pSyncProductSession, pRegKey, hkKey, wzRegKey, wzValueName, dwType, &fContinueProcessing);
-    ExitOnFailure2(hr, "Failed to appropriately check for and handle special registry value, subkey: %ls, value: %ls", wzRegKey, wzValueName);
+    ExitOnFailure(hr, "Failed to appropriately check for and handle special registry value, subkey: %ls, value: %ls", wzRegKey, wzValueName);
 
     // If special handling tells us to avoid normal processing for this value, skip it
     if (!fContinueProcessing)
@@ -1195,7 +1195,7 @@ static HRESULT ReadRegValueWriteLegacyDb(
     }
 
     hr = RegDefaultReadValue(pcdb, pSyncProductSession, pRegKey->sczNamespace, hkKey, wzRegKey, wzValueName, dwType);
-    ExitOnFailure3(hr, "Failed to read registry with default handler valuetype: %u, key: %ls, named: %ls", dwType, wzRegKey, wzValueName);
+    ExitOnFailure(hr, "Failed to read registry with default handler valuetype: %u, key: %ls, named: %ls", dwType, wzRegKey, wzValueName);
 
 LExit:
     return hr;
@@ -1221,15 +1221,15 @@ static HRESULT ReadRegKeyWriteLegacyDb(
     {
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to open regkey: %ls", wzSubKey);
+    ExitOnFailure(hr, "Failed to open regkey: %ls", wzSubKey);
 
     dwIndex = 0;
     while (E_NOMOREITEMS != (hr = RegValueEnum(hkKey, dwIndex, &sczValueName, &dwType)))
     {
-        ExitOnFailure1(hr, "Failed to enumerate value %u", dwIndex);
+        ExitOnFailure(hr, "Failed to enumerate value %u", dwIndex);
 
         hr = ReadRegValueWriteLegacyDb(pcdb, pSyncProductSession, pRegKey, hkKey, wzSubKey, sczValueName, dwType);
-        ExitOnFailure1(hr, "Failed to write registry value setting: %ls", sczValueName);
+        ExitOnFailure(hr, "Failed to write registry value setting: %ls", sczValueName);
 
         ++dwIndex;
     }
@@ -1238,7 +1238,7 @@ static HRESULT ReadRegKeyWriteLegacyDb(
     dwIndex = 0;
     while (E_NOMOREITEMS != (hr = RegKeyEnum(hkKey, dwIndex, &sczSubkeyName)))
     {
-        ExitOnFailure1(hr, "Failed to enumerate key %u", dwIndex);
+        ExitOnFailure(hr, "Failed to enumerate key %u", dwIndex);
 
         hr = StrAllocString(&sczSubkeyPath, wzSubKey, 0);
         ExitOnFailure(hr, "Failed to allocate copy of subkey name");
@@ -1250,7 +1250,7 @@ static HRESULT ReadRegKeyWriteLegacyDb(
         ExitOnFailure(hr, "Failed to concatenate subkey name to subkey path");
 
         hr = ReadRegKeyWriteLegacyDb(pcdb, pSyncProductSession, pRegKey, sczSubkeyPath);
-        ExitOnFailure2(hr, "Failed to read regkey and write settings for root: %u, subkey: %ls", pRegKey->dwRoot, sczSubkeyPath);
+        ExitOnFailure(hr, "Failed to read regkey and write settings for root: %u, subkey: %ls", pRegKey->dwRoot, sczSubkeyPath);
 
         ++dwIndex;
     }
@@ -1286,7 +1286,7 @@ static HRESULT ReadFileWriteLegacyDb(
     if (lstrlenW(pFile->sczExpandedPath) > lstrlenW(wzFilePath))
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Legacy file path %ls was longer than the file path sent to ReadFileWriteLegacyDb, %ls", pFile->sczExpandedPath, wzFilePath);
+        ExitOnFailure(hr, "Legacy file path %ls was longer than the file path sent to ReadFileWriteLegacyDb, %ls", pFile->sczExpandedPath, wzFilePath);
     }
 
     // Make the key reflect only the sub-portion under the original base key path
@@ -1308,16 +1308,16 @@ static HRESULT ReadFileWriteLegacyDb(
         {
             ExitFunction();
         }
-        ExitOnFailure1(hr, "Failed to check for write access to directory of file: %ls", wzFilePath);
+        ExitOnFailure(hr, "Failed to check for write access to directory of file: %ls", wzFilePath);
 
         if (!fWritePermission)
         {
             hr = UtilConvertToVirtualStorePath(wzFilePath, &sczVirtualStorePath);
-            ExitOnFailure1(hr, "Failed to convert file path to virtualstore path: %ls", wzFilePath);
+            ExitOnFailure(hr, "Failed to convert file path to virtualstore path: %ls", wzFilePath);
 
             // Pass the value up to check for special handling first
             hr = DirSpecialFileRead(pcdb, pSyncProductSession, pFile, sczVirtualStorePath, wzSubPath, &fContinueProcessing);
-            ExitOnFailure1(hr, "Failed to appropriately check for and handle special directory file under virtualstore, file path: %ls", wzFilePath);
+            ExitOnFailure(hr, "Failed to appropriately check for and handle special directory file under virtualstore, file path: %ls", wzFilePath);
 
             // If special handling tells us to avoid normal processing for this file, skip it
             if (!fContinueProcessing)
@@ -1326,7 +1326,7 @@ static HRESULT ReadFileWriteLegacyDb(
             }
 
             hr = DirDefaultReadFile(pcdb, pSyncProductSession, pFile->sczName, sczVirtualStorePath, NULL);
-            ExitOnFailure1(hr, "Failed to read virtualstore file with default handler, path: %ls", sczVirtualStorePath);
+            ExitOnFailure(hr, "Failed to read virtualstore file with default handler, path: %ls", sczVirtualStorePath);
 
             // Check if DirDefaultReadFile found the file or not
             hr = DictKeyExists(pSyncProductSession->shDictValuesSeen, pFile->sczName);
@@ -1336,7 +1336,7 @@ static HRESULT ReadFileWriteLegacyDb(
             }
             else
             {
-                ExitOnFailure1(hr, "Failed to check if file was seen under virtual store path: %ls", pFile->sczName);
+                ExitOnFailure(hr, "Failed to check if file was seen under virtual store path: %ls", pFile->sczName);
 
                 // It saw the file, so let's not proceed to check the non-virtualstore path
                 ExitFunction1(hr = S_OK);
@@ -1346,7 +1346,7 @@ static HRESULT ReadFileWriteLegacyDb(
 
     // Pass the value up to check for special handling first
     hr = DirSpecialFileRead(pcdb, pSyncProductSession, pFile, wzFilePath, wzSubPath, &fContinueProcessing);
-    ExitOnFailure1(hr, "Failed to appropriately check for and handle special directory file, file path: %ls", wzFilePath);
+    ExitOnFailure(hr, "Failed to appropriately check for and handle special directory file, file path: %ls", wzFilePath);
 
     // If special handling tells us to avoid normal processing for this file, skip it
     if (!fContinueProcessing)
@@ -1355,7 +1355,7 @@ static HRESULT ReadFileWriteLegacyDb(
     }
 
     hr = DirDefaultReadFile(pcdb, pSyncProductSession, pFile->sczName, wzFilePath, wzSubPath);
-    ExitOnFailure1(hr, "Failed to read file with default handler, path: %ls", wzFilePath);
+    ExitOnFailure(hr, "Failed to read file with default handler, path: %ls", wzFilePath);
 
 LExit:
     ReleaseStr(sczVirtualStorePath);
@@ -1381,18 +1381,18 @@ static HRESULT ReadDirWriteLegacyDb(
         fWritePermission = FALSE;
         hr = S_OK;
     }
-    ExitOnFailure1(hr, "Failed to check for write access to directory: %ls", wzSubDir);
+    ExitOnFailure(hr, "Failed to check for write access to directory: %ls", wzSubDir);
 
     if (!fWritePermission)
     {
         // If we don't have write permission to the directory, prefer files in virtualstore
         hr = UtilConvertToVirtualStorePath(wzSubDir, &sczFullPathToVirtualDirectory);
-        ExitOnFailure1(hr, "Failed to get path equivalent under virtualstore for directory: %ls", sczFullPathToVirtualDirectory);
+        ExitOnFailure(hr, "Failed to get path equivalent under virtualstore for directory: %ls", sczFullPathToVirtualDirectory);
 
         // Make the LEGACY_FILE struct temporarily appear as though its natural base path was under virtualstore
         pFile->sczExpandedPath = sczFullPathToVirtualDirectory;
         hr = ReadDirWriteLegacyDbHelp(pcdb, pSyncProductSession, pFile, sczFullPathToVirtualDirectory);
-        ExitOnFailure1(hr, "Failed to read files out of virtual store subdirectory: %ls", sczFullPathToVirtualDirectory);
+        ExitOnFailure(hr, "Failed to read files out of virtual store subdirectory: %ls", sczFullPathToVirtualDirectory);
 
         // Restore it back so it isn't pointing to virtualstore anymore
         pFile->sczExpandedPath = wzFullPathBackup;
@@ -1403,7 +1403,7 @@ static HRESULT ReadDirWriteLegacyDb(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to read files out of subdirectory: %ls", wzSubDir);
+    ExitOnFailure(hr, "Failed to read files out of subdirectory: %ls", wzSubDir);
 
 LExit:
     ReleaseStr(sczFullPathToVirtualDirectory);

@@ -39,7 +39,7 @@ HRESULT DatabaseGetUserDir(
     else
     {
         hr = PathGetKnownFolder(CSIDL_LOCAL_APPDATA, &sczPath);
-        ExitOnFailure1(hr, "Failed to get known folder with ID CSIDL_LOCAL_APPDATA", CSIDL_LOCAL_APPDATA);
+        ExitOnFailure(hr, "Failed to get known folder with ID CSIDL_LOCAL_APPDATA", CSIDL_LOCAL_APPDATA);
 
         hr = PathConcat(sczPath, L"Wix\\SettingsStore\\", psczDbFileDir);
         ExitOnFailure(hr, "Failed to concatenate settingsstore subpath to path");
@@ -318,7 +318,7 @@ HRESULT DatabaseGetAdminDir(
     else
     {
         hr = PathGetKnownFolder(CSIDL_WINDOWS, &sczPath);
-        ExitOnFailure1(hr, "Failed to get known folder with ID CSIDL_WINDOWS", CSIDL_WINDOWS);
+        ExitOnFailure(hr, "Failed to get known folder with ID CSIDL_WINDOWS", CSIDL_WINDOWS);
 
         hr = PathConcat(sczPath, L"Wix\\SettingsStore\\", psczDbFileDir);
         ExitOnFailure(hr, "Failed to concatenate settingsstore subpath to path");

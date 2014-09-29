@@ -223,13 +223,13 @@ extern "C" HRESULT ContainerOpen(
     if (INVALID_HANDLE_VALUE == hContainerFile)
     {
         pContext->hFile = ::CreateFileW(wzFilePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-        ExitOnInvalidHandleWithLastError1(pContext->hFile, hr, "Failed to open file: %ls", wzFilePath);
+        ExitOnInvalidHandleWithLastError(pContext->hFile, hr, "Failed to open file: %ls", wzFilePath);
     }
     else // use the container file handle.
     {
         if (!::DuplicateHandle(::GetCurrentProcess(), hContainerFile, ::GetCurrentProcess(), &pContext->hFile, 0, FALSE, DUPLICATE_SAME_ACCESS))
         {
-            ExitWithLastError1(hr, "Failed to duplicate handle to container: %ls", wzFilePath);
+            ExitWithLastError(hr, "Failed to duplicate handle to container: %ls", wzFilePath);
         }
     }
 

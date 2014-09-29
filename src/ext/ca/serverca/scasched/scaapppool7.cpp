@@ -39,18 +39,18 @@ HRESULT ScaFindAppPool7(
             break;
         }
     }
-    ExitOnNull1(psap, hr, HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "Could not find the app pool: %ls", wzAppPool);
+    ExitOnNull(psap, hr, HRESULT_FROM_WIN32(ERROR_NOT_FOUND), "Could not find the app pool: %ls", wzAppPool);
 
     // copy the web app pool name
 #pragma prefast(suppress:26037, "Source string is null terminated - it is populated as target of ::StringCchCopyW")
     hr = ::StringCchCopyW(wzName, cchName, psap->wzName);
-    ExitOnFailure1(hr, "failed to copy app pool name while finding app pool: %ls", psap->wzName);
+    ExitOnFailure(hr, "failed to copy app pool name while finding app pool: %ls", psap->wzName);
 
     // if it's not being installed now, check if it exists already
     if (!psap->fHasComponent)
     {
         hr = AppPoolExists(psap->wzName);
-        ExitOnFailure1(hr, "failed to check for existence of app pool: %ls", psap->wzName);
+        ExitOnFailure(hr, "failed to check for existence of app pool: %ls", psap->wzName);
     }
 
 LExit:
@@ -83,7 +83,7 @@ HRESULT ScaAppPoolInstall7(
         if (psap->fHasComponent && WcaIsInstalling(psap->isInstalled, psap->isAction))
         {
             hr = ScaWriteAppPool7(psap);
-            ExitOnFailure1(hr, "failed to write AppPool '%ls' to metabase", psap->wzAppPool);
+            ExitOnFailure(hr, "failed to write AppPool '%ls' to metabase", psap->wzAppPool);
         }
     }
 
@@ -105,7 +105,7 @@ HRESULT ScaAppPoolUninstall7(
         if (psap->fHasComponent && WcaIsUninstalling(psap->isInstalled, psap->isAction))
         {
             hr = ScaRemoveAppPool7(psap);
-            ExitOnFailure1(hr, "Failed to remove AppPool '%ls' from metabase", psap->wzAppPool);
+            ExitOnFailure(hr, "Failed to remove AppPool '%ls' from metabase", psap->wzAppPool);
         }
     }
 
@@ -133,7 +133,7 @@ HRESULT ScaWriteAppPool7(
     ExitOnFailure(hr, "failed to write AppPool create action.");
 
     hr = ScaWriteConfigString(psap->wzName);
-    ExitOnFailure1(hr, "failed to write AppPool name: %ls", psap->wzName);
+    ExitOnFailure(hr, "failed to write AppPool name: %ls", psap->wzName);
 
     // Now do all the optional stuff
 
@@ -207,7 +207,7 @@ HRESULT ScaWriteAppPool7(
         dwPercent = wcstoul(pwzValue, &wz, 10);
         if (100  < dwPercent)
         {
-            ExitOnFailure1(hr = E_INVALIDARG, "invalid maximum cpu percentage value: %d", dwPercent);
+            ExitOnFailure(hr = E_INVALIDARG, "invalid maximum cpu percentage value: %d", dwPercent);
         }
         if (wz && L',' == *wz)
         {
@@ -335,12 +335,12 @@ HRESULT ScaWriteAppPool7(
             if (*psap->suUser.wzDomain)
             {
                 hr = StrAllocFormatted(&pwzValue, L"%s\\%s", psap->suUser.wzDomain, psap->suUser.wzName);
-                ExitOnFailure2(hr, "failed to format user name: %ls domain: %ls", psap->suUser.wzName, psap->suUser.wzDomain);
+                ExitOnFailure(hr, "failed to format user name: %ls domain: %ls", psap->suUser.wzName, psap->suUser.wzDomain);
             }
             else
             {
                 hr = StrAllocFormatted(&pwzValue, L"%s", psap->suUser.wzName);
-                ExitOnFailure1(hr, "failed to format user name: %ls", psap->suUser.wzName);
+                ExitOnFailure(hr, "failed to format user name: %ls", psap->suUser.wzName);
             }
 
             hr = ScaWriteConfigID(IIS_APPPOOL_USER);
@@ -404,7 +404,7 @@ HRESULT ScaRemoveAppPool7(
         ExitOnFailure(hr, "failed to write AppPool delete action.");
 
         hr = ScaWriteConfigString(psap->wzName);
-        ExitOnFailure1(hr, "failed to delete AppPool: %ls", psap->wzName);
+        ExitOnFailure(hr, "failed to delete AppPool: %ls", psap->wzName);
     }
 
 LExit:

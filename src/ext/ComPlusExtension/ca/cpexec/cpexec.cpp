@@ -62,7 +62,7 @@ extern "C" UINT __stdcall ComPlusPrepare(MSIHANDLE hInstall)
     // create rollback file
     hRollbackFile = ::CreateFileW(pwzData, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_TEMPORARY, NULL);
     if (INVALID_HANDLE_VALUE == hRollbackFile)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to create rollback file, name: %S", pwzData);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to create rollback file, name: %S", pwzData);
 
     hr = S_OK;
 
@@ -156,7 +156,7 @@ extern "C" UINT __stdcall ComPlusInstallExecute(MSIHANDLE hInstall)
 
     hRollbackFile = ::CreateFileW(pwzRollbackFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_TEMPORARY, NULL);
     if (INVALID_HANDLE_VALUE == hRollbackFile)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
 
     // create partitions
     hr = CpiConfigurePartitions(&pwzData, hRollbackFile);
@@ -262,7 +262,7 @@ extern "C" UINT __stdcall ComPlusInstallExecuteCommit(MSIHANDLE hInstall)
 
     hRollbackFile = ::CreateFileW(pwzRollbackFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_TEMPORARY, NULL);
     if (INVALID_HANDLE_VALUE == hRollbackFile)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
 
     if (INVALID_SET_FILE_POINTER == ::SetFilePointer(hRollbackFile, 0, NULL, FILE_END))
         ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to set file pointer");
@@ -350,7 +350,7 @@ extern "C" UINT __stdcall ComPlusRollbackInstallExecute(MSIHANDLE hInstall)
 
     hRollbackFile = ::CreateFileW(pwzRollbackFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_TEMPORARY, NULL);
     if (INVALID_HANDLE_VALUE == hRollbackFile)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
 
     // read rollback data (execute)
     hr = CpiReadRollbackDataList(hRollbackFile, &prdPartitions);
@@ -497,7 +497,7 @@ extern "C" UINT __stdcall ComPlusUninstallExecute(MSIHANDLE hInstall)
 
     hRollbackFile = ::CreateFileW(pwzRollbackFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_TEMPORARY, NULL);
     if (INVALID_HANDLE_VALUE == hRollbackFile)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
 
     // delete subscriptions
     hr = CpiConfigureSubscriptions(&pwzData, hRollbackFile);
@@ -613,7 +613,7 @@ extern "C" UINT __stdcall ComPlusRollbackUninstallExecute(MSIHANDLE hInstall)
 
     hRollbackFile = ::CreateFileW(pwzRollbackFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_TEMPORARY, NULL);
     if (INVALID_HANDLE_VALUE == hRollbackFile)
-        ExitOnFailure1(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
+        ExitOnFailure(hr = HRESULT_FROM_WIN32(::GetLastError()), "Failed to open rollback file, name: %S", pwzRollbackFileName);
 
     // read rollback data
     hr = CpiReadRollbackDataList(hRollbackFile, &prdSubscriptions);

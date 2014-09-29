@@ -49,7 +49,7 @@ extern "C" HRESULT DAPI ProcExecuteAsInteractiveUser(
     si.cb = sizeof(si);
     if (!::CreateProcessAsUserW(hToken, wzExecutablePath, sczFullCommandLine, NULL, NULL, FALSE, CREATE_UNICODE_ENVIRONMENT, pEnvironment, NULL, &si, &pi))
     {
-        ExitWithLastError1(hr, "Failed to create UI process: %ls", sczFullCommandLine);
+        ExitWithLastError(hr, "Failed to create UI process: %ls", sczFullCommandLine);
     }
 
     *phProcess = pi.hProcess;

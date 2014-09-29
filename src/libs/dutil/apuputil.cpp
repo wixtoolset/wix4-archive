@@ -477,7 +477,7 @@ static HRESULT FilterEntries(
             DWORD cNewFilteredEntries = *pcFilteredEntries + 1;
 
             hr = ::SizeTMult(sizeof(APPLICATION_UPDATE_ENTRY), cNewFilteredEntries, &cbAllocSize);
-            ExitOnFailure1(hr, "Overflow while calculating alloc size for more entries - number of entries: %u", cNewFilteredEntries);
+            ExitOnFailure(hr, "Overflow while calculating alloc size for more entries - number of entries: %u", cNewFilteredEntries);
 
             if (*prgFilteredEntries)
             {

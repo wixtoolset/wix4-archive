@@ -34,28 +34,28 @@ namespace CfgTests
             if (dwIndex >= dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Planned to check product at index %u, but only %u products exist in the data store!", dwIndex, dwCount);
+                ExitOnFailure(hr, "Planned to check product at index %u, but only %u products exist in the data store!", dwIndex, dwCount);
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_PRODUCTNAME, &wzString);
             if (0 != lstrcmpW(wzString, wzProductName))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected product name: %ls, found product name:%ls", wzProductName, wzString);
+                ExitOnFailure(hr, "Expected product name: %ls, found product name:%ls", wzProductName, wzString);
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_VERSION, &wzString);
             if (0 != lstrcmpW(wzString, wzVersion))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected version: %ls, found version:%ls", wzVersion, wzString);
+                ExitOnFailure(hr, "Expected version: %ls, found version:%ls", wzVersion, wzString);
             }
 
             hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_PUBLICKEY, &wzString);
             if (0 != lstrcmpW(wzString, wzPublicKey))
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected public key: %ls, found public key:%ls", wzPublicKey, wzString);
+                ExitOnFailure(hr, "Expected public key: %ls, found public key:%ls", wzPublicKey, wzString);
             }
 
         LExit:
@@ -74,7 +74,7 @@ namespace CfgTests
             if (dwExpectedNumber != dwCount)
             {
                 hr = E_FAIL;
-                ExitOnFailure2(hr, "Expected %u products registered, but found %u products!", dwExpectedNumber, dwCount);
+                ExitOnFailure(hr, "Expected %u products registered, but found %u products!", dwExpectedNumber, dwCount);
             }
 
         LExit:

@@ -32,12 +32,12 @@ HRESULT SendDwordString(
     if (NULL != wzString1)
     {
         hr = StrAllocString(&pDwordString->sczString1, wzString1, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string1: %ls", wzString1);
+        ExitOnFailure(hr, "Failed to allocate copy of string1: %ls", wzString1);
     }
 
     if (!::PostThreadMessageW(dwThreadId, dwMessageId, dwDatabaseIndex, reinterpret_cast<LPARAM>(pDwordString)))
     {
-        ExitWithLastError1(hr, "Failed to send message %u to worker thread", dwMessageId);
+        ExitWithLastError(hr, "Failed to send message %u to worker thread", dwMessageId);
     }
 
     pDwordString = NULL;
@@ -66,12 +66,12 @@ HRESULT SendQwordString(
     if (NULL != wzString1)
     {
         hr = StrAllocString(&pQwordString->sczString1, wzString1, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string1: %ls", wzString1);
+        ExitOnFailure(hr, "Failed to allocate copy of string1: %ls", wzString1);
     }
 
     if (!::PostThreadMessageW(dwThreadId, dwMessageId, dwDatabaseIndex, reinterpret_cast<LPARAM>(pQwordString)))
     {
-        ExitWithLastError1(hr, "Failed to send message %u to worker thread", dwMessageId);
+        ExitWithLastError(hr, "Failed to send message %u to worker thread", dwMessageId);
     }
 
     pQwordString = NULL;
@@ -98,18 +98,18 @@ HRESULT SendStringPair(
     if (NULL != wzString1)
     {
         hr = StrAllocString(&pStringPair->sczString1, wzString1, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string1: %ls", wzString1);
+        ExitOnFailure(hr, "Failed to allocate copy of string1: %ls", wzString1);
     }
 
     if (NULL != wzString2)
     {
         hr = StrAllocString(&pStringPair->sczString2, wzString2, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string2: %ls", wzString2);
+        ExitOnFailure(hr, "Failed to allocate copy of string2: %ls", wzString2);
     }
 
     if (!::PostThreadMessageW(dwThreadId, dwMessageId, dwDatabaseIndex, reinterpret_cast<LPARAM>(pStringPair)))
     {
-        ExitWithLastError1(hr, "Failed to send message %u to worker thread", dwMessageId);
+        ExitWithLastError(hr, "Failed to send message %u to worker thread", dwMessageId);
     }
 
     pStringPair = NULL;
@@ -137,24 +137,24 @@ HRESULT SendStringTriplet(
     if (NULL != wzString1)
     {
         hr = StrAllocString(&pStringTriplet->sczString1, wzString1, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string1: %ls", wzString1);
+        ExitOnFailure(hr, "Failed to allocate copy of string1: %ls", wzString1);
     }
 
     if (NULL != wzString2)
     {
         hr = StrAllocString(&pStringTriplet->sczString2, wzString2, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string2: %ls", wzString2);
+        ExitOnFailure(hr, "Failed to allocate copy of string2: %ls", wzString2);
     }
 
     if (NULL != wzString3)
     {
         hr = StrAllocString(&pStringTriplet->sczString3, wzString3, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string3: %ls", wzString3);
+        ExitOnFailure(hr, "Failed to allocate copy of string3: %ls", wzString3);
     }
 
     if (!::PostThreadMessageW(dwThreadId, dwMessageId, dwDatabaseIndex, reinterpret_cast<LPARAM>(pStringTriplet)))
     {
-        ExitWithLastError1(hr, "Failed to send message %u to worker thread", dwMessageId);
+        ExitWithLastError(hr, "Failed to send message %u to worker thread", dwMessageId);
     }
 
     pStringTriplet = NULL;
@@ -185,19 +185,19 @@ HRESULT SendBackgroundStatusCallback(
     if (NULL != wzString1)
     {
         hr = StrAllocString(&pBackgroundStatusCallback->sczString1, wzString1, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string1: %ls", wzString1);
+        ExitOnFailure(hr, "Failed to allocate copy of string1: %ls", wzString1);
     }
 
     if (NULL != wzString2)
     {
         hr = StrAllocString(&pBackgroundStatusCallback->sczString2, wzString2, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string2: %ls", wzString2);
+        ExitOnFailure(hr, "Failed to allocate copy of string2: %ls", wzString2);
     }
 
     if (NULL != wzString3)
     {
         hr = StrAllocString(&pBackgroundStatusCallback->sczString3, wzString3, 0);
-        ExitOnFailure1(hr, "Failed to allocate copy of string3: %ls", wzString3);
+        ExitOnFailure(hr, "Failed to allocate copy of string3: %ls", wzString3);
     }
 
     if (!::PostThreadMessageW(dwThreadId, WM_BROWSE_BACKGROUND_STATUS_CALLBACK, reinterpret_cast<WPARAM>(pBackgroundStatusCallback), 0))

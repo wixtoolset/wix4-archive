@@ -52,17 +52,17 @@ HRESULT CompressToCab(
     }
 
     hr = CabCBegin(PathFile(wzCabPath), wzTempDir, 1, 0, 0, compressionType, &hCab);
-    ExitOnFailure1(hr, "Failed to begin compressing stream into cab %ls", wzCabPath);
+    ExitOnFailure(hr, "Failed to begin compressing stream into cab %ls", wzCabPath);
     fFreeCab = TRUE;
 
     hr = FileWrite(wzTempFilePath, FILE_ATTRIBUTE_TEMPORARY, pbBuffer, cbBuffer, NULL);
-    ExitOnFailure1(hr, "Failed to write file out to path %ls", wzTempFilePath);
+    ExitOnFailure(hr, "Failed to write file out to path %ls", wzTempFilePath);
 
     hr = CabCAddFile(wzTempFilePath, wzCompressedTokenName, NULL, hCab);
-    ExitOnFailure2(hr, "Failed to add only file %ls to cab %ls", wzTempFilePath, wzCabPath);
+    ExitOnFailure(hr, "Failed to add only file %ls to cab %ls", wzTempFilePath, wzCabPath);
 
     hr = CabCFinish(hCab, NULL);
-    ExitOnFailure1(hr, "Failed to finish cab %ls", wzCabPath);
+    ExitOnFailure(hr, "Failed to finish cab %ls", wzCabPath);
     fFreeCab = FALSE;
 
     // Ignore failures
@@ -77,7 +77,7 @@ HRESULT CompressToCab(
     if (static_cast<LONGLONG>(DWORD_MAX) < llSize)
     {
         hr = E_FAIL;
-        ExitOnFailure1(hr, "CAB file bigger than DWORD can track: %ls", *psczPath);
+        ExitOnFailure(hr, "CAB file bigger than DWORD can track: %ls", *psczPath);
     }
 
     *pcbCompressedSize = static_cast<DWORD>(llSize);
@@ -110,13 +110,13 @@ HRESULT CompressFromCab(
     ExitOnFailure(hr, "Failed to get path to extracted cab file");
 
     hr = FileEnsureDelete(sczInputFile);
-    ExitOnFailure1(hr, "Failed to delete file: %ls", sczInputFile);
+    ExitOnFailure(hr, "Failed to delete file: %ls", sczInputFile);
 
     hr = CabExtract(wzPath, wzCompressedTokenName, wzTempDir, NULL, NULL, 0);
-    ExitOnFailure1(hr, "Failed to extract only file from cabinet: %ls", wzPath);
+    ExitOnFailure(hr, "Failed to extract only file from cabinet: %ls", wzPath);
 
     hr = FileRead(ppbFileBuffer, pcbSize, sczInputFile);
-    ExitOnFailure1(hr, "Failed to read extracted file: %ls", sczInputFile);
+    ExitOnFailure(hr, "Failed to read extracted file: %ls", sczInputFile);
 
 LExit:
     if (sczInputFile)
@@ -161,7 +161,7 @@ HRESULT CompressWriteStream(
         // then rolling back the transaction or crashing or losing connection to remote)
         // we'll leave a stream behind that db doesn't know about, and is possibly incomplete. So just overwrite it.
         hr = FileEnsureMove(sczCabPath, sczStreamPath, TRUE, TRUE);
-        ExitOnFailure2(hr, "Failed to move file from cab path %ls to stream path %ls", sczCabPath, sczStreamPath);
+        ExitOnFailure(hr, "Failed to move file from cab path %ls to stream path %ls", sczCabPath, sczStreamPath);
 
         ReleaseNullStr(sczCabPath);
     }
@@ -170,7 +170,7 @@ HRESULT CompressWriteStream(
         *pcfCompressionFormat = COMPRESSION_NONE;
 
         hr = FileWrite(sczStreamPath, EXTERNAL_STREAM_FILE_FLAGS, pbBuffer, cbBuffer, NULL);
-        ExitOnFailure2(hr, "Failed to write file stream of size %u to disk at location: %ls", cbBuffer, sczStreamPath);
+        ExitOnFailure(hr, "Failed to write file stream of size %u to disk at location: %ls", cbBuffer, sczStreamPath);
     }
 
     if (sczCabPath)
@@ -213,29 +213,29 @@ HRESULT CompressReadStream(
     {
     case COMPRESSION_CAB:
         hr = CompressFromCab(sczStreamPath, &pbContent, &cbContent);
-        ExitOnFailure1(hr, "Failed to read cab stream on disk: %ls", sczStreamPath);
+        ExitOnFailure(hr, "Failed to read cab stream on disk: %ls", sczStreamPath);
         break;
 
     case COMPRESSION_NONE:
         hr = FileRead(&pbContent, &cbContent, sczStreamPath);
-        ExitOnFailure1(hr, "Failed to read uncompressed stream file: %ls", sczStreamPath);
+        ExitOnFailure(hr, "Failed to read uncompressed stream file: %ls", sczStreamPath);
         break;
 
     default:
         hr = E_FAIL;
-        ExitOnFailure1(hr, "Unrecognized compression option found while reading stream from disk: %u", cfCompressionFormat);
+        ExitOnFailure(hr, "Unrecognized compression option found while reading stream from disk: %u", cfCompressionFormat);
         break;
     }
 
     if (NULL != ppbFileBuffer)
     {
         hr = StreamValidateFileMatchesHash(pbContent, cbContent, pbHash, &fMatches);
-        ExitOnFailure1(hr, "Failed to check if file at path matches expected hash: %ls", sczStreamPath);
+        ExitOnFailure(hr, "Failed to check if file at path matches expected hash: %ls", sczStreamPath);
 
         if (!fMatches)
         {
             hr = E_FAIL;
-            ExitOnFailure1(hr, "Stream file on disk appears to be corrupted: %ls", sczStreamPath);
+            ExitOnFailure(hr, "Stream file on disk appears to be corrupted: %ls", sczStreamPath);
         }
     }
 

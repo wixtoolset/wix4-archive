@@ -520,7 +520,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             wzWindowClass = WC_STATICW;
             break;
         }
-        ExitOnFailure1(hr, "Failed to configure control %u.", i);
+        ExitOnFailure(hr, "Failed to configure control %u.", i);
 
         // If the control has a window, set the other information.
         if (wzWindowClass)
@@ -573,7 +573,7 @@ DAPI_(HRESULT) ThemeLoadControls(
 
                     if (-1 == ::SendMessageW(pControl->hWnd, LVM_INSERTCOLUMNW, (WPARAM)(int)(j), (LPARAM)(const LV_COLUMNW *)(&lvc)))
                     {
-                        ExitWithLastError1(hr, "Failed to insert listview column %u into tab control", j);
+                        ExitWithLastError(hr, "Failed to insert listview column %u into tab control", j);
                     }
 
                     // Return value tells us old image list, we don't care
@@ -622,7 +622,7 @@ DAPI_(HRESULT) ThemeLoadControls(
 
                     if (-1 == ::SendMessageW(pControl->hWnd, TCM_INSERTITEMW, (WPARAM)(int)(j), (LPARAM)(const TC_ITEMW *)(&tci)))
                     {
-                        ExitWithLastError1(hr, "Failed to insert tab %u into tab control", j);
+                        ExitWithLastError(hr, "Failed to insert tab %u into tab control", j);
                     }
                 }
             }
@@ -978,7 +978,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                         {
                             if (-1 == ::SendMessageW(pTheme->rgControls[i].hWnd, LVM_SETCOLUMNWIDTH, (WPARAM)(int)(j), (LPARAM)(pTheme->rgControls[i].ptcColumns[j].nWidth)))
                             {
-                                Trace2(REPORT_DEBUG, "Failed to resize listview column %u with error %u", j, ::GetLastError());
+                                Trace(REPORT_DEBUG, "Failed to resize listview column %u with error %u", j, ::GetLastError());
                                 return 0;
                             }
                         }
@@ -1907,7 +1907,7 @@ static HRESULT ParseApplication(
         ReleaseNullBSTR(bstr);
 
         pTheme->hIcon = ::LoadImageW(NULL, sczIconFile, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
-        ExitOnNullWithLastError1(pTheme->hIcon, hr, "Failed to load application icon: %ls.", bstr);
+        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load application icon: %ls.", bstr);
     }
 
     hr = XmlGetAttributeNumber(pixn, L"SourceX", reinterpret_cast<DWORD*>(&pTheme->nSourceX));
@@ -2259,7 +2259,7 @@ static HRESULT ParseImageLists(
                     hBitmap = NULL;
                 }
                 hr = ParseImage(NULL, NULL, pixnImage, &hBitmap);
-                ExitOnFailure1(hr, "Failed to parse image: %u", i);
+                ExitOnFailure(hr, "Failed to parse image: %u", i);
 
                 if (0 == i)
                 {
@@ -2272,7 +2272,7 @@ static HRESULT ParseImageLists(
                 iRetVal = ImageList_Add(pTheme->rgImageLists[dwImageListIndex].hImageList, hBitmap, NULL);
                 if (-1 == iRetVal)
                 {
-                    ExitWithLastError1(hr, "Failed to add image %u to image list", i);
+                    ExitWithLastError(hr, "Failed to add image %u to image list", i);
                 }
 
                 ++i;
@@ -2335,7 +2335,7 @@ static HRESULT ParseControls(
     if (pPage)
     {
         hr = ::SizeTMult(sizeof(DWORD), cNewControls, &cbAllocSize);
-        ExitOnFailure1(hr, "Overflow while calculating allocation size for %u control indices", cNewControls);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u control indices", cNewControls);
 
         pPage->rgdwControlIndices = static_cast<DWORD*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pPage->rgdwControlIndices, hr, E_OUTOFMEMORY, "Failed to allocate theme page controls.");
@@ -2896,7 +2896,7 @@ static HRESULT ParseBillboards(
     if (0 < pControl->cBillboards)
     {
         hr = ::SizeTMult(sizeof(THEME_BILLBOARD), pControl->cBillboards, &cbAllocSize);
-        ExitOnFailure1(hr, "Overflow while calculating allocation size for %u THEME_BILLBOARD structs", pControl->cBillboards);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_BILLBOARD structs", pControl->cBillboards);
 
         pControl->ptbBillboards = static_cast<THEME_BILLBOARD*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pControl->ptbBillboards, hr, E_OUTOFMEMORY, "Failed to allocate billboard image structs.");
@@ -2953,7 +2953,7 @@ static HRESULT ParseColumns(
     if (0 < pControl->cColumns)
     {
         hr = ::SizeTMult(sizeof(THEME_COLUMN), pControl->cColumns, &cbAllocSize);
-        ExitOnFailure1(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs", pControl->cColumns);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs", pControl->cColumns);
 
         pControl->ptcColumns = static_cast<THEME_COLUMN*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pControl->ptcColumns, hr, E_OUTOFMEMORY, "Failed to allocate column structs.");
@@ -3020,7 +3020,7 @@ static HRESULT ParseTabs(
     if (0 < pControl->cTabs)
     {
         hr = ::SizeTMult(sizeof(THEME_TAB), pControl->cTabs, &cbAllocSize);
-        ExitOnFailure1(hr, "Overflow while calculating allocation size for %u THEME_TAB structs", pControl->cTabs);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_TAB structs", pControl->cTabs);
 
         pControl->pttTabs = static_cast<THEME_TAB*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pControl->pttTabs, hr, E_OUTOFMEMORY, "Failed to allocate tab structs.");
@@ -3512,7 +3512,7 @@ static HRESULT OnRichEditEnLink(
         if (0 < ::SendMessageW(hWndRichEdit, EM_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&tr)))
         {
             hr = ShelExec(sczLink, NULL, L"open", NULL, SW_SHOWDEFAULT, hWnd, NULL);
-            ExitOnFailure1(hr, "Failed to launch link: %ls", sczLink);
+            ExitOnFailure(hr, "Failed to launch link: %ls", sczLink);
         }
         
         break;

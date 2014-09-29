@@ -89,7 +89,7 @@ extern "C" HRESULT DAPI BundleGetBundleInfo(
             ExitOnFailure(hr, "Failed to format dword property as string.");
             break;
         default:
-            ExitOnFailure1(hr = E_NOTIMPL, "Reading bundle info of type 0x%x not implemented.", dwType);
+            ExitOnFailure(hr = E_NOTIMPL, "Reading bundle info of type 0x%x not implemented.", dwType);
 
     }
 
@@ -219,7 +219,7 @@ HRESULT DAPI BundleEnumRelatedBundle(
                 break;
 
             default:
-                ExitOnFailure1(hr = E_NOTIMPL, "BundleUpgradeCode of type 0x%x not implemented.", dwType);
+                ExitOnFailure(hr = E_NOTIMPL, "BundleUpgradeCode of type 0x%x not implemented.", dwType);
 
         }
 

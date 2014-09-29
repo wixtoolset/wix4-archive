@@ -894,7 +894,7 @@ static HRESULT ExtractContainer(
     }
 
     hr = ContainerOpen(&context, pContainer, hContainerHandle, wzContainerPath);
-    ExitOnFailure1(hr, "Failed to open container: %ls.", pContainer->sczId);
+    ExitOnFailure(hr, "Failed to open container: %ls.", pContainer->sczId);
 
     while (S_OK == (hr = ContainerNextStream(&context, &sczExtractPayloadId)))
     {
@@ -907,7 +907,7 @@ static HRESULT ExtractContainer(
             {
                 // TODO: Send progress when extracting stream to file.
                 hr = ContainerStreamToFile(&context, pExtract->sczUnverifiedPath);
-                ExitOnFailure2(hr, "Failed to extract payload: %ls from container: %ls", sczExtractPayloadId, pContainer->sczId);
+                ExitOnFailure(hr, "Failed to extract payload: %ls from container: %ls", sczExtractPayloadId, pContainer->sczId);
 
                 fExtracted = TRUE;
                 break;
@@ -917,7 +917,7 @@ static HRESULT ExtractContainer(
         if (!fExtracted)
         {
             hr = ContainerSkipStream(&context);
-            ExitOnFailure2(hr, "Failed to skip the extraction of payload: %ls from container: %ls", sczExtractPayloadId, pContainer->sczId);
+            ExitOnFailure(hr, "Failed to skip the extraction of payload: %ls from container: %ls", sczExtractPayloadId, pContainer->sczId);
         }
     }
 
@@ -925,7 +925,7 @@ static HRESULT ExtractContainer(
     {
         hr = S_OK;
     }
-    ExitOnFailure1(hr, "Failed to extract all payloads from container: %ls", pContainer->sczId);
+    ExitOnFailure(hr, "Failed to extract all payloads from container: %ls", pContainer->sczId);
 
 LExit:
     ReleaseStr(sczExtractPayloadId);
@@ -1015,7 +1015,7 @@ static HRESULT LayoutBundle(
             {
                 hr = S_FALSE;
             }
-            ExitOnFailure2(hr, "Failed to copy bundle from: '%ls' to: '%ls'", sczBundlePath, wzUnverifiedPath);
+            ExitOnFailure(hr, "Failed to copy bundle from: '%ls' to: '%ls'", sczBundlePath, wzUnverifiedPath);
         } while (S_FALSE == hr);
 
         if (FAILED(hr))
@@ -1053,7 +1053,7 @@ static HRESULT LayoutBundle(
             }
         } while (S_FALSE == hr);
     } while (fRetry);
-    LogExitOnFailure2(hr, MSG_FAILED_LAYOUT_BUNDLE, "Failed to layout bundle: %ls to layout directory: %ls", sczBundlePath, wzLayoutDirectory);
+    LogExitOnFailure(hr, MSG_FAILED_LAYOUT_BUNDLE, "Failed to layout bundle: %ls to layout directory: %ls", sczBundlePath, wzLayoutDirectory);
 
 LExit:
     ReleaseStr(sczDestinationPath);
@@ -1134,7 +1134,7 @@ static HRESULT AcquireContainerOrPayload(
             }
 
             // Log the error
-            LogExitOnFailure1(hr, MSG_PAYLOAD_FILE_NOT_PRESENT, "Failed while prompting for source (original path '%ls').", sczSourceFullPath);
+            LogExitOnFailure(hr, MSG_PAYLOAD_FILE_NOT_PRESENT, "Failed while prompting for source (original path '%ls').", sczSourceFullPath);
         }
 
         if (fCopy)
@@ -1172,7 +1172,7 @@ static HRESULT AcquireContainerOrPayload(
                 hr = S_OK;
             }
         }
-        ExitOnFailure2(hr, "Failed to acquire payload from: '%ls' to working path: '%ls'", fCopy ? sczSourceFullPath : wzDownloadUrl, wzDestinationPath);
+        ExitOnFailure(hr, "Failed to acquire payload from: '%ls' to working path: '%ls'", fCopy ? sczSourceFullPath : wzDownloadUrl, wzDestinationPath);
     } while (fRetry);
     ExitOnFailure(hr, "Failed to find external payload to cache.");
 
@@ -1259,7 +1259,7 @@ static HRESULT LayoutOrCacheContainerOrPayload(
             {
                 hr = HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
             }
-            ExitOnRootFailure2(hr, "BA aborted verify of %hs: %ls", pContainer ? "container" : "payload", pContainer ? wzPackageOrContainerId : wzPayloadId);
+            ExitOnRootFailure(hr, "BA aborted verify of %hs: %ls", pContainer ? "container" : "payload", pContainer ? wzPackageOrContainerId : wzPayloadId);
         }
 
         nResult = pUX->pUserExperience->OnCacheVerifyComplete(wzPackageOrContainerId, wzPayloadId, hr, FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? IDTRYAGAIN : IDNOACTION);
@@ -1353,7 +1353,7 @@ static HRESULT CopyPayload(
             dwFileAttributes &= ~FILE_ATTRIBUTE_READONLY;
             if (!::SetFileAttributes(wzDestinationPath, dwFileAttributes))
             {
-                ExitWithLastError1(hr, "Failed to clear readonly bit on payload destination path: %ls", wzDestinationPath);
+                ExitWithLastError(hr, "Failed to clear readonly bit on payload destination path: %ls", wzDestinationPath);
             }
         }
     }
@@ -1363,11 +1363,11 @@ static HRESULT CopyPayload(
         if (pProgress->fCancel)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-            ExitOnRootFailure2(hr, "BA aborted copy of payload from: '%ls' to: %ls.", wzSourcePath, wzDestinationPath);
+            ExitOnRootFailure(hr, "BA aborted copy of payload from: '%ls' to: %ls.", wzSourcePath, wzDestinationPath);
         }
         else
         {
-            ExitWithLastError2(hr, "Failed attempt to copy payload from: '%ls' to: %ls.", wzSourcePath, wzDestinationPath);
+            ExitWithLastError(hr, "Failed attempt to copy payload from: '%ls' to: %ls.", wzSourcePath, wzDestinationPath);
         }
     }
 
@@ -1401,7 +1401,7 @@ static HRESULT DownloadPayload(
             dwFileAttributes &= ~FILE_ATTRIBUTE_READONLY;
             if (!::SetFileAttributes(wzDestinationPath, dwFileAttributes))
             {
-                ExitWithLastError1(hr, "Failed to clear readonly bit on payload destination path: %ls", wzDestinationPath);
+                ExitWithLastError(hr, "Failed to clear readonly bit on payload destination path: %ls", wzDestinationPath);
             }
         }
     }
@@ -1430,7 +1430,7 @@ static HRESULT DownloadPayload(
         
         hr = DownloadUrl(pDownloadSource, qwDownloadSize, wzDestinationPath, &cacheCallback, &authenticationCallback);
     }
-    ExitOnFailure2(hr, "Failed attempt to download URL: '%ls' to: '%ls'", pDownloadSource->sczUrl, wzDestinationPath);
+    ExitOnFailure(hr, "Failed attempt to download URL: '%ls' to: '%ls'", pDownloadSource->sczUrl, wzDestinationPath);
 
 LExit:
     return hr;
@@ -1816,7 +1816,7 @@ static HRESULT DoRollbackActions(
             case BURN_EXECUTE_ACTION_TYPE_SERVICE_START: __fallthrough;
             default:
                 hr = E_UNEXPECTED;
-                ExitOnFailure1(hr, "Invalid rollback action: %d.", pRollbackAction->type);
+                ExitOnFailure(hr, "Invalid rollback action: %d.", pRollbackAction->type);
             }
 
             if (*pRestart < restart)

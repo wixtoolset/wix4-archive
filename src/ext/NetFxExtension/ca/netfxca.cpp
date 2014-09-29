@@ -72,11 +72,11 @@ static HRESULT GetNgenVersion(
     HANDLE hFind = INVALID_HANDLE_VALUE;
     
     hr = StrAllocFormatted(&pwzVersionSearch, L"%s*", pwzParentPath);
-    ExitOnFailure1(hr, "failed to create outer directory search string from string %ls", pwzParentPath);
+    ExitOnFailure(hr, "failed to create outer directory search string from string %ls", pwzParentPath);
     hFind = FindFirstFileW(pwzVersionSearch, &wfdVersionDirectories);
     if (hFind == INVALID_HANDLE_VALUE)
     {
-        ExitWithLastError1(hr, "failed to call FindFirstFileW with string %ls", pwzVersionSearch);
+        ExitWithLastError(hr, "failed to call FindFirstFileW with string %ls", pwzVersionSearch);
     }
 
     while (fFound)
@@ -90,7 +90,7 @@ static HRESULT GetNgenVersion(
             {
                 // A potential candidate directory was found to run ngen from - let's make sure ngen actually exists here
                 hr = StrAllocFormatted(&pwzNgen, L"%s%s\\ngen.exe", pwzParentPath, pwzTempVersion);
-                ExitOnFailure2(hr, "failed to create inner ngen search string with strings %ls and %ls", pwzParentPath, pwzTempVersion);
+                ExitOnFailure(hr, "failed to create inner ngen search string with strings %ls and %ls", pwzParentPath, pwzTempVersion);
 
                 // If Ngen.exe does exist as a file here, then let's check the file version
                 if (FileExistsEx(pwzNgen, &dwNgenFileFlags) && (0 == (dwNgenFileFlags & FILE_ATTRIBUTE_DIRECTORY)))
@@ -105,7 +105,7 @@ static HRESULT GetNgenVersion(
                     {
                         // If the version we found is the highest we've seen so far in this search, it will be our new best-so-far candidate
                         hr = StrAllocString(ppwzVersion, pwzTempVersion, 0);
-                        ExitOnFailure1(hr, "failed to copy temp version string %ls to version string", pwzTempVersion);
+                        ExitOnFailure(hr, "failed to copy temp version string %ls to version string", pwzTempVersion);
                         // Add one for the backslash after the directory name
                         WcaLog(LOGMSG_VERBOSE, "Found highest-so-far version of ngen.exe (in directory %ls, version %u.%u.%u.%u)", *ppwzVersion, (DWORD)HIWORD(dwMajorVersion), (DWORD)LOWORD(dwMajorVersion), (DWORD)HIWORD(dwMinorVersion), (DWORD)LOWORD(dwMinorVersion));
 
@@ -134,14 +134,14 @@ static HRESULT GetNgenVersion(
         {
             dwError = ::GetLastError();
             hr = (ERROR_NO_MORE_FILES == dwError) ? ERROR_SUCCESS : HRESULT_FROM_WIN32(dwError);
-            ExitOnFailure1(hr, "Failed to call FindNextFileW() with query %ls", pwzVersionSearch);
+            ExitOnFailure(hr, "Failed to call FindNextFileW() with query %ls", pwzVersionSearch);
         }
     }
 
     if (NULL == *ppwzVersion)
     {
         hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-        ExitOnRootFailure1(hr, "Searched through all subdirectories of %ls, but failed to find any version of ngen.exe", pwzParentPath);
+        ExitOnRootFailure(hr, "Searched through all subdirectories of %ls, but failed to find any version of ngen.exe", pwzParentPath);
     }
     else
     {
@@ -184,7 +184,7 @@ static HRESULT GetNgenPath(
     ExitOnFailure(hr, "failed to get WindowsFolder property");
 
     hr = StrAllocString(ppwzNgenPath, pwzWindowsFolder, 0);
-    ExitOnFailure1(hr, "failed to copy to NgenPath windows folder: %ls", pwzWindowsFolder);
+    ExitOnFailure(hr, "failed to copy to NgenPath windows folder: %ls", pwzWindowsFolder);
 
     if (f64BitFramework)
     {
@@ -203,7 +203,7 @@ static HRESULT GetNgenPath(
 
     // We want to run the highest version of ngen possible, because they should be backwards compatible - so let's find the most appropriate directory now
     hr = GetNgenVersion(*ppwzNgenPath, &pwzVersion);
-    ExitOnFailure1(hr, "failed to search for ngen under path %ls", *ppwzNgenPath);
+    ExitOnFailure(hr, "failed to search for ngen under path %ls", *ppwzNgenPath);
 
     hr = StrAllocConcat(ppwzNgenPath, pwzVersion, 0);
     ExitOnFailure(hr, "failed to copy version portion of ngen path");
@@ -239,7 +239,7 @@ static HRESULT GetStrongName(
 
     hComponentRec = ::MsiCreateRecord(1);
     hr = WcaSetRecordString(hComponentRec, 1, pwzComponent);
-    ExitOnFailure1(hr, "failed to set component value in record to: %ls", pwzComponent);
+    ExitOnFailure(hr, "failed to set component value in record to: %ls", pwzComponent);
 
     // get the name value records for this component
     hr = WcaOpenView(vcsNgenStrongName, &hView);
@@ -251,35 +251,35 @@ static HRESULT GetStrongName(
     while (S_OK == (hr = WcaFetchRecord(hView, &hRec)))
     {
         hr = WcaGetRecordString(hRec, ngsnName, &pwzData);
-        ExitOnFailure1(hr, "failed to get MsiAssemblyName.Name for component: %ls", pwzComponent);
+        ExitOnFailure(hr, "failed to get MsiAssemblyName.Name for component: %ls", pwzComponent);
 
         if (0 == lstrcmpW(L"name", pwzData))
         {
             hr = WcaGetRecordString(hRec, ngsnValue, &pwzName);
-            ExitOnFailure2(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
+            ExitOnFailure(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
         }
         else if (0 == lstrcmpW(L"version", pwzData))
         {
             hr = WcaGetRecordString(hRec, ngsnValue, &pwzVersion);
-            ExitOnFailure2(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
+            ExitOnFailure(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
         }
         else if (0 == lstrcmpW(L"culture", pwzData))
         {
             hr = WcaGetRecordString(hRec, ngsnValue, &pwzCulture);
-            ExitOnFailure2(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
+            ExitOnFailure(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
         }
         else if (0 == lstrcmpW(L"publicKeyToken", pwzData))
         {
             hr = WcaGetRecordString(hRec, ngsnValue, &pwzPublicKeyToken);
-            ExitOnFailure2(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
+            ExitOnFailure(hr, "failed to get MsiAssemblyName.Value for component: %ls Name: %ls", pwzComponent, pwzData);
         }
     }
     if (E_NOMOREITEMS == hr)
         hr = S_OK;
-    ExitOnFailure1(hr, "failed while looping through all names and values in MsiAssemblyName table for component: %ls", pwzComponent);
+    ExitOnFailure(hr, "failed while looping through all names and values in MsiAssemblyName table for component: %ls", pwzComponent);
 
     hr = StrAllocFormatted(ppwzStrongName, L"\"%s, Version=%s, Culture=%s, PublicKeyToken=%s\"", pwzName, pwzVersion, pwzCulture, pwzPublicKeyToken);
-    ExitOnFailure1(hr, "failed to format strong name for component: %ls", pwzComponent);
+    ExitOnFailure(hr, "failed to format strong name for component: %ls", pwzComponent);
 
 LExit:
     ReleaseStr(pwzData);
@@ -381,7 +381,7 @@ static HRESULT FileIdExists(
 
     hRec = ::MsiCreateRecord(1);
     hr = WcaSetRecordString(hRec, fiFile, wzFile);
-    ExitOnFailure1(hr, "failed to create a record with the file: %ls", wzFile);
+    ExitOnFailure(hr, "failed to create a record with the file: %ls", wzFile);
 
     hr = WcaTableExists(L"File");
     if (S_OK == hr)
@@ -483,15 +483,15 @@ extern "C" UINT __stdcall SchedNetFx(
 
         // Get File
         hr = WcaGetRecordString(hRec, ngqFile, &pwzData);
-        ExitOnFailure1(hr, "failed to get NetFxNativeImage.File_ for record: %ls", pwzId);
+        ExitOnFailure(hr, "failed to get NetFxNativeImage.File_ for record: %ls", pwzId);
         hr = StrAllocFormatted(&pwzTemp, vpwzUnformattedQuotedFile, pwzData);
-        ExitOnFailure1(hr, "failed to format file string for file: %ls", pwzData);
+        ExitOnFailure(hr, "failed to format file string for file: %ls", pwzData);
         hr = WcaGetFormattedString(pwzTemp, &pwzFile);
-        ExitOnFailure1(hr, "failed to get formatted string for file: %ls", pwzData);
+        ExitOnFailure(hr, "failed to get formatted string for file: %ls", pwzData);
 
         // Get Priority
         hr = WcaGetRecordInteger(hRec, ngqPriority, &iPriority);
-        ExitOnFailure1(hr, "failed to get NetFxNativeImage.Priority for record: %ls", pwzId);
+        ExitOnFailure(hr, "failed to get NetFxNativeImage.Priority for record: %ls", pwzId);
 
         if (0 == iPriority)
             iAssemblyCost = COST_NGEN_BLOCKING;
@@ -500,60 +500,60 @@ extern "C" UINT __stdcall SchedNetFx(
 
         // Get Attributes
         hr = WcaGetRecordInteger(hRec, ngqAttributes, &iAttributes);
-        ExitOnFailure1(hr, "failed to get NetFxNativeImage.Attributes for record: %ls", pwzId);
+        ExitOnFailure(hr, "failed to get NetFxNativeImage.Attributes for record: %ls", pwzId);
 
         // Get File_Application or leave pwzFileApp NULL.
         hr = WcaGetRecordFormattedString(hRec, ngqFileApp, &pwzData);
-        ExitOnFailure1(hr, "failed to get NetFxNativeImage.File_Application for record: %ls", pwzId);
+        ExitOnFailure(hr, "failed to get NetFxNativeImage.File_Application for record: %ls", pwzId);
 
         // Check if the value resolves to a valid file ID.
         if (S_OK == FileIdExists(pwzData))
         {
             // Resolve the file ID to a path.
             hr = StrAllocFormatted(&pwzTemp, vpwzUnformattedQuotedFile, pwzData);
-            ExitOnFailure1(hr, "failed to format file application string for file: %ls", pwzData);
+            ExitOnFailure(hr, "failed to format file application string for file: %ls", pwzData);
 
             hr = WcaGetFormattedString(pwzTemp, &pwzFileApp);
-            ExitOnFailure1(hr, "failed to get formatted string for file application: %ls", pwzData);
+            ExitOnFailure(hr, "failed to get formatted string for file application: %ls", pwzData);
         }
         else
         {
             // Assume record formatted to a path already.
             hr = StrAllocString(&pwzFileApp, pwzData, 0);
-            ExitOnFailure1(hr, "failed to allocate string for file path: %ls", pwzData);
+            ExitOnFailure(hr, "failed to allocate string for file path: %ls", pwzData);
 
             hr = PathEnsureQuoted(&pwzFileApp, FALSE);
-            ExitOnFailure1(hr, "failed to quote file path: %ls", pwzData);
+            ExitOnFailure(hr, "failed to quote file path: %ls", pwzData);
         }
 
         // Get Directory_ApplicationBase or leave pwzDirAppBase NULL.
         hr = WcaGetRecordFormattedString(hRec, ngqDirAppBase, &pwzData);
-        ExitOnFailure1(hr, "failed to get NetFxNativeImage.Directory_ApplicationBase for record: %ls", pwzId);
+        ExitOnFailure(hr, "failed to get NetFxNativeImage.Directory_ApplicationBase for record: %ls", pwzId);
 
         if (WcaIsUnicodePropertySet(pwzData))
         {
             // Resolve the directory ID to a path.
             hr = StrAllocFormatted(&pwzTemp, vpwzUnformattedQuotedDirectory, pwzData);
-            ExitOnFailure1(hr, "failed to format directory application base string for property: %ls", pwzData);
+            ExitOnFailure(hr, "failed to format directory application base string for property: %ls", pwzData);
 
             hr = WcaGetFormattedString(pwzTemp, &pwzDirAppBase);
-            ExitOnFailure1(hr, "failed to get formatted string for directory application base: %ls", pwzData);
+            ExitOnFailure(hr, "failed to get formatted string for directory application base: %ls", pwzData);
         }
         else
         {
             // Assume record formatted to a path already.
             hr = StrAllocString(&pwzDirAppBase, pwzData, 0);
-            ExitOnFailure1(hr, "failed to allocate string for directory path: %ls", pwzData);
+            ExitOnFailure(hr, "failed to allocate string for directory path: %ls", pwzData);
 
             hr = PathEnsureQuoted(&pwzDirAppBase, TRUE);
-            ExitOnFailure1(hr, "failed to quote and backslashify directory: %ls", pwzData);
+            ExitOnFailure(hr, "failed to quote and backslashify directory: %ls", pwzData);
         }
 
         // Get Component
         hr = WcaGetRecordString(hRec, ngqComponent, &pwzComponent);
-        ExitOnFailure1(hr, "failed to get NetFxNativeImage.Directory_ApplicationBase for record: %ls", pwzId);
+        ExitOnFailure(hr, "failed to get NetFxNativeImage.Directory_ApplicationBase for record: %ls", pwzId);
         er = ::MsiGetComponentStateW(hInstall, pwzComponent, &isInstalled, &isAction);
-        ExitOnWin32Error1(er, hr, "failed to get install state for Component: %ls", pwzComponent);
+        ExitOnWin32Error(er, hr, "failed to get install state for Component: %ls", pwzComponent);
 
         //
         // Figure out if it's going to be GAC'd.  The possibility exists that no assemblies are going to be GAC'd 
@@ -579,7 +579,7 @@ extern "C" UINT __stdcall SchedNetFx(
                 if (L'\0' == pwzData[0])
                 {
                     hr = GetStrongName(&pwzFile, pwzComponent);
-                    ExitOnFailure1(hr, "failed to get strong name for component: %ls", pwzData);
+                    ExitOnFailure(hr, "failed to get strong name for component: %ls", pwzData);
                 }
             }
         }
@@ -588,7 +588,7 @@ extern "C" UINT __stdcall SchedNetFx(
         // Schedule the work
         //
         if (!(iAttributes & NGEN_32BIT) && !(iAttributes & NGEN_64BIT))
-            ExitOnFailure1(hr = E_INVALIDARG, "Neither 32bit nor 64bit is specified for NGEN of file: %ls", pwzFile);
+            ExitOnFailure(hr = E_INVALIDARG, "Neither 32bit nor 64bit is specified for NGEN of file: %ls", pwzFile);
 
         if (WcaIsInstalling(isInstalled, isAction) || WcaIsReInstalling(isInstalled, isAction))
         {
@@ -599,10 +599,10 @@ extern "C" UINT __stdcall SchedNetFx(
                 ExitOnFailure(hr, "failed to create install command line");
 
                 hr = WcaWriteStringToCaData(pwzData, &pwzInstallCustomActionData);
-                ExitOnFailure1(hr, "failed to add install command to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add install command to custom action data: %ls", pwzData);
 
                 hr = WcaWriteIntegerToCaData(iAssemblyCost, &pwzInstallCustomActionData);
-                ExitOnFailure1(hr, "failed to add cost to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add cost to custom action data: %ls", pwzData);
 
                 uiCost += iAssemblyCost;
 
@@ -616,10 +616,10 @@ extern "C" UINT __stdcall SchedNetFx(
                 ExitOnFailure(hr, "failed to create install command line");
 
                 hr = WcaWriteStringToCaData(pwzData, &pwzInstallCustomActionData); // command
-                ExitOnFailure1(hr, "failed to add install command to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add install command to custom action data: %ls", pwzData);
 
                 hr = WcaWriteIntegerToCaData(iAssemblyCost, &pwzInstallCustomActionData); // cost
-                ExitOnFailure1(hr, "failed to add cost to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add cost to custom action data: %ls", pwzData);
 
                 uiCost += iAssemblyCost;
 
@@ -634,10 +634,10 @@ extern "C" UINT __stdcall SchedNetFx(
                 ExitOnFailure(hr, "failed to create update 32 command line");
 
                 hr = WcaWriteStringToCaData(pwzData, &pwzUninstallCustomActionData); // command
-                ExitOnFailure1(hr, "failed to add install command to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add install command to custom action data: %ls", pwzData);
 
                 hr = WcaWriteIntegerToCaData(COST_NGEN_NONBLOCKING, &pwzUninstallCustomActionData); // cost
-                ExitOnFailure1(hr, "failed to add cost to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add cost to custom action data: %ls", pwzData);
 
                 uiCost += COST_NGEN_NONBLOCKING;
 
@@ -650,10 +650,10 @@ extern "C" UINT __stdcall SchedNetFx(
                 ExitOnFailure(hr, "failed to create update 64 command line");
 
                 hr = WcaWriteStringToCaData(pwzData, &pwzUninstallCustomActionData); // command
-                ExitOnFailure1(hr, "failed to add install command to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add install command to custom action data: %ls", pwzData);
 
                 hr = WcaWriteIntegerToCaData(COST_NGEN_NONBLOCKING, &pwzUninstallCustomActionData); // cost
-                ExitOnFailure1(hr, "failed to add cost to custom action data: %ls", pwzData);
+                ExitOnFailure(hr, "failed to add cost to custom action data: %ls", pwzData);
 
                 uiCost += COST_NGEN_NONBLOCKING;
 
@@ -672,10 +672,10 @@ extern "C" UINT __stdcall SchedNetFx(
         ExitOnFailure(hr, "failed to create install update 32 command line");
 
         hr = WcaWriteStringToCaData(pwzData, &pwzInstallCustomActionData); // command
-        ExitOnFailure1(hr, "failed to add install command to install custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add install command to install custom action data: %ls", pwzData);
 
         hr = WcaWriteIntegerToCaData(COST_NGEN_NONBLOCKING, &pwzInstallCustomActionData); // cost
-        ExitOnFailure1(hr, "failed to add cost to install custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add cost to install custom action data: %ls", pwzData);
 
         uiCost += COST_NGEN_NONBLOCKING;
     }
@@ -687,10 +687,10 @@ extern "C" UINT __stdcall SchedNetFx(
         ExitOnFailure(hr, "failed to create uninstall update 32 command line");
 
         hr = WcaWriteStringToCaData(pwzData, &pwzUninstallCustomActionData); // command
-        ExitOnFailure1(hr, "failed to add install command to uninstall custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add install command to uninstall custom action data: %ls", pwzData);
 
         hr = WcaWriteIntegerToCaData(COST_NGEN_NONBLOCKING, &pwzUninstallCustomActionData); // cost
-        ExitOnFailure1(hr, "failed to add cost to uninstall custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add cost to uninstall custom action data: %ls", pwzData);
 
         uiCost += COST_NGEN_NONBLOCKING;
     }
@@ -702,10 +702,10 @@ extern "C" UINT __stdcall SchedNetFx(
         ExitOnFailure(hr, "failed to create install update 64 command line");
 
         hr = WcaWriteStringToCaData(pwzData, &pwzInstallCustomActionData); // command
-        ExitOnFailure1(hr, "failed to add install command to install custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add install command to install custom action data: %ls", pwzData);
 
         hr = WcaWriteIntegerToCaData(COST_NGEN_NONBLOCKING, &pwzInstallCustomActionData); // cost
-        ExitOnFailure1(hr, "failed to add cost to install custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add cost to install custom action data: %ls", pwzData);
 
         uiCost += COST_NGEN_NONBLOCKING;
     }
@@ -717,10 +717,10 @@ extern "C" UINT __stdcall SchedNetFx(
         ExitOnFailure(hr, "failed to create uninstall update 64 command line");
 
         hr = WcaWriteStringToCaData(pwzData, &pwzUninstallCustomActionData); // command
-        ExitOnFailure1(hr, "failed to add install command to uninstall custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add install command to uninstall custom action data: %ls", pwzData);
 
         hr = WcaWriteIntegerToCaData(COST_NGEN_NONBLOCKING, &pwzUninstallCustomActionData); // cost
-        ExitOnFailure1(hr, "failed to add cost to uninstall custom action data: %ls", pwzData);
+        ExitOnFailure(hr, "failed to add cost to uninstall custom action data: %ls", pwzData);
 
         uiCost += COST_NGEN_NONBLOCKING;
     }
@@ -820,7 +820,7 @@ extern "C" UINT __stdcall ExecNetFx(
 
         // Tick the progress bar along for this assembly
         hr = WcaProgressMessage(iCost, FALSE);
-        ExitOnFailure1(hr, "failed to tick progress bar for command line: %ls", pwzData);
+        ExitOnFailure(hr, "failed to tick progress bar for command line: %ls", pwzData);
     }
 
 LExit:

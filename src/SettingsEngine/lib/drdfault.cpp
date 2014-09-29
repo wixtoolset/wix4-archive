@@ -37,10 +37,10 @@ HRESULT DirDefaultReadFile(
     CONFIG_VALUE cvNewValue = { };
 
     hr = MapFileToCfgName(wzName, wzSubPath, &sczValueName);
-    ExitOnFailure2(hr, "Failed to get cfg name for file at name %ls, subpath %ls", wzName, wzSubPath);
+    ExitOnFailure(hr, "Failed to get cfg name for file at name %ls, subpath %ls", wzName, wzSubPath);
 
     hr = FilterCheckValue(&pSyncProductSession->product, sczValueName, &fIgnore, &fShareWriteOnRead);
-    ExitOnFailure1(hr, "Failed to check if cfg blob value should be ignored: %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to check if cfg blob value should be ignored: %ls", sczValueName);
 
     if (fIgnore)
     {
@@ -48,13 +48,13 @@ HRESULT DirDefaultReadFile(
     }
 
     hr = FileGetTime(wzFilePath, NULL, NULL, &ft);
-    ExitOnFailure1(hr, "failed to get modified time of file : %ls", wzFilePath);
+    ExitOnFailure(hr, "failed to get modified time of file : %ls", wzFilePath);
 
     fRet = FileTimeToSystemTime(&ft, &st);
     if (!fRet)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Failed to convert file time to system time for file: %ls", wzFilePath);
+        ExitOnFailure(hr, "Failed to convert file time to system time for file: %ls", wzFilePath);
     }
 
     // In the case of files susceptible to the "VirtualStore\" directory,
@@ -73,7 +73,7 @@ HRESULT DirDefaultReadFile(
     }
 
     hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
-    ExitOnFailure1(hr, "Failed to add file to list of files seen: %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
 
     hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczValueName, &sceValueRow);
     if (S_OK == hr)
@@ -101,12 +101,12 @@ HRESULT DirDefaultReadFile(
     if (fShareWriteOnRead)
     {
         hr = FileReadEx(&pbBuffer, &cbBuffer, wzFilePath, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE);
-        ExitOnFailure1(hr, "Failed to read file into memory (with write sharing): %ls", wzFilePath);
+        ExitOnFailure(hr, "Failed to read file into memory (with write sharing): %ls", wzFilePath);
     }
     else
     {
         hr = FileReadEx(&pbBuffer, &cbBuffer, wzFilePath, FILE_SHARE_DELETE | FILE_SHARE_READ);
-        ExitOnFailure1(hr, "Failed to read file into memory: %ls", wzFilePath);
+        ExitOnFailure(hr, "Failed to read file into memory: %ls", wzFilePath);
     }
 
     if (fRefreshTimestamp)
@@ -119,16 +119,16 @@ HRESULT DirDefaultReadFile(
         }
 
         hr = FileSetTime(wzFilePath, NULL, NULL, &ft);
-        ExitOnFailure1(hr, "Failed to refresh timestamp on file: %ls", wzFilePath);
+        ExitOnFailure(hr, "Failed to refresh timestamp on file: %ls", wzFilePath);
     }
 
     hr = ValueSetBlob(pbBuffer, cbBuffer, FALSE, &st, pcdb->sczGuid, &cvNewValue);
-    ExitOnFailure1(hr, "Failed to set value in memory for file %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to set value in memory for file %ls", sczValueName);
 
     // Important: we must write the value even if the actual data didn't change, to update the timestamp in the database
     // This keeps perf high for future syncs, so we can rely on timestamp check
     hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvNewValue, FALSE);
-    ExitOnFailure1(hr, "Failed to set blob in cfg database, blob is named: %ls", sczValueName);
+    ExitOnFailure(hr, "Failed to set blob in cfg database, blob is named: %ls", sczValueName);
 
 LExit:
     ReleaseSceRow(sceValueRow);
@@ -178,12 +178,12 @@ HRESULT DirDefaultWriteFile(
         *pfHandled = TRUE;
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to get path to write for legacy file: %ls", wzName);
+    ExitOnFailure(hr, "Failed to get path to write for legacy file: %ls", wzName);
 
     *pfHandled = TRUE;
 
     hr = FilterCheckValue(pProduct, wzName, &fIgnore, NULL);
-    ExitOnFailure1(hr, "Failed to check if cfg value should be ignored: %ls", wzName);
+    ExitOnFailure(hr, "Failed to check if cfg value should be ignored: %ls", wzName);
 
     // If it's ignored, or not a valid cfg type for a file, or the file doesn't exist and we're intending to delete it, just exit with no error
     // This doesn't need to be transactional because if a new file was written right after this, autosync will pick it up
@@ -195,17 +195,17 @@ HRESULT DirDefaultWriteFile(
     if (VALUE_BLOB == pcvValue->cvType)
     {
         hr = PathGetDirectory(sczPath, &sczDir);
-        ExitOnFailure1(hr, "Failed to get directory of file: %ls", sczPath);
+        ExitOnFailure(hr, "Failed to get directory of file: %ls", sczPath);
 
         hr = DirEnsureExists(sczDir, NULL);
         if (E_ACCESSDENIED == hr)
         {
             hr = UtilConvertToVirtualStorePath(sczDir, &sczVirtualStorePath);
-            ExitOnFailure1(hr, "Failed to convert directory path to virtualstore path: %ls", sczDir);
+            ExitOnFailure(hr, "Failed to convert directory path to virtualstore path: %ls", sczDir);
 
             hr = DirEnsureExists(sczVirtualStorePath, NULL);
         }
-        ExitOnFailure1(hr, "Failed to ensure directory exists: %ls", sczDir);
+        ExitOnFailure(hr, "Failed to ensure directory exists: %ls", sczDir);
     }
 
     // Very important - this file handle makes our action against the file transactional in the sense that some other program
@@ -220,7 +220,7 @@ HRESULT DirDefaultWriteFile(
         if (ERROR_ACCESS_DENIED == ::GetLastError())
         {
             hr = UtilConvertToVirtualStorePath(sczPath, &sczVirtualStorePath);
-            ExitOnFailure1(hr, "Failed to convert file path to virtualstore path: %ls", sczPath);
+            ExitOnFailure(hr, "Failed to convert file path to virtualstore path: %ls", sczPath);
 
             // Switch path for the rest of the file to the virtualstore path
             ReleaseStr(sczPath);
@@ -228,7 +228,7 @@ HRESULT DirDefaultWriteFile(
             ReleaseNullStr(sczVirtualStorePath);
 
             hFile = ::CreateFileW(sczPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, 0, NULL);
-            ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open virtualstore file for write: %ls", sczPath);
+            ExitOnInvalidHandleWithLastError(hFile, hr, "Failed to open virtualstore file for write: %ls", sczPath);
         }
         else if (ERROR_SHARING_VIOLATION == ::GetLastError())
         {
@@ -237,7 +237,7 @@ HRESULT DirDefaultWriteFile(
         }
         else
         {
-            ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to open file for write: %ls", sczPath);
+            ExitOnInvalidHandleWithLastError(hFile, hr, "Failed to open file for write: %ls", sczPath);
         }
     }
     fFileExists = ::GetLastError() == ERROR_ALREADY_EXISTS;
@@ -247,7 +247,7 @@ HRESULT DirDefaultWriteFile(
     if (VALUE_BLOB == pcvValue->cvType && (fFileExists || fSharingViolation))
     {
         hr = FileGetTime(sczPath, NULL, NULL, &ftDisk);
-        ExitOnFailure1(hr, "Failed to get time of file: %ls", sczPath);
+        ExitOnFailure(hr, "Failed to get time of file: %ls", sczPath);
 
         fRet = ::FileTimeToSystemTime(&ftDisk, &stDisk);
         if (!fRet)
@@ -265,21 +265,21 @@ HRESULT DirDefaultWriteFile(
         {
             // File changed during sync - abort with a retryable error code.
             hr = HRESULT_FROM_WIN32(ERROR_TIME_SKEW);
-            ExitOnFailure1(hr, "Found newer file on disk at path %ls while trying to write file from DB, file must have changed during sync, aborting", sczPath);
+            ExitOnFailure(hr, "Found newer file on disk at path %ls while trying to write file from DB, file must have changed during sync, aborting", sczPath);
         }
 
         // If there is a sharing violation but we actually want to write the file, we won't be able to do so, so it becomes an error at this point
         if (fSharingViolation)
         {
             hr = HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION);
-            ExitOnFailure1(hr, "Sharing violation while writing file %ls - file is apparently in the process of being written - this should be resolved on next autosync.", sczPath);
+            ExitOnFailure(hr, "Sharing violation while writing file %ls - file is apparently in the process of being written - this should be resolved on next autosync.", sczPath);
         }
 
         // Clear out any existing content we are about to overwrite
         fRet = ::SetEndOfFile(hFile);
         if (!fRet)
         {
-            ExitWithLastError1(hr, "Failed to truncate file %ls", sczPath);
+            ExitWithLastError(hr, "Failed to truncate file %ls", sczPath);
         }
     }
 
@@ -287,7 +287,7 @@ HRESULT DirDefaultWriteFile(
     if (VALUE_DELETED == pcvValue->cvType)
     {
         hFileDelete = ::CreateFileW(sczPath, 0, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL);
-        ExitOnInvalidHandleWithLastError1(hFile, hr, "Failed to mark file for deletion: %ls", sczPath);
+        ExitOnInvalidHandleWithLastError(hFile, hr, "Failed to mark file for deletion: %ls", sczPath);
 
         ExitFunction1(hr = S_OK);
     }
@@ -295,11 +295,11 @@ HRESULT DirDefaultWriteFile(
     if (CFG_BLOB_DB_STREAM != pcvValue->blob.cbType)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unexpected blob value type %d while writing file %ls", pcvValue->blob.cbType, sczPath);
+        ExitOnFailure(hr, "Unexpected blob value type %d while writing file %ls", pcvValue->blob.cbType, sczPath);
     }
 
     hr = StreamRead(pcvValue->blob.dbstream.pcdb, pcvValue->blob.dbstream.dwContentID, NULL, &pbBuffer, &cbBuffer);
-    ExitOnFailure1(hr, "Failed to get binary content of ID: %u", pcvValue->blob.dbstream.dwContentID);
+    ExitOnFailure(hr, "Failed to get binary content of ID: %u", pcvValue->blob.dbstream.dwContentID);
 
     fRet = ::SystemTimeToFileTime(&pcvValue->stWhen, &ftCfg);
     if (!fRet)
@@ -308,14 +308,14 @@ HRESULT DirDefaultWriteFile(
     }
 
     hr = FileWriteHandle(hFile, pbBuffer, cbBuffer);
-    ExitOnFailure1(hr, "Failed to write content to file: %ls", sczPath);
+    ExitOnFailure(hr, "Failed to write content to file: %ls", sczPath);
 
     // Important: release file handles before setting time, or it won't be guaranteed to take effect
     ReleaseFile(hFileDelete); // must be before releasing hFile, to ensure it's deleted as part of a transaction
     ReleaseFile(hFile);
 
     hr = FileSetTime(sczPath, NULL, NULL, &ftCfg);
-    ExitOnFailure1(hr, "Failed to set timestamp on file: %ls", sczPath);
+    ExitOnFailure(hr, "Failed to set timestamp on file: %ls", sczPath);
 
 LExit:
     ReleaseFile(hFileDelete); // must be before releasing hFile, to ensure it's deleted as part of a transaction

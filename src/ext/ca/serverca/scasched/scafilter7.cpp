@@ -67,7 +67,7 @@ UINT __stdcall ScaFiltersRead7(
         psf = *ppsfList;
 
         hr = ::StringCchCopyW(psf->wzComponent, countof(psf->wzComponent), pwzData);
-        ExitOnFailure1(hr, "failed to copy component name: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy component name: %ls", pwzData);
 
         psf->isInstalled = isInstalled;
         psf->isAction = isAction;
@@ -196,7 +196,7 @@ static HRESULT WriteFilter(const SCA_FILTER* psf)
 
     //filter Name key
     hr = ScaWriteConfigString(psf->wzKey);
-    ExitOnFailure1(hr, "Failed to write key name for filter '%ls'", psf->wzKey);
+    ExitOnFailure(hr, "Failed to write key name for filter '%ls'", psf->wzKey);
 
     //web site name
     hr = ScaWriteConfigString(psf->wzFilterRoot);
@@ -204,11 +204,11 @@ static HRESULT WriteFilter(const SCA_FILTER* psf)
 
     // filter path
     hr = ScaWriteConfigString(psf->wzPath);
-    ExitOnFailure1(hr, "Failed to write Path for filter '%ls'", psf->wzKey);
+    ExitOnFailure(hr, "Failed to write Path for filter '%ls'", psf->wzKey);
 
     //filter load order
     hr = ScaWriteConfigInteger(psf->iLoadOrder);
-    ExitOnFailure1(hr, "Failed to write load order for filter '%ls'", psf->wzKey);
+    ExitOnFailure(hr, "Failed to write load order for filter '%ls'", psf->wzKey);
 
 LExit:
     return hr;
@@ -245,7 +245,7 @@ HRESULT ScaFiltersUninstall7(
 
                 //filter Name key
                 hr = ScaWriteConfigString(psf->wzKey);
-                ExitOnFailure1(hr, "Failed to write key name for filter '%ls'", psf->wzKey);
+                ExitOnFailure(hr, "Failed to write key name for filter '%ls'", psf->wzKey);
 
                 //web site name
                 hr = ScaWriteConfigString(psf->wzFilterRoot);
@@ -278,7 +278,7 @@ HRESULT ScaFiltersUninstall7(
 
                 //filter Name key
                 hr = ScaWriteConfigString(psf->wzKey);
-                ExitOnFailure1(hr, "Failed to write key name for filter '%ls'", psf->wzKey);
+                ExitOnFailure(hr, "Failed to write key name for filter '%ls'", psf->wzKey);
 
                 //web site name
                 hr = ScaWriteConfigString(psf->wzFilterRoot);

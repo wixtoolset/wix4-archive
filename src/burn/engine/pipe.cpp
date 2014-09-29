@@ -138,7 +138,7 @@ extern "C" HRESULT PipePumpMessages(
             ExitOnFailure(hr, "Failed to read log message.");
 
             hr = LogStringWorkRaw(sczMessage);
-            ExitOnFailure1(hr, "Failed to write log message:'%hs'.", sczMessage);
+            ExitOnFailure(hr, "Failed to write log message:'%hs'.", sczMessage);
 
             dwResult = static_cast<DWORD>(hr);
             break;
@@ -176,7 +176,7 @@ extern "C" HRESULT PipePumpMessages(
             {
                 hr = E_INVALIDARG;
             }
-            ExitOnFailure1(hr, "Failed to process message: %u", msg.dwMessage);
+            ExitOnFailure(hr, "Failed to process message: %u", msg.dwMessage);
             break;
         }
 
@@ -296,25 +296,25 @@ extern "C" HRESULT PipeCreatePipes(
 
     // Create the pipe.
     hr = StrAllocFormatted(&sczFullPipeName, PIPE_NAME_FORMAT_STRING, pConnection->sczName);
-    ExitOnFailure1(hr, "Failed to allocate full name of pipe: %ls", pConnection->sczName);
+    ExitOnFailure(hr, "Failed to allocate full name of pipe: %ls", pConnection->sczName);
 
     // TODO: consider using overlapped IO to do waits on the pipe and still be able to cancel and such.
     hPipe = ::CreateNamedPipeW(sczFullPipeName, PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, PIPE_64KB, PIPE_64KB, 1, psd ? &sa : NULL);
     if (INVALID_HANDLE_VALUE == hPipe)
     {
-        ExitWithLastError1(hr, "Failed to create pipe: %ls", sczFullPipeName);
+        ExitWithLastError(hr, "Failed to create pipe: %ls", sczFullPipeName);
     }
 
     if (fCreateCachePipe)
     {
         // Create the cache pipe.
         hr = StrAllocFormatted(&sczFullPipeName, CACHE_PIPE_NAME_FORMAT_STRING, pConnection->sczName);
-        ExitOnFailure1(hr, "Failed to allocate full name of cache pipe: %ls", pConnection->sczName);
+        ExitOnFailure(hr, "Failed to allocate full name of cache pipe: %ls", pConnection->sczName);
 
         hCachePipe = ::CreateNamedPipeW(sczFullPipeName, PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE, PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, PIPE_64KB, PIPE_64KB, 1, NULL);
         if (INVALID_HANDLE_VALUE == hCachePipe)
         {
-            ExitWithLastError1(hr, "Failed to create pipe: %ls", sczFullPipeName);
+            ExitWithLastError(hr, "Failed to create pipe: %ls", sczFullPipeName);
         }
     }
 
@@ -372,7 +372,7 @@ HRESULT PipeLaunchParentProcess(
     if (fDisableUnelevate)
     {
         hr = ProcExec(sczBurnPath, sczParameters, nCmdShow, &hProcess);
-        ExitOnFailure1(hr, "Failed to launch parent process with unelevate disabled: %ls", sczBurnPath);
+        ExitOnFailure(hr, "Failed to launch parent process with unelevate disabled: %ls", sczBurnPath);
     }
     else
     {
@@ -384,13 +384,13 @@ HRESULT PipeLaunchParentProcess(
             if (FAILED(hr))
             {
                 hr = ShelExec(sczBurnPath, sczParameters, L"open", NULL, nCmdShow, NULL, NULL);
-                ExitOnFailure1(hr, "Failed to launch parent process: %ls", sczBurnPath);
+                ExitOnFailure(hr, "Failed to launch parent process: %ls", sczBurnPath);
             }
         }
     }
 #else
     hr = ProcExec(sczBurnPath, sczParameters, nCmdShow, &hProcess);
-    ExitOnFailure1(hr, "Failed to launch parent process with unelevate disabled: %ls", sczBurnPath);
+    ExitOnFailure(hr, "Failed to launch parent process with unelevate disabled: %ls", sczBurnPath);
 #endif
 
 LExit:
@@ -429,7 +429,7 @@ extern "C" HRESULT PipeLaunchChildProcess(
     wzVerb = (OS_VERSION_VISTA > osVersion) || !fElevate ? L"open" : L"runas";
 
     hr = ShelExec(wzExecutablePath, sczParameters, wzVerb, NULL, SW_HIDE, hwndParent, &hProcess);
-    ExitOnFailure1(hr, "Failed to launch elevated child process: %ls", wzExecutablePath);
+    ExitOnFailure(hr, "Failed to launch elevated child process: %ls", wzExecutablePath);
 
     pConnection->dwProcessId = ::GetProcessId(hProcess);
     pConnection->hProcess = hProcess;
@@ -539,7 +539,7 @@ extern "C" HRESULT PipeWaitForChildConnect(
         //if (pConnection->dwProcessId != dwAck)
         //{
         //    hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        //    ExitOnRootFailure1(hr, "Incorrect ACK from elevated pipe: %u", dwAck);
+        //    ExitOnRootFailure(hr, "Incorrect ACK from elevated pipe: %u", dwAck);
         //}
     }
 
@@ -653,11 +653,11 @@ extern "C" HRESULT PipeChildConnect(
             hr = S_OK;
         }
     }
-    ExitOnRootFailure1(hr, "Failed to open parent pipe: %ls", sczPipeName)
+    ExitOnRootFailure(hr, "Failed to open parent pipe: %ls", sczPipeName)
 
     // Verify the parent and notify it that the child connected.
     hr = ChildPipeConnected(pConnection->hPipe, pConnection->sczSecret, &pConnection->dwProcessId);
-    ExitOnFailure1(hr, "Failed to verify parent pipe: %ls", sczPipeName);
+    ExitOnFailure(hr, "Failed to verify parent pipe: %ls", sczPipeName);
 
     if (fConnectCachePipe)
     {
@@ -668,16 +668,16 @@ extern "C" HRESULT PipeChildConnect(
         pConnection->hCachePipe = ::CreateFileW(sczPipeName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
         if (INVALID_HANDLE_VALUE == pConnection->hCachePipe)
         {
-            ExitWithLastError1(hr, "Failed to open parent pipe: %ls", sczPipeName)
+            ExitWithLastError(hr, "Failed to open parent pipe: %ls", sczPipeName)
         }
 
         // Verify the parent and notify it that the child connected.
         hr = ChildPipeConnected(pConnection->hCachePipe, pConnection->sczSecret, &pConnection->dwProcessId);
-        ExitOnFailure1(hr, "Failed to verify parent pipe: %ls", sczPipeName);
+        ExitOnFailure(hr, "Failed to verify parent pipe: %ls", sczPipeName);
     }
 
     pConnection->hProcess = ::OpenProcess(SYNCHRONIZE, FALSE, pConnection->dwProcessId);
-    ExitOnNullWithLastError1(pConnection->hProcess, hr, "Failed to open companion process with PID: %u", pConnection->dwProcessId);
+    ExitOnNullWithLastError(pConnection->hProcess, hr, "Failed to open companion process with PID: %u", pConnection->dwProcessId);
 
 LExit:
     ReleaseStr(sczPipeName);

@@ -289,7 +289,7 @@ extern "C" HRESULT DAPI CertInstallSingleCertificate(
 
     if (!::CertSetCertificateContextProperty(pCertContext, CERT_FRIENDLY_NAME_PROP_ID, 0, &blob))
     {
-        ExitWithLastError1(hr, "Failed to set the friendly name of the certificate: %ls", wzName);
+        ExitWithLastError(hr, "Failed to set the friendly name of the certificate: %ls", wzName);
     }
 
     if (!::CertAddCertificateContextToStore(hStore, pCertContext, CERT_STORE_ADD_REPLACE_EXISTING, NULL))

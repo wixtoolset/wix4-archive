@@ -53,10 +53,10 @@ extern "C" HRESULT RegDefaultReadValue(
     LPWSTR sczCfgValueName = NULL;
 
     hr = MapRegValueToCfgName(wzNamespace, wzRegKey, wzValueName, &sczCfgValueName);
-    ExitOnFailure3(hr, "Failed to format default legacy value name from namespace: %ls, key: %ls, valuename: %ls", wzNamespace, wzRegKey, wzValueName);
+    ExitOnFailure(hr, "Failed to format default legacy value name from namespace: %ls, key: %ls, valuename: %ls", wzNamespace, wzRegKey, wzValueName);
 
     hr = FilterCheckValue(&pSyncProductSession->product, sczCfgValueName, &fIgnore, NULL);
-    ExitOnFailure1(hr, "Failed to check if cfg value should be ignored: %ls", sczCfgValueName);
+    ExitOnFailure(hr, "Failed to check if cfg value should be ignored: %ls", sczCfgValueName);
 
     if (fIgnore)
     {
@@ -64,28 +64,28 @@ extern "C" HRESULT RegDefaultReadValue(
     }
 
     hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczCfgValueName);
-    ExitOnFailure1(hr, "Failed to add to dictionary value: %ls", sczCfgValueName);
+    ExitOnFailure(hr, "Failed to add to dictionary value: %ls", sczCfgValueName);
 
     switch (dwRegType)
     {
     case REG_BINARY:
         hr = RegDefaultReadValueBinary(pcdb, hkKey, wzValueName, sczCfgValueName);
-        ExitOnFailure1(hr, "Failed to handle binary value by default handler while reading from registry: %ls", wzValueName);
+        ExitOnFailure(hr, "Failed to handle binary value by default handler while reading from registry: %ls", wzValueName);
         break;
 
     case REG_SZ:
         hr = RegDefaultReadValueString(pcdb, hkKey, wzValueName, sczCfgValueName);
-        ExitOnFailure1(hr, "Failed to handle string value by default handler while reading from registry: %ls", wzValueName);
+        ExitOnFailure(hr, "Failed to handle string value by default handler while reading from registry: %ls", wzValueName);
         break;
 
     case REG_DWORD:
         hr = RegDefaultReadValueDword(pcdb, hkKey, wzValueName, sczCfgValueName);
-        ExitOnFailure1(hr, "Failed to handle dword value by default handler while reading from registry: %ls", wzValueName);
+        ExitOnFailure(hr, "Failed to handle dword value by default handler while reading from registry: %ls", wzValueName);
         break;
 
     case REG_QWORD:
         hr = RegDefaultReadValueQword(pcdb, hkKey, wzValueName, sczCfgValueName);
-        ExitOnFailure1(hr, "Failed to handle qword value by default handler while reading from registry: %ls", wzValueName);
+        ExitOnFailure(hr, "Failed to handle qword value by default handler while reading from registry: %ls", wzValueName);
         break;
 
     default:
@@ -138,9 +138,9 @@ extern "C" HRESULT RegDefaultWriteValue(
             ExitFunction1(hr = S_OK);
         }
         hr = RegCreate(ManifestConvertToRootKey(dwRoot), sczRegKey, KEY_SET_VALUE, &hk);
-        ExitOnFailure1(hr, "Failed to create regkey: %ls", sczRegKey);
+        ExitOnFailure(hr, "Failed to create regkey: %ls", sczRegKey);
     }
-    ExitOnFailure1(hr, "Failed to open regkey: %ls", sczRegKey);
+    ExitOnFailure(hr, "Failed to open regkey: %ls", sczRegKey);
 
     switch (pcvValue->cvType)
     {
@@ -216,13 +216,13 @@ static HRESULT RegDefaultReadValueBinary(
     CONFIG_VALUE cvNewValue = { };
 
     hr = RegReadBinary(hkKey, wzValueName, &pbBuffer, &cbBuffer);
-    ExitOnFailure1(hr, "Failed to read binary value from registry: %ls", wzValueName);
+    ExitOnFailure(hr, "Failed to read binary value from registry: %ls", wzValueName);
 
     hr = ValueSetBlob(pbBuffer, cbBuffer, FALSE, NULL, pcdb->sczGuid, &cvNewValue);
-    ExitOnFailure1(hr, "Failed to set string value %ls in memory", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set value in db: %ls", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
     ReleaseMem(pbBuffer);
@@ -243,13 +243,13 @@ static HRESULT RegDefaultReadValueString(
     CONFIG_VALUE cvNewValue = { };
 
     hr = RegReadString(hkKey, wzValueName, &sczStringValue);
-    ExitOnFailure1(hr, "Failed to read string value from registry: %ls", wzValueName);
+    ExitOnFailure(hr, "Failed to read string value from registry: %ls", wzValueName);
 
     hr = ValueSetString(sczStringValue, FALSE, NULL, pcdb->sczGuid, &cvNewValue);
-    ExitOnFailure1(hr, "Failed to set string value %ls in memory", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set value in db: %ls", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
     ReleaseStr(sczStringValue);
@@ -270,13 +270,13 @@ static HRESULT RegDefaultReadValueDword(
     CONFIG_VALUE cvNewValue = { };
 
     hr = RegReadNumber(hkKey, wzValueName, &dwValue);
-    ExitOnFailure1(hr, "Failed to read dword value from registry: %ls", wzValueName);
+    ExitOnFailure(hr, "Failed to read dword value from registry: %ls", wzValueName);
 
     hr = ValueSetDword(dwValue, NULL, pcdb->sczGuid, &cvNewValue);
-    ExitOnFailure1(hr, "Failed to set string value %ls in memory", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set value in db: %ls", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
     ReleaseCfgValue(cvNewValue);
@@ -296,13 +296,13 @@ static HRESULT RegDefaultReadValueQword(
     CONFIG_VALUE cvNewValue = { };
 
     hr = RegReadQword(hkKey, wzValueName, &qwValue);
-    ExitOnFailure1(hr, "Failed to read qword value from registry: %ls", wzValueName);
+    ExitOnFailure(hr, "Failed to read qword value from registry: %ls", wzValueName);
 
     hr = ValueSetQword(qwValue, NULL, pcdb->sczGuid, &cvNewValue);
-    ExitOnFailure1(hr, "Failed to set string value %ls in memory", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set value in db: %ls", wzCfgValueName);
+    ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
     ReleaseCfgValue(cvNewValue);

@@ -52,7 +52,7 @@ HRESULT ScaSslCertificateRead(
         ExitOnFailure(hr, "Failed to get hash for web ssl certificate.");
 
         hr = StrHexDecode(pwzData, pswsc->rgbSHA1Hash, countof(pswsc->rgbSHA1Hash));
-        ExitOnFailure2(hr, "Failed to decode certificate hash for web: %ls, data: %ls", wzWebId, pwzData);
+        ExitOnFailure(hr, "Failed to decode certificate hash for web: %ls, data: %ls", wzWebId, pwzData);
     }
 
     if (E_NOMOREITEMS == hr)

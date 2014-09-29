@@ -373,7 +373,7 @@ extern "C" HRESULT DAPI WiuQueryFeatureState(
     if (INSTALLSTATE_INVALIDARG == *pInstallState)
     {
         hr = E_INVALIDARG;
-        ExitOnRootFailure2(hr, "Failed to query state of feature: %ls in product: %ls", wzFeature, wzProduct);
+        ExitOnRootFailure(hr, "Failed to query state of feature: %ls in product: %ls", wzFeature, wzProduct);
     }
 
 LExit:
@@ -626,7 +626,7 @@ extern "C" HRESULT DAPI WiuEnumRelatedProducts(
     {
         ExitFunction1(hr = HRESULT_FROM_WIN32(er));
     }
-    ExitOnWin32Error1(er, hr, "Failed to enumerate related products for updgrade code: %ls", wzUpgradeCode);
+    ExitOnWin32Error(er, hr, "Failed to enumerate related products for updgrade code: %ls", wzUpgradeCode);
 
 LExit:
     return hr;
@@ -666,16 +666,16 @@ extern "C" HRESULT DAPI WiuEnumRelatedProductCodes(
             hr = S_OK;
             break;
         }
-        ExitOnFailure1(hr, "Failed to enumerate related products for upgrade code: %ls", wzUpgradeCode);
+        ExitOnFailure(hr, "Failed to enumerate related products for upgrade code: %ls", wzUpgradeCode);
 
         if (fReturnHighestVersionOnly)
         {
             // get the version
             hr = WiuGetProductInfo(wzCurrentProductCode, L"VersionString", &sczInstalledVersion);
-            ExitOnFailure1(hr, "Failed to get version for product code: %ls", wzCurrentProductCode);
+            ExitOnFailure(hr, "Failed to get version for product code: %ls", wzCurrentProductCode);
 
             hr = FileVersionFromStringEx(sczInstalledVersion, 0, &qwCurrentVersion);
-            ExitOnFailure2(hr, "Failed to convert version: %ls to DWORD64 for product code: %ls", sczInstalledVersion, wzCurrentProductCode);
+            ExitOnFailure(hr, "Failed to convert version: %ls to DWORD64 for product code: %ls", sczInstalledVersion, wzCurrentProductCode);
 
             // if this is the first product found then it is the highest version (for now)
             if (0 == *pcRelatedProducts)
@@ -813,7 +813,7 @@ extern "C" HRESULT DAPI WiuConfigureProductEx(
 
     er = vpfnMsiConfigureProductExW(wzProduct, iInstallLevel, eInstallState, wzCommandLine);
     er = CheckForRestartErrorCode(er, pRestart);
-    ExitOnWin32Error1(er, hr, "Failed to configure product: %ls", wzProduct);
+    ExitOnWin32Error(er, hr, "Failed to configure product: %ls", wzProduct);
 
 LExit:
     return hr;
@@ -831,7 +831,7 @@ extern "C" HRESULT DAPI WiuInstallProduct(
 
     er = vpfnMsiInstallProductW(wzPackagePath, wzCommandLine);
     er = CheckForRestartErrorCode(er, pRestart);
-    ExitOnWin32Error1(er, hr, "Failed to install product: %ls", wzPackagePath);
+    ExitOnWin32Error(er, hr, "Failed to install product: %ls", wzPackagePath);
 
 LExit:
     return hr;
@@ -988,7 +988,7 @@ static INT HandleInstallMessage(
 {
     INT nResult = IDNOACTION;
 
-Trace2(REPORT_STANDARD, "MSI install[%x]: %ls", pContext->dwCurrentProgressIndex, wzMessage);
+Trace(REPORT_STANDARD, "MSI install[%x]: %ls", pContext->dwCurrentProgressIndex, wzMessage);
 
     // Handle the message.
     switch (mt)
@@ -1138,7 +1138,7 @@ static INT HandleInstallProgress(
 #ifdef _DEBUG
     WCHAR wz[256];
     ::StringCchPrintfW(wz, countof(wz), L"1: %d 2: %d 3: %d 4: %d", iFields[0], iFields[1], iFields[2], iFields[3]);
-    Trace2(REPORT_STANDARD, "MSI progress[%x]: %ls", pContext->dwCurrentProgressIndex, wz);
+    Trace(REPORT_STANDARD, "MSI progress[%x]: %ls", pContext->dwCurrentProgressIndex, wz);
 #endif
 
     // Verify that we have the enough field values.
@@ -1153,10 +1153,10 @@ static INT HandleInstallProgress(
     case 0: // master progress reset
         if (4 > cFields)
         {
-            Trace2(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - Invalid field count %d, '%ls'", cFields, wzMessage);
+            Trace(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - Invalid field count %d, '%ls'", cFields, wzMessage);
             ExitFunction();
         }
-        //Trace3(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - MASTER RESET - %d, %d, %d", iFields[1], iFields[2], iFields[3]);
+        //Trace(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - MASTER RESET - %d, %d, %d", iFields[1], iFields[2], iFields[3]);
 
         // Update the index into progress array.
         if (WIU_MSI_PROGRESS_INVALID == pContext->dwCurrentProgressIndex)
@@ -1198,10 +1198,10 @@ static INT HandleInstallProgress(
     case 1: // action info.
         if (3 > cFields)
         {
-            Trace2(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - Invalid field count %d, '%ls'", cFields, wzMessage);
+            Trace(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - Invalid field count %d, '%ls'", cFields, wzMessage);
             ExitFunction();
         }
-        //Trace3(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - ACTION INFO - %d, %d, %d", iFields[1], iFields[2], iFields[3]);
+        //Trace(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - ACTION INFO - %d, %d, %d", iFields[1], iFields[2], iFields[3]);
 
         if (0 == iFields[2])
         {
@@ -1217,11 +1217,11 @@ static INT HandleInstallProgress(
     case 2: // progress report.
         if (2 > cFields)
         {
-            Trace2(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - Invalid field count %d, '%ls'", cFields, wzMessage);
+            Trace(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - Invalid field count %d, '%ls'", cFields, wzMessage);
             break;
         }
 
-        //Trace3(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - PROGRESS REPORT - %d, %d, %d", iFields[1], iFields[2], iFields[3]);
+        //Trace(REPORT_STANDARD, "INSTALLMESSAGE_PROGRESS - PROGRESS REPORT - %d, %d, %d", iFields[1], iFields[2], iFields[3]);
 
         if (WIU_MSI_PROGRESS_INVALID == pContext->dwCurrentProgressIndex)
         {
@@ -1398,7 +1398,7 @@ static INT SendProgressUpdate(
 #ifdef _DEBUG
     DWORD64 qwCompleted = pContext->rgMsiProgress[pContext->dwCurrentProgressIndex].dwCompleted;
     DWORD64 qwTotal = pContext->rgMsiProgress[pContext->dwCurrentProgressIndex].dwTotal;
-    Trace3(REPORT_STANDARD, "MSI progress: %I64u/%I64u (%u%%)", qwCompleted, qwTotal, dwPercentage);
+    Trace(REPORT_STANDARD, "MSI progress: %I64u/%I64u (%u%%)", qwCompleted, qwTotal, dwPercentage);
     //AssertSz(qwCompleted <= qwTotal, "Completed progress is larger than total progress.");
 #endif
 

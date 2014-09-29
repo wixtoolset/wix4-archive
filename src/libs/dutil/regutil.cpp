@@ -207,7 +207,7 @@ extern "C" HRESULT DAPI RegDelete(
         {
             ExitFunction1(hr = S_OK);
         }
-        ExitOnFailure1(hr, "Failed to open this key for enumerating subkeys", wzSubKey);
+        ExitOnFailure(hr, "Failed to open this key for enumerating subkeys", wzSubKey);
 
         // Yes, keep enumerating the 0th item, because we're deleting it every time
         while (E_NOMOREITEMS != (hr = RegKeyEnum(hkKey, 0, &pszEnumeratedSubKey)))
@@ -215,10 +215,10 @@ extern "C" HRESULT DAPI RegDelete(
             ExitOnFailure(hr, "Failed to enumerate key 0");
             
             hr = PathConcat(wzSubKey, pszEnumeratedSubKey, &pszRecursiveSubKey);
-            ExitOnFailure2(hr, "Failed to concatenate paths while recursively deleting subkeys. Path1: %ls, Path2: %ls", wzSubKey, pszEnumeratedSubKey);
+            ExitOnFailure(hr, "Failed to concatenate paths while recursively deleting subkeys. Path1: %ls, Path2: %ls", wzSubKey, pszEnumeratedSubKey);
 
             hr = RegDelete(hkRoot, pszRecursiveSubKey, kbKeyBitness, fDeleteTree);
-            ExitOnFailure1(hr, "Failed to recursively delete subkey: %ls", pszRecursiveSubKey);
+            ExitOnFailure(hr, "Failed to recursively delete subkey: %ls", pszRecursiveSubKey);
         }
 
         hr = S_OK;
@@ -429,7 +429,7 @@ HRESULT DAPI RegReadBinary(
     else
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
-        ExitOnRootFailure1(hr, "Error reading binary registry value due to unexpected data type: %u", dwType);
+        ExitOnRootFailure(hr, "Error reading binary registry value due to unexpected data type: %u", dwType);
     }
 
 LExit:
@@ -497,13 +497,13 @@ extern "C" HRESULT DAPI RegReadString(
             ExitOnFailure(hr, "Failed to copy registry value to expand.");
 
             hr = PathExpand(psczValue, sczExpand, PATH_EXPAND_ENVIRONMENT);
-            ExitOnFailure1(hr, "Failed to expand registry value: %ls", *psczValue);
+            ExitOnFailure(hr, "Failed to expand registry value: %ls", *psczValue);
         }
     }
     else
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
-        ExitOnRootFailure1(hr, "Error reading string registry value due to unexpected data type: %u", dwType);
+        ExitOnRootFailure(hr, "Error reading string registry value due to unexpected data type: %u", dwType);
     }
 
 LExit:
@@ -551,13 +551,13 @@ HRESULT DAPI RegReadStringArray(
     if (cb / sizeof(WCHAR) != cch)
     {
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "The size of registry value %ls unexpected changed between 2 reads", wzName);
+        ExitOnFailure(hr, "The size of registry value %ls unexpected changed between 2 reads", wzName);
     }
 
     if (REG_MULTI_SZ != dwType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
-        ExitOnRootFailure1(hr, "Tried to read string array, but registry value %ls is of an incorrect type", wzName);
+        ExitOnRootFailure(hr, "Tried to read string array, but registry value %ls is of an incorrect type", wzName);
     }
 
     // Value exists, but is empty, so no strings to return.
@@ -572,7 +572,7 @@ HRESULT DAPI RegReadStringArray(
     if (L'\0' != sczValue[cch-1] || L'\0' != sczValue[cch-2])
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Tried to read string array, but registry value %ls is invalid (isn't double-null-terminated)", wzName);
+        ExitOnFailure(hr, "Tried to read string array, but registry value %ls is invalid (isn't double-null-terminated)", wzName);
     }
 
     cch = cb / sizeof(WCHAR);
@@ -646,7 +646,7 @@ extern "C" HRESULT DAPI RegReadVersion(
     else // unexpected data type
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
-        ExitOnRootFailure1(hr, "Error reading version registry value due to unexpected data type: %u", dwType);
+        ExitOnRootFailure(hr, "Error reading version registry value due to unexpected data type: %u", dwType);
     }
 
 LExit:
@@ -681,7 +681,7 @@ extern "C" HRESULT DAPI RegReadNumber(
     if (REG_DWORD != dwType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
-        ExitOnRootFailure1(hr, "Error reading version registry value due to unexpected data type: %u", dwType);
+        ExitOnRootFailure(hr, "Error reading version registry value due to unexpected data type: %u", dwType);
     }
 
 LExit:
@@ -714,7 +714,7 @@ extern "C" HRESULT DAPI RegReadQword(
     if (REG_QWORD != dwType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
-        ExitOnRootFailure1(hr, "Error reading version registry value due to unexpected data type: %u", dwType);
+        ExitOnRootFailure(hr, "Error reading version registry value due to unexpected data type: %u", dwType);
     }
 
 LExit:
@@ -737,7 +737,7 @@ HRESULT DAPI RegWriteBinary(
     DWORD er = ERROR_SUCCESS;
 
     er = vpfnRegSetValueExW(hk, wzName, 0, REG_BINARY, pbBuffer, cbBuffer);
-    ExitOnWin32Error1(er, hr, "Failed to write binary registry value with name: %ls", wzName);
+    ExitOnWin32Error(er, hr, "Failed to write binary registry value with name: %ls", wzName);
 
 LExit:
     return hr;
@@ -762,10 +762,10 @@ extern "C" HRESULT DAPI RegWriteString(
     if (wzValue)
     {
         hr = ::StringCbLengthW(wzValue, DWORD_MAX, reinterpret_cast<size_t*>(&cbValue));
-        ExitOnFailure1(hr, "Failed to determine length of registry value: %ls", wzName);
+        ExitOnFailure(hr, "Failed to determine length of registry value: %ls", wzName);
 
         er = vpfnRegSetValueExW(hk, wzName, 0, REG_SZ, reinterpret_cast<const BYTE *>(wzValue), cbValue);
-        ExitOnWin32Error1(er, hr, "Failed to set registry value: %ls", wzName);
+        ExitOnWin32Error(er, hr, "Failed to set registry value: %ls", wzName);
     }
     else
     {
@@ -774,7 +774,7 @@ extern "C" HRESULT DAPI RegWriteString(
         {
             er = ERROR_SUCCESS;
         }
-        ExitOnWin32Error1(er, hr, "Failed to delete registry value: %ls", wzName);
+        ExitOnWin32Error(er, hr, "Failed to delete registry value: %ls", wzName);
     }
 
 LExit:
@@ -800,7 +800,7 @@ extern "C" HRESULT DAPI RegWriteStringFormatted(
     va_start(args, szFormat);
     hr = StrAllocFormattedArgs(&sczValue, szFormat, args);
     va_end(args);
-    ExitOnFailure1(hr, "Failed to allocate %ls value.", wzName);
+    ExitOnFailure(hr, "Failed to allocate %ls value.", wzName);
 
     hr = RegWriteString(hk, wzName, sczValue);
 
@@ -855,7 +855,7 @@ HRESULT DAPI RegWriteStringArray(
         for (DWORD i = 0; i < cValues; ++i)
         {
             hr = ::StringCchCopyW(wzCopyDestination, dwTotalStringSize, rgwzValues[i]);
-            ExitOnFailure1(hr, "failed to copy string: %ls", rgwzValues[i]);
+            ExitOnFailure(hr, "failed to copy string: %ls", rgwzValues[i]);
             
             dwTemp -= lstrlenW(rgwzValues[i]) + 1;
             wzCopyDestination += lstrlenW(rgwzValues[i]) + 1;
@@ -868,7 +868,7 @@ HRESULT DAPI RegWriteStringArray(
     ExitOnFailure(hr, "Failed to get total string size in bytes");
 
     er = vpfnRegSetValueExW(hk, wzName, 0, REG_MULTI_SZ, reinterpret_cast<const BYTE *>(wzWriteValue), cbTotalStringSize);
-    ExitOnWin32Error1(er, hr, "Failed to set registry value to array of strings (first string of which is): %ls", wzWriteValue);
+    ExitOnWin32Error(er, hr, "Failed to set registry value to array of strings (first string of which is): %ls", wzWriteValue);
 
 LExit:
     ReleaseStr(sczWriteValue);
@@ -890,7 +890,7 @@ extern "C" HRESULT DAPI RegWriteNumber(
     DWORD er = ERROR_SUCCESS;
 
     er = vpfnRegSetValueExW(hk, wzName, 0, REG_DWORD, reinterpret_cast<const BYTE *>(&dwValue), sizeof(dwValue));
-    ExitOnWin32Error1(er, hr, "Failed to set %ls value.", wzName);
+    ExitOnWin32Error(er, hr, "Failed to set %ls value.", wzName);
 
 LExit:
     return hr;
@@ -910,7 +910,7 @@ extern "C" HRESULT DAPI RegWriteQword(
     DWORD er = ERROR_SUCCESS;
 
     er = vpfnRegSetValueExW(hk, wzName, 0, REG_QWORD, reinterpret_cast<const BYTE *>(&qwValue), sizeof(qwValue));
-    ExitOnWin32Error1(er, hr, "Failed to set %ls value.", wzName);
+    ExitOnWin32Error(er, hr, "Failed to set %ls value.", wzName);
 
 LExit:
     return hr;

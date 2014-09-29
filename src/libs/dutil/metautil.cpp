@@ -122,7 +122,7 @@ extern "C" HRESULT DAPI MetaFindWebBase(
             {
                 // if the passed in buffer wasn't big enough
                 hr = ::StringCchCopyW(wzWebBase, cchWebBase, wzKey);
-                ExitOnFailure1(hr, "failed to copy in web base: %ls", wzKey);
+                ExitOnFailure(hr, "failed to copy in web base: %ls", wzKey);
 
                 fFound = TRUE;
                 break;

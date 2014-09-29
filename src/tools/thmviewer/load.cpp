@@ -99,7 +99,7 @@ static DWORD WINAPI LoadThreadProc(
     hDirectory = ::CreateFileW(sczDirectory, FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
     if (INVALID_HANDLE_VALUE == hDirectory)
     {
-        ExitWithLastError1(hr, "Failed to open directory: %ls", sczDirectory);
+        ExitWithLastError(hr, "Failed to open directory: %ls", sczDirectory);
     }
 
     BOOL fUpdated = FALSE;
@@ -132,7 +132,7 @@ static DWORD WINAPI LoadThreadProc(
             DWORD cbRead = 0;
             if (!::ReadDirectoryChangesW(hDirectory, rgbNotifications, sizeof(rgbNotifications), FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE, &cbRead, NULL, NULL))
             {
-                ExitWithLastError1(hr, "Failed while watching directory: %ls", sczDirectory);
+                ExitWithLastError(hr, "Failed while watching directory: %ls", sczDirectory);
             }
 
             // Wait for half a second to let all the file handles get closed to minimize access

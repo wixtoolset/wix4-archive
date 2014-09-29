@@ -78,7 +78,7 @@ extern "C" HRESULT ExeEngineParsePackageFromXml(
         else
         {
             hr = E_UNEXPECTED;
-            ExitOnFailure1(hr, "Invalid protocol type: %ls", scz);
+            ExitOnFailure(hr, "Invalid protocol type: %ls", scz);
         }
     }
     else if (E_NOTFOUND != hr)
@@ -133,7 +133,7 @@ extern "C" HRESULT ExeEngineParsePackageFromXml(
             else
             {
                 hr = E_UNEXPECTED;
-                ExitOnFailure1(hr, "Invalid exit code type: %ls", scz);
+                ExitOnFailure(hr, "Invalid exit code type: %ls", scz);
             }
 
             // @Code
@@ -147,7 +147,7 @@ extern "C" HRESULT ExeEngineParsePackageFromXml(
             else
             {
                 hr = StrStringToUInt32(scz, 0, (UINT*)&pExitCode->dwCode);
-                ExitOnFailure1(hr, "Failed to parse @Code value: %ls", scz);
+                ExitOnFailure(hr, "Failed to parse @Code value: %ls", scz);
             }
 
             // prepare next iteration
@@ -267,7 +267,7 @@ extern "C" HRESULT ExeEnginePlanCalculatePackage(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Invalid package current state: %d.", pPackage->currentState);
+        ExitOnRootFailure(hr, "Invalid package current state: %d.", pPackage->currentState);
     }
 
     // Calculate the rollback action if there is an execute action.
@@ -439,7 +439,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
 
     // get cached executable path
     hr = CacheGetCompletedPath(pExecuteAction->exePackage.pPackage->fPerMachine, pExecuteAction->exePackage.pPackage->sczCacheId, &sczCachedDirectory);
-    ExitOnFailure1(hr, "Failed to get cached path for package: %ls", pExecuteAction->exePackage.pPackage->sczId);
+    ExitOnFailure(hr, "Failed to get cached path for package: %ls", pExecuteAction->exePackage.pPackage->sczId);
 
     // Best effort to set the execute package cache folder variable.
     VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, sczCachedDirectory, TRUE);
@@ -519,12 +519,12 @@ extern "C" HRESULT ExeEngineExecutePackage(
     if (!pExecuteAction->exePackage.fFireAndForget && BURN_EXE_PROTOCOL_TYPE_BURN == pExecuteAction->exePackage.pPackage->Exe.protocol)
     {
         hr = EmbeddedRunBundle(sczExecutablePath, sczCommand, pfnGenericMessageHandler, pvContext, &dwExitCode);
-        ExitOnFailure1(hr, "Failed to run bundle as embedded from path: %ls", sczExecutablePath);
+        ExitOnFailure(hr, "Failed to run bundle as embedded from path: %ls", sczExecutablePath);
     }
     else if (!pExecuteAction->exePackage.fFireAndForget && BURN_EXE_PROTOCOL_TYPE_NETFX4 == pExecuteAction->exePackage.pPackage->Exe.protocol)
     {
         hr = NetFxRunChainer(sczExecutablePath, sczCommand, pfnGenericMessageHandler, pvContext, &dwExitCode);
-        ExitOnFailure1(hr, "Failed to run netfx chainer: %ls", sczExecutablePath);
+        ExitOnFailure(hr, "Failed to run netfx chainer: %ls", sczExecutablePath);
     }
     else // create and wait for the executable process while sending fake progress to allow cancel.
     {
@@ -538,7 +538,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
         si.cb = sizeof(si); // TODO: hookup the stdin/stdout/stderr pipes for logging purposes?
         if (!::CreateProcessW(sczExecutablePath, sczCommand, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
         {
-            ExitWithLastError1(hr, "Failed to CreateProcess on path: %ls", sczExecutablePath);
+            ExitWithLastError(hr, "Failed to CreateProcess on path: %ls", sczExecutablePath);
         }
 
         if (pExecuteAction->exePackage.fFireAndForget)
@@ -559,13 +559,13 @@ extern "C" HRESULT ExeEngineExecutePackage(
             hr = ProcWaitForCompletion(pi.hProcess, 500, &dwExitCode);
             if (HRESULT_FROM_WIN32(WAIT_TIMEOUT) != hr)
             {
-                ExitOnFailure1(hr, "Failed to wait for executable to complete: %ls", sczExecutablePath);
+                ExitOnFailure(hr, "Failed to wait for executable to complete: %ls", sczExecutablePath);
             }
         } while (HRESULT_FROM_WIN32(WAIT_TIMEOUT) == hr);
     }
 
     hr = HandleExitCode(pExecuteAction->exePackage.pPackage, dwExitCode, pRestart);
-    ExitOnRootFailure1(hr, "Process returned error: 0x%x", dwExitCode);
+    ExitOnRootFailure(hr, "Process returned error: 0x%x", dwExitCode);
 
 LExit:
     if (fChangedCurrentDirectory)

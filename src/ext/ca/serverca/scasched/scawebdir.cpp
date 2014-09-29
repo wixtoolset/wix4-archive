@@ -209,7 +209,7 @@ HRESULT ScaWebDirsUninstall(IMSAdminBase* piMetabase, SCA_WEBDIR* pswdList)
             }
 
             hr = ScaDeleteMetabaseKey(piMetabase, pswd->wzWebDirRoot, L"");
-            ExitOnFailure1(hr, "Failed to remove WebDir '%ls' from metabase", pswd->wzKey);
+            ExitOnFailure(hr, "Failed to remove WebDir '%ls' from metabase", pswd->wzKey);
         }
 
         pswd = pswd->pswdNext;

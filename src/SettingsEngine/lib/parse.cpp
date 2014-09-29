@@ -142,7 +142,7 @@ HRESULT ParseManifest(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Product", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Product", bstrElement);
         }
 
         ReleaseNullObject(pixnNode);
@@ -295,7 +295,7 @@ HRESULT ParseDetectArp(
         ExitOnFailure(hr, "Failed to get next child element while going through list of elements under Detect/Arp");
 
         hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-        ExitOnFailure1(hr, "Unknown element '%ls' found under Detect/Arp", bstrElement);
+        ExitOnFailure(hr, "Unknown element '%ls' found under Detect/Arp", bstrElement);
 
         ReleaseNullObject(pixnChildElement);
     }
@@ -350,7 +350,7 @@ HRESULT ParseDetectExe(
         ExitOnFailure(hr, "Failed to get next child element while going through list of elements under Detect/Exe");
 
         hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-        ExitOnFailure1(hr, "Unknown element '%ls' found under Detect/Exe", bstrElement);
+        ExitOnFailure(hr, "Unknown element '%ls' found under Detect/Exe", bstrElement);
 
         ReleaseNullObject(pixnChildElement);
     }
@@ -417,7 +417,7 @@ HRESULT ParseDetects(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Detect", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Detect", bstrElement);
         }
 
         ReleaseNullObject(pixnNode);
@@ -462,7 +462,7 @@ HRESULT ParseDataRegistryKeyChildren(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Data/RegistryKey", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Data/RegistryKey", bstrElement);
         }
 
         ReleaseNullObject(pixnNode);
@@ -528,7 +528,7 @@ HRESULT ParseDataRegistryKeyBinary(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Data/RegistryKey/Binary", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Data/RegistryKey/Binary", bstrElement);
         }
 
         ReleaseNullObject(pixnNode);
@@ -616,7 +616,7 @@ HRESULT ParseDataRegistryKey(
     else
     {
         hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-        ExitOnFailure1(hr, "Unexpected root type encountered: %ls", sczRoot);
+        ExitOnFailure(hr, "Unexpected root type encountered: %ls", sczRoot);
     }
     pProduct->rgRegKeys[pProduct->cRegKeys-1].sczKey = sczKey;
     sczKey = NULL;
@@ -691,7 +691,7 @@ HRESULT ParseDataDirectory(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, " Unknown element '%ls' found under Data/File", bstrElement);
+            ExitOnFailure(hr, " Unknown element '%ls' found under Data/File", bstrElement);
         }
 
         ReleaseNullObject(pixnChildElement);
@@ -733,7 +733,7 @@ HRESULT ParseDataFile(
     if (L'\\' == sczLocation[dwLocationLen - 1])
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "A path ending in backslash was specified for location in a file element: %ls", sczLocation);
+        ExitOnFailure(hr, "A path ending in backslash was specified for location in a file element: %ls", sczLocation);
     }
 
     hr = XmlGetAttributeEx(pixnElement, L"Name", &sczName);
@@ -774,7 +774,7 @@ HRESULT ParseDataFile(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Data/File", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Data/File", bstrElement);
         }
 
         ReleaseNullObject(pixnChildElement);
@@ -900,7 +900,7 @@ HRESULT ParseDataCfgFile(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Data/File", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Data/File", bstrElement);
         }
 
         ReleaseNullObject(pixnChildElement);
@@ -969,7 +969,7 @@ HRESULT ParseDataCfgFileValue(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under CfgFile/Value", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under CfgFile/Value", bstrElement);
         }
 
         ReleaseNullObject(pixnChildElement);
@@ -1025,7 +1025,7 @@ HRESULT ParseData(
         else
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Data", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Data", bstrElement);
         }
 
         ReleaseNullObject(pixnNode);
@@ -1068,7 +1068,7 @@ HRESULT ParseFilter(
         if (0 != lstrcmpW(bstrElement, L"Ignore") && 0 != lstrcmpW(bstrElement, L"Normal"))
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Unknown element '%ls' found under Filter element", bstrElement);
+            ExitOnFailure(hr, "Unknown element '%ls' found under Filter element", bstrElement);
         }
 
         hr = XmlGetAttributeEx(pixnNode, L"Name", &sczExactName);
@@ -1095,7 +1095,7 @@ HRESULT ParseFilter(
         if (NULL != sczExactName && (NULL != sczPrefix || NULL != sczPostfix))
         {
             hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
-            ExitOnFailure1(hr, "Can't specify both a name and a (prefix or postfix) to a '%ls' element!", bstrElement);
+            ExitOnFailure(hr, "Can't specify both a name and a (prefix or postfix) to a '%ls' element!", bstrElement);
         }
 
         hr = MemEnsureArraySize(reinterpret_cast<void **>(&pProduct->rgFilters), pProduct->cFilters + 1, sizeof(LEGACY_VALUE_FILTER), 5);
@@ -1229,14 +1229,14 @@ static HRESULT AddLegacyRegistrySpecialCfgValuesToDict(
         ExitOnFailure(hr, "Failed to format cfg value name with namespace");
 
         hr = DictAddKey(*pshRegistrySpecials, sczCfgValueName);
-        ExitOnFailure1(hr, "Failed to add cfg value to list of specially-handled cfg values (flags): %ls", pRegKeySpecial->rgFlagsInfo[i].sczCfgValueName);
+        ExitOnFailure(hr, "Failed to add cfg value to list of specially-handled cfg values (flags): %ls", pRegKeySpecial->rgFlagsInfo[i].sczCfgValueName);
     }
 
     hr = MapRegSpecialToCfgValueName(pRegKey, pRegKeySpecial, &sczCfgValueName);
     ExitOnFailure(hr, "Failed to map registry value name to cfg value name");
 
     hr = DictAddKey(*pshRegistrySpecials, sczCfgValueName);
-    ExitOnFailure1(hr, "Failed to add cfg value to list of specially-handled cfg values (basic special): %ls", sczCfgValueName);
+    ExitOnFailure(hr, "Failed to add cfg value to list of specially-handled cfg values (basic special): %ls", sczCfgValueName);
 
 LExit:
     ReleaseStr(sczCfgValueName);

@@ -332,13 +332,13 @@ static HRESULT CreateFwRuleObject(
     if (bstrRemoteAddresses && *bstrRemoteAddresses)
     {
         hr = pNetFwRule->put_RemoteAddresses(bstrRemoteAddresses);
-        ExitOnFailure1(hr, "failed to set exception remote addresses '%ls'", bstrRemoteAddresses);
+        ExitOnFailure(hr, "failed to set exception remote addresses '%ls'", bstrRemoteAddresses);
     }
 
     if (bstrDescription && *bstrDescription)
     {
         hr = pNetFwRule->put_Description(bstrDescription);
-        ExitOnFailure1(hr, "failed to set exception description '%ls'", bstrDescription);
+        ExitOnFailure(hr, "failed to set exception description '%ls'", bstrDescription);
     }
 
     *ppNetFwRule = pNetFwRule;
@@ -700,7 +700,7 @@ static HRESULT AddPortExceptionOnCurrentProfile(
     if (bstrRemoteAddresses && *bstrRemoteAddresses)
     {
         hr = pfwPort->put_RemoteAddresses(bstrRemoteAddresses);
-        ExitOnFailure1(hr, "failed to set exception remote addresses '%ls'", bstrRemoteAddresses);
+        ExitOnFailure(hr, "failed to set exception remote addresses '%ls'", bstrRemoteAddresses);
     }
 
     hr = pfwPort->put_Name(bstrName);
@@ -830,7 +830,7 @@ static HRESULT RemovePortExceptionFromCurrentProfile(
     ExitOnFailure(hr, "failed to get open ports");
 
     hr = pfwPorts->Remove(iPort, static_cast<NET_FW_IP_PROTOCOL>(iProtocol));
-    ExitOnFailure2(hr, "failed to remove open port %d, protocol %d", iPort, iProtocol);
+    ExitOnFailure(hr, "failed to remove open port %d, protocol %d", iPort, iProtocol);
 
 LExit:
     return fIgnoreFailures ? S_OK : hr;
@@ -1043,13 +1043,13 @@ extern "C" UINT __stdcall ExecFirewallExceptions(
             case WCA_TODO_REINSTALL:
                 WcaLog(LOGMSG_STANDARD, "Installing firewall exception2 %ls on port %ls, protocol %d", pwzName, pwzPort, iProtocol);
                 hr = AddPortException(fSupportProfiles, pwzName, iProfile, pwzRemoteAddresses, fIgnoreFailures, pwzPort, iProtocol, pwzDescription);
-                ExitOnFailure3(hr, "failed to add/update port exception for name '%ls' on port %ls, protocol %d", pwzName, pwzPort, iProtocol);
+                ExitOnFailure(hr, "failed to add/update port exception for name '%ls' on port %ls, protocol %d", pwzName, pwzPort, iProtocol);
                 break;
 
             case WCA_TODO_UNINSTALL:
                 WcaLog(LOGMSG_STANDARD, "Uninstalling firewall exception2 %ls on port %ls, protocol %d", pwzName, pwzPort, iProtocol);
                 hr = RemovePortException(fSupportProfiles, pwzName, pwzPort, iProtocol, fIgnoreFailures);
-                ExitOnFailure3(hr, "failed to remove port exception for name '%ls' on port %ls, protocol %d", pwzName, pwzPort, iProtocol);
+                ExitOnFailure(hr, "failed to remove port exception for name '%ls' on port %ls, protocol %d", pwzName, pwzPort, iProtocol);
                 break;
             }
             break;
@@ -1061,13 +1061,13 @@ extern "C" UINT __stdcall ExecFirewallExceptions(
             case WCA_TODO_REINSTALL:
                 WcaLog(LOGMSG_STANDARD, "Installing firewall exception2 %ls (%ls)", pwzName, pwzFile);
                 hr = AddApplicationException(fSupportProfiles, pwzFile, pwzName, iProfile, pwzRemoteAddresses, fIgnoreFailures, pwzPort, iProtocol, pwzDescription);
-                ExitOnFailure2(hr, "failed to add/update application exception for name '%ls', file '%ls'", pwzName, pwzFile);
+                ExitOnFailure(hr, "failed to add/update application exception for name '%ls', file '%ls'", pwzName, pwzFile);
                 break;
 
             case WCA_TODO_UNINSTALL:
                 WcaLog(LOGMSG_STANDARD, "Uninstalling firewall exception2 %ls (%ls)", pwzName, pwzFile);
                 hr = RemoveApplicationException(fSupportProfiles, pwzName, pwzFile, fIgnoreFailures, pwzPort, iProtocol);
-                ExitOnFailure2(hr, "failed to remove application exception for name '%ls', file '%ls'", pwzName, pwzFile);
+                ExitOnFailure(hr, "failed to remove application exception for name '%ls', file '%ls'", pwzName, pwzFile);
                 break;
             }
             break;

@@ -36,14 +36,14 @@ extern "C" HRESULT DAPI PolcReadNumber(
     {
         ExitFunction1(hr = S_FALSE);
     }
-    ExitOnFailure1(hr, "Failed to open policy key: %ls", wzPolicyPath);
+    ExitOnFailure(hr, "Failed to open policy key: %ls", wzPolicyPath);
 
     hr = RegReadNumber(hk, wzPolicyName, pdw);
     if (E_FILENOTFOUND == hr || E_PATHNOTFOUND == hr)
     {
         ExitFunction1(hr = S_FALSE);
     }
-    ExitOnFailure2(hr, "Failed to open policy key: %ls, name: %ls", wzPolicyPath, wzPolicyName);
+    ExitOnFailure(hr, "Failed to open policy key: %ls, name: %ls", wzPolicyPath, wzPolicyName);
 
 LExit:
     ReleaseRegKey(hk);
@@ -71,14 +71,14 @@ extern "C" HRESULT DAPI PolcReadString(
     {
         ExitFunction1(hr = S_FALSE);
     }
-    ExitOnFailure1(hr, "Failed to open policy key: %ls", wzPolicyPath);
+    ExitOnFailure(hr, "Failed to open policy key: %ls", wzPolicyPath);
 
     hr = RegReadString(hk, wzPolicyName, pscz);
     if (E_FILENOTFOUND == hr || E_PATHNOTFOUND == hr)
     {
         ExitFunction1(hr = S_FALSE);
     }
-    ExitOnFailure2(hr, "Failed to open policy key: %ls, name: %ls", wzPolicyPath, wzPolicyName);
+    ExitOnFailure(hr, "Failed to open policy key: %ls, name: %ls", wzPolicyPath, wzPolicyName);
 
 LExit:
     ReleaseRegKey(hk);

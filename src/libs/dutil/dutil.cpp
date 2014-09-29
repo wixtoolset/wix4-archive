@@ -408,7 +408,7 @@ extern "C" void DAPI Dutil_RootFailure(
     UNREFERENCED_PARAMETER(hrError);
 #endif // DEBUG
 
-    TraceError2(hrError, "Root failure at %s:%d", szFile, iLine);
+    TraceError(hrError, "Root failure at %s:%d", szFile, iLine);
 }
 
 /*******************************************************************
@@ -457,10 +457,10 @@ extern "C" HRESULT DAPI LoadSystemLibraryWithPath(
     }
 
     hr = ::StringCchCatW(wzPath, MAX_PATH, wzModuleName);
-    ExitOnRootFailure1(hr, "Failed to create the fully-qualified path to %ls.", wzModuleName);
+    ExitOnRootFailure(hr, "Failed to create the fully-qualified path to %ls.", wzModuleName);
 
     *phModule = ::LoadLibraryW(wzPath);
-    ExitOnNullWithLastError1(*phModule, hr, "Failed to load the library %ls.", wzModuleName);
+    ExitOnNullWithLastError(*phModule, hr, "Failed to load the library %ls.", wzModuleName);
 
     if (psczPath)
     {

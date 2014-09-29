@@ -6,7 +6,7 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
+//
 // <summary>
 //    WiX CustomAction utility library.
 // </summary>
@@ -18,23 +18,12 @@ extern "C" {
 
 #define WIXAPI __stdcall
 #define ExitTrace WcaLogError
-#define ExitTrace1 WcaLogError
-#define ExitTrace2 WcaLogError
-#define ExitTrace3 WcaLogError
 
 #include "dutil.h"
 
-#define MessageExitOnLastError(x, e, s)      { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace(x, "%s", s); WcaErrorMessage(e, x, MB_OK, 0);  goto LExit; } }
-#define MessageExitOnLastError1(x, e, f, s)  { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace1(x, f, s); WcaErrorMessage(e, x, MB_OK, 1, s);  goto LExit; } }
-
-#define MessageExitOnFailure(x, e, s)           if (FAILED(x)) { ExitTrace(x, "%s", s); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 0);  goto LExit; }
-#define MessageExitOnFailure1(x, e, f, s)       if (FAILED(x)) { ExitTrace1(x, f, s); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 1, s);  goto LExit; }
-#define MessageExitOnFailure2(x, e, f, s, t)    if (FAILED(x)) { ExitTrace2(x, f, s, t); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 2, s, t);  goto LExit; }
-#define MessageExitOnFailure3(x, e, f, s, t, u) if (FAILED(x)) { ExitTrace2(x, f, s, t, u); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 3, s, t, u);  goto LExit; }
-
-#define MessageExitOnNullWithLastError(p, x, e, s) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, "%s", s); WcaErrorMessage(e, x, MB_OK, 0);  goto LExit; }
-#define MessageExitOnNullWithLastError1(p, x, e, f, s) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, f, s); WcaErrorMessage(e, x, MB_OK, 1, s);  goto LExit; }
-#define MessageExitOnNullWithLastError2(p, x, e, f, s, t) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, f, s, t); WcaErrorMessage(e, x, MB_OK, 2, s, t);  goto LExit; }
+#define MessageExitOnLastError(x, e, s, ...)      { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, 0, __VA_ARGS__);  goto LExit; } }
+#define MessageExitOnFailure(x, e, s, ...)           if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 0, __VA_ARGS__);  goto LExit; }
+#define MessageExitOnNullWithLastError(p, x, e, s, ...) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, 0, __VA_ARGS__);  goto LExit; }
 
 // Generic action enum.
 typedef enum WCA_ACTION
@@ -54,7 +43,7 @@ typedef enum WCA_CASCRIPT_CLOSE
 {
     WCA_CASCRIPT_CLOSE_PRESERVE,
     WCA_CASCRIPT_CLOSE_DELETE,
-} WCA_CASCRIPT_CLOSE; 
+} WCA_CASCRIPT_CLOSE;
 
 typedef enum WCA_TODO
 {
@@ -96,7 +85,7 @@ BOOL WIXAPI WcaCancelDetected();
 
 #define LOG_BUFFER 2048
 typedef enum LOGLEVEL
-{ 
+{
     LOGMSG_TRACEONLY,  // Never written to the log file (except in DEBUG builds)
     LOGMSG_VERBOSE,    // Written to log when LOGVERBOSE
     LOGMSG_STANDARD    // Written to log whenever informational logging is enabled
@@ -120,10 +109,10 @@ UINT WIXAPI WcaProcessMessage(
     __in MSIHANDLE hRecord
     );
 UINT __cdecl WcaErrorMessage(
-    __in int iError, 
-    __in HRESULT hrError, 
-    __in UINT uiType, 
-    __in DWORD cArgs, 
+    __in int iError,
+    __in HRESULT hrError,
+    __in UINT uiType,
+    __in DWORD cArgs,
     ...
     );
 HRESULT WIXAPI WcaProgressMessage(
@@ -282,7 +271,7 @@ HRESULT WIXAPI WcaWriteStringToCaData(
     __deref_inout_z LPWSTR* ppwzCustomActionData
     );
 HRESULT WIXAPI WcaWriteIntegerToCaData(
-    __in int i, 
+    __in int i,
     __deref_out_z_opt LPWSTR* ppwzCustomActionData
     );
 HRESULT WIXAPI WcaWriteStreamToCaData(

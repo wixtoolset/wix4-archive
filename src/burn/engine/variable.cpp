@@ -281,7 +281,7 @@ extern "C" HRESULT VariableInitialize(
         BUILT_IN_VARIABLE_DECLARATION* pBuiltInVariable = &vrgBuiltInVariables[i];
 
         hr = AddBuiltInVariable(pVariables, pBuiltInVariable->wzVariable, pBuiltInVariable->pfnInitialize, pBuiltInVariable->dwpInitializeData, pBuiltInVariable->fPersist);
-        ExitOnFailure1(hr, "Failed to add built-in variable: %ls.", pBuiltInVariable->wzVariable);
+        ExitOnFailure(hr, "Failed to add built-in variable: %ls.", pBuiltInVariable->wzVariable);
     }
 
 LExit:
@@ -373,7 +373,7 @@ extern "C" HRESULT VariablesParseFromXml(
             else
             {
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Invalid value for @Type: %ls", scz);
+                ExitOnFailure(hr, "Invalid value for @Type: %ls", scz);
             }
         }
         else
@@ -392,25 +392,25 @@ extern "C" HRESULT VariablesParseFromXml(
 
         // find existing variable
         hr = FindVariableIndexByName(pVariables, sczId, &iVariable);
-        ExitOnFailure1(hr, "Failed to find variable value '%ls'.", sczId);
+        ExitOnFailure(hr, "Failed to find variable value '%ls'.", sczId);
 
         // insert element if not found
         if (S_FALSE == hr)
         {
             hr = InsertVariable(pVariables, sczId, iVariable);
-            ExitOnFailure1(hr, "Failed to insert variable '%ls'.", sczId);
+            ExitOnFailure(hr, "Failed to insert variable '%ls'.", sczId);
         }
         else if (pVariables->rgVariables[iVariable].fBuiltIn)
         {
             hr = E_INVALIDARG;
-            ExitOnRootFailure1(hr, "Attempt to set built-in variable value: %ls", sczId);
+            ExitOnRootFailure(hr, "Attempt to set built-in variable value: %ls", sczId);
         }
         pVariables->rgVariables[iVariable].fHidden = fHidden;
         pVariables->rgVariables[iVariable].fPersisted = fPersisted;
 
         // update variable value
         hr = BVariantCopy(&value, &pVariables->rgVariables[iVariable].Value);
-        ExitOnFailure1(hr, "Failed to set value of variable: %ls", sczId);
+        ExitOnFailure(hr, "Failed to set value of variable: %ls", sczId);
 
         hr = BVariantSetEncryption(&pVariables->rgVariables[iVariable].Value, fHidden);
         ExitOnFailure(hr, "Failed to set variant encryption");
@@ -515,10 +515,10 @@ extern "C" HRESULT VariableGetNumeric(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to get value of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value of variable: %ls", wzVariable);
 
     hr = BVariantGetNumeric(&pVariable->Value, pllValue);
-    ExitOnFailure1(hr, "Failed to get value as numeric for variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value as numeric for variable: %ls", wzVariable);
 
 LExit:
     ::LeaveCriticalSection(&pVariables->csAccess);
@@ -547,10 +547,10 @@ extern "C" HRESULT VariableGetString(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to get value of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value of variable: %ls", wzVariable);
 
     hr = BVariantGetString(&pVariable->Value, psczValue);
-    ExitOnFailure1(hr, "Failed to get value as string for variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value as string for variable: %ls", wzVariable);
 
 LExit:
     ::LeaveCriticalSection(&pVariables->csAccess);
@@ -579,10 +579,10 @@ extern "C" HRESULT VariableGetVersion(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to get value of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value of variable: %ls", wzVariable);
 
     hr = BVariantGetVersion(&pVariable->Value, pqwValue);
-    ExitOnFailure1(hr, "Failed to get value as version for variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value as version for variable: %ls", wzVariable);
 
 LExit:
     ::LeaveCriticalSection(&pVariables->csAccess);
@@ -606,10 +606,10 @@ extern "C" HRESULT VariableGetVariant(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to get value of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get value of variable: %ls", wzVariable);
 
     hr = BVariantCopy(&pVariable->Value, pValue);
-    ExitOnFailure1(hr, "Failed to copy value of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to copy value of variable: %ls", wzVariable);
 
 LExit:
     ::LeaveCriticalSection(&pVariables->csAccess);
@@ -639,7 +639,7 @@ extern "C" HRESULT VariableGetFormatted(
     {
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to get variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get variable: %ls", wzVariable);
 
     // Non-builtin strings may need to get expanded... non-strings and builtin
     // variables are never expanded.
@@ -648,12 +648,12 @@ extern "C" HRESULT VariableGetFormatted(
         hr = BVariantGetString(&pVariable->Value, &scz);
         ExitOnFailure(hr, "Failed to get unformatted string");
         hr = VariableFormatString(pVariables, scz, psczValue, NULL);
-        ExitOnFailure2(hr, "Failed to format value '%ls' of variable: %ls", pVariable->fHidden ? L"*****" : pVariable->Value.sczValue, wzVariable);
+        ExitOnFailure(hr, "Failed to format value '%ls' of variable: %ls", pVariable->fHidden ? L"*****" : pVariable->Value.sczValue, wzVariable);
     }
     else
     {
         hr = BVariantGetString(&pVariable->Value, psczValue);
-        ExitOnFailure1(hr, "Failed to get value as string for variable: %ls", wzVariable);
+        ExitOnFailure(hr, "Failed to get value as string for variable: %ls", wzVariable);
     }
 
 LExit:
@@ -1159,7 +1159,7 @@ static HRESULT FormatString(
                 if (fObfuscateHiddenVariables)
                 {
                     hr = IsVariableHidden(pVariables, scz, &fHidden);
-                    ExitOnFailure1(hr, "Failed to determine variable visibility: '%ls'.", scz);
+                    ExitOnFailure(hr, "Failed to determine variable visibility: '%ls'.", scz);
                 }
 
                 if (fHidden)
@@ -1323,7 +1323,7 @@ static HRESULT GetVariable(
     BURN_VARIABLE* pVariable = NULL;
 
     hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
-    ExitOnFailure1(hr, "Failed to find variable value '%ls'.", wzVariable);
+    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
     if (S_FALSE == hr)
     {
@@ -1336,7 +1336,7 @@ static HRESULT GetVariable(
     if (BURN_VARIANT_TYPE_NONE == pVariable->Value.Type && pVariable->fBuiltIn)
     {
         hr = pVariable->pfnInitialize(pVariable->dwpInitializeData, &pVariable->Value);
-        ExitOnFailure1(hr, "Failed to initialize built-in variable value '%ls'.", wzVariable);
+        ExitOnFailure(hr, "Failed to initialize built-in variable value '%ls'.", wzVariable);
     }
 
     *ppVariable = pVariable;
@@ -1459,13 +1459,13 @@ static HRESULT SetVariableValue(
     ::EnterCriticalSection(&pVariables->csAccess);
 
     hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
-    ExitOnFailure1(hr, "Failed to find variable value '%ls'.", wzVariable);
+    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
     // insert element if not found
     if (S_FALSE == hr)
     {
         hr = InsertVariable(pVariables, wzVariable, iVariable);
-        ExitOnFailure1(hr, "Failed to insert variable '%ls'.", wzVariable);
+        ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
     }
     else if (pVariables->rgVariables[iVariable].fBuiltIn) // built-in variables must be overridden
     {
@@ -1477,7 +1477,7 @@ static HRESULT SetVariableValue(
         else
         {
             hr = E_INVALIDARG;
-            ExitOnRootFailure1(hr, "Attempt to set built-in variable value: %ls", wzVariable);
+            ExitOnRootFailure(hr, "Attempt to set built-in variable value: %ls", wzVariable);
         }
     }
     else // must *not* be a built-in variable so caller should not have tried to override it as a built-in.
@@ -1529,7 +1529,7 @@ static HRESULT SetVariableValue(
 
     // update variable value
     hr = BVariantCopy(pVariant, &pVariables->rgVariables[iVariable].Value);
-    ExitOnFailure1(hr, "Failed to set value of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to set value of variable: %ls", wzVariable);
 
 LExit:
     ::LeaveCriticalSection(&pVariables->csAccess);
@@ -2232,7 +2232,7 @@ static HRESULT Get64bitFolderFromRegistry(
     ExitOnFailure(hr, "Failed to open Windows folder key.");
 
     hr = RegReadString(hkFolders, wzFolderValue, psczPath);
-    ExitOnFailure1(hr, "Failed to read folder path for '%ls'.", wzFolderValue);
+    ExitOnFailure(hr, "Failed to read folder path for '%ls'.", wzFolderValue);
 
     hr = PathBackslashTerminate(psczPath);
     ExitOnFailure(hr, "Failed to ensure path was backslash terminated.");
@@ -2263,7 +2263,7 @@ static HRESULT IsVariableHidden(
         hr = S_OK;
         ExitFunction();
     }
-    ExitOnFailure1(hr, "Failed to get visibility of variable: %ls", wzVariable);
+    ExitOnFailure(hr, "Failed to get visibility of variable: %ls", wzVariable);
 
     *pfHidden = pVariable->fHidden;
 

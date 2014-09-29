@@ -474,7 +474,7 @@ extern "C" HRESULT DAPI UriResolve(
     URI_PROTOCOL protocol = URI_PROTOCOL_UNKNOWN;
 
     hr = UriProtocol(wzUri, &protocol);
-    ExitOnFailure1(hr, "Failed to determine protocol for URL: %ls", wzUri);
+    ExitOnFailure(hr, "Failed to determine protocol for URL: %ls", wzUri);
 
     ExitOnNull(ppwzResolvedUri, hr, E_INVALIDARG, "Failed to resolve URI, because no method of output was provided");
 
@@ -485,7 +485,7 @@ extern "C" HRESULT DAPI UriResolve(
         if (L'/' == *wzUri || L'\\' == *wzUri)
         {
             hr = UriRoot(wzBaseUri, ppwzResolvedUri, &protocol);
-            ExitOnFailure1(hr, "Failed to get root from URI: %ls", wzBaseUri);
+            ExitOnFailure(hr, "Failed to get root from URI: %ls", wzBaseUri);
 
             hr = StrAllocConcat(ppwzResolvedUri, wzUri, 0);
             ExitOnFailure(hr, "Failed to concat file to base URI.");
@@ -493,13 +493,13 @@ extern "C" HRESULT DAPI UriResolve(
         else
         {
             hr = UriProtocol(wzBaseUri, &protocol);
-            ExitOnFailure1(hr, "Failed to get protocol of base URI: %ls", wzBaseUri);
+            ExitOnFailure(hr, "Failed to get protocol of base URI: %ls", wzBaseUri);
 
             LPCWSTR pwcFile = const_cast<LPCWSTR> (UriFile(wzBaseUri));
             if (!pwcFile)
             {
                 hr = E_INVALIDARG;
-                ExitOnFailure1(hr, "Failed to get file from base URI: %ls", wzBaseUri);
+                ExitOnFailure(hr, "Failed to get file from base URI: %ls", wzBaseUri);
             }
 
             hr = StrAllocString(ppwzResolvedUri, wzBaseUri, pwcFile - wzBaseUri);

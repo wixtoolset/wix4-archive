@@ -127,7 +127,7 @@ extern "C" HRESULT DAPI DirEnsureExists(
         *pwzLastSlash = L'\0'; // null terminate the parent path
         hr = DirEnsureExists(wzPath, psa);   // recurse!
         *pwzLastSlash = L'\\';  // put the slash back
-        ExitOnFailureDebugTrace1(hr, "failed to create path: %ls", wzPath);
+        ExitOnFailureDebugTrace(hr, "failed to create path: %ls", wzPath);
 
         // try to create the directory now that all parents are created
         if (!::CreateDirectoryW(wzPath, psa))
@@ -208,7 +208,7 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
             er = ERROR_PATH_NOT_FOUND;
         }
         hr = HRESULT_FROM_WIN32(er);
-        ExitOnRootFailure1(hr, "Failed to get attributes for path: %ls", wzPath);
+        ExitOnRootFailure(hr, "Failed to get attributes for path: %ls", wzPath);
     }
 
     if (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)
@@ -217,7 +217,7 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
         {
             if (!::SetFileAttributesW(wzPath, FILE_ATTRIBUTE_NORMAL))
             {
-                ExitWithLastError1(hr, "Failed to remove read-only attribute from path: %ls", wzPath);
+                ExitWithLastError(hr, "Failed to remove read-only attribute from path: %ls", wzPath);
             }
         }
 
@@ -234,12 +234,12 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
 
             // Delete everything in this directory.
             hr = PathConcat(wzPath, L"*.*", &sczDelete);
-            ExitOnFailure1(hr, "Failed to concat wild cards to string: %ls", wzPath);
+            ExitOnFailure(hr, "Failed to concat wild cards to string: %ls", wzPath);
 
             hFind = ::FindFirstFileW(sczDelete, &wfd);
             if (INVALID_HANDLE_VALUE == hFind)
             {
-                ExitWithLastError1(hr, "failed to get first file in directory: %ls", wzPath);
+                ExitWithLastError(hr, "failed to get first file in directory: %ls", wzPath);
             }
 
             do
@@ -254,18 +254,18 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
                 wfd.cFileName[MAX_PATH - 1] = L'\0';
 
                 hr = PathConcat(wzPath, wfd.cFileName, &sczDelete);
-                ExitOnFailure2(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzPath);
+                ExitOnFailure(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzPath);
 
                 if (fRecurse && wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 {
                     hr = PathBackslashTerminate(&sczDelete);
-                    ExitOnFailure1(hr, "Failed to ensure path is backslash terminated: %ls", sczDelete);
+                    ExitOnFailure(hr, "Failed to ensure path is backslash terminated: %ls", sczDelete);
 
                     hr = DirEnsureDeleteEx(sczDelete, dwFlags); // recursive call
                     if (FAILED(hr))
                     {
                       // if we failed to delete a subdirectory, keep trying to finish any remaining files
-                      ExitTrace1(hr, "Failed to delete subdirectory; continuing: %ls", sczDelete);
+                      ExitTrace(hr, "Failed to delete subdirectory; continuing: %ls", sczDelete);
                       hr = S_OK;
                     }
                 }
@@ -275,7 +275,7 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
                     {
                         if (!::SetFileAttributesW(sczDelete, FILE_ATTRIBUTE_NORMAL))
                         {
-                            ExitWithLastError1(hr, "Failed to remove attributes from file: %ls", sczDelete);
+                            ExitWithLastError(hr, "Failed to remove attributes from file: %ls", sczDelete);
                         }
                     }
 
@@ -301,7 +301,7 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
                         }
                         else
                         {
-                            ExitWithLastError1(hr, "Failed to delete file: %ls", sczDelete);
+                            ExitWithLastError(hr, "Failed to delete file: %ls", sczDelete);
                         }
                     }
                 }
@@ -314,7 +314,7 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
             }
             else
             {
-                ExitWithLastError1(hr, "Failed while looping through files in directory: %ls", wzPath);
+                ExitWithLastError(hr, "Failed while looping through files in directory: %ls", wzPath);
             }
         }
 
@@ -329,13 +329,13 @@ extern "C" HRESULT DAPI DirEnsureDeleteEx(
                 }
             }
 
-            ExitOnRootFailure1(hr, "Failed to remove directory: %ls", wzPath);
+            ExitOnRootFailure(hr, "Failed to remove directory: %ls", wzPath);
         }
     }
     else
     {
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "Directory delete cannot delete file: %ls", wzPath);
+        ExitOnFailure(hr, "Directory delete cannot delete file: %ls", wzPath);
     }
 
     Assert(S_OK == hr);
@@ -398,7 +398,7 @@ extern "C" HRESULT DAPI DirSetCurrent(
 
     if (!::SetCurrentDirectoryW(wzDirectory))
     {
-        ExitWithLastError1(hr, "Failed to set current directory to: %ls", wzDirectory);
+        ExitWithLastError(hr, "Failed to set current directory to: %ls", wzDirectory);
     }
 
 LExit:

@@ -253,17 +253,17 @@ static HRESULT DAPI CabOperation(
     }
 
     hr = StrAllocString(&sczCabinet, wzCabinet, 0);
-    ExitOnFailure1(hr, "Failed to make copy of cabinet name:%ls", wzCabinet);
+    ExitOnFailure(hr, "Failed to make copy of cabinet name:%ls", wzCabinet);
 
     //
     // split the cabinet full path into directory and filename and convert to multi-byte (ick!)
     //
     pwz = FileFromPath(sczCabinet);
-    ExitOnNull1(pwz, hr, E_INVALIDARG, "failed to process cabinet path: %ls", wzCabinet);
+    ExitOnNull(pwz, hr, E_INVALIDARG, "failed to process cabinet path: %ls", wzCabinet);
 
     if (!::WideCharToMultiByte(CP_UTF8, 0, pwz, -1, szCabFile, countof(szCabFile), NULL, NULL))
     {
-        ExitWithLastError1(hr, "failed to convert cabinet filename to ASCII: %ls", pwz);
+        ExitWithLastError(hr, "failed to convert cabinet filename to ASCII: %ls", pwz);
     }
 
     *pwz = '\0';
@@ -278,7 +278,7 @@ static HRESULT DAPI CabOperation(
     {
         if (!::WideCharToMultiByte(CP_UTF8, 0, sczCabinet, -1, szCabDirectory, countof(szCabDirectory), NULL, NULL))
         {
-            ExitWithLastError1(hr, "failed to convert cabinet directory to ASCII: %ls", sczCabinet);
+            ExitWithLastError(hr, "failed to convert cabinet directory to ASCII: %ls", sczCabinet);
         }
     }
 
@@ -306,7 +306,7 @@ static HRESULT DAPI CabOperation(
     fResult = vpfnFDICopy(vhfdi, szCabFile, szCabDirectory, 0, pfnFdiNotify, NULL, static_cast<void*>(&ccs));
     if (!fResult && !ccs.fStopExtracting)   // if something went wrong and it wasn't us just stopping the extraction, then return a failure
     {
-        ExitWithLastError1(hr, "failed to extract cabinet file: %ls", sczCabinet);
+        ExitWithLastError(hr, "failed to extract cabinet file: %ls", sczCabinet);
     }
 
 LExit:
@@ -351,13 +351,13 @@ static __callback INT_PTR FAR DIAMONDAPI CabExtractOpen(__in_z PSTR pszFile, __i
     pFile = reinterpret_cast<INT_PTR>(::CreateFileW(sczCabFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
     if (INVALID_HANDLE_VALUE == reinterpret_cast<HANDLE>(pFile))
     {
-        ExitWithLastError1(hr, "failed to open file: %ls", sczCabFile);
+        ExitWithLastError(hr, "failed to open file: %ls", sczCabFile);
     }
 
     if (vdw64EmbeddedOffset)
     {
         hr = CabExtractSeek(pFile, 0, 0);
-        ExitOnFailure1(hr, "Failed to seek to embedded offset %I64d", vdw64EmbeddedOffset);
+        ExitOnFailure(hr, "Failed to seek to embedded offset %I64d", vdw64EmbeddedOffset);
     }
 
 LExit:
@@ -420,7 +420,7 @@ static __callback long FAR DIAMONDAPI CabExtractSeek(__in INT_PTR hf, __in long 
     default :
         dwMoveMethod = 0;
         hr = E_UNEXPECTED;
-        ExitOnFailure1(hr, "unexpected seektype in FDISeek(): %d", seektype);
+        ExitOnFailure(hr, "unexpected seektype in FDISeek(): %d", seektype);
     }
 
     // SetFilePointer returns -1 if it fails (this will cause FDI to quit with an FDIERROR_USER_ABORT error. 
@@ -428,7 +428,7 @@ static __callback long FAR DIAMONDAPI CabExtractSeek(__in INT_PTR hf, __in long 
     lMove = ::SetFilePointer(reinterpret_cast<HANDLE>(hf), dist, NULL, dwMoveMethod);
     if (0xFFFFFFFF == lMove)
     {
-        ExitWithLastError1(hr, "failed to move file pointer %d bytes", dist);
+        ExitWithLastError(hr, "failed to move file pointer %d bytes", dist);
     }
 
 LExit:
@@ -477,7 +477,7 @@ static __callback INT_PTR DIAMONDAPI CabExtractCallback(__in FDINOTIFICATIONTYPE
         sz = static_cast<LPCSTR>(pFDINotify->psz1);
         if (!::MultiByteToWideChar(CP_ACP, 0, sz, -1, wz, countof(wz)))
         {
-            ExitWithLastError1(hr, "failed to convert cabinet file id to unicode: %s", sz);
+            ExitWithLastError(hr, "failed to convert cabinet file id to unicode: %s", sz);
         }
 
         if (pccs->pfnProgress)
@@ -495,21 +495,21 @@ static __callback INT_PTR DIAMONDAPI CabExtractCallback(__in FDINOTIFICATIONTYPE
             FILETIME ftLocal;
             if (!::DosDateTimeToFileTime(pFDINotify->date, pFDINotify->time, &ftLocal))
             {
-                ExitWithLastError1(hr, "failed to get time for resource: %ls", wz);
+                ExitWithLastError(hr, "failed to get time for resource: %ls", wz);
             }
             ::LocalFileTimeToFileTime(&ftLocal, &ft);
             
 
             WCHAR wzPath[MAX_PATH];
             hr = ::StringCchCopyW(wzPath, countof(wzPath), pccs->pwzExtractDir);
-            ExitOnFailure2(hr, "failed to copy in extract directory: %ls for file: %ls", pccs->pwzExtractDir, wz);
+            ExitOnFailure(hr, "failed to copy in extract directory: %ls for file: %ls", pccs->pwzExtractDir, wz);
             hr = ::StringCchCatW(wzPath, countof(wzPath), wz);
-            ExitOnFailure2(hr, "failed to concat onto path: %ls file: %ls", wzPath, wz);
+            ExitOnFailure(hr, "failed to concat onto path: %ls file: %ls", wzPath, wz);
 
             ipResult = reinterpret_cast<INT_PTR>(::CreateFileW(wzPath, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
             if (INVALID_HANDLE_VALUE == reinterpret_cast<HANDLE>(ipResult))
             {
-                ExitWithLastError1(hr, "failed to create file: %s", wzPath);
+                ExitWithLastError(hr, "failed to create file: %s", wzPath);
             }
 
             ::SetFileTime(reinterpret_cast<HANDLE>(ipResult), &ft, &ft, &ft);   // try to set the file time (who cares if it fails)
@@ -539,7 +539,7 @@ static __callback INT_PTR DIAMONDAPI CabExtractCallback(__in FDINOTIFICATIONTYPE
 
         if (!::MultiByteToWideChar(CP_ACP, 0, sz, -1, wz, countof(wz)))
         {
-            ExitWithLastError1(hr, "failed to convert cabinet file id to unicode: %s", sz);
+            ExitWithLastError(hr, "failed to convert cabinet file id to unicode: %s", sz);
         }
 
         if (NULL != pFDINotify->hf)  // just close the file

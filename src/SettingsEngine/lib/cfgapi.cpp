@@ -249,13 +249,13 @@ extern "C" HRESULT CfgSetProduct(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version while setting product: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version while setting product: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle when setting produt");
@@ -319,7 +319,7 @@ extern "C" HRESULT CfgSetDword(
     ExitOnFailure(hr, "Failed to set dword value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set DWORD value: %u", dwValue);
+    ExitOnFailure(hr, "Failed to set DWORD value: %u", dwValue);
 
     if (!pcdb->fRemote)
     {
@@ -379,7 +379,7 @@ extern "C" HRESULT CfgGetDword(
     }
 
     hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
-    ExitOnFailure2(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
+    ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
     ExitOnFailure(hr, "Failed to retrieve deleted column");
@@ -392,7 +392,7 @@ extern "C" HRESULT CfgGetDword(
     if (VALUE_DWORD != cvValue.cvType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "Tried to retrieve value as dword, but it's of type: %d", cvValue.cvType);
+        ExitOnFailure(hr, "Tried to retrieve value as dword, but it's of type: %d", cvValue.cvType);
     }
 
     *pdwValue = cvValue.dword.dwValue;
@@ -448,7 +448,7 @@ extern "C" HRESULT CfgSetQword(
     ExitOnFailure(hr, "Failed to set qword value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set QWORD value: %I64u", qwValue);
+    ExitOnFailure(hr, "Failed to set QWORD value: %I64u", qwValue);
 
     if (!pcdb->fRemote)
     {
@@ -508,7 +508,7 @@ extern "C" HRESULT CfgGetQword(
     }
 
     hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
-    ExitOnFailure2(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
+    ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
     ExitOnFailure(hr, "Failed to retrieve deleted column");
@@ -521,7 +521,7 @@ extern "C" HRESULT CfgGetQword(
     if (VALUE_QWORD != cvValue.cvType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "Tried to retrieve value as dword, but it's of type: %d", cvValue.cvType);
+        ExitOnFailure(hr, "Tried to retrieve value as dword, but it's of type: %d", cvValue.cvType);
     }
 
     *pqwValue = cvValue.qword.qwValue;
@@ -580,7 +580,7 @@ extern "C" HRESULT CfgSetString(
     ExitOnFailure(hr, "Failed to set string value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
-    ExitOnFailure2(hr, "Failed to set string value '%ls' to '%ls'", wzName, wzValue);
+    ExitOnFailure(hr, "Failed to set string value '%ls' to '%ls'", wzName, wzValue);
 
     if (!pcdb->fRemote)
     {
@@ -640,7 +640,7 @@ extern "C" HRESULT CfgGetString(
     fLocked = TRUE;
 
     hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
-    ExitOnFailure2(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
+    ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
     ExitOnFailure(hr, "Failed to retrieve deleted column");
@@ -653,7 +653,7 @@ extern "C" HRESULT CfgGetString(
     if (VALUE_STRING != cvValue.cvType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "Tried to retrieve value as string, but it's of type: %d", cvValue.cvType);
+        ExitOnFailure(hr, "Tried to retrieve value as string, but it's of type: %d", cvValue.cvType);
     }
 
     ReleaseStr(*psczValue);
@@ -713,7 +713,7 @@ extern "C" HRESULT CFGAPI CfgSetBool(
     ExitOnFailure(hr, "Failed to set bool value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set BOOL value named: %ls", wzName);
+    ExitOnFailure(hr, "Failed to set BOOL value named: %ls", wzName);
 
     if (!pcdb->fRemote)
     {
@@ -773,7 +773,7 @@ extern "C" HRESULT CFGAPI CfgGetBool(
     fLocked = TRUE;
 
     hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
-    ExitOnFailure2(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
+    ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
     ExitOnFailure(hr, "Failed to retrieve deleted column");
@@ -786,7 +786,7 @@ extern "C" HRESULT CFGAPI CfgGetBool(
     if (VALUE_BOOL != cvValue.cvType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "Tried to retrieve value as bool, but it's of type: %d", cvValue.cvType);
+        ExitOnFailure(hr, "Tried to retrieve value as bool, but it's of type: %d", cvValue.cvType);
     }
 
     *pfValue = cvValue.boolean.fValue;
@@ -844,7 +844,7 @@ extern "C" HRESULT CfgDeleteValue(
     ExitOnFailure(hr, "Failed to set delete value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
-    ExitOnFailure1(hr, "Failed to delete value: %ls", wzName);
+    ExitOnFailure(hr, "Failed to delete value: %ls", wzName);
 
     if (!pcdb->fRemote)
     {
@@ -937,7 +937,7 @@ extern "C" HRESULT CFGAPI CfgSetBlob(
     ExitOnFailure(hr, "Failed to set blob value in memory");
 
     hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
-    ExitOnFailure1(hr, "Failed to set blob: %ls", wzName);
+    ExitOnFailure(hr, "Failed to set blob: %ls", wzName);
 
     if (!pcdb->fRemote)
     {
@@ -1004,7 +1004,7 @@ extern "C" HRESULT CFGAPI CfgGetBlob(
     {
         ExitFunction();
     }
-    ExitOnFailure2(hr, "Failed to find blob named: %ls for AppID: %u", wzName, pcdb->dwAppID);
+    ExitOnFailure(hr, "Failed to find blob named: %ls for AppID: %u", wzName, pcdb->dwAppID);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
     ExitOnFailure(hr, "Failed to retrieve deleted column");
@@ -1017,17 +1017,17 @@ extern "C" HRESULT CFGAPI CfgGetBlob(
     if (VALUE_BLOB != cvValue.cvType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "Tried to retrieve value as blob, but it's of type: %d", cvValue.cvType);
+        ExitOnFailure(hr, "Tried to retrieve value as blob, but it's of type: %d", cvValue.cvType);
     }
 
     if (CFG_BLOB_DB_STREAM != cvValue.blob.cbType)
     {
         hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-        ExitOnFailure1(hr, "Tried to retrieve value as db stream blob, but it's of type: %d", cvValue.blob.cbType);
+        ExitOnFailure(hr, "Tried to retrieve value as db stream blob, but it's of type: %d", cvValue.blob.cbType);
     }
 
     hr = StreamRead(pcdb, cvValue.blob.dbstream.dwContentID, NULL, ppbBuffer, piBuffer);
-    ExitOnFailure2(hr, "Failed to get binary content of blob named: %ls, with content ID: %u", wzName, dwContentID);
+    ExitOnFailure(hr, "Failed to get binary content of blob named: %ls, with content ID: %u", wzName, dwContentID);
 
 LExit:
     ReleaseSceRow(sceRow);
@@ -1105,7 +1105,7 @@ extern "C" HRESULT CfgEnumerateProducts(
     hr = SceGetFirstRow(pcdb->psceDb, PRODUCT_INDEX_TABLE, &sceRow);
     while (E_NOTFOUND != hr)
     {
-        ExitOnFailure1(hr, "Failed to get row from table: %u", PRODUCT_INDEX_TABLE);
+        ExitOnFailure(hr, "Failed to get row from table: %u", PRODUCT_INDEX_TABLE);
 
         if (pcesEnum->dwNumValues >= pcesEnum->dwMaxValues)
         {
@@ -1191,7 +1191,7 @@ extern "C" HRESULT CfgEnumPastValues(
     fLocked = TRUE;
 
     hr = EnumPastValues(pcdb, wzName, reinterpret_cast<CFG_ENUMERATION **>(ppvHandle), pcCount);
-    ExitOnFailure1(hr, "Failed to call internal enumerate past values function on value named: %ls", wzName);
+    ExitOnFailure(hr, "Failed to call internal enumerate past values function on value named: %ls", wzName);
 
 LExit:
     if (fLocked)
@@ -1248,7 +1248,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDataType(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1264,7 +1264,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDataType(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for datatype. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for datatype. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1280,7 +1280,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDataType(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for datatype. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for datatype. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1288,7 +1288,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDataType(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for datatype. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for datatype. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1314,7 +1314,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1336,7 +1336,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1358,7 +1358,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1381,7 +1381,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1400,14 +1400,14 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
 
     default:
         hr = E_INVALIDARG;
-          ExitOnFailure2(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+          ExitOnFailure(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1439,7 +1439,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDword(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1457,14 +1457,14 @@ extern "C" HRESULT CFGAPI CfgEnumReadDword(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
 
     case ENUMERATION_PRODUCTS:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
 
     case ENUMERATION_VALUE_HISTORY:
@@ -1480,7 +1480,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDword(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1488,7 +1488,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadDword(
 
     default:
         hr = E_INVALIDARG;
-          ExitOnFailure2(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+          ExitOnFailure(hr, "Unsupported request for dword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1514,7 +1514,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadQword(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1528,7 +1528,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadQword(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for qword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for qword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1542,7 +1542,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadQword(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for qword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for qword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1550,7 +1550,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadQword(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for qword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for qword. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1576,7 +1576,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBool(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1590,7 +1590,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBool(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1604,7 +1604,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBool(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1618,7 +1618,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBool(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1633,7 +1633,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBool(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1641,7 +1641,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBool(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for bool. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1667,7 +1667,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadHash(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1681,7 +1681,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadHash(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for hash. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for hash. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1695,14 +1695,14 @@ extern "C" HRESULT CFGAPI CfgEnumReadHash(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for hash. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for hash. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for hash. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for hash. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1728,7 +1728,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadSystemTime(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     switch (pcesEnum->enumType)
@@ -1742,7 +1742,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadSystemTime(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for systemtime. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for systemtime. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1757,7 +1757,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadSystemTime(
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for systemtime. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for systemtime. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1765,7 +1765,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadSystemTime(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for systemtime. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for systemtime. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1797,7 +1797,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBinary(
     if (dwIndex >= pcesEnum->dwNumValues)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
     }
 
     hr = HandleLock(pcdb);
@@ -1811,12 +1811,12 @@ extern "C" HRESULT CFGAPI CfgEnumReadBinary(
         {
         case ENUM_DATA_BLOBCONTENT:
             hr = StreamRead(pcdb, pcesEnum->values.rgcValues[dwIndex].blob.dbstream.dwContentID, NULL, ppbBuffer, piBuffer);
-            ExitOnFailure1(hr, "Failed to get blob content with ID: %u", pcesEnum->values.rgcValues[dwIndex].blob.dbstream.dwContentID);
+            ExitOnFailure(hr, "Failed to get blob content with ID: %u", pcesEnum->values.rgcValues[dwIndex].blob.dbstream.dwContentID);
             break;
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for blob. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for blob. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
         break;
@@ -1826,12 +1826,12 @@ extern "C" HRESULT CFGAPI CfgEnumReadBinary(
         {
         case ENUM_DATA_BLOBCONTENT:
             hr = StreamRead(pcdb, pcesEnum->valueHistory.rgcValues[dwIndex].blob.dbstream.dwContentID, NULL, ppbBuffer, piBuffer);
-            ExitOnFailure1(hr, "Failed to get binary content with ID: %u", pcesEnum->valueHistory.rgcValues[dwIndex].blob.dbstream.dwContentID);
+            ExitOnFailure(hr, "Failed to get binary content with ID: %u", pcesEnum->valueHistory.rgcValues[dwIndex].blob.dbstream.dwContentID);
             break;
 
         default:
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "Unsupported request for blob. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+            ExitOnFailure(hr, "Unsupported request for blob. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
             break;
         }
 
@@ -1839,7 +1839,7 @@ extern "C" HRESULT CFGAPI CfgEnumReadBinary(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnFailure2(hr, "Unsupported request for blob. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
+        ExitOnFailure(hr, "Unsupported request for blob. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);
         break;
     }
 
@@ -1990,7 +1990,7 @@ extern "C" HRESULT CfgResolve(
         if (fLegacy)
         {
             hr = LegacySyncSetProduct(pcdb->pcdbLocal, &syncSession, rgcpProduct[dwProductIndex].sczProductName);
-            ExitOnFailure1(hr, "Failed to set legacy product: ", rgcpProduct[dwProductIndex].sczProductName);
+            ExitOnFailure(hr, "Failed to set legacy product: ", rgcpProduct[dwProductIndex].sczProductName);
         }
 
         for (dwValueIndex = 0; dwValueIndex < rgcpProduct[dwProductIndex].cValues; ++dwValueIndex)
@@ -2063,13 +2063,13 @@ extern "C" HRESULT CFGAPI CfgRegisterProduct(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle when registering product");
@@ -2112,13 +2112,13 @@ extern "C" HRESULT CFGAPI CfgUnregisterProduct(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle when unregistering product");
@@ -2162,13 +2162,13 @@ extern "C" HRESULT CFGAPI CfgIsProductRegistered(
     StrStringToLower(sczLowPublicKey);
 
     hr = ProductValidateName(wzProductName);
-    ExitOnFailure1(hr, "Failed to validate ProductName: %ls", wzProductName);
+    ExitOnFailure(hr, "Failed to validate ProductName: %ls", wzProductName);
 
     hr = ProductValidateVersion(wzVersion);
-    ExitOnFailure1(hr, "Failed to validate Version: %ls", wzVersion);
+    ExitOnFailure(hr, "Failed to validate Version: %ls", wzVersion);
 
     hr = ProductValidatePublicKey(sczLowPublicKey);
-    ExitOnFailure1(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
+    ExitOnFailure(hr, "Failed to validate Public Key: %ls", sczLowPublicKey);
 
     hr = HandleLock(pcdb);
     ExitOnFailure(hr, "Failed to lock handle when checking if product is registered");

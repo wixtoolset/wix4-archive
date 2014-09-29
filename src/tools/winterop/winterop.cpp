@@ -72,7 +72,7 @@ HRESULT ResetAcls(
         hr = ::SetNamedSecurityInfoW(const_cast<LPWSTR>(pwzFiles[i]), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION, NULL, NULL, pacl, NULL);
         if (ERROR_FILE_NOT_FOUND != hr && ERROR_PATH_NOT_FOUND != hr)
         {
-            ExitOnFailure1(hr = HRESULT_FROM_WIN32(hr), "failed to set security descriptor for file: %S", pwzFiles[i]);
+            ExitOnFailure(hr = HRESULT_FROM_WIN32(hr), "failed to set security descriptor for file: %S", pwzFiles[i]);
         }
     }
 
@@ -138,7 +138,7 @@ HRESULT CreateCabAddFiles(
             pmfHash[i],
             hContext
             );
-        ExitOnFailure1(hr, "Failed to add file %S to cab", pwzFiles[i]);
+        ExitOnFailure(hr, "Failed to add file %S to cab", pwzFiles[i]);
     }
 
 LExit:

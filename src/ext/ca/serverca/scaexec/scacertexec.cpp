@@ -187,7 +187,7 @@ static HRESULT ExecuteCertificateOperation(
 
     // Open the right store.
     hCertStore = ::CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, NULL, dwStoreLocation, pwzStore);
-    MessageExitOnNullWithLastError1(hCertStore, hr, msierrCERTFailedOpen, "Failed to open certificate store: %ls", pwzStore);
+    MessageExitOnNullWithLastError(hCertStore, hr, msierrCERTFailedOpen, "Failed to open certificate store: %ls", pwzStore);
 
     if (SCA_ACTION_INSTALL == saAction) // install operations need more data
     {
@@ -258,7 +258,7 @@ static HRESULT InstallCertificatePackage(
 
     if (!::CryptQueryObject(CERT_QUERY_OBJECT_BLOB, &blob, CERT_QUERY_CONTENT_FLAG_ALL, CERT_QUERY_FORMAT_FLAG_ALL, 0, &dwEncodingType, &dwContentType, &dwFormatType, NULL, NULL, (LPCVOID*)&pCertContext))
     {
-        ExitWithLastError1(hr, "Failed to parse the certificate blob: %ls", wzName);
+        ExitWithLastError(hr, "Failed to parse the certificate blob: %ls", wzName);
     }
 
     hr = StrAllocFormatted(&pwzUniqueName, L"%s_wixCert_%d", wzName, ++iUniqueId);

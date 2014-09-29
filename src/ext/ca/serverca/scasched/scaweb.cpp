@@ -469,7 +469,7 @@ HRESULT ScaWebsInstall(
         if (psw->fHasComponent && WcaIsInstalling(psw->isInstalled, psw->isAction))
         {
             hr = ScaWebWrite(piMetabase, psw, psapList);
-            ExitOnFailure1(hr, "failed to write web '%ls' to metabase", psw->wzKey);
+            ExitOnFailure(hr, "failed to write web '%ls' to metabase", psw->wzKey);
         }
 
         psw = psw->pswNext;
@@ -494,7 +494,7 @@ HRESULT ScaWebsUninstall(
         if (psw->fHasComponent && WcaIsUninstalling(psw->isInstalled, psw->isAction))
         {
             hr = ScaWebRemove(piMetabase, psw);
-            ExitOnFailure1(hr, "Failed to remove web '%ls' from metabase", psw->wzKey);
+            ExitOnFailure(hr, "Failed to remove web '%ls' from metabase", psw->wzKey);
         }
 
         psw = psw->pswNext;
@@ -870,7 +870,7 @@ static HRESULT ScaWebFindFreeBase(
                 }
             }
             // In case we don't find a slash, error out
-            ExitOnNull1(pcchSlash, hr, E_INVALIDARG, "Failed to find a slash in the web root: %ls", psw->wzWebBase);
+            ExitOnNull(pcchSlash, hr, E_INVALIDARG, "Failed to find a slash in the web root: %ls", psw->wzWebBase);
 
             prgdwSubKeys[cSubKeysFilled] = wcstol(pcchSlash + 1, NULL, 10);
             ++cSubKeysFilled;
@@ -904,7 +904,7 @@ static HRESULT ScaWebFindFreeBase(
     }
 
     hr = ::StringCchPrintfW(wzWebBase, cchWebBase, L"/LM/W3SVC/%u", dwKey);
-    ExitOnFailure1(hr, "failed to format web base with key: %u", dwKey);
+    ExitOnFailure(hr, "failed to format web base with key: %u", dwKey);
 
 LExit:
     MetaFreeValue(&mr);
@@ -1101,7 +1101,7 @@ static HRESULT ScaWebWrite(
     if (psw->pswscList)
     {
         hr = ScaSslCertificateWriteMetabase(piMetabase, psw->wzWebBase, psw->pswscList);
-        ExitOnFailure1(hr, "Failed to write SSL certificates for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write SSL certificates for Web site: %ls", psw->wzKey);
     }
 
     hr = ScaWriteMetabaseValue(piMetabase, psw->wzWebBase, L"", MD_SECURE_BINDINGS, METADATA_NO_ATTRIBUTES, IIS_MD_UT_SERVER, MULTISZ_METADATA, wzSecureBindings);
@@ -1111,21 +1111,21 @@ static HRESULT ScaWebWrite(
     if (psw->pshhList)
     {
         hr = ScaWriteHttpHeader(piMetabase, wzRootOfWeb, psw->pshhList);
-        ExitOnFailure1(hr, "Failed to write custom HTTP headers for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write custom HTTP headers for Web site: %ls", psw->wzKey);
     }
 
     // write the errors
     if (psw->psweList)
     {
         hr = ScaWriteWebError(piMetabase, weptWeb, psw->wzWebBase, psw->psweList);
-        ExitOnFailure1(hr, "Failed to write custom web errors for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write custom web errors for Web site: %ls", psw->wzKey);
     }
 
     // write the mimetypes
     if (psw->psmm)
     {
         hr = ScaWriteMimeMap(piMetabase, wzRootOfWeb, psw->psmm);
-        ExitOnFailure1(hr, "Failed to write mimemap for Web site: %ls", psw->wzKey);
+        ExitOnFailure(hr, "Failed to write mimemap for Web site: %ls", psw->wzKey);
     }
 
     // write the log information to the metabase
@@ -1149,7 +1149,7 @@ static HRESULT ScaWebRemove(
 
     // simply remove the root key and everything else is pulled at the same time
     hr = ScaDeleteMetabaseKey(piMetabase, psw->wzWebBase, L"");
-    ExitOnFailure1(hr, "Failed to remove web '%ls' from metabase", psw->wzKey);
+    ExitOnFailure(hr, "Failed to remove web '%ls' from metabase", psw->wzKey);
 
 LExit:
     return hr;

@@ -38,6 +38,7 @@ WcaErrorMessage() - sends an error message from the CustomAction using
 the Error table
 
 NOTE: Any and all var_args (...) must be WCHAR*
+      If you pass -1 to cArgs the count will be determined
 ********************************************************************/
 extern "C" UINT __cdecl WcaErrorMessage(
     __in int iError,
@@ -49,7 +50,7 @@ extern "C" UINT __cdecl WcaErrorMessage(
 {
     UINT er;
     MSIHANDLE hRec = NULL;
-    va_list args;
+    va_list args = NULL;
 
     uiType |= INSTALLMESSAGE_ERROR;  // ensure error type is set
     hRec = ::MsiCreateRecord(cArgs + 2);
@@ -66,6 +67,18 @@ extern "C" UINT __cdecl WcaErrorMessage(
     ExitOnFailure(HRESULT_FROM_WIN32(er), "failed to set hresult code into error message");
 
     va_start(args, cArgs);
+    if (-1 == cArgs)
+    {
+        LPCWSTR wzArg = NULL;
+        va_list iter = args;
+        cArgs = 0;
+
+        while (NULL != (wzArg = va_arg(iter, WCHAR*)) && L'\0' != *wzArg)
+        {
+            ++cArgs;
+        }
+    }
+
     for (DWORD i = 0; i < cArgs; i++)
     {
         er = ::MsiRecordSetStringW(hRec, i + 3, va_arg(args, WCHAR*));
@@ -75,6 +88,11 @@ extern "C" UINT __cdecl WcaErrorMessage(
 
     er = WcaProcessMessage(static_cast<INSTALLMESSAGE>(uiType), hRec);
 LExit:
+    if (args)
+    {
+        va_end(args);
+    }
+
     if (hRec)
     {
         ::MsiCloseHandle(hRec);
@@ -322,7 +340,7 @@ extern "C" HRESULT WIXAPI WcaOpenView(
 
     HRESULT hr = S_OK;
     UINT er = ::MsiDatabaseOpenViewW(WcaGetDatabaseHandle(), wzSql, phView);
-    ExitOnWin32Error1(er, hr, "failed to open view on database with SQL: %ls", wzSql);
+    ExitOnWin32Error(er, hr, "failed to open view on database with SQL: %ls", wzSql);
 
 LExit:
     return hr;
@@ -474,7 +492,7 @@ extern "C" HRESULT WIXAPI WcaGetProperty(
         {
             hr = HRESULT_FROM_WIN32(er);
         }
-        ExitOnFailure1(hr, "Failed to allocate string for Property '%ls'", wzProperty);
+        ExitOnFailure(hr, "Failed to allocate string for Property '%ls'", wzProperty);
     }
     else
     {
@@ -487,11 +505,11 @@ extern "C" HRESULT WIXAPI WcaGetProperty(
     {
         Assert(*ppwzData);
         hr = StrAlloc(ppwzData, ++cch);
-        ExitOnFailure1(hr, "Failed to allocate string for Property '%ls'", wzProperty);
+        ExitOnFailure(hr, "Failed to allocate string for Property '%ls'", wzProperty);
 
         er = ::MsiGetPropertyW(WcaGetInstallHandle(), wzProperty, *ppwzData, (DWORD *)&cch);
     }
-    ExitOnWin32Error1(er, hr, "Failed to get data for property '%ls'", wzProperty);
+    ExitOnWin32Error(er, hr, "Failed to get data for property '%ls'", wzProperty);
 
 LExit:
     return hr;
@@ -517,10 +535,10 @@ extern "C" HRESULT WIXAPI WcaGetFormattedProperty(
     LPWSTR pwzPropertyValue = NULL;
 
     hr = WcaGetProperty(wzProperty, &pwzPropertyValue);
-    ExitOnFailure1(hr, "failed to get %ls", wzProperty);
+    ExitOnFailure(hr, "failed to get %ls", wzProperty);
 
     hr = WcaGetFormattedString(pwzPropertyValue, ppwzData);
-    ExitOnFailure2(hr, "failed to get formatted value for property: '%ls' with value: '%ls'", wzProperty, pwzPropertyValue);
+    ExitOnFailure(hr, "failed to get formatted value for property: '%ls' with value: '%ls'", wzProperty, pwzPropertyValue);
 
 LExit:
     ReleaseStr(pwzPropertyValue);
@@ -550,7 +568,7 @@ extern "C" HRESULT WIXAPI WcaGetFormattedString(
     DWORD_PTR cch = 0;
 
     er = ::MsiRecordSetStringW(hRecord, 0, wzString);
-    ExitOnWin32Error1(er, hr, "Failed to set record field 0 with '%ls'", wzString);
+    ExitOnWin32Error(er, hr, "Failed to set record field 0 with '%ls'", wzString);
 
     if (!*ppwzData)
     {
@@ -564,7 +582,7 @@ extern "C" HRESULT WIXAPI WcaGetFormattedString(
         {
             hr = HRESULT_FROM_WIN32(er);
         }
-        ExitOnFailure1(hr, "Failed to allocate string for formatted string: '%ls'", wzString);
+        ExitOnFailure(hr, "Failed to allocate string for formatted string: '%ls'", wzString);
     }
     else
     {
@@ -576,11 +594,11 @@ extern "C" HRESULT WIXAPI WcaGetFormattedString(
     if (ERROR_MORE_DATA == er)
     {
         hr = StrAlloc(ppwzData, ++cch);
-        ExitOnFailure1(hr, "Failed to allocate string for formatted string: '%ls'", wzString);
+        ExitOnFailure(hr, "Failed to allocate string for formatted string: '%ls'", wzString);
 
         er = ::MsiFormatRecordW(WcaGetInstallHandle(), hRecord, *ppwzData, (DWORD *)&cch);
     }
-    ExitOnWin32Error1(er, hr, "Failed to get formatted string: '%ls'", wzString);
+    ExitOnWin32Error(er, hr, "Failed to get formatted string: '%ls'", wzString);
 
 LExit:
     return hr;
@@ -606,7 +624,7 @@ extern "C" HRESULT WIXAPI WcaGetIntProperty(
     DWORD cch = countof(wzValue) - 1;
 
     er = ::MsiGetPropertyW(WcaGetInstallHandle(), wzProperty, wzValue, &cch);
-    ExitOnWin32Error1(er, hr, "Failed to get data for property '%ls'", wzProperty);
+    ExitOnWin32Error(er, hr, "Failed to get data for property '%ls'", wzProperty);
 
     *piData = wcstol(wzValue, NULL, 10);
 
@@ -645,7 +663,7 @@ extern "C" HRESULT WIXAPI WcaGetTargetPath(
         {
             hr = HRESULT_FROM_WIN32(er);
         }
-        ExitOnFailure1(hr, "Failed to allocate string for target path of folder: '%ls'", wzFolder);
+        ExitOnFailure(hr, "Failed to allocate string for target path of folder: '%ls'", wzFolder);
     }
     else
     {
@@ -658,11 +676,11 @@ extern "C" HRESULT WIXAPI WcaGetTargetPath(
     {
         ++cch;
         hr = StrAlloc(ppwzData, cch);
-        ExitOnFailure1(hr, "Failed to allocate string for target path of folder: '%ls'", wzFolder);
+        ExitOnFailure(hr, "Failed to allocate string for target path of folder: '%ls'", wzFolder);
 
         er = ::MsiGetTargetPathW(WcaGetInstallHandle(), wzFolder, *ppwzData, (DWORD*)&cch);
     }
-    ExitOnWin32Error1(er, hr, "Failed to get target path for folder '%ls'", wzFolder);
+    ExitOnWin32Error(er, hr, "Failed to get target path for folder '%ls'", wzFolder);
 
 LExit:
     return hr;
@@ -684,7 +702,7 @@ extern "C" HRESULT WIXAPI WcaSetProperty(
         return E_INVALIDARG;
 
     UINT er = ::MsiSetPropertyW(WcaGetInstallHandle(), wzPropertyName, wzPropertyValue);
-    ExitOnWin32Error1(er, hr, "failed to set property: %ls", wzPropertyName);
+    ExitOnWin32Error(er, hr, "failed to set property: %ls", wzPropertyName);
 
 LExit:
     return hr;
@@ -706,10 +724,10 @@ extern "C" HRESULT WIXAPI WcaSetIntProperty(
     // 12 characters should be enough for a 32-bit int: 10 digits, 1 sign, 1 null
     WCHAR wzPropertyValue[13];
     HRESULT hr = StringCchPrintfW(wzPropertyValue, countof(wzPropertyValue), L"%d", nPropertyValue);
-    ExitOnFailure1(hr, "failed to convert into string property value: %d", nPropertyValue);
+    ExitOnFailure(hr, "failed to convert into string property value: %d", nPropertyValue);
 
     UINT er = ::MsiSetPropertyW(WcaGetInstallHandle(), wzPropertyName, wzPropertyValue);
-    ExitOnWin32Error1(er, hr, "failed to set property: %ls", wzPropertyName);
+    ExitOnWin32Error(er, hr, "failed to set property: %ls", wzPropertyName);
 
 LExit:
     return hr;
@@ -965,7 +983,7 @@ extern "C" HRESULT WIXAPI WcaGetRecordFormattedInteger(
     LPWSTR pwzData = NULL;
 
     hr = WcaGetRecordFormattedString(hRec, uiField, &pwzData);
-    ExitOnFailure1(hr, "failed to get record field: %u", uiField);
+    ExitOnFailure(hr, "failed to get record field: %u", uiField);
     if (pwzData && *pwzData)
     {
         LPWSTR wz = NULL;
@@ -973,7 +991,7 @@ extern "C" HRESULT WIXAPI WcaGetRecordFormattedInteger(
         if (wz && *wz)
         {
             hr = E_INVALIDARG;
-            ExitOnFailure2(hr, "failed to parse record field: %u as number: %ls", uiField, pwzData);
+            ExitOnFailure(hr, "failed to parse record field: %u as number: %ls", uiField, pwzData);
         }
     }
     else
@@ -1432,14 +1450,14 @@ extern "C" HRESULT __cdecl WcaAddTempRecord(
 
         // Open and Execute the temp View
         hr = WcaOpenExecuteView(pwzQuery, phTableView);
-        ExitOnFailure1(hr, "failed to openexecute temp view with query %ls", pwzQuery);
+        ExitOnFailure(hr, "failed to openexecute temp view with query %ls", pwzQuery);
     }
 
     if (NULL == *phColumns)
     {
         // use GetColumnInfo to populate the datatype record
         er = ::MsiViewGetColumnInfo(*phTableView, MSICOLINFO_TYPES, phColumns);
-        ExitOnWin32Error1(er, hr, "failed to columns for table: %ls", wzTable);
+        ExitOnWin32Error(er, hr, "failed to columns for table: %ls", wzTable);
     }
     AssertSz(::MsiRecordGetFieldCount(*phColumns) == cColumns, "passed in argument does not match number of columns in table");
 
@@ -1447,7 +1465,7 @@ extern "C" HRESULT __cdecl WcaAddTempRecord(
     // create the temp record
     //
     hTempRec = ::MsiCreateRecord(cColumns);
-    ExitOnNull1(hTempRec, hr, E_UNEXPECTED, "could not create temp record for table: %ls", wzTable);
+    ExitOnNull(hTempRec, hr, E_UNEXPECTED, "could not create temp record for table: %ls", wzTable);
 
     //
     // loop through all the columns filling in the data
@@ -1456,7 +1474,7 @@ extern "C" HRESULT __cdecl WcaAddTempRecord(
     for (i = 1; i <= cColumns; i++)
     {
         hr = WcaGetRecordString(*phColumns, i, &pwzData);
-        ExitOnFailure1(hr, "failed to get the data type for %d", i);
+        ExitOnFailure(hr, "failed to get the data type for %d", i);
 
         // if data type is string write string
         if (L's' == *pwzData || L'S' == *pwzData || L'g' == *pwzData || L'G' == *pwzData || L'l' == *pwzData || L'L' == *pwzData)
@@ -1467,13 +1485,13 @@ extern "C" HRESULT __cdecl WcaAddTempRecord(
             if (uiUniquifyColumn == i)
             {
                 hr = StrAllocFormatted(&pwzUniquify, L"%s%u", wz, ++dwUniquifyValue);   // up the count so we have no collisions on the unique name
-                ExitOnFailure1(hr, "failed to allocate string for unique column: %d", uiUniquifyColumn);
+                ExitOnFailure(hr, "failed to allocate string for unique column: %d", uiUniquifyColumn);
 
                 wz = pwzUniquify;
             }
 
             er = ::MsiRecordSetStringW(hTempRec, i, wz);
-            ExitOnWin32Error1(er, hr, "failed to set string value at position %d", i);
+            ExitOnWin32Error(er, hr, "failed to set string value at position %d", i);
         }
         // if data type is integer write integer
         else if (L'i' == *pwzData || L'I' == *pwzData || L'j' == *pwzData || L'J' == *pwzData)
@@ -1482,13 +1500,13 @@ extern "C" HRESULT __cdecl WcaAddTempRecord(
             int iData = va_arg(args, int);
 
             er = ::MsiRecordSetInteger(hTempRec, i, iData);
-            ExitOnWin32Error1(er, hr, "failed to set integer value at position %d", i);
+            ExitOnWin32Error(er, hr, "failed to set integer value at position %d", i);
         }
         else
         {
             // not supporting binary streams so error out
             hr = HRESULT_FROM_WIN32(ERROR_DATATYPE_MISMATCH);
-            ExitOnRootFailure2(hr, "unsupported data type '%ls' in column: %d", pwzData, i);
+            ExitOnRootFailure(hr, "unsupported data type '%ls' in column: %d", pwzData, i);
         }
     }
     va_end(args);
@@ -1516,7 +1534,7 @@ extern "C" HRESULT __cdecl WcaAddTempRecord(
         {
             *pdbError = dbErr;
         }
-        ExitOnFailure2(hr, "failed to add temporary row, dberr: %d, err: %ls", dbErr, wzBuf);
+        ExitOnFailure(hr, "failed to add temporary row, dberr: %d, err: %ls", dbErr, wzBuf);
     }
 
 LExit:
@@ -1553,12 +1571,12 @@ extern "C" HRESULT WIXAPI WcaDumpTable(
 
     // Open and Execute the temp View
     hr = WcaOpenExecuteView(pwzQuery, &hView);
-    ExitOnFailure1(hr, "failed to openexecute temp view with query %ls", pwzQuery);
+    ExitOnFailure(hr, "failed to openexecute temp view with query %ls", pwzQuery);
 
     // Use GetColumnInfo to populate the names of the columns.
     er = ::MsiViewGetColumnInfo(hView, MSICOLINFO_NAMES, &hColumns);
     hr = HRESULT_FROM_WIN32(er);
-    ExitOnFailure1(hr, "failed to get column info for table: %ls", wzTable);
+    ExitOnFailure(hr, "failed to get column info for table: %ls", wzTable);
 
     cColumns = ::MsiRecordGetFieldCount(hColumns);
 
@@ -1568,7 +1586,7 @@ extern "C" HRESULT WIXAPI WcaDumpTable(
     for (DWORD i = 1; i <= cColumns; i++)
     {
         hr = WcaGetRecordString(hColumns, i, &pwzData);
-        ExitOnFailure1(hr, "failed to get the column name for %d", i);
+        ExitOnFailure(hr, "failed to get the column name for %d", i);
 
         hr = StrAllocConcat(&pwzPrint, pwzData, 0);
         ExitOnFailure(hr, "Failed to add column name.");
@@ -1590,7 +1608,7 @@ extern "C" HRESULT WIXAPI WcaDumpTable(
         for (DWORD i = 1; i <= cColumns; i++)
         {
             hr = WcaGetRecordString(hRec, i, &pwzData);
-            ExitOnFailure1(hr, "failed to get the column name for %d", i);
+            ExitOnFailure(hr, "failed to get the column name for %d", i);
 
             hr = StrAllocConcat(&pwzPrint, pwzData, 0);
             ExitOnFailure(hr, "Failed to add column name.");

@@ -237,7 +237,7 @@ extern "C" HRESULT DAPI DictCreateStringListFromArray(
         else
         {
             hr = DictAddKey(sd, wzKey);
-            ExitOnFailure1(hr, "Failed to add \"%ls\" to the string dictionary.", wzKey);
+            ExitOnFailure(hr, "Failed to add \"%ls\" to the string dictionary.", wzKey);
         }
     }
 
@@ -296,7 +296,7 @@ extern "C" HRESULT DAPI DictAddKey(
     if (DICT_STRING_LIST != psd->dtType)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Tried to add key without value to wrong dictionary type! This dictionary type is: %d", psd->dtType);
+        ExitOnFailure(hr, "Tried to add key without value to wrong dictionary type! This dictionary type is: %d", psd->dtType);
     }
 
     if ((psd->dwNumItems + 1) >= MAX_BUCKET_SIZES[psd->dwBucketSizeIndex] / MAX_BUCKETS_TO_ITEMS_RATIO)
@@ -353,7 +353,7 @@ extern "C" HRESULT DAPI DictAddValue(
     if (DICT_EMBEDDED_KEY != psd->dtType)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Tried to add key/value pair to wrong dictionary type! This dictionary type is: %d", psd->dtType);
+        ExitOnFailure(hr, "Tried to add key/value pair to wrong dictionary type! This dictionary type is: %d", psd->dtType);
     }
 
     wzKey = GetKey(psd, pvValue);
@@ -404,7 +404,7 @@ extern "C" HRESULT DAPI DictGetValue(
     if (DICT_EMBEDDED_KEY != psd->dtType)
     {
         hr = E_INVALIDARG;
-        ExitOnFailure1(hr, "Tried to lookup value in wrong dictionary type! This dictionary type is: %d", psd->dtType);
+        ExitOnFailure(hr, "Tried to lookup value in wrong dictionary type! This dictionary type is: %d", psd->dtType);
     }
 
     hr = GetValue(psd, pszString, ppvValue);
@@ -615,7 +615,7 @@ static HRESULT GetInsertIndex(
         {
             // The dict table is full - this error seems to be a reasonably close match 
             hr = HRESULT_FROM_WIN32(ERROR_DATABASE_FULL);
-            ExitOnRootFailure1(hr, "Failed to add item '%ls' to dict table because dict table is full of items", pszString);
+            ExitOnRootFailure(hr, "Failed to add item '%ls' to dict table because dict table is full of items", pszString);
         }
     }
 
@@ -718,7 +718,7 @@ static HRESULT GrowDictionary(
     ExitOnFailure(hr, "Overflow while calculating allocation size to grow dictionary");
 
     ppvNewBuckets = static_cast<void**>(MemAlloc(cbAllocSize, TRUE));
-    ExitOnNull1(ppvNewBuckets, hr, E_OUTOFMEMORY, "Failed to allocate %u buckets while growing dictionary", MAX_BUCKET_SIZES[dwNewBucketSizeIndex]);
+    ExitOnNull(ppvNewBuckets, hr, E_OUTOFMEMORY, "Failed to allocate %u buckets while growing dictionary", MAX_BUCKET_SIZES[dwNewBucketSizeIndex]);
 
     for (DWORD i = 0; i < psd->dwNumItems; ++i)
     {

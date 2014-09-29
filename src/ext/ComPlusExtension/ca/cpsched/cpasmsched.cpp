@@ -421,7 +421,7 @@ HRESULT CpiAssembliesVerifyInstall(
 
         // if the assembly is referensed, it must be installed
         if ((pItm->fReferencedForInstall || pItm->iRoleAssignmentsInstallCount) && !CpiWillBeInstalled(pItm->isInstalled, pItm->isAction))
-            MessageExitOnFailure1(hr = E_FAIL, msierrComPlusAssemblyDependency, "An assembly is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
+            MessageExitOnFailure(hr = E_FAIL, msierrComPlusAssemblyDependency, "An assembly is used by another entity being installed, but is not installed itself, key: %S", pItm->wzKey);
     }
 
     hr = S_OK;
@@ -516,7 +516,7 @@ HRESULT CpiAssembliesInstall(
 
         // add to action data
         hr = AddAssemblyToActionData(pItm, TRUE, iActionType, COST_ASSEMBLY_REGISTER, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -563,7 +563,7 @@ HRESULT CpiAssembliesUninstall(
 
         // add to action data
         hr = AddAssemblyToActionData(pItm, FALSE, iActionType, COST_ASSEMBLY_UNREGISTER, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
     }
 
     // add progress tics
@@ -635,7 +635,7 @@ HRESULT CpiRoleAssignmentsInstall(
 
         // add to action data
         hr = AddRoleAssignmentsToActionData(pItm, TRUE, iActionType, COST_ROLLASSIGNMENT_CREATE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
 
         // add progress tics
         if (piProgress)
@@ -682,7 +682,7 @@ HRESULT CpiRoleAssignmentsUninstall(
 
         // add to action data
         hr = AddRoleAssignmentsToActionData(pItm, FALSE, iActionType, COST_ROLLASSIGNMENT_DELETE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
+        ExitOnFailure(hr, "Failed to add assembly to custom action data, key: %S", pItm->wzKey);
 
         // add progress tics
         if (piProgress)
@@ -1015,7 +1015,7 @@ static HRESULT AssembliesRead(
             hr = CpiApplicationFindByKey(pAppList, pwzData, &pItm->pApplication);
             if (S_FALSE == hr)
                 hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-            ExitOnFailure1(hr, "Failed to find application, key: %S", pwzData);
+            ExitOnFailure(hr, "Failed to find application, key: %S", pwzData);
         }
 
         // get tlb path
@@ -1134,7 +1134,7 @@ static HRESULT SwapDependentModules(
                 if (0 == lstrcmpW(pdcItm->pwzKey, pDep->wzSecondKey))
                 {
                     // circular dependency found
-                    ExitOnFailure1(hr = E_FAIL, "Circular module dependency found, key: %S", pDep->wzSecondKey);
+                    ExitOnFailure(hr = E_FAIL, "Circular module dependency found, key: %S", pDep->wzSecondKey);
                 }
             }
 
@@ -1150,7 +1150,7 @@ static HRESULT SwapDependentModules(
             if (S_FALSE == hr)
             {
                 // not found
-                ExitOnFailure1(hr = E_FAIL, "Module dependency not found, key: %S", pDep->wzSecondKey);
+                ExitOnFailure(hr = E_FAIL, "Module dependency not found, key: %S", pDep->wzSecondKey);
             }
 
             // if this item in turn has dependencies, they have to be swaped first
@@ -1297,7 +1297,7 @@ static HRESULT SwapDependentAssemblies(
                 if (0 == lstrcmpW(pdcItm->pwzKey, pDep->wzSecondKey))
                 {
                     // circular dependency found
-                    ExitOnFailure1(hr = E_FAIL, "Circular assembly dependency found, key: %S", pDep->wzSecondKey);
+                    ExitOnFailure(hr = E_FAIL, "Circular assembly dependency found, key: %S", pDep->wzSecondKey);
                 }
             }
 
@@ -1313,14 +1313,14 @@ static HRESULT SwapDependentAssemblies(
             if (S_FALSE == hr)
             {
                 // not found
-                ExitOnFailure1(hr = E_FAIL, "Assembly dependency not found, key: %S", pDep->wzSecondKey);
+                ExitOnFailure(hr = E_FAIL, "Assembly dependency not found, key: %S", pDep->wzSecondKey);
             }
 
             // if the root item belongs to a module, this item must also belong to the same module
             if (*pItm->wzModule)
             {
                 if (0 != lstrcmpW(pDepItm->wzModule, pItm->wzModule))
-                    ExitOnFailure2(hr = E_FAIL, "An assembly dependency can only exist between two assemblies not belonging to modules, or belonging to the same module. assembly: %S, required assembly: %S", pItm->wzKey, pDepItm->wzKey);
+                    ExitOnFailure(hr = E_FAIL, "An assembly dependency can only exist between two assemblies not belonging to modules, or belonging to the same module. assembly: %S, required assembly: %S", pItm->wzKey, pDepItm->wzKey);
             }
 
             // if this item in turn has dependencies, they have to be swaped first
@@ -1600,7 +1600,7 @@ static HRESULT MethodsRead(
 
         // either an index or a name must be provided
         if (!*pItm->wzIndex && !*pItm->wzName)
-            ExitOnFailure1(hr = E_FAIL, "A method must have either an index or a name associated, key: %S", pItm->wzKey);
+            ExitOnFailure(hr = E_FAIL, "A method must have either an index or a name associated, key: %S", pItm->wzKey);
 
         // read properties
         if (CpiTableExists(cptComPlusMethodProperty))
@@ -1708,7 +1708,7 @@ static HRESULT RoleAssignmentsRead(
         hr = CpiApplicationRoleFindByKey(pAppRoleList, pwzData, &pItm->pApplicationRole);
         if (S_FALSE == hr)
             hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
-        ExitOnFailure1(hr, "Failed to find application, key: %S", pwzData);
+        ExitOnFailure(hr, "Failed to find application, key: %S", pwzData);
 
         // set references & increment counters
         if (WcaIsInstalling(pItm->isInstalled, pItm->isAction))
@@ -1793,14 +1793,14 @@ static HRESULT AddAssemblyToActionData(
     //
     int iCompCount = (atCreate == iActionType || (atRemove == iActionType && 0 == (pItm->iAttributes & aaDotNetAssembly))) ? pItm->iComponentCount : 0;
     hr = WcaWriteIntegerToCaData(iCompCount, ppwzActionData);
-    ExitOnFailure1(hr, "Failed to add component count to custom action data, key: %S", pItm->wzKey);
+    ExitOnFailure(hr, "Failed to add component count to custom action data, key: %S", pItm->wzKey);
 
     if (iCompCount)
     {
         for (CPI_COMPONENT* pComp = pItm->pComponents; pComp; pComp = pComp->pNext)
         {
             hr = AddComponentToActionData(pComp, fInstall, atCreate == iActionType, FALSE, ppwzActionData);
-            ExitOnFailure1(hr, "Failed to add component to custom action data, component: %S", pComp->wzKey);
+            ExitOnFailure(hr, "Failed to add component to custom action data, component: %S", pComp->wzKey);
         }
     }
 
@@ -1848,7 +1848,7 @@ static HRESULT AddRoleAssignmentsToActionData(
     for (CPI_COMPONENT* pComp = pItm->pComponents; pComp; pComp = pComp->pNext)
     {
         hr = AddComponentToActionData(pComp, fInstall, FALSE, TRUE, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add component to custom action data, component: %S", pComp->wzKey);
+        ExitOnFailure(hr, "Failed to add component to custom action data, component: %S", pComp->wzKey);
     }
 
     hr = S_OK;
@@ -1889,7 +1889,7 @@ static HRESULT AddComponentToActionData(
         for (CPI_INTERFACE* pIntf = pItm->pInterfaces; pIntf; pIntf = pIntf->pNext)
         {
             hr = AddInterfaceToActionData(pIntf, fInstall, fProps, fRoles, ppwzActionData);
-            ExitOnFailure1(hr, "Failed to add interface custom action data, interface: %S", pIntf->wzKey);
+            ExitOnFailure(hr, "Failed to add interface custom action data, interface: %S", pIntf->wzKey);
         }
     }
 
@@ -1928,7 +1928,7 @@ static HRESULT AddInterfaceToActionData(
     for (CPI_METHOD* pMeth = pItm->pMethods; pMeth; pMeth = pMeth->pNext)
     {
         hr = AddMethodToActionData(pMeth, fInstall, fProps, fRoles, ppwzActionData);
-        ExitOnFailure1(hr, "Failed to add method custom action data, method: %S", pMeth->wzKey);
+        ExitOnFailure(hr, "Failed to add method custom action data, method: %S", pMeth->wzKey);
     }
 
     hr = S_OK;
@@ -1992,10 +1992,10 @@ static HRESULT AddRolesToActionData(
                 continue;
 
             hr = WcaWriteStringToCaData(pRole->pApplicationRole->wzKey, ppwzActionData);
-            ExitOnFailure1(hr, "Failed to add key to custom action data, role: %S", pRole->wzKey);
+            ExitOnFailure(hr, "Failed to add key to custom action data, role: %S", pRole->wzKey);
 
             hr = WcaWriteStringToCaData(pRole->pApplicationRole->wzName, ppwzActionData);
-            ExitOnFailure1(hr, "Failed to add role name to custom action data, role: %S", pRole->wzKey);
+            ExitOnFailure(hr, "Failed to add role name to custom action data, role: %S", pRole->wzKey);
         }
     }
 

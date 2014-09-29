@@ -82,7 +82,7 @@ HRESULT __stdcall ScaVirtualDirsRead(
         pvdir = *ppsvdList;
 
         hr = ::StringCchCopyW(pvdir->wzComponent, countof(pvdir->wzComponent), pwzData);
-        ExitOnFailure1(hr, "failed to copy component name: %ls", pwzData);
+        ExitOnFailure(hr, "failed to copy component name: %ls", pwzData);
 
         pvdir->isInstalled = isInstalled;
         pvdir->isAction = isAction;
@@ -97,7 +97,7 @@ HRESULT __stdcall ScaVirtualDirsRead(
             // If we're uninstalling, ignore any failure to find the existing web
             hr = S_OK;
         }
-        ExitOnFailure1(hr, "Failed to get base of web: %ls for VirtualDir", pwzData);
+        ExitOnFailure(hr, "Failed to get base of web: %ls for VirtualDir", pwzData);
 
         hr = WcaGetRecordString(hRec, vdqAlias, &pwzData);
         ExitOnFailure(hr, "Failed to get Alias for VirtualDir");
@@ -165,13 +165,13 @@ HRESULT __stdcall ScaVirtualDirsRead(
         if (*pwzData && *ppshhList)
         {
             hr = ScaGetHttpHeader(hhptVDir, pwzData, ppshhList, &pvdir->pshh);
-            ExitOnFailure1(hr, "Failed to get custom HTTP headers for VirtualDir: %ls", pwzData);
+            ExitOnFailure(hr, "Failed to get custom HTTP headers for VirtualDir: %ls", pwzData);
         }
 
         if (*pwzData && *ppsweList)
         {
             hr = ScaGetWebError(weptVDir, pwzData, ppsweList, &pvdir->pswe);
-            ExitOnFailure1(hr, "Failed to get custom web errors for VirtualDir: %ls", pwzData);
+            ExitOnFailure(hr, "Failed to get custom web errors for VirtualDir: %ls", pwzData);
         }
     }
 
@@ -289,7 +289,7 @@ HRESULT ScaVirtualDirsUninstall(
             if (0 != lstrlenW(psvd->wzVDirRoot))
             {
                 hr = ScaDeleteMetabaseKey(piMetabase, psvd->wzVDirRoot, L"");
-                ExitOnFailure1(hr, "Failed to remove VirtualDir '%ls' from metabase", psvd->wzKey);
+                ExitOnFailure(hr, "Failed to remove VirtualDir '%ls' from metabase", psvd->wzKey);
             }
         }
 

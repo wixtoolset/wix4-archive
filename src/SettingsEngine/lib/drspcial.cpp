@@ -38,19 +38,19 @@ HRESULT DirSpecialFileRead(
         *pfContinueProcessing = TRUE;
         ExitFunction1(hr = S_OK);
     }
-    ExitOnFailure1(hr, "Failed to find special for subpath: %ls in legacy file", wzSubPath);
+    ExitOnFailure(hr, "Failed to find special for subpath: %ls in legacy file", wzSubPath);
 
     *pfContinueProcessing = FALSE;
 
     if (1 < pFileSpecial->cIniInfo)
     {
         hr = E_FAIL;
-        ExitOnFailure1(hr, "Can't parse INI file %ls with two different Cfg file formats for the same file", wzSubPath);
+        ExitOnFailure(hr, "Can't parse INI file %ls with two different Cfg file formats for the same file", wzSubPath);
     }
     else if (1 == pFileSpecial->cIniInfo)
     {
         hr = IniFileRead(pcdb, pSyncProductSession, wzFullPath, pFileSpecial->rgIniInfo + 0);
-        ExitOnFailure1(hr, "Failed to parse INI file at path: %ls", wzFullPath);
+        ExitOnFailure(hr, "Failed to parse INI file at path: %ls", wzFullPath);
     }
 
 LExit:
