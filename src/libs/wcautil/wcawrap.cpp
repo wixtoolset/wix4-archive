@@ -50,8 +50,7 @@ extern "C" UINT __cdecl WcaErrorMessage(
 {
     UINT er;
     MSIHANDLE hRec = NULL;
-    va_list args;
-    va_list iter;
+    va_list args = NULL;
 
     uiType |= INSTALLMESSAGE_ERROR;  // ensure error type is set
     hRec = ::MsiCreateRecord(cArgs + 2);
@@ -70,15 +69,14 @@ extern "C" UINT __cdecl WcaErrorMessage(
     va_start(args, cArgs);
     if (-1 == cArgs)
     {
-        LPCWSTR wzArg;
+        LPCWSTR wzArg = NULL;
+        va_list iter = args;
         cArgs = 0;
 
-        va_copy(iter, args);
         while (NULL != (wzArg = va_arg(iter, WCHAR*)) && L'\0' != *wzArg)
         {
             ++cArgs;
         }
-        va_end(iter);
     }
 
     for (DWORD i = 0; i < cArgs; i++)
@@ -90,6 +88,11 @@ extern "C" UINT __cdecl WcaErrorMessage(
 
     er = WcaProcessMessage(static_cast<INSTALLMESSAGE>(uiType), hRec);
 LExit:
+    if (args)
+    {
+        va_end(args);
+    }
+
     if (hRec)
     {
         ::MsiCloseHandle(hRec);
