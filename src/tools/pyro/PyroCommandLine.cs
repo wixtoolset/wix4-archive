@@ -29,6 +29,8 @@ namespace WixToolset.Tools
             this.Extensions = new List<string>();
         }
 
+        public bool AllowEmptyTransforms { get; private set; }
+
         public bool Delta { get; private set; }
 
         public bool ShowLogo { get; private set; }
@@ -82,7 +84,11 @@ namespace WixToolset.Tools
                 else if ('-' == arg[0] || '/' == arg[0])
                 {
                     string parameter = arg.Substring(1);
-                    if ("bt" == parameter)
+                    if ("aet" == parameter)
+                    {
+                        this.AllowEmptyTransforms = true;
+                    }
+                    else if ("bt" == parameter)
                     {
                         BindPath bindPath = CommandLine.GetBindPath(parameter, args, ++i);
                         if (null == bindPath)

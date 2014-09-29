@@ -19,6 +19,14 @@ namespace WixToolset.Bind
 
     internal class BindTransformCommand : ICommand
     {
+        public bool AllowEmptyTransforms { private get; set; }
+
+        public List<string> NonEmptyProductCodes { private get; set; }
+
+        public List<string> NonEmptyTransformNames { private get; set; }
+
+        public List<string> EmptyTransformNames { private get; set; }
+
         public IEnumerable<IBinderExtension> Extensions { private get; set; }
 
         public IEnumerable<IBinderFileManager> FileManagers { private get; set; }
@@ -76,6 +84,7 @@ namespace WixToolset.Bind
             Table updatedSummaryInfo = updatedOutput.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
             Table targetPropertyTable = targetOutput.EnsureTable(this.TableDefinitions["Property"]);
             Table updatedPropertyTable = updatedOutput.EnsureTable(this.TableDefinitions["Property"]);
+            string targetProductCode = null;
 
             // process special summary information values
             foreach (Row row in this.Transform.Tables["_SummaryInformation"].Rows)
@@ -134,9 +143,10 @@ namespace WixToolset.Bind
                 {
                     string[] propertyData = ((string)row[1]).Split(';');
 
+                    targetProductCode = propertyData[0].Substring(0, 38);
                     Row targetProductCodeRow = targetPropertyTable.CreateRow(null);
                     targetProductCodeRow[0] = "ProductCode";
-                    targetProductCodeRow[1] = propertyData[0].Substring(0, 38);
+                    targetProductCodeRow[1] = targetProductCode;
 
                     Row targetProductVersionRow = targetPropertyTable.CreateRow(null);
                     targetProductVersionRow[0] = "ProductVersion";
@@ -420,13 +430,37 @@ namespace WixToolset.Bind
                 {
                     using (Database updatedDatabase = new Database(updatedDatabaseFile, OpenDatabase.ReadOnly))
                     {
-                        if (updatedDatabase.GenerateTransform(targetDatabase, this.OutputPath))
+                        // Skip adding the patch transform if the product transform was empty.
+                        // Patch transforms are usually not empty due to changes such as Media Table Row insertions.
+                        if ((this.AllowEmptyTransforms && this.EmptyTransformNames.Contains(transformFileName.Replace("#", ""))) || !updatedDatabase.GenerateTransform(targetDatabase, this.OutputPath))
                         {
-                            updatedDatabase.CreateTransformSummaryInfo(targetDatabase, this.OutputPath, (TransformErrorConditions)(transformFlags & 0xFFFF), (TransformValidations)((transformFlags >> 16) & 0xFFFF));
+                            if (this.AllowEmptyTransforms)
+                            {
+                                // Only output the message once for the product transform.
+                                if (!transformFileName.StartsWith("#"))
+                                {
+                                    Messaging.Instance.OnMessage(WixWarnings.NoDifferencesInTransform(this.Transform.SourceLineNumbers));
+                                }
+
+                                this.EmptyTransformNames.Add(transformFileName);
+                            }
+                            else
+                            {
+                                Messaging.Instance.OnMessage(WixErrors.NoDifferencesInTransform(this.Transform.SourceLineNumbers));
+                            }
                         }
                         else
                         {
-                            Messaging.Instance.OnMessage(WixErrors.NoDifferencesInTransform(this.Transform.SourceLineNumbers));
+                            if (targetProductCode != null && !this.NonEmptyProductCodes.Contains(targetProductCode))
+                            {
+                                this.NonEmptyProductCodes.Add(targetProductCode);
+                            }
+                            if (!this.NonEmptyTransformNames.Contains(":" + transformFileName))
+                            {
+                                this.NonEmptyTransformNames.Add(":" + transformFileName);
+                            }
+
+                            updatedDatabase.CreateTransformSummaryInfo(targetDatabase, this.OutputPath, (TransformErrorConditions)(transformFlags & 0xFFFF), (TransformValidations)((transformFlags >> 16) & 0xFFFF));
                         }
                     }
                 }
