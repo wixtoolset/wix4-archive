@@ -29,6 +29,8 @@ DAPI_(HRESULT) BalInfoParseFromXml(
     IXMLDOMNode* pNode = NULL;
 
     hr = XmlSelectSingleNode(pixdManifest, L"/BootstrapperApplicationData/WixBundleProperties", &pNode);
+    ExitOnFailure(hr, "Failed to select bundle information.");
+
     if (S_OK == hr)
     {
         hr = XmlGetYesNoAttribute(pNode, L"PerMachine", &pBundle->fPerMachine);
@@ -49,7 +51,6 @@ DAPI_(HRESULT) BalInfoParseFromXml(
             ExitOnFailure(hr, "Failed to read bundle information log path variable.");
         }
     }
-    ExitOnFailure(hr, "Failed to select bundle information.");
 
     hr = ParsePackagesFromXml(&pBundle->packages, pixdManifest);
     BalExitOnFailure(hr, "Failed to parse package information from bootstrapper application data.");

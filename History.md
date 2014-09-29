@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4525 - Reimplement balutil in BootstrapperCore.
+
 * HeathS: WIXBUG:4541 - Add support for high DPI to the Burn engine
 
 * HeathS: Add Windows "Threshold" supported to burn stub.

@@ -13,7 +13,6 @@
 
 #include "precomp.h"
 
-LPCWSTR BAL_MANIFEST_FILENAME = L"BootstrapperApplicationData.xml";
 const DWORD VARIABLE_GROW_FACTOR = 80;
 static IBootstrapperEngine* vpEngine = NULL;
 
