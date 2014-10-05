@@ -51,12 +51,32 @@
     <Compile Include="RowDictionary.cs" />
     <Compile Include="RowOperation.cs" />
     <Compile Include="Rows\BBControlRow.cs" />
+    <Compile Include="Rows\ChainExePackageAttributes.cs" />
+    <Compile Include="Rows\ExitCodeBehaviorType.cs" />
+    <Compile Include="Rows\ExitCodeRow.cs" />
+    <Compile Include="Rows\SlipstreamMspRow.cs" />
+    <Compile Include="Rows\WixChainAttributes.cs" />
+    <Compile Include="Rows\WixChainRow.cs" />
+    <Compile Include="Rows\ChainPackageAttributes.cs" />
+    <Compile Include="Rows\ChainMspPackageAttributes.cs" />
+    <Compile Include="Rows\ChainMsiPackageAttributes.cs" />
+    <Compile Include="Rows\ChainExePackageRow.cs" />
+    <Compile Include="Rows\MsiFeatureRow.cs" />
+    <Compile Include="Rows\RelatedPackageRow.cs" />
+    <Compile Include="Rows\ContainerType.cs" />
+    <Compile Include="Rows\ChainPackageType.cs" />
+    <Compile Include="Rows\ContainerRow.cs" />
+    <Compile Include="Rows\MsiPropertyRow.cs" />
+    <Compile Include="Rows\RollbackBoundaryRow.cs" />
+    <Compile Include="Rows\ChainMsuPackageRow.cs" />
+    <Compile Include="Rows\ChainMspPackageRow.cs" />
+    <Compile Include="Rows\ChainPackageRow.cs" />
     <Compile Include="Rows\ChainMsiPackageRow.cs" />
     <Compile Include="Rows\ComponentRow.cs" />
     <Compile Include="Rows\ControlRow.cs" />
     <Compile Include="Rows\FileRow.cs" />
     <Compile Include="Rows\MediaRow.cs" />
-    <Compile Include="Rows\PayloadInfoRow.cs" />
+    <Compile Include="Rows\PayloadRow.cs" />
     <Compile Include="Rows\SummaryInfoRowCollection.cs" />
     <Compile Include="Rows\PropertyRow.cs" />
     <Compile Include="Rows\UpgradeRow.cs" />
@@ -67,6 +87,7 @@
     <Compile Include="Rows\WixBundlePatchTargetCodeRow.cs" />
     <Compile Include="Rows\WixBundleRow.cs" />
     <Compile Include="Rows\WixBundleUpdateRow.cs" />
+    <Compile Include="Rows\WixChainItemRow.cs" />
     <Compile Include="Rows\WixCatalogRow.cs" />
     <Compile Include="Rows\WixGroupRow.cs" />
     <Compile Include="Rows\WixComplexReferenceRow.cs" />
@@ -87,6 +108,7 @@
     <Compile Include="SourceLineNumber.cs" />
     <Compile Include="SubStorage.cs" />
     <Compile Include="Symbol.cs" />
+    <Compile Include="TableExtensions.cs" />
     <Compile Include="Table.cs" />
     <Compile Include="TableIndexedCollection.cs" />
     <Compile Include="TableDefinition.cs" />
@@ -120,6 +142,7 @@
     </EmbeddedFlattenedResource>
     <EmbeddedFlattenedResource Include="Data\tables.xml">
       <LogicalName>$(RootNamespace).Data.tables.xml</LogicalName>
+      <SubType>Designer</SubType>
     </EmbeddedFlattenedResource>
   </ItemGroup>
   <ItemGroup>

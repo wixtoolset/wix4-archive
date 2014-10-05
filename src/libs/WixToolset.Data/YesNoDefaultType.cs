@@ -14,11 +14,11 @@ namespace WixToolset.Data
     /// </summary>
     public enum YesNoDefaultType
     {
-        /// <summary>Value not set; equivalent to null for reference types.</summary>
-        NotSet,
+        /// <summary>Not a valid yes, no or default value.</summary>
+        IllegalValue = -2,
 
-        /// <summary>The default value.</summary>
-        Default,
+        /// <summary>Value not set; equivalent to null for reference types.</summary>
+        NotSet = -1,
 
         /// <summary>The no value.</summary>
         No,
@@ -26,7 +26,7 @@ namespace WixToolset.Data
         /// <summary>The yes value.</summary>
         Yes,
 
-        /// <summary>Not a valid yes, no or default value.</summary>
-        IllegalValue,
+        /// <summary>The default value.</summary>
+        Default,
     }
 }

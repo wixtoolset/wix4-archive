@@ -14,7 +14,6 @@
 namespace WixToolset.Data.Serialize
 {
     using System;
-    using System.Collections;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Reflection;
@@ -160,7 +159,7 @@ namespace WixToolset.Data.Serialize
             {
                 foreach (Type type in assembly.GetTypes())
                 {
-                    if (type.FullName.EndsWith(element.LocalName, StringComparison.Ordinal) 
+                    if (type.FullName.EndsWith(element.LocalName, StringComparison.Ordinal)
                         && typeof(ISchemaElement).IsAssignableFrom(type))
                     {
                         schemaElement = (ISchemaElement)Activator.CreateInstance(type);

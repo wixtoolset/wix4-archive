@@ -465,24 +465,16 @@ namespace WixToolset
             }
         }
 
-        internal static string GetFileHash(FileInfo fileInfo)
+        internal static string GetFileHash(string path)
         {
-            byte[] hashBytes;
             using (SHA1Managed managed = new SHA1Managed())
             {
-                using (FileStream stream = fileInfo.OpenRead())
+                using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
                 {
-                    hashBytes = managed.ComputeHash(stream);
+                    byte[] hash = managed.ComputeHash(stream);
+                    return BitConverter.ToString(hash).Replace("-", String.Empty);
                 }
             }
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hashBytes.Length; i++)
-            {
-                sb.AppendFormat("{0:X2}", hashBytes[i]);
-            }
-
-            return sb.ToString();
         }
 
         /// <summary>

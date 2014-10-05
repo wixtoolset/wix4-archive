@@ -19,6 +19,7 @@ namespace WixToolset.Link
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
+    using System.Linq;
     using System.Text;
     using WixToolset.Extensibility;
     using WixToolset.Data;
@@ -180,16 +181,7 @@ namespace WixToolset.Link
         /// </summary>
         public void RemoveUsedGroupRows()
         {
-            // Ensure we have a list of unique IDs, sorted in descending order...
-            Dictionary<int, bool> uniqueRowsUsed = new Dictionary<int, bool>(this.rowsUsed.Count);
-            foreach (int rowIndex in this.rowsUsed)
-            {
-                uniqueRowsUsed[rowIndex] = true;
-            }
-
-            List<int> sortedIndexes = new List<int>(uniqueRowsUsed.Keys);
-            sortedIndexes.Sort();
-            sortedIndexes.Reverse();
+            List<int> sortedIndexes = this.rowsUsed.Distinct().OrderByDescending(i => i).ToList();
 
             Table wixGroupTable = this.output.Tables["WixGroup"];
             Debug.Assert(null != wixGroupTable);

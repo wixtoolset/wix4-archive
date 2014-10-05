@@ -22,7 +22,6 @@ namespace WixToolset
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
     using WixToolset.Link;
-    using WixToolset.Msi;
     using WixToolset.Msi.Interop;
 
     /// <summary>
@@ -305,12 +304,6 @@ namespace WixToolset
                                 }
                                 break;
 
-                            case "ChainPackage":
-                            case "ChainPackageGroup":
-                            case "MsiProperty":
-                                copyRows = true;
-                                break;
-
                             case "CustomAction":
                                 if (OutputType.Module == this.activeOutput.Type)
                                 {
@@ -423,10 +416,6 @@ namespace WixToolset
                                 }
                                 break;
 
-                            case "Variable":
-                                copyRows = true;
-                                break;
-
                             case "WixAction":
                                 if (this.sectionIdOnRows)
                                 {
@@ -436,11 +425,6 @@ namespace WixToolset
                                     }
                                 }
                                 actionRows.AddRange(table.Rows);
-                                break;
-
-                            case "WixBBControl":
-                            case "WixControl":
-                                copyRows = true;
                                 break;
 
                             case "WixCustomTable":
@@ -477,19 +461,6 @@ namespace WixToolset
                                         generatedShortFileNameIdentifiers.Add((string)row[0]);
                                     }
                                 }
-                                copyRows = true;
-                                break;
-
-                            case "WixGroup":
-                                copyRows = true;
-                                break;
-
-                            case "WixInstanceTransforms":
-                                copyRows = true;
-                                break;
-
-                            case "WixMedia":
-                                copyRows = true;
                                 break;
 
                             case "WixMerge":
@@ -497,20 +468,10 @@ namespace WixToolset
                                 {
                                     this.ResolveFeatures(table.Rows, 0, 7, modulesToFeatures, null);
                                 }
-                                copyRows = true;
-                                break;
-
-                            case "WixOrdering":
-                                copyRows = true;
                                 break;
 
                             case "WixSuppressAction":
                                 suppressActionRows.AddRange(table.Rows);
-                                break;
-
-                            case "WixSuppressModularization":
-                                // just copy the rows to the output
-                                copyRows = true;
                                 break;
 
                             case "WixVariable":
@@ -529,11 +490,6 @@ namespace WixToolset
                                     }
                                 }
                                 copyRows = false;
-                                break;
-                            case "WixPatchRef":
-                            case "WixPatchBaseline":
-                            case "WixPatchId":
-                                copyRows = true;
                                 break;
                         }
 
@@ -1376,7 +1332,7 @@ namespace WixToolset
                                 break;
 
                             case ComplexReferenceParentType.Patch:
-                                switch(wixComplexReferenceRow.ChildType)
+                                switch (wixComplexReferenceRow.ChildType)
                                 {
                                     case ComplexReferenceChildType.PatchFamily:
                                     case ComplexReferenceChildType.PatchFamilyGroup:

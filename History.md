@@ -1,3 +1,5 @@
+* RobMen: Massive refactor of BindBundleCommand to radically improve code maintainability.
+
 * SeanHall: WIXFEAT:4525 - Reimplement balutil in BootstrapperCore.
 
 * HeathS: WIXBUG:4541 - Add support for high DPI to the Burn engine

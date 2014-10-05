@@ -14,7 +14,10 @@
 namespace WixToolset.Extensions
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
+    using System.Security.Cryptography;
+    using System.Text;
     using WixToolset.Data;
     using Wix = WixToolset.Data.Serialize;
 
@@ -54,7 +57,7 @@ namespace WixToolset.Extensions
             {
                 throw new ArgumentNullException("argument");
             }
-            
+
             string fullPath = Path.GetFullPath(argument);
 
             Wix.RemotePayload remotePayload = this.HarvestRemotePayload(fullPath);
@@ -82,62 +85,48 @@ namespace WixToolset.Extensions
                 throw new WixException(UtilErrors.FileNotFound(path));
             }
 
-            PayloadInfo payloadInfo = new PayloadInfo() 
+            Wix.RemotePayload remotePayload = new Wix.RemotePayload();
+
+            FileInfo fileInfo = new FileInfo(path);
+
+            remotePayload.Size = (int)fileInfo.Length;
+            remotePayload.Hash = this.GetFileHash(path);
+
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(path);
+
+            if (null != versionInfo)
             {
-                SourceFile = Path.GetFullPath(path),
-                SuppressSignatureValidation = false // assume signed, if its unsigned it won't get the certificate properties
-            };
+                // Use the fixed version info block for the file since the resource text may not be a dotted quad.
+                Version version = new Version(versionInfo.ProductMajorPart, versionInfo.ProductMinorPart, versionInfo.ProductBuildPart, versionInfo.ProductPrivatePart);
 
-            PayloadInfoRow.ResolvePayloadInfo(payloadInfo);
+                remotePayload.Version = version.ToString();
+                remotePayload.Description = versionInfo.FileDescription;
+                remotePayload.ProductName = versionInfo.ProductName;
+            }
 
-            return payloadInfo;
+            return remotePayload;
         }
 
-        /// <summary>
-        /// An adapter for RemotePayload that exposes an IPayloadInfo
-        /// </summary>
-        private class PayloadInfo : Wix.RemotePayload, IPayloadInfo
+        private string GetFileHash(string path)
         {
-            public string SourceFile { get; set; }
-            public bool SuppressSignatureValidation { get; set; }
-
-
-            // renamed columns
-            public int FileSize
+            byte[] hashBytes;
+            using (SHA1Managed managed = new SHA1Managed())
             {
-                get
+                using (FileStream stream = new FileStream(path, FileMode.Open))
                 {
-                    return this.Size;
-                }
-                set
-                {
-                    this.Size = value;
+                    hashBytes = managed.ComputeHash(stream);
                 }
             }
 
-            public string PublicKey
-            {
-                get
-                {
-                    return this.CertificatePublicKey;
-                }
-                set
-                {
-                    this.CertificatePublicKey = value;
-                }
-            }
+            return BitConverter.ToString(hashBytes).Replace("-", String.Empty);
 
-            public string Thumbprint
-            {
-                get
-                {
-                    return this.CertificateThumbprint;
-                }
-                set
-                {
-                    this.CertificateThumbprint = value;
-                }
-            }
+            //StringBuilder sb = new StringBuilder();
+            //for (int i = 0; i < hashBytes.Length; i++)
+            //{
+            //    sb.AppendFormat("{0:X2}", hashBytes[i]);
+            //}
+
+            //return sb.ToString();
         }
     }
 }

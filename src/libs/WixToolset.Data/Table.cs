@@ -15,7 +15,6 @@ namespace WixToolset.Data
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
-    using System.Linq;
     using System.Text;
     using System.Xml;
     using WixToolset.Data.Rows;
@@ -71,12 +70,6 @@ namespace WixToolset.Data
         public IList<Row> Rows { get; private set; }
 
         /// <summary>
-        /// Gets the rows contained in the table as a particular row type.
-        /// </summary>
-        /// <value>Rows contained in the table as a particular type.</value>
-        public IEnumerable<T> RowsAs<T>() { return this.Rows.Cast<T>(); }
-
-        /// <summary>
         /// Creates a new row in the table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
@@ -91,11 +84,26 @@ namespace WixToolset.Data
                 case "BBControl":
                     row = new BBControlRow(sourceLineNumbers, this);
                     break;
+                case "ChainPackage":
+                    row = new ChainPackageRow(sourceLineNumbers, this);
+                    break;
+                case "ChainExePackage":
+                    row = new ChainExePackageRow(sourceLineNumbers, this);
+                    break;
                 case "ChainMsiPackage":
                     row = new ChainMsiPackageRow(sourceLineNumbers, this);
                     break;
+                case "ChainMspPackage":
+                    row = new ChainMspPackageRow(sourceLineNumbers, this);
+                    break;
+                case "ChainMsuPackage":
+                    row = new ChainMsuPackageRow(sourceLineNumbers, this);
+                    break;
                 case "Component":
                     row = new ComponentRow(sourceLineNumbers, this);
+                    break;
+                case "Container":
+                    row = new ContainerRow(sourceLineNumbers, this);
                     break;
                 case "Control":
                     row = new ControlRow(sourceLineNumbers, this);
@@ -103,17 +111,29 @@ namespace WixToolset.Data
                 case "File":
                     row = new FileRow(sourceLineNumbers, this);
                     break;
+                case "MsiFeature":
+                    row = new MsiFeatureRow(sourceLineNumbers, this);
+                    break;
+                case "MsiProperty":
+                    row = new MsiPropertyRow(sourceLineNumbers, this);
+                    break;
                 case "Media":
                     row = new MediaRow(sourceLineNumbers, this);
                     break;
-                case "PayloadInfo":
-                    row = new PayloadInfoRow(sourceLineNumbers, this);
+                case "Payload":
+                    row = new PayloadRow(sourceLineNumbers, this);
                     break;
                 case "Property":
                     row = new PropertyRow(sourceLineNumbers, this);
                     break;
                 case "RelatedBundle":
                     row = new RelatedBundleRow(sourceLineNumbers, this);
+                    break;
+                case "RelatedPackage":
+                    row = new RelatedPackageRow(sourceLineNumbers, this);
+                    break;
+                case "RollbackBoundary":
+                    row = new RollbackBoundaryRow(sourceLineNumbers, this);
                     break;
                 case "Upgrade":
                     row = new UpgradeRow(sourceLineNumbers, this);
@@ -138,6 +158,12 @@ namespace WixToolset.Data
                     break;
                 case "WixCatalog":
                     row = new WixCatalogRow(sourceLineNumbers, this);
+                    break;
+                case "WixChain":
+                    row = new WixChainRow(sourceLineNumbers, this);
+                    break;
+                case "WixChainItem":
+                    row = new WixChainItemRow(sourceLineNumbers, this);
                     break;
                 case "WixComplexReference":
                     row = new WixComplexReferenceRow(sourceLineNumbers, this);

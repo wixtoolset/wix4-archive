@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Generates the types for a given schema document.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Tools
@@ -16,10 +12,8 @@ namespace WixToolset.Tools
     using System;
     using System.CodeDom;
     using System.Collections;
-    using System.Collections.Specialized;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
+    using System.Collections.Specialized;
     using System.IO;
     using System.Reflection;
     using System.Text;
@@ -69,7 +63,7 @@ namespace WixToolset.Tools
             }
 
             simpleTypeNamesToClrTypeNames = new Hashtable();
-            typeNamesToEnumDeclarations = new Dictionary<string,EnumDeclaration>();
+            typeNamesToEnumDeclarations = new Dictionary<string, EnumDeclaration>();
             refToAttributeGroups = new Dictionary<string, XmlSchemaAttributeGroup>();
             enumsToParseMethodClasses = new Dictionary<EnumDeclaration, CodeTypeDeclaration>();
 
@@ -648,7 +642,7 @@ namespace WixToolset.Tools
             if (rawAttributeType == null || rawAttributeType.Length == 0)
             {
                 ProcessSimpleType(attributeName, attribute.AttributeSchemaType, true, out enumDeclaration, out attributeType);
-                
+
                 if (enumDeclaration != null)
                 {
                     typeDeclaration.Members.Add(enumDeclaration.TypeDeclaration);
@@ -674,7 +668,7 @@ namespace WixToolset.Tools
         private static string GetDocumentation(XmlSchemaAnnotation annotation)
         {
             string documentation = null;
-            
+
             if (annotation != null && annotation.Items != null)
             {
                 foreach (XmlSchemaObject obj in annotation.Items)

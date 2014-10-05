@@ -50,8 +50,7 @@ namespace WixToolset.Data
             set
             {
                 // Validate the value before setting it.
-                this.Column.ValidateValue(value);
-                this.data = value;
+                this.data = this.Column.ValidateValue(value);
             }
         }
 
@@ -86,17 +85,18 @@ namespace WixToolset.Data
         public bool BestEffortSet(object value)
         {
             bool success = true;
+            object bestEffortValue = value;
 
             try
             {
-                this.Column.ValidateValue(value);
+                bestEffortValue = this.Column.ValidateValue(value);
             }
             catch (InvalidOperationException)
             {
                 success = false;
             }
 
-            this.data = value;
+            this.data = bestEffortValue;
             return success;
         }
 
