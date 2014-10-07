@@ -13,8 +13,6 @@
 
 namespace WixToolset.Data.Rows
 {
-    using System;
-
     /// <summary>
     /// Specialization of a row for the upgrade table.
     /// </summary>
@@ -55,7 +53,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <value>Version maximum for the row.</value>
         public string VersionMax
-        {        
+        {
             get { return (string)this.Fields[2].Data; }
             set { this.Fields[2].Data = value; }
         }

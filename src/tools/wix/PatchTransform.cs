@@ -34,7 +34,7 @@ namespace WixToolset
             {
                 if (null == this.transform)
                 {
-                    this.transform = Output.Load(this.transformPath, false); ;
+                    this.transform = Output.Load(this.transformPath, false);
                 }
 
                 return this.transform;

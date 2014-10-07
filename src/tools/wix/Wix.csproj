@@ -18,6 +18,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Bind\AutomaticallySlipstreamPatchesCommand.cs" />
     <Compile Include="Bind\AutoMediaAssignerCommand.cs" />
     <Compile Include="Binder.cs" />
     <Compile Include="BinderCore.cs" />
@@ -27,20 +28,28 @@
     <Compile Include="Bind\BindDatabaseCommand.cs" />
     <Compile Include="Bind\BindSummaryInfoCommand.cs" />
     <Compile Include="Bind\BindTransformCommand.cs" />
+    <Compile Include="Bind\ChainPackageFacade.cs" />
     <Compile Include="Bind\ConfigurationCallback.cs" />
     <Compile Include="Bind\CopyTransformDataCommand.cs" />
+    <Compile Include="Bind\CreateBootstrapperApplicationManifestCommand.cs" />
     <Compile Include="Bind\CreateBurnManifestCommand.cs" />
+    <Compile Include="Bind\CreateContainerCommand.cs" />
     <Compile Include="Bind\CreateCabinetsCommand.cs" />
     <Compile Include="Bind\DelayedField.cs" />
     <Compile Include="Bind\ExtractEmbeddedFilesCommand.cs" />
     <Compile Include="Bind\GenerateDatabaseCommand.cs" />
+    <Compile Include="Bind\GetPackageFacadesCommand.cs" />
+    <Compile Include="Bind\OrderPackagesAndRollbackBoundariesCommand.cs" />
+    <Compile Include="Bind\ProcessMspPackage.cs" />
+    <Compile Include="Bind\ProcessMsuPackage.cs" />
+    <Compile Include="Bind\ProcessExePackage.cs" />
+    <Compile Include="Bind\ProcessMsiPackage.cs" />
+    <Compile Include="Bind\ProcessPayloads.cs" />
     <Compile Include="Bind\ResolveDelayedFieldsCommand.cs" />
     <Compile Include="Bind\ResolveFieldsCommand.cs" />
     <Compile Include="Bind\TransferFilesCommand.cs" />
     <Compile Include="Bind\VerifyPayloadsWithCatalogCommand.cs" />
     <Compile Include="Bind\WixPatchSymbolPathsComparer.cs" />
-    <Compile Include="BundleChainAttributes.cs" />
-    <Compile Include="BundlePackageAttributes.cs" />
     <Compile Include="Bind\BurnCommon.cs" />
     <Compile Include="Bind\BurnReader.cs" />
     <Compile Include="Bind\BurnWriter.cs" />
@@ -130,17 +139,9 @@
       <DependentUpon>WixStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="WixVariableResolver.cs" />
-    <Compile Include="Bind\ChainInfo.cs" />
-    <Compile Include="Bind\ChainPackageInfo.cs" />
-    <Compile Include="Bind\ContainerInfo.cs" />
-    <Compile Include="ExitCodeInfo.cs" />
-    <Compile Include="MsiFeature.cs" />
-    <Compile Include="MsiPropertyInfo.cs" />
     <Compile Include="ProvidesDependency.cs" />
     <Compile Include="ProvidesDependencyCollection.cs" />
-    <Compile Include="RelatedPackage.cs" />
     <Compile Include="Bind\ResolvedDirectory.cs" />
-    <Compile Include="RollbackBoundaryInfo.cs" />
     <Compile Include="WixComponentSearchInfo.cs" />
     <Compile Include="WixFileSearchInfo.cs" />
     <Compile Include="WixProductSearchInfo.cs" />

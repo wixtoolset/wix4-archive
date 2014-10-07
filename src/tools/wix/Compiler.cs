@@ -38,6 +38,7 @@ namespace WixToolset
         public const string DefaultComponentIdPlaceholder = "OfficialWixComponentIdPlaceholder";
         public const string DefaultComponentIdPlaceholderWixVariable = "!(wix.OfficialWixComponentIdPlaceholder)";
         public const string BurnUXContainerId = "WixUXContainer";
+        public const string BurnDefaultAttachedContainerId = "WixAttachedContainer";
 
         // The following constants must stay in sync with src\burn\engine\core.h
         private const string BURN_BUNDLE_NAME = "WixBundleName";
@@ -89,18 +90,6 @@ namespace WixToolset
 
             /// <summary>Icon</summary>
             Icon,
-        }
-
-        /// <summary>
-        /// Type of packages in a Chain
-        /// </summary>
-        public enum ChainPackageType
-        {
-            Msi,
-            Msp,
-            Msu,
-            Exe,
-            RollbackBoundary,
         }
 
         /// <summary>
@@ -6307,7 +6296,6 @@ namespace WixToolset
             if (!this.core.EncounteredError && null != id)
             {
                 Row row = this.core.CreateRow(sourceLineNumbers, "WixFragment");
-                row.Access = AccessModifier.Public;
                 row[0] = id;
             }
         }
@@ -18177,6 +18165,11 @@ namespace WixToolset
                     relatedBundleRow[1] = (int)Wix.RelatedBundle.ActionType.Upgrade;
                 }
 
+                ContainerRow containerRow = (ContainerRow)this.core.CreateRow(sourceLineNumbers, "Container");
+                containerRow.Id = Compiler.BurnDefaultAttachedContainerId;
+                containerRow.Name = "bundle-attached.cab";
+                containerRow.Type = ContainerType.Attached;
+
                 Row row = this.core.CreateRow(sourceLineNumbers, "WixBundle");
                 row[0] = version;
                 row[1] = copyright;
@@ -18211,25 +18204,21 @@ namespace WixToolset
 
                 // Ensure that the bundle stores the well-known persisted values.
                 VariableRow bundleNameWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
-                bundleNameWellKnownVariable.Access = AccessModifier.Public;
                 bundleNameWellKnownVariable.Id = Compiler.BURN_BUNDLE_NAME;
                 bundleNameWellKnownVariable.Hidden = false;
                 bundleNameWellKnownVariable.Persisted = true;
 
                 VariableRow bundleOriginalSourceWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
-                bundleOriginalSourceWellKnownVariable.Access = AccessModifier.Public;
                 bundleOriginalSourceWellKnownVariable.Id = Compiler.BURN_BUNDLE_ORIGINAL_SOURCE;
                 bundleOriginalSourceWellKnownVariable.Hidden = false;
                 bundleOriginalSourceWellKnownVariable.Persisted = true;
 
                 VariableRow bundleOriginalSourceFolderWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
-                bundleOriginalSourceFolderWellKnownVariable.Access = AccessModifier.Public;
                 bundleOriginalSourceFolderWellKnownVariable.Id = Compiler.BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER;
                 bundleOriginalSourceFolderWellKnownVariable.Hidden = false;
                 bundleOriginalSourceFolderWellKnownVariable.Persisted = true;
 
                 VariableRow bundleLastUsedSourceWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
-                bundleLastUsedSourceWellKnownVariable.Access = AccessModifier.Public;
                 bundleLastUsedSourceWellKnownVariable.Id = Compiler.BURN_BUNDLE_LAST_USED_SOURCE;
                 bundleLastUsedSourceWellKnownVariable.Hidden = false;
                 bundleLastUsedSourceWellKnownVariable.Persisted = true;
@@ -18331,7 +18320,7 @@ namespace WixToolset
             // Create catalog row
             if (!this.core.EncounteredError)
             {
-                this.CreatePayloadRow(sourceLineNumbers, id, Path.GetFileName(sourceFile), sourceFile, null, ComplexReferenceParentType.Container, Compiler.BurnUXContainerId, ComplexReferenceChildType.Unknown, null, YesNoDefaultType.Yes, YesNoType.Yes, null, null);
+                this.CreatePayloadRow(sourceLineNumbers, id, Path.GetFileName(sourceFile), sourceFile, null, ComplexReferenceParentType.Container, Compiler.BurnUXContainerId, ComplexReferenceChildType.Unknown, null, YesNoDefaultType.Yes, YesNoType.Yes, null, null, null);
 
                 WixCatalogRow wixCatalogRow = (WixCatalogRow)this.core.CreateRow(sourceLineNumbers, "WixCatalog", id);
                 wixCatalogRow.PayloadId = id.Id;
@@ -18348,7 +18337,7 @@ namespace WixToolset
             Identifier id = null;
             string downloadUrl = null;
             string name = null;
-            string type = null;
+            ContainerType type = ContainerType.Detached;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18366,7 +18355,11 @@ namespace WixToolset
                             name = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "Type":
-                            type = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            string typeString = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (!Enum.TryParse<ContainerType>(typeString, out type))
+                            {
+                                this.core.OnMessage(WixErrors.IllegalAttributeValueWithLegalList(sourceLineNumbers, node.Name.LocalName, "Type", typeString, "attached, detached"));
+                            }
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -18401,17 +18394,7 @@ namespace WixToolset
                 name = id.Id;
             }
 
-            if (null == type)
-            {
-                type = "detached";
-            }
-
-            if ("attached" != type && "detached" != type)
-            {
-                this.core.OnMessage(WixErrors.IllegalAttributeValueWithLegalList(sourceLineNumbers, node.Name.LocalName, "Type", type, "attached, detached"));
-            }
-
-            if (!String.IsNullOrEmpty(downloadUrl) && !type.Equals("detached", StringComparison.Ordinal))
+            if (!String.IsNullOrEmpty(downloadUrl) && ContainerType.Detached != type)
             {
                 this.core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, "DownloadUrl", "Type", "attached"));
             }
@@ -18439,10 +18422,10 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "Container", id);
-                row[1] = name;
-                row[2] = type;
-                row[3] = downloadUrl;
+                ContainerRow row = (ContainerRow)this.core.CreateRow(sourceLineNumbers, "Container", id);
+                row.Name = name;
+                row.Type = type;
+                row.DownloadUrl = downloadUrl;
             }
         }
 
@@ -18501,14 +18484,14 @@ namespace WixToolset
             // Add the application as an attached container and if an Id was provided add that too.
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "Container");
-                row[0] = Compiler.BurnUXContainerId;
-                row[1] = "bundle-ux.cab";
-                row[2] = "attached";
+                ContainerRow containerRow = (ContainerRow)this.core.CreateRow(sourceLineNumbers, "Container");
+                containerRow.Id = Compiler.BurnUXContainerId;
+                containerRow.Name = "bundle-ux.cab";
+                containerRow.Type = ContainerType.Attached;
 
                 if (!String.IsNullOrEmpty(id))
                 {
-                    row = this.core.CreateRow(sourceLineNumbers, "WixBootstrapperApplication");
+                    Row row = this.core.CreateRow(sourceLineNumbers, "WixBootstrapperApplication");
                     row[0] = id;
                 }
             }
@@ -18727,12 +18710,12 @@ namespace WixToolset
 
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             YesNoDefaultType compressed = YesNoDefaultType.Default;
-            YesNoType suppressSignatureVerification = YesNoType.Yes;
+            YesNoType enableSignatureVerification = YesNoType.No;
             Identifier id = null;
             string name = null;
             string sourceFile = null;
             string downloadUrl = null;
-            PayloadInfoRow remotePayload = null;
+            Wix.RemotePayload remotePayload = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18755,8 +18738,8 @@ namespace WixToolset
                         case "DownloadUrl":
                             downloadUrl = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
-                        case "SuppressSignatureVerification":
-                            suppressSignatureVerification = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                        case "EnableSignatureVerification":
+                            enableSignatureVerification = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -18826,20 +18809,16 @@ namespace WixToolset
             {
                 id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
             }
-            else if (null != remotePayload)
-            {
-                remotePayload.Id = id.Id;
-            }
 
-            this.CreatePayloadRow(sourceLineNumbers, id, name, sourceFile, downloadUrl, parentType, parentId, previousType, previousId, compressed, suppressSignatureVerification, null, null);
+            this.CreatePayloadRow(sourceLineNumbers, id, name, sourceFile, downloadUrl, parentType, parentId, previousType, previousId, compressed, enableSignatureVerification, null, null, remotePayload);
 
             return id.Id;
         }
 
-        private PayloadInfoRow ParseRemotePayloadElement(XElement node)
+        private Wix.RemotePayload ParseRemotePayloadElement(XElement node)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
-            PayloadInfoRow remotePayload = (PayloadInfoRow)this.core.CreateRow(sourceLineNumbers, "PayloadInfo");
+            Wix.RemotePayload remotePayload = new Wix.RemotePayload();
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18848,10 +18827,10 @@ namespace WixToolset
                     switch (attrib.Name.LocalName)
                     {
                         case "CertificatePublicKey":
-                            remotePayload.PublicKey = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            remotePayload.CertificatePublicKey = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "CertificateThumbprint":
-                            remotePayload.Thumbprint = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            remotePayload.CertificateThumbprint = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "Description":
                             remotePayload.Description = this.core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -18863,7 +18842,7 @@ namespace WixToolset
                             remotePayload.ProductName = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "Size":
-                            remotePayload.FileSize = this.core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 0, int.MaxValue);
+                            remotePayload.Size = this.core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 0, int.MaxValue);
                             break;
                         case "Version":
                             remotePayload.Version = this.core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -18879,22 +18858,26 @@ namespace WixToolset
                 }
             }
 
-            if (String.IsNullOrEmpty(remotePayload.Description))
-            {
-                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Description"));
-            }
-            if (String.IsNullOrEmpty(remotePayload.Hash))
-            {
-                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Hash"));
-            }
             if (String.IsNullOrEmpty(remotePayload.ProductName))
             {
                 this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "ProductName"));
             }
-            if (0 == remotePayload.FileSize)
+
+            if (String.IsNullOrEmpty(remotePayload.Description))
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Description"));
+            }
+
+            if (String.IsNullOrEmpty(remotePayload.Hash))
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Hash"));
+            }
+
+            if (0 == remotePayload.Size)
             {
                 this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Size"));
             }
+
             if (String.IsNullOrEmpty(remotePayload.Version))
             {
                 this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Version"));
@@ -18909,31 +18892,39 @@ namespace WixToolset
         /// <param name="node">Element to parse</param>
         /// <param name="parentType">ComplexReferenceParentType of parent element</param>
         /// <param name="parentId">Identifier of parent element.</param>
-        private void CreatePayloadRow(SourceLineNumber sourceLineNumbers, Identifier id, string name, string sourceFile, string downloadUrl, ComplexReferenceParentType parentType,
-            string parentId, ComplexReferenceChildType previousType, string previousId, YesNoDefaultType compressed, YesNoType suppressSignatureVerification, string displayName, string description)
+        private PayloadRow CreatePayloadRow(SourceLineNumber sourceLineNumbers, Identifier id, string name, string sourceFile, string downloadUrl, ComplexReferenceParentType parentType,
+            string parentId, ComplexReferenceChildType previousType, string previousId, YesNoDefaultType compressed, YesNoType enableSignatureVerification, string displayName, string description,
+            Wix.RemotePayload remotePayload)
         {
+            PayloadRow row = null;
+
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "Payload", id);
-                row[1] = String.IsNullOrEmpty(name) ? Path.GetFileName(sourceFile) : name;
-                row[2] = sourceFile;
-                row[3] = downloadUrl;
-                if (YesNoDefaultType.Default != compressed)
-                {
-                    row[4] = (YesNoDefaultType.Yes == compressed) ? 1 : 0;
-                }
-                row[5] = sourceFile; // duplicate of sourceFile but in a string column so it won't get resolved to a full path during binding.
-                row[6] = (YesNoType.Yes == suppressSignatureVerification) ? 1 : 0;
+                row = (PayloadRow)this.core.CreateRow(sourceLineNumbers, "Payload", id);
+                row.Name = String.IsNullOrEmpty(name) ? Path.GetFileName(sourceFile) : name;
+                row.SourceFile = sourceFile;
+                row.DownloadUrl = downloadUrl;
+                row.Compressed = compressed;
+                row.UnresolvedSourceFile = sourceFile; // duplicate of sourceFile but in a string column so it won't get resolved to a full path during binding.
+                row.DisplayName = displayName;
+                row.Description = description;
+                row.EnableSignatureValidation = (YesNoType.Yes == enableSignatureVerification);
 
-                if (!String.IsNullOrEmpty(description) || !String.IsNullOrEmpty(displayName))
+                if (null != remotePayload)
                 {
-                    Row rowDisplay = this.core.CreateRow(sourceLineNumbers, "PayloadDisplayInformation", id);
-                    rowDisplay[1] = displayName;
-                    rowDisplay[2] = description;
+                    row.Description = remotePayload.Description;
+                    row.DisplayName = remotePayload.ProductName;
+                    row.Hash = remotePayload.Hash;
+                    row.PublicKey = remotePayload.CertificatePublicKey;
+                    row.Thumbprint = remotePayload.CertificateThumbprint;
+                    row.FileSize = remotePayload.Size;
+                    row.Version = remotePayload.Version;
                 }
 
                 this.CreateGroupAndOrderingRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Payload, id.Id, previousType, previousId);
             }
+
+            return row;
         }
 
         /// <summary>
@@ -19093,7 +19084,7 @@ namespace WixToolset
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             int value = CompilerConstants.IntegerNotSet;
-            string behavior = null;
+            ExitCodeBehaviorType behavior = ExitCodeBehaviorType.NotSet;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -19105,7 +19096,11 @@ namespace WixToolset
                             value = this.core.GetAttributeIntegerValue(sourceLineNumbers, attrib, int.MinValue + 2, int.MaxValue);
                             break;
                         case "Behavior":
-                            behavior = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            string behaviorString = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (!Enum.TryParse<ExitCodeBehaviorType>(behaviorString, true, out behavior))
+                            {
+                                this.core.OnMessage(WixErrors.IllegalAttributeValueWithLegalList(sourceLineNumbers, node.Name.LocalName, "Behavior", behaviorString, "success, error, scheduleReboot, forceReboot"));
+                            }
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -19118,7 +19113,7 @@ namespace WixToolset
                 }
             }
 
-            if (null == behavior)
+            if (ExitCodeBehaviorType.NotSet == behavior)
             {
                 this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Behavior"));
             }
@@ -19127,10 +19122,10 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "ExitCode");
-                row[0] = packageId;
-                row[1] = value;
-                row[2] = behavior;
+                ExitCodeRow row = (ExitCodeRow)this.core.CreateRow(sourceLineNumbers, "ExitCode");
+                row.ChainPackageId = packageId;
+                row.Code = value;
+                row.Behavior = behavior;
             }
         }
 
@@ -19141,7 +19136,7 @@ namespace WixToolset
         private void ParseChainElement(XElement node)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
-            BundleChainAttributes attributes = BundleChainAttributes.None;
+            WixChainAttributes attributes = WixChainAttributes.None;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -19152,19 +19147,19 @@ namespace WixToolset
                         case "DisableRollback":
                             if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
-                                attributes |= BundleChainAttributes.DisableRollback;
+                                attributes |= WixChainAttributes.DisableRollback;
                             }
                             break;
                         case "DisableSystemRestore":
                             if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
-                                attributes |= BundleChainAttributes.DisableSystemRestore;
+                                attributes |= WixChainAttributes.DisableSystemRestore;
                             }
                             break;
                         case "ParallelCache":
                             if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
-                                attributes |= BundleChainAttributes.ParallelCache;
+                                attributes |= WixChainAttributes.ParallelCache;
                             }
                             break;
                         default:
@@ -19178,8 +19173,12 @@ namespace WixToolset
                 }
             }
 
-            ComplexReferenceChildType previousType = ComplexReferenceChildType.Unknown;
-            string previousId = null;
+            // Ensure there is always a rollback boundary at the beginning of the chain.
+            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
+
+            string previousId = "WixDefaultBoundary";
+            ComplexReferenceChildType previousType = ComplexReferenceChildType.Package;
+
             foreach (XElement child in node.Elements())
             {
                 if (CompilerCore.WixNamespace == child.Name.Namespace)
@@ -19229,8 +19228,8 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixChain");
-                row[0] = (int)attributes;
+                WixChainRow row = (WixChainRow)this.core.CreateRow(sourceLineNumbers, "WixChain");
+                row.Attributes = attributes;
             }
         }
 
@@ -19360,7 +19359,7 @@ namespace WixToolset
                 }
             }
 
-            // Now that the package ID is known, we can parse the extension attributes...
+            // Now that the rollback identifier is known, we can parse the extension attributes...
             Dictionary<string, string> contextValues = new Dictionary<string, string>();
             contextValues["RollbackBoundaryId"] = id.Id;
             foreach (XAttribute attribute in extensionAttributes)
@@ -19372,15 +19371,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
-                row[1] = ChainPackageType.RollbackBoundary.ToString();
-
-                if (YesNoType.NotSet != vital)
-                {
-                    row[10] = (YesNoType.Yes == vital) ? 1 : 0;
-                }
-
-                this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
+                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, parentType, parentId, previousType, previousId);
             }
 
             return id.Id;
@@ -19410,7 +19401,7 @@ namespace WixToolset
             string downloadUrl = null;
             string after = null;
             string installCondition = null;
-            YesNoAlwaysType cache = YesNoAlwaysType.NotSet;
+            YesNoAlwaysType cache = YesNoAlwaysType.Yes; // the default is to cache everything in tradeoff for stability over disk space.
             string cacheId = null;
             string description = null;
             string displayName = null;
@@ -19429,13 +19420,12 @@ namespace WixToolset
             int installSize = CompilerConstants.IntegerNotSet;
             string msuKB = null;
             YesNoType suppressLooseFilePayloadGeneration = YesNoType.NotSet;
-            YesNoType suppressSignatureVerification = YesNoType.Yes;
+            YesNoType enableSignatureVerification = YesNoType.No;
             YesNoDefaultType compressed = YesNoDefaultType.Default;
             YesNoType displayInternalUI = YesNoType.NotSet;
             YesNoType enableFeatureSelection = YesNoType.NotSet;
             YesNoType forcePerMachine = YesNoType.NotSet;
-            BundlePackageAttributes attributes = BundlePackageAttributes.None;
-            PayloadInfoRow remotePayload = null;
+            Wix.RemotePayload remotePayload = null;
             YesNoType slipstream = YesNoType.NotSet;
 
             string[] expectedNetFx4Args = new string[] { "/q", "/norestart", "/chainingpackage" };
@@ -19553,8 +19543,8 @@ namespace WixToolset
                             suppressLooseFilePayloadGeneration = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             allowed = (packageType == ChainPackageType.Msi);
                             break;
-                        case "SuppressSignatureVerification":
-                            suppressSignatureVerification = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                        case "EnableSignatureVerification":
+                            enableSignatureVerification = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         case "Slipstream":
                             slipstream = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
@@ -19580,24 +19570,20 @@ namespace WixToolset
             // We need to handle RemotePayload up front because it effects value of sourceFile which is used in Id generation.  Id is needed by other child elements.
             foreach (XElement child in node.Elements(CompilerCore.WixNamespace + "RemotePayload"))
             {
-                // We need to handle RemotePayload up front because it effects value of sourceFile which is used in Id generation.  Id is needed by other child elements.
-                if (CompilerCore.WixNamespace == child.Name.Namespace && child.Name.LocalName == "RemotePayload")
+                SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
+
+                if (CompilerCore.WixNamespace == node.Name.Namespace && node.Name.LocalName != "ExePackage" && node.Name.LocalName != "MsuPackage")
                 {
-                    SourceLineNumber childSourceLineNumbers = Preprocessor.GetSourceLineNumbers(child);
-
-                    if (CompilerCore.WixNamespace == node.Name.Namespace && node.Name.LocalName != "ExePackage" && node.Name.LocalName != "MsuPackage")
-                    {
-                        this.core.OnMessage(WixErrors.RemotePayloadUnsupported(childSourceLineNumbers));
-                        continue;
-                    }
-
-                    if (null != remotePayload)
-                    {
-                        this.core.OnMessage(WixErrors.TooManyChildren(childSourceLineNumbers, node.Name.LocalName, child.Name.LocalName));
-                    }
-
-                    remotePayload = this.ParseRemotePayloadElement(child);
+                    this.core.OnMessage(WixErrors.RemotePayloadUnsupported(childSourceLineNumbers));
+                    continue;
                 }
+
+                if (null != remotePayload)
+                {
+                    this.core.OnMessage(WixErrors.TooManyChildren(childSourceLineNumbers, node.Name.LocalName, child.Name.LocalName));
+                }
+
+                remotePayload = this.ParseRemotePayloadElement(child);
             }
 
             if (String.IsNullOrEmpty(sourceFile))
@@ -19662,11 +19648,6 @@ namespace WixToolset
                 {
                     this.core.OnMessage(WixErrors.IllegalIdentifier(sourceLineNumbers, node.Name.LocalName, "Id", id.Id));
                 }
-            }
-
-            if (null != remotePayload)
-            {
-                remotePayload.Id = id.Id;
             }
 
             if (null == logPathVariable)
@@ -19774,98 +19755,88 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                if (YesNoType.Yes == permanent)
-                {
-                    attributes |= BundlePackageAttributes.Permanent;
-                }
-
-                if (YesNoType.Yes == visible)
-                {
-                    attributes |= BundlePackageAttributes.Visible;
-                }
-
-                if (YesNoType.Yes == slipstream)
-                {
-                    attributes |= BundlePackageAttributes.Slipstream;
-                }
-
                 // We create the package contents as a payload with this package as the parent
                 this.CreatePayloadRow(sourceLineNumbers, id, name, sourceFile, downloadUrl, ComplexReferenceParentType.Package, id.Id,
-                    ComplexReferenceChildType.Unknown, null, compressed, suppressSignatureVerification, displayName, description);
+                    ComplexReferenceChildType.Unknown, null, compressed, enableSignatureVerification, displayName, description, remotePayload);
 
-                Row row = this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
-                row[1] = packageType.ToString();
-                row[2] = id.Id;
-                row[3] = installCondition;
-                row[4] = installCommand;
-                row[5] = repairCommand;
-                row[6] = uninstallCommand;
+                WixChainItemRow chainItemRow = (WixChainItemRow)this.core.CreateRow(sourceLineNumbers, "WixChainItem", id);
 
-                switch (cache)
+                ChainPackageAttributes attributes = 0;
+                attributes |= (YesNoType.Yes == permanent) ? ChainPackageAttributes.Permanent : 0;
+                attributes |= (YesNoType.Yes == visible) ? ChainPackageAttributes.Visible : 0;
+
+                ChainPackageRow chainPackageRow = (ChainPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
+                chainPackageRow.Type = packageType;
+                chainPackageRow.PackagePayloadId = id.Id;
+                chainPackageRow.Attributes = attributes;
+
+                chainPackageRow.InstallCondition = installCondition;
+
+                if (YesNoAlwaysType.NotSet != cache)
                 {
-                    case YesNoAlwaysType.No:
-                        row[7] = 0;
-                        break;
-                    case YesNoAlwaysType.Yes:
-                        row[7] = 1;
-                        break;
-                    case YesNoAlwaysType.Always:
-                        row[7] = 2;
-                        break;
+                    chainPackageRow.Cache = cache;
                 }
 
-                row[8] = cacheId;
-
-                row[9] = (int)attributes;
+                chainPackageRow.CacheId = cacheId;
 
                 if (YesNoType.NotSet != vital)
                 {
-                    row[10] = (YesNoType.Yes == vital) ? 1 : 0;
+                    chainPackageRow.Vital = vital;
                 }
 
-                switch (perMachine)
+                if (YesNoDefaultType.NotSet != perMachine)
                 {
-                    case YesNoDefaultType.No:
-                        row[11] = 0;
+                    chainPackageRow.PerMachine = perMachine;
+                }
+
+                chainPackageRow.LogPathVariable = logPathVariable;
+                chainPackageRow.RollbackLogPathVariable = rollbackPathVariable;
+
+                if (CompilerConstants.IntegerNotSet != installSize)
+                {
+                    chainPackageRow.InstallSize = installSize;
+                }
+
+                switch (packageType)
+                {
+                    case ChainPackageType.Exe:
+                        ChainExePackageAttributes exeAttributes = 0;
+                        exeAttributes |= (YesNoType.Yes == repairable) ? ChainExePackageAttributes.Repairable : 0;
+
+                        ChainExePackageRow exeRow = (ChainExePackageRow)this.core.CreateRow(sourceLineNumbers, "ChainExePackage", id);
+                        exeRow.Attributes = exeAttributes;
+                        exeRow.DetectCondition = detectCondition;
+                        exeRow.InstallCommand = installCommand;
+                        exeRow.RepairCommand = repairCommand;
+                        exeRow.UninstallCommand = uninstallCommand;
+                        exeRow.ExeProtocol = protocol;
                         break;
-                    case YesNoDefaultType.Yes:
-                        row[11] = 1;
+
+                    case ChainPackageType.Msi:
+                        ChainMsiPackageAttributes msiAttributes = 0;
+                        msiAttributes |= (YesNoType.Yes == displayInternalUI) ? ChainMsiPackageAttributes.DisplayInternalUI : 0;
+                        msiAttributes |= (YesNoType.Yes == enableFeatureSelection) ? ChainMsiPackageAttributes.EnableFeatureSelection : 0;
+                        msiAttributes |= (YesNoType.Yes == forcePerMachine) ? ChainMsiPackageAttributes.ForcePerMachine : 0;
+                        msiAttributes |= (YesNoType.Yes == suppressLooseFilePayloadGeneration) ? ChainMsiPackageAttributes.SuppressLooseFilePayloadGeneration : 0;
+
+                        ChainMsiPackageRow msiRow = (ChainMsiPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainMsiPackage", id);
+                        msiRow.Attributes = msiAttributes;
                         break;
-                    case YesNoDefaultType.Default:
-                        row[11] = 2;
+
+                    case ChainPackageType.Msp:
+                        ChainMspPackageAttributes mspAttributes = 0;
+                        mspAttributes |= (YesNoType.Yes == displayInternalUI) ? ChainMspPackageAttributes.DisplayInternalUI : 0;
+                        mspAttributes |= (YesNoType.Yes == slipstream) ? ChainMspPackageAttributes.Slipstream : 0;
+
+                        ChainMspPackageRow mspRow = (ChainMspPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainMspPackage", id);
+                        mspRow.Attributes = mspAttributes;
                         break;
-                }
 
-                row[12] = detectCondition;
-                row[13] = msuKB;
-
-                if (YesNoType.NotSet != repairable)
-                {
-                    row[14] = (YesNoType.Yes == repairable) ? 1 : 0;
-                }
-
-                row[15] = logPathVariable;
-                row[16] = rollbackPathVariable;
-                row[17] = protocol;
-                row[18] = installSize;
-                if (YesNoType.NotSet != suppressLooseFilePayloadGeneration)
-                {
-                    row[19] = (YesNoType.Yes == suppressLooseFilePayloadGeneration) ? 1 : 0;
-                }
-
-                if (YesNoType.NotSet != enableFeatureSelection)
-                {
-                    row[20] = (YesNoType.Yes == enableFeatureSelection) ? 1 : 0;
-                }
-
-                if (YesNoType.NotSet != forcePerMachine)
-                {
-                    row[21] = (YesNoType.Yes == forcePerMachine) ? 1 : 0;
-                }
-
-                if (YesNoType.NotSet != displayInternalUI)
-                {
-                    row[22] = (YesNoType.Yes == displayInternalUI) ? 1 : 0;
+                    case ChainPackageType.Msu:
+                        ChainMsuPackageRow msuRow = (ChainMsuPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainMsuPackage", id);
+                        msuRow.DetectCondition = detectCondition;
+                        msuRow.MsuKB = msuKB;
+                        break;
                 }
 
                 this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, after);
@@ -19968,7 +19939,7 @@ namespace WixToolset
         /// <returns>Identifier for package group element.</rereturns>
         private string ParsePackageGroupRefElement(XElement node, ComplexReferenceParentType parentType, string parentId)
         {
-            return ParsePackageGroupRefElement(node, parentType, parentId, ComplexReferenceChildType.PackageGroup, null);
+            return this.ParsePackageGroupRefElement(node, parentType, parentId, ComplexReferenceChildType.Unknown, null);
         }
 
         /// <summary>
@@ -20000,7 +19971,7 @@ namespace WixToolset
                             this.core.CreateSimpleReference(sourceLineNumbers, "ChainPackageGroup", id);
                             break;
                         case "After":
-                            after = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            after = this.core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -20036,6 +20007,30 @@ namespace WixToolset
             }
 
             return id;
+        }
+
+        /// <summary>
+        /// Creates rollback boundary.
+        /// </summary>
+        /// <param name="sourceLineNumbers">Source line numbers.</param>
+        /// <param name="id">Identifier for the rollback boundary.</param>
+        /// <param name="vital">Indicates whether the rollback boundary is vital or not.</param>
+        /// <param name="parentType">Type of parent group.</param>
+        /// <param name="parentId">Identifier of parent group.</param>
+        /// <param name="previousType">Type of previous item, if any.</param>
+        /// <param name="previousId">Identifier of previous item, if any.</param>
+        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        {
+            WixChainItemRow row = (WixChainItemRow)this.core.CreateRow(sourceLineNumbers, "WixChainItem", id);
+
+            RollbackBoundaryRow rollbackBoundary = (RollbackBoundaryRow)this.core.CreateRow(sourceLineNumbers, "RollbackBoundary", id);
+
+            if (YesNoType.NotSet != vital)
+            {
+                rollbackBoundary.Vital = vital;
+            }
+
+            this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
         }
 
         /// <summary>

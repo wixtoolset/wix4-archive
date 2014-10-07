@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="BundleChainAttributes.cs" company="Outercurve Foundation">
+// <copyright file="WixChainAttributes.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -7,15 +7,12 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Data.Rows
 {
     using System;
 
-    /// <summary>
-    /// Attributes available for a bundle chain.
-    /// </summary>
     [Flags]
-    internal enum BundleChainAttributes : int
+    public enum WixChainAttributes
     {
         None = 0x0,
         DisableRollback = 0x1,

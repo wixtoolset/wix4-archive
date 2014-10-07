@@ -5,18 +5,12 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-// Specialization of a row for the ChainMsiPackage table.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Data
+namespace WixToolset.Data.Rows
 {
     using System;
     using System.Globalization;
-    using System.Text;
-    using System.Xml;
 
     /// <summary>
     /// Specialization of a row for the ChainMsiPackage table.
@@ -44,63 +38,107 @@ namespace WixToolset.Data
         }
 
         /// <summary>
-        /// Gets or sets the primary key of the ChainPackage row.
+        /// Gets or sets the foreign key identifier to the ChainPackage row.
         /// </summary>
-        /// <value>Primary key of the ChainPackage row.</value>
-        public string ChainPackage
+        public string ChainPackageId
         {
             get { return (string)this.Fields[0].Data; }
             set { this.Fields[0].Data = value; }
         }
 
         /// <summary>
-        /// Gets or sets the MSI package's product code.
+        /// Gets or sets the raw MSI attributes of a package.
         /// </summary>
-        /// <value>MSI package's product code.</value>
-        public string ProductCode
+        public ChainMsiPackageAttributes Attributes
         {
-            get { return (string)this.Fields[1].Data; }
+            get { return (ChainMsiPackageAttributes)this.Fields[1].Data; }
             set { this.Fields[1].Data = value; }
         }
 
         /// <summary>
-        /// Gets or sets the language of the MSI package.
+        /// Gets or sets the MSI package's product code.
         /// </summary>
-        /// <value>Language id of the MSI package.</value>
-        public int ProductLanguage
+        public string ProductCode
         {
-            get { return Convert.ToInt32(this.Fields[4].Data, CultureInfo.InvariantCulture); }
-            set { this.Fields[4].Data = value; }
+            get { return (string)this.Fields[2].Data; }
+            set { this.Fields[2].Data = value; }
         }
 
         /// <summary>
-        /// Gets or sets the product name of the MSI package.
+        /// Gets or sets the MSI package's upgrade code.
         /// </summary>
-        /// <value>Product name of the MSI package.</value>
-        public string ProductName
-        {
-            get { return (string)this.Fields[5].Data; }
-            set { this.Fields[5].Data = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the product version of the MSI package.
-        /// </summary>
-        /// <value>Product version of the MSI package.</value>
-        public string ProductVersion
+        public string UpgradeCode
         {
             get { return (string)this.Fields[3].Data; }
             set { this.Fields[3].Data = value; }
         }
 
         /// <summary>
-        /// Gets or sets the MSI package's upgrade code.
+        /// Gets or sets the product version of the MSI package.
         /// </summary>
-        /// <value>MSI package's upgrade code.</value>
-        public string UpgradeCode
+        public string ProductVersion
         {
-            get { return (string)this.Fields[2].Data; }
-            set { this.Fields[2].Data = value; }
+            get { return (string)this.Fields[4].Data; }
+            set { this.Fields[4].Data = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the language of the MSI package.
+        /// </summary>
+        public int ProductLanguage
+        {
+            get { return Convert.ToInt32(this.Fields[5].Data, CultureInfo.InvariantCulture); }
+            set { this.Fields[5].Data = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the product name of the MSI package.
+        /// </summary>
+        public string ProductName
+        {
+            get { return (string)this.Fields[6].Data; }
+            set { this.Fields[6].Data = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the MSI package's manufacturer.
+        /// </summary>
+        public string Manufacturer
+        {
+            get { return (string)this.Fields[7].Data; }
+            set { this.Fields[7].Data = value; }
+        }
+
+        /// <summary>
+        /// Gets the display internal UI of a package.
+        /// </summary>
+        public bool DisplayInternalUI
+        {
+            get { return 0 != (this.Attributes & ChainMsiPackageAttributes.DisplayInternalUI); }
+        }
+
+        /// <summary>
+        /// Gets the display internal UI of a package.
+        /// </summary>
+        public bool EnableFeatureSelection
+        {
+            get { return 0 != (this.Attributes & ChainMsiPackageAttributes.EnableFeatureSelection); }
+        }
+
+        /// <summary>
+        /// Gets the display internal UI of a package.
+        /// </summary>
+        public bool ForcePerMachine
+        {
+            get { return 0 != (this.Attributes & ChainMsiPackageAttributes.ForcePerMachine); }
+        }
+
+        /// <summary>
+        /// Gets the suppress loose file payload generation of a package.
+        /// </summary>
+        public bool SuppressLooseFilePayloadGeneration
+        {
+            get { return 0 != (this.Attributes & ChainMsiPackageAttributes.SuppressLooseFilePayloadGeneration); }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="YesNoDefaultType.cs" company="Outercurve Foundation">
+// <copyright file="YesNoAlwaysType.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -14,11 +14,11 @@ namespace WixToolset.Data
     /// </summary>
     public enum YesNoAlwaysType
     {
-        /// <summary>Value not set; equivalent to null for reference types.</summary>
-        NotSet,
+        /// <summary>Not a valid yes, no or always value.</summary>
+        IllegalValue = -2,
 
-        /// <summary>The always value.</summary>
-        Always,
+        /// <summary>Value not set; equivalent to null for reference types.</summary>
+        NotSet = -1,
 
         /// <summary>The no value.</summary>
         No,
@@ -26,7 +26,7 @@ namespace WixToolset.Data
         /// <summary>The yes value.</summary>
         Yes,
 
-        /// <summary>Not a valid yes, no or always value.</summary>
-        IllegalValue,
+        /// <summary>The always value.</summary>
+        Always,
     }
 }

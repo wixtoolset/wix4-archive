@@ -14,8 +14,6 @@
 namespace WixToolset.Data
 {
     using System;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Xml;
 
@@ -178,9 +176,9 @@ namespace WixToolset.Data
         private bool added;
 
         private bool minValueSet;
-        private int minValue;
+        private long minValue;
         private bool maxValueSet;
-        private int maxValue;
+        private long maxValue;
         private string keyTable;
         private bool keyColumnSet;
         private int keyColumn;
@@ -212,7 +210,7 @@ namespace WixToolset.Data
         /// <param name="description">Description of column in vaidation table.</param>
         /// <param name="escapeIdtCharacters">If characters should be escaped in IDT.</param>
         /// <param name="useCData">If whitespace should be preserved in a CDATA node.</param>
-        public ColumnDefinition(string name, ColumnType type, int length, bool primaryKey, bool nullable, ColumnModularizeType modularizeType, bool localizable, bool minValueSet, int minValue, bool maxValueSet, int maxValue, string keyTable, bool keyColumnSet, int keyColumn, ColumnCategory category, string possibilities, string description, bool escapeIdtCharacters, bool useCData)
+        public ColumnDefinition(string name, ColumnType type, int length, bool primaryKey, bool nullable, ColumnModularizeType modularizeType, bool localizable, bool minValueSet, long minValue, bool maxValueSet, long maxValue, string keyTable, bool keyColumnSet, int keyColumn, ColumnCategory category, string possibilities, string description, bool escapeIdtCharacters, bool useCData)
         {
             this.name = name;
             this.type = type;
@@ -322,7 +320,7 @@ namespace WixToolset.Data
         /// Gets the minimum value for the column, only valid if IsMinValueSet returns true.
         /// </summary>
         /// <value>Minimum value for the column.</value>
-        public int MinValue
+        public long MinValue
         {
             get { return this.minValue; }
         }
@@ -340,7 +338,7 @@ namespace WixToolset.Data
         /// Gets the maximum value for the column, only valid if IsMinValueSet returns true.
         /// </summary>
         /// <value>Maximum value for the column.</value>
-        public int MaxValue
+        public long MaxValue
         {
             get { return this.maxValue; }
         }
@@ -471,9 +469,9 @@ namespace WixToolset.Data
             string keyTable = null;
             int length = -1;
             bool localizable = false;
-            int maxValue = 0;
+            long maxValue = 0;
             bool maxValueSet = false;
-            int minValue = 0;
+            long minValue = 0;
             bool minValueSet = false;
             ColumnModularizeType modularize = ColumnModularizeType.None;
             string name = null;
@@ -927,40 +925,59 @@ namespace WixToolset.Data
         /// Validate a value for this column.
         /// </summary>
         /// <param name="value">The value to validate.</param>
-        internal void ValidateValue(object value)
+        /// <returns>Validated value.</returns>
+        internal object ValidateValue(object value)
         {
-            // non-nullable columns require a non-null value
-            if (!this.nullable && null == value)
+            if (null == value)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with a null value because this is a required field.", this.name));
+                if (!this.nullable)
+                {
+                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with a null value because this is a required field.", this.name));
+                }
             }
-
-            // check numerical values against their specified minimum and maximum values
-            if (null != value)
+            else if (null != value) // check numerical values against their specified minimum and maximum values.
             {
                 if (ColumnType.Number == this.type && !this.IsLocalizable)
                 {
-                    int intValue;
-
-                    if (value is int)
+                    if (value is int || value.GetType().IsEnum)
                     {
-                        intValue = (int)value;
+                        int intValue = (int)value;
+
+                        // validate the value against the minimum allowed value
+                        if (this.minValueSet && this.minValue > intValue)
+                        {
+                            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with value {1} because it is less than the minimum allowed value for this column, {2}.", this.name, intValue, this.minValue));
+                        }
+
+                        // validate the value against the maximum allowed value
+                        if (this.maxValueSet && this.maxValue < intValue)
+                        {
+                            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with value {1} because it is greater than the maximum allowed value for this column, {2}.", this.name, intValue, this.maxValue));
+                        }
+
+                        return intValue;
+                    }
+                    else if (value is long)
+                    {
+                        long longValue = (long)value;
+
+                        // validate the value against the minimum allowed value
+                        if (this.minValueSet && this.minValue > longValue)
+                        {
+                            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with value {1} because it is less than the minimum allowed value for this column, {2}.", this.name, longValue, this.minValue));
+                        }
+
+                        // validate the value against the maximum allowed value
+                        if (this.maxValueSet && this.maxValue < longValue)
+                        {
+                            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with value {1} because it is greater than the maximum allowed value for this column, {2}.", this.name, longValue, this.maxValue));
+                        }
+
+                        return longValue;
                     }
                     else
                     {
                         throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set number column '{0}' with a value of type '{1}'.", this.name, value.GetType().ToString()));
-                    }
-
-                    // validate the value against the minimum allowed value
-                    if (this.minValueSet && this.minValue > intValue)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with value {1} because it is less than the minimum allowed value for this column, {2}.", this.name, intValue, this.minValue));
-                    }
-
-                    // validate the value against the maximum allowed value
-                    if (this.maxValueSet && this.maxValue < intValue)
-                    {
-                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with value {1} because it is greater than the maximum allowed value for this column, {2}.", this.name, intValue, this.maxValue));
                     }
                 }
                 else
@@ -971,6 +988,8 @@ namespace WixToolset.Data
                     }
                 }
             }
+
+            return value;
         }
 
         /// <summary>

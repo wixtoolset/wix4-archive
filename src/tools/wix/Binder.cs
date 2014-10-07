@@ -598,7 +598,7 @@ namespace WixToolset
         /// </summary>
         /// <param name="path">Path to write file.</param>
         /// <param name="payloads">Collection of payloads whose source will be written to file.</param>
-        private void CreateContentsFile(string path, IEnumerable<PayloadInfoRow> payloads)
+        private void CreateContentsFile(string path, IEnumerable<PayloadRow> payloads)
         {
             string directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
@@ -608,7 +608,7 @@ namespace WixToolset
 
             using (StreamWriter contents = new StreamWriter(path, false))
             {
-                foreach (PayloadInfoRow payload in payloads)
+                foreach (PayloadRow payload in payloads)
                 {
                     if (payload.ContentFile)
                     {

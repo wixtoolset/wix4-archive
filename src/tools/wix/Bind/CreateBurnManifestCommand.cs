@@ -24,33 +24,29 @@ namespace WixToolset.Bind
     {
         public IEnumerable<IBinderFileManager> FileManagers { private get; set; }
 
+        public Output Output { private get; set; }
+
         public string ExecutableName { private get; set; }
 
         public WixBundleRow BundleInfo { private get; set; }
 
-        public WixBundleUpdateRow UpdateRow { private get; set; }
-
-        public WixUpdateRegistrationRow UpdateRegistrationInfo { private get; set; }
+        public WixChainRow Chain { private get; set; }
 
         public string OutputPath { private get; set; }
 
-        public IEnumerable<RelatedBundleRow> RelatedBundles { private get; set; }
+        public IEnumerable<RollbackBoundaryRow> RollbackBoundaries { private get; set; }
 
-        public IEnumerable<VariableRow> Variables { private get; set; }
+        public IEnumerable<ChainPackageFacade> OrderedPackages { private get; set; }
 
         public IEnumerable<WixSearchInfo> OrderedSearches { private get; set; }
 
-        public Dictionary<string, PayloadInfoRow> Payloads { private get; set; }
+        public Dictionary<string, PayloadRow> Payloads { private get; set; }
 
-        public ChainInfo Chain { private get; set; }
+        public Dictionary<string, ContainerRow> Containers { private get; set; }
 
-        public Dictionary<string, ContainerInfo> Containers { private get; set; }
+        public IEnumerable<PayloadRow> UXContainerPayloads { private get; set; }
 
         public IEnumerable<WixCatalogRow> Catalogs { private get; set; }
-
-        public IEnumerable<Row> BundleTags { private get; set; }
-
-        public IEnumerable<WixApprovedExeForElevationRow> ApprovedExesForElevation { private get; set; }
 
         public void Execute()
         {
@@ -79,15 +75,24 @@ namespace WixToolset.Bind
                     writer.WriteEndElement();
                 }
 
-                if (null != this.UpdateRow)
+
+                // Get update if specified.
+                WixBundleUpdateRow updateRow = this.Output.Tables["WixBundleUpdate"].RowsAs<WixBundleUpdateRow>().FirstOrDefault();
+
+                if (null != updateRow)
                 {
                     writer.WriteStartElement("Update");
-                    writer.WriteAttributeString("Location", this.UpdateRow.Location);
+                    writer.WriteAttributeString("Location", updateRow.Location);
                     writer.WriteEndElement(); // </Update>
                 }
 
                 // Write the RelatedBundle elements
-                foreach (RelatedBundleRow relatedBundle in this.RelatedBundles)
+
+                // For the related bundles with duplicated identifiers the second instance is ignored (i.e. the Duplicates
+                // enumeration in the index row list is not used).
+                RowIndexedList<RelatedBundleRow> relatedBundles = new RowIndexedList<RelatedBundleRow>(this.Output.Tables["RelatedBundle"]);
+
+                foreach (RelatedBundleRow relatedBundle in relatedBundles)
                 {
                     writer.WriteStartElement("RelatedBundle");
                     writer.WriteAttributeString("Id", relatedBundle.Id);
@@ -96,7 +101,9 @@ namespace WixToolset.Bind
                 }
 
                 // Write the variables
-                foreach (VariableRow variable in this.Variables)
+                IEnumerable<VariableRow> variables = this.Output.Tables["Variable"].RowsAs<VariableRow>();
+
+                foreach (VariableRow variable in variables)
                 {
                     writer.WriteStartElement("Variable");
                     writer.WriteAttributeString("Id", variable.Id);
@@ -124,15 +131,14 @@ namespace WixToolset.Bind
                 }
 
                 // write the UX allPayloads...
-                List<PayloadInfoRow> uxPayloads = this.Containers[Compiler.BurnUXContainerId].Payloads;
-                foreach (PayloadInfoRow payload in uxPayloads)
+                foreach (PayloadRow payload in this.UXContainerPayloads)
                 {
                     writer.WriteStartElement("Payload");
-                    WriteBurnManifestPayloadAttributes(writer, payload, true, this.Payloads);
+                    this.WriteBurnManifestPayloadAttributes(writer, payload, true, this.Payloads);
                     writer.WriteEndElement();
                 }
 
-                writer.WriteEndElement();
+                writer.WriteEndElement(); // </UX>
 
                 // write the catalog elements
                 if (this.Catalogs.Any())
@@ -146,41 +152,36 @@ namespace WixToolset.Bind
                     }
                 }
 
-                int attachedContainerIndex = 1; // count starts at one because UX container is "0".
-                foreach (ContainerInfo container in this.Containers.Values)
+                foreach (ContainerRow container in this.Containers.Values)
                 {
-                    if (Compiler.BurnUXContainerId != container.Id && 0 < container.Payloads.Count)
+                    if (!String.IsNullOrEmpty(container.WorkingPath) && Compiler.BurnUXContainerId != container.Id)
                     {
                         writer.WriteStartElement("Container");
-                        WriteBurnManifestContainerAttributes(writer, this.ExecutableName, container, attachedContainerIndex);
+                        this.WriteBurnManifestContainerAttributes(writer, this.ExecutableName, container);
                         writer.WriteEndElement();
-                        if ("attached" == container.Type)
-                        {
-                            attachedContainerIndex++;
-                        }
                     }
                 }
 
-                foreach (PayloadInfoRow payload in this.Payloads.Values)
+                foreach (PayloadRow payload in this.Payloads.Values)
                 {
                     if (PackagingType.Embedded == payload.Packaging && Compiler.BurnUXContainerId != payload.Container)
                     {
                         writer.WriteStartElement("Payload");
-                        WriteBurnManifestPayloadAttributes(writer, payload, true, this.Payloads);
+                        this.WriteBurnManifestPayloadAttributes(writer, payload, true, this.Payloads);
                         writer.WriteEndElement();
                     }
                     else if (PackagingType.External == payload.Packaging)
                     {
                         writer.WriteStartElement("Payload");
-                        WriteBurnManifestPayloadAttributes(writer, payload, false, this.Payloads);
+                        this.WriteBurnManifestPayloadAttributes(writer, payload, false, this.Payloads);
                         writer.WriteEndElement();
                     }
                 }
 
-                foreach (RollbackBoundaryInfo rollbackBoundary in this.Chain.RollbackBoundaries)
+                foreach (RollbackBoundaryRow rollbackBoundary in this.RollbackBoundaries)
                 {
                     writer.WriteStartElement("RollbackBoundary");
-                    writer.WriteAttributeString("Id", rollbackBoundary.Id);
+                    writer.WriteAttributeString("Id", rollbackBoundary.ChainPackageId);
                     writer.WriteAttributeString("Vital", YesNoType.Yes == rollbackBoundary.Vital ? "yes" : "no");
                     writer.WriteEndElement();
                 }
@@ -245,27 +246,32 @@ namespace WixToolset.Bind
                 }
                 writer.WriteEndElement(); // </Arp>
 
-                if (null != this.UpdateRegistrationInfo)
+                // Get update registration if specified.
+                WixUpdateRegistrationRow updateRegistrationInfo = this.Output.Tables["WixUpdateRegistration"].RowsAs<WixUpdateRegistrationRow>().FirstOrDefault();
+
+                if (null != updateRegistrationInfo)
                 {
                     writer.WriteStartElement("Update"); // <Update>
-                    writer.WriteAttributeString("Manufacturer", this.UpdateRegistrationInfo.Manufacturer);
+                    writer.WriteAttributeString("Manufacturer", updateRegistrationInfo.Manufacturer);
 
-                    if (!String.IsNullOrEmpty(this.UpdateRegistrationInfo.Department))
+                    if (!String.IsNullOrEmpty(updateRegistrationInfo.Department))
                     {
-                        writer.WriteAttributeString("Department", this.UpdateRegistrationInfo.Department);
+                        writer.WriteAttributeString("Department", updateRegistrationInfo.Department);
                     }
 
-                    if (!String.IsNullOrEmpty(this.UpdateRegistrationInfo.ProductFamily))
+                    if (!String.IsNullOrEmpty(updateRegistrationInfo.ProductFamily))
                     {
-                        writer.WriteAttributeString("ProductFamily", this.UpdateRegistrationInfo.ProductFamily);
+                        writer.WriteAttributeString("ProductFamily", updateRegistrationInfo.ProductFamily);
                     }
 
-                    writer.WriteAttributeString("Name", this.UpdateRegistrationInfo.Name);
-                    writer.WriteAttributeString("Classification", this.UpdateRegistrationInfo.Classification);
+                    writer.WriteAttributeString("Name", updateRegistrationInfo.Name);
+                    writer.WriteAttributeString("Classification", updateRegistrationInfo.Classification);
                     writer.WriteEndElement(); // </Update>
                 }
 
-                foreach (Row row in this.BundleTags)
+                IEnumerable<Row> bundleTags = this.Output.Tables["WixBundleTag"].RowsAs<Row>();
+
+                foreach (Row row in bundleTags)
                 {
                     writer.WriteStartElement("SoftwareTag");
                     writer.WriteAttributeString("Filename", (string)row[0]);
@@ -293,16 +299,25 @@ namespace WixToolset.Bind
                     writer.WriteAttributeString("ParallelCache", "yes");
                 }
 
+                // Index a few tables by package.
+                ILookup<string, WixBundlePatchTargetCodeRow> targetCodesByPatch = this.Output.Tables["WixBundlePatchTargetCode"].RowsAs<WixBundlePatchTargetCodeRow>().ToLookup(r => r.MspPackageId);
+                ILookup<string, MsiFeatureRow> msiFeaturesByPackage = this.Output.Tables["MsiFeature"].RowsAs<MsiFeatureRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, MsiPropertyRow> msiPropertiesByPackage = this.Output.Tables["MsiProperty"].RowsAs<MsiPropertyRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, PayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
+                ILookup<string, RelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["RelatedPackage"].RowsAs<RelatedPackageRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, SlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["SlipstreamMsp"].RowsAs<SlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, ExitCodeRow> exitCodesByPackage = this.Output.Tables["ExitCode"].RowsAs<ExitCodeRow>().ToLookup(r => r.ChainPackageId);
+
                 // Build up the list of target codes from all the MSPs in the chain.
                 List<WixBundlePatchTargetCodeRow> targetCodes = new List<WixBundlePatchTargetCodeRow>();
 
-                foreach (ChainPackageInfo package in this.Chain.Packages)
+                foreach (ChainPackageFacade package in this.OrderedPackages)
                 {
-                    writer.WriteStartElement(String.Format(CultureInfo.InvariantCulture, "{0}Package", package.ChainPackageType));
+                    writer.WriteStartElement(String.Format(CultureInfo.InvariantCulture, "{0}Package", package.ChainPackage.Type));
 
-                    writer.WriteAttributeString("Id", package.Id);
+                    writer.WriteAttributeString("Id", package.ChainPackage.WixChainItemId);
 
-                    switch (package.Cache)
+                    switch (package.ChainPackage.Cache)
                     {
                         case YesNoAlwaysType.No:
                             writer.WriteAttributeString("Cache", "no");
@@ -315,74 +330,76 @@ namespace WixToolset.Bind
                             break;
                     }
 
-                    writer.WriteAttributeString("CacheId", package.CacheId);
-                    writer.WriteAttributeString("InstallSize", Convert.ToString(package.InstallSize));
-                    writer.WriteAttributeString("Size", Convert.ToString(package.Size));
-                    writer.WriteAttributeString("PerMachine", YesNoDefaultType.Yes == package.PerMachine ? "yes" : "no");
-                    writer.WriteAttributeString("Permanent", package.Permanent ? "yes" : "no");
-                    writer.WriteAttributeString("Vital", package.Vital ? "yes" : "no");
+                    writer.WriteAttributeString("CacheId", package.ChainPackage.CacheId);
+                    writer.WriteAttributeString("InstallSize", Convert.ToString(package.ChainPackage.InstallSize));
+                    writer.WriteAttributeString("Size", Convert.ToString(package.ChainPackage.Size));
+                    writer.WriteAttributeString("PerMachine", YesNoDefaultType.Yes == package.ChainPackage.PerMachine ? "yes" : "no");
+                    writer.WriteAttributeString("Permanent", package.ChainPackage.Permanent ? "yes" : "no");
+                    writer.WriteAttributeString("Vital", (YesNoType.Yes == package.ChainPackage.Vital) ? "yes" : "no");
 
-                    if (null != package.RollbackBoundary)
+                    if (null != package.ChainPackage.RollbackBoundaryId)
                     {
-                        writer.WriteAttributeString("RollbackBoundaryForward", package.RollbackBoundary.Id);
+                        writer.WriteAttributeString("RollbackBoundaryForward", package.ChainPackage.RollbackBoundaryId);
                     }
 
-                    if (!String.IsNullOrEmpty(package.RollbackBoundaryBackwardId))
+                    if (!String.IsNullOrEmpty(package.ChainPackage.RollbackBoundaryBackwardId))
                     {
-                        writer.WriteAttributeString("RollbackBoundaryBackward", package.RollbackBoundaryBackwardId);
+                        writer.WriteAttributeString("RollbackBoundaryBackward", package.ChainPackage.RollbackBoundaryBackwardId);
                     }
 
-                    if (!String.IsNullOrEmpty(package.LogPathVariable))
+                    if (!String.IsNullOrEmpty(package.ChainPackage.LogPathVariable))
                     {
-                        writer.WriteAttributeString("LogPathVariable", package.LogPathVariable);
+                        writer.WriteAttributeString("LogPathVariable", package.ChainPackage.LogPathVariable);
                     }
 
-                    if (!String.IsNullOrEmpty(package.RollbackLogPathVariable))
+                    if (!String.IsNullOrEmpty(package.ChainPackage.RollbackLogPathVariable))
                     {
-                        writer.WriteAttributeString("RollbackLogPathVariable", package.RollbackLogPathVariable);
+                        writer.WriteAttributeString("RollbackLogPathVariable", package.ChainPackage.RollbackLogPathVariable);
                     }
 
-                    if (!String.IsNullOrEmpty(package.InstallCondition))
+                    if (!String.IsNullOrEmpty(package.ChainPackage.InstallCondition))
                     {
-                        writer.WriteAttributeString("InstallCondition", package.InstallCondition);
+                        writer.WriteAttributeString("InstallCondition", package.ChainPackage.InstallCondition);
                     }
 
-                    if (Compiler.ChainPackageType.Exe == package.ChainPackageType)
+                    if (ChainPackageType.Exe == package.ChainPackage.Type)
                     {
-                        writer.WriteAttributeString("DetectCondition", package.DetectCondition);
-                        writer.WriteAttributeString("InstallArguments", package.InstallCommand);
-                        writer.WriteAttributeString("UninstallArguments", package.UninstallCommand);
-                        writer.WriteAttributeString("RepairArguments", package.RepairCommand);
-                        writer.WriteAttributeString("Repairable", package.Repairable ? "yes" : "no");
-                        if (!String.IsNullOrEmpty(package.Protocol))
+                        writer.WriteAttributeString("DetectCondition", package.ExePackage.DetectCondition);
+                        writer.WriteAttributeString("InstallArguments", package.ExePackage.InstallCommand);
+                        writer.WriteAttributeString("UninstallArguments", package.ExePackage.UninstallCommand);
+                        writer.WriteAttributeString("RepairArguments", package.ExePackage.RepairCommand);
+                        writer.WriteAttributeString("Repairable", package.ExePackage.Repairable ? "yes" : "no");
+                        if (!String.IsNullOrEmpty(package.ExePackage.ExeProtocol))
                         {
-                            writer.WriteAttributeString("Protocol", package.Protocol);
+                            writer.WriteAttributeString("Protocol", package.ExePackage.ExeProtocol);
                         }
                     }
-                    else if (Compiler.ChainPackageType.Msi == package.ChainPackageType)
+                    else if (ChainPackageType.Msi == package.ChainPackage.Type)
                     {
-                        writer.WriteAttributeString("ProductCode", package.ProductCode);
-                        writer.WriteAttributeString("Language", package.Language);
-                        writer.WriteAttributeString("Version", package.Version);
-                        writer.WriteAttributeString("DisplayInternalUI", package.DisplayInternalUI ? "yes" : "no");
-                        if (!String.IsNullOrEmpty(package.UpgradeCode))
+                        writer.WriteAttributeString("ProductCode", package.MsiPackage.ProductCode);
+                        writer.WriteAttributeString("Language", package.MsiPackage.ProductLanguage.ToString(CultureInfo.InvariantCulture));
+                        writer.WriteAttributeString("Version", package.MsiPackage.ProductVersion);
+                        writer.WriteAttributeString("DisplayInternalUI", package.MsiPackage.DisplayInternalUI ? "yes" : "no");
+                        if (!String.IsNullOrEmpty(package.MsiPackage.UpgradeCode))
                         {
-                            writer.WriteAttributeString("UpgradeCode", package.UpgradeCode);
+                            writer.WriteAttributeString("UpgradeCode", package.MsiPackage.UpgradeCode);
                         }
                     }
-                    else if (Compiler.ChainPackageType.Msp == package.ChainPackageType)
+                    else if (ChainPackageType.Msp == package.ChainPackage.Type)
                     {
-                        writer.WriteAttributeString("PatchCode", package.PatchCode);
-                        writer.WriteAttributeString("PatchXml", package.PatchXml);
-                        writer.WriteAttributeString("DisplayInternalUI", package.DisplayInternalUI ? "yes" : "no");
+                        writer.WriteAttributeString("PatchCode", package.MspPackage.PatchCode);
+                        writer.WriteAttributeString("PatchXml", package.MspPackage.PatchXml);
+                        writer.WriteAttributeString("DisplayInternalUI", package.MspPackage.DisplayInternalUI ? "yes" : "no");
 
                         // If there is still a chance that all of our patches will target a narrow set of
                         // product codes, add the patch list to the overall list.
                         if (null != targetCodes)
                         {
-                            if (!package.TargetUnspecified)
+                            if (!package.MspPackage.TargetUnspecified)
                             {
-                                targetCodes.AddRange(package.TargetCodes);
+                                IEnumerable<WixBundlePatchTargetCodeRow> patchTargetCodes = targetCodesByPatch[package.MspPackage.ChainPackageId];
+
+                                targetCodes.AddRange(patchTargetCodes);
                             }
                             else // we have a patch that targets the world, so throw the whole list away.
                             {
@@ -390,20 +407,24 @@ namespace WixToolset.Bind
                             }
                         }
                     }
-                    else if (Compiler.ChainPackageType.Msu == package.ChainPackageType)
+                    else if (ChainPackageType.Msu == package.ChainPackage.Type)
                     {
-                        writer.WriteAttributeString("DetectCondition", package.DetectCondition);
-                        writer.WriteAttributeString("KB", package.MsuKB);
+                        writer.WriteAttributeString("DetectCondition", package.MsuPackage.DetectCondition);
+                        writer.WriteAttributeString("KB", package.MsuPackage.MsuKB);
                     }
 
-                    foreach (MsiFeature feature in package.MsiFeatures)
+                    IEnumerable<MsiFeatureRow> packageMsiFeatures = msiFeaturesByPackage[package.ChainPackage.WixChainItemId];
+
+                    foreach (MsiFeatureRow feature in packageMsiFeatures)
                     {
                         writer.WriteStartElement("MsiFeature");
                         writer.WriteAttributeString("Id", feature.Name);
                         writer.WriteEndElement();
                     }
 
-                    foreach (MsiPropertyInfo msiProperty in package.MsiProperties)
+                    IEnumerable<MsiPropertyRow> packageMsiProperties = msiPropertiesByPackage[package.ChainPackage.WixChainItemId];
+
+                    foreach (MsiPropertyRow msiProperty in packageMsiProperties)
                     {
                         writer.WriteStartElement("MsiProperty");
                         writer.WriteAttributeString("Id", msiProperty.Name);
@@ -411,18 +432,31 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    foreach (string slipstreamMsp in package.SlipstreamMsps)
+                    IEnumerable<SlipstreamMspRow> packageSlipstreamMsps = slipstreamMspsByPackage[package.ChainPackage.WixChainItemId];
+
+                    foreach (SlipstreamMspRow slipstreamMsp in packageSlipstreamMsps)
                     {
                         writer.WriteStartElement("SlipstreamMsp");
-                        writer.WriteAttributeString("Id", slipstreamMsp);
+                        writer.WriteAttributeString("Id", slipstreamMsp.MspPackageId);
                         writer.WriteEndElement();
                     }
 
-                    foreach (ExitCodeInfo exitCode in package.ExitCodes)
+                    IEnumerable<ExitCodeRow> packageExitCodes = exitCodesByPackage[package.ChainPackage.WixChainItemId];
+
+                    foreach (ExitCodeRow exitCode in packageExitCodes)
                     {
                         writer.WriteStartElement("ExitCode");
-                        writer.WriteAttributeString("Type", exitCode.Type);
-                        writer.WriteAttributeString("Code", exitCode.Code);
+
+                        if (exitCode.Code.HasValue)
+                        {
+                            writer.WriteAttributeString("Code", unchecked((uint)exitCode.Code).ToString(CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            writer.WriteAttributeString("Code", "*");
+                        }
+
+                        writer.WriteAttributeString("Type", ((int)exitCode.Behavior).ToString(CultureInfo.InvariantCulture));
                         writer.WriteEndElement();
                     }
 
@@ -433,7 +467,9 @@ namespace WixToolset.Bind
                         dependency.WriteXml(writer);
                     }
 
-                    foreach (RelatedPackage related in package.RelatedPackages)
+                    IEnumerable<RelatedPackageRow> packageRelatedPackages = relatedPackagesByPackage[package.ChainPackage.WixChainItemId];
+
+                    foreach (RelatedPackageRow related in packageRelatedPackages)
                     {
                         writer.WriteStartElement("RelatedPackage");
                         writer.WriteAttributeString("Id", related.Id);
@@ -448,10 +484,13 @@ namespace WixToolset.Bind
                             writer.WriteAttributeString("MaxInclusive", related.MaxInclusive ? "yes" : "no");
                         }
                         writer.WriteAttributeString("OnlyDetect", related.OnlyDetect ? "yes" : "no");
-                        if (0 < related.Languages.Count)
+
+                        string[] relatedLanguages = related.Languages.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (0 < relatedLanguages.Length)
                         {
                             writer.WriteAttributeString("LangInclusive", related.LangInclusive ? "yes" : "no");
-                            foreach (string language in related.Languages)
+                            foreach (string language in relatedLanguages)
                             {
                                 writer.WriteStartElement("Language");
                                 writer.WriteAttributeString("Id", language);
@@ -463,12 +502,14 @@ namespace WixToolset.Bind
 
                     // Write any contained Payloads with the PackagePayload being first
                     writer.WriteStartElement("PayloadRef");
-                    writer.WriteAttributeString("Id", package.PackagePayload.Id);
+                    writer.WriteAttributeString("Id", package.ChainPackage.PackagePayloadId);
                     writer.WriteEndElement();
 
-                    foreach (PayloadInfoRow payload in package.Payloads)
+                    IEnumerable<PayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
+
+                    foreach (PayloadRow payload in packagePayloads)
                     {
-                        if (payload.Id != package.PackagePayload.Id)
+                        if (payload.Id != package.ChainPackage.PackagePayloadId)
                         {
                             writer.WriteStartElement("PayloadRef");
                             writer.WriteAttributeString("Id", payload.Id);
@@ -491,8 +532,10 @@ namespace WixToolset.Bind
                     }
                 }
 
-                // write the ApprovedExeForElevation elements
-                foreach (WixApprovedExeForElevationRow approvedExeForElevation in this.ApprovedExesForElevation)
+                // Write the ApprovedExeForElevation elements.
+                IEnumerable<WixApprovedExeForElevationRow> approvedExesForElevation = this.Output.Tables["WixApprovedExeForElevation"].RowsAs<WixApprovedExeForElevationRow>();
+
+                foreach (WixApprovedExeForElevationRow approvedExeForElevation in approvedExesForElevation)
                 {
                     writer.WriteStartElement("ApprovedExeForElevation");
                     writer.WriteAttributeString("Id", approvedExeForElevation.Id);
@@ -515,12 +558,13 @@ namespace WixToolset.Bind
             }
         }
 
-        private void WriteBurnManifestContainerAttributes(XmlTextWriter writer, string executableName, ContainerInfo container, int containerIndex)
+        private void WriteBurnManifestContainerAttributes(XmlTextWriter writer, string executableName, ContainerRow container)
         {
             writer.WriteAttributeString("Id", container.Id);
-            writer.WriteAttributeString("FileSize", container.FileInfo.Length.ToString(CultureInfo.InvariantCulture));
-            writer.WriteAttributeString("Hash", Common.GetFileHash(container.FileInfo));
-            if (container.Type == "detached")
+            writer.WriteAttributeString("FileSize", container.Size.ToString(CultureInfo.InvariantCulture));
+            writer.WriteAttributeString("Hash", container.Hash);
+
+            if (ContainerType.Detached == container.Type)
             {
                 string resolvedUrl = this.ResolveUrl(container.DownloadUrl, null, null, container.Id, container.Name);
                 if (!String.IsNullOrEmpty(resolvedUrl))
@@ -534,7 +578,7 @@ namespace WixToolset.Bind
 
                 writer.WriteAttributeString("FilePath", container.Name);
             }
-            else if (container.Type == "attached")
+            else if (ContainerType.Attached == container.Type)
             {
                 if (!String.IsNullOrEmpty(container.DownloadUrl))
                 {
@@ -542,13 +586,13 @@ namespace WixToolset.Bind
                 }
 
                 writer.WriteAttributeString("FilePath", executableName); // attached containers use the name of the bundle since they are attached to the executable.
-                writer.WriteAttributeString("AttachedIndex", containerIndex.ToString(CultureInfo.InvariantCulture));
+                writer.WriteAttributeString("AttachedIndex", container.AttachedContainerIndex.ToString(CultureInfo.InvariantCulture));
                 writer.WriteAttributeString("Attached", "yes");
                 writer.WriteAttributeString("Primary", "yes");
             }
         }
 
-        private void WriteBurnManifestPayloadAttributes(XmlTextWriter writer, PayloadInfoRow payload, bool embeddedOnly, Dictionary<string, PayloadInfoRow> allPayloads)
+        private void WriteBurnManifestPayloadAttributes(XmlTextWriter writer, PayloadRow payload, bool embeddedOnly, Dictionary<string, PayloadRow> allPayloads)
         {
             Debug.Assert(!embeddedOnly || PackagingType.Embedded == payload.Packaging);
 

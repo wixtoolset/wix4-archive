@@ -15,5 +15,4 @@ namespace WixToolset.Data
         Embedded,
         External,
     }
-
 }

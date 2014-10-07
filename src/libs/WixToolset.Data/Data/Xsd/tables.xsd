@@ -107,20 +107,20 @@
                     <xs:documentation>Enumeration specifying how column should have the ModuleId appended</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            
+
             <xs:attribute name="localizable" type="TablesYesNoType">
                 <xs:annotation>
                     <xs:documentation>Set to "yes" in order to allow substitution for localized variables.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
 
-            <xs:attribute name="minValue" type="xs:integer">
+            <xs:attribute name="minValue" type="xs:long">
                 <xs:annotation>
                     <xs:documentation>Minimum value for column in Windows Installer table</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
 
-            <xs:attribute name="maxValue" type="xs:integer">
+            <xs:attribute name="maxValue" type="xs:long">
                 <xs:annotation>
                     <xs:documentation>Maximum value for column in Windows Installer table</xs:documentation>
                 </xs:annotation>
@@ -161,13 +161,13 @@
                     <xs:documentation>Description of column</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            
+
             <xs:attribute name="escapeIdtCharacters" type="TablesYesNoType">
                 <xs:annotation>
                     <xs:documentation>Set to "yes" in order to make the idt exporter escape whitespace characters \r, \n, and \t.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            
+
             <xs:attribute name="useCData" type="TablesYesNoType">
                 <xs:annotation>
                     <xs:documentation>Set to "yes" in order to make the Intermediate and Output objects wrap their data in a CDATA element to preserve whitespace.</xs:documentation>

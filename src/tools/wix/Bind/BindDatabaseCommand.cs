@@ -1052,7 +1052,7 @@ namespace WixToolset.Bind
         private void CopyToTransformData(Output output)
         {
             CopyTransformDataCommand command = new CopyTransformDataCommand();
-            command.CopyOutFileRows = true;
+            command.CopyOutFileRows = false;
             command.FileManagerCore = this.FileManagerCore;
             command.FileManagers = this.FileManagers;
             command.Output = output;

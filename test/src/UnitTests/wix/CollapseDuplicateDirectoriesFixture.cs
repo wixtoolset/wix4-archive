@@ -9,7 +9,6 @@
 
 namespace WixTest.WixUnitTest
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
@@ -19,6 +18,14 @@ namespace WixTest.WixUnitTest
 
     public class CollapseDuplicateDirectoriesFixture : WixUnitTestBaseFixture
     {
+        [Fact]
+        public void TableExt()
+        {
+            TableIndexedCollection tables = new TableIndexedCollection();
+
+            Assert.Empty(tables["NotFound"].RowsAs<Row>());
+        }
+
         [Fact]
         public void DuplicatePrivateDirectoriesCollapse()
         {

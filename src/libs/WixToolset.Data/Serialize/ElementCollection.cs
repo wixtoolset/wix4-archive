@@ -108,7 +108,7 @@ namespace WixToolset.Data.Serialize
                     if (collectionItem.ElementType.IsAssignableFrom(element.GetType()))
                     {
                         collectionItem.AddElement(element);
-                        
+
                         if (!containerUsed)
                         {
                             this.containersUsed++;
@@ -173,7 +173,7 @@ namespace WixToolset.Data.Serialize
                         }
 
                         collectionItem.RemoveElement(element);
-                        
+
                         if (collectionItem.Elements.Count == 0)
                         {
                             this.containersUsed--;
@@ -274,7 +274,7 @@ namespace WixToolset.Data.Serialize
                     {
                         return nestedFilter;
                     }
-                    
+
                     continue;
                 }
             }
@@ -352,10 +352,10 @@ namespace WixToolset.Data.Serialize
                 {
                     throw new ArgumentException(
                         String.Format(
-                            CultureInfo.InvariantCulture, 
-                            WixDataStrings.EXP_ElementIsSubclassOfDifferentType, 
-                            this.elementType.Name, 
-                            element.GetType().Name), 
+                            CultureInfo.InvariantCulture,
+                            WixDataStrings.EXP_ElementIsSubclassOfDifferentType,
+                            this.elementType.Name,
+                            element.GetType().Name),
                         "element");
                 }
 
@@ -373,10 +373,10 @@ namespace WixToolset.Data.Serialize
                 {
                     throw new ArgumentException(
                         String.Format(
-                            CultureInfo.InvariantCulture, 
-                            WixDataStrings.EXP_ElementIsSubclassOfDifferentType, 
-                            this.elementType.Name, 
-                            element.GetType().Name), 
+                            CultureInfo.InvariantCulture,
+                            WixDataStrings.EXP_ElementIsSubclassOfDifferentType,
+                            this.elementType.Name,
+                            element.GetType().Name),
                         "element");
                 }
 
@@ -393,7 +393,8 @@ namespace WixToolset.Data.Serialize
             /// Creates a new choice item.
             /// </summary>
             /// <param name="elementType">Type of the created item.</param>
-            public ChoiceItem(Type elementType) : base(elementType)
+            public ChoiceItem(Type elementType)
+                : base(elementType)
             {
             }
         }
@@ -407,7 +408,8 @@ namespace WixToolset.Data.Serialize
             /// Creates a new sequence item.
             /// </summary>
             /// <param name="elementType">Type of the created item.</param>
-            public SequenceItem(Type elementType) : base(elementType)
+            public SequenceItem(Type elementType)
+                : base(elementType)
             {
             }
         }
@@ -440,7 +442,7 @@ namespace WixToolset.Data.Serialize
                     {
                         CollectionTuple tuple = (CollectionTuple)this.collectionStack.Peek();
                         object container = tuple.Collection.items[tuple.ContainerIndex];
-                        
+
                         CollectionItem collectionItem = container as CollectionItem;
                         if (collectionItem != null)
                         {
@@ -529,7 +531,7 @@ namespace WixToolset.Data.Serialize
             private bool FindNext(CollectionTuple tuple)
             {
                 object container = tuple.Collection.items[tuple.ContainerIndex];
-                        
+
                 CollectionItem collectionItem = container as CollectionItem;
                 if (collectionItem != null)
                 {
@@ -553,7 +555,7 @@ namespace WixToolset.Data.Serialize
                 for (int i = tuple.ContainerIndex + 1; i < tuple.Collection.items.Count; ++i)
                 {
                     object nestedContainer = tuple.Collection.items[i];
-                        
+
                     CollectionItem nestedCollectionItem = nestedContainer as CollectionItem;
                     if (nestedCollectionItem != null)
                     {

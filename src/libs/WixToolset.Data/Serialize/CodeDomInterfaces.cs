@@ -31,7 +31,7 @@ namespace WixToolset.Data.Serialize
             get;
             set;
         }
-    
+
         /// <summary>
         /// Outputs xml representing this element, including the associated attributes
         /// and any nested elements.

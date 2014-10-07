@@ -111,30 +111,8 @@ extern "C" HRESULT ExeEngineParsePackageFromXml(
             ExitOnFailure(hr, "Failed to get next node.");
 
             // @Type
-            hr = XmlGetAttributeEx(pixnNode, L"Type", &scz);
+            hr = XmlGetAttributeNumber(pixnNode, L"Type", (DWORD*)&pExitCode->type);
             ExitOnFailure(hr, "Failed to get @Type.");
-
-            if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"success", -1))
-            {
-                pExitCode->type = BURN_EXE_EXIT_CODE_TYPE_SUCCESS;
-            }
-            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"error", -1))
-            {
-                pExitCode->type = BURN_EXE_EXIT_CODE_TYPE_ERROR;
-            }
-            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"scheduleReboot", -1))
-            {
-                pExitCode->type = BURN_EXE_EXIT_CODE_TYPE_SCHEDULE_REBOOT;
-            }
-            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, scz, -1, L"forceReboot", -1))
-            {
-                pExitCode->type = BURN_EXE_EXIT_CODE_TYPE_FORCE_REBOOT;
-            }
-            else
-            {
-                hr = E_UNEXPECTED;
-                ExitOnFailure(hr, "Invalid exit code type: %ls", scz);
-            }
 
             // @Code
             hr = XmlGetAttributeEx(pixnNode, L"Code", &scz);
