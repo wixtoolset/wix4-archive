@@ -212,6 +212,7 @@ namespace WixToolset.Extensions
             string launchTargetElevatedId = null;
             string launchArguments = null;
             YesNoType launchHidden = YesNoType.NotSet;
+            string launchWorkingDir = null;
             string licenseFile = null;
             string licenseUrl = null;
             string logoFile = null;
@@ -240,6 +241,9 @@ namespace WixToolset.Extensions
                             break;
                         case "LaunchHidden":
                             launchHidden = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "LaunchWorkingDir":
+                            launchWorkingDir = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseFile":
                             licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -320,6 +324,15 @@ namespace WixToolset.Extensions
                     VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
                     row.Id = "LaunchHidden";
                     row.Value = "yes";
+                    row.Type = "string";
+                }
+
+
+                if (!String.IsNullOrEmpty(launchWorkingDir))
+                {
+                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    row.Id = "LaunchWorkingDir";
+                    row.Value = launchWorkingDir;
                     row.Type = "string";
                 }
 

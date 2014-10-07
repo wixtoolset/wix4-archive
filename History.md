@@ -1,3 +1,5 @@
+* BMurri: WIXBUG:3750 - Add LaunchWorkingDir to wixstdba to facilitate processes that require a different working folder.
+
 * SeanHall: WIXFEAT:4525 - Reimplement balutil in BootstrapperCore.
 
 * HeathS: WIXBUG:4541 - Add support for high DPI to the Burn engine
