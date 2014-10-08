@@ -18160,7 +18160,7 @@ namespace WixToolset
             {
                 if (null != upgradeCode)
                 {
-                    Row relatedBundleRow = this.core.CreateRow(sourceLineNumbers, "RelatedBundle");
+                    Row relatedBundleRow = this.core.CreateRow(sourceLineNumbers, "WixRelatedBundle");
                     relatedBundleRow[0] = upgradeCode;
                     relatedBundleRow[1] = (int)Wix.RelatedBundle.ActionType.Upgrade;
                 }
@@ -20239,7 +20239,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "RelatedBundle");
+                Row row = this.core.CreateRow(sourceLineNumbers, "WixRelatedBundle");
                 row[0] = id;
                 row[1] = (int)actionType;
             }

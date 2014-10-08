@@ -1792,7 +1792,7 @@
         <columnDefinition name="ChainPackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the referenced Msp." />
     </tableDefinition>
-    <tableDefinition name="RelatedBundle" unreal="yes">
+    <tableDefinition name="WixRelatedBundle" unreal="yes">
         <columnDefinition name="Id" type="string" length="38" category="guid" primaryKey="yes" />
         <columnDefinition name="Action" type="number" length="4" />
     </tableDefinition>

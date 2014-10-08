@@ -90,9 +90,9 @@ namespace WixToolset.Bind
 
                 // For the related bundles with duplicated identifiers the second instance is ignored (i.e. the Duplicates
                 // enumeration in the index row list is not used).
-                RowIndexedList<RelatedBundleRow> relatedBundles = new RowIndexedList<RelatedBundleRow>(this.Output.Tables["RelatedBundle"]);
+                RowIndexedList<WixRelatedBundleRow> relatedBundles = new RowIndexedList<WixRelatedBundleRow>(this.Output.Tables["WixRelatedBundle"]);
 
-                foreach (RelatedBundleRow relatedBundle in relatedBundles)
+                foreach (WixRelatedBundleRow relatedBundle in relatedBundles)
                 {
                     writer.WriteStartElement("RelatedBundle");
                     writer.WriteAttributeString("Id", relatedBundle.Id);

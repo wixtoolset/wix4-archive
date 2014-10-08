@@ -126,8 +126,8 @@ namespace WixToolset.Data
                 case "Property":
                     row = new PropertyRow(sourceLineNumbers, this);
                     break;
-                case "RelatedBundle":
-                    row = new RelatedBundleRow(sourceLineNumbers, this);
+                case "WixRelatedBundle":
+                    row = new WixRelatedBundleRow(sourceLineNumbers, this);
                     break;
                 case "RelatedPackage":
                     row = new RelatedPackageRow(sourceLineNumbers, this);
