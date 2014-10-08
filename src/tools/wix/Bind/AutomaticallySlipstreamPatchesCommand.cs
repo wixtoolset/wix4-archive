@@ -13,15 +13,14 @@ namespace WixToolset.Bind
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Text;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
 
     internal class AutomaticallySlipstreamPatchesCommand : ICommand
     {
-        public IEnumerable<PackageFacade> Packages { private get; set;}
+        public IEnumerable<PackageFacade> Facades { private get; set; }
 
-        public Table WixBundlePatchTargetCodeTable {private get; set;}
+        public Table WixBundlePatchTargetCodeTable { private get; set; }
 
         public Table SlipstreamMspTable { private get; set; }
 
@@ -31,16 +30,16 @@ namespace WixToolset.Bind
             Dictionary<string, List<WixBundlePatchTargetCodeRow>> targetsProductCode = new Dictionary<string, List<WixBundlePatchTargetCodeRow>>();
             Dictionary<string, List<WixBundlePatchTargetCodeRow>> targetsUpgradeCode = new Dictionary<string, List<WixBundlePatchTargetCodeRow>>();
 
-            foreach (PackageFacade package in Packages)
+            foreach (PackageFacade facade in this.Facades)
             {
-                if (WixBundlePackageType.Msi == package.Package.Type)
+                if (WixBundlePackageType.Msi == facade.Package.Type)
                 {
                     // Keep track of all MSI packages.
-                    msiPackages.Add(package.MsiPackage);
+                    msiPackages.Add(facade.MsiPackage);
                 }
-                else if (WixBundlePackageType.Msp == package.Package.Type && package.MspPackage.Slipstream)
+                else if (WixBundlePackageType.Msp == facade.Package.Type && facade.MspPackage.Slipstream)
                 {
-                    IEnumerable<WixBundlePatchTargetCodeRow> patchTargetCodeRows = WixBundlePatchTargetCodeTable.RowsAs<WixBundlePatchTargetCodeRow>().Where(r => r.MspPackageId == package.Package.WixChainItemId);
+                    IEnumerable<WixBundlePatchTargetCodeRow> patchTargetCodeRows = this.WixBundlePatchTargetCodeTable.RowsAs<WixBundlePatchTargetCodeRow>().Where(r => r.MspPackageId == facade.Package.WixChainItemId);
 
                     // Index target ProductCodes and UpgradeCodes for slipstreamed MSPs.
                     foreach (WixBundlePatchTargetCodeRow row in patchTargetCodeRows)

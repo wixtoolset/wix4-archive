@@ -15,7 +15,7 @@ namespace WixToolset.Bind
 
     internal class GetPackageFacadesCommand : ICommand
     {
-        public Table ChainPackageTable { private get; set; }
+        public Table PackageTable { private get; set; }
 
         public Table ExePackageTable { private get; set; }
 
@@ -25,7 +25,7 @@ namespace WixToolset.Bind
 
         public Table MsuPackageTable { private get; set; }
 
-        public IDictionary<string, PackageFacade> Packages { get; private set; }
+        public IDictionary<string, PackageFacade> Facades { get; private set; }
 
         public void Execute()
         {
@@ -34,36 +34,36 @@ namespace WixToolset.Bind
             RowDictionary<BundleMspPackageRow> mspPackages = new RowDictionary<BundleMspPackageRow>(this.MspPackageTable);
             RowDictionary<WixBundleMsuPackageRow> msuPackages = new RowDictionary<WixBundleMsuPackageRow>(this.MsuPackageTable);
 
-            Dictionary<string, PackageFacade> packages = new Dictionary<string, PackageFacade>(this.ChainPackageTable.Rows.Count);
+            Dictionary<string, PackageFacade> facades = new Dictionary<string, PackageFacade>(this.PackageTable.Rows.Count);
 
-            foreach (WixBundlePackageRow chainPackage in this.ChainPackageTable.Rows)
+            foreach (WixBundlePackageRow package in this.PackageTable.Rows)
             {
-                string id = chainPackage.WixChainItemId;
+                string id = package.WixChainItemId;
                 PackageFacade facade = null;
 
-                switch (chainPackage.Type)
+                switch (package.Type)
                 {
                     case WixBundlePackageType.Exe:
-                        facade = new PackageFacade(chainPackage, exePackages.Get(id));
+                        facade = new PackageFacade(package, exePackages.Get(id));
                         break;
 
                     case WixBundlePackageType.Msi:
-                        facade = new PackageFacade(chainPackage, msiPackages.Get(id));
+                        facade = new PackageFacade(package, msiPackages.Get(id));
                         break;
 
                     case WixBundlePackageType.Msp:
-                        facade = new PackageFacade(chainPackage, mspPackages.Get(id));
+                        facade = new PackageFacade(package, mspPackages.Get(id));
                         break;
 
                     case WixBundlePackageType.Msu:
-                        facade = new PackageFacade(chainPackage, msuPackages.Get(id));
+                        facade = new PackageFacade(package, msuPackages.Get(id));
                         break;
                 }
 
-                packages.Add(id, facade);
+                facades.Add(id, facade);
             }
 
-            this.Packages = packages;
+            this.Facades = facades;
         }
     }
 }
