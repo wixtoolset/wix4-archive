@@ -1808,8 +1808,8 @@
         <columnDefinition name="LangInclusive" type="number" length="2" minValue="0" maxValue="1"/>
         <columnDefinition name="OnlyDetect" type="number" length="2" minValue="0" maxValue="1"/>
     </tableDefinition>
-    <tableDefinition name="Variable" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Variable" type="string" length="0" category="identifier" primaryKey="yes" />
+    <tableDefinition name="WixBundleVariable" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundleVariable" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Value" type="string" length="0" nullable="yes" />
         <columnDefinition name="Type" type="string" length="0" nullable="yes" />
         <columnDefinition name="Hidden" type="number" length="2" minValue="0" maxValue="1"/>

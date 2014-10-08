@@ -18203,22 +18203,22 @@ namespace WixToolset
                 row[19] = upgradeCode;
 
                 // Ensure that the bundle stores the well-known persisted values.
-                VariableRow bundleNameWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                WixBundleVariableRow bundleNameWellKnownVariable = (WixBundleVariableRow)this.core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                 bundleNameWellKnownVariable.Id = Compiler.BURN_BUNDLE_NAME;
                 bundleNameWellKnownVariable.Hidden = false;
                 bundleNameWellKnownVariable.Persisted = true;
 
-                VariableRow bundleOriginalSourceWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                WixBundleVariableRow bundleOriginalSourceWellKnownVariable = (WixBundleVariableRow)this.core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                 bundleOriginalSourceWellKnownVariable.Id = Compiler.BURN_BUNDLE_ORIGINAL_SOURCE;
                 bundleOriginalSourceWellKnownVariable.Hidden = false;
                 bundleOriginalSourceWellKnownVariable.Persisted = true;
 
-                VariableRow bundleOriginalSourceFolderWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                WixBundleVariableRow bundleOriginalSourceFolderWellKnownVariable = (WixBundleVariableRow)this.core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                 bundleOriginalSourceFolderWellKnownVariable.Id = Compiler.BURN_BUNDLE_ORIGINAL_SOURCE_FOLDER;
                 bundleOriginalSourceFolderWellKnownVariable.Hidden = false;
                 bundleOriginalSourceFolderWellKnownVariable.Persisted = true;
 
-                VariableRow bundleLastUsedSourceWellKnownVariable = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                WixBundleVariableRow bundleLastUsedSourceWellKnownVariable = (WixBundleVariableRow)this.core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                 bundleLastUsedSourceWellKnownVariable.Id = Compiler.BURN_BUNDLE_LAST_USED_SOURCE;
                 bundleLastUsedSourceWellKnownVariable.Hidden = false;
                 bundleLastUsedSourceWellKnownVariable.Persisted = true;
@@ -20398,7 +20398,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                VariableRow row = (VariableRow)this.core.CreateRow(sourceLineNumbers, "Variable");
+                WixBundleVariableRow row = (WixBundleVariableRow)this.core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                 row.Id = name;
                 row.Value = value;
                 row.Type = type;

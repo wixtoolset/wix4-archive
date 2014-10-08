@@ -101,9 +101,9 @@ namespace WixToolset.Bind
                 }
 
                 // Write the variables
-                IEnumerable<VariableRow> variables = this.Output.Tables["Variable"].RowsAs<VariableRow>();
+                IEnumerable<WixBundleVariableRow> variables = this.Output.Tables["WixBundleVariable"].RowsAs<WixBundleVariableRow>();
 
-                foreach (VariableRow variable in variables)
+                foreach (WixBundleVariableRow variable in variables)
                 {
                     writer.WriteStartElement("Variable");
                     writer.WriteAttributeString("Id", variable.Id);

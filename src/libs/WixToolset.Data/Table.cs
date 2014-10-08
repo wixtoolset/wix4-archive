@@ -138,8 +138,8 @@ namespace WixToolset.Data
                 case "Upgrade":
                     row = new UpgradeRow(sourceLineNumbers, this);
                     break;
-                case "Variable":
-                    row = new VariableRow(sourceLineNumbers, this);
+                case "WixBundleVariable":
+                    row = new WixBundleVariableRow(sourceLineNumbers, this);
                     break;
                 case "WixAction":
                     row = new WixActionRow(sourceLineNumbers, this);

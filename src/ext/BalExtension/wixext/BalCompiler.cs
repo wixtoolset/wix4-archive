@@ -293,7 +293,7 @@ namespace WixToolset.Extensions
             {
                 if (!String.IsNullOrEmpty(launchTarget))
                 {
-                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    WixBundleVariableRow row = (WixBundleVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                     row.Id = "LaunchTarget";
                     row.Value = launchTarget;
                     row.Type = "string";
@@ -301,7 +301,7 @@ namespace WixToolset.Extensions
 
                 if (!String.IsNullOrEmpty(launchTargetElevatedId))
                 {
-                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    WixBundleVariableRow row = (WixBundleVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                     row.Id = "LaunchTargetElevatedId";
                     row.Value = launchTargetElevatedId;
                     row.Type = "string";
@@ -309,7 +309,7 @@ namespace WixToolset.Extensions
 
                 if (!String.IsNullOrEmpty(launchArguments))
                 {
-                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    WixBundleVariableRow row = (WixBundleVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                     row.Id = "LaunchArguments";
                     row.Value = launchArguments;
                     row.Type = "string";
@@ -317,7 +317,7 @@ namespace WixToolset.Extensions
 
                 if (YesNoType.Yes == launchHidden)
                 {
-                    VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    WixBundleVariableRow row = (WixBundleVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixBundleVariable");
                     row.Id = "LaunchHidden";
                     row.Value = "yes";
                     row.Type = "string";

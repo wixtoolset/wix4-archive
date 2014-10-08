@@ -80,7 +80,7 @@
     <Compile Include="Rows\SummaryInfoRowCollection.cs" />
     <Compile Include="Rows\PropertyRow.cs" />
     <Compile Include="Rows\UpgradeRow.cs" />
-    <Compile Include="Rows\VariableRow.cs" />
+    <Compile Include="Rows\WixBundleVariableRow.cs" />
     <Compile Include="Rows\WixActionRow.cs" />
     <Compile Include="Rows\WixActionRowCollection.cs" />
     <Compile Include="Rows\WixApprovedExeForElevationRow.cs" />
