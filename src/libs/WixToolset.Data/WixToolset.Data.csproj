@@ -70,7 +70,7 @@
     <Compile Include="Rows\WixRollbackBoundaryRow.cs" />
     <Compile Include="Rows\ChainMsuPackageRow.cs" />
     <Compile Include="Rows\ChainMspPackageRow.cs" />
-    <Compile Include="Rows\ChainPackageRow.cs" />
+    <Compile Include="Rows\WixBundlePackageRow.cs" />
     <Compile Include="Rows\ChainMsiPackageRow.cs" />
     <Compile Include="Rows\ComponentRow.cs" />
     <Compile Include="Rows\ControlRow.cs" />

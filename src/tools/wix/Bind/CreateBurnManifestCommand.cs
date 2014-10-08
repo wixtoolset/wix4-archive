@@ -313,11 +313,11 @@ namespace WixToolset.Bind
 
                 foreach (ChainPackageFacade package in this.OrderedPackages)
                 {
-                    writer.WriteStartElement(String.Format(CultureInfo.InvariantCulture, "{0}Package", package.ChainPackage.Type));
+                    writer.WriteStartElement(String.Format(CultureInfo.InvariantCulture, "{0}Package", package.Package.Type));
 
-                    writer.WriteAttributeString("Id", package.ChainPackage.WixChainItemId);
+                    writer.WriteAttributeString("Id", package.Package.WixChainItemId);
 
-                    switch (package.ChainPackage.Cache)
+                    switch (package.Package.Cache)
                     {
                         case YesNoAlwaysType.No:
                             writer.WriteAttributeString("Cache", "no");
@@ -330,39 +330,39 @@ namespace WixToolset.Bind
                             break;
                     }
 
-                    writer.WriteAttributeString("CacheId", package.ChainPackage.CacheId);
-                    writer.WriteAttributeString("InstallSize", Convert.ToString(package.ChainPackage.InstallSize));
-                    writer.WriteAttributeString("Size", Convert.ToString(package.ChainPackage.Size));
-                    writer.WriteAttributeString("PerMachine", YesNoDefaultType.Yes == package.ChainPackage.PerMachine ? "yes" : "no");
-                    writer.WriteAttributeString("Permanent", package.ChainPackage.Permanent ? "yes" : "no");
-                    writer.WriteAttributeString("Vital", (YesNoType.Yes == package.ChainPackage.Vital) ? "yes" : "no");
+                    writer.WriteAttributeString("CacheId", package.Package.CacheId);
+                    writer.WriteAttributeString("InstallSize", Convert.ToString(package.Package.InstallSize));
+                    writer.WriteAttributeString("Size", Convert.ToString(package.Package.Size));
+                    writer.WriteAttributeString("PerMachine", YesNoDefaultType.Yes == package.Package.PerMachine ? "yes" : "no");
+                    writer.WriteAttributeString("Permanent", package.Package.Permanent ? "yes" : "no");
+                    writer.WriteAttributeString("Vital", (YesNoType.Yes == package.Package.Vital) ? "yes" : "no");
 
-                    if (null != package.ChainPackage.RollbackBoundary)
+                    if (null != package.Package.RollbackBoundary)
                     {
-                        writer.WriteAttributeString("RollbackBoundaryForward", package.ChainPackage.RollbackBoundary);
+                        writer.WriteAttributeString("RollbackBoundaryForward", package.Package.RollbackBoundary);
                     }
 
-                    if (!String.IsNullOrEmpty(package.ChainPackage.RollbackBoundaryBackward))
+                    if (!String.IsNullOrEmpty(package.Package.RollbackBoundaryBackward))
                     {
-                        writer.WriteAttributeString("RollbackBoundaryBackward", package.ChainPackage.RollbackBoundaryBackward);
+                        writer.WriteAttributeString("RollbackBoundaryBackward", package.Package.RollbackBoundaryBackward);
                     }
 
-                    if (!String.IsNullOrEmpty(package.ChainPackage.LogPathVariable))
+                    if (!String.IsNullOrEmpty(package.Package.LogPathVariable))
                     {
-                        writer.WriteAttributeString("LogPathVariable", package.ChainPackage.LogPathVariable);
+                        writer.WriteAttributeString("LogPathVariable", package.Package.LogPathVariable);
                     }
 
-                    if (!String.IsNullOrEmpty(package.ChainPackage.RollbackLogPathVariable))
+                    if (!String.IsNullOrEmpty(package.Package.RollbackLogPathVariable))
                     {
-                        writer.WriteAttributeString("RollbackLogPathVariable", package.ChainPackage.RollbackLogPathVariable);
+                        writer.WriteAttributeString("RollbackLogPathVariable", package.Package.RollbackLogPathVariable);
                     }
 
-                    if (!String.IsNullOrEmpty(package.ChainPackage.InstallCondition))
+                    if (!String.IsNullOrEmpty(package.Package.InstallCondition))
                     {
-                        writer.WriteAttributeString("InstallCondition", package.ChainPackage.InstallCondition);
+                        writer.WriteAttributeString("InstallCondition", package.Package.InstallCondition);
                     }
 
-                    if (ChainPackageType.Exe == package.ChainPackage.Type)
+                    if (ChainPackageType.Exe == package.Package.Type)
                     {
                         writer.WriteAttributeString("DetectCondition", package.ExePackage.DetectCondition);
                         writer.WriteAttributeString("InstallArguments", package.ExePackage.InstallCommand);
@@ -374,7 +374,7 @@ namespace WixToolset.Bind
                             writer.WriteAttributeString("Protocol", package.ExePackage.ExeProtocol);
                         }
                     }
-                    else if (ChainPackageType.Msi == package.ChainPackage.Type)
+                    else if (ChainPackageType.Msi == package.Package.Type)
                     {
                         writer.WriteAttributeString("ProductCode", package.MsiPackage.ProductCode);
                         writer.WriteAttributeString("Language", package.MsiPackage.ProductLanguage.ToString(CultureInfo.InvariantCulture));
@@ -385,7 +385,7 @@ namespace WixToolset.Bind
                             writer.WriteAttributeString("UpgradeCode", package.MsiPackage.UpgradeCode);
                         }
                     }
-                    else if (ChainPackageType.Msp == package.ChainPackage.Type)
+                    else if (ChainPackageType.Msp == package.Package.Type)
                     {
                         writer.WriteAttributeString("PatchCode", package.MspPackage.PatchCode);
                         writer.WriteAttributeString("PatchXml", package.MspPackage.PatchXml);
@@ -407,13 +407,13 @@ namespace WixToolset.Bind
                             }
                         }
                     }
-                    else if (ChainPackageType.Msu == package.ChainPackage.Type)
+                    else if (ChainPackageType.Msu == package.Package.Type)
                     {
                         writer.WriteAttributeString("DetectCondition", package.MsuPackage.DetectCondition);
                         writer.WriteAttributeString("KB", package.MsuPackage.MsuKB);
                     }
 
-                    IEnumerable<WixBundleMsiFeatureRow> packageMsiFeatures = msiFeaturesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleMsiFeatureRow> packageMsiFeatures = msiFeaturesByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundleMsiFeatureRow feature in packageMsiFeatures)
                     {
@@ -422,7 +422,7 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    IEnumerable<WixBundleMsiPropertyRow> packageMsiProperties = msiPropertiesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleMsiPropertyRow> packageMsiProperties = msiPropertiesByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundleMsiPropertyRow msiProperty in packageMsiProperties)
                     {
@@ -432,7 +432,7 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    IEnumerable<WixBundleSlipstreamMspRow> packageSlipstreamMsps = slipstreamMspsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleSlipstreamMspRow> packageSlipstreamMsps = slipstreamMspsByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundleSlipstreamMspRow slipstreamMsp in packageSlipstreamMsps)
                     {
@@ -441,7 +441,7 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    IEnumerable<WixBundlePackageExitCodeRow> packageExitCodes = exitCodesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePackageExitCodeRow> packageExitCodes = exitCodesByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundlePackageExitCodeRow exitCode in packageExitCodes)
                     {
@@ -467,7 +467,7 @@ namespace WixToolset.Bind
                         dependency.WriteXml(writer);
                     }
 
-                    IEnumerable<WixBundleRelatedPackageRow> packageRelatedPackages = relatedPackagesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleRelatedPackageRow> packageRelatedPackages = relatedPackagesByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundleRelatedPackageRow related in packageRelatedPackages)
                     {
@@ -502,14 +502,14 @@ namespace WixToolset.Bind
 
                     // Write any contained Payloads with the PackagePayload being first
                     writer.WriteStartElement("PayloadRef");
-                    writer.WriteAttributeString("Id", package.ChainPackage.PackagePayload);
+                    writer.WriteAttributeString("Id", package.Package.PackagePayload);
                     writer.WriteEndElement();
 
-                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundlePayloadRow payload in packagePayloads)
                     {
-                        if (payload.Id != package.ChainPackage.PackagePayload)
+                        if (payload.Id != package.Package.PackagePayload)
                         {
                             writer.WriteStartElement("PayloadRef");
                             writer.WriteAttributeString("Id", payload.Id);

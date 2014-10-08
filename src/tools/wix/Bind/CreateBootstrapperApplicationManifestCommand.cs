@@ -75,23 +75,23 @@ namespace WixToolset.Bind
 
             foreach (ChainPackageFacade package in this.ChainPackages)
             {
-                WixBundlePayloadRow packagePayload = this.Payloads[package.ChainPackage.PackagePayload];
+                WixBundlePayloadRow packagePayload = this.Payloads[package.Package.PackagePayload];
 
-                Row row = wixPackagePropertiesTable.CreateRow(package.ChainPackage.SourceLineNumbers);
-                row[0] = package.ChainPackage.WixChainItemId;
-                row[1] = (YesNoType.Yes == package.ChainPackage.Vital) ? "yes" : "no";
-                row[2] = package.ChainPackage.DisplayName;
-                row[3] = package.ChainPackage.Description;
-                row[4] = package.ChainPackage.Size.ToString(CultureInfo.InvariantCulture); // TODO: DownloadSize (compressed) (what does this mean when it's embedded?)
-                row[5] = package.ChainPackage.Size.ToString(CultureInfo.InvariantCulture); // Package.Size (uncompressed)
-                row[6] = package.ChainPackage.InstallSize.Value.ToString(CultureInfo.InvariantCulture); // InstallSize (required disk space)
-                row[7] = package.ChainPackage.Type.ToString(CultureInfo.InvariantCulture);
-                row[8] = package.ChainPackage.Permanent ? "yes" : "no";
-                row[9] = package.ChainPackage.LogPathVariable;
-                row[10] = package.ChainPackage.RollbackLogPathVariable;
+                Row row = wixPackagePropertiesTable.CreateRow(package.Package.SourceLineNumbers);
+                row[0] = package.Package.WixChainItemId;
+                row[1] = (YesNoType.Yes == package.Package.Vital) ? "yes" : "no";
+                row[2] = package.Package.DisplayName;
+                row[3] = package.Package.Description;
+                row[4] = package.Package.Size.ToString(CultureInfo.InvariantCulture); // TODO: DownloadSize (compressed) (what does this mean when it's embedded?)
+                row[5] = package.Package.Size.ToString(CultureInfo.InvariantCulture); // Package.Size (uncompressed)
+                row[6] = package.Package.InstallSize.Value.ToString(CultureInfo.InvariantCulture); // InstallSize (required disk space)
+                row[7] = package.Package.Type.ToString(CultureInfo.InvariantCulture);
+                row[8] = package.Package.Permanent ? "yes" : "no";
+                row[9] = package.Package.LogPathVariable;
+                row[10] = package.Package.RollbackLogPathVariable;
                 row[11] = (PackagingType.Embedded == packagePayload.Packaging) ? "yes" : "no";
 
-                if (ChainPackageType.Msi == package.ChainPackage.Type)
+                if (ChainPackageType.Msi == package.Package.Type)
                 {
                     row[12] = package.MsiPackage.DisplayInternalUI ? "yes" : "no";
 
@@ -105,7 +105,7 @@ namespace WixToolset.Bind
                         row[14] = package.MsiPackage.UpgradeCode;
                     }
                 }
-                else if (ChainPackageType.Msp == package.ChainPackage.Type)
+                else if (ChainPackageType.Msp == package.Package.Type)
                 {
                     row[12] = package.MspPackage.DisplayInternalUI ? "yes" : "no";
 
@@ -115,17 +115,17 @@ namespace WixToolset.Bind
                     }
                 }
 
-                if (!String.IsNullOrEmpty(package.ChainPackage.Version))
+                if (!String.IsNullOrEmpty(package.Package.Version))
                 {
-                    row[15] = package.ChainPackage.Version;
+                    row[15] = package.Package.Version;
                 }
 
-                if (!String.IsNullOrEmpty(package.ChainPackage.InstallCondition))
+                if (!String.IsNullOrEmpty(package.Package.InstallCondition))
                 {
-                    row[16] = package.ChainPackage.InstallCondition;
+                    row[16] = package.Package.InstallCondition;
                 }
 
-                switch (package.ChainPackage.Cache)
+                switch (package.Package.Cache)
                 {
                     case YesNoAlwaysType.No:
                         row[17] = "no";

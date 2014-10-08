@@ -59,7 +59,7 @@ namespace WixToolset.Bind
             // We shouldn't really get past the linker phase if there are
             // no group items... that means that there's no UX, no Chain,
             // *and* no Containers!
-            Table chainPackageTable = this.GetRequiredTable("ChainPackage");
+            Table chainPackageTable = this.GetRequiredTable("WixBundlePackage");
 
             Table wixGroupTable = this.GetRequiredTable("WixGroup");
 
@@ -194,7 +194,7 @@ namespace WixToolset.Bind
             // note that any indexes created above may be out of date now.
             foreach (ChainPackageFacade package in packages.Values)
             {
-                switch (package.ChainPackage.Type)
+                switch (package.Package.Type)
                 {
                     case ChainPackageType.Exe:
                         {
@@ -240,7 +240,7 @@ namespace WixToolset.Bind
 
                 if (null != variableCache)
                 {
-                    BindBundleCommand.PopulatePackageVariableCache(package.ChainPackage, variableCache);
+                    BindBundleCommand.PopulatePackageVariableCache(package.Package, variableCache);
                 }
             }
 
@@ -267,31 +267,31 @@ namespace WixToolset.Bind
             {
                 foreach (ChainPackageFacade package in packages.Values)
                 {
-                    package.ChainPackage.Size = 0;
+                    package.Package.Size = 0;
 
-                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[package.Package.WixChainItemId];
 
                     foreach (WixBundlePayloadRow payload in packagePayloads)
                     {
-                        package.ChainPackage.Size += payload.FileSize;
+                        package.Package.Size += payload.FileSize;
                     }
 
-                    if (!package.ChainPackage.InstallSize.HasValue)
+                    if (!package.Package.InstallSize.HasValue)
                     {
-                        package.ChainPackage.InstallSize = package.ChainPackage.Size;
+                        package.Package.InstallSize = package.Package.Size;
 
                     }
 
-                    WixBundlePayloadRow packagePayload = payloads[package.ChainPackage.PackagePayload];
+                    WixBundlePayloadRow packagePayload = payloads[package.Package.PackagePayload];
 
-                    if (String.IsNullOrEmpty(package.ChainPackage.Description))
+                    if (String.IsNullOrEmpty(package.Package.Description))
                     {
-                        package.ChainPackage.Description = packagePayload.Description;
+                        package.Package.Description = packagePayload.Description;
                     }
 
-                    if (String.IsNullOrEmpty(package.ChainPackage.DisplayName))
+                    if (String.IsNullOrEmpty(package.Package.DisplayName))
                     {
-                        package.ChainPackage.DisplayName = packagePayload.DisplayName;
+                        package.Package.DisplayName = packagePayload.DisplayName;
                     }
                 }
             }
@@ -655,7 +655,7 @@ namespace WixToolset.Bind
         /// </summary>
         /// <param name="package">The package with properties to cache.</param>
         /// <param name="variableCache">The property cache.</param>
-        private static void PopulatePackageVariableCache(ChainPackageRow package, IDictionary<string, string> variableCache)
+        private static void PopulatePackageVariableCache(WixBundlePackageRow package, IDictionary<string, string> variableCache)
         {
             string id = package.WixChainItemId;
 
@@ -683,9 +683,9 @@ namespace WixToolset.Bind
         {
             foreach (ChainPackageFacade package in chainPackages)
             {
-                if (bundleInfo.PerMachine && YesNoDefaultType.No == package.ChainPackage.PerMachine)
+                if (bundleInfo.PerMachine && YesNoDefaultType.No == package.Package.PerMachine)
                 {
-                    Messaging.Instance.OnMessage(WixVerboses.SwitchingToPerUserPackage(package.ChainPackage.WixChainItemId));
+                    Messaging.Instance.OnMessage(WixVerboses.SwitchingToPerUserPackage(package.Package.WixChainItemId));
 
                     bundleInfo.PerMachine = false;
                     break;
@@ -695,14 +695,14 @@ namespace WixToolset.Bind
             foreach (ChainPackageFacade package in chainPackages)
             {
                 // Update package scope from bundle scope if default.
-                if (YesNoDefaultType.Default == package.ChainPackage.PerMachine)
+                if (YesNoDefaultType.Default == package.Package.PerMachine)
                 {
-                    package.ChainPackage.PerMachine = bundleInfo.PerMachine ? YesNoDefaultType.Yes : YesNoDefaultType.No;
+                    package.Package.PerMachine = bundleInfo.PerMachine ? YesNoDefaultType.Yes : YesNoDefaultType.No;
                 }
 
                 // We will only register packages in the same scope as the bundle. Warn if any packages with providers
                 // are in a different scope and not permanent (permanents typically don't need a ref-count).
-                if (!bundleInfo.PerMachine && YesNoDefaultType.Yes == package.ChainPackage.PerMachine && !package.ChainPackage.Permanent && 0 < package.Provides.Count)
+                if (!bundleInfo.PerMachine && YesNoDefaultType.Yes == package.Package.PerMachine && !package.Package.Permanent && 0 < package.Provides.Count)
                 {
                     Messaging.Instance.OnMessage(WixWarnings.NoPerMachineDependencies());
                 }
@@ -802,7 +802,7 @@ namespace WixToolset.Bind
 
                         if (String.IsNullOrEmpty(dependency.Key))
                         {
-                            switch (package.ChainPackage.Type)
+                            switch (package.Package.Type)
                             {
                                 // The WixDependencyExtension allows an empty Key for MSIs and MSPs.
                                 case ChainPackageType.Msi:
@@ -816,23 +816,23 @@ namespace WixToolset.Bind
 
                         if (String.IsNullOrEmpty(dependency.Version))
                         {
-                            dependency.Version = package.ChainPackage.Version;
+                            dependency.Version = package.Package.Version;
                         }
 
                         // If the version is still missing, a version could not be harvested from the package and was not authored.
                         if (String.IsNullOrEmpty(dependency.Version))
                         {
-                            Messaging.Instance.OnMessage(WixErrors.MissingDependencyVersion(package.ChainPackage.WixChainItemId));
+                            Messaging.Instance.OnMessage(WixErrors.MissingDependencyVersion(package.Package.WixChainItemId));
                         }
 
                         if (String.IsNullOrEmpty(dependency.DisplayName))
                         {
-                            dependency.DisplayName = package.ChainPackage.DisplayName;
+                            dependency.DisplayName = package.Package.DisplayName;
                         }
 
                         if (!package.Provides.Merge(dependency))
                         {
-                            Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, package.ChainPackage.WixChainItemId));
+                            Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, package.Package.WixChainItemId));
                         }
                     }
                 }
@@ -843,22 +843,22 @@ namespace WixToolset.Bind
             {
                 string key = null;
 
-                if (ChainPackageType.Msi == package.ChainPackage.Type && 0 == package.Provides.Count)
+                if (ChainPackageType.Msi == package.Package.Type && 0 == package.Provides.Count)
                 {
                     key = package.MsiPackage.ProductCode;
                 }
-                else if (ChainPackageType.Msp == package.ChainPackage.Type && 0 == package.Provides.Count)
+                else if (ChainPackageType.Msp == package.Package.Type && 0 == package.Provides.Count)
                 {
                     key = package.MspPackage.PatchCode;
                 }
 
                 if (!String.IsNullOrEmpty(key))
                 {
-                    ProvidesDependency dependency = new ProvidesDependency(key, package.ChainPackage.Version, package.ChainPackage.DisplayName, 0);
+                    ProvidesDependency dependency = new ProvidesDependency(key, package.Package.Version, package.Package.DisplayName, 0);
 
                     if (!package.Provides.Merge(dependency))
                     {
-                        Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, package.ChainPackage.WixChainItemId));
+                        Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, package.Package.WixChainItemId));
                     }
                 }
             }

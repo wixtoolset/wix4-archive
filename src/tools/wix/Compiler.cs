@@ -19765,7 +19765,7 @@ namespace WixToolset
                 attributes |= (YesNoType.Yes == permanent) ? ChainPackageAttributes.Permanent : 0;
                 attributes |= (YesNoType.Yes == visible) ? ChainPackageAttributes.Visible : 0;
 
-                ChainPackageRow chainPackageRow = (ChainPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
+                WixBundlePackageRow chainPackageRow = (WixBundlePackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundlePackage", id);
                 chainPackageRow.Type = packageType;
                 chainPackageRow.PackagePayload = id.Id;
                 chainPackageRow.Attributes = attributes;
@@ -20149,7 +20149,7 @@ namespace WixToolset
                     {
                         case "Id":
                             id = this.core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.core.CreateSimpleReference(sourceLineNumbers, "ChainPackage", id);
+                            this.core.CreateSimpleReference(sourceLineNumbers, "WixBundlePackage", id);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);

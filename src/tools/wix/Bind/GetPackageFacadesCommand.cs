@@ -36,7 +36,7 @@ namespace WixToolset.Bind
 
             Dictionary<string, ChainPackageFacade> packages = new Dictionary<string, ChainPackageFacade>(this.ChainPackageTable.Rows.Count);
 
-            foreach (ChainPackageRow chainPackage in this.ChainPackageTable.Rows)
+            foreach (WixBundlePackageRow chainPackage in this.ChainPackageTable.Rows)
             {
                 string id = chainPackage.WixChainItemId;
                 ChainPackageFacade facade = null;

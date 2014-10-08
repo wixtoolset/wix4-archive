@@ -13,37 +13,37 @@ namespace WixToolset.Bind
 
     internal class ChainPackageFacade
     {
-        private ChainPackageFacade(ChainPackageRow chainPackage)
+        private ChainPackageFacade(WixBundlePackageRow package)
         {
-            this.ChainPackage = chainPackage;
+            this.Package = package;
             this.Provides = new ProvidesDependencyCollection();
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainExePackageRow exePackage)
-            : this(chainPackage)
+        public ChainPackageFacade(WixBundlePackageRow package, ChainExePackageRow exePackage)
+            : this(package)
         {
             this.ExePackage = exePackage;
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainMsiPackageRow msiPackage)
-            : this(chainPackage)
+        public ChainPackageFacade(WixBundlePackageRow package, ChainMsiPackageRow msiPackage)
+            : this(package)
         {
             this.MsiPackage = msiPackage;
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainMspPackageRow mspPackage)
-            : this(chainPackage)
+        public ChainPackageFacade(WixBundlePackageRow package, ChainMspPackageRow mspPackage)
+            : this(package)
         {
             this.MspPackage = mspPackage;
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainMsuPackageRow msuPackage)
-            : this(chainPackage)
+        public ChainPackageFacade(WixBundlePackageRow package, WixChainMsuPackageRow msuPackage)
+            : this(package)
         {
             this.MsuPackage = msuPackage;
         }
 
-        public ChainPackageRow ChainPackage { get; private set; }
+        public WixBundlePackageRow Package { get; private set; }
 
         public ChainExePackageRow ExePackage { get; private set; }
 

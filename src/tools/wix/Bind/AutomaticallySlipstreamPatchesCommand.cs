@@ -33,14 +33,14 @@ namespace WixToolset.Bind
 
             foreach (ChainPackageFacade package in Packages)
             {
-                if (ChainPackageType.Msi == package.ChainPackage.Type)
+                if (ChainPackageType.Msi == package.Package.Type)
                 {
                     // Keep track of all MSI packages.
                     msiPackages.Add(package.MsiPackage);
                 }
-                else if (ChainPackageType.Msp == package.ChainPackage.Type && package.MspPackage.Slipstream)
+                else if (ChainPackageType.Msp == package.Package.Type && package.MspPackage.Slipstream)
                 {
-                    IEnumerable<WixBundlePatchTargetCodeRow> patchTargetCodeRows = WixBundlePatchTargetCodeTable.RowsAs<WixBundlePatchTargetCodeRow>().Where(r => r.MspPackageId == package.ChainPackage.WixChainItemId);
+                    IEnumerable<WixBundlePatchTargetCodeRow> patchTargetCodeRows = WixBundlePatchTargetCodeTable.RowsAs<WixBundlePatchTargetCodeRow>().Where(r => r.MspPackageId == package.Package.WixChainItemId);
 
                     // Index target ProductCodes and UpgradeCodes for slipstreamed MSPs.
                     foreach (WixBundlePatchTargetCodeRow row in patchTargetCodeRows)

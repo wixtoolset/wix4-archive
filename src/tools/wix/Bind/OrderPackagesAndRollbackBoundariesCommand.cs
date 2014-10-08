@@ -55,7 +55,7 @@ namespace WixToolset.Bind
                         {
                             usedBoundaries.Add(previousRollbackBoundary);
 
-                            package.ChainPackage.RollbackBoundary = previousRollbackBoundary.ChainPackageId;
+                            package.Package.RollbackBoundary = previousRollbackBoundary.ChainPackageId;
                             previousRollbackBoundary = null;
                         }
 
@@ -116,14 +116,14 @@ namespace WixToolset.Bind
 
             foreach (ChainPackageFacade package in orderedPackages)
             {
-                if (null != package.ChainPackage.RollbackBoundary)
+                if (null != package.Package.RollbackBoundary)
                 {
                     if (null != previousPackage)
                     {
-                        previousPackage.ChainPackage.RollbackBoundaryBackward = previousRollbackBoundaryId;
+                        previousPackage.Package.RollbackBoundaryBackward = previousRollbackBoundaryId;
                     }
 
-                    previousRollbackBoundaryId = package.ChainPackage.RollbackBoundary;
+                    previousRollbackBoundaryId = package.Package.RollbackBoundary;
                 }
 
                 previousPackage = package;
@@ -131,7 +131,7 @@ namespace WixToolset.Bind
 
             if (!String.IsNullOrEmpty(previousRollbackBoundaryId) && null != previousPackage)
             {
-                previousPackage.ChainPackage.RollbackBoundaryBackward = previousRollbackBoundaryId;
+                previousPackage.Package.RollbackBoundaryBackward = previousRollbackBoundaryId;
             }
 
             this.OrderedPackages = orderedPackages;

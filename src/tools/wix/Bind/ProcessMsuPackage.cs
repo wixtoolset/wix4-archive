@@ -24,14 +24,14 @@ namespace WixToolset.Bind
 
         public void Execute()
         {
-            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayload);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.Package.PackagePayload);
 
-            if (String.IsNullOrEmpty(this.Facade.ChainPackage.CacheId))
+            if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
             {
-                this.Facade.ChainPackage.CacheId = packagePayload.Hash;
+                this.Facade.Package.CacheId = packagePayload.Hash;
             }
 
-            this.Facade.ChainPackage.PerMachine = YesNoDefaultType.Yes; // MSUs are always per-machine.
+            this.Facade.Package.PerMachine = YesNoDefaultType.Yes; // MSUs are always per-machine.
         }
     }
 }

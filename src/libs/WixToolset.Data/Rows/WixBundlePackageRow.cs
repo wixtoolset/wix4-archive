@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="ChainPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundlePackageRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,26 +10,26 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the ChainPackage table.
+    /// Specialization of a row for the WixBundlePackage table.
     /// </summary>
-    public sealed class ChainPackageRow : Row
+    public sealed class WixBundlePackageRow : Row
     {
         /// <summary>
-        /// Creates a ChainPackage row that does not belong to a table.
+        /// Creates a WixBundlePackage row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public ChainPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundlePackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates a ChainPackageRow row that belongs to a table.
+        /// Creates a WixBundlePackage row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public ChainPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundlePackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }

@@ -84,8 +84,8 @@ namespace WixToolset.Data
                 case "BBControl":
                     row = new BBControlRow(sourceLineNumbers, this);
                     break;
-                case "ChainPackage":
-                    row = new ChainPackageRow(sourceLineNumbers, this);
+                case "WixBundlePackage":
+                    row = new WixBundlePackageRow(sourceLineNumbers, this);
                     break;
                 case "ChainExePackage":
                     row = new ChainExePackageRow(sourceLineNumbers, this);
