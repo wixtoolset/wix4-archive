@@ -111,8 +111,8 @@ namespace WixToolset.Data
                 case "File":
                     row = new FileRow(sourceLineNumbers, this);
                     break;
-                case "MsiFeature":
-                    row = new MsiFeatureRow(sourceLineNumbers, this);
+                case "WixBundleMsiFeature":
+                    row = new WixBundleMsiFeatureRow(sourceLineNumbers, this);
                     break;
                 case "MsiProperty":
                     row = new MsiPropertyRow(sourceLineNumbers, this);

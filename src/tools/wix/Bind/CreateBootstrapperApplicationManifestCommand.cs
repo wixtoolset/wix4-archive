@@ -27,7 +27,7 @@ namespace WixToolset.Bind
 
         public int LastUXPayloadIndex { private get; set; }
 
-        public IEnumerable<MsiFeatureRow> MsiFeatures { private get; set; }
+        public IEnumerable<WixBundleMsiFeatureRow> MsiFeatures { private get; set; }
 
         public Output Output { private get; set; }
 
@@ -144,7 +144,7 @@ namespace WixToolset.Bind
         {
             Table wixPackageFeatureInfoTable = this.Output.EnsureTable(this.TableDefinitions["WixPackageFeatureInfo"]);
 
-            foreach (MsiFeatureRow feature in this.MsiFeatures)
+            foreach (WixBundleMsiFeatureRow feature in this.MsiFeatures)
             {
                 Row row = wixPackageFeatureInfoTable.CreateRow(feature.SourceLineNumbers);
                 row[0] = feature.ChainPackageId;

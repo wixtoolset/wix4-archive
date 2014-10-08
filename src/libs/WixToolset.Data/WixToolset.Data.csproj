@@ -61,7 +61,7 @@
     <Compile Include="Rows\ChainMspPackageAttributes.cs" />
     <Compile Include="Rows\ChainMsiPackageAttributes.cs" />
     <Compile Include="Rows\ChainExePackageRow.cs" />
-    <Compile Include="Rows\MsiFeatureRow.cs" />
+    <Compile Include="Rows\WixBundleMsiFeatureRow.cs" />
     <Compile Include="Rows\RelatedPackageRow.cs" />
     <Compile Include="Rows\ContainerType.cs" />
     <Compile Include="Rows\ChainPackageType.cs" />

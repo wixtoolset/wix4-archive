@@ -1766,7 +1766,7 @@
         <columnDefinition name="DetectCondition" type="string" length="0" nullable="yes"/>
         <columnDefinition name="MsuKB" type="string" length="0" nullable="yes"/>
     </tableDefinition>
-    <tableDefinition name="MsiFeature" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleMsiFeature" createSymbols="yes" unreal="yes">
         <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />

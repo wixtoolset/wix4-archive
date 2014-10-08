@@ -211,7 +211,7 @@ namespace WixToolset.Bind
                             command.AuthoredPayloads = payloads;
                             command.Facade = package;
                             command.FileManager = this.FileManagers.First();
-                            command.MsiFeatureTable = this.Output.EnsureTable(this.TableDefinitions["MsiFeature"]);
+                            command.MsiFeatureTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiFeature"]);
                             command.MsiPropertyTable = this.Output.EnsureTable(this.TableDefinitions["MsiProperty"]);
                             command.PayloadTable = this.Output.Tables["Payload"];
                             command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["RelatedPackage"]);
@@ -395,7 +395,7 @@ namespace WixToolset.Bind
             // Import or generate dependency providers for packages in the manifest.
             this.ProcessDependencyProviders(this.Output, packages);
 
-            // Start creating the this.bundle.
+            // Update the bundle per-machine/per-user scope based on chained the packages.
             this.ResolveBundleInstallScope(bundleRow, orderedPackages);
 
             // Generate the core-defined BA manifest tables...
@@ -404,7 +404,7 @@ namespace WixToolset.Bind
                 command.BundleRow = bundleRow;
                 command.ChainPackages = orderedPackages;
                 command.LastUXPayloadIndex = uxPayloadIndex;
-                command.MsiFeatures = this.Output.Tables["MsiFeature"].RowsAs<MsiFeatureRow>();
+                command.MsiFeatures = this.Output.Tables["WixBundleMsiFeature"].RowsAs<WixBundleMsiFeatureRow>();
                 command.Output = this.Output;
                 command.Payloads = payloads;
                 command.TableDefinitions = this.TableDefinitions;

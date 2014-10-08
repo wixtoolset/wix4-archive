@@ -328,7 +328,7 @@ namespace WixToolset.Bind
                                         }
                                     }
 
-                                    MsiFeatureRow feature = (MsiFeatureRow)this.MsiFeatureTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                                    WixBundleMsiFeatureRow feature = (WixBundleMsiFeatureRow)this.MsiFeatureTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
                                     feature.Name = featureName;
                                     feature.Parent = allFeaturesResultRecord.GetString(2);
                                     feature.Title = allFeaturesResultRecord.GetString(3);
