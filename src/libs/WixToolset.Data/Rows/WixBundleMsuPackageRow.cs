@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="ChainMsuPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleMsuPackageRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,26 +10,26 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the ChainMsuPackage table.
+    /// Specialization of a row for the WixBundleMsuPackage table.
     /// </summary>
-    public sealed class ChainMsuPackageRow : Row
+    public sealed class WixBundleMsuPackageRow : Row
     {
         /// <summary>
-        /// Creates a ChainMsuPackage row that does not belong to a table.
+        /// Creates a WixBundleMsuPackage row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public ChainMsuPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundleMsuPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates a ChainMsuPackageRow row that belongs to a table.
+        /// Creates a WixBundleMsuPackage row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public ChainMsuPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundleMsuPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }

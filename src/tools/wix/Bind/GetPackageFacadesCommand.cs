@@ -23,7 +23,7 @@ namespace WixToolset.Bind
 
         public Table ChainMspPackageTable { private get; set; }
 
-        public Table ChainMsuPackageTable { private get; set; }
+        public Table MsuPackageTable { private get; set; }
 
         public IDictionary<string, ChainPackageFacade> Packages { get; private set; }
 
@@ -32,7 +32,7 @@ namespace WixToolset.Bind
             RowDictionary<ChainExePackageRow> exePackages = new RowDictionary<ChainExePackageRow>(this.ChainExePackageTable);
             RowDictionary<ChainMsiPackageRow> msiPackages = new RowDictionary<ChainMsiPackageRow>(this.ChainMsiPackageTable);
             RowDictionary<ChainMspPackageRow> mspPackages = new RowDictionary<ChainMspPackageRow>(this.ChainMspPackageTable);
-            RowDictionary<ChainMsuPackageRow> msuPackages = new RowDictionary<ChainMsuPackageRow>(this.ChainMsuPackageTable);
+            RowDictionary<WixBundleMsuPackageRow> msuPackages = new RowDictionary<WixBundleMsuPackageRow>(this.MsuPackageTable);
 
             Dictionary<string, ChainPackageFacade> packages = new Dictionary<string, ChainPackageFacade>(this.ChainPackageTable.Rows.Count);
 

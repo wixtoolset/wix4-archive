@@ -37,7 +37,7 @@ namespace WixToolset.Bind
             this.MspPackage = mspPackage;
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, WixChainMsuPackageRow msuPackage)
+        public ChainPackageFacade(WixBundlePackageRow package, WixBundleMsuPackageRow msuPackage)
             : this(package)
         {
             this.MsuPackage = msuPackage;
@@ -51,7 +51,7 @@ namespace WixToolset.Bind
 
         public ChainMspPackageRow MspPackage { get; private set; }
 
-        public ChainMsuPackageRow MsuPackage { get; private set; }
+        public WixBundleMsuPackageRow MsuPackage { get; private set; }
 
         /// <summary>
         /// The provides dependencies authored and imported for this package.

@@ -19833,7 +19833,7 @@ namespace WixToolset
                         break;
 
                     case ChainPackageType.Msu:
-                        ChainMsuPackageRow msuRow = (ChainMsuPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainMsuPackage", id);
+                        WixBundleMsuPackageRow msuRow = (WixBundleMsuPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMsuPackage", id);
                         msuRow.DetectCondition = detectCondition;
                         msuRow.MsuKB = msuKB;
                         break;
