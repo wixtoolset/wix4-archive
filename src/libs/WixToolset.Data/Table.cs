@@ -102,8 +102,8 @@ namespace WixToolset.Data
                 case "Component":
                     row = new ComponentRow(sourceLineNumbers, this);
                     break;
-                case "Container":
-                    row = new ContainerRow(sourceLineNumbers, this);
+                case "WixBundleContainer":
+                    row = new WixBundleContainerRow(sourceLineNumbers, this);
                     break;
                 case "Control":
                     row = new ControlRow(sourceLineNumbers, this);

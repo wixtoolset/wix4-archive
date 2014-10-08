@@ -42,7 +42,7 @@ namespace WixToolset.Bind
 
         public Dictionary<string, PayloadRow> Payloads { private get; set; }
 
-        public Dictionary<string, ContainerRow> Containers { private get; set; }
+        public Dictionary<string, WixBundleContainerRow> Containers { private get; set; }
 
         public IEnumerable<PayloadRow> UXContainerPayloads { private get; set; }
 
@@ -152,7 +152,7 @@ namespace WixToolset.Bind
                     }
                 }
 
-                foreach (ContainerRow container in this.Containers.Values)
+                foreach (WixBundleContainerRow container in this.Containers.Values)
                 {
                     if (!String.IsNullOrEmpty(container.WorkingPath) && Compiler.BurnUXContainerId != container.Id)
                     {
@@ -558,7 +558,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void WriteBurnManifestContainerAttributes(XmlTextWriter writer, string executableName, ContainerRow container)
+        private void WriteBurnManifestContainerAttributes(XmlTextWriter writer, string executableName, WixBundleContainerRow container)
         {
             writer.WriteAttributeString("Id", container.Id);
             writer.WriteAttributeString("FileSize", container.Size.ToString(CultureInfo.InvariantCulture));

@@ -18110,7 +18110,7 @@ namespace WixToolset
                             this.ParseContainerElement(child);
                             break;
                         case "ContainerRef":
-                            this.ParseSimpleRefElement(child, "Container");
+                            this.ParseSimpleRefElement(child, "WixBundleContainer");
                             break;
                         case "Log":
                             if (logSeen)
@@ -18165,7 +18165,7 @@ namespace WixToolset
                     relatedBundleRow[1] = (int)Wix.RelatedBundle.ActionType.Upgrade;
                 }
 
-                ContainerRow containerRow = (ContainerRow)this.core.CreateRow(sourceLineNumbers, "Container");
+                WixBundleContainerRow containerRow = (WixBundleContainerRow)this.core.CreateRow(sourceLineNumbers, "WixBundleContainer");
                 containerRow.Id = Compiler.BurnDefaultAttachedContainerId;
                 containerRow.Name = "bundle-attached.cab";
                 containerRow.Type = ContainerType.Attached;
@@ -18422,7 +18422,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                ContainerRow row = (ContainerRow)this.core.CreateRow(sourceLineNumbers, "Container", id);
+                WixBundleContainerRow row = (WixBundleContainerRow)this.core.CreateRow(sourceLineNumbers, "WixBundleContainer", id);
                 row.Name = name;
                 row.Type = type;
                 row.DownloadUrl = downloadUrl;
@@ -18484,7 +18484,7 @@ namespace WixToolset
             // Add the application as an attached container and if an Id was provided add that too.
             if (!this.core.EncounteredError)
             {
-                ContainerRow containerRow = (ContainerRow)this.core.CreateRow(sourceLineNumbers, "Container");
+                WixBundleContainerRow containerRow = (WixBundleContainerRow)this.core.CreateRow(sourceLineNumbers, "WixBundleContainer");
                 containerRow.Id = Compiler.BurnUXContainerId;
                 containerRow.Name = "bundle-ux.cab";
                 containerRow.Type = ContainerType.Attached;

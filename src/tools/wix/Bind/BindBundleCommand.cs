@@ -417,7 +417,7 @@ namespace WixToolset.Bind
 
             // Create all the containers except the UX container first so the manifest (that goes in the UX container)
             // can contain all size and hash information about the non-UX containers.
-            RowDictionary<ContainerRow> containers = new RowDictionary<ContainerRow>(this.Output.Tables["Container"]);
+            RowDictionary<WixBundleContainerRow> containers = new RowDictionary<WixBundleContainerRow>(this.Output.Tables["WixBundleContainer"]);
 
             ILookup<string, PayloadRow> payloadsByContainer = payloads.Values.ToLookup(p => p.Container);
 
@@ -425,7 +425,7 @@ namespace WixToolset.Bind
 
             IEnumerable<PayloadRow> uxContainerPayloads = Enumerable.Empty<PayloadRow>();
 
-            foreach (ContainerRow container in containers.Values)
+            foreach (WixBundleContainerRow container in containers.Values)
             {
                 IEnumerable<PayloadRow> containerPayloads = payloadsByContainer[container.Id];
 
@@ -508,7 +508,7 @@ namespace WixToolset.Bind
                 command.Execute();
             }
 
-            ContainerRow uxContainer = containers[Compiler.BurnUXContainerId];
+            WixBundleContainerRow uxContainer = containers[Compiler.BurnUXContainerId];
             this.CreateContainer(uxContainer, uxContainerPayloads, manifestPath);
 
             // Copy the burn.exe to a writable location then mark it to be moved to its final build location. Note
@@ -543,7 +543,7 @@ namespace WixToolset.Bind
                 writer.AppendContainer(uxContainer.WorkingPath, BurnWriter.Container.UX);
 
                 // Now append all other attached containers
-                foreach (ContainerRow container in containers.Values)
+                foreach (WixBundleContainerRow container in containers.Values)
                 {
                     if (ContainerType.Attached == container.Type)
                     {
@@ -666,7 +666,7 @@ namespace WixToolset.Bind
             variableCache.Add(String.Concat("packageVersion.", id), package.Version);
         }
 
-        private void CreateContainer(ContainerRow container, IEnumerable<PayloadRow> containerPayloads, string manifestFile)
+        private void CreateContainer(WixBundleContainerRow container, IEnumerable<PayloadRow> containerPayloads, string manifestFile)
         {
             CreateContainerCommand command = new CreateContainerCommand();
             command.DefaultCompressionLevel = this.DefaultCompressionLevel;

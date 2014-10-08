@@ -1596,8 +1596,8 @@
         <columnDefinition name="Value" type="localized" length="0" nullable="yes"/>
         <columnDefinition name="Attributes" type="number" length="4"/>
     </tableDefinition>
-    <tableDefinition name="Container" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Container" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundleContainer" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundleContainer" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Name" type="string" length="0"/>
         <columnDefinition name="Type" type="number" length="2" minValue="0" maxValue="1" />
         <columnDefinition name="DownloadUrl" type="string" length="0" nullable="yes" />
@@ -1625,8 +1625,9 @@
         <columnDefinition name="PublicKey" type="string" length="0" nullable="yes" />
         <columnDefinition name="Thumbprint" type="string" length="0" nullable="yes" />
         <columnDefinition name="Catalog_" type="string" length="0" nullable="yes" category="identifier"
-                          keyTable="WixBundleCatalog" keyColumn="1" description="Reference to a catalog entry in the WixBundleCatalog table."/>
-        <columnDefinition name="Container" type="string" length="0" nullable="yes" />
+                keyTable="WixBundleCatalog" keyColumn="1" description="Reference to a catalog entry in the WixBundleCatalog table."/>
+        <columnDefinition name="Container_" type="string" length="0" nullable="yes"
+                keyTable="WixBundleContainer" keyColumn="1" description="Reference to a container entry in the WixBundleContainer table."/>
         <columnDefinition name="Package" type="string" length="0" nullable="yes" />
         <columnDefinition name="ContentFile" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="EmbeddedId" type="string" length="0" nullable="yes" />
@@ -1861,8 +1862,9 @@
     <tableDefinition name="WixPayloadProperties" unreal="yes" bootstrapperApplicationData="yes">
         <columnDefinition name="Payload"  type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Package"  type="string" length="0" category="identifier" primaryKey="yes" nullable="yes"
-                          keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
-        <columnDefinition name="Container" type="string" length="0" nullable="yes"/>
+                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+        <columnDefinition name="Container" type="string" length="0" nullable="yes"
+                keyTable="WixBundleContainer" keyColumn="1" description="Reference to a container entry in the WixBundleContainer table."/>
         <columnDefinition name="Name" type="string" length="0"  />
         <columnDefinition name="Size" type="string" length="0" />
         <columnDefinition name="DownloadUrl" type="string" length="0" nullable="yes" />
