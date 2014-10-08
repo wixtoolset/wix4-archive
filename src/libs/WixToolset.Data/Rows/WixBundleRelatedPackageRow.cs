@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="RelatedPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleRelatedPackageRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -12,14 +12,14 @@ namespace WixToolset.Data.Rows
     /// <summary>
     /// Specialization of a row for the RelatedPackage table.
     /// </summary>
-    public class RelatedPackageRow : Row
+    public class WixBundleRelatedPackageRow : Row
     {
         /// <summary>
         /// Creates a RelatedPackageRow row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this Media row belongs to and should get its column definitions from.</param>
-        public RelatedPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundleRelatedPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
@@ -29,7 +29,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this Media row belongs to and should get its column definitions from.</param>
-        public RelatedPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundleRelatedPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }

@@ -1796,7 +1796,7 @@
         <columnDefinition name="Id" type="string" length="38" category="guid" primaryKey="yes" />
         <columnDefinition name="Action" type="number" length="4" />
     </tableDefinition>
-    <tableDefinition name="RelatedPackage" unreal="yes">
+    <tableDefinition name="WixBundleRelatedPackage" unreal="yes">
         <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
         <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes" />

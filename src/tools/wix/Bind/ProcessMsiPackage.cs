@@ -251,7 +251,7 @@ namespace WixToolset.Bind
                                 break;
                             }
 
-                            RelatedPackageRow related = (RelatedPackageRow)this.RelatedPackageTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                            WixBundleRelatedPackageRow related = (WixBundleRelatedPackageRow)this.RelatedPackageTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
                             related.ChainPackageId = this.Facade.ChainPackage.WixChainItemId;
                             related.Id = record.GetString(1);
                             related.MinVersion = record.GetString(2);

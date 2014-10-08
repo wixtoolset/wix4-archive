@@ -304,7 +304,7 @@ namespace WixToolset.Bind
                 ILookup<string, WixBundleMsiFeatureRow> msiFeaturesByPackage = this.Output.Tables["WixBundleMsiFeature"].RowsAs<WixBundleMsiFeatureRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundleMsiPropertyRow> msiPropertiesByPackage = this.Output.Tables["WixBundleMsiProperty"].RowsAs<WixBundleMsiPropertyRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, PayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
-                ILookup<string, RelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["RelatedPackage"].RowsAs<RelatedPackageRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, WixBundleRelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["WixBundleRelatedPackage"].RowsAs<WixBundleRelatedPackageRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundleSlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["WixBundleSlipstreamMsp"].RowsAs<WixBundleSlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundlePackageExitCodeRow> exitCodesByPackage = this.Output.Tables["WixBundlePackageExitCode"].RowsAs<WixBundlePackageExitCodeRow>().ToLookup(r => r.ChainPackageId);
 
@@ -467,9 +467,9 @@ namespace WixToolset.Bind
                         dependency.WriteXml(writer);
                     }
 
-                    IEnumerable<RelatedPackageRow> packageRelatedPackages = relatedPackagesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleRelatedPackageRow> packageRelatedPackages = relatedPackagesByPackage[package.ChainPackage.WixChainItemId];
 
-                    foreach (RelatedPackageRow related in packageRelatedPackages)
+                    foreach (WixBundleRelatedPackageRow related in packageRelatedPackages)
                     {
                         writer.WriteStartElement("RelatedPackage");
                         writer.WriteAttributeString("Id", related.Id);

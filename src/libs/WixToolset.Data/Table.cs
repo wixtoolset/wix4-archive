@@ -129,8 +129,8 @@ namespace WixToolset.Data
                 case "WixRelatedBundle":
                     row = new WixRelatedBundleRow(sourceLineNumbers, this);
                     break;
-                case "RelatedPackage":
-                    row = new RelatedPackageRow(sourceLineNumbers, this);
+                case "WixBundleRelatedPackage":
+                    row = new WixBundleRelatedPackageRow(sourceLineNumbers, this);
                     break;
                 case "RollbackBoundary":
                     row = new RollbackBoundaryRow(sourceLineNumbers, this);

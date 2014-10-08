@@ -214,7 +214,7 @@ namespace WixToolset.Bind
                             command.MsiFeatureTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiFeature"]);
                             command.MsiPropertyTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiProperty"]);
                             command.PayloadTable = this.Output.Tables["Payload"];
-                            command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["RelatedPackage"]);
+                            command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleRelatedPackage"]);
                             command.Execute();
                         }
                         break;
