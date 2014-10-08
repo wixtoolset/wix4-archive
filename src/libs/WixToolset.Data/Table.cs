@@ -114,8 +114,8 @@ namespace WixToolset.Data
                 case "WixBundleMsiFeature":
                     row = new WixBundleMsiFeatureRow(sourceLineNumbers, this);
                     break;
-                case "MsiProperty":
-                    row = new MsiPropertyRow(sourceLineNumbers, this);
+                case "WixBundleMsiProperty":
+                    row = new WixBundleMsiPropertyRow(sourceLineNumbers, this);
                     break;
                 case "Media":
                     row = new MediaRow(sourceLineNumbers, this);

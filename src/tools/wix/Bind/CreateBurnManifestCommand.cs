@@ -302,7 +302,7 @@ namespace WixToolset.Bind
                 // Index a few tables by package.
                 ILookup<string, WixBundlePatchTargetCodeRow> targetCodesByPatch = this.Output.Tables["WixBundlePatchTargetCode"].RowsAs<WixBundlePatchTargetCodeRow>().ToLookup(r => r.MspPackageId);
                 ILookup<string, WixBundleMsiFeatureRow> msiFeaturesByPackage = this.Output.Tables["WixBundleMsiFeature"].RowsAs<WixBundleMsiFeatureRow>().ToLookup(r => r.ChainPackageId);
-                ILookup<string, MsiPropertyRow> msiPropertiesByPackage = this.Output.Tables["MsiProperty"].RowsAs<MsiPropertyRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, WixBundleMsiPropertyRow> msiPropertiesByPackage = this.Output.Tables["WixBundleMsiProperty"].RowsAs<WixBundleMsiPropertyRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, PayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
                 ILookup<string, RelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["RelatedPackage"].RowsAs<RelatedPackageRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, SlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["SlipstreamMsp"].RowsAs<SlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
@@ -422,9 +422,9 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    IEnumerable<MsiPropertyRow> packageMsiProperties = msiPropertiesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleMsiPropertyRow> packageMsiProperties = msiPropertiesByPackage[package.ChainPackage.WixChainItemId];
 
-                    foreach (MsiPropertyRow msiProperty in packageMsiProperties)
+                    foreach (WixBundleMsiPropertyRow msiProperty in packageMsiProperties)
                     {
                         writer.WriteStartElement("MsiProperty");
                         writer.WriteAttributeString("Id", msiProperty.Name);

@@ -1780,7 +1780,7 @@
         <columnDefinition name="Directory" type="string" length="0" />
         <columnDefinition name="Attributes" type="number" length="2" />
     </tableDefinition>
-    <tableDefinition name="MsiProperty" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleMsiProperty" createSymbols="yes" unreal="yes">
         <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />

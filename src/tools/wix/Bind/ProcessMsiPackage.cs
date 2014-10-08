@@ -155,7 +155,7 @@ namespace WixToolset.Bind
 
         private ISet<string> GetMsiPropertyNames()
         {
-            IEnumerable<string> properties = this.MsiPropertyTable.RowsAs<MsiPropertyRow>()
+            IEnumerable<string> properties = this.MsiPropertyTable.RowsAs<WixBundleMsiPropertyRow>()
                 .Where(r => r.ChainPackageId == this.Facade.ChainPackage.WixChainItemId)
                 .Select(r => r.Name);
 
@@ -467,7 +467,7 @@ namespace WixToolset.Bind
 
         private void AddMsiProperty(string name, string value)
         {
-            MsiPropertyRow row = (MsiPropertyRow)this.MsiPropertyTable.CreateRow(this.Facade.MsiPackage.SourceLineNumbers);
+            WixBundleMsiPropertyRow row = (WixBundleMsiPropertyRow)this.MsiPropertyTable.CreateRow(this.Facade.MsiPackage.SourceLineNumbers);
             row.ChainPackageId = this.Facade.ChainPackage.WixChainItemId;
             row.Name = name;
             row.Value = value;

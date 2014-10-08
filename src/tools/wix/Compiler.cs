@@ -20124,7 +20124,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "MsiProperty");
+                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
                 row[0] = packageId;
                 row[1] = name;
                 row[2] = value;

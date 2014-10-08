@@ -66,7 +66,7 @@
     <Compile Include="Rows\ContainerType.cs" />
     <Compile Include="Rows\ChainPackageType.cs" />
     <Compile Include="Rows\ContainerRow.cs" />
-    <Compile Include="Rows\MsiPropertyRow.cs" />
+    <Compile Include="Rows\WixBundleMsiPropertyRow.cs" />
     <Compile Include="Rows\RollbackBoundaryRow.cs" />
     <Compile Include="Rows\ChainMsuPackageRow.cs" />
     <Compile Include="Rows\ChainMspPackageRow.cs" />
