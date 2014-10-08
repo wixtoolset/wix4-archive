@@ -1739,7 +1739,7 @@
         <columnDefinition name="UninstallCommand" type="string" length="0" nullable="yes"/>
         <columnDefinition name="ExeProtocol" type="string" length="0" nullable="yes"/>
     </tableDefinition>
-    <tableDefinition name="ChainMsiPackage" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleMsiPackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to this MSI package."/>

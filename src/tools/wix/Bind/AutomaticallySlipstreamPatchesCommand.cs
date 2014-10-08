@@ -27,7 +27,7 @@ namespace WixToolset.Bind
 
         public void Execute()
         {
-            List<ChainMsiPackageRow> msiPackages = new List<ChainMsiPackageRow>();
+            List<WixBundleMsiPackageRow> msiPackages = new List<WixBundleMsiPackageRow>();
             Dictionary<string, List<WixBundlePatchTargetCodeRow>> targetsProductCode = new Dictionary<string, List<WixBundlePatchTargetCodeRow>>();
             Dictionary<string, List<WixBundlePatchTargetCodeRow>> targetsUpgradeCode = new Dictionary<string, List<WixBundlePatchTargetCodeRow>>();
 
@@ -72,7 +72,7 @@ namespace WixToolset.Bind
             RowIndexedList<Row> slipstreamMspRows = new RowIndexedList<Row>(SlipstreamMspTable);
 
             // Loop through the MSI and slipstream patches targeting it.
-            foreach (ChainMsiPackageRow msi in msiPackages)
+            foreach (WixBundleMsiPackageRow msi in msiPackages)
             {
                 List<WixBundlePatchTargetCodeRow> rows;
                 if (targetsProductCode.TryGetValue(msi.ProductCode, out rows))

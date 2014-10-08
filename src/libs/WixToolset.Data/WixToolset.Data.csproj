@@ -59,7 +59,7 @@
     <Compile Include="Rows\WixChainRow.cs" />
     <Compile Include="Rows\ChainPackageAttributes.cs" />
     <Compile Include="Rows\WixBundleMspPackageAttributes.cs" />
-    <Compile Include="Rows\ChainMsiPackageAttributes.cs" />
+    <Compile Include="Rows\WixBundleMsiPackageAttributes.cs" />
     <Compile Include="Rows\WixBundleExePackageRow.cs" />
     <Compile Include="Rows\WixBundleMsiFeatureRow.cs" />
     <Compile Include="Rows\WixBundleRelatedPackageRow.cs" />
@@ -71,7 +71,7 @@
     <Compile Include="Rows\WixBundleMsuPackageRow.cs" />
     <Compile Include="Rows\BundleMspPackageRow.cs" />
     <Compile Include="Rows\WixBundlePackageRow.cs" />
-    <Compile Include="Rows\ChainMsiPackageRow.cs" />
+    <Compile Include="Rows\WixBundleMsiPackageRow.cs" />
     <Compile Include="Rows\ComponentRow.cs" />
     <Compile Include="Rows\ControlRow.cs" />
     <Compile Include="Rows\FileRow.cs" />

@@ -182,7 +182,7 @@ namespace WixToolset.Bind
                 GetPackageFacadesCommand command = new GetPackageFacadesCommand();
                 command.ChainPackageTable = chainPackageTable;
                 command.ExePackageTable = this.Output.Tables["WixBundleExePackage"];
-                command.ChainMsiPackageTable = this.Output.Tables["ChainMsiPackage"];
+                command.MsiPackageTable = this.Output.Tables["WixBundleMsiPackage"];
                 command.MspPackageTable = this.Output.Tables["WixBundleMspPackage"];
                 command.MsuPackageTable = this.Output.Tables["WixBundleMsuPackage"];
                 command.Execute();

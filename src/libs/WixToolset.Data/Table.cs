@@ -90,8 +90,8 @@ namespace WixToolset.Data
                 case "WixBundleExePackage":
                     row = new WixBundleExePackageRow(sourceLineNumbers, this);
                     break;
-                case "ChainMsiPackage":
-                    row = new ChainMsiPackageRow(sourceLineNumbers, this);
+                case "WixBundleMsiPackage":
+                    row = new WixBundleMsiPackageRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleMspPackage":
                     row = new BundleMspPackageRow(sourceLineNumbers, this);

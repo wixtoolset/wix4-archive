@@ -19813,13 +19813,13 @@ namespace WixToolset
                         break;
 
                     case ChainPackageType.Msi:
-                        ChainMsiPackageAttributes msiAttributes = 0;
-                        msiAttributes |= (YesNoType.Yes == displayInternalUI) ? ChainMsiPackageAttributes.DisplayInternalUI : 0;
-                        msiAttributes |= (YesNoType.Yes == enableFeatureSelection) ? ChainMsiPackageAttributes.EnableFeatureSelection : 0;
-                        msiAttributes |= (YesNoType.Yes == forcePerMachine) ? ChainMsiPackageAttributes.ForcePerMachine : 0;
-                        msiAttributes |= (YesNoType.Yes == suppressLooseFilePayloadGeneration) ? ChainMsiPackageAttributes.SuppressLooseFilePayloadGeneration : 0;
+                        WixBundleMsiPackageAttributes msiAttributes = 0;
+                        msiAttributes |= (YesNoType.Yes == displayInternalUI) ? WixBundleMsiPackageAttributes.DisplayInternalUI : 0;
+                        msiAttributes |= (YesNoType.Yes == enableFeatureSelection) ? WixBundleMsiPackageAttributes.EnableFeatureSelection : 0;
+                        msiAttributes |= (YesNoType.Yes == forcePerMachine) ? WixBundleMsiPackageAttributes.ForcePerMachine : 0;
+                        msiAttributes |= (YesNoType.Yes == suppressLooseFilePayloadGeneration) ? WixBundleMsiPackageAttributes.SuppressLooseFilePayloadGeneration : 0;
 
-                        ChainMsiPackageRow msiRow = (ChainMsiPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainMsiPackage", id);
+                        WixBundleMsiPackageRow msiRow = (WixBundleMsiPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMsiPackage", id);
                         msiRow.Attributes = msiAttributes;
                         break;
 
