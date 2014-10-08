@@ -19926,7 +19926,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                this.core.CreateRow(sourceLineNumbers, "ChainPackageGroup", id);
+                this.core.CreateRow(sourceLineNumbers, "WixBundlePackageGroup", id);
             }
         }
 
@@ -19968,7 +19968,7 @@ namespace WixToolset
                     {
                         case "Id":
                             id = this.core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.core.CreateSimpleReference(sourceLineNumbers, "ChainPackageGroup", id);
+                            this.core.CreateSimpleReference(sourceLineNumbers, "WixBundlePackageGroup", id);
                             break;
                         case "After":
                             after = this.core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);

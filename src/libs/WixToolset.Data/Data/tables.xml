@@ -1701,8 +1701,8 @@
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
         <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
     </tableDefinition>
-    <tableDefinition name="ChainPackageGroup" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundlePackageGroup" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackageGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
     <tableDefinition name="ChainPackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixChainItem_" type="string" length="0" category="identifier" primaryKey="yes"
