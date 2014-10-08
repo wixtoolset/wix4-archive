@@ -40,11 +40,11 @@ namespace WixToolset.Bind
 
         public IEnumerable<WixSearchInfo> OrderedSearches { private get; set; }
 
-        public Dictionary<string, PayloadRow> Payloads { private get; set; }
+        public Dictionary<string, WixBundlePayloadRow> Payloads { private get; set; }
 
         public Dictionary<string, WixBundleContainerRow> Containers { private get; set; }
 
-        public IEnumerable<PayloadRow> UXContainerPayloads { private get; set; }
+        public IEnumerable<WixBundlePayloadRow> UXContainerPayloads { private get; set; }
 
         public IEnumerable<WixBundleCatalogRow> Catalogs { private get; set; }
 
@@ -131,7 +131,7 @@ namespace WixToolset.Bind
                 }
 
                 // write the UX allPayloads...
-                foreach (PayloadRow payload in this.UXContainerPayloads)
+                foreach (WixBundlePayloadRow payload in this.UXContainerPayloads)
                 {
                     writer.WriteStartElement("Payload");
                     this.WriteBurnManifestPayloadAttributes(writer, payload, true, this.Payloads);
@@ -162,7 +162,7 @@ namespace WixToolset.Bind
                     }
                 }
 
-                foreach (PayloadRow payload in this.Payloads.Values)
+                foreach (WixBundlePayloadRow payload in this.Payloads.Values)
                 {
                     if (PackagingType.Embedded == payload.Packaging && Compiler.BurnUXContainerId != payload.Container)
                     {
@@ -303,7 +303,7 @@ namespace WixToolset.Bind
                 ILookup<string, WixBundlePatchTargetCodeRow> targetCodesByPatch = this.Output.Tables["WixBundlePatchTargetCode"].RowsAs<WixBundlePatchTargetCodeRow>().ToLookup(r => r.MspPackageId);
                 ILookup<string, WixBundleMsiFeatureRow> msiFeaturesByPackage = this.Output.Tables["WixBundleMsiFeature"].RowsAs<WixBundleMsiFeatureRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundleMsiPropertyRow> msiPropertiesByPackage = this.Output.Tables["WixBundleMsiProperty"].RowsAs<WixBundleMsiPropertyRow>().ToLookup(r => r.ChainPackageId);
-                ILookup<string, PayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
+                ILookup<string, WixBundlePayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
                 ILookup<string, WixBundleRelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["WixBundleRelatedPackage"].RowsAs<WixBundleRelatedPackageRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundleSlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["WixBundleSlipstreamMsp"].RowsAs<WixBundleSlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundlePackageExitCodeRow> exitCodesByPackage = this.Output.Tables["WixBundlePackageExitCode"].RowsAs<WixBundlePackageExitCodeRow>().ToLookup(r => r.ChainPackageId);
@@ -502,14 +502,14 @@ namespace WixToolset.Bind
 
                     // Write any contained Payloads with the PackagePayload being first
                     writer.WriteStartElement("PayloadRef");
-                    writer.WriteAttributeString("Id", package.ChainPackage.PackagePayloadId);
+                    writer.WriteAttributeString("Id", package.ChainPackage.PackagePayload);
                     writer.WriteEndElement();
 
-                    IEnumerable<PayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
 
-                    foreach (PayloadRow payload in packagePayloads)
+                    foreach (WixBundlePayloadRow payload in packagePayloads)
                     {
-                        if (payload.Id != package.ChainPackage.PackagePayloadId)
+                        if (payload.Id != package.ChainPackage.PackagePayload)
                         {
                             writer.WriteStartElement("PayloadRef");
                             writer.WriteAttributeString("Id", payload.Id);
@@ -592,7 +592,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void WriteBurnManifestPayloadAttributes(XmlTextWriter writer, PayloadRow payload, bool embeddedOnly, Dictionary<string, PayloadRow> allPayloads)
+        private void WriteBurnManifestPayloadAttributes(XmlTextWriter writer, WixBundlePayloadRow payload, bool embeddedOnly, Dictionary<string, WixBundlePayloadRow> allPayloads)
         {
             Debug.Assert(!embeddedOnly || PackagingType.Embedded == payload.Packaging);
 

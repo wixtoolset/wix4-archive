@@ -28,7 +28,7 @@ namespace WixToolset.Bind
         private const string PatchMetadataFormat = "SELECT `Value` FROM `MsiPatchMetadata` WHERE `Property` = '{0}'";
         private static readonly Encoding XmlOutputEncoding = new UTF8Encoding(false);
 
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
         public ChainPackageFacade Facade { private get; set; }
 
@@ -39,7 +39,7 @@ namespace WixToolset.Bind
         /// </summary>
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayload);
 
             string sourcePath = packagePayload.FullFileName;
 
@@ -80,7 +80,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void ProcessPatchXml(PayloadRow packagePayload, string sourcePath)
+        private void ProcessPatchXml(WixBundlePayloadRow packagePayload, string sourcePath)
         {
             HashSet<string> uniqueTargetCodes = new HashSet<string>();
 

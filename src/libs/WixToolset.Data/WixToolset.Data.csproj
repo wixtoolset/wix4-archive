@@ -76,7 +76,7 @@
     <Compile Include="Rows\ControlRow.cs" />
     <Compile Include="Rows\FileRow.cs" />
     <Compile Include="Rows\MediaRow.cs" />
-    <Compile Include="Rows\PayloadRow.cs" />
+    <Compile Include="Rows\WixBundlePayloadRow.cs" />
     <Compile Include="Rows\SummaryInfoRowCollection.cs" />
     <Compile Include="Rows\PropertyRow.cs" />
     <Compile Include="Rows\UpgradeRow.cs" />

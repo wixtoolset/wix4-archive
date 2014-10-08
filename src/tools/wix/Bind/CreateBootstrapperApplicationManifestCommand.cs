@@ -31,13 +31,13 @@ namespace WixToolset.Bind
 
         public Output Output { private get; set; }
 
-        public RowDictionary<PayloadRow> Payloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> Payloads { private get; set; }
 
         public TableDefinitionCollection TableDefinitions { private get; set; }
 
         public string TempFilesLocation { private get; set; }
 
-        public PayloadRow BootstrapperApplicationManifestPayloadRow { get; private set; }
+        public WixBundlePayloadRow BootstrapperApplicationManifestPayloadRow { get; private set; }
 
         public void Execute()
         {
@@ -75,7 +75,7 @@ namespace WixToolset.Bind
 
             foreach (ChainPackageFacade package in this.ChainPackages)
             {
-                PayloadRow packagePayload = this.Payloads[package.ChainPackage.PackagePayloadId];
+                WixBundlePayloadRow packagePayload = this.Payloads[package.ChainPackage.PackagePayload];
 
                 Row row = wixPackagePropertiesTable.CreateRow(package.ChainPackage.SourceLineNumbers);
                 row[0] = package.ChainPackage.WixChainItemId;
@@ -165,7 +165,7 @@ namespace WixToolset.Bind
         {
             Table wixPayloadPropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixPayloadProperties"]);
 
-            foreach (PayloadRow payload in this.Payloads.Values)
+            foreach (WixBundlePayloadRow payload in this.Payloads.Values)
             {
                 Row row = wixPayloadPropertiesTable.CreateRow(payload.SourceLineNumbers);
                 row[0] = payload.Id;
@@ -223,10 +223,10 @@ namespace WixToolset.Bind
             }
         }
 
-        private PayloadRow CreateBootstrapperApplicationManifestPayloadRow(string baManifestPath)
+        private WixBundlePayloadRow CreateBootstrapperApplicationManifestPayloadRow(string baManifestPath)
         {
-            Table payloadTable = this.Output.EnsureTable(this.TableDefinitions["Payload"]);
-            PayloadRow row = (PayloadRow)payloadTable.CreateRow(this.BundleRow.SourceLineNumbers);
+            Table payloadTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePayload"]);
+            WixBundlePayloadRow row = (WixBundlePayloadRow)payloadTable.CreateRow(this.BundleRow.SourceLineNumbers);
             row.Id = Common.GenerateIdentifier("ux", "BootstrapperApplicationData.xml");
             row.Name = "BootstrapperApplicationData.xml";
             row.SourceFile = baManifestPath;

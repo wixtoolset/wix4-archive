@@ -133,7 +133,7 @@ namespace WixToolset.Bind
             }
 
             // Get the explicit payloads.
-            RowDictionary<PayloadRow> payloads = new RowDictionary<PayloadRow>(this.Output.Tables["Payload"]);
+            RowDictionary<WixBundlePayloadRow> payloads = new RowDictionary<WixBundlePayloadRow>(this.Output.Tables["WixBundlePayload"]);
 
             // Update explicitly authored payloads with their parent package and container (as appropriate)
             // to make it easier to gather the payloads later.
@@ -141,7 +141,7 @@ namespace WixToolset.Bind
             {
                 if (ComplexReferenceChildType.Payload == row.ChildType)
                 {
-                    PayloadRow payload = payloads.Get(row.ChildId);
+                    WixBundlePayloadRow payload = payloads.Get(row.ChildId);
 
                     if (ComplexReferenceParentType.Package == row.ParentType)
                     {
@@ -213,7 +213,7 @@ namespace WixToolset.Bind
                             command.FileManager = this.FileManagers.First();
                             command.MsiFeatureTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiFeature"]);
                             command.MsiPropertyTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiProperty"]);
-                            command.PayloadTable = this.Output.Tables["Payload"];
+                            command.PayloadTable = this.Output.Tables["WixBundlePayload"];
                             command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleRelatedPackage"]);
                             command.Execute();
                         }
@@ -246,7 +246,7 @@ namespace WixToolset.Bind
 
             // Reindex the payloads now that all the payloads (minus the manifest payloads that will be created later)
             // are present.
-            payloads = new RowDictionary<PayloadRow>(this.Output.Tables["Payload"]);
+            payloads = new RowDictionary<WixBundlePayloadRow>(this.Output.Tables["WixBundlePayload"]);
 
             // Process the payloads that were added by processing the packages.
             {
@@ -262,16 +262,16 @@ namespace WixToolset.Bind
             }
 
             // Set the package metadata from the payloads now that we have the complete payload information.
-            ILookup<string, PayloadRow> payloadsByPackage = payloads.Values.ToLookup(p => p.Package);
+            ILookup<string, WixBundlePayloadRow> payloadsByPackage = payloads.Values.ToLookup(p => p.Package);
 
             {
                 foreach (ChainPackageFacade package in packages.Values)
                 {
                     package.ChainPackage.Size = 0;
 
-                    IEnumerable<PayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
 
-                    foreach (PayloadRow payload in packagePayloads)
+                    foreach (WixBundlePayloadRow payload in packagePayloads)
                     {
                         package.ChainPackage.Size += payload.FileSize;
                     }
@@ -282,7 +282,7 @@ namespace WixToolset.Bind
 
                     }
 
-                    PayloadRow packagePayload = payloads[package.ChainPackage.PackagePayloadId];
+                    WixBundlePayloadRow packagePayload = payloads[package.ChainPackage.PackagePayload];
 
                     if (String.IsNullOrEmpty(package.ChainPackage.Description))
                     {
@@ -300,7 +300,7 @@ namespace WixToolset.Bind
             // Give the UX payloads their embedded IDs...
             int uxPayloadIndex = 0;
             {
-                foreach (PayloadRow payload in payloads.Values.Where(p => Compiler.BurnUXContainerId == p.Container))
+                foreach (WixBundlePayloadRow payload in payloads.Values.Where(p => Compiler.BurnUXContainerId == p.Container))
                 {
                     // In theory, UX payloads could be embedded in the UX CAB, external to the bundle EXE, or even
                     // downloaded. The current engine requires the UX to be fully present before any downloading starts,
@@ -324,7 +324,7 @@ namespace WixToolset.Bind
 
                 // Give the embedded payloads without an embedded id yet an embedded id.
                 int payloadIndex = 0;
-                foreach (PayloadRow payload in payloads.Values)
+                foreach (WixBundlePayloadRow payload in payloads.Values)
                 {
                     Debug.Assert(PackagingType.Unknown != payload.Packaging);
 
@@ -406,7 +406,7 @@ namespace WixToolset.Bind
                 command.TempFilesLocation = this.TempFilesLocation;
                 command.Execute();
 
-                PayloadRow baManifestPayload = command.BootstrapperApplicationManifestPayloadRow;
+                WixBundlePayloadRow baManifestPayload = command.BootstrapperApplicationManifestPayloadRow;
                 payloads.Add(baManifestPayload);
             }
 
@@ -419,15 +419,15 @@ namespace WixToolset.Bind
             // can contain all size and hash information about the non-UX containers.
             RowDictionary<WixBundleContainerRow> containers = new RowDictionary<WixBundleContainerRow>(this.Output.Tables["WixBundleContainer"]);
 
-            ILookup<string, PayloadRow> payloadsByContainer = payloads.Values.ToLookup(p => p.Container);
+            ILookup<string, WixBundlePayloadRow> payloadsByContainer = payloads.Values.ToLookup(p => p.Container);
 
             int attachedContainerIndex = 1; // count starts at one because UX container is "0".
 
-            IEnumerable<PayloadRow> uxContainerPayloads = Enumerable.Empty<PayloadRow>();
+            IEnumerable<WixBundlePayloadRow> uxContainerPayloads = Enumerable.Empty<WixBundlePayloadRow>();
 
             foreach (WixBundleContainerRow container in containers.Values)
             {
-                IEnumerable<PayloadRow> containerPayloads = payloadsByContainer[container.Id];
+                IEnumerable<WixBundlePayloadRow> containerPayloads = payloadsByContainer[container.Id];
 
                 if (!containerPayloads.Any())
                 {
@@ -443,11 +443,11 @@ namespace WixToolset.Bind
 
                     // Gather the list of UX payloads but ensure the BootstrapperApplication Payload is the first
                     // in the list since that is the Payload that Burn attempts to load.
-                    List<PayloadRow> uxPayloads = new List<PayloadRow>();
+                    List<WixBundlePayloadRow> uxPayloads = new List<WixBundlePayloadRow>();
 
                     string baPayloadId = baRow.FieldAsString(0);
 
-                    foreach (PayloadRow uxPayload in containerPayloads)
+                    foreach (WixBundlePayloadRow uxPayload in containerPayloads)
                     {
                         if (uxPayload.Id == baPayloadId)
                         {
@@ -666,7 +666,7 @@ namespace WixToolset.Bind
             variableCache.Add(String.Concat("packageVersion.", id), package.Version);
         }
 
-        private void CreateContainer(WixBundleContainerRow container, IEnumerable<PayloadRow> containerPayloads, string manifestFile)
+        private void CreateContainer(WixBundleContainerRow container, IEnumerable<WixBundlePayloadRow> containerPayloads, string manifestFile)
         {
             CreateContainerCommand command = new CreateContainerCommand();
             command.DefaultCompressionLevel = this.DefaultCompressionLevel;

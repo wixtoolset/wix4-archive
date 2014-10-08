@@ -22,7 +22,7 @@ namespace WixToolset.Bind
     {
         public IEnumerable<WixBundleCatalogRow> Catalogs { private get; set; }
 
-        public IEnumerable<PayloadRow> Payloads { private get; set; }
+        public IEnumerable<WixBundlePayloadRow> Payloads { private get; set; }
 
         public void Execute()
         {
@@ -33,7 +33,7 @@ namespace WixToolset.Bind
                     (catalog, payload) => new CatalogIdWithPath() { Id = catalog.Id, FullPath = Path.GetFullPath(payload.SourceFile) })
                 .ToList();
 
-            foreach (PayloadRow payloadInfo in this.Payloads)
+            foreach (WixBundlePayloadRow payloadInfo in this.Payloads)
             {
                 // Payloads that are not embedded should be verfied.
                 if (String.IsNullOrEmpty(payloadInfo.EmbeddedId))

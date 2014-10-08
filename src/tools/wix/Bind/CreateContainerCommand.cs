@@ -25,7 +25,7 @@ namespace WixToolset.Bind
     {
         public CompressionLevel DefaultCompressionLevel { private get; set; }
 
-        public IEnumerable<PayloadRow> Payloads { private get; set; }
+        public IEnumerable<WixBundlePayloadRow> Payloads { private get; set; }
 
         public string ManifestFile { private get; set; }
 
@@ -52,7 +52,7 @@ namespace WixToolset.Bind
                     cab.AddFile(this.ManifestFile, "0");
                 }
 
-                foreach (PayloadRow payload in this.Payloads)
+                foreach (WixBundlePayloadRow payload in this.Payloads)
                 {
                     Debug.Assert(PackagingType.Embedded == payload.Packaging);
 

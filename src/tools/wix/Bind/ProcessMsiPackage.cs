@@ -30,7 +30,7 @@ namespace WixToolset.Bind
     {
         private const string PropertySqlFormat = "SELECT `Value` FROM `Property` WHERE `Property` = '{0}'";
 
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
         public ChainPackageFacade Facade { private get; set; }
 
@@ -49,7 +49,7 @@ namespace WixToolset.Bind
         /// </summary>
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayload);
 
             string sourcePath = packagePayload.FullFileName;
             bool longNamesInImage = false;
@@ -146,7 +146,7 @@ namespace WixToolset.Bind
 
         private ISet<string> GetPayloadTargetNames()
         {
-            IEnumerable<string> payloadNames = this.PayloadTable.RowsAs<PayloadRow>()
+            IEnumerable<string> payloadNames = this.PayloadTable.RowsAs<WixBundlePayloadRow>()
                 .Where(r => r.Package == this.Facade.ChainPackage.WixChainItemId)
                 .Select(r => r.Name);
 
@@ -346,7 +346,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void ImportExternalCabinetAsPayloads(Dtf.Database db, PayloadRow packagePayload, ISet<string> payloadNames)
+        private void ImportExternalCabinetAsPayloads(Dtf.Database db, WixBundlePayloadRow packagePayload, ISet<string> payloadNames)
         {
             if (db.Tables.Contains("Media"))
             {
@@ -364,7 +364,7 @@ namespace WixToolset.Bind
                             string generatedId = Common.GenerateIdentifier("cab", packagePayload.Id, cabinet);
                             string payloadSourceFile = FileManager.ResolveRelatedFile(packagePayload.UnresolvedSourceFile, cabinet, "Cabinet", this.Facade.ChainPackage.SourceLineNumbers, BindStage.Normal);
 
-                            PayloadRow payload = (PayloadRow)this.PayloadTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                            WixBundlePayloadRow payload = (WixBundlePayloadRow)this.PayloadTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
                             payload.Id = generatedId;
                             payload.Name = cabinetName;
                             payload.SourceFile = payloadSourceFile;
@@ -382,7 +382,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private long ImportExternalFileAsPayloadsAndReturnInstallSize(Dtf.Database db, PayloadRow packagePayload, bool longNamesInImage, bool compressed, ISet<string> payloadNames)
+        private long ImportExternalFileAsPayloadsAndReturnInstallSize(Dtf.Database db, WixBundlePayloadRow packagePayload, bool longNamesInImage, bool compressed, ISet<string> payloadNames)
         {
             long size = 0;
 
@@ -440,7 +440,7 @@ namespace WixToolset.Bind
                                         string generatedId = Common.GenerateIdentifier("f", packagePayload.Id, record.GetString(2));
                                         string payloadSourceFile = FileManager.ResolveRelatedFile(packagePayload.UnresolvedSourceFile, fileSourcePath, "File", this.Facade.ChainPackage.SourceLineNumbers, BindStage.Normal);
 
-                                        PayloadRow payload = (PayloadRow)this.PayloadTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                                        WixBundlePayloadRow payload = (WixBundlePayloadRow)this.PayloadTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
                                         payload.Id = generatedId;
                                         payload.Name = name;
                                         payload.SourceFile = payloadSourceFile;

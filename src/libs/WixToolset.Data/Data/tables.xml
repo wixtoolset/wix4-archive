@@ -1609,8 +1609,8 @@
     <tableDefinition name="WixBundlePayloadGroup" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePayloadGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
-    <tableDefinition name="Payload" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Payload" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundlePayload" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePayload" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Name" type="string" length="0" nullable="yes"/>
         <columnDefinition name="SourceFile" type="object" length="0" nullable="yes"/>
         <columnDefinition name="DownloadUrl" type="string" length="0" nullable="yes" />
@@ -1688,7 +1688,7 @@
     <tableDefinition name="WixBundleCatalog" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundleCatalog" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Payload_" type="string" length="0" category="identifier"
-                          keyTable="Payload" keyColumn="1" description="Reference to a Payload entry in the Payload table." />
+                keyTable="WixBundlePayload" keyColumn="1" description="Reference to a payload entry in the WixBundlePayload table." />
     </tableDefinition>
     <tableDefinition name="WixChain" unreal="yes">
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to the chain."/>
@@ -1709,7 +1709,7 @@
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
         <columnDefinition name="Type" type="number" length="2" minValue="0" maxValue="3" />
         <columnDefinition name="Payload_" type="string" length="0" category="identifier"
-                keyTable="Payload" keyColumn="1" description="Reference to a Payload entry in the Payload table."/>
+                keyTable="WixBundlePayload" keyColumn="1" description="Reference to a payload entry in the WixBundlePayload table."/>
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to this package."/>
         <columnDefinition name="InstallCondition" type="string" length="0" nullable="yes"/>
         <columnDefinition name="Cache" type="number" length="2" nullable="yes" minValue="0" maxValue="2"/>

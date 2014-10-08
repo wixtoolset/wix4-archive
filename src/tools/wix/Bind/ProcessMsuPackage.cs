@@ -18,13 +18,13 @@ namespace WixToolset.Bind
     /// </summary>
     internal class ProcessMsuPackage : ICommand
     {
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
         public ChainPackageFacade Facade { private get; set; }
 
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayload);
 
             if (String.IsNullOrEmpty(this.Facade.ChainPackage.CacheId))
             {

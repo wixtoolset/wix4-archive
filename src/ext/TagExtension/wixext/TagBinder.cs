@@ -246,15 +246,15 @@ namespace WixToolset.Extensions
             Table packageTable = bundle.Tables["ChainPackage"];
             if (null != packageTable)
             {
-                Table payloadTable = bundle.Tables["Payload"];
-                RowDictionary<PayloadRow> payloads = new RowDictionary<PayloadRow>(payloadTable);
+                Table payloadTable = bundle.Tables["WixBundlePayload"];
+                RowDictionary<WixBundlePayloadRow> payloads = new RowDictionary<WixBundlePayloadRow>(payloadTable);
 
                 foreach (ChainPackageRow row in packageTable.RowsAs<ChainPackageRow>())
                 {
                     if (ChainPackageType.Msi == row.Type)
                     {
                         string packagePayloadId = row.PackagePayloadId;
-                        PayloadRow payload = payloads.Get(packagePayloadId);
+                        WixBundlePayloadRow payload = payloads.Get(packagePayloadId);
 
                         using (Database db = new Database(payload.FullFileName))
                         {

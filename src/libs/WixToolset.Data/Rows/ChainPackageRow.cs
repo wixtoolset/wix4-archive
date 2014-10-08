@@ -55,7 +55,7 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the indentifier of the package's payload.
         /// </summary>
-        public string PackagePayloadId
+        public string PackagePayload
         {
             get { return (string)this.Fields[2].Data; }
             set { this.Fields[2].Data = value; }

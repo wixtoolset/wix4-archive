@@ -120,8 +120,8 @@ namespace WixToolset.Data
                 case "Media":
                     row = new MediaRow(sourceLineNumbers, this);
                     break;
-                case "Payload":
-                    row = new PayloadRow(sourceLineNumbers, this);
+                case "WixBundlePayload":
+                    row = new WixBundlePayloadRow(sourceLineNumbers, this);
                     break;
                 case "Property":
                     row = new PropertyRow(sourceLineNumbers, this);

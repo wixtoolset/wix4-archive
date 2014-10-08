@@ -18892,15 +18892,15 @@ namespace WixToolset
         /// <param name="node">Element to parse</param>
         /// <param name="parentType">ComplexReferenceParentType of parent element</param>
         /// <param name="parentId">Identifier of parent element.</param>
-        private PayloadRow CreatePayloadRow(SourceLineNumber sourceLineNumbers, Identifier id, string name, string sourceFile, string downloadUrl, ComplexReferenceParentType parentType,
+        private WixBundlePayloadRow CreatePayloadRow(SourceLineNumber sourceLineNumbers, Identifier id, string name, string sourceFile, string downloadUrl, ComplexReferenceParentType parentType,
             string parentId, ComplexReferenceChildType previousType, string previousId, YesNoDefaultType compressed, YesNoType enableSignatureVerification, string displayName, string description,
             Wix.RemotePayload remotePayload)
         {
-            PayloadRow row = null;
+            WixBundlePayloadRow row = null;
 
             if (!this.core.EncounteredError)
             {
-                row = (PayloadRow)this.core.CreateRow(sourceLineNumbers, "Payload", id);
+                row = (WixBundlePayloadRow)this.core.CreateRow(sourceLineNumbers, "WixBundlePayload", id);
                 row.Name = String.IsNullOrEmpty(name) ? Path.GetFileName(sourceFile) : name;
                 row.SourceFile = sourceFile;
                 row.DownloadUrl = downloadUrl;
@@ -19767,7 +19767,7 @@ namespace WixToolset
 
                 ChainPackageRow chainPackageRow = (ChainPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainPackage", id);
                 chainPackageRow.Type = packageType;
-                chainPackageRow.PackagePayloadId = id.Id;
+                chainPackageRow.PackagePayload = id.Id;
                 chainPackageRow.Attributes = attributes;
 
                 chainPackageRow.InstallCondition = installCondition;
