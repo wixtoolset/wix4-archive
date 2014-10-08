@@ -251,7 +251,7 @@ namespace WixToolset.Extensions
 
                 foreach (WixBundlePackageRow row in packageTable.RowsAs<WixBundlePackageRow>())
                 {
-                    if (ChainPackageType.Msi == row.Type)
+                    if (WixBundlePackageType.Msi == row.Type)
                     {
                         string packagePayloadId = row.PackagePayload;
                         WixBundlePayloadRow payload = payloads.Get(packagePayloadId);

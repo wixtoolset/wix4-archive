@@ -33,12 +33,12 @@ namespace WixToolset.Bind
 
             foreach (ChainPackageFacade package in Packages)
             {
-                if (ChainPackageType.Msi == package.Package.Type)
+                if (WixBundlePackageType.Msi == package.Package.Type)
                 {
                     // Keep track of all MSI packages.
                     msiPackages.Add(package.MsiPackage);
                 }
-                else if (ChainPackageType.Msp == package.Package.Type && package.MspPackage.Slipstream)
+                else if (WixBundlePackageType.Msp == package.Package.Type && package.MspPackage.Slipstream)
                 {
                     IEnumerable<WixBundlePatchTargetCodeRow> patchTargetCodeRows = WixBundlePatchTargetCodeTable.RowsAs<WixBundlePatchTargetCodeRow>().Where(r => r.MspPackageId == package.Package.WixChainItemId);
 

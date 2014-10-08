@@ -46,9 +46,9 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the item type.
         /// </summary>
-        public ChainPackageType Type
+        public WixBundlePackageType Type
         {
-            get { return (ChainPackageType)this.Fields[1].Data; }
+            get { return (WixBundlePackageType)this.Fields[1].Data; }
             set { this.Fields[1].Data = (int)value; }
         }
 
@@ -64,9 +64,9 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the raw attributes of a package.
         /// </summary>
-        public ChainPackageAttributes Attributes
+        public WixBundlePackageAttributes Attributes
         {
-            get { return (ChainPackageAttributes)this.Fields[3].Data; }
+            get { return (WixBundlePackageAttributes)this.Fields[3].Data; }
             set { this.Fields[3].Data = value; }
         }
 
@@ -210,7 +210,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool Permanent
         {
-            get { return 0 != (this.Attributes & ChainPackageAttributes.Permanent); }
+            get { return 0 != (this.Attributes & WixBundlePackageAttributes.Permanent); }
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool Visible
         {
-            get { return 0 != (this.Attributes & ChainPackageAttributes.Visible); }
+            get { return 0 != (this.Attributes & WixBundlePackageAttributes.Visible); }
         }
     }
 }

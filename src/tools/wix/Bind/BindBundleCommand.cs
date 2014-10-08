@@ -196,7 +196,7 @@ namespace WixToolset.Bind
             {
                 switch (package.Package.Type)
                 {
-                    case ChainPackageType.Exe:
+                    case WixBundlePackageType.Exe:
                         {
                             ProcessExePackage command = new ProcessExePackage();
                             command.AuthoredPayloads = payloads;
@@ -205,7 +205,7 @@ namespace WixToolset.Bind
                         }
                         break;
 
-                    case ChainPackageType.Msi:
+                    case WixBundlePackageType.Msi:
                         {
                             ProcessMsiPackage command = new ProcessMsiPackage();
                             command.AuthoredPayloads = payloads;
@@ -219,7 +219,7 @@ namespace WixToolset.Bind
                         }
                         break;
 
-                    case ChainPackageType.Msp:
+                    case WixBundlePackageType.Msp:
                         {
                             ProcessMspPackage command = new ProcessMspPackage();
                             command.AuthoredPayloads = payloads;
@@ -229,7 +229,7 @@ namespace WixToolset.Bind
                         }
                         break;
 
-                    case ChainPackageType.Msu:
+                    case WixBundlePackageType.Msu:
                         {
                             ProcessMsuPackage command = new ProcessMsuPackage();
                             command.Facade = package;
@@ -805,10 +805,10 @@ namespace WixToolset.Bind
                             switch (package.Package.Type)
                             {
                                 // The WixDependencyExtension allows an empty Key for MSIs and MSPs.
-                                case ChainPackageType.Msi:
+                                case WixBundlePackageType.Msi:
                                     dependency.Key = package.MsiPackage.ProductCode;
                                     break;
-                                case ChainPackageType.Msp:
+                                case WixBundlePackageType.Msp:
                                     dependency.Key = package.MspPackage.PatchCode;
                                     break;
                             }
@@ -843,11 +843,11 @@ namespace WixToolset.Bind
             {
                 string key = null;
 
-                if (ChainPackageType.Msi == package.Package.Type && 0 == package.Provides.Count)
+                if (WixBundlePackageType.Msi == package.Package.Type && 0 == package.Provides.Count)
                 {
                     key = package.MsiPackage.ProductCode;
                 }
-                else if (ChainPackageType.Msp == package.Package.Type && 0 == package.Provides.Count)
+                else if (WixBundlePackageType.Msp == package.Package.Type && 0 == package.Provides.Count)
                 {
                     key = package.MspPackage.PatchCode;
                 }

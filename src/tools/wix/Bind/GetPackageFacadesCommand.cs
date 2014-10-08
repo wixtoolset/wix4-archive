@@ -43,19 +43,19 @@ namespace WixToolset.Bind
 
                 switch (chainPackage.Type)
                 {
-                    case ChainPackageType.Exe:
+                    case WixBundlePackageType.Exe:
                         facade = new ChainPackageFacade(chainPackage, exePackages.Get(id));
                         break;
 
-                    case ChainPackageType.Msi:
+                    case WixBundlePackageType.Msi:
                         facade = new ChainPackageFacade(chainPackage, msiPackages.Get(id));
                         break;
 
-                    case ChainPackageType.Msp:
+                    case WixBundlePackageType.Msp:
                         facade = new ChainPackageFacade(chainPackage, mspPackages.Get(id));
                         break;
 
-                    case ChainPackageType.Msu:
+                    case WixBundlePackageType.Msu:
                         facade = new ChainPackageFacade(chainPackage, msuPackages.Get(id));
                         break;
                 }

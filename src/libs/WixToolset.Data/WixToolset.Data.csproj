@@ -57,14 +57,14 @@
     <Compile Include="Rows\WixBundleSlipstreamMspRow.cs" />
     <Compile Include="Rows\WixChainAttributes.cs" />
     <Compile Include="Rows\WixChainRow.cs" />
-    <Compile Include="Rows\ChainPackageAttributes.cs" />
+    <Compile Include="Rows\WixBundlePackageAttributes.cs" />
     <Compile Include="Rows\WixBundleMspPackageAttributes.cs" />
     <Compile Include="Rows\WixBundleMsiPackageAttributes.cs" />
     <Compile Include="Rows\WixBundleExePackageRow.cs" />
     <Compile Include="Rows\WixBundleMsiFeatureRow.cs" />
     <Compile Include="Rows\WixBundleRelatedPackageRow.cs" />
     <Compile Include="Rows\ContainerType.cs" />
-    <Compile Include="Rows\ChainPackageType.cs" />
+    <Compile Include="Rows\WixBundlePackageType.cs" />
     <Compile Include="Rows\WixBundleContainerRow.cs" />
     <Compile Include="Rows\WixBundleMsiPropertyRow.cs" />
     <Compile Include="Rows\WixRollbackBoundaryRow.cs" />

@@ -91,7 +91,7 @@ namespace WixToolset.Bind
                 row[10] = package.Package.RollbackLogPathVariable;
                 row[11] = (PackagingType.Embedded == packagePayload.Packaging) ? "yes" : "no";
 
-                if (ChainPackageType.Msi == package.Package.Type)
+                if (WixBundlePackageType.Msi == package.Package.Type)
                 {
                     row[12] = package.MsiPackage.DisplayInternalUI ? "yes" : "no";
 
@@ -105,7 +105,7 @@ namespace WixToolset.Bind
                         row[14] = package.MsiPackage.UpgradeCode;
                     }
                 }
-                else if (ChainPackageType.Msp == package.Package.Type)
+                else if (WixBundlePackageType.Msp == package.Package.Type)
                 {
                     row[12] = package.MspPackage.DisplayInternalUI ? "yes" : "no";
 

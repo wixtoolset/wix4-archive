@@ -362,7 +362,7 @@ namespace WixToolset.Bind
                         writer.WriteAttributeString("InstallCondition", package.Package.InstallCondition);
                     }
 
-                    if (ChainPackageType.Exe == package.Package.Type)
+                    if (WixBundlePackageType.Exe == package.Package.Type)
                     {
                         writer.WriteAttributeString("DetectCondition", package.ExePackage.DetectCondition);
                         writer.WriteAttributeString("InstallArguments", package.ExePackage.InstallCommand);
@@ -374,7 +374,7 @@ namespace WixToolset.Bind
                             writer.WriteAttributeString("Protocol", package.ExePackage.ExeProtocol);
                         }
                     }
-                    else if (ChainPackageType.Msi == package.Package.Type)
+                    else if (WixBundlePackageType.Msi == package.Package.Type)
                     {
                         writer.WriteAttributeString("ProductCode", package.MsiPackage.ProductCode);
                         writer.WriteAttributeString("Language", package.MsiPackage.ProductLanguage.ToString(CultureInfo.InvariantCulture));
@@ -385,7 +385,7 @@ namespace WixToolset.Bind
                             writer.WriteAttributeString("UpgradeCode", package.MsiPackage.UpgradeCode);
                         }
                     }
-                    else if (ChainPackageType.Msp == package.Package.Type)
+                    else if (WixBundlePackageType.Msp == package.Package.Type)
                     {
                         writer.WriteAttributeString("PatchCode", package.MspPackage.PatchCode);
                         writer.WriteAttributeString("PatchXml", package.MspPackage.PatchXml);
@@ -407,7 +407,7 @@ namespace WixToolset.Bind
                             }
                         }
                     }
-                    else if (ChainPackageType.Msu == package.Package.Type)
+                    else if (WixBundlePackageType.Msu == package.Package.Type)
                     {
                         writer.WriteAttributeString("DetectCondition", package.MsuPackage.DetectCondition);
                         writer.WriteAttributeString("KB", package.MsuPackage.MsuKB);
