@@ -361,10 +361,10 @@ namespace WixToolset.Bind
             }
 
             IEnumerable<ChainPackageFacade> orderedPackages;
-            IEnumerable<RollbackBoundaryRow> boundaries;
+            IEnumerable<WixRollbackBoundaryRow> boundaries;
             {
                 OrderPackagesAndRollbackBoundariesCommand command = new OrderPackagesAndRollbackBoundariesCommand();
-                command.boundaries = new RowDictionary<RollbackBoundaryRow>(this.Output.Tables["RollbackBoundary"]);
+                command.boundaries = new RowDictionary<WixRollbackBoundaryRow>(this.Output.Tables["WixRollbackBoundary"]);
                 command.packages = packages;
                 command.wixGroupTable = wixGroupTable;
                 command.Execute();

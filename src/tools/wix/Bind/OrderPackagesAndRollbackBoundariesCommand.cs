@@ -20,18 +20,18 @@ namespace WixToolset.Bind
     {
         public Table wixGroupTable { private get; set; }
 
-        public RowDictionary<RollbackBoundaryRow> boundaries { private get; set; }
+        public RowDictionary<WixRollbackBoundaryRow> boundaries { private get; set; }
 
         public IDictionary<string, ChainPackageFacade> packages { private get; set; }
 
         public IEnumerable<ChainPackageFacade> OrderedPackages { get; private set; }
 
-        public IEnumerable<RollbackBoundaryRow> UsedRollbackBoundaries { get; private set; }
+        public IEnumerable<WixRollbackBoundaryRow> UsedRollbackBoundaries { get; private set; }
 
         public void Execute()
         {
             List<ChainPackageFacade> orderedPackages = new List<ChainPackageFacade>();
-            List<RollbackBoundaryRow> usedBoundaries = new List<RollbackBoundaryRow>();
+            List<WixRollbackBoundaryRow> usedBoundaries = new List<WixRollbackBoundaryRow>();
 
             // Process the chain of packages to add them in the correct order
             // and assign the forward rollback boundaries as appropriate. Remember
@@ -42,7 +42,7 @@ namespace WixToolset.Bind
             // We handle uninstall (aka: backwards) rollback boundaries after
             // we get these install/repair (aka: forward) rollback boundaries
             // defined.
-            RollbackBoundaryRow previousRollbackBoundary = null;
+            WixRollbackBoundaryRow previousRollbackBoundary = null;
 
             foreach (WixGroupRow row in this.wixGroupTable.Rows)
             {
@@ -55,7 +55,7 @@ namespace WixToolset.Bind
                         {
                             usedBoundaries.Add(previousRollbackBoundary);
 
-                            package.ChainPackage.RollbackBoundaryId = previousRollbackBoundary.ChainPackageId;
+                            package.ChainPackage.RollbackBoundary = previousRollbackBoundary.ChainPackageId;
                             previousRollbackBoundary = null;
                         }
 
@@ -64,7 +64,7 @@ namespace WixToolset.Bind
                     else // must be a rollback boundary.
                     {
                         // Discard the next rollback boundary if we have a previously defined boundary.
-                        RollbackBoundaryRow nextRollbackBoundary = boundaries.Get(row.ChildId);
+                        WixRollbackBoundaryRow nextRollbackBoundary = boundaries.Get(row.ChildId);
                         if (null != previousRollbackBoundary)
                         {
                             Messaging.Instance.OnMessage(WixWarnings.DiscardedRollbackBoundary(nextRollbackBoundary.SourceLineNumbers, nextRollbackBoundary.ChainPackageId));
@@ -116,14 +116,14 @@ namespace WixToolset.Bind
 
             foreach (ChainPackageFacade package in orderedPackages)
             {
-                if (null != package.ChainPackage.RollbackBoundaryId)
+                if (null != package.ChainPackage.RollbackBoundary)
                 {
                     if (null != previousPackage)
                     {
-                        previousPackage.ChainPackage.RollbackBoundaryBackwardId = previousRollbackBoundaryId;
+                        previousPackage.ChainPackage.RollbackBoundaryBackward = previousRollbackBoundaryId;
                     }
 
-                    previousRollbackBoundaryId = package.ChainPackage.RollbackBoundaryId;
+                    previousRollbackBoundaryId = package.ChainPackage.RollbackBoundary;
                 }
 
                 previousPackage = package;
@@ -131,7 +131,7 @@ namespace WixToolset.Bind
 
             if (!String.IsNullOrEmpty(previousRollbackBoundaryId) && null != previousPackage)
             {
-                previousPackage.ChainPackage.RollbackBoundaryBackwardId = previousRollbackBoundaryId;
+                previousPackage.ChainPackage.RollbackBoundaryBackward = previousRollbackBoundaryId;
             }
 
             this.OrderedPackages = orderedPackages;

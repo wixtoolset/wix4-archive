@@ -34,7 +34,7 @@ namespace WixToolset.Bind
 
         public string OutputPath { private get; set; }
 
-        public IEnumerable<RollbackBoundaryRow> RollbackBoundaries { private get; set; }
+        public IEnumerable<WixRollbackBoundaryRow> RollbackBoundaries { private get; set; }
 
         public IEnumerable<ChainPackageFacade> OrderedPackages { private get; set; }
 
@@ -178,7 +178,7 @@ namespace WixToolset.Bind
                     }
                 }
 
-                foreach (RollbackBoundaryRow rollbackBoundary in this.RollbackBoundaries)
+                foreach (WixRollbackBoundaryRow rollbackBoundary in this.RollbackBoundaries)
                 {
                     writer.WriteStartElement("RollbackBoundary");
                     writer.WriteAttributeString("Id", rollbackBoundary.ChainPackageId);
@@ -337,14 +337,14 @@ namespace WixToolset.Bind
                     writer.WriteAttributeString("Permanent", package.ChainPackage.Permanent ? "yes" : "no");
                     writer.WriteAttributeString("Vital", (YesNoType.Yes == package.ChainPackage.Vital) ? "yes" : "no");
 
-                    if (null != package.ChainPackage.RollbackBoundaryId)
+                    if (null != package.ChainPackage.RollbackBoundary)
                     {
-                        writer.WriteAttributeString("RollbackBoundaryForward", package.ChainPackage.RollbackBoundaryId);
+                        writer.WriteAttributeString("RollbackBoundaryForward", package.ChainPackage.RollbackBoundary);
                     }
 
-                    if (!String.IsNullOrEmpty(package.ChainPackage.RollbackBoundaryBackwardId))
+                    if (!String.IsNullOrEmpty(package.ChainPackage.RollbackBoundaryBackward))
                     {
-                        writer.WriteAttributeString("RollbackBoundaryBackward", package.ChainPackage.RollbackBoundaryBackwardId);
+                        writer.WriteAttributeString("RollbackBoundaryBackward", package.ChainPackage.RollbackBoundaryBackward);
                     }
 
                     if (!String.IsNullOrEmpty(package.ChainPackage.LogPathVariable))

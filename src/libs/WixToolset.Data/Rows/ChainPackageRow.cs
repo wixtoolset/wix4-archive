@@ -190,7 +190,7 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the rollback boundary identifier for the package.
         /// </summary>
-        public string RollbackBoundaryId
+        public string RollbackBoundary
         {
             get { return (string)this.Fields[17].Data; }
             set { this.Fields[17].Data = value; }
@@ -199,7 +199,7 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the backward rollback boundary identifier for the package.
         /// </summary>
-        public string RollbackBoundaryBackwardId
+        public string RollbackBoundaryBackward
         {
             get { return (string)this.Fields[18].Data; }
             set { this.Fields[18].Data = value; }
