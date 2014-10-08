@@ -305,7 +305,7 @@ namespace WixToolset.Bind
                 ILookup<string, WixBundleMsiPropertyRow> msiPropertiesByPackage = this.Output.Tables["WixBundleMsiProperty"].RowsAs<WixBundleMsiPropertyRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, PayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
                 ILookup<string, RelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["RelatedPackage"].RowsAs<RelatedPackageRow>().ToLookup(r => r.ChainPackageId);
-                ILookup<string, SlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["SlipstreamMsp"].RowsAs<SlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, WixBundleSlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["WixBundleSlipstreamMsp"].RowsAs<WixBundleSlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundlePackageExitCodeRow> exitCodesByPackage = this.Output.Tables["WixBundlePackageExitCode"].RowsAs<WixBundlePackageExitCodeRow>().ToLookup(r => r.ChainPackageId);
 
                 // Build up the list of target codes from all the MSPs in the chain.
@@ -432,9 +432,9 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    IEnumerable<SlipstreamMspRow> packageSlipstreamMsps = slipstreamMspsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundleSlipstreamMspRow> packageSlipstreamMsps = slipstreamMspsByPackage[package.ChainPackage.WixChainItemId];
 
-                    foreach (SlipstreamMspRow slipstreamMsp in packageSlipstreamMsps)
+                    foreach (WixBundleSlipstreamMspRow slipstreamMsp in packageSlipstreamMsps)
                     {
                         writer.WriteStartElement("SlipstreamMsp");
                         writer.WriteAttributeString("Id", slipstreamMsp.MspPackageId);

@@ -20171,7 +20171,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "SlipstreamMsp");
+                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
                 row[0] = packageId;
                 row[1] = id;
             }

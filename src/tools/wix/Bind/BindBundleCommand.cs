@@ -340,7 +340,7 @@ namespace WixToolset.Bind
             {
                 AutomaticallySlipstreamPatchesCommand command = new AutomaticallySlipstreamPatchesCommand();
                 command.Packages = packages.Values;
-                command.SlipstreamMspTable = this.Output.EnsureTable(this.TableDefinitions["SlipstreamMsp"]);
+                command.SlipstreamMspTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleSlipstreamMsp"]);
                 command.WixBundlePatchTargetCodeTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePatchTargetCode"]);
                 command.Execute();
             }

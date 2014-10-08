@@ -54,7 +54,7 @@
     <Compile Include="Rows\ChainExePackageAttributes.cs" />
     <Compile Include="Rows\ExitCodeBehaviorType.cs" />
     <Compile Include="Rows\WixBundlePackageExitCodeRow.cs" />
-    <Compile Include="Rows\SlipstreamMspRow.cs" />
+    <Compile Include="Rows\WixBundleSlipstreamMspRow.cs" />
     <Compile Include="Rows\WixChainAttributes.cs" />
     <Compile Include="Rows\WixChainRow.cs" />
     <Compile Include="Rows\ChainPackageAttributes.cs" />

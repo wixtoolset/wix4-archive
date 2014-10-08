@@ -1786,7 +1786,7 @@
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Value" type="string" length="0" />
     </tableDefinition>
-    <tableDefinition name="SlipstreamMsp" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleSlipstreamMsp" createSymbols="yes" unreal="yes">
         <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the parent Msi."/>
         <columnDefinition name="ChainPackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
