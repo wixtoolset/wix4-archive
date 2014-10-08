@@ -18996,7 +18996,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                this.core.CreateRow(sourceLineNumbers, "PayloadGroup", id);
+                this.core.CreateRow(sourceLineNumbers, "WixBundlePayloadGroup", id);
 
                 this.CreateGroupAndOrderingRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.PayloadGroup, id.Id, ComplexReferenceChildType.Unknown, null);
             }
@@ -19024,7 +19024,7 @@ namespace WixToolset
                     {
                         case "Id":
                             id = this.core.GetAttributeIdentifierValue(sourceLineNumbers, attrib);
-                            this.core.CreateSimpleReference(sourceLineNumbers, "PayloadGroup", id);
+                            this.core.CreateSimpleReference(sourceLineNumbers, "WixBundlePayloadGroup", id);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);

@@ -1606,8 +1606,8 @@
         <columnDefinition name="AttachedContainerIndex" type="number" length="2" nullable="yes" />
         <columnDefinition name="WorkingPath" type="string" length="0" nullable="yes" />
     </tableDefinition>
-    <tableDefinition name="PayloadGroup" createSymbols="yes" unreal="yes">
-        <columnDefinition name="PayloadGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundlePayloadGroup" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePayloadGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
     <tableDefinition name="Payload" createSymbols="yes" unreal="yes">
         <columnDefinition name="Payload" type="string" length="0" category="identifier" primaryKey="yes"/>
