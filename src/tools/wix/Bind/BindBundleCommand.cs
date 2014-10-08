@@ -183,7 +183,7 @@ namespace WixToolset.Bind
                 command.ChainPackageTable = chainPackageTable;
                 command.ChainExePackageTable = this.Output.Tables["ChainExePackage"];
                 command.ChainMsiPackageTable = this.Output.Tables["ChainMsiPackage"];
-                command.ChainMspPackageTable = this.Output.Tables["ChainMspPackage"];
+                command.MspPackageTable = this.Output.Tables["WixBundleMspPackage"];
                 command.MsuPackageTable = this.Output.Tables["WixBundleMsuPackage"];
                 command.Execute();
 

@@ -112,7 +112,7 @@ namespace WixToolset.Bind
                     }
                     else // this patch targets an unknown number of products
                     {
-                        this.Facade.MspPackage.Attributes |= ChainMspPackageAttributes.TargetUnspecified;
+                        this.Facade.MspPackage.Attributes |= WixBundleMspPackageAttributes.TargetUnspecified;
                     }
                 }
 

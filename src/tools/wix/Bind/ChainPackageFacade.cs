@@ -31,7 +31,7 @@ namespace WixToolset.Bind
             this.MsiPackage = msiPackage;
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, ChainMspPackageRow mspPackage)
+        public ChainPackageFacade(WixBundlePackageRow package, BundleMspPackageRow mspPackage)
             : this(package)
         {
             this.MspPackage = mspPackage;
@@ -49,7 +49,7 @@ namespace WixToolset.Bind
 
         public ChainMsiPackageRow MsiPackage { get; private set; }
 
-        public ChainMspPackageRow MspPackage { get; private set; }
+        public BundleMspPackageRow MspPackage { get; private set; }
 
         public WixBundleMsuPackageRow MsuPackage { get; private set; }
 

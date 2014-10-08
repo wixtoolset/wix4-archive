@@ -1750,7 +1750,7 @@
         <columnDefinition name="ProductName" type="string" length="0" />
         <columnDefinition name="Manufacturer" type="string" length="0" nullable="yes" />
     </tableDefinition>
-    <tableDefinition name="ChainMspPackage" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleMspPackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Attributes" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />

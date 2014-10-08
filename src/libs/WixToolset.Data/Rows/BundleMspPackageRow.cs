@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="ChainMspPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleMspPackage.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -12,24 +12,24 @@ namespace WixToolset.Data.Rows
     /// <summary>
     /// Specialization of a row for the ChainMspPackage table.
     /// </summary>
-    public sealed class ChainMspPackageRow : Row
+    public sealed class BundleMspPackageRow : Row
     {
         /// <summary>
         /// Creates a ChainMspPackage row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public ChainMspPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public BundleMspPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates a ChainMspPackageRow row that belongs to a table.
+        /// Creates a WixBundleMspPackage row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public ChainMspPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public BundleMspPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }
@@ -46,9 +46,9 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the raw MSP attributes of a patch.
         /// </summary>
-        public ChainMspPackageAttributes Attributes
+        public WixBundleMspPackageAttributes Attributes
         {
-            get { return (ChainMspPackageAttributes)this.Fields[1].Data; }
+            get { return (WixBundleMspPackageAttributes)this.Fields[1].Data; }
             set { this.Fields[1].Data = value; }
         }
 
@@ -84,7 +84,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool DisplayInternalUI
         {
-            get { return 0 != (this.Attributes & ChainMspPackageAttributes.DisplayInternalUI); }
+            get { return 0 != (this.Attributes & WixBundleMspPackageAttributes.DisplayInternalUI); }
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool Slipstream
         {
-            get { return 0 != (this.Attributes & ChainMspPackageAttributes.Slipstream); }
+            get { return 0 != (this.Attributes & WixBundleMspPackageAttributes.Slipstream); }
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool TargetUnspecified
         {
-            get { return 0 != (this.Attributes & ChainMspPackageAttributes.TargetUnspecified); }
+            get { return 0 != (this.Attributes & WixBundleMspPackageAttributes.TargetUnspecified); }
         }
     }
 }

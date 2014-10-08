@@ -19824,11 +19824,11 @@ namespace WixToolset
                         break;
 
                     case ChainPackageType.Msp:
-                        ChainMspPackageAttributes mspAttributes = 0;
-                        mspAttributes |= (YesNoType.Yes == displayInternalUI) ? ChainMspPackageAttributes.DisplayInternalUI : 0;
-                        mspAttributes |= (YesNoType.Yes == slipstream) ? ChainMspPackageAttributes.Slipstream : 0;
+                        WixBundleMspPackageAttributes mspAttributes = 0;
+                        mspAttributes |= (YesNoType.Yes == displayInternalUI) ? WixBundleMspPackageAttributes.DisplayInternalUI : 0;
+                        mspAttributes |= (YesNoType.Yes == slipstream) ? WixBundleMspPackageAttributes.Slipstream : 0;
 
-                        ChainMspPackageRow mspRow = (ChainMspPackageRow)this.core.CreateRow(sourceLineNumbers, "ChainMspPackage", id);
+                        BundleMspPackageRow mspRow = (BundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
                         mspRow.Attributes = mspAttributes;
                         break;
 

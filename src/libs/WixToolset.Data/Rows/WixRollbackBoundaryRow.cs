@@ -10,12 +10,12 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the ChainMspPackage table.
+    /// Specialization of a row for the WixRollbackBoundary table.
     /// </summary>
     public sealed class WixRollbackBoundaryRow : Row
     {
         /// <summary>
-        /// Creates a ChainMspPackage row that does not belong to a table.
+        /// Creates a WixRollbackBoundary row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
