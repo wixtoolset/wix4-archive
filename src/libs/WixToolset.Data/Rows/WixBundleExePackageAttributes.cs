@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ChainExePackageAttributes.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleExePackageAttributes.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -12,7 +12,7 @@ namespace WixToolset.Data.Rows
     using System;
 
     [Flags]
-    public enum ChainExePackageAttributes
+    public enum WixBundleExePackageAttributes
     {
         Repairable = 0x1,
     }

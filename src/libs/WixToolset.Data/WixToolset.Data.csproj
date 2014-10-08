@@ -51,7 +51,7 @@
     <Compile Include="RowDictionary.cs" />
     <Compile Include="RowOperation.cs" />
     <Compile Include="Rows\BBControlRow.cs" />
-    <Compile Include="Rows\ChainExePackageAttributes.cs" />
+    <Compile Include="Rows\WixBundleExePackageAttributes.cs" />
     <Compile Include="Rows\ExitCodeBehaviorType.cs" />
     <Compile Include="Rows\WixBundlePackageExitCodeRow.cs" />
     <Compile Include="Rows\WixBundleSlipstreamMspRow.cs" />
@@ -60,7 +60,7 @@
     <Compile Include="Rows\ChainPackageAttributes.cs" />
     <Compile Include="Rows\WixBundleMspPackageAttributes.cs" />
     <Compile Include="Rows\ChainMsiPackageAttributes.cs" />
-    <Compile Include="Rows\ChainExePackageRow.cs" />
+    <Compile Include="Rows\WixBundleExePackageRow.cs" />
     <Compile Include="Rows\WixBundleMsiFeatureRow.cs" />
     <Compile Include="Rows\WixBundleRelatedPackageRow.cs" />
     <Compile Include="Rows\ContainerType.cs" />

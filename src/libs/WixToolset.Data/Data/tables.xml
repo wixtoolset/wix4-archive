@@ -1729,7 +1729,7 @@
         <columnDefinition name="RollbackBoundaryBackward_" type="string" length="0" nullable="yes"
                 keyTable="WixRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixRollbackBoundary table."/>
       </tableDefinition>
-    <tableDefinition name="ChainExePackage" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleExePackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to this MSI package."/>

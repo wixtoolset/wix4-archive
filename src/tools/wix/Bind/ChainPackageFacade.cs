@@ -19,7 +19,7 @@ namespace WixToolset.Bind
             this.Provides = new ProvidesDependencyCollection();
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, ChainExePackageRow exePackage)
+        public ChainPackageFacade(WixBundlePackageRow package, WixBundleExePackageRow exePackage)
             : this(package)
         {
             this.ExePackage = exePackage;
@@ -45,7 +45,7 @@ namespace WixToolset.Bind
 
         public WixBundlePackageRow Package { get; private set; }
 
-        public ChainExePackageRow ExePackage { get; private set; }
+        public WixBundleExePackageRow ExePackage { get; private set; }
 
         public ChainMsiPackageRow MsiPackage { get; private set; }
 

@@ -19800,10 +19800,10 @@ namespace WixToolset
                 switch (packageType)
                 {
                     case ChainPackageType.Exe:
-                        ChainExePackageAttributes exeAttributes = 0;
-                        exeAttributes |= (YesNoType.Yes == repairable) ? ChainExePackageAttributes.Repairable : 0;
+                        WixBundleExePackageAttributes exeAttributes = 0;
+                        exeAttributes |= (YesNoType.Yes == repairable) ? WixBundleExePackageAttributes.Repairable : 0;
 
-                        ChainExePackageRow exeRow = (ChainExePackageRow)this.core.CreateRow(sourceLineNumbers, "ChainExePackage", id);
+                        WixBundleExePackageRow exeRow = (WixBundleExePackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleExePackage", id);
                         exeRow.Attributes = exeAttributes;
                         exeRow.DetectCondition = detectCondition;
                         exeRow.InstallCommand = installCommand;
