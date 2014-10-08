@@ -25,7 +25,7 @@ namespace WixToolset.Bind
 
         public Table MsuPackageTable { private get; set; }
 
-        public IDictionary<string, ChainPackageFacade> Packages { get; private set; }
+        public IDictionary<string, PackageFacade> Packages { get; private set; }
 
         public void Execute()
         {
@@ -34,29 +34,29 @@ namespace WixToolset.Bind
             RowDictionary<BundleMspPackageRow> mspPackages = new RowDictionary<BundleMspPackageRow>(this.MspPackageTable);
             RowDictionary<WixBundleMsuPackageRow> msuPackages = new RowDictionary<WixBundleMsuPackageRow>(this.MsuPackageTable);
 
-            Dictionary<string, ChainPackageFacade> packages = new Dictionary<string, ChainPackageFacade>(this.ChainPackageTable.Rows.Count);
+            Dictionary<string, PackageFacade> packages = new Dictionary<string, PackageFacade>(this.ChainPackageTable.Rows.Count);
 
             foreach (WixBundlePackageRow chainPackage in this.ChainPackageTable.Rows)
             {
                 string id = chainPackage.WixChainItemId;
-                ChainPackageFacade facade = null;
+                PackageFacade facade = null;
 
                 switch (chainPackage.Type)
                 {
                     case WixBundlePackageType.Exe:
-                        facade = new ChainPackageFacade(chainPackage, exePackages.Get(id));
+                        facade = new PackageFacade(chainPackage, exePackages.Get(id));
                         break;
 
                     case WixBundlePackageType.Msi:
-                        facade = new ChainPackageFacade(chainPackage, msiPackages.Get(id));
+                        facade = new PackageFacade(chainPackage, msiPackages.Get(id));
                         break;
 
                     case WixBundlePackageType.Msp:
-                        facade = new ChainPackageFacade(chainPackage, mspPackages.Get(id));
+                        facade = new PackageFacade(chainPackage, mspPackages.Get(id));
                         break;
 
                     case WixBundlePackageType.Msu:
-                        facade = new ChainPackageFacade(chainPackage, msuPackages.Get(id));
+                        facade = new PackageFacade(chainPackage, msuPackages.Get(id));
                         break;
                 }
 

@@ -30,7 +30,7 @@ namespace WixToolset.Bind
 
         public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
-        public ChainPackageFacade Facade { private get; set; }
+        public PackageFacade Facade { private get; set; }
 
         public Table WixBundlePatchTargetCodeTable { private get; set; }
 

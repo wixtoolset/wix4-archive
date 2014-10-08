@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ChainPackageFacade.cs" company="Outercurve Foundation">
+// <copyright file="PackageFacade.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -11,33 +11,33 @@ namespace WixToolset.Bind
 {
     using WixToolset.Data.Rows;
 
-    internal class ChainPackageFacade
+    internal class PackageFacade
     {
-        private ChainPackageFacade(WixBundlePackageRow package)
+        private PackageFacade(WixBundlePackageRow package)
         {
             this.Package = package;
             this.Provides = new ProvidesDependencyCollection();
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, WixBundleExePackageRow exePackage)
+        public PackageFacade(WixBundlePackageRow package, WixBundleExePackageRow exePackage)
             : this(package)
         {
             this.ExePackage = exePackage;
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, WixBundleMsiPackageRow msiPackage)
+        public PackageFacade(WixBundlePackageRow package, WixBundleMsiPackageRow msiPackage)
             : this(package)
         {
             this.MsiPackage = msiPackage;
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, BundleMspPackageRow mspPackage)
+        public PackageFacade(WixBundlePackageRow package, BundleMspPackageRow mspPackage)
             : this(package)
         {
             this.MspPackage = mspPackage;
         }
 
-        public ChainPackageFacade(WixBundlePackageRow package, WixBundleMsuPackageRow msuPackage)
+        public PackageFacade(WixBundlePackageRow package, WixBundleMsuPackageRow msuPackage)
             : this(package)
         {
             this.MsuPackage = msuPackage;

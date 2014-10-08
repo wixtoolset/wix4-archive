@@ -22,15 +22,15 @@ namespace WixToolset.Bind
 
         public RowDictionary<WixRollbackBoundaryRow> boundaries { private get; set; }
 
-        public IDictionary<string, ChainPackageFacade> packages { private get; set; }
+        public IDictionary<string, PackageFacade> packages { private get; set; }
 
-        public IEnumerable<ChainPackageFacade> OrderedPackages { get; private set; }
+        public IEnumerable<PackageFacade> OrderedPackages { get; private set; }
 
         public IEnumerable<WixRollbackBoundaryRow> UsedRollbackBoundaries { get; private set; }
 
         public void Execute()
         {
-            List<ChainPackageFacade> orderedPackages = new List<ChainPackageFacade>();
+            List<PackageFacade> orderedPackages = new List<PackageFacade>();
             List<WixRollbackBoundaryRow> usedBoundaries = new List<WixRollbackBoundaryRow>();
 
             // Process the chain of packages to add them in the correct order
@@ -48,7 +48,7 @@ namespace WixToolset.Bind
             {
                 if (ComplexReferenceChildType.Package == row.ChildType && ComplexReferenceParentType.PackageGroup == row.ParentType && "WixChain" == row.ParentId)
                 {
-                    ChainPackageFacade package = null;
+                    PackageFacade package = null;
                     if (packages.TryGetValue(row.ChildId, out package))
                     {
                         if (null != previousRollbackBoundary)
@@ -112,9 +112,9 @@ namespace WixToolset.Bind
             //      uninstall:  2 C 1 B A
             // Woot!
             string previousRollbackBoundaryId = null;
-            ChainPackageFacade previousPackage = null;
+            PackageFacade previousPackage = null;
 
-            foreach (ChainPackageFacade package in orderedPackages)
+            foreach (PackageFacade package in orderedPackages)
             {
                 if (null != package.Package.RollbackBoundary)
                 {

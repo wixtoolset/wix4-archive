@@ -23,7 +23,7 @@ namespace WixToolset.Bind
     {
         public WixBundleRow BundleRow { private get; set; }
 
-        public IEnumerable<ChainPackageFacade> ChainPackages { private get; set; }
+        public IEnumerable<PackageFacade> ChainPackages { private get; set; }
 
         public int LastUXPayloadIndex { private get; set; }
 
@@ -73,7 +73,7 @@ namespace WixToolset.Bind
         {
             Table wixPackagePropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixPackageProperties"]);
 
-            foreach (ChainPackageFacade package in this.ChainPackages)
+            foreach (PackageFacade package in this.ChainPackages)
             {
                 WixBundlePayloadRow packagePayload = this.Payloads[package.Package.PackagePayload];
 

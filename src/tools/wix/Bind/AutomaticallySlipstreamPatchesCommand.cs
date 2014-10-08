@@ -19,7 +19,7 @@ namespace WixToolset.Bind
 
     internal class AutomaticallySlipstreamPatchesCommand : ICommand
     {
-        public IEnumerable<ChainPackageFacade> Packages { private get; set;}
+        public IEnumerable<PackageFacade> Packages { private get; set;}
 
         public Table WixBundlePatchTargetCodeTable {private get; set;}
 
@@ -31,7 +31,7 @@ namespace WixToolset.Bind
             Dictionary<string, List<WixBundlePatchTargetCodeRow>> targetsProductCode = new Dictionary<string, List<WixBundlePatchTargetCodeRow>>();
             Dictionary<string, List<WixBundlePatchTargetCodeRow>> targetsUpgradeCode = new Dictionary<string, List<WixBundlePatchTargetCodeRow>>();
 
-            foreach (ChainPackageFacade package in Packages)
+            foreach (PackageFacade package in Packages)
             {
                 if (WixBundlePackageType.Msi == package.Package.Type)
                 {

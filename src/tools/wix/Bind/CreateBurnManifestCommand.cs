@@ -36,7 +36,7 @@ namespace WixToolset.Bind
 
         public IEnumerable<WixRollbackBoundaryRow> RollbackBoundaries { private get; set; }
 
-        public IEnumerable<ChainPackageFacade> OrderedPackages { private get; set; }
+        public IEnumerable<PackageFacade> OrderedPackages { private get; set; }
 
         public IEnumerable<WixSearchInfo> OrderedSearches { private get; set; }
 
@@ -311,7 +311,7 @@ namespace WixToolset.Bind
                 // Build up the list of target codes from all the MSPs in the chain.
                 List<WixBundlePatchTargetCodeRow> targetCodes = new List<WixBundlePatchTargetCodeRow>();
 
-                foreach (ChainPackageFacade package in this.OrderedPackages)
+                foreach (PackageFacade package in this.OrderedPackages)
                 {
                     writer.WriteStartElement(String.Format(CultureInfo.InvariantCulture, "{0}Package", package.Package.Type));
 

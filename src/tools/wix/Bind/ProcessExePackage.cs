@@ -20,7 +20,7 @@ namespace WixToolset.Bind
     {
         public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
-        public ChainPackageFacade Facade { private get; set; }
+        public PackageFacade Facade { private get; set; }
 
         /// <summary>
         /// Processes the Exe packages to add properties and payloads from the Exe packages.

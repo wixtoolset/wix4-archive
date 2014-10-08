@@ -177,7 +177,7 @@ namespace WixToolset.Bind
                 processedPayloads = new HashSet<string>(payloads.Keys);
             }
 
-            IDictionary<string, ChainPackageFacade> packages;
+            IDictionary<string, PackageFacade> packages;
             {
                 GetPackageFacadesCommand command = new GetPackageFacadesCommand();
                 command.ChainPackageTable = chainPackageTable;
@@ -192,7 +192,7 @@ namespace WixToolset.Bind
 
             // Process each package facade. Note this is likely to add payloads and other rows to tables so
             // note that any indexes created above may be out of date now.
-            foreach (ChainPackageFacade package in packages.Values)
+            foreach (PackageFacade package in packages.Values)
             {
                 switch (package.Package.Type)
                 {
@@ -265,7 +265,7 @@ namespace WixToolset.Bind
             ILookup<string, WixBundlePayloadRow> payloadsByPackage = payloads.Values.ToLookup(p => p.Package);
 
             {
-                foreach (ChainPackageFacade package in packages.Values)
+                foreach (PackageFacade package in packages.Values)
                 {
                     package.Package.Size = 0;
 
@@ -360,7 +360,7 @@ namespace WixToolset.Bind
                 return;
             }
 
-            IEnumerable<ChainPackageFacade> orderedPackages;
+            IEnumerable<PackageFacade> orderedPackages;
             IEnumerable<WixRollbackBoundaryRow> boundaries;
             {
                 OrderPackagesAndRollbackBoundariesCommand command = new OrderPackagesAndRollbackBoundariesCommand();
@@ -679,9 +679,9 @@ namespace WixToolset.Bind
             container.Size = command.Size;
         }
 
-        private void ResolveBundleInstallScope(WixBundleRow bundleInfo, IEnumerable<ChainPackageFacade> chainPackages)
+        private void ResolveBundleInstallScope(WixBundleRow bundleInfo, IEnumerable<PackageFacade> chainPackages)
         {
-            foreach (ChainPackageFacade package in chainPackages)
+            foreach (PackageFacade package in chainPackages)
             {
                 if (bundleInfo.PerMachine && YesNoDefaultType.No == package.Package.PerMachine)
                 {
@@ -692,7 +692,7 @@ namespace WixToolset.Bind
                 }
             }
 
-            foreach (ChainPackageFacade package in chainPackages)
+            foreach (PackageFacade package in chainPackages)
             {
                 // Update package scope from bundle scope if default.
                 if (YesNoDefaultType.Default == package.Package.PerMachine)
@@ -784,7 +784,7 @@ namespace WixToolset.Bind
         /// </summary>
         /// <param name="bundle">The <see cref="Output"/> object for the bundle.</param>
         /// <param name="packages">An indexed collection of chained packages.</param>
-        private void ProcessDependencyProviders(Output bundle, IDictionary<string, ChainPackageFacade> packages)
+        private void ProcessDependencyProviders(Output bundle, IDictionary<string, PackageFacade> packages)
         {
             // First import any authored dependencies. These may merge with imported provides from MSI packages.
             Table wixDependencyProviderTable = bundle.Tables["WixDependencyProvider"];
@@ -795,7 +795,7 @@ namespace WixToolset.Bind
                 {
                     string packageId = (string)wixDependencyProviderRow[1];
 
-                    ChainPackageFacade package = null;
+                    PackageFacade package = null;
                     if (packages.TryGetValue(packageId, out package))
                     {
                         ProvidesDependency dependency = new ProvidesDependency(wixDependencyProviderRow);
@@ -839,7 +839,7 @@ namespace WixToolset.Bind
             }
 
             // Generate providers for MSI packages that still do not have providers.
-            foreach (ChainPackageFacade package in packages.Values)
+            foreach (PackageFacade package in packages.Values)
             {
                 string key = null;
 
