@@ -19122,7 +19122,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                ExitCodeRow row = (ExitCodeRow)this.core.CreateRow(sourceLineNumbers, "ExitCode");
+                WixBundlePackageExitCodeRow row = (WixBundlePackageExitCodeRow)this.core.CreateRow(sourceLineNumbers, "WixBundlePackageExitCode");
                 row.ChainPackageId = packageId;
                 row.Code = value;
                 row.Behavior = behavior;

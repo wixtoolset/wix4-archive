@@ -1634,12 +1634,6 @@
         <columnDefinition name="Packaging" type="number" length="2" nullable="yes" minValue="1" maxValue="2" />
         <columnDefinition name="ParentPackagePayload_" type="string" length="0" nullable="yes" />
     </tableDefinition>
-    <tableDefinition name="ExitCode" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the parent Exe."/>
-        <columnDefinition name="Code" type="number" length="0" category="integer" nullable="yes" primaryKey="yes" />
-        <columnDefinition name="Behavior" type="number" length="2"  category="integer" minValue="0" maxValue="3" />
-    </tableDefinition>
     <tableDefinition name="WixBundlePatchTargetCode" createSymbols="yes" unreal="yes">
         <columnDefinition name="PackageId" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="TargetCode" type="string" length="0" nullable="yes" primaryKey="yes" />
@@ -1766,6 +1760,12 @@
                 keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
         <columnDefinition name="DetectCondition" type="string" length="0" nullable="yes"/>
         <columnDefinition name="MsuKB" type="string" length="0" nullable="yes"/>
+    </tableDefinition>
+    <tableDefinition name="WixBundlePackageExitCode" createSymbols="yes" unreal="yes">
+        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the parent Exe."/>
+        <columnDefinition name="Code" type="number" length="0" category="integer" nullable="yes" primaryKey="yes" />
+        <columnDefinition name="Behavior" type="number" length="2"  category="integer" minValue="0" maxValue="3" />
     </tableDefinition>
     <tableDefinition name="WixBundleMsiFeature" createSymbols="yes" unreal="yes">
         <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"

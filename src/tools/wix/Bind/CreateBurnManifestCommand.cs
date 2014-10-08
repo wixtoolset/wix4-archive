@@ -306,7 +306,7 @@ namespace WixToolset.Bind
                 ILookup<string, PayloadRow> payloadsByPackage = this.Payloads.Values.ToLookup(p => p.Package);
                 ILookup<string, RelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["RelatedPackage"].RowsAs<RelatedPackageRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, SlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["SlipstreamMsp"].RowsAs<SlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
-                ILookup<string, ExitCodeRow> exitCodesByPackage = this.Output.Tables["ExitCode"].RowsAs<ExitCodeRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, WixBundlePackageExitCodeRow> exitCodesByPackage = this.Output.Tables["WixBundlePackageExitCode"].RowsAs<WixBundlePackageExitCodeRow>().ToLookup(r => r.ChainPackageId);
 
                 // Build up the list of target codes from all the MSPs in the chain.
                 List<WixBundlePatchTargetCodeRow> targetCodes = new List<WixBundlePatchTargetCodeRow>();
@@ -441,9 +441,9 @@ namespace WixToolset.Bind
                         writer.WriteEndElement();
                     }
 
-                    IEnumerable<ExitCodeRow> packageExitCodes = exitCodesByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePackageExitCodeRow> packageExitCodes = exitCodesByPackage[package.ChainPackage.WixChainItemId];
 
-                    foreach (ExitCodeRow exitCode in packageExitCodes)
+                    foreach (WixBundlePackageExitCodeRow exitCode in packageExitCodes)
                     {
                         writer.WriteStartElement("ExitCode");
 
