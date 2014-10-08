@@ -46,7 +46,7 @@ namespace WixToolset.Bind
 
         public IEnumerable<PayloadRow> UXContainerPayloads { private get; set; }
 
-        public IEnumerable<WixCatalogRow> Catalogs { private get; set; }
+        public IEnumerable<WixBundleCatalogRow> Catalogs { private get; set; }
 
         public void Execute()
         {
@@ -143,11 +143,11 @@ namespace WixToolset.Bind
                 // write the catalog elements
                 if (this.Catalogs.Any())
                 {
-                    foreach (WixCatalogRow catalog in this.Catalogs)
+                    foreach (WixBundleCatalogRow catalog in this.Catalogs)
                     {
                         writer.WriteStartElement("Catalog");
                         writer.WriteAttributeString("Id", catalog.Id);
-                        writer.WriteAttributeString("Payload", catalog.PayloadId);
+                        writer.WriteAttributeString("Payload", catalog.Payload);
                         writer.WriteEndElement();
                     }
                 }
@@ -651,9 +651,9 @@ namespace WixToolset.Bind
                     break;
             }
 
-            if (!String.IsNullOrEmpty(payload.CatalogId))
+            if (!String.IsNullOrEmpty(payload.Catalog))
             {
-                writer.WriteAttributeString("Catalog", payload.CatalogId);
+                writer.WriteAttributeString("Catalog", payload.Catalog);
             }
         }
 

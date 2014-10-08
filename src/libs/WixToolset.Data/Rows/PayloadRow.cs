@@ -121,7 +121,7 @@ namespace WixToolset.Data.Rows
             set { this.Fields[13].Data = value; }
         }
 
-        public string CatalogId
+        public string Catalog
         {
             get { return (string)this.Fields[14].Data; }
             set { this.Fields[14].Data = value; }

@@ -20,7 +20,7 @@ namespace WixToolset.Bind
 
     internal class VerifyPayloadsWithCatalogCommand : ICommand
     {
-        public IEnumerable<WixCatalogRow> Catalogs { private get; set; }
+        public IEnumerable<WixBundleCatalogRow> Catalogs { private get; set; }
 
         public IEnumerable<PayloadRow> Payloads { private get; set; }
 
@@ -28,7 +28,7 @@ namespace WixToolset.Bind
         {
             List<CatalogIdWithPath> catalogIdsWithPaths = this.Catalogs
                 .Join(this.Payloads,
-                    catalog => catalog.PayloadId,
+                    catalog => catalog.Payload,
                     payload => payload.Id,
                     (catalog, payload) => new CatalogIdWithPath() { Id = catalog.Id, FullPath = Path.GetFullPath(payload.SourceFile) })
                 .ToList();
@@ -115,7 +115,7 @@ namespace WixToolset.Bind
                                 long verifyResult = VerifyInterop.WinVerifyTrust(noWindow, ref verifyGuid, ref trustData);
                                 if (0 == verifyResult)
                                 {
-                                    payloadInfo.CatalogId = catalog.Id;
+                                    payloadInfo.Catalog = catalog.Id;
                                     validated = true;
                                     break;
                                 }

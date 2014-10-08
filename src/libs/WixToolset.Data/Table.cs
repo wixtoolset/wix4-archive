@@ -156,8 +156,8 @@ namespace WixToolset.Data
                 case "WixBundleUpdate":
                     row = new WixBundleUpdateRow(sourceLineNumbers, this);
                     break;
-                case "WixCatalog":
-                    row = new WixCatalogRow(sourceLineNumbers, this);
+                case "WixBundleCatalog":
+                    row = new WixBundleCatalogRow(sourceLineNumbers, this);
                     break;
                 case "WixChain":
                     row = new WixChainRow(sourceLineNumbers, this);

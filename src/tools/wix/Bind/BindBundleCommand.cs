@@ -346,11 +346,11 @@ namespace WixToolset.Bind
             }
 
             // If catalog files exist, non-embedded payloads should validate with the catalogs.
-            IEnumerable<WixCatalogRow> catalogs;
+            IEnumerable<WixBundleCatalogRow> catalogs;
             {
-                Table catalogTable = this.Output.Tables["WixCatalog"];
+                Table catalogTable = this.Output.Tables["WixBundleCatalog"];
 
-                catalogs = (null == catalogTable) ? Enumerable.Empty<WixCatalogRow>() : catalogTable.RowsAs<WixCatalogRow>();
+                catalogs = (null == catalogTable) ? Enumerable.Empty<WixBundleCatalogRow>() : catalogTable.RowsAs<WixBundleCatalogRow>();
 
                 if (catalogs.Any())
                 {

@@ -18322,8 +18322,8 @@ namespace WixToolset
             {
                 this.CreatePayloadRow(sourceLineNumbers, id, Path.GetFileName(sourceFile), sourceFile, null, ComplexReferenceParentType.Container, Compiler.BurnUXContainerId, ComplexReferenceChildType.Unknown, null, YesNoDefaultType.Yes, YesNoType.Yes, null, null, null);
 
-                WixCatalogRow wixCatalogRow = (WixCatalogRow)this.core.CreateRow(sourceLineNumbers, "WixCatalog", id);
-                wixCatalogRow.PayloadId = id.Id;
+                WixBundleCatalogRow wixCatalogRow = (WixBundleCatalogRow)this.core.CreateRow(sourceLineNumbers, "WixBundleCatalog", id);
+                wixCatalogRow.Payload = id.Id;
             }
         }
 

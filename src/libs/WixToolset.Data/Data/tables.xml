@@ -1624,14 +1624,15 @@
         <columnDefinition name="Hash" type="string" length="0" nullable="yes" />
         <columnDefinition name="PublicKey" type="string" length="0" nullable="yes" />
         <columnDefinition name="Thumbprint" type="string" length="0" nullable="yes" />
-        <columnDefinition name="CatalogId" type="string" length="0" nullable="yes" />
+        <columnDefinition name="Catalog_" type="string" length="0" nullable="yes" category="identifier"
+                          keyTable="WixBundleCatalog" keyColumn="1" description="Reference to a catalog entry in the WixBundleCatalog table."/>
         <columnDefinition name="Container" type="string" length="0" nullable="yes" />
         <columnDefinition name="Package" type="string" length="0" nullable="yes" />
         <columnDefinition name="ContentFile" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="EmbeddedId" type="string" length="0" nullable="yes" />
         <columnDefinition name="LayoutOnly" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="Packaging" type="number" length="2" nullable="yes" minValue="1" maxValue="2" />
-        <columnDefinition name="ParentPackagePayload" type="string" length="0" nullable="yes" />
+        <columnDefinition name="ParentPackagePayload_" type="string" length="0" nullable="yes" />
     </tableDefinition>
     <tableDefinition name="ExitCode" createSymbols="yes" unreal="yes">
         <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
@@ -1689,8 +1690,8 @@
         <columnDefinition name="Name" type="string" length="0" />
         <columnDefinition name="Classification" type="string" length="0" />
     </tableDefinition>
-    <tableDefinition name="WixCatalog" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundleCatalog" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundleCatalog" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Payload_" type="string" length="0" category="identifier"
                           keyTable="Payload" keyColumn="1" description="Reference to a Payload entry in the Payload table." />
     </tableDefinition>

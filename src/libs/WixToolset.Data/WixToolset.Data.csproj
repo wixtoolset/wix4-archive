@@ -88,7 +88,7 @@
     <Compile Include="Rows\WixBundleRow.cs" />
     <Compile Include="Rows\WixBundleUpdateRow.cs" />
     <Compile Include="Rows\WixChainItemRow.cs" />
-    <Compile Include="Rows\WixCatalogRow.cs" />
+    <Compile Include="Rows\WixBundleCatalogRow.cs" />
     <Compile Include="Rows\WixGroupRow.cs" />
     <Compile Include="Rows\WixComplexReferenceRow.cs" />
     <Compile Include="Rows\WixFileRow.cs" />
