@@ -25,7 +25,7 @@ namespace WixToolset.Bind
 
         public Table MsuPackageTable { private get; set; }
 
-        public IDictionary<string, PackageFacade> Facades { get; private set; }
+        public IDictionary<string, PackageFacade> PackageFacades { get; private set; }
 
         public void Execute()
         {
@@ -63,7 +63,7 @@ namespace WixToolset.Bind
                 facades.Add(id, facade);
             }
 
-            this.Facades = facades;
+            this.PackageFacades = facades;
         }
     }
 }

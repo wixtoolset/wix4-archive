@@ -1696,7 +1696,7 @@
     <tableDefinition name="WixChainItem" createSymbols="yes" unreal="yes">
         <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
-    <tableDefinition name="WixRollbackBoundary" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundleRollbackBoundary" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixChainItem_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
         <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
@@ -1725,9 +1725,9 @@
         <columnDefinition name="DisplayName" type="string" length="0" nullable="yes" />
         <columnDefinition name="Description" type="string" length="0" nullable="yes" />
         <columnDefinition name="RollbackBoundary_" type="string" length="0" nullable="yes"
-                keyTable="WixRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixRollbackBoundary table."/>
+                keyTable="WixBundleRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixBundleRollbackBoundary table."/>
         <columnDefinition name="RollbackBoundaryBackward_" type="string" length="0" nullable="yes"
-                keyTable="WixRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixRollbackBoundary table."/>
+                keyTable="WixBundleRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixBundleRollbackBoundary table."/>
       </tableDefinition>
     <tableDefinition name="WixBundleExePackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"

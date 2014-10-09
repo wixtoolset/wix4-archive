@@ -20023,7 +20023,7 @@ namespace WixToolset
         {
             WixChainItemRow row = (WixChainItemRow)this.core.CreateRow(sourceLineNumbers, "WixChainItem", id);
 
-            WixRollbackBoundaryRow rollbackBoundary = (WixRollbackBoundaryRow)this.core.CreateRow(sourceLineNumbers, "WixRollbackBoundary", id);
+            WixBundleRollbackBoundaryRow rollbackBoundary = (WixBundleRollbackBoundaryRow)this.core.CreateRow(sourceLineNumbers, "WixBundleRollbackBoundary", id);
 
             if (YesNoType.NotSet != vital)
             {

@@ -34,7 +34,7 @@ namespace WixToolset.Bind
 
         public string OutputPath { private get; set; }
 
-        public IEnumerable<WixRollbackBoundaryRow> RollbackBoundaries { private get; set; }
+        public IEnumerable<WixBundleRollbackBoundaryRow> RollbackBoundaries { private get; set; }
 
         public IEnumerable<PackageFacade> OrderedPackages { private get; set; }
 
@@ -178,7 +178,7 @@ namespace WixToolset.Bind
                     }
                 }
 
-                foreach (WixRollbackBoundaryRow rollbackBoundary in this.RollbackBoundaries)
+                foreach (WixBundleRollbackBoundaryRow rollbackBoundary in this.RollbackBoundaries)
                 {
                     writer.WriteStartElement("RollbackBoundary");
                     writer.WriteAttributeString("Id", rollbackBoundary.ChainPackageId);

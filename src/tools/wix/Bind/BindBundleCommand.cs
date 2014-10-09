@@ -187,7 +187,7 @@ namespace WixToolset.Bind
                 command.MsuPackageTable = this.Output.Tables["WixBundleMsuPackage"];
                 command.Execute();
 
-                facades = command.Facades;
+                facades = command.PackageFacades;
             }
 
             // Process each package facade. Note this is likely to add payloads and other rows to tables so
@@ -339,7 +339,7 @@ namespace WixToolset.Bind
             // Determine patches to automatically slipstream.
             {
                 AutomaticallySlipstreamPatchesCommand command = new AutomaticallySlipstreamPatchesCommand();
-                command.Facades = facades.Values;
+                command.PackageFacades = facades.Values;
                 command.SlipstreamMspTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleSlipstreamMsp"]);
                 command.WixBundlePatchTargetCodeTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePatchTargetCode"]);
                 command.Execute();
@@ -361,15 +361,15 @@ namespace WixToolset.Bind
             }
 
             IEnumerable<PackageFacade> orderedFacades;
-            IEnumerable<WixRollbackBoundaryRow> boundaries;
+            IEnumerable<WixBundleRollbackBoundaryRow> boundaries;
             {
                 OrderPackagesAndRollbackBoundariesCommand command = new OrderPackagesAndRollbackBoundariesCommand();
-                command.Boundaries = new RowDictionary<WixRollbackBoundaryRow>(this.Output.Tables["WixRollbackBoundary"]);
-                command.Facades = facades;
+                command.Boundaries = new RowDictionary<WixBundleRollbackBoundaryRow>(this.Output.Tables["WixBundleRollbackBoundary"]);
+                command.PackageFacades = facades;
                 command.WixGroupTable = wixGroupTable;
                 command.Execute();
 
-                orderedFacades = command.OrderedFacades;
+                orderedFacades = command.OrderedPackageFacades;
                 boundaries = command.UsedRollbackBoundaries;
             }
 
