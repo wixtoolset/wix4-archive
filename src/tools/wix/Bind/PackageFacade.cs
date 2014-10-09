@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ChainPackageFacade.cs" company="Outercurve Foundation">
+// <copyright file="PackageFacade.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -11,47 +11,47 @@ namespace WixToolset.Bind
 {
     using WixToolset.Data.Rows;
 
-    internal class ChainPackageFacade
+    internal class PackageFacade
     {
-        private ChainPackageFacade(ChainPackageRow chainPackage)
+        private PackageFacade(WixBundlePackageRow package)
         {
-            this.ChainPackage = chainPackage;
+            this.Package = package;
             this.Provides = new ProvidesDependencyCollection();
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainExePackageRow exePackage)
-            : this(chainPackage)
+        public PackageFacade(WixBundlePackageRow package, WixBundleExePackageRow exePackage)
+            : this(package)
         {
             this.ExePackage = exePackage;
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainMsiPackageRow msiPackage)
-            : this(chainPackage)
+        public PackageFacade(WixBundlePackageRow package, WixBundleMsiPackageRow msiPackage)
+            : this(package)
         {
             this.MsiPackage = msiPackage;
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainMspPackageRow mspPackage)
-            : this(chainPackage)
+        public PackageFacade(WixBundlePackageRow package, BundleMspPackageRow mspPackage)
+            : this(package)
         {
             this.MspPackage = mspPackage;
         }
 
-        public ChainPackageFacade(ChainPackageRow chainPackage, ChainMsuPackageRow msuPackage)
-            : this(chainPackage)
+        public PackageFacade(WixBundlePackageRow package, WixBundleMsuPackageRow msuPackage)
+            : this(package)
         {
             this.MsuPackage = msuPackage;
         }
 
-        public ChainPackageRow ChainPackage { get; private set; }
+        public WixBundlePackageRow Package { get; private set; }
 
-        public ChainExePackageRow ExePackage { get; private set; }
+        public WixBundleExePackageRow ExePackage { get; private set; }
 
-        public ChainMsiPackageRow MsiPackage { get; private set; }
+        public WixBundleMsiPackageRow MsiPackage { get; private set; }
 
-        public ChainMspPackageRow MspPackage { get; private set; }
+        public BundleMspPackageRow MspPackage { get; private set; }
 
-        public ChainMsuPackageRow MsuPackage { get; private set; }
+        public WixBundleMsuPackageRow MsuPackage { get; private set; }
 
         /// <summary>
         /// The provides dependencies authored and imported for this package.

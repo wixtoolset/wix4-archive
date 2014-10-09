@@ -28,9 +28,9 @@ namespace WixToolset.Bind
         private const string PatchMetadataFormat = "SELECT `Value` FROM `MsiPatchMetadata` WHERE `Property` = '{0}'";
         private static readonly Encoding XmlOutputEncoding = new UTF8Encoding(false);
 
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
-        public ChainPackageFacade Facade { private get; set; }
+        public PackageFacade Facade { private get; set; }
 
         public Table WixBundlePatchTargetCodeTable { private get; set; }
 
@@ -39,7 +39,7 @@ namespace WixToolset.Bind
         /// </summary>
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.Package.PackagePayload);
 
             string sourcePath = packagePayload.FullFileName;
 
@@ -53,14 +53,14 @@ namespace WixToolset.Bind
 
                 using (Dtf.Database db = new Dtf.Database(sourcePath))
                 {
-                    if (String.IsNullOrEmpty(this.Facade.ChainPackage.DisplayName))
+                    if (String.IsNullOrEmpty(this.Facade.Package.DisplayName))
                     {
-                        this.Facade.ChainPackage.DisplayName = ProcessMspPackage.GetPatchMetadataProperty(db, "DisplayName");
+                        this.Facade.Package.DisplayName = ProcessMspPackage.GetPatchMetadataProperty(db, "DisplayName");
                     }
 
-                    if (String.IsNullOrEmpty(this.Facade.ChainPackage.Description))
+                    if (String.IsNullOrEmpty(this.Facade.Package.Description))
                     {
-                        this.Facade.ChainPackage.Description = ProcessMspPackage.GetPatchMetadataProperty(db, "Description");
+                        this.Facade.Package.Description = ProcessMspPackage.GetPatchMetadataProperty(db, "Description");
                     }
 
                     this.Facade.MspPackage.Manufacturer = ProcessMspPackage.GetPatchMetadataProperty(db, "ManufacturerName");
@@ -74,13 +74,13 @@ namespace WixToolset.Bind
                 return;
             }
 
-            if (String.IsNullOrEmpty(this.Facade.ChainPackage.CacheId))
+            if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
             {
-                this.Facade.ChainPackage.CacheId = this.Facade.MspPackage.PatchCode;
+                this.Facade.Package.CacheId = this.Facade.MspPackage.PatchCode;
             }
         }
 
-        private void ProcessPatchXml(PayloadRow packagePayload, string sourcePath)
+        private void ProcessPatchXml(WixBundlePayloadRow packagePayload, string sourcePath)
         {
             HashSet<string> uniqueTargetCodes = new HashSet<string>();
 
@@ -112,7 +112,7 @@ namespace WixToolset.Bind
                     }
                     else // this patch targets an unknown number of products
                     {
-                        this.Facade.MspPackage.Attributes |= ChainMspPackageAttributes.TargetUnspecified;
+                        this.Facade.MspPackage.Attributes |= WixBundleMspPackageAttributes.TargetUnspecified;
                     }
                 }
 

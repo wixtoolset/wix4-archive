@@ -1596,8 +1596,8 @@
         <columnDefinition name="Value" type="localized" length="0" nullable="yes"/>
         <columnDefinition name="Attributes" type="number" length="4"/>
     </tableDefinition>
-    <tableDefinition name="Container" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Container" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundleContainer" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundleContainer" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Name" type="string" length="0"/>
         <columnDefinition name="Type" type="number" length="2" minValue="0" maxValue="1" />
         <columnDefinition name="DownloadUrl" type="string" length="0" nullable="yes" />
@@ -1606,11 +1606,11 @@
         <columnDefinition name="AttachedContainerIndex" type="number" length="2" nullable="yes" />
         <columnDefinition name="WorkingPath" type="string" length="0" nullable="yes" />
     </tableDefinition>
-    <tableDefinition name="PayloadGroup" createSymbols="yes" unreal="yes">
-        <columnDefinition name="PayloadGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundlePayloadGroup" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePayloadGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
-    <tableDefinition name="Payload" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Payload" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundlePayload" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePayload" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Name" type="string" length="0" nullable="yes"/>
         <columnDefinition name="SourceFile" type="object" length="0" nullable="yes"/>
         <columnDefinition name="DownloadUrl" type="string" length="0" nullable="yes" />
@@ -1624,20 +1624,16 @@
         <columnDefinition name="Hash" type="string" length="0" nullable="yes" />
         <columnDefinition name="PublicKey" type="string" length="0" nullable="yes" />
         <columnDefinition name="Thumbprint" type="string" length="0" nullable="yes" />
-        <columnDefinition name="CatalogId" type="string" length="0" nullable="yes" />
-        <columnDefinition name="Container" type="string" length="0" nullable="yes" />
+        <columnDefinition name="Catalog_" type="string" length="0" nullable="yes" category="identifier"
+                keyTable="WixBundleCatalog" keyColumn="1" description="Reference to a catalog entry in the WixBundleCatalog table."/>
+        <columnDefinition name="Container_" type="string" length="0" nullable="yes"
+                keyTable="WixBundleContainer" keyColumn="1" description="Reference to a container entry in the WixBundleContainer table."/>
         <columnDefinition name="Package" type="string" length="0" nullable="yes" />
         <columnDefinition name="ContentFile" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="EmbeddedId" type="string" length="0" nullable="yes" />
         <columnDefinition name="LayoutOnly" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="Packaging" type="number" length="2" nullable="yes" minValue="1" maxValue="2" />
-        <columnDefinition name="ParentPackagePayload" type="string" length="0" nullable="yes" />
-    </tableDefinition>
-    <tableDefinition name="ExitCode" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the parent Exe."/>
-        <columnDefinition name="Code" type="number" length="0" category="integer" nullable="yes" primaryKey="yes" />
-        <columnDefinition name="Behavior" type="number" length="2"  category="integer" minValue="0" maxValue="3" />
+        <columnDefinition name="ParentPackagePayload_" type="string" length="0" nullable="yes" />
     </tableDefinition>
     <tableDefinition name="WixBundlePatchTargetCode" createSymbols="yes" unreal="yes">
         <columnDefinition name="PackageId" type="string" length="0" category="identifier" primaryKey="yes" />
@@ -1689,10 +1685,10 @@
         <columnDefinition name="Name" type="string" length="0" />
         <columnDefinition name="Classification" type="string" length="0" />
     </tableDefinition>
-    <tableDefinition name="WixCatalog" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundleCatalog" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundleCatalog" type="string" length="0" category="identifier" primaryKey="yes"/>
         <columnDefinition name="Payload_" type="string" length="0" category="identifier"
-                          keyTable="Payload" keyColumn="1" description="Reference to a Payload entry in the Payload table." />
+                keyTable="WixBundlePayload" keyColumn="1" description="Reference to a payload entry in the WixBundlePayload table." />
     </tableDefinition>
     <tableDefinition name="WixChain" unreal="yes">
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to the chain."/>
@@ -1700,20 +1696,20 @@
     <tableDefinition name="WixChainItem" createSymbols="yes" unreal="yes">
         <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
-    <tableDefinition name="RollbackBoundary" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixRollbackBoundary" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixChainItem_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
         <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
     </tableDefinition>
-    <tableDefinition name="ChainPackageGroup" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes"/>
+    <tableDefinition name="WixBundlePackageGroup" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackageGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
     </tableDefinition>
-    <tableDefinition name="ChainPackage" createSymbols="yes" unreal="yes">
+    <tableDefinition name="WixBundlePackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixChainItem_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
         <columnDefinition name="Type" type="number" length="2" minValue="0" maxValue="3" />
         <columnDefinition name="Payload_" type="string" length="0" category="identifier"
-                keyTable="Payload" keyColumn="1" description="Reference to a Payload entry in the Payload table."/>
+                keyTable="WixBundlePayload" keyColumn="1" description="Reference to a payload entry in the WixBundlePayload table."/>
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to this package."/>
         <columnDefinition name="InstallCondition" type="string" length="0" nullable="yes"/>
         <columnDefinition name="Cache" type="number" length="2" nullable="yes" minValue="0" maxValue="2"/>
@@ -1728,12 +1724,14 @@
         <columnDefinition name="Language" type="number" length="2" nullable="yes" />
         <columnDefinition name="DisplayName" type="string" length="0" nullable="yes" />
         <columnDefinition name="Description" type="string" length="0" nullable="yes" />
-        <columnDefinition name="RollbackBoundaryId" type="string" length="0" nullable="yes"/>
-        <columnDefinition name="RollbackBoundaryBackwardId" type="string" length="0" nullable="yes"/>
-    </tableDefinition>
-    <tableDefinition name="ChainExePackage" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+        <columnDefinition name="RollbackBoundary_" type="string" length="0" nullable="yes"
+                keyTable="WixRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixRollbackBoundary table."/>
+        <columnDefinition name="RollbackBoundaryBackward_" type="string" length="0" nullable="yes"
+                keyTable="WixRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixRollbackBoundary table."/>
+      </tableDefinition>
+    <tableDefinition name="WixBundleExePackage" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to this MSI package."/>
         <columnDefinition name="DetectCondition" type="string" length="0" nullable="yes"/>
         <columnDefinition name="InstallCommand" type="string" length="0" nullable="yes"/>
@@ -1741,9 +1739,9 @@
         <columnDefinition name="UninstallCommand" type="string" length="0" nullable="yes"/>
         <columnDefinition name="ExeProtocol" type="string" length="0" nullable="yes"/>
     </tableDefinition>
-    <tableDefinition name="ChainMsiPackage" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundleMsiPackage" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Attributes" type="number" length="4" nullable="no" minValue="0" maxValue="2147483647" description="A 32-bit word that specifies the attribute flags to be applied to this MSI package."/>
         <columnDefinition name="ProductCode" type="string" length="38" category="guid" />
         <columnDefinition name="UpgradeCode" type="string" length="38" category="guid" nullable="yes" />
@@ -1752,23 +1750,29 @@
         <columnDefinition name="ProductName" type="string" length="0" />
         <columnDefinition name="Manufacturer" type="string" length="0" nullable="yes" />
     </tableDefinition>
-    <tableDefinition name="ChainMspPackage" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundleMspPackage" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Attributes" type="number" length="2" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="PatchCode" type="string" length="38" category="guid" nullable="yes" />
         <columnDefinition name="Manufacturer" type="string" length="0" nullable="yes" />
         <columnDefinition name="PatchXml" type="string" length="0" nullable="yes" />
     </tableDefinition>
-    <tableDefinition name="ChainMsuPackage" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundleMsuPackage" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="DetectCondition" type="string" length="0" nullable="yes"/>
         <columnDefinition name="MsuKB" type="string" length="0" nullable="yes"/>
     </tableDefinition>
-    <tableDefinition name="MsiFeature" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundlePackageExitCode" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the parent Exe."/>
+        <columnDefinition name="Code" type="number" length="0" category="integer" nullable="yes" primaryKey="yes" />
+        <columnDefinition name="Behavior" type="number" length="2"  category="integer" minValue="0" maxValue="3" />
+    </tableDefinition>
+    <tableDefinition name="WixBundleMsiFeature" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Size" type="number" length="4" />
         <columnDefinition name="Parent" type="string" length="0" />
@@ -1779,25 +1783,25 @@
         <columnDefinition name="Directory" type="string" length="0" />
         <columnDefinition name="Attributes" type="number" length="2" />
     </tableDefinition>
-    <tableDefinition name="MsiProperty" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundleMsiProperty" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Value" type="string" length="0" />
     </tableDefinition>
-    <tableDefinition name="SlipstreamMsp" createSymbols="yes" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the parent Msi."/>
-        <columnDefinition name="ChainPackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table for the referenced Msp." />
+    <tableDefinition name="WixBundleSlipstreamMsp" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the parent Msi."/>
+        <columnDefinition name="WixBundlePackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the referenced Msp." />
     </tableDefinition>
-    <tableDefinition name="RelatedBundle" unreal="yes">
+    <tableDefinition name="WixRelatedBundle" unreal="yes">
         <columnDefinition name="Id" type="string" length="38" category="guid" primaryKey="yes" />
         <columnDefinition name="Action" type="number" length="4" />
     </tableDefinition>
-    <tableDefinition name="RelatedPackage" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" primaryKey="yes"
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundleRelatedPackage" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Id" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="MinVersion" type="string" length="0" />
         <columnDefinition name="MaxVersion" type="string" length="0" />
@@ -1807,8 +1811,8 @@
         <columnDefinition name="LangInclusive" type="number" length="2" minValue="0" maxValue="1"/>
         <columnDefinition name="OnlyDetect" type="number" length="2" minValue="0" maxValue="1"/>
     </tableDefinition>
-    <tableDefinition name="Variable" createSymbols="yes" unreal="yes">
-        <columnDefinition name="Variable" type="string" length="0" category="identifier" primaryKey="yes" />
+    <tableDefinition name="WixBundleVariable" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundleVariable" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Value" type="string" length="0" nullable="yes" />
         <columnDefinition name="Type" type="string" length="0" nullable="yes" />
         <columnDefinition name="Hidden" type="number" length="2" minValue="0" maxValue="1"/>
@@ -1836,7 +1840,7 @@
     </tableDefinition>
     <tableDefinition name="WixPackageProperties" unreal="yes" bootstrapperApplicationData="yes">
         <columnDefinition name="Package"  type="string" length="0" category="identifier" primaryKey="yes"
-                          keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Vital" type="string" length="0" nullable="yes" minValue="0" maxValue="1" />
         <columnDefinition name="DisplayName" type="string" length="0" nullable="yes"/>
         <columnDefinition name="Description" type="string" length="0" nullable="yes"/>
@@ -1858,8 +1862,9 @@
     <tableDefinition name="WixPayloadProperties" unreal="yes" bootstrapperApplicationData="yes">
         <columnDefinition name="Payload"  type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Package"  type="string" length="0" category="identifier" primaryKey="yes" nullable="yes"
-                          keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
-        <columnDefinition name="Container" type="string" length="0" nullable="yes"/>
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
+        <columnDefinition name="Container" type="string" length="0" nullable="yes"
+                keyTable="WixBundleContainer" keyColumn="1" description="Reference to a container entry in the WixBundleContainer table."/>
         <columnDefinition name="Name" type="string" length="0"  />
         <columnDefinition name="Size" type="string" length="0" />
         <columnDefinition name="DownloadUrl" type="string" length="0" nullable="yes" />

@@ -28,7 +28,7 @@
     <Compile Include="Bind\BindDatabaseCommand.cs" />
     <Compile Include="Bind\BindSummaryInfoCommand.cs" />
     <Compile Include="Bind\BindTransformCommand.cs" />
-    <Compile Include="Bind\ChainPackageFacade.cs" />
+    <Compile Include="Bind\PackageFacade.cs" />
     <Compile Include="Bind\ConfigurationCallback.cs" />
     <Compile Include="Bind\CopyTransformDataCommand.cs" />
     <Compile Include="Bind\CreateBootstrapperApplicationManifestCommand.cs" />

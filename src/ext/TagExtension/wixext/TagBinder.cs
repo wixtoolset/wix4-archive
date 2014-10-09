@@ -243,18 +243,18 @@ namespace WixToolset.Extensions
         private static IList<SoftwareTag> CollectPackageTags(Output bundle)
         {
             List<SoftwareTag> tags = new List<SoftwareTag>();
-            Table packageTable = bundle.Tables["ChainPackage"];
+            Table packageTable = bundle.Tables["WixBundlePackage"];
             if (null != packageTable)
             {
-                Table payloadTable = bundle.Tables["Payload"];
-                RowDictionary<PayloadRow> payloads = new RowDictionary<PayloadRow>(payloadTable);
+                Table payloadTable = bundle.Tables["WixBundlePayload"];
+                RowDictionary<WixBundlePayloadRow> payloads = new RowDictionary<WixBundlePayloadRow>(payloadTable);
 
-                foreach (ChainPackageRow row in packageTable.RowsAs<ChainPackageRow>())
+                foreach (WixBundlePackageRow row in packageTable.RowsAs<WixBundlePackageRow>())
                 {
-                    if (ChainPackageType.Msi == row.Type)
+                    if (WixBundlePackageType.Msi == row.Type)
                     {
-                        string packagePayloadId = row.PackagePayloadId;
-                        PayloadRow payload = payloads.Get(packagePayloadId);
+                        string packagePayloadId = row.PackagePayload;
+                        WixBundlePayloadRow payload = payloads.Get(packagePayloadId);
 
                         using (Database db = new Database(payload.FullFileName))
                         {

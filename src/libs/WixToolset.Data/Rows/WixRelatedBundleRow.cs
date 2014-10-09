@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="RelatedBundleRow.cs" company="Outercurve Foundation">
+// <copyright file="WixRelatedBundleRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -14,14 +14,14 @@ namespace WixToolset.Data.Rows
     /// <summary>
     /// Specialization of a row for the RelatedBundle table.
     /// </summary>
-    public sealed class RelatedBundleRow : Row
+    public sealed class WixRelatedBundleRow : Row
     {
         /// <summary>
         /// Creates a RelatedBundle row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this RelatedBundle row belongs to and should get its column definitions from.</param>
-        public RelatedBundleRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixRelatedBundleRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
@@ -31,7 +31,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this RelatedBundle row belongs to and should get its column definitions from.</param>
-        public RelatedBundleRow(SourceLineNumber sourceLineNumbers, Table table)
+        public WixRelatedBundleRow(SourceLineNumber sourceLineNumbers, Table table)
             : base(sourceLineNumbers, table)
         {
         }

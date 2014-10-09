@@ -30,9 +30,9 @@ namespace WixToolset.Bind
     {
         private const string PropertySqlFormat = "SELECT `Value` FROM `Property` WHERE `Property` = '{0}'";
 
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
-        public ChainPackageFacade Facade { private get; set; }
+        public PackageFacade Facade { private get; set; }
 
         public IBinderFileManager FileManager { private get; set; }
 
@@ -49,7 +49,7 @@ namespace WixToolset.Bind
         /// </summary>
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.Package.PackagePayload);
 
             string sourcePath = packagePayload.FullFileName;
             bool longNamesInImage = false;
@@ -71,7 +71,7 @@ namespace WixToolset.Bind
                     // 8 is the Word Count summary information stream bit that means
                     // "Elevated privileges are not required to install this package."
                     // in MSI 4.5 and below, if this bit is 0, elevation is required.
-                    this.Facade.ChainPackage.PerMachine = (0 == (sumInfo.WordCount & 8)) ? YesNoDefaultType.Yes : YesNoDefaultType.No;
+                    this.Facade.Package.PerMachine = (0 == (sumInfo.WordCount & 8)) ? YesNoDefaultType.Yes : YesNoDefaultType.No;
                 }
 
                 using (Dtf.Database db = new Dtf.Database(sourcePath))
@@ -84,22 +84,22 @@ namespace WixToolset.Bind
 
                     if (!Common.IsValidModuleOrBundleVersion(this.Facade.MsiPackage.ProductVersion))
                     {
-                        Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.Facade.ChainPackage.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath));
+                        Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath));
                     }
 
-                    if (String.IsNullOrEmpty(this.Facade.ChainPackage.CacheId))
+                    if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
                     {
-                        this.Facade.ChainPackage.CacheId = String.Format("{0}v{1}", this.Facade.MsiPackage.ProductCode, this.Facade.MsiPackage.ProductVersion);
+                        this.Facade.Package.CacheId = String.Format("{0}v{1}", this.Facade.MsiPackage.ProductCode, this.Facade.MsiPackage.ProductVersion);
                     }
 
-                    if (String.IsNullOrEmpty(this.Facade.ChainPackage.DisplayName))
+                    if (String.IsNullOrEmpty(this.Facade.Package.DisplayName))
                     {
-                        this.Facade.ChainPackage.DisplayName = ProcessMsiPackage.GetProperty(db, "ProductName");
+                        this.Facade.Package.DisplayName = ProcessMsiPackage.GetProperty(db, "ProductName");
                     }
 
-                    if (String.IsNullOrEmpty(this.Facade.ChainPackage.Description))
+                    if (String.IsNullOrEmpty(this.Facade.Package.Description))
                     {
-                        this.Facade.ChainPackage.Description = ProcessMsiPackage.GetProperty(db, "ARPCOMMENTS");
+                        this.Facade.Package.Description = ProcessMsiPackage.GetProperty(db, "ARPCOMMENTS");
                     }
 
                     ISet<string> payloadNames = this.GetPayloadTargetNames();
@@ -132,7 +132,7 @@ namespace WixToolset.Bind
 
                     // Add all external files as package payloads and calculate the total install size as the rollup of
                     // File table's sizes.
-                    this.Facade.ChainPackage.InstallSize = this.ImportExternalFileAsPayloadsAndReturnInstallSize(db, packagePayload, longNamesInImage, compressed, payloadNames);
+                    this.Facade.Package.InstallSize = this.ImportExternalFileAsPayloadsAndReturnInstallSize(db, packagePayload, longNamesInImage, compressed, payloadNames);
 
                     // Add all dependency providers from the MSI.
                     this.ImportDependencyProviders(db);
@@ -140,14 +140,14 @@ namespace WixToolset.Bind
             }
             catch (Dtf.InstallerException e)
             {
-                Messaging.Instance.OnMessage(WixErrors.UnableToReadPackageInformation(this.Facade.ChainPackage.SourceLineNumbers, sourcePath, e.Message));
+                Messaging.Instance.OnMessage(WixErrors.UnableToReadPackageInformation(this.Facade.Package.SourceLineNumbers, sourcePath, e.Message));
             }
         }
 
         private ISet<string> GetPayloadTargetNames()
         {
-            IEnumerable<string> payloadNames = this.PayloadTable.RowsAs<PayloadRow>()
-                .Where(r => r.Package == this.Facade.ChainPackage.WixChainItemId)
+            IEnumerable<string> payloadNames = this.PayloadTable.RowsAs<WixBundlePayloadRow>()
+                .Where(r => r.Package == this.Facade.Package.WixChainItemId)
                 .Select(r => r.Name);
 
             return new HashSet<string>(payloadNames, StringComparer.OrdinalIgnoreCase);
@@ -155,8 +155,8 @@ namespace WixToolset.Bind
 
         private ISet<string> GetMsiPropertyNames()
         {
-            IEnumerable<string> properties = this.MsiPropertyTable.RowsAs<MsiPropertyRow>()
-                .Where(r => r.ChainPackageId == this.Facade.ChainPackage.WixChainItemId)
+            IEnumerable<string> properties = this.MsiPropertyTable.RowsAs<WixBundleMsiPropertyRow>()
+                .Where(r => r.ChainPackageId == this.Facade.Package.WixChainItemId)
                 .Select(r => r.Name);
 
             return new HashSet<string>(properties, StringComparer.Ordinal);
@@ -171,7 +171,7 @@ namespace WixToolset.Bind
             {
                 if (existingMsiProperties.Contains(disallowed))
                 {
-                    Messaging.Instance.OnMessage(WixErrors.DisallowedMsiProperty(this.Facade.ChainPackage.SourceLineNumbers, disallowed));
+                    Messaging.Instance.OnMessage(WixErrors.DisallowedMsiProperty(this.Facade.Package.SourceLineNumbers, disallowed));
                 }
             }
         }
@@ -180,10 +180,10 @@ namespace WixToolset.Bind
         {
             if (this.Facade.MsiPackage.ForcePerMachine)
             {
-                if (YesNoDefaultType.No == this.Facade.ChainPackage.PerMachine)
+                if (YesNoDefaultType.No == this.Facade.Package.PerMachine)
                 {
-                    Messaging.Instance.OnMessage(WixWarnings.PerUserButForcingPerMachine(this.Facade.ChainPackage.SourceLineNumbers, sourcePath));
-                    this.Facade.ChainPackage.PerMachine = YesNoDefaultType.Yes; // ensure that we think the package is per-machine.
+                    Messaging.Instance.OnMessage(WixWarnings.PerUserButForcingPerMachine(this.Facade.Package.SourceLineNumbers, sourcePath));
+                    this.Facade.Package.PerMachine = YesNoDefaultType.Yes; // ensure that we think the package is per-machine.
                 }
 
                 // Force ALLUSERS=1 via the MSI command-line.
@@ -196,26 +196,26 @@ namespace WixToolset.Bind
                 if (String.IsNullOrEmpty(allusers))
                 {
                     // Not forced per-machine and no ALLUSERS property, flip back to per-user.
-                    if (YesNoDefaultType.Yes == this.Facade.ChainPackage.PerMachine)
+                    if (YesNoDefaultType.Yes == this.Facade.Package.PerMachine)
                     {
-                        Messaging.Instance.OnMessage(WixWarnings.ImplicitlyPerUser(this.Facade.ChainPackage.SourceLineNumbers, sourcePath));
-                        this.Facade.ChainPackage.PerMachine = YesNoDefaultType.No;
+                        Messaging.Instance.OnMessage(WixWarnings.ImplicitlyPerUser(this.Facade.Package.SourceLineNumbers, sourcePath));
+                        this.Facade.Package.PerMachine = YesNoDefaultType.No;
                     }
                 }
                 else if (allusers.Equals("1", StringComparison.Ordinal))
                 {
-                    if (YesNoDefaultType.No == this.Facade.ChainPackage.PerMachine)
+                    if (YesNoDefaultType.No == this.Facade.Package.PerMachine)
                     {
-                        Messaging.Instance.OnMessage(WixErrors.PerUserButAllUsersEquals1(this.Facade.ChainPackage.SourceLineNumbers, sourcePath));
+                        Messaging.Instance.OnMessage(WixErrors.PerUserButAllUsersEquals1(this.Facade.Package.SourceLineNumbers, sourcePath));
                     }
                 }
                 else if (allusers.Equals("2", StringComparison.Ordinal))
                 {
-                    Messaging.Instance.OnMessage(WixWarnings.DiscouragedAllUsersValue(this.Facade.ChainPackage.SourceLineNumbers, sourcePath, (YesNoDefaultType.Yes == this.Facade.ChainPackage.PerMachine) ? "machine" : "user"));
+                    Messaging.Instance.OnMessage(WixWarnings.DiscouragedAllUsersValue(this.Facade.Package.SourceLineNumbers, sourcePath, (YesNoDefaultType.Yes == this.Facade.Package.PerMachine) ? "machine" : "user"));
                 }
                 else
                 {
-                    Messaging.Instance.OnMessage(WixErrors.UnsupportedAllUsersValue(this.Facade.ChainPackage.SourceLineNumbers, sourcePath, allusers));
+                    Messaging.Instance.OnMessage(WixErrors.UnsupportedAllUsersValue(this.Facade.Package.SourceLineNumbers, sourcePath, allusers));
                 }
             }
         }
@@ -224,12 +224,12 @@ namespace WixToolset.Bind
         {
             bool alreadyVisible = !ProcessMsiPackage.HasProperty(db, "ARPSYSTEMCOMPONENT");
 
-            if (alreadyVisible != this.Facade.ChainPackage.Visible) // if not already set to the correct visibility.
+            if (alreadyVisible != this.Facade.Package.Visible) // if not already set to the correct visibility.
             {
                 // If the authoring specifically added "ARPSYSTEMCOMPONENT", don't do it again.
                 if (!msiPropertyNames.Contains("ARPSYSTEMCOMPONENT"))
                 {
-                    this.AddMsiProperty("ARPSYSTEMCOMPONENT", this.Facade.ChainPackage.Visible ? String.Empty : "1");
+                    this.AddMsiProperty("ARPSYSTEMCOMPONENT", this.Facade.Package.Visible ? String.Empty : "1");
                 }
             }
         }
@@ -251,8 +251,8 @@ namespace WixToolset.Bind
                                 break;
                             }
 
-                            RelatedPackageRow related = (RelatedPackageRow)this.RelatedPackageTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
-                            related.ChainPackageId = this.Facade.ChainPackage.WixChainItemId;
+                            WixBundleRelatedPackageRow related = (WixBundleRelatedPackageRow)this.RelatedPackageTable.CreateRow(this.Facade.Package.SourceLineNumbers);
+                            related.ChainPackageId = this.Facade.Package.WixChainItemId;
                             related.Id = record.GetString(1);
                             related.MinVersion = record.GetString(2);
                             related.MaxVersion = record.GetString(3);
@@ -328,7 +328,7 @@ namespace WixToolset.Bind
                                         }
                                     }
 
-                                    MsiFeatureRow feature = (MsiFeatureRow)this.MsiFeatureTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                                    WixBundleMsiFeatureRow feature = (WixBundleMsiFeatureRow)this.MsiFeatureTable.CreateRow(this.Facade.Package.SourceLineNumbers);
                                     feature.Name = featureName;
                                     feature.Parent = allFeaturesResultRecord.GetString(2);
                                     feature.Title = allFeaturesResultRecord.GetString(3);
@@ -346,7 +346,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void ImportExternalCabinetAsPayloads(Dtf.Database db, PayloadRow packagePayload, ISet<string> payloadNames)
+        private void ImportExternalCabinetAsPayloads(Dtf.Database db, WixBundlePayloadRow packagePayload, ISet<string> payloadNames)
         {
             if (db.Tables.Contains("Media"))
             {
@@ -362,9 +362,9 @@ namespace WixToolset.Bind
                         if (!payloadNames.Contains(cabinetName))
                         {
                             string generatedId = Common.GenerateIdentifier("cab", packagePayload.Id, cabinet);
-                            string payloadSourceFile = FileManager.ResolveRelatedFile(packagePayload.UnresolvedSourceFile, cabinet, "Cabinet", this.Facade.ChainPackage.SourceLineNumbers, BindStage.Normal);
+                            string payloadSourceFile = FileManager.ResolveRelatedFile(packagePayload.UnresolvedSourceFile, cabinet, "Cabinet", this.Facade.Package.SourceLineNumbers, BindStage.Normal);
 
-                            PayloadRow payload = (PayloadRow)this.PayloadTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                            WixBundlePayloadRow payload = (WixBundlePayloadRow)this.PayloadTable.CreateRow(this.Facade.Package.SourceLineNumbers);
                             payload.Id = generatedId;
                             payload.Name = cabinetName;
                             payload.SourceFile = payloadSourceFile;
@@ -382,7 +382,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private long ImportExternalFileAsPayloadsAndReturnInstallSize(Dtf.Database db, PayloadRow packagePayload, bool longNamesInImage, bool compressed, ISet<string> payloadNames)
+        private long ImportExternalFileAsPayloadsAndReturnInstallSize(Dtf.Database db, WixBundlePayloadRow packagePayload, bool longNamesInImage, bool compressed, ISet<string> payloadNames)
         {
             long size = 0;
 
@@ -438,9 +438,9 @@ namespace WixToolset.Bind
                                     if (!payloadNames.Contains(name))
                                     {
                                         string generatedId = Common.GenerateIdentifier("f", packagePayload.Id, record.GetString(2));
-                                        string payloadSourceFile = FileManager.ResolveRelatedFile(packagePayload.UnresolvedSourceFile, fileSourcePath, "File", this.Facade.ChainPackage.SourceLineNumbers, BindStage.Normal);
+                                        string payloadSourceFile = FileManager.ResolveRelatedFile(packagePayload.UnresolvedSourceFile, fileSourcePath, "File", this.Facade.Package.SourceLineNumbers, BindStage.Normal);
 
-                                        PayloadRow payload = (PayloadRow)this.PayloadTable.CreateRow(this.Facade.ChainPackage.SourceLineNumbers);
+                                        WixBundlePayloadRow payload = (WixBundlePayloadRow)this.PayloadTable.CreateRow(this.Facade.Package.SourceLineNumbers);
                                         payload.Id = generatedId;
                                         payload.Name = name;
                                         payload.SourceFile = payloadSourceFile;
@@ -467,8 +467,8 @@ namespace WixToolset.Bind
 
         private void AddMsiProperty(string name, string value)
         {
-            MsiPropertyRow row = (MsiPropertyRow)this.MsiPropertyTable.CreateRow(this.Facade.MsiPackage.SourceLineNumbers);
-            row.ChainPackageId = this.Facade.ChainPackage.WixChainItemId;
+            WixBundleMsiPropertyRow row = (WixBundleMsiPropertyRow)this.MsiPropertyTable.CreateRow(this.Facade.MsiPackage.SourceLineNumbers);
+            row.ChainPackageId = this.Facade.Package.WixChainItemId;
             row.Name = name;
             row.Value = value;
         }
@@ -494,7 +494,7 @@ namespace WixToolset.Bind
                             // Import the provider key and attributes.
                             string providerKey = record.GetString(1);
                             string version = record.GetString(2) ?? this.Facade.MsiPackage.ProductVersion;
-                            string displayName = record.GetString(3) ?? this.Facade.ChainPackage.DisplayName;
+                            string displayName = record.GetString(3) ?? this.Facade.Package.DisplayName;
                             int attributes = record.GetInteger(4);
 
                             ProvidesDependency dependency = new ProvidesDependency(providerKey, version, displayName, attributes);

@@ -18,20 +18,20 @@ namespace WixToolset.Bind
     /// </summary>
     internal class ProcessMsuPackage : ICommand
     {
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
-        public ChainPackageFacade Facade { private get; set; }
+        public PackageFacade Facade { private get; set; }
 
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.Package.PackagePayload);
 
-            if (String.IsNullOrEmpty(this.Facade.ChainPackage.CacheId))
+            if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
             {
-                this.Facade.ChainPackage.CacheId = packagePayload.Hash;
+                this.Facade.Package.CacheId = packagePayload.Hash;
             }
 
-            this.Facade.ChainPackage.PerMachine = YesNoDefaultType.Yes; // MSUs are always per-machine.
+            this.Facade.Package.PerMachine = YesNoDefaultType.Yes; // MSUs are always per-machine.
         }
     }
 }

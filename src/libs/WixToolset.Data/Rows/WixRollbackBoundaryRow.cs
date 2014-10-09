@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="ChainMsuPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixRollbackBoundaryRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,26 +10,26 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the ChainMsuPackage table.
+    /// Specialization of a row for the WixRollbackBoundary table.
     /// </summary>
-    public sealed class ChainMsuPackageRow : Row
+    public sealed class WixRollbackBoundaryRow : Row
     {
         /// <summary>
-        /// Creates a ChainMsuPackage row that does not belong to a table.
+        /// Creates a WixRollbackBoundary row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public ChainMsuPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixRollbackBoundaryRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates a ChainMsuPackageRow row that belongs to a table.
+        /// Creates a RollbackBoundaryRow row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public ChainMsuPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixRollbackBoundaryRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }
@@ -44,21 +44,13 @@ namespace WixToolset.Data.Rows
         }
 
         /// <summary>
-        /// Gets or sets the detection condition the package.
+        /// Gets or sets whether the package is vital.
         /// </summary>
-        public string DetectCondition
+        /// <value>Vitality of the package.</value>
+        public YesNoType Vital
         {
-            get { return (string)this.Fields[1].Data; }
-            set { this.Fields[1].Data = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the KB of the package.
-        /// </summary>
-        public string MsuKB
-        {
-            get { return (string)this.Fields[2].Data; }
-            set { this.Fields[2].Data = value; }
+            get { return (null == this.Fields[1].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[1].Data; }
+            set { this.Fields[1].Data = (int)value; }
         }
     }
 }

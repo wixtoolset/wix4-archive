@@ -84,26 +84,26 @@ namespace WixToolset.Data
                 case "BBControl":
                     row = new BBControlRow(sourceLineNumbers, this);
                     break;
-                case "ChainPackage":
-                    row = new ChainPackageRow(sourceLineNumbers, this);
+                case "WixBundlePackage":
+                    row = new WixBundlePackageRow(sourceLineNumbers, this);
                     break;
-                case "ChainExePackage":
-                    row = new ChainExePackageRow(sourceLineNumbers, this);
+                case "WixBundleExePackage":
+                    row = new WixBundleExePackageRow(sourceLineNumbers, this);
                     break;
-                case "ChainMsiPackage":
-                    row = new ChainMsiPackageRow(sourceLineNumbers, this);
+                case "WixBundleMsiPackage":
+                    row = new WixBundleMsiPackageRow(sourceLineNumbers, this);
                     break;
-                case "ChainMspPackage":
-                    row = new ChainMspPackageRow(sourceLineNumbers, this);
+                case "WixBundleMspPackage":
+                    row = new BundleMspPackageRow(sourceLineNumbers, this);
                     break;
-                case "ChainMsuPackage":
-                    row = new ChainMsuPackageRow(sourceLineNumbers, this);
+                case "WixBundleMsuPackage":
+                    row = new WixBundleMsuPackageRow(sourceLineNumbers, this);
                     break;
                 case "Component":
                     row = new ComponentRow(sourceLineNumbers, this);
                     break;
-                case "Container":
-                    row = new ContainerRow(sourceLineNumbers, this);
+                case "WixBundleContainer":
+                    row = new WixBundleContainerRow(sourceLineNumbers, this);
                     break;
                 case "Control":
                     row = new ControlRow(sourceLineNumbers, this);
@@ -111,35 +111,35 @@ namespace WixToolset.Data
                 case "File":
                     row = new FileRow(sourceLineNumbers, this);
                     break;
-                case "MsiFeature":
-                    row = new MsiFeatureRow(sourceLineNumbers, this);
+                case "WixBundleMsiFeature":
+                    row = new WixBundleMsiFeatureRow(sourceLineNumbers, this);
                     break;
-                case "MsiProperty":
-                    row = new MsiPropertyRow(sourceLineNumbers, this);
+                case "WixBundleMsiProperty":
+                    row = new WixBundleMsiPropertyRow(sourceLineNumbers, this);
                     break;
                 case "Media":
                     row = new MediaRow(sourceLineNumbers, this);
                     break;
-                case "Payload":
-                    row = new PayloadRow(sourceLineNumbers, this);
+                case "WixBundlePayload":
+                    row = new WixBundlePayloadRow(sourceLineNumbers, this);
                     break;
                 case "Property":
                     row = new PropertyRow(sourceLineNumbers, this);
                     break;
-                case "RelatedBundle":
-                    row = new RelatedBundleRow(sourceLineNumbers, this);
+                case "WixRelatedBundle":
+                    row = new WixRelatedBundleRow(sourceLineNumbers, this);
                     break;
-                case "RelatedPackage":
-                    row = new RelatedPackageRow(sourceLineNumbers, this);
+                case "WixBundleRelatedPackage":
+                    row = new WixBundleRelatedPackageRow(sourceLineNumbers, this);
                     break;
-                case "RollbackBoundary":
-                    row = new RollbackBoundaryRow(sourceLineNumbers, this);
+                case "WixRollbackBoundary":
+                    row = new WixRollbackBoundaryRow(sourceLineNumbers, this);
                     break;
                 case "Upgrade":
                     row = new UpgradeRow(sourceLineNumbers, this);
                     break;
-                case "Variable":
-                    row = new VariableRow(sourceLineNumbers, this);
+                case "WixBundleVariable":
+                    row = new WixBundleVariableRow(sourceLineNumbers, this);
                     break;
                 case "WixAction":
                     row = new WixActionRow(sourceLineNumbers, this);
@@ -156,8 +156,8 @@ namespace WixToolset.Data
                 case "WixBundleUpdate":
                     row = new WixBundleUpdateRow(sourceLineNumbers, this);
                     break;
-                case "WixCatalog":
-                    row = new WixCatalogRow(sourceLineNumbers, this);
+                case "WixBundleCatalog":
+                    row = new WixBundleCatalogRow(sourceLineNumbers, this);
                     break;
                 case "WixChain":
                     row = new WixChainRow(sourceLineNumbers, this);

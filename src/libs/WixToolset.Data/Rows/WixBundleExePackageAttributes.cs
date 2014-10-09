@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ChainPackageType.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleExePackageAttributes.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -9,14 +9,11 @@
 
 namespace WixToolset.Data.Rows
 {
-    /// <summary>
-    /// Types of bundle packages.
-    /// </summary>
-    public enum ChainPackageType
+    using System;
+
+    [Flags]
+    public enum WixBundleExePackageAttributes
     {
-        Exe,
-        Msi,
-        Msp,
-        Msu,
+        Repairable = 0x1,
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="PayloadRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundlePayloadRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -15,14 +15,14 @@ namespace WixToolset.Data.Rows
     /// <summary>
     /// Specialization of a row for the PayloadInfo table.
     /// </summary>
-    public class PayloadRow : Row
+    public class WixBundlePayloadRow : Row
     {
         /// <summary>
         /// Creates a PayloadRow row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this Media row belongs to and should get its column definitions from.</param>
-        public PayloadRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundlePayloadRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
@@ -32,7 +32,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this Media row belongs to and should get its column definitions from.</param>
-        public PayloadRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundlePayloadRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }
@@ -121,7 +121,7 @@ namespace WixToolset.Data.Rows
             set { this.Fields[13].Data = value; }
         }
 
-        public string CatalogId
+        public string Catalog
         {
             get { return (string)this.Fields[14].Data; }
             set { this.Fields[14].Data = value; }

@@ -18,23 +18,23 @@ namespace WixToolset.Bind
     /// </summary>
     internal class ProcessExePackage : ICommand
     {
-        public RowDictionary<PayloadRow> AuthoredPayloads { private get; set; }
+        public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 
-        public ChainPackageFacade Facade { private get; set; }
+        public PackageFacade Facade { private get; set; }
 
         /// <summary>
         /// Processes the Exe packages to add properties and payloads from the Exe packages.
         /// </summary>
         public void Execute()
         {
-            PayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.ChainPackage.PackagePayloadId);
+            WixBundlePayloadRow packagePayload = this.AuthoredPayloads.Get(this.Facade.Package.PackagePayload);
 
-            if (String.IsNullOrEmpty(this.Facade.ChainPackage.CacheId))
+            if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
             {
-                this.Facade.ChainPackage.CacheId = packagePayload.Hash;
+                this.Facade.Package.CacheId = packagePayload.Hash;
             }
 
-            this.Facade.ChainPackage.Version = packagePayload.Version;
+            this.Facade.Package.Version = packagePayload.Version;
         }
     }
 }

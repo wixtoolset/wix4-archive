@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="ChainExePackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleExePackageRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,26 +10,26 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the ChainExePackage table.
+    /// Specialization of a row for the WixBundleExePackage table.
     /// </summary>
-    public sealed class ChainExePackageRow : Row
+    public sealed class WixBundleExePackageRow : Row
     {
         /// <summary>
-        /// Creates a ChainExePackage row that does not belong to a table.
+        /// Creates a WixBundleExePackage row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public ChainExePackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundleExePackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates a ChainExePackageRow row that belongs to a table.
+        /// Creates a WixBundleExePackageRow row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public ChainExePackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundleExePackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }
@@ -46,9 +46,9 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the raw Exe attributes of a patch.
         /// </summary>
-        public ChainExePackageAttributes Attributes
+        public WixBundleExePackageAttributes Attributes
         {
-            get { return (ChainExePackageAttributes)this.Fields[1].Data; }
+            get { return (WixBundleExePackageAttributes)this.Fields[1].Data; }
             set { this.Fields[1].Data = value; }
         }
 
@@ -102,7 +102,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool Repairable
         {
-            get { return 0 != (this.Attributes & ChainExePackageAttributes.Repairable); }
+            get { return 0 != (this.Attributes & WixBundleExePackageAttributes.Repairable); }
         }
     }
 }

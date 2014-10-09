@@ -59,7 +59,7 @@ namespace WixToolset.Bind
             // We shouldn't really get past the linker phase if there are
             // no group items... that means that there's no UX, no Chain,
             // *and* no Containers!
-            Table chainPackageTable = this.GetRequiredTable("ChainPackage");
+            Table chainPackageTable = this.GetRequiredTable("WixBundlePackage");
 
             Table wixGroupTable = this.GetRequiredTable("WixGroup");
 
@@ -133,7 +133,7 @@ namespace WixToolset.Bind
             }
 
             // Get the explicit payloads.
-            RowDictionary<PayloadRow> payloads = new RowDictionary<PayloadRow>(this.Output.Tables["Payload"]);
+            RowDictionary<WixBundlePayloadRow> payloads = new RowDictionary<WixBundlePayloadRow>(this.Output.Tables["WixBundlePayload"]);
 
             // Update explicitly authored payloads with their parent package and container (as appropriate)
             // to make it easier to gather the payloads later.
@@ -141,7 +141,7 @@ namespace WixToolset.Bind
             {
                 if (ComplexReferenceChildType.Payload == row.ChildType)
                 {
-                    PayloadRow payload = payloads.Get(row.ChildId);
+                    WixBundlePayloadRow payload = payloads.Get(row.ChildId);
 
                     if (ComplexReferenceParentType.Package == row.ParentType)
                     {
@@ -177,62 +177,62 @@ namespace WixToolset.Bind
                 processedPayloads = new HashSet<string>(payloads.Keys);
             }
 
-            IDictionary<string, ChainPackageFacade> packages;
+            IDictionary<string, PackageFacade> facades;
             {
                 GetPackageFacadesCommand command = new GetPackageFacadesCommand();
-                command.ChainPackageTable = chainPackageTable;
-                command.ChainExePackageTable = this.Output.Tables["ChainExePackage"];
-                command.ChainMsiPackageTable = this.Output.Tables["ChainMsiPackage"];
-                command.ChainMspPackageTable = this.Output.Tables["ChainMspPackage"];
-                command.ChainMsuPackageTable = this.Output.Tables["ChainMsuPackage"];
+                command.PackageTable = chainPackageTable;
+                command.ExePackageTable = this.Output.Tables["WixBundleExePackage"];
+                command.MsiPackageTable = this.Output.Tables["WixBundleMsiPackage"];
+                command.MspPackageTable = this.Output.Tables["WixBundleMspPackage"];
+                command.MsuPackageTable = this.Output.Tables["WixBundleMsuPackage"];
                 command.Execute();
 
-                packages = command.Packages;
+                facades = command.Facades;
             }
 
             // Process each package facade. Note this is likely to add payloads and other rows to tables so
             // note that any indexes created above may be out of date now.
-            foreach (ChainPackageFacade package in packages.Values)
+            foreach (PackageFacade facade in facades.Values)
             {
-                switch (package.ChainPackage.Type)
+                switch (facade.Package.Type)
                 {
-                    case ChainPackageType.Exe:
+                    case WixBundlePackageType.Exe:
                         {
                             ProcessExePackage command = new ProcessExePackage();
                             command.AuthoredPayloads = payloads;
-                            command.Facade = package;
+                            command.Facade = facade;
                             command.Execute();
                         }
                         break;
 
-                    case ChainPackageType.Msi:
+                    case WixBundlePackageType.Msi:
                         {
                             ProcessMsiPackage command = new ProcessMsiPackage();
                             command.AuthoredPayloads = payloads;
-                            command.Facade = package;
+                            command.Facade = facade;
                             command.FileManager = this.FileManagers.First();
-                            command.MsiFeatureTable = this.Output.EnsureTable(this.TableDefinitions["MsiFeature"]);
-                            command.MsiPropertyTable = this.Output.EnsureTable(this.TableDefinitions["MsiProperty"]);
-                            command.PayloadTable = this.Output.Tables["Payload"];
-                            command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["RelatedPackage"]);
+                            command.MsiFeatureTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiFeature"]);
+                            command.MsiPropertyTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleMsiProperty"]);
+                            command.PayloadTable = this.Output.Tables["WixBundlePayload"];
+                            command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleRelatedPackage"]);
                             command.Execute();
                         }
                         break;
 
-                    case ChainPackageType.Msp:
+                    case WixBundlePackageType.Msp:
                         {
                             ProcessMspPackage command = new ProcessMspPackage();
                             command.AuthoredPayloads = payloads;
-                            command.Facade = package;
+                            command.Facade = facade;
                             command.WixBundlePatchTargetCodeTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePatchTargetCode"]);
                             command.Execute();
                         }
                         break;
 
-                    case ChainPackageType.Msu:
+                    case WixBundlePackageType.Msu:
                         {
                             ProcessMsuPackage command = new ProcessMsuPackage();
-                            command.Facade = package;
+                            command.Facade = facade;
                             command.Execute();
                         }
                         break;
@@ -240,13 +240,13 @@ namespace WixToolset.Bind
 
                 if (null != variableCache)
                 {
-                    BindBundleCommand.PopulatePackageVariableCache(package.ChainPackage, variableCache);
+                    BindBundleCommand.PopulatePackageVariableCache(facade.Package, variableCache);
                 }
             }
 
             // Reindex the payloads now that all the payloads (minus the manifest payloads that will be created later)
             // are present.
-            payloads = new RowDictionary<PayloadRow>(this.Output.Tables["Payload"]);
+            payloads = new RowDictionary<WixBundlePayloadRow>(this.Output.Tables["WixBundlePayload"]);
 
             // Process the payloads that were added by processing the packages.
             {
@@ -262,36 +262,36 @@ namespace WixToolset.Bind
             }
 
             // Set the package metadata from the payloads now that we have the complete payload information.
-            ILookup<string, PayloadRow> payloadsByPackage = payloads.Values.ToLookup(p => p.Package);
+            ILookup<string, WixBundlePayloadRow> payloadsByPackage = payloads.Values.ToLookup(p => p.Package);
 
             {
-                foreach (ChainPackageFacade package in packages.Values)
+                foreach (PackageFacade facade in facades.Values)
                 {
-                    package.ChainPackage.Size = 0;
+                    facade.Package.Size = 0;
 
-                    IEnumerable<PayloadRow> packagePayloads = payloadsByPackage[package.ChainPackage.WixChainItemId];
+                    IEnumerable<WixBundlePayloadRow> packagePayloads = payloadsByPackage[facade.Package.WixChainItemId];
 
-                    foreach (PayloadRow payload in packagePayloads)
+                    foreach (WixBundlePayloadRow payload in packagePayloads)
                     {
-                        package.ChainPackage.Size += payload.FileSize;
+                        facade.Package.Size += payload.FileSize;
                     }
 
-                    if (!package.ChainPackage.InstallSize.HasValue)
+                    if (!facade.Package.InstallSize.HasValue)
                     {
-                        package.ChainPackage.InstallSize = package.ChainPackage.Size;
+                        facade.Package.InstallSize = facade.Package.Size;
 
                     }
 
-                    PayloadRow packagePayload = payloads[package.ChainPackage.PackagePayloadId];
+                    WixBundlePayloadRow packagePayload = payloads[facade.Package.PackagePayload];
 
-                    if (String.IsNullOrEmpty(package.ChainPackage.Description))
+                    if (String.IsNullOrEmpty(facade.Package.Description))
                     {
-                        package.ChainPackage.Description = packagePayload.Description;
+                        facade.Package.Description = packagePayload.Description;
                     }
 
-                    if (String.IsNullOrEmpty(package.ChainPackage.DisplayName))
+                    if (String.IsNullOrEmpty(facade.Package.DisplayName))
                     {
-                        package.ChainPackage.DisplayName = packagePayload.DisplayName;
+                        facade.Package.DisplayName = packagePayload.DisplayName;
                     }
                 }
             }
@@ -300,7 +300,7 @@ namespace WixToolset.Bind
             // Give the UX payloads their embedded IDs...
             int uxPayloadIndex = 0;
             {
-                foreach (PayloadRow payload in payloads.Values.Where(p => Compiler.BurnUXContainerId == p.Container))
+                foreach (WixBundlePayloadRow payload in payloads.Values.Where(p => Compiler.BurnUXContainerId == p.Container))
                 {
                     // In theory, UX payloads could be embedded in the UX CAB, external to the bundle EXE, or even
                     // downloaded. The current engine requires the UX to be fully present before any downloading starts,
@@ -324,7 +324,7 @@ namespace WixToolset.Bind
 
                 // Give the embedded payloads without an embedded id yet an embedded id.
                 int payloadIndex = 0;
-                foreach (PayloadRow payload in payloads.Values)
+                foreach (WixBundlePayloadRow payload in payloads.Values)
                 {
                     Debug.Assert(PackagingType.Unknown != payload.Packaging);
 
@@ -339,25 +339,20 @@ namespace WixToolset.Bind
             // Determine patches to automatically slipstream.
             {
                 AutomaticallySlipstreamPatchesCommand command = new AutomaticallySlipstreamPatchesCommand();
-                command.Packages = packages.Values;
-                command.SlipstreamMspTable = this.Output.EnsureTable(this.TableDefinitions["SlipstreamMsp"]);
+                command.Facades = facades.Values;
+                command.SlipstreamMspTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleSlipstreamMsp"]);
                 command.WixBundlePatchTargetCodeTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePatchTargetCode"]);
                 command.Execute();
             }
 
             // If catalog files exist, non-embedded payloads should validate with the catalogs.
-            IEnumerable<WixCatalogRow> catalogs;
+            IEnumerable<WixBundleCatalogRow> catalogs = this.Output.Tables["WixBundleCatalog"].RowsAs<WixBundleCatalogRow>();
+
+            if (catalogs.Any())
             {
-                Table catalogTable = this.Output.Tables["WixCatalog"];
-
-                catalogs = (null == catalogTable) ? Enumerable.Empty<WixCatalogRow>() : catalogTable.RowsAs<WixCatalogRow>();
-
-                if (catalogs.Any())
-                {
-                    VerifyPayloadsWithCatalogCommand command = new VerifyPayloadsWithCatalogCommand();
-                    command.Catalogs = catalogs;
-                    command.Payloads = payloads.Values;
-                }
+                VerifyPayloadsWithCatalogCommand command = new VerifyPayloadsWithCatalogCommand();
+                command.Catalogs = catalogs;
+                command.Payloads = payloads.Values;
             }
 
             if (Messaging.Instance.EncounteredError)
@@ -365,16 +360,16 @@ namespace WixToolset.Bind
                 return;
             }
 
-            IEnumerable<ChainPackageFacade> orderedPackages;
-            IEnumerable<RollbackBoundaryRow> boundaries;
+            IEnumerable<PackageFacade> orderedFacades;
+            IEnumerable<WixRollbackBoundaryRow> boundaries;
             {
                 OrderPackagesAndRollbackBoundariesCommand command = new OrderPackagesAndRollbackBoundariesCommand();
-                command.boundaries = new RowDictionary<RollbackBoundaryRow>(this.Output.Tables["RollbackBoundary"]);
-                command.packages = packages;
-                command.wixGroupTable = wixGroupTable;
+                command.Boundaries = new RowDictionary<WixRollbackBoundaryRow>(this.Output.Tables["WixRollbackBoundary"]);
+                command.Facades = facades;
+                command.WixGroupTable = wixGroupTable;
                 command.Execute();
 
-                orderedPackages = command.OrderedPackages;
+                orderedFacades = command.OrderedFacades;
                 boundaries = command.UsedRollbackBoundaries;
             }
 
@@ -393,25 +388,25 @@ namespace WixToolset.Bind
             this.SetBundleProviderKey(this.Output, bundleRow);
 
             // Import or generate dependency providers for packages in the manifest.
-            this.ProcessDependencyProviders(this.Output, packages);
+            this.ProcessDependencyProviders(this.Output, facades);
 
-            // Start creating the this.bundle.
-            this.ResolveBundleInstallScope(bundleRow, orderedPackages);
+            // Update the bundle per-machine/per-user scope based on chained the packages.
+            this.ResolveBundleInstallScope(bundleRow, orderedFacades);
 
             // Generate the core-defined BA manifest tables...
             {
                 CreateBootstrapperApplicationManifestCommand command = new CreateBootstrapperApplicationManifestCommand();
                 command.BundleRow = bundleRow;
-                command.ChainPackages = orderedPackages;
+                command.ChainPackages = orderedFacades;
                 command.LastUXPayloadIndex = uxPayloadIndex;
-                command.MsiFeatures = this.Output.Tables["MsiFeature"].RowsAs<MsiFeatureRow>();
+                command.MsiFeatures = this.Output.Tables["WixBundleMsiFeature"].RowsAs<WixBundleMsiFeatureRow>();
                 command.Output = this.Output;
                 command.Payloads = payloads;
                 command.TableDefinitions = this.TableDefinitions;
                 command.TempFilesLocation = this.TempFilesLocation;
                 command.Execute();
 
-                PayloadRow baManifestPayload = command.BootstrapperApplicationManifestPayloadRow;
+                WixBundlePayloadRow baManifestPayload = command.BootstrapperApplicationManifestPayloadRow;
                 payloads.Add(baManifestPayload);
             }
 
@@ -422,17 +417,17 @@ namespace WixToolset.Bind
 
             // Create all the containers except the UX container first so the manifest (that goes in the UX container)
             // can contain all size and hash information about the non-UX containers.
-            RowDictionary<ContainerRow> containers = new RowDictionary<ContainerRow>(this.Output.Tables["Container"]);
+            RowDictionary<WixBundleContainerRow> containers = new RowDictionary<WixBundleContainerRow>(this.Output.Tables["WixBundleContainer"]);
 
-            ILookup<string, PayloadRow> payloadsByContainer = payloads.Values.ToLookup(p => p.Container);
+            ILookup<string, WixBundlePayloadRow> payloadsByContainer = payloads.Values.ToLookup(p => p.Container);
 
             int attachedContainerIndex = 1; // count starts at one because UX container is "0".
 
-            IEnumerable<PayloadRow> uxContainerPayloads = Enumerable.Empty<PayloadRow>();
+            IEnumerable<WixBundlePayloadRow> uxContainerPayloads = Enumerable.Empty<WixBundlePayloadRow>();
 
-            foreach (ContainerRow container in containers.Values)
+            foreach (WixBundleContainerRow container in containers.Values)
             {
-                IEnumerable<PayloadRow> containerPayloads = payloadsByContainer[container.Id];
+                IEnumerable<WixBundlePayloadRow> containerPayloads = payloadsByContainer[container.Id];
 
                 if (!containerPayloads.Any())
                 {
@@ -448,11 +443,11 @@ namespace WixToolset.Bind
 
                     // Gather the list of UX payloads but ensure the BootstrapperApplication Payload is the first
                     // in the list since that is the Payload that Burn attempts to load.
-                    List<PayloadRow> uxPayloads = new List<PayloadRow>();
+                    List<WixBundlePayloadRow> uxPayloads = new List<WixBundlePayloadRow>();
 
                     string baPayloadId = baRow.FieldAsString(0);
 
-                    foreach (PayloadRow uxPayload in containerPayloads)
+                    foreach (WixBundlePayloadRow uxPayload in containerPayloads)
                     {
                         if (uxPayload.Id == baPayloadId)
                         {
@@ -504,7 +499,7 @@ namespace WixToolset.Bind
                 command.Containers = containers;
                 command.Catalogs = catalogs;
                 command.ExecutableName = Path.GetFileName(this.OutputPath);
-                command.OrderedPackages = orderedPackages;
+                command.OrderedPackages = orderedFacades;
                 command.OutputPath = manifestPath;
                 command.RollbackBoundaries = boundaries;
                 command.OrderedSearches = orderedSearches;
@@ -513,7 +508,7 @@ namespace WixToolset.Bind
                 command.Execute();
             }
 
-            ContainerRow uxContainer = containers[Compiler.BurnUXContainerId];
+            WixBundleContainerRow uxContainer = containers[Compiler.BurnUXContainerId];
             this.CreateContainer(uxContainer, uxContainerPayloads, manifestPath);
 
             // Copy the burn.exe to a writable location then mark it to be moved to its final build location. Note
@@ -548,7 +543,7 @@ namespace WixToolset.Bind
                 writer.AppendContainer(uxContainer.WorkingPath, BurnWriter.Container.UX);
 
                 // Now append all other attached containers
-                foreach (ContainerRow container in containers.Values)
+                foreach (WixBundleContainerRow container in containers.Values)
                 {
                     if (ContainerType.Attached == container.Type)
                     {
@@ -660,7 +655,7 @@ namespace WixToolset.Bind
         /// </summary>
         /// <param name="package">The package with properties to cache.</param>
         /// <param name="variableCache">The property cache.</param>
-        private static void PopulatePackageVariableCache(ChainPackageRow package, IDictionary<string, string> variableCache)
+        private static void PopulatePackageVariableCache(WixBundlePackageRow package, IDictionary<string, string> variableCache)
         {
             string id = package.WixChainItemId;
 
@@ -671,7 +666,7 @@ namespace WixToolset.Bind
             variableCache.Add(String.Concat("packageVersion.", id), package.Version);
         }
 
-        private void CreateContainer(ContainerRow container, IEnumerable<PayloadRow> containerPayloads, string manifestFile)
+        private void CreateContainer(WixBundleContainerRow container, IEnumerable<WixBundlePayloadRow> containerPayloads, string manifestFile)
         {
             CreateContainerCommand command = new CreateContainerCommand();
             command.DefaultCompressionLevel = this.DefaultCompressionLevel;
@@ -684,30 +679,30 @@ namespace WixToolset.Bind
             container.Size = command.Size;
         }
 
-        private void ResolveBundleInstallScope(WixBundleRow bundleInfo, IEnumerable<ChainPackageFacade> chainPackages)
+        private void ResolveBundleInstallScope(WixBundleRow bundleInfo, IEnumerable<PackageFacade> facades)
         {
-            foreach (ChainPackageFacade package in chainPackages)
+            foreach (PackageFacade facade in facades)
             {
-                if (bundleInfo.PerMachine && YesNoDefaultType.No == package.ChainPackage.PerMachine)
+                if (bundleInfo.PerMachine && YesNoDefaultType.No == facade.Package.PerMachine)
                 {
-                    Messaging.Instance.OnMessage(WixVerboses.SwitchingToPerUserPackage(package.ChainPackage.WixChainItemId));
+                    Messaging.Instance.OnMessage(WixVerboses.SwitchingToPerUserPackage(facade.Package.WixChainItemId));
 
                     bundleInfo.PerMachine = false;
                     break;
                 }
             }
 
-            foreach (ChainPackageFacade package in chainPackages)
+            foreach (PackageFacade facade in facades)
             {
                 // Update package scope from bundle scope if default.
-                if (YesNoDefaultType.Default == package.ChainPackage.PerMachine)
+                if (YesNoDefaultType.Default == facade.Package.PerMachine)
                 {
-                    package.ChainPackage.PerMachine = bundleInfo.PerMachine ? YesNoDefaultType.Yes : YesNoDefaultType.No;
+                    facade.Package.PerMachine = bundleInfo.PerMachine ? YesNoDefaultType.Yes : YesNoDefaultType.No;
                 }
 
                 // We will only register packages in the same scope as the bundle. Warn if any packages with providers
                 // are in a different scope and not permanent (permanents typically don't need a ref-count).
-                if (!bundleInfo.PerMachine && YesNoDefaultType.Yes == package.ChainPackage.PerMachine && !package.ChainPackage.Permanent && 0 < package.Provides.Count)
+                if (!bundleInfo.PerMachine && YesNoDefaultType.Yes == facade.Package.PerMachine && !facade.Package.Permanent && 0 < facade.Provides.Count)
                 {
                     Messaging.Instance.OnMessage(WixWarnings.NoPerMachineDependencies());
                 }
@@ -788,8 +783,8 @@ namespace WixToolset.Bind
         /// have a provider defined.
         /// </summary>
         /// <param name="bundle">The <see cref="Output"/> object for the bundle.</param>
-        /// <param name="packages">An indexed collection of chained packages.</param>
-        private void ProcessDependencyProviders(Output bundle, IDictionary<string, ChainPackageFacade> packages)
+        /// <param name="facades">An indexed collection of chained packages.</param>
+        private void ProcessDependencyProviders(Output bundle, IDictionary<string, PackageFacade> facades)
         {
             // First import any authored dependencies. These may merge with imported provides from MSI packages.
             Table wixDependencyProviderTable = bundle.Tables["WixDependencyProvider"];
@@ -800,70 +795,70 @@ namespace WixToolset.Bind
                 {
                     string packageId = (string)wixDependencyProviderRow[1];
 
-                    ChainPackageFacade package = null;
-                    if (packages.TryGetValue(packageId, out package))
+                    PackageFacade facade = null;
+                    if (facades.TryGetValue(packageId, out facade))
                     {
                         ProvidesDependency dependency = new ProvidesDependency(wixDependencyProviderRow);
 
                         if (String.IsNullOrEmpty(dependency.Key))
                         {
-                            switch (package.ChainPackage.Type)
+                            switch (facade.Package.Type)
                             {
                                 // The WixDependencyExtension allows an empty Key for MSIs and MSPs.
-                                case ChainPackageType.Msi:
-                                    dependency.Key = package.MsiPackage.ProductCode;
+                                case WixBundlePackageType.Msi:
+                                    dependency.Key = facade.MsiPackage.ProductCode;
                                     break;
-                                case ChainPackageType.Msp:
-                                    dependency.Key = package.MspPackage.PatchCode;
+                                case WixBundlePackageType.Msp:
+                                    dependency.Key = facade.MspPackage.PatchCode;
                                     break;
                             }
                         }
 
                         if (String.IsNullOrEmpty(dependency.Version))
                         {
-                            dependency.Version = package.ChainPackage.Version;
+                            dependency.Version = facade.Package.Version;
                         }
 
                         // If the version is still missing, a version could not be harvested from the package and was not authored.
                         if (String.IsNullOrEmpty(dependency.Version))
                         {
-                            Messaging.Instance.OnMessage(WixErrors.MissingDependencyVersion(package.ChainPackage.WixChainItemId));
+                            Messaging.Instance.OnMessage(WixErrors.MissingDependencyVersion(facade.Package.WixChainItemId));
                         }
 
                         if (String.IsNullOrEmpty(dependency.DisplayName))
                         {
-                            dependency.DisplayName = package.ChainPackage.DisplayName;
+                            dependency.DisplayName = facade.Package.DisplayName;
                         }
 
-                        if (!package.Provides.Merge(dependency))
+                        if (!facade.Provides.Merge(dependency))
                         {
-                            Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, package.ChainPackage.WixChainItemId));
+                            Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, facade.Package.WixChainItemId));
                         }
                     }
                 }
             }
 
             // Generate providers for MSI packages that still do not have providers.
-            foreach (ChainPackageFacade package in packages.Values)
+            foreach (PackageFacade facade in facades.Values)
             {
                 string key = null;
 
-                if (ChainPackageType.Msi == package.ChainPackage.Type && 0 == package.Provides.Count)
+                if (WixBundlePackageType.Msi == facade.Package.Type && 0 == facade.Provides.Count)
                 {
-                    key = package.MsiPackage.ProductCode;
+                    key = facade.MsiPackage.ProductCode;
                 }
-                else if (ChainPackageType.Msp == package.ChainPackage.Type && 0 == package.Provides.Count)
+                else if (WixBundlePackageType.Msp == facade.Package.Type && 0 == facade.Provides.Count)
                 {
-                    key = package.MspPackage.PatchCode;
+                    key = facade.MspPackage.PatchCode;
                 }
 
                 if (!String.IsNullOrEmpty(key))
                 {
-                    ProvidesDependency dependency = new ProvidesDependency(key, package.ChainPackage.Version, package.ChainPackage.DisplayName, 0);
+                    ProvidesDependency dependency = new ProvidesDependency(key, facade.Package.Version, facade.Package.DisplayName, 0);
 
-                    if (!package.Provides.Merge(dependency))
+                    if (!facade.Provides.Merge(dependency))
                     {
-                        Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, package.ChainPackage.WixChainItemId));
+                        Messaging.Instance.OnMessage(WixErrors.DuplicateProviderDependencyKey(dependency.Key, facade.Package.WixChainItemId));
                     }
                 }
             }

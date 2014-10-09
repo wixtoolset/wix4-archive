@@ -15,55 +15,55 @@ namespace WixToolset.Bind
 
     internal class GetPackageFacadesCommand : ICommand
     {
-        public Table ChainPackageTable { private get; set; }
+        public Table PackageTable { private get; set; }
 
-        public Table ChainExePackageTable { private get; set; }
+        public Table ExePackageTable { private get; set; }
 
-        public Table ChainMsiPackageTable { private get; set; }
+        public Table MsiPackageTable { private get; set; }
 
-        public Table ChainMspPackageTable { private get; set; }
+        public Table MspPackageTable { private get; set; }
 
-        public Table ChainMsuPackageTable { private get; set; }
+        public Table MsuPackageTable { private get; set; }
 
-        public IDictionary<string, ChainPackageFacade> Packages { get; private set; }
+        public IDictionary<string, PackageFacade> Facades { get; private set; }
 
         public void Execute()
         {
-            RowDictionary<ChainExePackageRow> exePackages = new RowDictionary<ChainExePackageRow>(this.ChainExePackageTable);
-            RowDictionary<ChainMsiPackageRow> msiPackages = new RowDictionary<ChainMsiPackageRow>(this.ChainMsiPackageTable);
-            RowDictionary<ChainMspPackageRow> mspPackages = new RowDictionary<ChainMspPackageRow>(this.ChainMspPackageTable);
-            RowDictionary<ChainMsuPackageRow> msuPackages = new RowDictionary<ChainMsuPackageRow>(this.ChainMsuPackageTable);
+            RowDictionary<WixBundleExePackageRow> exePackages = new RowDictionary<WixBundleExePackageRow>(this.ExePackageTable);
+            RowDictionary<WixBundleMsiPackageRow> msiPackages = new RowDictionary<WixBundleMsiPackageRow>(this.MsiPackageTable);
+            RowDictionary<BundleMspPackageRow> mspPackages = new RowDictionary<BundleMspPackageRow>(this.MspPackageTable);
+            RowDictionary<WixBundleMsuPackageRow> msuPackages = new RowDictionary<WixBundleMsuPackageRow>(this.MsuPackageTable);
 
-            Dictionary<string, ChainPackageFacade> packages = new Dictionary<string, ChainPackageFacade>(this.ChainPackageTable.Rows.Count);
+            Dictionary<string, PackageFacade> facades = new Dictionary<string, PackageFacade>(this.PackageTable.Rows.Count);
 
-            foreach (ChainPackageRow chainPackage in this.ChainPackageTable.Rows)
+            foreach (WixBundlePackageRow package in this.PackageTable.Rows)
             {
-                string id = chainPackage.WixChainItemId;
-                ChainPackageFacade facade = null;
+                string id = package.WixChainItemId;
+                PackageFacade facade = null;
 
-                switch (chainPackage.Type)
+                switch (package.Type)
                 {
-                    case ChainPackageType.Exe:
-                        facade = new ChainPackageFacade(chainPackage, exePackages.Get(id));
+                    case WixBundlePackageType.Exe:
+                        facade = new PackageFacade(package, exePackages.Get(id));
                         break;
 
-                    case ChainPackageType.Msi:
-                        facade = new ChainPackageFacade(chainPackage, msiPackages.Get(id));
+                    case WixBundlePackageType.Msi:
+                        facade = new PackageFacade(package, msiPackages.Get(id));
                         break;
 
-                    case ChainPackageType.Msp:
-                        facade = new ChainPackageFacade(chainPackage, mspPackages.Get(id));
+                    case WixBundlePackageType.Msp:
+                        facade = new PackageFacade(package, mspPackages.Get(id));
                         break;
 
-                    case ChainPackageType.Msu:
-                        facade = new ChainPackageFacade(chainPackage, msuPackages.Get(id));
+                    case WixBundlePackageType.Msu:
+                        facade = new PackageFacade(package, msuPackages.Get(id));
                         break;
                 }
 
-                packages.Add(id, facade);
+                facades.Add(id, facade);
             }
 
-            this.Packages = packages;
+            this.Facades = facades;
         }
     }
 }

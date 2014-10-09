@@ -23,7 +23,7 @@ namespace WixToolset.Bind
     {
         private static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
 
-        public IEnumerable<PayloadRow> Payloads { private get; set; }
+        public IEnumerable<WixBundlePayloadRow> Payloads { private get; set; }
 
         public PackagingType DefaultPackaging { private get; set; }
 
@@ -35,7 +35,7 @@ namespace WixToolset.Bind
         {
             List<FileTransfer> fileTransfers = new List<FileTransfer>();
 
-            foreach (PayloadRow payload in this.Payloads)
+            foreach (WixBundlePayloadRow payload in this.Payloads)
             {
                 // Embedded files (aka: files from binary .wixlibs) are not content files (because they are hidden
                 // in the .wixlib).
@@ -70,7 +70,7 @@ namespace WixToolset.Bind
             this.FileTransfers = fileTransfers;
         }
 
-        private void UpdatePayloadPackagingType(PayloadRow payload)
+        private void UpdatePayloadPackagingType(WixBundlePayloadRow payload)
         {
             if (PackagingType.Unknown == payload.Packaging)
             {
@@ -96,7 +96,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void UpdatePayloadFileInformation(PayloadRow payload)
+        private void UpdatePayloadFileInformation(WixBundlePayloadRow payload)
         {
             FileInfo fileInfo = new FileInfo(payload.SourceFile);
 
@@ -138,7 +138,7 @@ namespace WixToolset.Bind
             }
         }
 
-        private void UpdatePayloadVersionInformation(PayloadRow payload)
+        private void UpdatePayloadVersionInformation(WixBundlePayloadRow payload)
         {
             FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(payload.SourceFile);
 

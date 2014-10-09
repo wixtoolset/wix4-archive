@@ -20,7 +20,8 @@ namespace WixToolset.Data
         /// <summary>
         /// Gets the rows contained in the table as a particular row type.
         /// </summary>
-        /// <value>Rows contained in the table as a particular type.</value>
+        /// <param name="table">Table to get rows from.</param>
+        /// <remarks>If the <paramref name="table"/> is null, an empty enumerable will be returned.</remarks>
         public static IEnumerable<T> RowsAs<T>(this Table table) where T : Row
         {
             return (null == table) ? Enumerable.Empty<T>() : table.Rows.Cast<T>();

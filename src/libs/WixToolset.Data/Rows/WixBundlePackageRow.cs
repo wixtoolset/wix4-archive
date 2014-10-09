@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="ChainPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundlePackageRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,26 +10,26 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the ChainPackage table.
+    /// Specialization of a row for the WixBundlePackage table.
     /// </summary>
-    public sealed class ChainPackageRow : Row
+    public sealed class WixBundlePackageRow : Row
     {
         /// <summary>
-        /// Creates a ChainPackage row that does not belong to a table.
+        /// Creates a WixBundlePackage row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public ChainPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundlePackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates a ChainPackageRow row that belongs to a table.
+        /// Creates a WixBundlePackage row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public ChainPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundlePackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }
@@ -46,16 +46,16 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the item type.
         /// </summary>
-        public ChainPackageType Type
+        public WixBundlePackageType Type
         {
-            get { return (ChainPackageType)this.Fields[1].Data; }
+            get { return (WixBundlePackageType)this.Fields[1].Data; }
             set { this.Fields[1].Data = (int)value; }
         }
 
         /// <summary>
         /// Gets or sets the indentifier of the package's payload.
         /// </summary>
-        public string PackagePayloadId
+        public string PackagePayload
         {
             get { return (string)this.Fields[2].Data; }
             set { this.Fields[2].Data = value; }
@@ -64,9 +64,9 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the raw attributes of a package.
         /// </summary>
-        public ChainPackageAttributes Attributes
+        public WixBundlePackageAttributes Attributes
         {
-            get { return (ChainPackageAttributes)this.Fields[3].Data; }
+            get { return (WixBundlePackageAttributes)this.Fields[3].Data; }
             set { this.Fields[3].Data = value; }
         }
 
@@ -190,7 +190,7 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the rollback boundary identifier for the package.
         /// </summary>
-        public string RollbackBoundaryId
+        public string RollbackBoundary
         {
             get { return (string)this.Fields[17].Data; }
             set { this.Fields[17].Data = value; }
@@ -199,7 +199,7 @@ namespace WixToolset.Data.Rows
         /// <summary>
         /// Gets or sets the backward rollback boundary identifier for the package.
         /// </summary>
-        public string RollbackBoundaryBackwardId
+        public string RollbackBoundaryBackward
         {
             get { return (string)this.Fields[18].Data; }
             set { this.Fields[18].Data = value; }
@@ -210,7 +210,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool Permanent
         {
-            get { return 0 != (this.Attributes & ChainPackageAttributes.Permanent); }
+            get { return 0 != (this.Attributes & WixBundlePackageAttributes.Permanent); }
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public bool Visible
         {
-            get { return 0 != (this.Attributes & ChainPackageAttributes.Visible); }
+            get { return 0 != (this.Attributes & WixBundlePackageAttributes.Visible); }
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="VerifyPayloadWithCatalogCommand.cs" company="Outercurve Foundation">
+// <copyright file="VerifyPayloadsWithCatalogCommand.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -20,20 +20,20 @@ namespace WixToolset.Bind
 
     internal class VerifyPayloadsWithCatalogCommand : ICommand
     {
-        public IEnumerable<WixCatalogRow> Catalogs { private get; set; }
+        public IEnumerable<WixBundleCatalogRow> Catalogs { private get; set; }
 
-        public IEnumerable<PayloadRow> Payloads { private get; set; }
+        public IEnumerable<WixBundlePayloadRow> Payloads { private get; set; }
 
         public void Execute()
         {
             List<CatalogIdWithPath> catalogIdsWithPaths = this.Catalogs
                 .Join(this.Payloads,
-                    catalog => catalog.PayloadId,
+                    catalog => catalog.Payload,
                     payload => payload.Id,
                     (catalog, payload) => new CatalogIdWithPath() { Id = catalog.Id, FullPath = Path.GetFullPath(payload.SourceFile) })
                 .ToList();
 
-            foreach (PayloadRow payloadInfo in this.Payloads)
+            foreach (WixBundlePayloadRow payloadInfo in this.Payloads)
             {
                 // Payloads that are not embedded should be verfied.
                 if (String.IsNullOrEmpty(payloadInfo.EmbeddedId))
@@ -115,7 +115,7 @@ namespace WixToolset.Bind
                                 long verifyResult = VerifyInterop.WinVerifyTrust(noWindow, ref verifyGuid, ref trustData);
                                 if (0 == verifyResult)
                                 {
-                                    payloadInfo.CatalogId = catalog.Id;
+                                    payloadInfo.Catalog = catalog.Id;
                                     validated = true;
                                     break;
                                 }
