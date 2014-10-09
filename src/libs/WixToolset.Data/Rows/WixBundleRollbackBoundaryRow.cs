@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="WixRollbackBoundaryRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleRollbackBoundaryRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,16 +10,16 @@
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the WixRollbackBoundary table.
+    /// Specialization of a row for the WixBundleRollbackBoundary table.
     /// </summary>
-    public sealed class WixRollbackBoundaryRow : Row
+    public sealed class WixBundleRollbackBoundaryRow : Row
     {
         /// <summary>
-        /// Creates a WixRollbackBoundary row that does not belong to a table.
+        /// Creates a WixBundleRollbackBoundary row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public WixRollbackBoundaryRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundleRollbackBoundaryRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
@@ -29,7 +29,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public WixRollbackBoundaryRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundleRollbackBoundaryRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }
