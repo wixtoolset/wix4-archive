@@ -20,9 +20,9 @@ namespace WixToolset.Bind
 
         public RowDictionary<WixBundleRollbackBoundaryRow> Boundaries { private get; set; }
 
-        public IDictionary<string, PackageFacade> Facades { private get; set; }
+        public IDictionary<string, PackageFacade> PackageFacades { private get; set; }
 
-        public IEnumerable<PackageFacade> OrderedFacades { get; private set; }
+        public IEnumerable<PackageFacade> OrderedPackageFacades { get; private set; }
 
         public IEnumerable<WixBundleRollbackBoundaryRow> UsedRollbackBoundaries { get; private set; }
 
@@ -47,7 +47,7 @@ namespace WixToolset.Bind
                 if (ComplexReferenceChildType.Package == row.ChildType && ComplexReferenceParentType.PackageGroup == row.ParentType && "WixChain" == row.ParentId)
                 {
                     PackageFacade facade = null;
-                    if (Facades.TryGetValue(row.ChildId, out facade))
+                    if (PackageFacades.TryGetValue(row.ChildId, out facade))
                     {
                         if (null != previousRollbackBoundary)
                         {
@@ -132,7 +132,7 @@ namespace WixToolset.Bind
                 previousFacade.Package.RollbackBoundaryBackward = previousRollbackBoundaryId;
             }
 
-            this.OrderedFacades = orderedFacades;
+            this.OrderedPackageFacades = orderedFacades;
             this.UsedRollbackBoundaries = usedBoundaries;
         }
     }
