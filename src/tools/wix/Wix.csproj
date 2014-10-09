@@ -19,7 +19,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Bind\AutomaticallySlipstreamPatchesCommand.cs" />
-    <Compile Include="Bind\AutoMediaAssignerCommand.cs" />
+    <Compile Include="Bind\AssignMediaCommand.cs" />
     <Compile Include="Binder.cs" />
     <Compile Include="BinderCore.cs" />
     <Compile Include="BinderFileManagerCore.cs" />

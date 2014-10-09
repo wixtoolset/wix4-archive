@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="AutoMediaAssignerCommand.cs" company="Outercurve Foundation">
+// <copyright file="AssignMediaCommand.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -18,11 +18,11 @@ namespace WixToolset.Bind
     using WixToolset.Data.Rows;
 
     /// <summary>
-    /// AutoMediaAssigner assigns files to cabs depending on Media or MediaTemplate.
+    /// AssignMediaCommand assigns files to cabs based on Media or MediaTemplate rows.
     /// </summary>
-    public class AutoMediaAssignerCommand : ICommand
+    public class AssignMediaCommand : ICommand
     {
-        public AutoMediaAssignerCommand()
+        public AssignMediaCommand()
         {
             this.CabinetNameTemplate = "Cab{0}.cab";
         }

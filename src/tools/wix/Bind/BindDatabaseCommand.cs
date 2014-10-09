@@ -266,16 +266,16 @@ namespace WixToolset.Bind
             Dictionary<MediaRow, IEnumerable<FileRow>> fileRowsByCabinetMedia;
             IEnumerable<FileRow> uncompressedFileRows;
             {
-                AutoMediaAssignerCommand autoMediaAssigner = new AutoMediaAssignerCommand();
-                autoMediaAssigner.FilesCompressed = compressed;
-                autoMediaAssigner.FileRows = fileRows;
-                autoMediaAssigner.Output = this.Output;
-                autoMediaAssigner.TableDefinitions = this.TableDefinitions;
-                autoMediaAssigner.Execute();
+                AssignMediaCommand command = new AssignMediaCommand();
+                command.FilesCompressed = compressed;
+                command.FileRows = fileRows;
+                command.Output = this.Output;
+                command.TableDefinitions = this.TableDefinitions;
+                command.Execute();
 
-                assignedMediaRows = autoMediaAssigner.MediaRows;
-                fileRowsByCabinetMedia = autoMediaAssigner.FileRowsByCabinetMedia;
-                uncompressedFileRows = autoMediaAssigner.UncompressedFileRows;
+                assignedMediaRows = command.MediaRows;
+                fileRowsByCabinetMedia = command.FileRowsByCabinetMedia;
+                uncompressedFileRows = command.UncompressedFileRows;
             }
 
             // Update file sequence.
