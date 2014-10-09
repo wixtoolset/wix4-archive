@@ -91,17 +91,20 @@ namespace WixToolset.Bind
             // Localize fields, resolve wix variables, and resolve file paths.
             ExtractEmbeddedFiles filesWithEmbeddedFiles = new ExtractEmbeddedFiles();
 
-            ResolveFieldsCommand command = new ResolveFieldsCommand();
-            command.Tables = this.Output.Tables;
-            command.FilesWithEmbeddedFiles = filesWithEmbeddedFiles;
-            command.FileManagerCore = this.FileManagerCore;
-            command.FileManagers = this.FileManagers;
-            command.SupportDelayedResolution = true;
-            command.TempFilesLocation = this.TempFilesLocation;
-            command.WixVariableResolver = this.WixVariableResolver;
-            command.Execute();
+            IEnumerable<DelayedField> delayedFields;
+            {
+                ResolveFieldsCommand command = new ResolveFieldsCommand();
+                command.Tables = this.Output.Tables;
+                command.FilesWithEmbeddedFiles = filesWithEmbeddedFiles;
+                command.FileManagerCore = this.FileManagerCore;
+                command.FileManagers = this.FileManagers;
+                command.SupportDelayedResolution = true;
+                command.TempFilesLocation = this.TempFilesLocation;
+                command.WixVariableResolver = this.WixVariableResolver;
+                command.Execute();
 
-            IEnumerable<DelayedField> delayedFields = command.DelayedFields;
+                delayedFields = command.DelayedFields;
+            }
 
             // if there are any fields to resolve later, create the cache to populate during bind
             IDictionary<string, string> variableCache = null;
@@ -113,13 +116,19 @@ namespace WixToolset.Bind
             this.LocalizeUI(this.Output.Tables);
 
             // Process the summary information table before the other tables.
-            BindSummaryInfoCommand summaryInfoCommand = new BindSummaryInfoCommand();
-            summaryInfoCommand.Output = this.Output;
-            summaryInfoCommand.Execute();
+            bool compressed;
+            bool longNames;
+            string modularizationGuid;
 
-            bool compressed = summaryInfoCommand.Compressed;
-            bool longNames = summaryInfoCommand.LongNames;
-            string modularizationGuid = summaryInfoCommand.ModularizationGuid;
+            {
+                BindSummaryInfoCommand command = new BindSummaryInfoCommand();
+                command.Output = this.Output;
+                command.Execute();
+
+                compressed = command.Compressed;
+                longNames = command.LongNames;
+                modularizationGuid = command.ModularizationGuid;
+            }
 
             // Stop processing if an error previously occurred.
             if (Messaging.Instance.EncounteredError)
@@ -157,17 +166,17 @@ namespace WixToolset.Bind
             {
                 foreach (SubStorage substorage in this.Output.SubStorages)
                 {
-                    Output transform = (Output)substorage.Data;
+                    Output transform = substorage.Data;
 
-                    ResolveFieldsCommand resolveFieldsCommand = new ResolveFieldsCommand();
-                    resolveFieldsCommand.Tables = transform.Tables;
-                    resolveFieldsCommand.FilesWithEmbeddedFiles = filesWithEmbeddedFiles;
-                    resolveFieldsCommand.FileManagerCore = this.FileManagerCore;
-                    resolveFieldsCommand.FileManagers = this.FileManagers;
-                    resolveFieldsCommand.SupportDelayedResolution = false;
-                    resolveFieldsCommand.TempFilesLocation = this.TempFilesLocation;
-                    resolveFieldsCommand.WixVariableResolver = this.WixVariableResolver;
-                    resolveFieldsCommand.Execute();
+                    ResolveFieldsCommand command = new ResolveFieldsCommand();
+                    command.Tables = transform.Tables;
+                    command.FilesWithEmbeddedFiles = filesWithEmbeddedFiles;
+                    command.FileManagerCore = this.FileManagerCore;
+                    command.FileManagers = this.FileManagers;
+                    command.SupportDelayedResolution = false;
+                    command.TempFilesLocation = this.TempFilesLocation;
+                    command.WixVariableResolver = this.WixVariableResolver;
+                    command.Execute();
 
                     this.MergeUnrealTables(this.Output, transform.Tables);
                 }
@@ -221,16 +230,17 @@ namespace WixToolset.Bind
             }
 
             // Extract files that come from cabinet files (this does not extract files from merge modules).
-            ExtractEmbeddedFilesCommand extractEmbeddedFilesCommand = new ExtractEmbeddedFilesCommand();
-            extractEmbeddedFilesCommand.FilesWithEmbeddedFiles = filesWithEmbeddedFiles;
-            extractEmbeddedFilesCommand.Execute();
+            {
+                ExtractEmbeddedFilesCommand command = new ExtractEmbeddedFilesCommand();
+                command.FilesWithEmbeddedFiles = filesWithEmbeddedFiles;
+                command.Execute();
+            }
 
             // Start with a collection of all files from the File table. The list of all files that need
             // to be processed may grow if we add things like Merge Modules or patches with multiple
             // transforms.
             // Collecting these files must occur AFTER the unreal data has been merged in.
-            Table fileTable = this.Output.Tables["File"];
-            List<FileRow> fileRows = fileTable.Rows.Cast<FileRow>().ToList();
+            List<FileRow> fileRows = this.Output.Tables["File"].RowsAs<FileRow>().ToList();
 
             if (OutputType.Product == this.Output.Type)
             {
@@ -252,16 +262,25 @@ namespace WixToolset.Bind
             }
 
             // Assign files to media.
-            AutoMediaAssignerCommand autoMediaAssigner = new AutoMediaAssignerCommand();
-            autoMediaAssigner.FilesCompressed = compressed;
-            autoMediaAssigner.FileRows = fileRows;
-            autoMediaAssigner.Output = this.Output;
-            autoMediaAssigner.TableDefinitions = this.TableDefinitions;
-            autoMediaAssigner.Execute();
+            RowDictionary<MediaRow> assignedMediaRows;
+            Dictionary<MediaRow, IEnumerable<FileRow>> fileRowsByCabinetMedia;
+            IEnumerable<FileRow> uncompressedFileRows;
+            {
+                AutoMediaAssignerCommand autoMediaAssigner = new AutoMediaAssignerCommand();
+                autoMediaAssigner.FilesCompressed = compressed;
+                autoMediaAssigner.FileRows = fileRows;
+                autoMediaAssigner.Output = this.Output;
+                autoMediaAssigner.TableDefinitions = this.TableDefinitions;
+                autoMediaAssigner.Execute();
+
+                assignedMediaRows = autoMediaAssigner.MediaRows;
+                fileRowsByCabinetMedia = autoMediaAssigner.FileRowsByCabinetMedia;
+                uncompressedFileRows = autoMediaAssigner.UncompressedFileRows;
+            }
 
             // Update file sequence.
             Messaging.Instance.OnMessage(WixVerboses.UpdatingFileInformation());
-            this.UpdateMediaSequences(this.Output, fileRows, autoMediaAssigner.MediaRows);
+            this.UpdateMediaSequences(this.Output, fileRows, assignedMediaRows);
 
             // Gather information about files that did not come from merge modules (i.e. rows with a reference to the File table).
             foreach (FileRow row in fileRows.Where(r => null != r.Table))
@@ -269,7 +288,7 @@ namespace WixToolset.Bind
                 this.UpdateFileRow(this.Output, variableCache, modularizationGuid, fileRows, row, false);
             }
 
-            // set generated component guids
+            // Set generated component guids.
             this.SetComponentGuids(this.Output);
 
             // With the Component Guids set now we can create instance transforms.
@@ -281,12 +300,12 @@ namespace WixToolset.Bind
 
             if (delayedFields.Any())
             {
-                ResolveDelayedFieldsCommand resolveDelayedFieldsCommand = new ResolveDelayedFieldsCommand();
-                resolveDelayedFieldsCommand.OutputType = this.Output.Type;
-                resolveDelayedFieldsCommand.DelayedFields = delayedFields;
-                resolveDelayedFieldsCommand.ModularizationGuid = null;
-                resolveDelayedFieldsCommand.VariableCache = variableCache;
-                resolveDelayedFieldsCommand.Execute();
+                ResolveDelayedFieldsCommand command = new ResolveDelayedFieldsCommand();
+                command.OutputType = this.Output.Type;
+                command.DelayedFields = delayedFields;
+                command.ModularizationGuid = null;
+                command.VariableCache = variableCache;
+                command.Execute();
             }
 
             // stop processing if an error previously occurred
@@ -296,21 +315,18 @@ namespace WixToolset.Bind
             }
 
             // Extended binder extensions can be called now that fields are resolved.
+            Table updatedFiles = this.Output.EnsureTable(this.TableDefinitions["WixBindUpdatedFiles"]);
+
             foreach (BinderExtension extension in this.Extensions)
             {
-                this.Output.EnsureTable(this.TableDefinitions["WixBindUpdatedFiles"]);
                 extension.AfterResolvedFields(this.Output);
             }
 
-            Table updatedFiles = this.Output.Tables["WixBindUpdatedFiles"];
-            if (null != updatedFiles)
+            foreach (Row updatedFile in updatedFiles.Rows)
             {
-                foreach (Row updatedFile in updatedFiles.Rows)
-                {
-                    // TODO: Is this too slow? It's basically NxM. Okay'ish, if updatedFiles is small count.
-                    FileRow updatedFileRow = fileRows.Single(r => r.File.Equals((string)updatedFile[0], StringComparison.Ordinal));
-                    this.UpdateFileRow(this.Output, null, modularizationGuid, fileRows, updatedFileRow, true);
-                }
+                // TODO: Is this too slow? It's basically NxM. Okay'ish, if updatedFiles is small count.
+                FileRow updatedFileRow = fileRows.Single(r => r.File.Equals((string)updatedFile[0], StringComparison.Ordinal));
+                this.UpdateFileRow(this.Output, null, modularizationGuid, fileRows, updatedFileRow, true);
             }
 
             // stop processing if an error previously occurred
@@ -323,25 +339,23 @@ namespace WixToolset.Bind
 
             // create cabinet files and process uncompressed files
             string layoutDirectory = Path.GetDirectoryName(this.OutputPath);
-            RowDictionary<FileRow> uncompressedFileRows = null;
             if (!this.SuppressLayout || OutputType.Module == this.Output.Type)
             {
                 Messaging.Instance.OnMessage(WixVerboses.CreatingCabinetFiles());
 
-                CreateCabinetsCommand createCabinetsCommand = new CreateCabinetsCommand();
-                createCabinetsCommand.CabbingThreadCount = this.CabbingThreadCount;
-                createCabinetsCommand.DefaultCompressionLevel = this.DefaultCompressionLevel;
-                createCabinetsCommand.Output = this.Output;
-                createCabinetsCommand.FileManagers = this.FileManagers;
-                createCabinetsCommand.LayoutDirectory = layoutDirectory;
-                createCabinetsCommand.Compressed = compressed;
-                createCabinetsCommand.AutoMediaAssigner = autoMediaAssigner;
-                createCabinetsCommand.TableDefinitions = this.TableDefinitions;
-                createCabinetsCommand.TempFilesLocation = this.TempFilesLocation;
-                createCabinetsCommand.Execute();
+                CreateCabinetsCommand command = new CreateCabinetsCommand();
+                command.CabbingThreadCount = this.CabbingThreadCount;
+                command.DefaultCompressionLevel = this.DefaultCompressionLevel;
+                command.Output = this.Output;
+                command.FileManagers = this.FileManagers;
+                command.LayoutDirectory = layoutDirectory;
+                command.Compressed = compressed;
+                command.FileRowsByCabinet = fileRowsByCabinetMedia;
+                command.TableDefinitions = this.TableDefinitions;
+                command.TempFilesLocation = this.TempFilesLocation;
+                command.Execute();
 
-                uncompressedFileRows = createCabinetsCommand.UncompressedFileRows;
-                fileTransfers.AddRange(createCabinetsCommand.FileTransfers);
+                fileTransfers.AddRange(command.FileTransfers);
             }
 
             if (OutputType.Patch == this.Output.Type)
@@ -465,7 +479,7 @@ namespace WixToolset.Bind
             // process uncompressed files
             if (!this.SuppressLayout)
             {
-                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows.Values, fileTransfers, autoMediaAssigner.MediaRows, layoutDirectory, compressed, longNames);
+                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows, fileTransfers, assignedMediaRows, layoutDirectory, compressed, longNames);
             }
 
             this.FileTransfers = fileTransfers;

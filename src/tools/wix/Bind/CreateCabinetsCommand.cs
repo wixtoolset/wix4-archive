@@ -13,6 +13,7 @@ namespace WixToolset.Bind
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Threading;
     using WixToolset.Data;
@@ -58,13 +59,11 @@ namespace WixToolset.Bind
 
         public bool Compressed { private get; set; }
 
-        public AutoMediaAssignerCommand AutoMediaAssigner { private get; set; }
+        public Dictionary<MediaRow, IEnumerable<FileRow>> FileRowsByCabinet { private get; set; }
 
         public TableDefinitionCollection TableDefinitions { private get; set; }
 
         public IEnumerable<FileTransfer> FileTransfers { get { return this.fileTransfers; } }
-
-        public RowDictionary<FileRow> UncompressedFileRows { get; private set; }
 
         /// <param name="output">Output to generate image for.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
@@ -87,10 +86,10 @@ namespace WixToolset.Bind
             cabinetBuilder.MaximumCabinetSizeForLargeFileSplitting = MaximumCabinetSizeForLargeFileSplitting;
             cabinetBuilder.MaximumUncompressedMediaSize = MaximumUncompressedMediaSize;
 
-            foreach (var entry in this.AutoMediaAssigner.Cabinets)
+            foreach (var entry in this.FileRowsByCabinet)
             {
                 MediaRow mediaRow = entry.Key;
-                List<FileRow> files = entry.Value;
+                IEnumerable<FileRow> files = entry.Value;
 
                 string cabinetDir = this.ResolveMedia(mediaRow, this.LayoutDirectory);
 
@@ -113,8 +112,6 @@ namespace WixToolset.Bind
             {
                 return;
             }
-
-            this.UncompressedFileRows = this.AutoMediaAssigner.UncompressedFileRows;
         }
 
         /// <summary>
@@ -167,13 +164,13 @@ namespace WixToolset.Bind
         /// <param name="fileRows">Collection of files in this cabinet.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
         /// <returns>created CabinetWorkItem object</returns>
-        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, List<FileRow> fileRows, List<FileTransfer> fileTransfers)
+        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, IEnumerable<FileRow> fileRows, List<FileTransfer> fileTransfers)
         {
             CabinetWorkItem cabinetWorkItem = null;
             string tempCabinetFileX = Path.Combine(this.TempFilesLocation, mediaRow.Cabinet);
 
             // check for an empty cabinet
-            if (0 == fileRows.Count)
+            if (!fileRows.Any())
             {
                 string cabinetName = mediaRow.Cabinet;
 

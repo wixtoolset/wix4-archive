@@ -35,7 +35,7 @@ namespace WixToolset.Bind
         /// <param name="maxThreshold">Maximum threshold for each cabinet.</param>
         /// <param name="compressionLevel">The compression level of the cabinet.</param>
         /// <param name="binderFileManager">The binder file manager.</param>
-        public CabinetWorkItem(List<FileRow> fileRows, string cabinetFile, int maxThreshold, CompressionLevel compressionLevel /*, BinderFileManager binderFileManager*/)
+        public CabinetWorkItem(IEnumerable<FileRow> fileRows, string cabinetFile, int maxThreshold, CompressionLevel compressionLevel /*, BinderFileManager binderFileManager*/)
         {
             this.cabinetFile = cabinetFile;
             this.compressionLevel = compressionLevel;
@@ -66,7 +66,7 @@ namespace WixToolset.Bind
         /// Gets the collection of files in this cabinet.
         /// </summary>
         /// <value>The collection of files in this cabinet.</value>
-        public List<FileRow> FileRows { get; private set; }
+        public IEnumerable<FileRow> FileRows { get; private set; }
 
         /// <summary>
         /// Gets the binder file manager.
