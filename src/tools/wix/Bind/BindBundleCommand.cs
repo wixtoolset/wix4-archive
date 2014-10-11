@@ -19,6 +19,7 @@ namespace WixToolset.Bind
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
+    using WixToolset.Bind.Bundles;
 
     /// <summary>
     /// Binds a this.bundle.

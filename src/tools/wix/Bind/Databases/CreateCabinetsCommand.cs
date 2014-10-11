@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Databases
 {
     using System;
     using System.Collections.Generic;

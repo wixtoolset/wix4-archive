@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Bundles
 {
     using System.Collections.Generic;
     using WixToolset.Data;

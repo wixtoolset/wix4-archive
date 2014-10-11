@@ -30,6 +30,7 @@ namespace WixToolset.Bind
     using WixToolset.MergeMod;
     using WixToolset.Msi;
     using WixToolset.Msi.Interop;
+    using WixToolset.Bind.Databases;
 
     /// <summary>
     /// Binds a databse.

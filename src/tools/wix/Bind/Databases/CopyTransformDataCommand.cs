@@ -7,14 +7,12 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Databases
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;

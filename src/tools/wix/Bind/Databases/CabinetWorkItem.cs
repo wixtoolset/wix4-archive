@@ -5,13 +5,9 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// A cabinet builder work item.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Databases
 {
     using System.Collections.Generic;
     using WixToolset.Data;

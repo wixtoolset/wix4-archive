@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Bundles
 {
     using WixToolset.Data.Rows;
 
