@@ -22,6 +22,7 @@
     <Compile Include="BinderCore.cs" />
     <Compile Include="BinderFileManagerCore.cs" />
     <Compile Include="BinderFileManager.cs" />
+    <Compile Include="Bind\Databases\CreateSpecialPropertiesCommand.cs" />
     <Compile Include="CommandLine.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />

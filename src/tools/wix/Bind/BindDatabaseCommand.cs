@@ -154,6 +154,13 @@ namespace WixToolset.Bind
                 }
             }
 
+            {
+                CreateSpecialPropertiesCommand command = new CreateSpecialPropertiesCommand();
+                command.PropertyTable = this.Output.Tables["Property"];
+                command.WixPropertyTable = this.Output.Tables["WixProperty"];
+                command.Execute();
+            }
+
             // Merge unreal table data into the real tables
             // This must occur after all variables and source paths have been resolved and after modularization.
             this.MergeUnrealTables(this.Output, this.Output.Tables);
@@ -579,56 +586,6 @@ namespace WixToolset.Bind
         /// <param name="tables">Collection of all tables.</param>
         private void MergeUnrealTables(Output output, TableIndexedCollection tables)
         {
-            // Create the special properties.
-            Table wixPropertyTable = output.Tables["WixProperty"];
-            if (null != wixPropertyTable)
-            {
-                // Create lists of the properties that contribute to the special lists of properties.
-                SortedSet<string> adminProperties = new SortedSet<string>();
-                SortedSet<string> secureProperties = new SortedSet<string>();
-                SortedSet<string> hiddenProperties = new SortedSet<string>();
-
-                foreach (WixPropertyRow wixPropertyRow in wixPropertyTable.Rows)
-                {
-                    if (wixPropertyRow.Admin)
-                    {
-                        adminProperties.Add(wixPropertyRow.Id);
-                    }
-
-                    if (wixPropertyRow.Hidden)
-                    {
-                        hiddenProperties.Add(wixPropertyRow.Id);
-                    }
-
-                    if (wixPropertyRow.Secure)
-                    {
-                        secureProperties.Add(wixPropertyRow.Id);
-                    }
-                }
-
-                Table propertyTable = output.Tables["Property"];
-                if (0 < adminProperties.Count)
-                {
-                    PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
-                    row.Property = "AdminProperties";
-                    row.Value = String.Join(";", adminProperties);
-                }
-
-                if (0 < secureProperties.Count)
-                {
-                    PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
-                    row.Property = "SecureCustomProperties";
-                    row.Value = String.Join(";", secureProperties);
-                }
-
-                if (0 < hiddenProperties.Count)
-                {
-                    PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);
-                    row.Property = "MsiHiddenProperties";
-                    row.Value = String.Join(";", hiddenProperties);
-                }
-            }
-
             // Merge data from the WixFile rows into the File rows.
             Table wixFileTable = tables["WixFile"];
             if (null != wixFileTable)
