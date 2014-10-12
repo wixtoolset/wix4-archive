@@ -18,8 +18,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Bind\Bundles\AutomaticallySlipstreamPatchesCommand.cs" />
-    <Compile Include="Bind\Databases\AssignMediaCommand.cs" />
     <Compile Include="Binder.cs" />
     <Compile Include="BinderCore.cs" />
     <Compile Include="BinderFileManagerCore.cs" />
@@ -50,6 +48,7 @@
     <Compile Include="Bind\ResolveDelayedFieldsCommand.cs" />
     <Compile Include="Bind\ResolveFieldsCommand.cs" />
     <Compile Include="Bind\TransferFilesCommand.cs" />
+    <Compile Include="Bind\Bundles\AutomaticallySlipstreamPatchesCommand.cs" />
     <Compile Include="Bind\Bundles\BurnCommon.cs" />
     <Compile Include="Bind\Bundles\BurnReader.cs" />
     <Compile Include="Bind\Bundles\BurnWriter.cs" />
@@ -65,12 +64,14 @@
     <Compile Include="Bind\Bundles\ProcessMsiPackage.cs" />
     <Compile Include="Bind\Bundles\ProcessPayloads.cs" />
     <Compile Include="Bind\Bundles\VerifyPayloadsWithCatalogCommand.cs" />
+    <Compile Include="Bind\Databases\AssignMediaCommand.cs" />
     <Compile Include="Bind\Databases\BindSummaryInfoCommand.cs" />
     <Compile Include="Bind\Databases\CabinetBuilder.cs" />
     <Compile Include="Bind\Databases\CabinetWorkItem.cs" />
     <Compile Include="Bind\Databases\CreateCabinetsCommand.cs" />
     <Compile Include="Bind\Databases\ConfigurationCallback.cs" />
     <Compile Include="Bind\Databases\CopyTransformDataCommand.cs" />
+    <Compile Include="Bind\Databases\UpdateControlTextCommand.cs" />
     <Compile Include="Bind\Databases\WixPatchSymbolPathsComparer.cs" />
     <Compile Include="Cab\CabinetFileInfo.cs" />
     <Compile Include="Cab\Interop\CabInterop.cs" />

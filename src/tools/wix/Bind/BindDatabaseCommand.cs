@@ -22,6 +22,7 @@ namespace WixToolset.Bind
     using System.Text;
     using System.Xml;
     using System.Xml.XPath;
+    using WixToolset.Bind.Databases;
     using WixToolset.Cab;
     using WixToolset.Clr.Interop;
     using WixToolset.Data;
@@ -30,7 +31,6 @@ namespace WixToolset.Bind
     using WixToolset.MergeMod;
     using WixToolset.Msi;
     using WixToolset.Msi.Interop;
-    using WixToolset.Bind.Databases;
 
     /// <summary>
     /// Binds a databse.
@@ -579,30 +579,6 @@ namespace WixToolset.Bind
         /// <param name="tables">Collection of all tables.</param>
         private void MergeUnrealTables(Output output, TableIndexedCollection tables)
         {
-            // Merge data from the WixBBControl rows into the BBControl rows.
-            Table wixBBControlTable = tables["WixBBControl"];
-            if (null != wixBBControlTable)
-            {
-                RowDictionary<BBControlRow> indexedBBControlRows = new RowDictionary<BBControlRow>(tables["BBControl"]);
-                foreach (Row row in wixBBControlTable.Rows)
-                {
-                    BBControlRow bbControlRow = indexedBBControlRows.Get(row.GetPrimaryKey());
-                    bbControlRow.SourceFile = (string)row[2];
-                }
-            }
-
-            // Merge data from the WixControl rows into the Control rows.
-            Table wixControlTable = tables["WixControl"];
-            if (null != wixControlTable)
-            {
-                RowDictionary<ControlRow> indexedControlRows = new RowDictionary<ControlRow>(tables["Control"]);
-                foreach (Row row in wixControlTable.Rows)
-                {
-                    ControlRow controlRow = indexedControlRows.Get(row.GetPrimaryKey());
-                    controlRow.SourceFile = (string)row[2];
-                }
-            }
-
             // Create the special properties.
             Table wixPropertyTable = output.Tables["WixProperty"];
             if (null != wixPropertyTable)
@@ -2434,68 +2410,12 @@ namespace WixToolset.Bind
         /// <param name="output">Internal representation of the msi database to operate upon.</param>
         private void UpdateControlText(Output output)
         {
-            // Control table
-            Table controlTable = output.Tables["Control"];
-            if (null != controlTable)
-            {
-                foreach (ControlRow controlRow in controlTable.Rows)
-                {
-                    if (null != controlRow.SourceFile)
-                    {
-                        controlRow.Text = this.ReadTextFile(controlRow.SourceLineNumbers, controlRow.SourceFile);
-                    }
-                }
-            }
-
-            // BBControl table
-            Table bbcontrolTable = output.Tables["BBControl"];
-            if (null != bbcontrolTable)
-            {
-                foreach (BBControlRow bbcontrolRow in bbcontrolTable.Rows)
-                {
-                    if (null != bbcontrolRow.SourceFile)
-                    {
-                        bbcontrolRow.Text = this.ReadTextFile(bbcontrolRow.SourceLineNumbers, bbcontrolRow.SourceFile);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Reads a text file and returns the contents.
-        /// </summary>
-        /// <param name="sourceLineNumbers">Source line numbers for row from source.</param>
-        /// <param name="source">Source path to file to read.</param>
-        /// <returns>Text string read from file.</returns>
-        private string ReadTextFile(SourceLineNumber sourceLineNumbers, string source)
-        {
-            string text = null;
-
-            try
-            {
-                using (StreamReader reader = new StreamReader(source))
-                {
-                    text = reader.ReadToEnd();
-                }
-            }
-            catch (DirectoryNotFoundException e)
-            {
-                Messaging.Instance.OnMessage(WixErrors.BinderFileManagerMissingFile(sourceLineNumbers, e.Message));
-            }
-            catch (FileNotFoundException e)
-            {
-                Messaging.Instance.OnMessage(WixErrors.BinderFileManagerMissingFile(sourceLineNumbers, e.Message));
-            }
-            catch (IOException e)
-            {
-                Messaging.Instance.OnMessage(WixErrors.BinderFileManagerMissingFile(sourceLineNumbers, e.Message));
-            }
-            catch (NotSupportedException)
-            {
-                Messaging.Instance.OnMessage(WixErrors.FileNotFound(sourceLineNumbers, source));
-            }
-
-            return text;
+            UpdateControlTextCommand command = new UpdateControlTextCommand();
+            command.BBControlTable = output.Tables["BBControl"];
+            command.WixBBControlTable = output.Tables["WixBBControl"];
+            command.ControlTable = output.Tables["Control"];
+            command.WixControlTable = output.Tables["WixControl"];
+            command.Execute();
         }
 
         /// <summary>
