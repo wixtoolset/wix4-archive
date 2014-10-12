@@ -2526,10 +2526,9 @@ namespace WixToolset
 
                 if (0 < symbols.Count)
                 {
-                    Row symbolRow = this.core.CreateRow(sourceLineNumbers, "WixPatchSymbolPaths");
-                    symbolRow[0] = "Component";
-                    symbolRow[1] = id;
-                    symbolRow[2] = String.Join(";", symbols);
+                    WixDeltaPatchSymbolPathsRow symbolRow = (WixDeltaPatchSymbolPathsRow)this.core.CreateRow(sourceLineNumbers, "WixDeltaPatchSymbolPaths", id);
+                    symbolRow.Type = SymbolPathType.Component;
+                    symbolRow.SymbolPaths = String.Join(";", symbols);
                 }
 
                 // Complus
@@ -4318,10 +4317,9 @@ namespace WixToolset
 
                 if (null != symbols)
                 {
-                    Row symbolRow = this.core.CreateRow(sourceLineNumbers, "WixPatchSymbolPaths");
-                    symbolRow[0] = "Directory";
-                    symbolRow[1] = id.Id;
-                    symbolRow[2] = symbols;
+                    WixDeltaPatchSymbolPathsRow symbolRow = (WixDeltaPatchSymbolPathsRow)this.core.CreateRow(sourceLineNumbers, "WixDeltaPatchSymbolPaths", id);
+                    symbolRow.Type = SymbolPathType.Directory;
+                    symbolRow.SymbolPaths = symbols;
                 }
             }
         }
@@ -5455,7 +5453,7 @@ namespace WixToolset
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             Identifier id = null;
-            int assemblyAttributes = CompilerConstants.IntegerNotSet;
+            FileAssemblyType assemblyType = FileAssemblyType.NotAnAssembly;
             string assemblyApplication = null;
             string assemblyManifest = null;
             string bindPath = null;
@@ -5472,11 +5470,13 @@ namespace WixToolset
             bool patchIgnore = false;
             bool patchIncludeWholeFile = false;
             bool patchAllowIgnoreOnError = false;
+
             string ignoreLengths = null;
             string ignoreOffsets = null;
             string protectLengths = null;
             string protectOffsets = null;
             string symbols = null;
+
             string procArch = null;
             int selfRegCost = CompilerConstants.IntegerNotSet;
             string shortName = null;
@@ -5496,16 +5496,17 @@ namespace WixToolset
                             string assemblyValue = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < assemblyValue.Length)
                             {
-                                Wix.File.AssemblyType assemblyType = Wix.File.ParseAssemblyType(assemblyValue);
-                                switch (assemblyType)
+                                Wix.File.AssemblyType parsedAssemblyType = Wix.File.ParseAssemblyType(assemblyValue);
+                                switch (parsedAssemblyType)
                                 {
                                     case Wix.File.AssemblyType.net:
-                                        assemblyAttributes = 0;
+                                        assemblyType = FileAssemblyType.DotNetAssembly;
                                         break;
                                     case Wix.File.AssemblyType.no:
+                                        assemblyType = FileAssemblyType.NotAnAssembly;
                                         break;
                                     case Wix.File.AssemblyType.win32:
-                                        assemblyAttributes = 1;
+                                        assemblyType = FileAssemblyType.Win32Assembly;
                                         break;
                                     default:
                                         this.core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, "File", "Assembly", assemblyValue, "no", "win32", ".net"));
@@ -5699,7 +5700,7 @@ namespace WixToolset
                 this.core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, "DefaultVersion", "CompanionFile", companionFile));
             }
 
-            if (CompilerConstants.IntegerNotSet == assemblyAttributes)
+            if (FileAssemblyType.NotAnAssembly == assemblyType)
             {
                 if (null != assemblyManifest)
                 {
@@ -5713,7 +5714,7 @@ namespace WixToolset
             }
             else
             {
-                if (1 == assemblyAttributes && null == assemblyManifest)
+                if (FileAssemblyType.Win32Assembly == assemblyType && null == assemblyManifest)
                 {
                     this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "AssemblyManifest", "Assembly", "win32"));
                 }
@@ -5721,7 +5722,7 @@ namespace WixToolset
                 // allow "*" guid components to omit explicit KeyPath as they can have only one file and therefore this file is the keypath
                 if (YesNoType.Yes != keyPath && "*" != componentGuid)
                 {
-                    this.core.OnMessage(WixErrors.IllegalAttributeValueWithoutOtherAttribute(sourceLineNumbers, node.Name.LocalName, "Assembly", (0 == assemblyAttributes ? ".net" : "win32"), "KeyPath", "yes"));
+                    this.core.OnMessage(WixErrors.IllegalAttributeValueWithoutOtherAttribute(sourceLineNumbers, node.Name.LocalName, "Assembly", (FileAssemblyType.DotNetAssembly == assemblyType ? ".net" : "win32"), "KeyPath", "yes"));
                 }
             }
 
@@ -5847,43 +5848,40 @@ namespace WixToolset
                 // the Sequence row is set in the binder
 
                 WixFileRow wixFileRow = (WixFileRow)this.core.CreateRow(sourceLineNumbers, "WixFile", id);
-                if (CompilerConstants.IntegerNotSet != assemblyAttributes)
-                {
-                    wixFileRow.AssemblyAttributes = assemblyAttributes;
-                }
+                wixFileRow.AssemblyType = assemblyType;
                 wixFileRow.AssemblyManifest = assemblyManifest;
                 wixFileRow.AssemblyApplication = assemblyApplication;
                 wixFileRow.Directory = directoryId;
-                if (CompilerConstants.IntegerNotSet != diskId)
-                {
-                    wixFileRow.DiskId = diskId;
-                }
+                wixFileRow.DiskId = (CompilerConstants.IntegerNotSet == diskId) ? 0 : diskId;
                 wixFileRow.Source = source;
                 wixFileRow.ProcessorArchitecture = procArch;
                 wixFileRow.PatchGroup = (CompilerConstants.IntegerNotSet != patchGroup ? patchGroup : -1);
                 wixFileRow.Attributes = (generatedShortFileName ? 0x1 : 0x0);
                 wixFileRow.PatchAttributes = patchAttributes;
-                wixFileRow.RetainLengths = protectLengths;
-                wixFileRow.IgnoreOffsets = ignoreOffsets;
-                wixFileRow.IgnoreLengths = ignoreLengths;
-                wixFileRow.RetainOffsets = protectOffsets;
+
+                // Always create a delta patch row for this file since other elements (like Component and Media) may
+                // want to add symbol paths to it.
+                WixDeltaPatchFileRow deltaPatchFileRow = (WixDeltaPatchFileRow)this.core.CreateRow(sourceLineNumbers, "WixDeltaPatchFile", id);
+                deltaPatchFileRow.RetainLengths = protectLengths;
+                deltaPatchFileRow.IgnoreOffsets = ignoreOffsets;
+                deltaPatchFileRow.IgnoreLengths = ignoreLengths;
+                deltaPatchFileRow.RetainOffsets = protectOffsets;
 
                 if (null != symbols)
                 {
-                    Row symbolRow = this.core.CreateRow(sourceLineNumbers, "WixPatchSymbolPaths");
-                    symbolRow[0] = "File";
-                    symbolRow[1] = id.Id;
-                    symbolRow[2] = symbols;
+                    WixDeltaPatchSymbolPathsRow symbolRow = (WixDeltaPatchSymbolPathsRow)this.core.CreateRow(sourceLineNumbers, "WixDeltaPatchSymbolPaths", id);
+                    symbolRow.Type = SymbolPathType.File;
+                    symbolRow.SymbolPaths = symbols;
                 }
 
-                if (CompilerConstants.IntegerNotSet != assemblyAttributes)
+                if (FileAssemblyType.NotAnAssembly != assemblyType)
                 {
                     Row row = this.core.CreateRow(sourceLineNumbers, "MsiAssembly");
                     row[0] = componentId;
                     row[1] = Guid.Empty.ToString("B");
                     row[2] = assemblyManifest;
                     row[3] = assemblyApplication;
-                    row[4] = assemblyAttributes;
+                    row[4] = (FileAssemblyType.DotNetAssembly == assemblyType) ? 0 : 1;
                 }
 
                 if (null != bindPath)
@@ -7425,10 +7423,10 @@ namespace WixToolset
 
                 if (null != symbols)
                 {
-                    Row symbolRow = this.core.CreateRow(sourceLineNumbers, "WixPatchSymbolPaths");
-                    symbolRow[0] = "Media";
-                    symbolRow[1] = id.ToString(CultureInfo.InvariantCulture);
-                    symbolRow[2] = symbols;
+                    WixDeltaPatchSymbolPathsRow symbolRow = (WixDeltaPatchSymbolPathsRow)this.core.CreateRow(sourceLineNumbers, "WixDeltaPatchSymbolPaths");
+                    symbolRow.Id = id.ToString(CultureInfo.InvariantCulture);
+                    symbolRow.Type = SymbolPathType.Media;
+                    symbolRow.SymbolPaths = symbols;
                 }
             }
         }
@@ -12042,10 +12040,10 @@ namespace WixToolset
                 {
                     if (null != symbols)
                     {
-                        Row symbolRow = this.core.CreateRow(sourceLineNumbers, "WixPatchSymbolPaths");
-                        symbolRow[0] = "Product";
-                        symbolRow[1] = productCode;
-                        symbolRow[2] = symbols;
+                        WixDeltaPatchSymbolPathsRow symbolRow = (WixDeltaPatchSymbolPathsRow)this.core.CreateRow(sourceLineNumbers, "WixDeltaPatchSymbolPaths");
+                        symbolRow.Id = productCode;
+                        symbolRow.Type = SymbolPathType.Product;
+                        symbolRow.SymbolPaths = symbols;
                     }
                 }
             }

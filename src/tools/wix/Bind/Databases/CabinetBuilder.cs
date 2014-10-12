@@ -147,15 +147,15 @@ namespace WixToolset.Bind.Databases
             {
                 // User Specified Max Cab Size for File Splitting, So Check if this cabinet has a single file larger than MaximumUncompressedFileSize
                 // If a file is larger than MaximumUncompressedFileSize, then the cabinet containing it will have only this file
-                if (1 == cabinetWorkItem.FileRows.Count())
+                if (1 == cabinetWorkItem.FileFacades.Count())
                 {
                     // Cabinet has Single File, Check if this is Large File than needs Splitting into Multiple cabs
                     // Get the Value for Max Uncompressed Media Size
                     maxPreCompressedSizeInBytes = (ulong)MaximumUncompressedMediaSize * 1024 * 1024;
 
-                    foreach (FileRow fileRow in cabinetWorkItem.FileRows) // No other easy way than looping to get the only row
+                    foreach (FileFacade facade in cabinetWorkItem.FileFacades) // No other easy way than looping to get the only row
                     {
-                        if ((ulong)fileRow.FileSize >= maxPreCompressedSizeInBytes)
+                        if ((ulong)facade.File.FileSize >= maxPreCompressedSizeInBytes)
                         {
                             // If file is larger than MaximumUncompressedFileSize set Maximum Cabinet Size for Cabinet Splitting
                             maxCabinetSize = MaximumCabinetSizeForLargeFileSplitting;
@@ -168,19 +168,11 @@ namespace WixToolset.Bind.Databases
             string cabinetFileName = Path.GetFileName(cabinetWorkItem.CabinetFile);
             string cabinetDirectory = Path.GetDirectoryName(cabinetWorkItem.CabinetFile);
 
-            using (WixCreateCab cab = new WixCreateCab(cabinetFileName, cabinetDirectory, cabinetWorkItem.FileRows.Count(), maxCabinetSize, cabinetWorkItem.MaxThreshold, cabinetWorkItem.CompressionLevel))
+            using (WixCreateCab cab = new WixCreateCab(cabinetFileName, cabinetDirectory, cabinetWorkItem.FileFacades.Count(), maxCabinetSize, cabinetWorkItem.MaxThreshold, cabinetWorkItem.CompressionLevel))
             {
-                foreach (FileRow fileRow in cabinetWorkItem.FileRows)
+                foreach (FileFacade facade in cabinetWorkItem.FileFacades)
                 {
-                    bool retainRangeWarning = false;
-                    // TODO: bring this line back when we find a better way to get the binder file manager here.
-                    // cabinetWorkItem.BinderFileManager.ResolvePatch(fileRow, out retainRangeWarning);
-                    if (retainRangeWarning)
-                    {
-                        // TODO: get patch family to add to warning message for PatchWiz parity.
-                        Messaging.Instance.OnMessage(WixWarnings.RetainRangeMismatch(fileRow.SourceLineNumbers, fileRow.File));
-                    }
-                    cab.AddFile(fileRow);
+                    cab.AddFile(facade);
                 }
 
                 cab.Complete(newCabNamesCallBackAddress);

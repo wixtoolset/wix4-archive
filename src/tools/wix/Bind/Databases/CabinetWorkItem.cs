@@ -26,16 +26,16 @@ namespace WixToolset.Bind.Databases
         /// <summary>
         /// Instantiate a new CabinetWorkItem.
         /// </summary>
-        /// <param name="fileRows">The collection of files in this cabinet.</param>
+        /// <param name="fileFacades">The collection of files in this cabinet.</param>
         /// <param name="cabinetFile">The cabinet file.</param>
         /// <param name="maxThreshold">Maximum threshold for each cabinet.</param>
         /// <param name="compressionLevel">The compression level of the cabinet.</param>
         /// <param name="binderFileManager">The binder file manager.</param>
-        public CabinetWorkItem(IEnumerable<FileRow> fileRows, string cabinetFile, int maxThreshold, CompressionLevel compressionLevel /*, BinderFileManager binderFileManager*/)
+        public CabinetWorkItem(IEnumerable<FileFacade> fileFacades, string cabinetFile, int maxThreshold, CompressionLevel compressionLevel /*, BinderFileManager binderFileManager*/)
         {
             this.cabinetFile = cabinetFile;
             this.compressionLevel = compressionLevel;
-            this.FileRows = fileRows;
+            this.FileFacades = fileFacades;
             //this.binderFileManager = binderFileManager;
             this.maxThreshold = maxThreshold;
         }
@@ -62,7 +62,7 @@ namespace WixToolset.Bind.Databases
         /// Gets the collection of files in this cabinet.
         /// </summary>
         /// <value>The collection of files in this cabinet.</value>
-        public IEnumerable<FileRow> FileRows { get; private set; }
+        public IEnumerable<FileFacade> FileFacades { get; private set; }
 
         /// <summary>
         /// Gets the binder file manager.

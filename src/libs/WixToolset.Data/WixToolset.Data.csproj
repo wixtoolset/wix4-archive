@@ -51,6 +51,9 @@
     <Compile Include="RowDictionary.cs" />
     <Compile Include="RowOperation.cs" />
     <Compile Include="Rows\BBControlRow.cs" />
+    <Compile Include="Rows\FileAssemblyType.cs" />
+    <Compile Include="Rows\SymbolPathType.cs" />
+    <Compile Include="Rows\PatchAttributeType.cs" />
     <Compile Include="Rows\WixBundleExePackageAttributes.cs" />
     <Compile Include="Rows\ExitCodeBehaviorType.cs" />
     <Compile Include="Rows\WixBundlePackageExitCodeRow.cs" />
@@ -89,6 +92,8 @@
     <Compile Include="Rows\WixBundleUpdateRow.cs" />
     <Compile Include="Rows\WixChainItemRow.cs" />
     <Compile Include="Rows\WixBundleCatalogRow.cs" />
+    <Compile Include="Rows\WixDeltaPatchSymbolPathsRow.cs" />
+    <Compile Include="Rows\WixDeltaPatchFileRow.cs" />
     <Compile Include="Rows\WixGroupRow.cs" />
     <Compile Include="Rows\WixComplexReferenceRow.cs" />
     <Compile Include="Rows\WixFileRow.cs" />

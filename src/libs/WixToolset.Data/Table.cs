@@ -168,6 +168,12 @@ namespace WixToolset.Data
                 case "WixComplexReference":
                     row = new WixComplexReferenceRow(sourceLineNumbers, this);
                     break;
+                case "WixDeltaPatchFile":
+                    row = new WixDeltaPatchFileRow(sourceLineNumbers, this);
+                    break;
+                case "WixDeltaPatchSymbolPaths":
+                    row = new WixDeltaPatchSymbolPathsRow(sourceLineNumbers, this);
+                    break;
                 case "WixFile":
                     row = new WixFileRow(sourceLineNumbers, this);
                     break;

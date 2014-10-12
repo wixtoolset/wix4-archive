@@ -1463,31 +1463,27 @@
         <columnDefinition name="WixMerge_" type="string" length="72" primaryKey="yes"/>
     </tableDefinition>
     <tableDefinition name="WixFile" unreal="yes">
-        <columnDefinition name="File_" type="string" length="0" primaryKey="yes" modularize="column" keyTable="File" keyColumn="1" />
-        <columnDefinition name="AssemblyAttributes" type="number" length="4" nullable="yes"/>
-        <columnDefinition name="File_AssemblyManifest" type="string" length="72" nullable="yes" modularize="column"/>
-        <columnDefinition name="File_AssemblyApplication" type="string" length="72" nullable="yes" modularize="column"/>
-        <columnDefinition name="Directory_" type="string" length="72"/>
+        <columnDefinition name="File_" type="string" length="0" category="identifier" primaryKey="yes"
+                modularize="column" keyTable="File" keyColumn="1" />
+        <columnDefinition name="AssemblyType" type="number" length="2" minValue="0" maxValue="1" />
+        <columnDefinition name="File_AssemblyManifest" type="string" length="72" category="identifier" nullable="yes"
+                modularize="column" keyTable="File" keyColumn="1" />
+        <columnDefinition name="File_AssemblyApplication" type="string" length="72" category="identifier" nullable="yes"
+                modularize="column" keyTable="File" keyColumn="1" />
+        <columnDefinition name="Directory_" type="string" length="72" modularize="column" keyTable="Directory" keyColumn="1" />
         <columnDefinition name="DiskId" type="number" length="4" nullable="yes"/>
         <columnDefinition name="Source" type="object" length="0"/>
         <columnDefinition name="ProcessorArchitecture" type="string" length="0" nullable="yes"/>
         <columnDefinition name="PatchGroup" type="number" length="4" />
         <columnDefinition name="Attributes" type="number" length="4"/>
         <columnDefinition name="PatchAttributes" type="number" length="4" nullable="yes"/>
-        <columnDefinition name="RetainLengths" type="preserved" length="0" nullable="yes"
-                category="text"/>
-        <columnDefinition name="IgnoreOffsets" type="preserved" length="0" nullable="yes"
-                category="text"/>
-        <columnDefinition name="IgnoreLengths" type="preserved" length="0" nullable="yes"
-                category="text"/>
-        <columnDefinition name="RetainOffsets" type="preserved" length="0" nullable="yes"
-                category="text"/>
+        <columnDefinition name="DeltaPatchHeaderSource" type="string" length="0"/>
     </tableDefinition>
     <tableDefinition name="WixBindUpdatedFiles" unreal="yes">
         <columnDefinition name="File_" type="string" length="0" primaryKey="yes" modularize="column" keyTable="File" keyColumn="1" category="identifier" />
     </tableDefinition>
     <tableDefinition name="WixBuildInfo" unreal="yes">
-        <columnDefinition name="WixVersion" type="string" length="20" 
+        <columnDefinition name="WixVersion" type="string" length="20"
                 category="text" description="Version number of WiX."/>
         <columnDefinition name="WixOutputFile" type="string" length="0" nullable="yes" escapeIdtCharacters="yes"
                 category="text" description="Path to output file, if supplied."/>
@@ -1542,11 +1538,18 @@
         <columnDefinition name="DependsOnId_" type="string" length="72" category="identifier" primaryKey="yes"
                 description="Reference to an entry in another table."/>
     </tableDefinition>
-    <tableDefinition name="WixPatchSymbolPaths" unreal="yes">
-        <columnDefinition name="Table" type="string" length="72" primaryKey="yes"/>
-        <columnDefinition name="Id" type="string" length="72" primaryKey="yes"/>
-        <columnDefinition name="SymbolPaths" type="preserved" length="255"
-                category="text"/>
+    <tableDefinition name="WixDeltaPatchFile" unreal="yes">
+        <columnDefinition name="File_" type="string" length="72" primaryKey="yes" modularize="column" keyTable="File" keyColumn="1" />
+        <columnDefinition name="RetainLengths" type="preserved" length="0" nullable="yes" category="text"/>
+        <columnDefinition name="IgnoreOffsets" type="preserved" length="0" nullable="yes" category="text"/>
+        <columnDefinition name="IgnoreLengths" type="preserved" length="0" nullable="yes" category="text"/>
+        <columnDefinition name="RetainOffsets" type="preserved" length="0" nullable="yes" category="text"/>
+        <columnDefinition name="SymbolPaths" type="preserved" length="0" nullable="yes" category="text"/>
+    </tableDefinition>
+    <tableDefinition name="WixDeltaPatchSymbolPaths" unreal="yes">
+      <columnDefinition name="Id" type="string" length="72" primaryKey="yes" />
+      <columnDefinition name="Type" type="number" length="2" primaryKey="yes" minValue="0" maxValue="4" />
+      <columnDefinition name="SymbolPaths" type="preserved" length="0" category="text"/>
     </tableDefinition>
     <tableDefinition name="WixProperty" unreal="yes">
         <columnDefinition name="Property_" type="string" length="72" modularize="column"/>

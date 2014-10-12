@@ -12,7 +12,6 @@ namespace WixToolset.Bind.Databases
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
@@ -30,33 +29,35 @@ namespace WixToolset.Bind.Databases
 
         public TableDefinitionCollection TableDefinitions { private get; set; }
 
-        public IEnumerable<FileRow> FileRows { get; private set; }
+        public IEnumerable<FileFacade> FileFacades { get; private set; }
 
         public void Execute()
         {
             Debug.Assert(OutputType.Patch != this.Output.Type);
 
-            List<FileRow> allFileRows = this.CopyOutFileRows ? new List<FileRow>() : null;
+            List<FileFacade> allFileRows = this.CopyOutFileRows ? new List<FileFacade>() : null;
 
+#if false // TODO: Fix this patching related code to work correctly with FileFacades.
             bool copyToPatch = (allFileRows != null);
             bool copyFromPatch = !copyToPatch;
 
             RowDictionary<MediaRow> patchMediaRows = new RowDictionary<MediaRow>();
 
-            Dictionary<int, RowDictionary<FileRow>> patchMediaFileRows = new Dictionary<int, RowDictionary<FileRow>>();
+            Dictionary<int, RowDictionary<WixFileRow>> patchMediaFileRows = new Dictionary<int, RowDictionary<WixFileRow>>();
 
-            Table patchFileTable = this.Output.EnsureTable(this.TableDefinitions["File"]);
+            Table patchActualFileTable = this.Output.EnsureTable(this.TableDefinitions["File"]);
+            Table patchFileTable = this.Output.EnsureTable(this.TableDefinitions["WixFile"]);
 
             if (copyFromPatch)
             {
                 // index patch files by diskId+fileId
-                foreach (FileRow patchFileRow in patchFileTable.Rows)
+                foreach (WixFileRow patchFileRow in patchFileTable.Rows)
                 {
                     int diskId = patchFileRow.DiskId;
-                    RowDictionary<FileRow> mediaFileRows;
+                    RowDictionary<WixFileRow> mediaFileRows;
                     if (!patchMediaFileRows.TryGetValue(diskId, out mediaFileRows))
                     {
-                        mediaFileRows = new RowDictionary<FileRow>();
+                        mediaFileRows = new RowDictionary<WixFileRow>();
                         patchMediaFileRows.Add(diskId, mediaFileRows);
                     }
 
@@ -88,13 +89,13 @@ namespace WixToolset.Bind.Databases
                         continue;
                     }
 
-                    Output mainTransform = (Output)substorage.Data;
+                    Output mainTransform = substorage.Data;
                     Table mainWixFileTable = mainTransform.Tables["WixFile"];
                     Table mainMsiFileHashTable = mainTransform.Tables["MsiFileHash"];
 
                     this.FileManagerCore.ActiveSubStorage = substorage;
 
-                    RowDictionary<WixFileRow> wixFiles = new RowDictionary<WixFileRow>(mainWixFileTable);
+                    RowDictionary<WixFileRow> mainWixFiles = new RowDictionary<WixFileRow>(mainWixFileTable);
                     RowDictionary<Row> mainMsiFileHashIndex = new RowDictionary<Row>();
 
                     Table mainFileTable = mainTransform.Tables["File"];
@@ -133,20 +134,21 @@ namespace WixToolset.Bind.Databases
 
                         foreach (FileRow mainFileRow in mainFileTable.Rows)
                         {
-                            if (mainFileRow.Operation == RowOperation.Delete)
+                            if (RowOperation.Delete == mainFileRow.Operation)
+                            {
+                                continue;
+                            }
+                            else if (RowOperation.None == mainFileRow.Operation && !copyToPatch)
                             {
                                 continue;
                             }
 
-                            if (!copyToPatch && mainFileRow.Operation == RowOperation.None)
+                            WixFileRow mainWixFileRow = mainWixFiles.Get(mainFileRow.File);
+
+                            if (copyToPatch) // when copying to the patch, we need compare the underlying files and include all file changes.
                             {
-                                continue;
-                            }
-                            else if (copyToPatch) // when copying to the patch, we need compare the underlying files and include all file changes.
-                            {
-                                WixFileRow wixFileRow = wixFiles.Get((string)mainFileRow[0]);
-                                ObjectField objectField = (ObjectField)wixFileRow.Fields[6];
-                                FileRow pairedFileRow = pairedFileRows.Get((string)mainFileRow[0]);
+                                ObjectField objectField = (ObjectField)mainWixFileRow.Fields[6];
+                                FileRow pairedFileRow = pairedFileRows.Get(mainFileRow.File);
 
                                 // If the file is new, we always need to add it to the patch.
                                 if (mainFileRow.Operation != RowOperation.Add)
@@ -162,7 +164,7 @@ namespace WixToolset.Bind.Databases
                                     else
                                     {
                                         // TODO: should this entire condition be placed in the binder file manager?
-                                        if ((0 == (PatchAttributeType.Ignore & wixFileRow.PatchAttributes)) &&
+                                        if ((0 == (PatchAttributeType.Ignore & mainWixFileRow.PatchAttributes)) &&
                                             !this.CompareFiles(objectField.PreviousData.ToString(), objectField.Data.ToString()))
                                         {
                                             // If the file is different, we need to mark the mainFileRow and pairedFileRow as modified.
@@ -206,37 +208,43 @@ namespace WixToolset.Bind.Databases
                             }
 
                             // index patch files by diskId+fileId
-                            int diskId = mainFileRow.DiskId;
-                            RowDictionary<FileRow> mediaFileRows;
+                            int diskId = mainWixFileRow.DiskId;
+
+                            RowDictionary<WixFileRow> mediaFileRows;
                             if (!patchMediaFileRows.TryGetValue(diskId, out mediaFileRows))
                             {
-                                mediaFileRows = new RowDictionary<FileRow>();
+                                mediaFileRows = new RowDictionary<WixFileRow>();
                                 patchMediaFileRows.Add(diskId, mediaFileRows);
                             }
 
                             string fileId = mainFileRow.File;
-                            FileRow patchFileRow = mediaFileRows.Get(fileId);
+                            WixFileRow patchFileRow = mediaFileRows.Get(fileId);
                             if (copyToPatch)
                             {
                                 if (null == patchFileRow)
                                 {
-                                    patchFileRow = (FileRow)patchFileTable.CreateRow(null);
-                                    patchFileRow.CopyFrom(mainFileRow);
+                                    FileRow patchActualFileRow = (FileRow)patchFileTable.CreateRow(mainFileRow.SourceLineNumbers);
+                                    patchActualFileRow.CopyFrom(mainFileRow);
+
+                                    patchFileRow = (WixFileRow)patchFileTable.CreateRow(mainFileRow.SourceLineNumbers);
+                                    patchFileRow.CopyFrom(mainWixFileRow);
+
                                     mediaFileRows.Add(patchFileRow);
-                                    allFileRows.Add(patchFileRow);
+
+                                    allFileRows.Add(new FileFacade(patchActualFileRow, patchFileRow, null)); // TODO: should we be passing along delta information? Probably, right?
                                 }
                                 else
                                 {
                                     // TODO: confirm the rest of data is identical?
 
                                     // make sure Source is same. Otherwise we are silently ignoring a file.
-                                    if (0 != String.Compare(patchFileRow.Source, mainFileRow.Source, StringComparison.OrdinalIgnoreCase))
+                                    if (0 != String.Compare(patchFileRow.Source, mainWixFileRow.Source, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        Messaging.Instance.OnMessage(WixErrors.SameFileIdDifferentSource(mainFileRow.SourceLineNumbers, fileId, patchFileRow.Source, mainFileRow.Source));
+                                        Messaging.Instance.OnMessage(WixErrors.SameFileIdDifferentSource(mainFileRow.SourceLineNumbers, fileId, patchFileRow.Source, mainWixFileRow.Source));
                                     }
 
                                     // capture the previous file versions (and associated data) from this targeted instance of the baseline into the current filerow.
-                                    patchFileRow.AppendPreviousDataFrom(mainFileRow);
+                                    patchFileRow.AppendPreviousDataFrom(mainWixFileRow);
                                 }
                             }
                             else
@@ -296,7 +304,7 @@ namespace WixToolset.Bind.Databases
                                     Row patchHashRow;
                                     if (!mainMsiFileHashIndex.TryGetValue(patchFileRow.File, out patchHashRow))
                                     {
-                                        patchHashRow = patchFileRow.HashRow;
+                                        patchHashRow = patchFileRow.Hash;
                                     }
 
                                     if (null != patchHashRow)
@@ -318,7 +326,7 @@ namespace WixToolset.Bind.Databases
                                     }
 
                                     // copy MsiAssemblyName rows for this File
-                                    List<Row> patchAssemblyNameRows = patchFileRow.AssemblyNameRows;
+                                    List<Row> patchAssemblyNameRows = patchFileRow.AssemblyNames;
                                     if (null != patchAssemblyNameRows)
                                     {
                                         Table mainAssemblyNameTable = mainTransform.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
@@ -415,8 +423,8 @@ namespace WixToolset.Bind.Databases
             {
                 this.FileManagerCore.ActiveSubStorage = null;
             }
-
-            this.FileRows = allFileRows;
+#endif
+            this.FileFacades = allFileRows;
         }
 
         /// <summary>

@@ -33,11 +33,6 @@ namespace WixToolset.Bind
 
         public void Execute()
         {
-            foreach (BinderExtension extension in this.Extensions)
-            {
-                extension.Initialize(this.Transform);
-            }
-
             int transformFlags = 0;
 
             Output targetOutput = new Output(null);

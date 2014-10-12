@@ -123,6 +123,12 @@ namespace WixToolset
         public List<BindPath> UpdatedBindPaths { get; private set; }
 
         /// <summary>
+        /// Gets or sets the option to enable building binary delta patches.
+        /// </summary>
+        /// <value>The option to enable building binary delta patches.</value>
+        public bool DeltaBinaryPatch { get; set; }
+
+        /// <summary>
         /// Gets or sets the cabinet cache location.
         /// </summary>
         public string CabCachePath { get; set; }
@@ -240,12 +246,15 @@ namespace WixToolset
             this.core = new BinderCore();
             this.core.FileManagerCore = this.fileManagerCore;
 
+            this.WriteBuildInfoTable(output, file);
+
+            // Initialize extensions.
             foreach (IBinderExtension extension in this.extensions)
             {
                 extension.Core = this.core;
-            }
 
-            this.WriteBuildInfoTable(output, file);
+                extension.Initialize(output);
+            }
 
             // Gather all the wix variables.
             Table wixVariableTable = output.Tables["WixVariable"];

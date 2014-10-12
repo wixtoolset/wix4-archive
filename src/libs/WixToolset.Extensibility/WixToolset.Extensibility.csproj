@@ -17,6 +17,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BinderExtension.cs" />
+    <Compile Include="BindFileWithPath.cs" />
     <Compile Include="BindPath.cs" />
     <Compile Include="BindStage.cs" />
     <Compile Include="CabinetBuildOption.cs" />
