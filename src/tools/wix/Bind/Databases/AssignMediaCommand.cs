@@ -210,7 +210,7 @@ namespace WixToolset.Bind.Databases
                 if (currentPreCabSize > maxPreCabSizeInBytes)
                 {
                     // Overflow due to current file
-                    currentMediaRow = this.AddMediaRow(mediaTable, ++currentCabIndex, mediaTemplateRow.CompressionLevel);
+                    currentMediaRow = this.AddMediaRow(mediaTemplateRow, mediaTable, ++currentCabIndex);
                     mediaRows.Add(currentMediaRow);
                     filesByCabinetMedia.Add(currentMediaRow, new List<FileRow>());
 
@@ -226,7 +226,7 @@ namespace WixToolset.Bind.Databases
                     if (currentMediaRow == null)
                     {
                         // Create new cab and MediaRow
-                        currentMediaRow = this.AddMediaRow(mediaTable, ++currentCabIndex, mediaTemplateRow.CompressionLevel);
+                        currentMediaRow = this.AddMediaRow(mediaTemplateRow, mediaTable, ++currentCabIndex);
                         mediaRows.Add(currentMediaRow);
                         filesByCabinetMedia.Add(currentMediaRow, new List<FileRow>());
                     }
@@ -335,21 +335,16 @@ namespace WixToolset.Bind.Databases
         /// <param name="mediaTable"></param>
         /// <param name="cabIndex"></param>
         /// <returns></returns>
-        private MediaRow AddMediaRow(Table mediaTable, int cabIndex, string compressionLevel)
+        private MediaRow AddMediaRow(WixMediaTemplateRow mediaTemplateRow, Table mediaTable, int cabIndex)
         {
-            MediaRow currentMediaRow = (MediaRow)mediaTable.CreateRow(null);
+            MediaRow currentMediaRow = (MediaRow)mediaTable.CreateRow(mediaTemplateRow.SourceLineNumbers);
             currentMediaRow.DiskId = cabIndex;
             currentMediaRow.Cabinet = String.Format(this.CabinetNameTemplate, cabIndex);
 
-            if (!String.IsNullOrEmpty(compressionLevel))
-            {
-                currentMediaRow.CompressionLevel = WixCreateCab.CompressionLevelFromString(compressionLevel);
-            }
-
             Table wixMediaTable = this.Output.EnsureTable(this.TableDefinitions["WixMedia"]);
-            Row row = wixMediaTable.CreateRow(null);
-            row[0] = cabIndex;
-            row[1] = compressionLevel;
+            WixMediaRow row = (WixMediaRow)wixMediaTable.CreateRow(mediaTemplateRow.SourceLineNumbers);
+            row.DiskId = cabIndex;
+            row.CompressionLevel = mediaTemplateRow.CompressionLevel;
 
             return currentMediaRow;
         }

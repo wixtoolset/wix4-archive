@@ -359,8 +359,10 @@ namespace WixToolset.Bind
                 command.LayoutDirectory = layoutDirectory;
                 command.Compressed = compressed;
                 command.FileRowsByCabinet = fileRowsByCabinetMedia;
+                command.ResolveMedia = this.ResolveMedia;
                 command.TableDefinitions = this.TableDefinitions;
                 command.TempFilesLocation = this.TempFilesLocation;
+                command.WixMediaTable = this.Output.Tables["WixMedia"];
                 command.Execute();
 
                 fileTransfers.AddRange(command.FileTransfers);
@@ -485,9 +487,20 @@ namespace WixToolset.Bind
             }
 
             // process uncompressed files
-            if (!this.SuppressLayout)
+            if (Messaging.Instance.EncounteredError && !this.SuppressLayout && fileRows.Any())
             {
-                this.ProcessUncompressedFiles(tempDatabaseFile, uncompressedFileRows, fileTransfers, assignedMediaRows, layoutDirectory, compressed, longNames);
+                ProcessUncompressedFilesCommand command = new ProcessUncompressedFilesCommand();
+                command.Compressed = compressed;
+                command.FileRows = uncompressedFileRows;
+                command.LayoutDirectory = layoutDirectory;
+                command.LongNamesInImage = longNames;
+                command.MediaRows = assignedMediaRows;
+                command.ResolveMedia = this.ResolveMedia;
+                command.DatabasePath = tempDatabaseFile;
+                command.WixMediaTable = this.Output.Tables["WixMedia"];
+                command.Execute();
+
+                fileTransfers.AddRange(command.FileTransfers);
             }
 
             this.FileTransfers = fileTransfers;
@@ -747,37 +760,6 @@ namespace WixToolset.Bind
                         default:
                             // error
                             break;
-                    }
-                }
-            }
-
-            // copy data from the WixMedia rows into the Media rows
-            Table wixMediaTable = tables["WixMedia"];
-            if (null != wixMediaTable)
-            {
-                Table mediaTable = tables["Media"];
-
-                // index all the Media rows by their identifier
-                Hashtable indexedMediaRows = new Hashtable(mediaTable.Rows.Count);
-                foreach (MediaRow mediaRow in mediaTable.Rows)
-                {
-                    indexedMediaRows.Add(mediaRow.DiskId, mediaRow);
-                }
-
-                foreach (Row row in wixMediaTable.Rows)
-                {
-                    MediaRow mediaRow = (MediaRow)indexedMediaRows[row[0]];
-
-                    // compression level
-                    if (null != row[1])
-                    {
-                        mediaRow.CompressionLevel = WixCreateCab.CompressionLevelFromString((string)row[1]);
-                    }
-
-                    // layout
-                    if (null != row[2])
-                    {
-                        mediaRow.Layout = (string)row[2];
                     }
                 }
             }
@@ -2442,93 +2424,33 @@ namespace WixToolset.Bind
             }
         }
 
-
-        /// <summary>
-        /// Process uncompressed files.
-        /// </summary>
-        /// <param name="tempDatabaseFile">The temporary database file.</param>
-        /// <param name="fileRows">The collection of files to copy into the image.</param>
-        /// <param name="fileTransfers">Array of files to be transfered.</param>
-        /// <param name="mediaRows">The indexed media rows.</param>
-        /// <param name="layoutDirectory">The directory in which the image should be layed out.</param>
-        /// <param name="compressed">Flag if source image should be compressed.</param>
-        /// <param name="longNamesInImage">Flag if long names should be used.</param>
-        private void ProcessUncompressedFiles(string tempDatabaseFile, IEnumerable<FileRow> fileRows, List<FileTransfer> fileTransfers, RowDictionary<MediaRow> mediaRows, string layoutDirectory, bool compressed, bool longNamesInImage)
-        {
-            if (Messaging.Instance.EncounteredError || !fileRows.Any())
-            {
-                return;
-            }
-
-            Hashtable directories = new Hashtable();
-            using (Database db = new Database(tempDatabaseFile, OpenDatabase.ReadOnly))
-            {
-                using (View directoryView = db.OpenExecuteView("SELECT `Directory`, `Directory_Parent`, `DefaultDir` FROM `Directory`"))
-                {
-                    while (true)
-                    {
-                        using (Record directoryRecord = directoryView.Fetch())
-                        {
-                            if (null == directoryRecord)
-                            {
-                                break;
-                            }
-
-                            string sourceName = Installer.GetName(directoryRecord.GetString(3), true, longNamesInImage);
-
-                            directories.Add(directoryRecord.GetString(1), new ResolvedDirectory(directoryRecord.GetString(2), sourceName));
-                        }
-                    }
-                }
-
-                using (View fileView = db.OpenView("SELECT `Directory_`, `FileName` FROM `Component`, `File` WHERE `Component`.`Component`=`File`.`Component_` AND `File`.`File`=?"))
-                {
-                    using (Record fileQueryRecord = new Record(1))
-                    {
-                        // for each file in the array of uncompressed files
-                        foreach (FileRow fileRow in fileRows)
-                        {
-                            string relativeFileLayoutPath = null;
-
-                            string mediaLayoutDirectory = this.ResolveMedia(mediaRows.Get(fileRow.DiskId), layoutDirectory);
-
-                            // setup up the query record and find the appropriate file in the
-                            // previously executed file view
-                            fileQueryRecord[1] = fileRow.File;
-                            fileView.Execute(fileQueryRecord);
-
-                            using (Record fileRecord = fileView.Fetch())
-                            {
-                                if (null == fileRecord)
-                                {
-                                    throw new WixException(WixErrors.FileIdentifierNotFound(fileRow.SourceLineNumbers, fileRow.File));
-                                }
-
-                                relativeFileLayoutPath = Binder.GetFileSourcePath(directories, fileRecord[1], fileRecord[2], compressed, longNamesInImage);
-                            }
-
-                            // finally put together the base media layout path and the relative file layout path
-                            string fileLayoutPath = Path.Combine(mediaLayoutDirectory, relativeFileLayoutPath);
-                            FileTransfer transfer;
-                            if (FileTransfer.TryCreate(fileRow.Source, fileLayoutPath, false, "File", fileRow.SourceLineNumbers, out transfer))
-                            {
-                                fileTransfers.Add(transfer);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private string ResolveMedia(MediaRow mediaRow, string layoutDirectory)
+        private string ResolveMedia(MediaRow mediaRow, string mediaLayoutDirectory, string layoutDirectory)
         {
             string layout = null;
+
             foreach (IBinderFileManager fileManager in this.FileManagers)
             {
-                layout = fileManager.ResolveMedia(mediaRow, layoutDirectory);
+                layout = fileManager.ResolveMedia(mediaRow, mediaLayoutDirectory, layoutDirectory);
                 if (!String.IsNullOrEmpty(layout))
                 {
                     break;
+                }
+            }
+
+            // If no binder file manager resolved the layout, do the default behavior.
+            if (String.IsNullOrEmpty(layout))
+            {
+                if (String.IsNullOrEmpty(mediaLayoutDirectory))
+                {
+                    layout = layoutDirectory;
+                }
+                else if (Path.IsPathRooted(mediaLayoutDirectory))
+                {
+                    layout = mediaLayoutDirectory;
+                }
+                else
+                {
+                    layout = Path.Combine(layoutDirectory, mediaLayoutDirectory);
                 }
             }
 

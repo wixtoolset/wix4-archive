@@ -5,18 +5,10 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Specialization of a row for the MediaTeplate table.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Data.Rows
 {
-    using System;
-    using System.Globalization;
-    using System.Text;
-
     /// <summary>
     /// Specialization of a row for the MediaTemplate table.
     /// </summary>
@@ -46,9 +38,9 @@ namespace WixToolset.Data.Rows
         /// Gets or sets the compression level for this media template row.
         /// </summary>
         /// <value>Compression level.</value>
-        public string CompressionLevel
+        public CompressionLevel? CompressionLevel
         {
-            get { return (string)this.Fields[1].Data; }
+            get { return (CompressionLevel?)this.Fields[1].AsNullableInteger(); }
             set { this.Fields[1].Data = value; }
         }
 

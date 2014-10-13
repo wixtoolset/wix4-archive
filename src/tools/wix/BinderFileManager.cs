@@ -261,27 +261,12 @@ namespace WixToolset
         /// Resolve the layout path of a media.
         /// </summary>
         /// <param name="mediaRow">The media's row.</param>
+        /// <param name="mediaLayoutDirectory">The layout directory provided by the Media element.</param>
         /// <param name="layoutDirectory">The layout directory for the setup image.</param>
         /// <returns>The layout path for the media.</returns>
-        public virtual string ResolveMedia(MediaRow mediaRow, string layoutDirectory)
+        public virtual string ResolveMedia(MediaRow mediaRow, string mediaLayoutDirectory, string layoutDirectory)
         {
-            if (mediaRow == null)
-            {
-                throw new ArgumentNullException("mediaRow");
-            }
-
-            string mediaLayoutDirectory = mediaRow.Layout;
-
-            if (null == mediaLayoutDirectory)
-            {
-                mediaLayoutDirectory = layoutDirectory;
-            }
-            else if (!Path.IsPathRooted(mediaLayoutDirectory))
-            {
-                mediaLayoutDirectory = Path.Combine(layoutDirectory, mediaLayoutDirectory);
-            }
-
-            return mediaLayoutDirectory;
+            return null;
         }
 
         /// <summary>

@@ -72,6 +72,7 @@
     <Compile Include="Bind\Databases\CreateCabinetsCommand.cs" />
     <Compile Include="Bind\Databases\ConfigurationCallback.cs" />
     <Compile Include="Bind\Databases\CopyTransformDataCommand.cs" />
+    <Compile Include="Bind\Databases\ProcessUncompressedFilesCommand.cs" />
     <Compile Include="Bind\Databases\UpdateControlTextCommand.cs" />
     <Compile Include="Bind\Databases\WixPatchSymbolPathsComparer.cs" />
     <Compile Include="Cab\CabinetFileInfo.cs" />

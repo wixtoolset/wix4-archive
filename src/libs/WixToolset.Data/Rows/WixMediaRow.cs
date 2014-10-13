@@ -13,11 +13,6 @@
 
 namespace WixToolset.Data.Rows
 {
-    using System;
-    using System.Globalization;
-    using System.Text;
-    using System.Xml;
-
     /// <summary>
     /// Specialization of a row for the WixMedia table.
     /// </summary>
@@ -44,78 +39,23 @@ namespace WixToolset.Data.Rows
         }
 
         /// <summary>
-        /// Gets or sets the compression level for this media row.
-        /// </summary>
-        /// <value>Compression level.</value>
-        public CompressionLevel CompressionLevel
-        {
-            get
-            {
-                CompressionLevel level = CompressionLevel.Mszip;
-                switch ((string)this.Fields[1].Data)
-                {
-                    case "low":
-                        level = CompressionLevel.Low;
-                        break;
-                    case "medium":
-                        level = CompressionLevel.Medium;
-                        break;
-                    case "high":
-                        level = CompressionLevel.High;
-                        break;
-                    case "none":
-                        level = CompressionLevel.None;
-                        break;
-                    case "mszip":
-                        level = CompressionLevel.Mszip;
-                        break;
-                }
-
-                return level;
-            }
-
-            set
-            {
-                switch (value)
-                {
-                    case CompressionLevel.None:
-                        this.Fields[1].Data = "none";
-                        break;
-                    case CompressionLevel.Low:
-                        this.Fields[1].Data = "low";
-                        break;
-                    case CompressionLevel.Medium:
-                        this.Fields[1].Data = "medium";
-                        break;
-                    case CompressionLevel.High:
-                        this.Fields[1].Data = "high";
-                        break;
-                    case CompressionLevel.Mszip:
-                        this.Fields[1].Data = "mszip";
-                        break;
-                    default:
-                        throw new ArgumentException(String.Format(CultureInfo.CurrentUICulture, WixDataStrings.EXP_UnknownCompressionLevelType, value));
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the disk id for this media.
         /// </summary>
         /// <value>Disk id for the media.</value>
         public int DiskId
         {
-            get { return Convert.ToInt32(this.Fields[0].Data, CultureInfo.InvariantCulture); }
+            get { return (int)this.Fields[0].Data; }
             set { this.Fields[0].Data = value; }
         }
 
         /// <summary>
-        /// Gets a value indicating whether the compression level for this media row has been set.
+        /// Gets or sets the compression level for this media row.
         /// </summary>
         /// <value>Compression level.</value>
-        public bool HasExplicitCompressionLevel
+        public CompressionLevel? CompressionLevel
         {
-            get { return !String.IsNullOrEmpty((string)this.Fields[1].Data); }
+            get { return (CompressionLevel?)this.Fields[1].AsNullableInteger(); }
+            set { this.Fields[1].Data = value; }
         }
 
         /// <summary>

@@ -9,10 +9,7 @@
 
 namespace WixToolset.Extensibility
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
 
@@ -26,7 +23,7 @@ namespace WixToolset.Extensibility
 
         string ResolveRelatedFile(string source, string relatedSource, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage);
 
-        string ResolveMedia(MediaRow mediaRow, string layoutDirectory);
+        string ResolveMedia(MediaRow mediaRow, string mediaLayoutDirectory, string layoutDirectory);
 
         string ResolveUrl(string url, string fallbackUrl, string packageId, string payloadId, string fileName);
 
