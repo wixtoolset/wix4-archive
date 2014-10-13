@@ -93,11 +93,7 @@ namespace WixToolset.Bootstrapper
                 package.Vital = vital.Value;
 
                 bool? displayInternalUI = BootstrapperApplicationData.GetYesNoAttribute(node, "DisplayInternalUI");
-                if (!displayInternalUI.HasValue)
-                {
-                    throw new Exception("Failed to get DisplayInternalUI setting for package.");
-                }
-                package.DisplayInternalUI = displayInternalUI.Value;
+                package.DisplayInternalUI = displayInternalUI.HasValue && displayInternalUI.Value;
 
                 package.ProductCode = BootstrapperApplicationData.GetAttribute(node, "ProductCode");
 
