@@ -7222,7 +7222,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             int id = CompilerConstants.IntegerNotSet;
             string cabinet = null;
-            string compressionLevel = null; // this defaults to mszip in Binder
+            CompressionLevel? compressionLevel = null;
             string diskPrompt = null;
             string layout = null;
             bool patch = null != patchId;
@@ -7245,13 +7245,17 @@ namespace WixToolset
                             cabinet = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "CompressionLevel":
-                            compressionLevel = this.core.GetAttributeValue(sourceLineNumbers, attrib);
-                            if (0 < compressionLevel.Length)
+                            string compressionLevelString = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (0 < compressionLevelString.Length)
                             {
                                 Wix.CompressionLevelType compressionLevelType;
-                                if (!Wix.Enums.TryParseCompressionLevelType(compressionLevel, out compressionLevelType))
+                                if (!Wix.Enums.TryParseCompressionLevelType(compressionLevelString, out compressionLevelType))
                                 {
-                                    this.core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, compressionLevel, "high", "low", "medium", "mszip", "none"));
+                                    this.core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, attrib.Name.LocalName, compressionLevelString, "high", "low", "medium", "mszip", "none"));
+                                }
+                                else
+                                {
+                                    compressionLevel = (CompressionLevel)Enum.Parse(typeof(CompressionLevel), compressionLevelString, true);
                                 }
                             }
                             break;
@@ -7413,10 +7417,10 @@ namespace WixToolset
 
                 if (null != compressionLevel || null != layout)
                 {
-                    Row row = this.core.CreateRow(sourceLineNumbers, "WixMedia");
-                    row[0] = id;
-                    row[1] = compressionLevel;
-                    row[2] = layout;
+                    WixMediaRow row = (WixMediaRow)this.core.CreateRow(sourceLineNumbers, "WixMedia");
+                    row.DiskId = id;
+                    row.CompressionLevel = compressionLevel;
+                    row.Layout = layout;
                 }
 
                 if (null != symbols)
@@ -7555,19 +7559,19 @@ namespace WixToolset
                 switch (compressionLevelType)
                 {
                     case Wix.CompressionLevelType.high:
-                        mediaTemplateRow.CompressionLevel = CompressionLevel.High.ToString();
+                        mediaTemplateRow.CompressionLevel = CompressionLevel.High;
                         break;
                     case Wix.CompressionLevelType.low:
-                        mediaTemplateRow.CompressionLevel = CompressionLevel.Low.ToString();
+                        mediaTemplateRow.CompressionLevel = CompressionLevel.Low;
                         break;
                     case Wix.CompressionLevelType.medium:
-                        mediaTemplateRow.CompressionLevel = CompressionLevel.Medium.ToString();
+                        mediaTemplateRow.CompressionLevel = CompressionLevel.Medium;
                         break;
                     case Wix.CompressionLevelType.none:
-                        mediaTemplateRow.CompressionLevel = CompressionLevel.None.ToString();
+                        mediaTemplateRow.CompressionLevel = CompressionLevel.None;
                         break;
                     case Wix.CompressionLevelType.mszip:
-                        mediaTemplateRow.CompressionLevel = CompressionLevel.Mszip.ToString();
+                        mediaTemplateRow.CompressionLevel = CompressionLevel.Mszip;
                         break;
                 }
             }

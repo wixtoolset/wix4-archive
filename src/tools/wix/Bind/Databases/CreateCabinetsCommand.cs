@@ -7,12 +7,13 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Databases
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Threading;
     using WixToolset.Data;
@@ -58,13 +59,15 @@ namespace WixToolset.Bind
 
         public bool Compressed { private get; set; }
 
-        public AutoMediaAssignerCommand AutoMediaAssigner { private get; set; }
+        public Dictionary<MediaRow, IEnumerable<FileRow>> FileRowsByCabinet { private get; set; }
+
+        public Func<MediaRow, string, string, string> ResolveMedia { private get; set; }
 
         public TableDefinitionCollection TableDefinitions { private get; set; }
 
-        public IEnumerable<FileTransfer> FileTransfers { get { return this.fileTransfers; } }
+        public Table WixMediaTable { private get; set; }
 
-        public RowDictionary<FileRow> UncompressedFileRows { get; private set; }
+        public IEnumerable<FileTransfer> FileTransfers { get { return this.fileTransfers; } }
 
         /// <param name="output">Output to generate image for.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
@@ -73,6 +76,8 @@ namespace WixToolset.Bind
         /// <returns>The uncompressed file rows.</returns>
         public void Execute()
         {
+            RowDictionary<WixMediaRow> wixMediaRows = new RowDictionary<WixMediaRow>(this.WixMediaTable);
+
             this.lastCabinetAddedToMediaTable = new Dictionary<string, string>();
 
             this.SetCabbingThreadCount();
@@ -87,14 +92,28 @@ namespace WixToolset.Bind
             cabinetBuilder.MaximumCabinetSizeForLargeFileSplitting = MaximumCabinetSizeForLargeFileSplitting;
             cabinetBuilder.MaximumUncompressedMediaSize = MaximumUncompressedMediaSize;
 
-            foreach (var entry in this.AutoMediaAssigner.Cabinets)
+            foreach (var entry in this.FileRowsByCabinet)
             {
                 MediaRow mediaRow = entry.Key;
-                List<FileRow> files = entry.Value;
+                IEnumerable<FileRow> files = entry.Value;
+                CompressionLevel compressionLevel = this.DefaultCompressionLevel;
 
-                string cabinetDir = this.ResolveMedia(mediaRow, this.LayoutDirectory);
+                WixMediaRow wixMediaRow = null;
+                string mediaLayoutFolder = null;
 
-                CabinetWorkItem cabinetWorkItem = this.CreateCabinetWorkItem(this.Output, cabinetDir, mediaRow, files, this.fileTransfers);
+                if (wixMediaRows.TryGetValue(mediaRow.GetKey(), out wixMediaRow))
+                {
+                    mediaLayoutFolder = wixMediaRow.Layout;
+
+                    if (wixMediaRow.CompressionLevel.HasValue)
+                    {
+                        compressionLevel = wixMediaRow.CompressionLevel.Value;
+                    }
+                }
+
+                string cabinetDir = this.ResolveMedia(mediaRow, mediaLayoutFolder, this.LayoutDirectory);
+
+                CabinetWorkItem cabinetWorkItem = this.CreateCabinetWorkItem(this.Output, cabinetDir, mediaRow, compressionLevel, files, this.fileTransfers);
                 if (null != cabinetWorkItem)
                 {
                     cabinetBuilder.Enqueue(cabinetWorkItem);
@@ -113,8 +132,6 @@ namespace WixToolset.Bind
             {
                 return;
             }
-
-            this.UncompressedFileRows = this.AutoMediaAssigner.UncompressedFileRows;
         }
 
         /// <summary>
@@ -167,13 +184,13 @@ namespace WixToolset.Bind
         /// <param name="fileRows">Collection of files in this cabinet.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
         /// <returns>created CabinetWorkItem object</returns>
-        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, List<FileRow> fileRows, List<FileTransfer> fileTransfers)
+        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, CompressionLevel compressionLevel, IEnumerable<FileRow> fileRows, List<FileTransfer> fileTransfers)
         {
             CabinetWorkItem cabinetWorkItem = null;
             string tempCabinetFileX = Path.Combine(this.TempFilesLocation, mediaRow.Cabinet);
 
             // check for an empty cabinet
-            if (0 == fileRows.Count)
+            if (!fileRows.Any())
             {
                 string cabinetName = mediaRow.Cabinet;
 
@@ -200,12 +217,6 @@ namespace WixToolset.Bind
             if (CabinetBuildOption.BuildAndCopy == resolvedCabinet.BuildOption || CabinetBuildOption.BuildAndMove == resolvedCabinet.BuildOption)
             {
                 int maxThreshold = 0; // default to the threshold for best smartcabbing (makes smallest cabinet).
-                CompressionLevel compressionLevel = this.DefaultCompressionLevel;
-
-                if (mediaRow.HasExplicitCompressionLevel)
-                {
-                    compressionLevel = mediaRow.CompressionLevel;
-                }
 
                 cabinetWorkItem = new CabinetWorkItem(fileRows, resolvedCabinet.Path, maxThreshold, compressionLevel/*, this.FileManager*/);
             }
@@ -265,22 +276,6 @@ namespace WixToolset.Bind
             }
 
             return resolved;
-        }
-
-        private string ResolveMedia(MediaRow mediaRow, string layoutDirectory)
-        {
-            string layout = null;
-
-            foreach (IBinderFileManager fileManager in this.FileManagers)
-            {
-                layout = fileManager.ResolveMedia(mediaRow, layoutDirectory);
-                if (!String.IsNullOrEmpty(layout))
-                {
-                    break;
-                }
-            }
-
-            return layout;
         }
 
         /// <summary>

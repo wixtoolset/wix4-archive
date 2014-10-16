@@ -5,26 +5,17 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Specialization of a row for the BBControl table.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Data.Rows
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Text;
-    using System.Xml;
 
     /// <summary>
     /// Specialization of a row for the Control table.
     /// </summary>
     public sealed class BBControlRow : Row
     {
-        private string sourceFile;
-
         /// <summary>
         /// Creates a Control row that belongs to a table.
         /// </summary>
@@ -62,7 +53,7 @@ namespace WixToolset.Data.Rows
         [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
         public string Type
         {
-            get { return Convert.ToString(this.Fields[2].Data); }
+            get { return this.Fields[2].AsString(); }
             set { this.Fields[2].Data = value; }
         }
 
@@ -72,7 +63,7 @@ namespace WixToolset.Data.Rows
         /// <value>X location of the BBControl.</value>
         public string X
         {
-            get { return Convert.ToString(this.Fields[3].Data); }
+            get { return this.Fields[3].AsString(); }
             set { this.Fields[3].Data = value; }
         }
 
@@ -82,7 +73,7 @@ namespace WixToolset.Data.Rows
         /// <value>Y location of the BBControl.</value>
         public string Y
         {
-            get { return Convert.ToString(this.Fields[4].Data); }
+            get { return this.Fields[4].AsString(); }
             set { this.Fields[4].Data = value; }
         }
 
@@ -92,7 +83,7 @@ namespace WixToolset.Data.Rows
         /// <value>Width of the BBControl.</value>
         public string Width
         {
-            get { return Convert.ToString(this.Fields[5].Data); }
+            get { return this.Fields[5].AsString(); }
             set { this.Fields[5].Data = value; }
         }
 
@@ -102,7 +93,7 @@ namespace WixToolset.Data.Rows
         /// <value>Height of the BBControl.</value>
         public string Height
         {
-            get { return Convert.ToString(this.Fields[6].Data); }
+            get { return this.Fields[6].AsString(); }
             set { this.Fields[6].Data = value; }
         }
 
@@ -124,16 +115,6 @@ namespace WixToolset.Data.Rows
         {
             get { return (string)this.Fields[8].Data; }
             set { this.Fields[8].Data = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the source location to the file to fill in the Text of the BBControl.
-        /// </summary>
-        /// <value>Source location to the file to fill in the Text of the BBControl.</value>
-        public string SourceFile
-        {
-            get { return this.sourceFile; }
-            set { this.sourceFile = value; }
         }
     }
 }

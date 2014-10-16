@@ -5,25 +5,22 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Builds cabinets using multiple threads.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset.Bind
+namespace WixToolset.Bind.Databases
 {
     using System;
     using System.Collections;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using WixToolset.Cab;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
 
     /// <summary>
-    /// This implements a thread pool that generates cabinets with multiple threads.
-    /// Unlike System.Threading.ThreadPool, it waits until all threads are finished.
+    /// Builds cabinets using multiple threads. This implements a thread pool that generates cabinets with multiple
+    /// threads. Unlike System.Threading.ThreadPool, it waits until all threads are finished.
     /// </summary>
     internal sealed class CabinetBuilder
     {
@@ -150,7 +147,7 @@ namespace WixToolset.Bind
             {
                 // User Specified Max Cab Size for File Splitting, So Check if this cabinet has a single file larger than MaximumUncompressedFileSize
                 // If a file is larger than MaximumUncompressedFileSize, then the cabinet containing it will have only this file
-                if (cabinetWorkItem.FileRows.Count == 1)
+                if (1 == cabinetWorkItem.FileRows.Count())
                 {
                     // Cabinet has Single File, Check if this is Large File than needs Splitting into Multiple cabs
                     // Get the Value for Max Uncompressed Media Size
@@ -171,7 +168,7 @@ namespace WixToolset.Bind
             string cabinetFileName = Path.GetFileName(cabinetWorkItem.CabinetFile);
             string cabinetDirectory = Path.GetDirectoryName(cabinetWorkItem.CabinetFile);
 
-            using (WixCreateCab cab = new WixCreateCab(cabinetFileName, cabinetDirectory, cabinetWorkItem.FileRows.Count, maxCabinetSize, cabinetWorkItem.MaxThreshold, cabinetWorkItem.CompressionLevel))
+            using (WixCreateCab cab = new WixCreateCab(cabinetFileName, cabinetDirectory, cabinetWorkItem.FileRows.Count(), maxCabinetSize, cabinetWorkItem.MaxThreshold, cabinetWorkItem.CompressionLevel))
             {
                 foreach (FileRow fileRow in cabinetWorkItem.FileRows)
                 {

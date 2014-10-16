@@ -1,30 +1,23 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="inscriber.cs" company="Outercurve Foundation">
+// <copyright file="Inscriber.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Converts a wixout representation of an MSM database into a ComponentGroup the form of WiX source.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset
 {
     using System;
     using System.CodeDom.Compiler;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
-    using System.Text;
-    using WixToolset.Bind;
+    using WixToolset.Bind.Bundles;
     using WixToolset.Data;
-    using WixToolset.Extensibility;
     using WixToolset.Msi;
 
     /// <summary>
@@ -233,7 +226,7 @@ namespace WixToolset
                                 {
                                     // Export to a file, because the MSI API's require us to provide a file path on disk
                                     string hashPath = Path.Combine(this.TempFilesLocation, "MsiDigitalSignature");
-                                    string hashFileName = string.Concat(table,".", signObject, ".bin");
+                                    string hashFileName = string.Concat(table, ".", signObject, ".bin");
 
                                     Directory.CreateDirectory(hashPath);
                                     hashPath = Path.Combine(hashPath, hashFileName);

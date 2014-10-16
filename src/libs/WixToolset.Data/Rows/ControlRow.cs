@@ -5,27 +5,17 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Specialization of a row for the Control table.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Data.Rows
 {
-    using System;
     using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.Text;
-    using System.Xml;
 
     /// <summary>
     /// Specialization of a row for the Control table.
     /// </summary>
     public sealed class ControlRow : Row
     {
-        private string sourceFile;
-
         /// <summary>
         /// Creates a Control row that belongs to a table.
         /// </summary>
@@ -73,7 +63,7 @@ namespace WixToolset.Data.Rows
         /// <value>X location of the control.</value>
         public string X
         {
-            get { return Convert.ToString(this.Fields[3].Data, CultureInfo.InvariantCulture); }
+            get { return this.Fields[3].AsString(); }
             set { this.Fields[3].Data = value; }
         }
 
@@ -83,7 +73,7 @@ namespace WixToolset.Data.Rows
         /// <value>Y location of the control.</value>
         public string Y
         {
-            get { return Convert.ToString(this.Fields[4].Data, CultureInfo.InvariantCulture); }
+            get { return this.Fields[4].AsString(); }
             set { this.Fields[4].Data = value; }
         }
 
@@ -93,7 +83,7 @@ namespace WixToolset.Data.Rows
         /// <value>Width of the control.</value>
         public string Width
         {
-            get { return Convert.ToString(this.Fields[5].Data, CultureInfo.InvariantCulture); }
+            get { return this.Fields[5].AsString(); }
             set { this.Fields[5].Data = value; }
         }
 
@@ -103,7 +93,7 @@ namespace WixToolset.Data.Rows
         /// <value>Height of the control.</value>
         public string Height
         {
-            get { return Convert.ToString(this.Fields[6].Data, CultureInfo.InvariantCulture); }
+            get { return this.Fields[6].AsString(); }
             set { this.Fields[6].Data = value; }
         }
 
@@ -155,16 +145,6 @@ namespace WixToolset.Data.Rows
         {
             get { return (string)this.Fields[11].Data; }
             set { this.Fields[11].Data = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the source location to the file to fill in the Text of the control.
-        /// </summary>
-        /// <value>Source location to the file to fill in the Text of the control.</value>
-        public string SourceFile
-        {
-            get { return this.sourceFile; }
-            set { this.sourceFile = value; }
         }
     }
 }

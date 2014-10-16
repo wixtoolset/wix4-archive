@@ -9,17 +9,11 @@
 
 namespace WixToolset.Data.Rows
 {
-    using System;
-
     /// <summary>
     /// Specialization of a row for the Media table.
     /// </summary>
     public sealed class MediaRow : Row
     {
-        private CompressionLevel compressionLevel;
-        private bool hasExplicitCompressionLevel;
-        private string layout;
-
         /// <summary>
         /// Creates a Media row that belongs to a table.
         /// </summary>
@@ -28,8 +22,6 @@ namespace WixToolset.Data.Rows
         public MediaRow(SourceLineNumber sourceLineNumbers, Table table)
             : base(sourceLineNumbers, table)
         {
-            // default the compression level to mszip
-            this.compressionLevel = CompressionLevel.Mszip;
         }
 
         /// <summary>
@@ -90,39 +82,6 @@ namespace WixToolset.Data.Rows
         {
             get { return (string)this.Fields[5].Data; }
             set { this.Fields[5].Data = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the compression level for this media row.
-        /// </summary>
-        /// <value>Compression level.</value>
-        public CompressionLevel CompressionLevel
-        {
-            get { return this.compressionLevel; }
-            set
-            {
-                this.compressionLevel = value;
-                this.hasExplicitCompressionLevel = true;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether the compression level for this media row has been set.
-        /// </summary>
-        /// <value>Compression level.</value>
-        public bool HasExplicitCompressionLevel
-        {
-            get { return this.hasExplicitCompressionLevel; }
-        }
-
-        /// <summary>
-        /// Gets or sets the layout location for this media row.
-        /// </summary>
-        /// <value>Layout location to the root of the media.</value>
-        public string Layout
-        {
-            get { return this.layout; }
-            set { this.layout = value; }
         }
     }
 }

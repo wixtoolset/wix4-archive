@@ -1511,12 +1511,12 @@
     </tableDefinition>
     <tableDefinition name="WixMedia" unreal="yes">
         <columnDefinition name="DiskId_" type="number" length="2" primaryKey="yes"/>
-        <columnDefinition name="CompressionLevel" type="string" length="0" nullable="yes"/>
+        <columnDefinition name="CompressionLevel" type="number" length="2" nullable="yes" minValue="0" maxValue="4" />
         <columnDefinition name="Layout" type="string" length="0" nullable="yes"/>
     </tableDefinition>
     <tableDefinition name="WixMediaTemplate" unreal="yes">
       <columnDefinition name="CabinetTemplate" type="string" length="0" nullable="yes"/>
-      <columnDefinition name="CompressionLevel" type="string" length="0" nullable="yes"/>
+      <columnDefinition name="CompressionLevel" type="number" length="2" nullable="yes" minValue="0" maxValue="4" />
       <columnDefinition name="DiskPrompt" type="string" length="0" nullable="yes"/>
       <columnDefinition name="VolumeLabel" type="string" length="0" nullable="yes"/>
       <columnDefinition name="MaximumUncompressedMediaSize" type="number" length="4" />

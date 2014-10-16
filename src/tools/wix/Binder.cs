@@ -85,7 +85,7 @@ namespace WixToolset
 
         public Binder()
         {
-            this.DefaultCompressionLevel = CompressionLevel.Mszip;
+            this.DefaultCompressionLevel = CompressionLevel.High;
 
             this.BindPaths = new List<BindPath>();
             this.TargetBindPaths = new List<BindPath>();
