@@ -36,7 +36,7 @@ namespace WixToolset.Tools
 
         public string PdbFile { get; private set; }
 
-        public CompressionLevel DefaultCompressionLevel { get; set; }
+        public CompressionLevel? DefaultCompressionLevel { get; set; }
 
         public bool SuppressAclReset { get; private set; }
 
