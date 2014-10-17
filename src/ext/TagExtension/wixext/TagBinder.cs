@@ -149,14 +149,21 @@ namespace WixToolset.Extensions
                 // If the ProductCode is available, only keep it if it is a GUID.
                 if (!String.IsNullOrEmpty(productCode))
                 {
-                    try
-                    {
-                        Guid guid = new Guid(productCode);
-                        productCode = guid.ToString("D").ToUpperInvariant();
-                    }
-                    catch // not a GUID, erase it.
+                    if (productCode.Equals("*"))
                     {
                         productCode = null;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Guid guid = new Guid(productCode);
+                            productCode = guid.ToString("D").ToUpperInvariant();
+                        }
+                        catch // not a GUID, erase it.
+                        {
+                            productCode = null;
+                        }
                     }
                 }
 
@@ -212,6 +219,8 @@ namespace WixToolset.Extensions
                             // Always rewrite.
                             swidRow[2] = uniqueId;
                             swidRow[3] = type.ToString();
+
+                            break;
                         }
                     }
                 }
