@@ -59,7 +59,7 @@ namespace WixToolset.Bind.Databases
 
         public bool Compressed { private get; set; }
 
-        public Dictionary<MediaRow, IEnumerable<FileRow>> FileRowsByCabinet { private get; set; }
+        public Dictionary<MediaRow, IEnumerable<FileFacade>> FileRowsByCabinet { private get; set; }
 
         public Func<MediaRow, string, string, string> ResolveMedia { private get; set; }
 
@@ -95,7 +95,7 @@ namespace WixToolset.Bind.Databases
             foreach (var entry in this.FileRowsByCabinet)
             {
                 MediaRow mediaRow = entry.Key;
-                IEnumerable<FileRow> files = entry.Value;
+                IEnumerable<FileFacade> files = entry.Value;
                 CompressionLevel compressionLevel = this.DefaultCompressionLevel;
 
                 WixMediaRow wixMediaRow = null;
@@ -181,16 +181,16 @@ namespace WixToolset.Bind.Databases
         /// <param name="output">Output for the current database.</param>
         /// <param name="cabinetDir">Directory to create cabinet in.</param>
         /// <param name="mediaRow">MediaRow containing information about the cabinet.</param>
-        /// <param name="fileRows">Collection of files in this cabinet.</param>
+        /// <param name="fileFacades">Collection of files in this cabinet.</param>
         /// <param name="fileTransfers">Array of files to be transfered.</param>
         /// <returns>created CabinetWorkItem object</returns>
-        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, CompressionLevel compressionLevel, IEnumerable<FileRow> fileRows, List<FileTransfer> fileTransfers)
+        private CabinetWorkItem CreateCabinetWorkItem(Output output, string cabinetDir, MediaRow mediaRow, CompressionLevel compressionLevel, IEnumerable<FileFacade> fileFacades, List<FileTransfer> fileTransfers)
         {
             CabinetWorkItem cabinetWorkItem = null;
             string tempCabinetFileX = Path.Combine(this.TempFilesLocation, mediaRow.Cabinet);
 
             // check for an empty cabinet
-            if (!fileRows.Any())
+            if (!fileFacades.Any())
             {
                 string cabinetName = mediaRow.Cabinet;
 
@@ -211,14 +211,14 @@ namespace WixToolset.Bind.Databases
                 }
             }
 
-            ResolvedCabinet resolvedCabinet = this.ResolveCabinet(tempCabinetFileX, fileRows);
+            ResolvedCabinet resolvedCabinet = this.ResolveCabinet(tempCabinetFileX, fileFacades);
 
             // create a cabinet work item if it's not being skipped
             if (CabinetBuildOption.BuildAndCopy == resolvedCabinet.BuildOption || CabinetBuildOption.BuildAndMove == resolvedCabinet.BuildOption)
             {
                 int maxThreshold = 0; // default to the threshold for best smartcabbing (makes smallest cabinet).
 
-                cabinetWorkItem = new CabinetWorkItem(fileRows, resolvedCabinet.Path, maxThreshold, compressionLevel/*, this.FileManager*/);
+                cabinetWorkItem = new CabinetWorkItem(fileFacades, resolvedCabinet.Path, maxThreshold, compressionLevel/*, this.FileManager*/);
             }
             else // reuse the cabinet from the cabinet cache.
             {
@@ -262,13 +262,15 @@ namespace WixToolset.Bind.Databases
             return cabinetWorkItem;
         }
 
-        private ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<FileRow> fileRows)
+        private ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<FileFacade> fileFacades)
         {
             ResolvedCabinet resolved = null;
 
+            List<BindFileWithPath> filesWithPath = fileFacades.Select(f => new BindFileWithPath() { Id = f.File.File, Path = f.WixFile.Source }).ToList();
+
             foreach (IBinderFileManager fileManager in this.FileManagers)
             {
-                resolved = fileManager.ResolveCabinet(cabinetPath, fileRows);
+                resolved = fileManager.ResolveCabinet(cabinetPath, filesWithPath);
                 if (null != resolved)
                 {
                     break;
@@ -336,7 +338,7 @@ namespace WixToolset.Bind.Databases
 
                 // Add the new Cabinets to media table using LastSequence of Base Cabinet
                 Table mediaTable = this.Output.Tables["Media"];
-                Table fileTable = this.Output.Tables["File"];
+                Table wixFileTable = this.Output.Tables["WixFile"];
                 int diskIDForLastSplitCabAdded = 0; // The DiskID value for the first cab in this cabinet split chain
                 int lastSequenceForLastSplitCabAdded = 0; // The LastSequence value for the first cab in this cabinet split chain
                 bool lastSplitCabinetFound = false; // Used for Error Handling
@@ -391,15 +393,15 @@ namespace WixToolset.Bind.Databases
                     }
                 }
 
-                // Now Increment DiskID for All files Rows so that the refer to the right Media Row
-                foreach (FileRow fileRow in fileTable.Rows)
+                // Now Increment DiskID for All files Rows so that they refer to the right Media Row
+                foreach (WixFileRow wixFileRow in wixFileTable.Rows)
                 {
                     // Check if this row comes after inserted row and if this row is not the file that has to go into the current cabinet
                     // This check will work as we have only one large file in every splitting cabinet
                     // If we want to support splitting cabinet with more large files we need to update this code
-                    if (fileRow.DiskId >= newMediaRow.DiskId && !fileRow.File.Equals(fileToken, StringComparison.InvariantCultureIgnoreCase))
+                    if (wixFileRow.DiskId >= newMediaRow.DiskId && !wixFileRow.File.Equals(fileToken, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        fileRow.DiskId++; // Increment DiskID
+                        wixFileRow.DiskId++; // Increment DiskID
                     }
                 }
 

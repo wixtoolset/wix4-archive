@@ -24,7 +24,7 @@ namespace WixToolset.Bind.Databases
     {
         public string DatabasePath { private get; set; }
 
-        public IEnumerable<FileRow> FileRows { private get; set; }
+        public IEnumerable<FileFacade> FileFacades { private get; set; }
 
         public RowDictionary<MediaRow> MediaRows { private get; set; }
 
@@ -73,9 +73,9 @@ namespace WixToolset.Bind.Databases
                     using (Record fileQueryRecord = new Record(1))
                     {
                         // for each file in the array of uncompressed files
-                        foreach (FileRow fileRow in this.FileRows)
+                        foreach (FileFacade facade in this.FileFacades)
                         {
-                            MediaRow mediaRow = this.MediaRows.Get(fileRow.DiskId);
+                            MediaRow mediaRow = this.MediaRows.Get(facade.WixFile.DiskId);
                             string relativeFileLayoutPath = null;
 
                             WixMediaRow wixMediaRow = null;
@@ -90,14 +90,14 @@ namespace WixToolset.Bind.Databases
 
                             // setup up the query record and find the appropriate file in the
                             // previously executed file view
-                            fileQueryRecord[1] = fileRow.File;
+                            fileQueryRecord[1] = facade.File.File;
                             fileView.Execute(fileQueryRecord);
 
                             using (Record fileRecord = fileView.Fetch())
                             {
                                 if (null == fileRecord)
                                 {
-                                    throw new WixException(WixErrors.FileIdentifierNotFound(fileRow.SourceLineNumbers, fileRow.File));
+                                    throw new WixException(WixErrors.FileIdentifierNotFound(facade.File.SourceLineNumbers, facade.File.File));
                                 }
 
                                 relativeFileLayoutPath = Binder.GetFileSourcePath(directories, fileRecord[1], fileRecord[2], this.Compressed, this.LongNamesInImage);
@@ -106,7 +106,7 @@ namespace WixToolset.Bind.Databases
                             // finally put together the base media layout path and the relative file layout path
                             string fileLayoutPath = Path.Combine(mediaLayoutDirectory, relativeFileLayoutPath);
                             FileTransfer transfer;
-                            if (FileTransfer.TryCreate(fileRow.Source, fileLayoutPath, false, "File", fileRow.SourceLineNumbers, out transfer))
+                            if (FileTransfer.TryCreate(facade.WixFile.Source, fileLayoutPath, false, "File", facade.File.SourceLineNumbers, out transfer))
                             {
                                 fileTransfers.Add(transfer);
                             }

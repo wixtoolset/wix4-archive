@@ -22,7 +22,13 @@
     <Compile Include="BinderCore.cs" />
     <Compile Include="BinderFileManagerCore.cs" />
     <Compile Include="BinderFileManager.cs" />
+    <Compile Include="Bind\Databases\CreateDeltaPatchesCommand.cs" />
     <Compile Include="Bind\Databases\CreateSpecialPropertiesCommand.cs" />
+    <Compile Include="Bind\Databases\MergeModulesCommand.cs" />
+    <Compile Include="Bind\Databases\UpdateFileFacadesCommand.cs" />
+    <Compile Include="Bind\Databases\FileFacade.cs" />
+    <Compile Include="Bind\Databases\ExtractMergeModuleFilesCommand.cs" />
+    <Compile Include="Bind\Databases\GetPackageFacadesCommand.cs" />
     <Compile Include="CommandLine.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
@@ -74,7 +80,6 @@
     <Compile Include="Bind\Databases\CopyTransformDataCommand.cs" />
     <Compile Include="Bind\Databases\ProcessUncompressedFilesCommand.cs" />
     <Compile Include="Bind\Databases\UpdateControlTextCommand.cs" />
-    <Compile Include="Bind\Databases\WixPatchSymbolPathsComparer.cs" />
     <Compile Include="Cab\CabinetFileInfo.cs" />
     <Compile Include="Cab\Interop\CabInterop.cs" />
     <Compile Include="Cab\WixCreateCab.cs" />

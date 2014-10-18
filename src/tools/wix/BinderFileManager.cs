@@ -17,7 +17,6 @@ namespace WixToolset
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -181,12 +180,12 @@ namespace WixToolset
         /// Resolves the source path of a cabinet file.
         /// </summary>
         /// <param name="cabinetPath">Default path to cabinet to generate.</param>
-        /// <param name="fileRows">Collection of files in this cabinet.</param>
+        /// <param name="filesWithPath">Collection of files in this cabinet.</param>
         /// <returns>The CabinetBuildOption and path to build the .  By default the cabinet is built and moved to its target location.</returns>
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference")]
-        public virtual ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<FileRow> fileRows)
+        public virtual ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<BindFileWithPath> filesWithPath)
         {
-            if (null == fileRows)
+            if (null == filesWithPath)
             {
                 throw new ArgumentNullException("fileRows");
             }
@@ -215,29 +214,33 @@ namespace WixToolset
                     {
                         List<CabinetFileInfo> fileList = wixEnumerateCab.Enumerate(resolved.Path);
 
-                        if (fileRows.Count() != fileList.Count)
+                        if (filesWithPath.Count() != fileList.Count)
                         {
                             cabinetValid = false;
                         }
                         else
                         {
                             int i = 0;
-                            foreach (FileRow fileRow in fileRows)
+                            foreach (BindFileWithPath file in filesWithPath)
                             {
                                 // First check that the file identifiers match because that is quick and easy.
                                 CabinetFileInfo cabFileInfo = fileList[i];
-                                cabinetValid = (cabFileInfo.FileId == fileRow.File);
+                                cabinetValid = (cabFileInfo.FileId == file.Id);
                                 if (cabinetValid)
                                 {
-                                    // Still valid so ensure the source time stamp hasn't changed. Thus we need
-                                    // to convert the source file time stamp into a cabinet compatible data/time.
-                                    FileInfo fileInfo = new FileInfo(fileRow.Source);
-                                    ushort sourceCabDate;
-                                    ushort sourceCabTime;
+                                    // Still valid so ensure the file sizes are the same.
+                                    FileInfo fileInfo = new FileInfo(file.Path);
+                                    cabinetValid = (cabFileInfo.Size == fileInfo.Length);
+                                    if (cabinetValid)
+                                    {
+                                        // Still valid so ensure the source time stamp hasn't changed. Thus we need
+                                        // to convert the source file time stamp into a cabinet compatible data/time.
+                                        ushort sourceCabDate;
+                                        ushort sourceCabTime;
 
-                                    Cab.Interop.CabInterop.DateTimeToCabDateAndTime(fileInfo.LastWriteTime, out sourceCabDate, out sourceCabTime);
-                                    cabinetValid = (cabFileInfo.Date == sourceCabDate && cabFileInfo.Time == sourceCabTime)
-                                        && (cabFileInfo.Size == fileInfo.Length);
+                                        Cab.Interop.CabInterop.DateTimeToCabDateAndTime(fileInfo.LastWriteTime, out sourceCabDate, out sourceCabTime);
+                                        cabinetValid = (cabFileInfo.Date == sourceCabDate && cabFileInfo.Time == sourceCabTime);
+                                    }
                                 }
 
                                 if (!cabinetValid)
@@ -348,70 +351,6 @@ namespace WixToolset
 
             File.Move(source, destination);
             return true;
-        }
-
-        /// <summary>
-        /// Create patch if needed. This runs in the cabinet building thread.
-        /// </summary>
-        /// <param name="fileRow">The FileRow of the file to create the delta for.</param>
-        /// <param name="retainRangeWarning">true if the retain ranges were ignored to mismatches.</param>
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters")]
-        public virtual void ResolvePatch(FileRow fileRow, out bool retainRangeWarning)
-        {
-            if (fileRow == null)
-            {
-                throw new ArgumentNullException("fileRow");
-            }
-
-            retainRangeWarning = false;
-            if (this.Core.DeltaBinaryPatch && RowOperation.Modify == fileRow.Operation)
-            {
-                if (0 != (PatchAttributeType.IncludeWholeFile | fileRow.PatchAttributes))
-                {
-                    string deltaBase = Common.GenerateIdentifier("dlt", Common.GenerateGuid());
-                    string deltaFile = Path.Combine(this.Core.TempFilesLocation, String.Concat(deltaBase, ".dpf"));
-                    string headerFile = Path.Combine(this.Core.TempFilesLocation, String.Concat(deltaBase, ".phd"));
-                    PatchAPI.PatchInterop.PatchSymbolFlagsType apiPatchingSymbolFlags = 0;
-                    bool optimizePatchSizeForLargeFiles = false;
-
-                    Table wixPatchIdTable = this.Core.Output.Tables["WixPatchId"];
-                    if (null != wixPatchIdTable)
-                    {
-                        Row row = wixPatchIdTable.Rows[0];
-                        if (null != row)
-                        {
-                            if (null != row[2])
-                            {
-                                optimizePatchSizeForLargeFiles = (1 == Convert.ToUInt32(row[2], CultureInfo.InvariantCulture));
-                            }
-                            if (null != row[3])
-                            {
-                                apiPatchingSymbolFlags = (PatchAPI.PatchInterop.PatchSymbolFlagsType)Convert.ToUInt32(row[3], CultureInfo.InvariantCulture);
-                            }
-                        }
-                    }
-
-                    if (PatchAPI.PatchInterop.CreateDelta(
-                            deltaFile,
-                            fileRow.Source,
-                            fileRow.Symbols,
-                            fileRow.RetainOffsets,
-                            fileRow.PreviousSourceArray,
-                            fileRow.PreviousSymbolsArray,
-                            fileRow.PreviousIgnoreLengthsArray,
-                            fileRow.PreviousIgnoreOffsetsArray,
-                            fileRow.PreviousRetainLengthsArray,
-                            fileRow.PreviousRetainOffsetsArray,
-                            apiPatchingSymbolFlags,
-                            optimizePatchSizeForLargeFiles,
-                            out retainRangeWarning))
-                    {
-                        PatchAPI.PatchInterop.ExtractDeltaHeader(deltaFile, headerFile);
-                        fileRow.Patch = headerFile;
-                        fileRow.Source = deltaFile;
-                    }
-                }
-            }
         }
 
         /// <summary>

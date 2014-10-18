@@ -1180,9 +1180,8 @@ namespace WixToolset.Data
                     }
 
                     // override authored media for patch bind
-                    // TODO: consider using File/@DiskId for patch media
-                    mainFileRow.DiskId = mediaRow.DiskId;
                     mainWixFileRow.DiskId = mediaRow.DiskId;
+
                     // suppress any change to File.Sequence to avoid bloat
                     mainFileRow.Fields[7].Modified = false;
 

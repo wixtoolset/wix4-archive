@@ -43,12 +43,6 @@ namespace WixToolset
         public SubStorage ActiveSubStorage { get; set; }
 
         /// <summary>
-        /// Gets or sets the option to enable building binary delta patches.
-        /// </summary>
-        /// <value>The option to enable building binary delta patches.</value>
-        public bool DeltaBinaryPatch { get; set; }
-
-        /// <summary>
         /// Gets or sets the output object used for binding.
         /// </summary>
         /// <value>The output object.</value>

@@ -17,6 +17,7 @@ namespace WixToolset.Cab
     using System.Globalization;
     using System.IO;
     using System.Runtime.InteropServices;
+    using WixToolset.Bind.Databases;
     using WixToolset.Cab.Interop;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
@@ -115,24 +116,24 @@ namespace WixToolset.Cab
         /// <summary>
         /// Adds a file to the cabinet.
         /// </summary>
-        /// <param name="fileRow">The filerow of the file to add.</param>
-        public void AddFile(FileRow fileRow)
+        /// <param name="fileFacade">The file facade of the file to add.</param>
+        public void AddFile(FileFacade fileFacade)
         {
             MsiInterop.MSIFILEHASHINFO hashInterop = new MsiInterop.MSIFILEHASHINFO();
 
-            if (null != fileRow.HashRow)
+            if (null != fileFacade.Hash)
             {
                 hashInterop.FileHashInfoSize = 20;
-                hashInterop.Data0 = (int)fileRow.HashRow[2];
-                hashInterop.Data1 = (int)fileRow.HashRow[3];
-                hashInterop.Data2 = (int)fileRow.HashRow[4];
-                hashInterop.Data3 = (int)fileRow.HashRow[5];
+                hashInterop.Data0 = (int)fileFacade.Hash[2];
+                hashInterop.Data1 = (int)fileFacade.Hash[3];
+                hashInterop.Data2 = (int)fileFacade.Hash[4];
+                hashInterop.Data3 = (int)fileFacade.Hash[5];
 
-                this.AddFile(fileRow.Source, fileRow.File, hashInterop);
+                this.AddFile(fileFacade.WixFile.Source, fileFacade.File.File, hashInterop);
             }
             else
             {
-                this.AddFile(fileRow.Source, fileRow.File);
+                this.AddFile(fileFacade.WixFile.Source, fileFacade.File.File);
             }
         }
 

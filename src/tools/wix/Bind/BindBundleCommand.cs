@@ -81,11 +81,6 @@ namespace WixToolset.Bind
             // this behavior.
             WixChainRow chainRow = (WixChainRow)this.GetSingleRowTable("WixChain");
 
-            foreach (BinderExtension extension in this.Extensions)
-            {
-                extension.Initialize(Output);
-            }
-
             if (Messaging.Instance.EncounteredError)
             {
                 return;

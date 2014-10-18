@@ -182,7 +182,10 @@ namespace WixToolset.Tools
             binder.WixprojectFile = this.commandLine.WixprojectFile;
             binder.BindPaths.AddRange(this.commandLine.BindPaths);
             binder.CabbingThreadCount = this.commandLine.CabbingThreadCount;
-            binder.DefaultCompressionLevel = this.commandLine.DefaultCompressionLevel;
+            if (this.commandLine.DefaultCompressionLevel.HasValue)
+            {
+                binder.DefaultCompressionLevel = this.commandLine.DefaultCompressionLevel.Value;
+            }
             binder.Ices.AddRange(this.commandLine.Ices);
             binder.SuppressIces.AddRange(this.commandLine.SuppressIces);
             binder.SuppressAclReset = this.commandLine.SuppressAclReset;

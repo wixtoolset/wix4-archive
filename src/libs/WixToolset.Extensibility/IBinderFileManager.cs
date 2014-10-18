@@ -15,9 +15,9 @@ namespace WixToolset.Extensibility
 
     public interface IBinderFileManager
     {
-        IBinderFileManagerCore Core { get; set; }
+        IBinderFileManagerCore Core { set; }
 
-        ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<FileRow> fileRows);
+        ResolvedCabinet ResolveCabinet(string cabinetPath, IEnumerable<BindFileWithPath> files);
 
         string ResolveFile(string source, string type, SourceLineNumber sourceLineNumbers, BindStage bindStage);
 

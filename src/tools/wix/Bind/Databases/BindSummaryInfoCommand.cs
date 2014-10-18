@@ -33,6 +33,8 @@ namespace WixToolset.Bind.Databases
         /// </summary>
         public bool LongNames { get; private set; }
 
+        public int InstallerVersion { get; private set; }
+
         /// <summary>
         /// Modularization guid, or null if the output is not a module.
         /// </summary>
@@ -42,6 +44,7 @@ namespace WixToolset.Bind.Databases
         {
             this.Compressed = false;
             this.LongNames = false;
+            this.InstallerVersion = 0;
             this.ModularizationGuid = null;
 
             Table summaryInformationTable = this.Output.Tables["_SummaryInformation"];
@@ -88,6 +91,9 @@ namespace WixToolset.Bind.Databases
                             break;
                         case 13: // PID_LASTSAVE_DTM
                             foundLastSaveDataTime = true;
+                            break;
+                        case 14:
+                            this.InstallerVersion = summaryInformationRow.FieldAsInteger(1);
                             break;
                         case 15: // PID_WORDCOUNT
                             if (OutputType.Patch == this.Output.Type)
