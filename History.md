@@ -1,3 +1,5 @@
+## WixBuild: Version 4.0.2220.0
+
 * RobMen: Massive refactor of BindBundleCommand to radically improve code maintainability.
 
 * SeanHall: WIXFEAT:4525 - Reimplement balutil in BootstrapperCore.
