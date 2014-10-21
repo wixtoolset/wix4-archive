@@ -254,7 +254,7 @@ DAPI_(void) ThemeUnloadControls(
     );
 
 /********************************************************************
- ThemeLocalize - Localizes all of the strings in the them.
+ ThemeLocalize - Localizes all of the strings in the theme.
 
 *******************************************************************/
 DAPI_(HRESULT) ThemeLocalize(

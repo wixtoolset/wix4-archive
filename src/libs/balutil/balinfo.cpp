@@ -230,7 +230,10 @@ static HRESULT ParsePackagesFromXml(
         ExitOnFailure(hr, "Failed to get vital setting for package.");
 
         hr = XmlGetYesNoAttribute(pNode, L"DisplayInternalUI", &prgPackages[iPackage].fDisplayInternalUI);
-        ExitOnFailure(hr, "Failed to get DisplayInternalUI setting for package.");
+        if (E_NOTFOUND != hr)
+        {
+            ExitOnFailure(hr, "Failed to get DisplayInternalUI setting for package.");
+        }
 
         hr = XmlGetAttributeEx(pNode, L"ProductCode", &prgPackages[iPackage].sczProductCode);
         if (E_NOTFOUND != hr)
