@@ -419,7 +419,7 @@ DAPI_(HRESULT) ThemeLoadControls(
 
         switch (pControl->type)
         {
-        case THEME_CONTROL_TYPE_BILLBOARD: // billboards are basically just owner drawn static controls (where we draw different images).
+        case THEME_CONTROL_TYPE_BILLBOARD: // Billboards are basically just owner drawn static controls (where we draw different images).
             if (pControl->cBillboards)
             {
                 wzWindowClass = WC_STATICW;
@@ -433,7 +433,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             break;
 
         case THEME_CONTROL_TYPE_CHECKBOX:
-            dwWindowBits |= BS_AUTOCHECKBOX | BS_MULTILINE; // checkbox is basically a button with an extra bit tossed in.
+            dwWindowBits |= BS_AUTOCHECKBOX | BS_MULTILINE; // Checkbox is basically a button with an extra bit tossed in.
             __fallthrough;
         case THEME_CONTROL_TYPE_BUTTON:
             wzWindowClass = WC_BUTTONW;
@@ -444,8 +444,8 @@ DAPI_(HRESULT) ThemeLoadControls(
             break;
 
         case THEME_CONTROL_TYPE_LISTVIEW:
-            // If thmutil is handling the image list for this listview, tell windows not to free it when the control is destroyed
-            if (NULL != pControl->rghImageList[0] || NULL != pControl->rghImageList[1] || NULL != pControl->rghImageList[2] || NULL != pControl->rghImageList[3])
+            // If thmutil is handling the image list for this listview, tell Windows not to free it when the control is destroyed.
+            if (pControl->rghImageList[0] || pControl->rghImageList[1] || pControl->rghImageList[2] || pControl->rghImageList[3])
             {
                 pControl->dwStyle |= LVS_SHAREIMAGELISTS;
             }
@@ -466,7 +466,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowExBits = WS_EX_CLIENTEDGE;
             break;
 
-        case THEME_CONTROL_TYPE_HYPERLINK: // hyperlinks are basically just owner drawn buttons.
+        case THEME_CONTROL_TYPE_HYPERLINK: // Hyperlinks are basically just owner drawn buttons.
             wzWindowClass = THEME_WC_HYPERLINK;
             dwWindowBits |= BS_OWNERDRAW | BTNS_NOPREFIX;
             break;
@@ -476,7 +476,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowBits |= LWS_NOPREFIX;
             break;
 
-        case THEME_CONTROL_TYPE_IMAGE: // images are basically just owner drawn static controls (so we can draw .jpgs and .pngs instead of just bitmaps).
+        case THEME_CONTROL_TYPE_IMAGE: // Images are basically just owner drawn static controls (so we can draw .jpgs and .pngs instead of just bitmaps).
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
                 wzWindowClass = WC_STATICW;
@@ -492,7 +492,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         case THEME_CONTROL_TYPE_PROGRESSBAR:
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
-                wzWindowClass = WC_STATICW; // no such thing as an owner drawn progress bar so we'll make our own out of a static control.
+                wzWindowClass = WC_STATICW; // No such thing as an owner drawn progress bar so we'll make our own out of a static control.
                 dwWindowBits |= SS_OWNERDRAW;
             }
             else
@@ -502,7 +502,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             break;
 
         case THEME_CONTROL_TYPE_RICHEDIT:
-            if (NULL == vhModuleRichEd)
+            if (!vhModuleRichEd)
             {
                 hr = LoadSystemLibrary(L"Riched20.dll", &vhModuleRichEd);
                 ExitOnFailure(hr, "Failed to load Rich Edit control library.");
@@ -542,7 +542,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             int w, h, x, y;
             GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
 
-            // disable paged controls so their shortcut keys don't trigger when their page isn't being shown
+            // Disable paged controls so their shortcut keys don't trigger when their page isn't being shown.
             dwWindowBits |= 0 < pControl->wPageId ? WS_DISABLED : 0;
             pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, pTheme->hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, NULL);
             ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
@@ -559,7 +559,7 @@ DAPI_(HRESULT) ThemeLoadControls(
                 ::SendMessageW(pControl->hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, pControl->dwExtendedStyle);
 
                 hr = SizeListViewColumns(pControl);
-                ExitOnFailure(hr, "Failed to get size of list view columns");
+                ExitOnFailure(hr, "Failed to get size of list view columns.");
 
                 for (DWORD j = 0; j < pControl->cColumns; ++j)
                 {
@@ -573,23 +573,23 @@ DAPI_(HRESULT) ThemeLoadControls(
 
                     if (-1 == ::SendMessageW(pControl->hWnd, LVM_INSERTCOLUMNW, (WPARAM)(int)(j), (LPARAM)(const LV_COLUMNW *)(&lvc)))
                     {
-                        ExitWithLastError(hr, "Failed to insert listview column %u into tab control", j);
+                        ExitWithLastError(hr, "Failed to insert listview column %u into tab control.", j);
                     }
 
-                    // Return value tells us old image list, we don't care
-                    if (NULL != pControl->rghImageList[0])
+                    // Return value tells us the old image list, we don't care.
+                    if (pControl->rghImageList[0])
                     {
                         ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_NORMAL), reinterpret_cast<LPARAM>(pControl->rghImageList[0]));
                     }
-                    else if (NULL != pControl->rghImageList[1])
+                    else if (pControl->rghImageList[1])
                     {
                         ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_SMALL), reinterpret_cast<LPARAM>(pControl->rghImageList[1]));
                     }
-                    else if (NULL != pControl->rghImageList[2])
+                    else if (pControl->rghImageList[2])
                     {
                         ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_STATE), reinterpret_cast<LPARAM>(pControl->rghImageList[2]));
                     }
-                    else if (NULL != pControl->rghImageList[3])
+                    else if (pControl->rghImageList[3])
                     {
                         ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_GROUPHEADER), reinterpret_cast<LPARAM>(pControl->rghImageList[3]));
                     }
@@ -622,7 +622,7 @@ DAPI_(HRESULT) ThemeLoadControls(
 
                     if (-1 == ::SendMessageW(pControl->hWnd, TCM_INSERTITEMW, (WPARAM)(int)(j), (LPARAM)(const TC_ITEMW *)(&tci)))
                     {
-                        ExitWithLastError(hr, "Failed to insert tab %u into tab control", j);
+                        ExitWithLastError(hr, "Failed to insert tab %u into tab control.", j);
                     }
                 }
             }
@@ -713,7 +713,7 @@ DAPI_(HRESULT) ThemeLocalize(
             pControl->nHeight = pLocControl->nHeight;
         }
 
-        if (pLocControl->wzText && 0 < wcslen(pLocControl->wzText))
+        if (pLocControl->wzText && *pLocControl->wzText)
         {
             hr = StrAllocString(&pControl->sczText, pLocControl->wzText, 0);
             ExitOnFailure(hr, "Failed to localize control text.");
@@ -813,7 +813,7 @@ DAPI_(HRESULT) ThemeLoadRichEditFromFile(
 
         ::SendMessageW(hWnd, EM_STREAMIN, SF_RTF, reinterpret_cast<LPARAM>(&es));
         hr = es.dwError;
-        ExitOnFailure(hr, "Failed to update RTF stream");
+        ExitOnFailure(hr, "Failed to update RTF stream.");
     }
 
 LExit:
@@ -853,7 +853,7 @@ DAPI_(HRESULT) ThemeLoadRichEditFromResourceToHWnd(
 
     ::SendMessageW(hWnd, EM_STREAMIN, SF_RTF, reinterpret_cast<LPARAM>(&es));
     hr = es.dwError;
-    ExitOnFailure(hr, "Failed to update RTF stream");
+    ExitOnFailure(hr, "Failed to update RTF stream.");
 
 LExit:
     return hr;
@@ -889,7 +889,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
         case WM_NCHITTEST:
             if (pTheme->dwStyle & WS_POPUP)
             {
-                return HTCAPTION; // allow pop-up windows to be moved by grabbing any non-control.
+                return HTCAPTION; // Allow pop-up windows to be moved by grabbing any non-control.
             }
             break;
 
@@ -999,7 +999,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                 LPNMHDR pnmhdr = reinterpret_cast<LPNMHDR>(lParam);
                 switch (pnmhdr->code)
                 {
-                // Tab/Shift+Tab support for rich-edit control
+                // Tab/Shift+Tab support for rich-edit control.
                 case EN_MSGFILTER:
                     {
                     MSGFILTER* msgFilter = reinterpret_cast<MSGFILTER*>(lParam);
@@ -1013,11 +1013,11 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                     break;
                     }
 
-                // Hyperlink clicks from rich-edit control
+                // Hyperlink clicks from rich-edit control.
                 case EN_LINK:
                     return SUCCEEDED(OnRichEditEnLink(lParam, pnmhdr->hwndFrom, hWnd));
 
-                // Clicks on a hypertext/syslink control
+                // Clicks on a hypertext/syslink control.
                 case NM_CLICK: __fallthrough;
                 case NM_RETURN:
                     if (ControlIsType(pTheme, static_cast<DWORD>(pnmhdr->idFrom), THEME_CONTROL_TYPE_HYPERTEXT))
@@ -1302,7 +1302,7 @@ DAPI_(HRESULT) ThemeDrawControl(
 
     case THEME_CONTROL_TYPE_BUTTON:
         hr = DrawButton(pTheme, pdis, pControl);
-        ExitOnFailure(hr, "Failed to draw button");
+        ExitOnFailure(hr, "Failed to draw button.");
         break;
 
     case THEME_CONTROL_TYPE_HYPERLINK:
@@ -1585,7 +1585,7 @@ DAPI_(HRESULT) ThemeGetTextControl(
     hr = StrMaxLength(*psczText, reinterpret_cast<DWORD_PTR*>(&cchText));
     ExitOnFailure(hr, "Failed to get text buffer length.");
 
-    if (0 == cchText)
+    if (!cchText)
     {
         cchText = GROW_WINDOW_TEXT;
 
@@ -1684,7 +1684,7 @@ static HRESULT ParseTheme(
     }
     ExitOnFailure(hr, "Failed to get theme window style (t@s) attribute.");
 
-    // Parse the application element
+    // Parse the application element.
     hr = ParseApplication(hModule, wzRelativePath, pThemeElement, pTheme);
     ExitOnFailure(hr, "Failed to parse theme application element.");
 
@@ -1692,7 +1692,7 @@ static HRESULT ParseTheme(
     hr = ParseFonts(pThemeElement, pTheme);
     ExitOnFailure(hr, "Failed to parse theme fonts.");
 
-    // Parse any imagelists
+    // Parse any imagelists.
     hr = ParseImageLists(hModule, wzRelativePath, pThemeElement, pTheme);
     ExitOnFailure(hr, "Failed to parse image lists.");
 
@@ -1740,7 +1740,7 @@ static HRESULT ParseImage(
         iResourceId = wcstol(bstr, NULL, 10);
 
         hr = GdipBitmapFromResource(hModule, MAKEINTRESOURCE(iResourceId), &pBitmap);
-        //// don't fail
+        // Don't fail.
     }
 
     ReleaseNullBSTR(bstr);
@@ -1765,7 +1765,7 @@ static HRESULT ParseImage(
             }
 
             hr = GdipBitmapFromFile(sczImageFile, &pBitmap);
-            // don't fail
+            // Don't fail.
         }
     }
 
@@ -1995,7 +1995,7 @@ static HRESULT ParseFonts(
     hr = pixnl->get_length(reinterpret_cast<long*>(&pTheme->cFonts));
     ExitOnFailure(hr, "Failed to count the number of theme fonts.");
 
-    if (0 == pTheme->cFonts)
+    if (!pTheme->cFonts)
     {
         ExitFunction1(hr = S_OK);
     }
@@ -2029,7 +2029,7 @@ static HRESULT ParseFonts(
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
-        ExitOnFailure(hr, "Failed to get application caption.");
+        ExitOnFailure(hr, "Failed to get font name.");
 
         hr = ::StringCchCopyW(lf.lfFaceName, countof(lf.lfFaceName), bstrName);
         ExitOnFailure(hr, "Failed to copy font name.");
@@ -2093,7 +2093,7 @@ static HRESULT ParseFonts(
         ExitOnFailure(hr, "Failed to find font background color.");
 
         THEME_FONT* pFont = pTheme->rgFonts + dwId;
-        if (NULL != pFont->hFont)
+        if (pFont->hFont)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
             ExitOnRootFailure(hr, "Theme font id duplicated.");
@@ -2155,9 +2155,9 @@ static HRESULT ParsePages(
     hr = pixnl->get_length(reinterpret_cast<long*>(&pTheme->cPages));
     ExitOnFailure(hr, "Failed to count the number of theme pages.");
 
-    if (0 == pTheme->cPages)
+    if (!pTheme->cPages)
     {
-        ExitFunction();
+        ExitFunction1(hr = S_OK);
     }
 
     pTheme->rgPages = static_cast<THEME_PAGE*>(MemAlloc(sizeof(THEME_PAGE) * pTheme->cPages, TRUE));
@@ -2201,8 +2201,8 @@ LExit:
 
 
 static HRESULT ParseImageLists(
-    __in_opt HMODULE /*hModule*/,
-    __in_opt LPCWSTR /*wzRelativePath*/,
+    __in_opt HMODULE hModule,
+    __in_opt LPCWSTR wzRelativePath,
     __in IXMLDOMElement* pElement,
     __in THEME* pTheme
     )
@@ -2226,9 +2226,9 @@ static HRESULT ParseImageLists(
     hr = pixnlImageLists->get_length(reinterpret_cast<long*>(&pTheme->cImageLists));
     ExitOnFailure(hr, "Failed to count the number of image lists.");
 
-    if (0 == pTheme->cImageLists)
+    if (!pTheme->cImageLists)
     {
-        ExitFunction();
+        ExitFunction1(hr = S_OK);
     }
 
     pTheme->rgImageLists = static_cast<THEME_IMAGELIST*>(MemAlloc(sizeof(THEME_IMAGELIST) * pTheme->cImageLists, TRUE));
@@ -2253,12 +2253,12 @@ static HRESULT ParseImageLists(
             i = 0;
             while (S_OK == (hr = XmlNextElement(pixnlImages, &pixnImage, NULL)))
             {
-                if (NULL != hBitmap)
+                if (hBitmap)
                 {
                     ::DeleteObject(hBitmap);
                     hBitmap = NULL;
                 }
-                hr = ParseImage(NULL, NULL, pixnImage, &hBitmap);
+                hr = ParseImage(hModule, wzRelativePath, pixnImage, &hBitmap);
                 ExitOnFailure(hr, "Failed to parse image: %u", i);
 
                 if (0 == i)
@@ -2272,7 +2272,7 @@ static HRESULT ParseImageLists(
                 iRetVal = ImageList_Add(pTheme->rgImageLists[dwImageListIndex].hImageList, hBitmap, NULL);
                 if (-1 == iRetVal)
                 {
-                    ExitWithLastError(hr, "Failed to add image %u to image list", i);
+                    ExitWithLastError(hr, "Failed to add image %u to image list.", i);
                 }
 
                 ++i;
@@ -2282,7 +2282,7 @@ static HRESULT ParseImageLists(
     }
 
 LExit:
-    if (NULL != hBitmap)
+    if (hBitmap)
     {
         ::DeleteObject(hBitmap);
     }
@@ -2327,7 +2327,7 @@ static HRESULT ParseControls(
         cNewControls = cNewControls - pTheme->cFonts - pTheme->cPages - pTheme->cImageLists - 1;
     }
 
-    if (0 == cNewControls)
+    if (!cNewControls)
     {
         ExitFunction1(hr = S_OK);
     }
@@ -2335,7 +2335,7 @@ static HRESULT ParseControls(
     if (pPage)
     {
         hr = ::SizeTMult(sizeof(DWORD), cNewControls, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u control indices", cNewControls);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u control indices.", cNewControls);
 
         pPage->rgdwControlIndices = static_cast<DWORD*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pPage->rgdwControlIndices, hr, E_OUTOFMEMORY, "Failed to allocate theme page controls.");
@@ -2353,7 +2353,7 @@ static HRESULT ParseControls(
     {
         THEME_CONTROL_TYPE type = THEME_CONTROL_TYPE_UNKNOWN;
 
-        if (NULL == bstrType)
+        if (!bstrType)
         {
             hr = E_UNEXPECTED;
             ExitOnFailure(hr, "Null element encountered!");
@@ -2552,11 +2552,11 @@ static HRESULT ParseControl(
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
     }
-    ExitOnFailure(hr, "Failed to find control height attribute.");
+    ExitOnFailure(hr, "Failed to find control width attribute.");
 
     // Parse the optional background resource image.
     hr = ParseImage(hModule, wzRelativePath, pixn, &pControl->hImage);
-    ExitOnFailure(hr, "Failed while parsing theme image.");
+    ExitOnFailure(hr, "Failed while parsing control image.");
 
     hr = XmlGetAttributeNumber(pixn, L"SourceX", reinterpret_cast<DWORD*>(&pControl->nSourceX));
     if (S_FALSE == hr)
@@ -2801,7 +2801,7 @@ static HRESULT ParseControl(
         }
         else if (fValue)
         {
-            pControl->dwStyle |= ~TVS_DISABLEDRAGDROP;
+            pControl->dwStyle &= ~TVS_DISABLEDRAGDROP;
         }
         ExitOnFailure(hr, "Failed to tell if the tree control control enables drag and drop.");
 
@@ -2896,7 +2896,7 @@ static HRESULT ParseBillboards(
     if (0 < pControl->cBillboards)
     {
         hr = ::SizeTMult(sizeof(THEME_BILLBOARD), pControl->cBillboards, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_BILLBOARD structs", pControl->cBillboards);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_BILLBOARD structs.", pControl->cBillboards);
 
         pControl->ptbBillboards = static_cast<THEME_BILLBOARD*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pControl->ptbBillboards, hr, E_OUTOFMEMORY, "Failed to allocate billboard image structs.");
@@ -2953,7 +2953,7 @@ static HRESULT ParseColumns(
     if (0 < pControl->cColumns)
     {
         hr = ::SizeTMult(sizeof(THEME_COLUMN), pControl->cColumns, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs", pControl->cColumns);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs.", pControl->cColumns);
 
         pControl->ptcColumns = static_cast<THEME_COLUMN*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pControl->ptcColumns, hr, E_OUTOFMEMORY, "Failed to allocate column structs.");
@@ -2980,7 +2980,7 @@ static HRESULT ParseColumns(
             {
                 hr = S_OK;
             }
-            ExitOnFailure(hr, "Failed to find font underline attribute.");
+            ExitOnFailure(hr, "Failed to find expands attribute.");
 
             hr = StrAllocString(&(pControl->ptcColumns[i].pszName), bstrText, 0);
             ExitOnFailure(hr, "Failed to copy column name");
@@ -3020,7 +3020,7 @@ static HRESULT ParseTabs(
     if (0 < pControl->cTabs)
     {
         hr = ::SizeTMult(sizeof(THEME_TAB), pControl->cTabs, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_TAB structs", pControl->cTabs);
+        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_TAB structs.", pControl->cTabs);
 
         pControl->pttTabs = static_cast<THEME_TAB*>(MemAlloc(cbAllocSize, TRUE));
         ExitOnNull(pControl->pttTabs, hr, E_OUTOFMEMORY, "Failed to allocate tab structs.");
@@ -3169,7 +3169,7 @@ static HRESULT DrawHyperlink(
     clrBackPrev = ::SetBkColor(pdis->hDC, pFont->crBackground);
 
 #pragma prefast(push)
-#pragma prefast(disable:26010) // OACR doesn't know this, but GetWindowText won't return a number larger than the buffer
+#pragma prefast(disable:26010) // OACR doesn't know this, but GetWindowText won't return a number larger than the buffer.
     ::ExtTextOutW(pdis->hDC, 0, 0, ETO_CLIPPED | ETO_OPAQUE, &pdis->rcItem, wzText, cchText, NULL);
 #pragma prefast(pop)
 
@@ -3502,7 +3502,7 @@ static HRESULT OnRichEditEnLink(
     case WM_LBUTTONDOWN:
         {
         hr = StrAlloc(&sczLink, link->chrg.cpMax - link->chrg.cpMin + 2);
-        ExitOnFailure(hr, "Failed to allocate string for link");
+        ExitOnFailure(hr, "Failed to allocate string for link.");
 
         TEXTRANGEW tr;
         tr.chrg.cpMin = link->chrg.cpMin;
@@ -3551,7 +3551,7 @@ static const THEME_CONTROL* FindControlFromHWnd(
     __in HWND hWnd
     )
 {
-    // as we can't use GWLP_USERDATA (SysLink controls on Windows XP uses it too)...
+    // As we can't use GWLP_USERDATA (SysLink controls on Windows XP uses it too)...
     for (DWORD i = 0; i < pTheme->cControls; ++i)
     {
         if (hWnd == pTheme->rgControls[i].hWnd)
@@ -3589,7 +3589,7 @@ static HRESULT SizeListViewColumns(
 
     if (!::GetWindowRect(pControl->hWnd, &rcParent))
     {
-        ExitWithLastError(hr, "Failed to get window rect of listview control");
+        ExitWithLastError(hr, "Failed to get window rect of listview control.");
     }
 
     iExtraAvailableSize = rcParent.right - rcParent.left;
@@ -3604,7 +3604,7 @@ static HRESULT SizeListViewColumns(
         iExtraAvailableSize -= pControl->ptcColumns[i].nBaseWidth;
     }
 
-    // Leave room for a vertical scroll bar just in case
+    // Leave room for a vertical scroll bar just in case.
     iExtraAvailableSize -= ::GetSystemMetrics(SM_CXVSCROLL);
 
     for (DWORD i = 0; i < pControl->cColumns; ++i)
@@ -3612,7 +3612,7 @@ static HRESULT SizeListViewColumns(
         if (pControl->ptcColumns[i].fExpands)
         {
             pControl->ptcColumns[i].nWidth = pControl->ptcColumns[i].nBaseWidth + (iExtraAvailableSize / cNumExpandingColumns);
-            // In case there is any remainder, use it up the first chance we get
+            // In case there is any remainder, use it up the first chance we get.
             pControl->ptcColumns[i].nWidth += iExtraAvailableSize % cNumExpandingColumns;
             iExtraAvailableSize -= iExtraAvailableSize % cNumExpandingColumns;
         }
