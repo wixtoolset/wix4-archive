@@ -55,6 +55,8 @@
     <Stage Include="$(OutputPath)wix.signing.targets" />
     <Stage Include="$(OutputPath)WixCop.exe" />
     <Stage Include="$(OutputPath)WixTasks.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Data.dll" />
+    <Stage Include="$(OutputPath)WixToolset.Extensibility.dll" />
     <!--<Stage Include="$(OutputPath)wui.dll" />-->
     <Stage Include="$(OutputPath)x86\burn.exe">
       <StageSubDirectory>x86</StageSubDirectory>

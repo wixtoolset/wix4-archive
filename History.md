@@ -1,3 +1,5 @@
+* RobMen: WIXBUG:4565 - add WixToolset.Data.dll and WixToolset.Extensibility.dll to binaries.zip.
+
 ## WixBuild: Version 4.0.2220.0
 
 * RobMen: Massive refactor of BindBundleCommand to radically improve code maintainability.
