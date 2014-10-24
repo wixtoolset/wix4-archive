@@ -16,6 +16,7 @@ namespace WixToolset
     using System.Linq;
     using System.Xml;
     using System.Xml.Linq;
+    using WixToolset.Data;
 
     /// <summary>
     /// WiX source code converter.
@@ -545,54 +546,18 @@ namespace WixToolset
                 return false;
             }
 
-            // increase the error count
+            // Increase the error count.
             this.Errors++;
 
-            // set the warning/error part of the message
-            string warningError;
-            if (this.ErrorsAsWarnings.Contains(converterTestType)) // error as warning
-            {
-                warningError = "warning";
-            }
-            else // normal error
-            {
-                warningError = "error";
-            }
+            SourceLineNumber sourceLine = (null == node) ? new SourceLineNumber(this.SourceFile ?? "wixcop.exe") : new SourceLineNumber(this.SourceFile, ((IXmlLineInfo)node).LineNumber);
+            bool warning = this.ErrorsAsWarnings.Contains(converterTestType);
+            string display = String.Format(CultureInfo.CurrentCulture, message, args);
 
-            if (null != node)
-            {
-                Console.Error.WriteLine("{0}({1}) : {2} WXCP{3:0000} : {4} ({5})", this.SourceFile, ((IXmlLineInfo)node).LineNumber, warningError, (int)converterTestType, String.Format(CultureInfo.CurrentCulture, message, args), converterTestType.ToString());
-            }
-            else
-            {
-                string source = this.SourceFile ?? "wixcop.exe";
+            WixGenericMessageEventArgs ea = new WixGenericMessageEventArgs(sourceLine, (int)converterTestType, warning ? MessageLevel.Warning : MessageLevel.Error, "{0} ({1})", display, converterTestType.ToString());
 
-                Console.Error.WriteLine("{0} : {1} WXCP{2:0000} : {3} ({4})", source, warningError, (int)converterTestType, String.Format(CultureInfo.CurrentCulture, message, args), converterTestType.ToString());
-            }
+            Messaging.Instance.OnMessage(ea);
 
             return true;
-        }
-
-        /// <summary>
-        /// Output a message to the console.
-        /// </summary>
-        /// <param name="node">The node that caused the message.</param>
-        /// <param name="message">Detailed message.</param>
-        /// <param name="args">Additional formatted string arguments.</param>
-        private void OnVerbose(XNode node, string message, params string[] args)
-        {
-            this.Errors++;
-
-            if (null != node)
-            {
-                Console.WriteLine("{0}({1}) : {2}", this.SourceFile, ((IXmlLineInfo)node).LineNumber, String.Format(CultureInfo.CurrentCulture, message, args));
-            }
-            else
-            {
-                string source = this.SourceFile ?? "wixcop.exe";
-
-                Console.WriteLine("{0} : {1}", source, String.Format(CultureInfo.CurrentCulture, message, args));
-            }
         }
 
         /// <summary>

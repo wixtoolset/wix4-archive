@@ -17,6 +17,7 @@ namespace WixToolset.Tools
     using System.IO;
     using System.Reflection;
     using System.Xml;
+    using WixToolset.Data;
 
     /// <summary>
     /// Wix source code style inspector and converter.
@@ -59,6 +60,9 @@ namespace WixToolset.Tools
         [STAThread]
         public static int Main(string[] args)
         {
+            AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("WXCP", "wixcop.exe").Display += AppCommon.ConsoleDisplayMessage;
+
             WixCop wixCop = new WixCop();
             return wixCop.Run(args);
         }

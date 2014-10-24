@@ -14,11 +14,17 @@ namespace WixTest.WixUnitTest
     using System.Text;
     using System.Xml.Linq;
     using WixToolset;
+    using WixToolset.Data;
     using Xunit;
 
     public class ConverterFixture
     {
         private static readonly XNamespace Wix4Namespace = "http://wixtoolset.org/schemas/v4/wxs";
+
+        public ConverterFixture()
+        {
+            Messaging.Instance.InitializeAppName("TEST", this.GetType().ToString()).Display += MessageDisplay;
+        }
 
         [Fact]
         public void EnsuresDeclaration()
@@ -356,6 +362,10 @@ namespace WixTest.WixUnitTest
 
             Assert.Equal(1, errors);
             Assert.Equal(expected, actual);
+        }
+
+        private void MessageDisplay(object sender, DisplayEventArgs e)
+        {
         }
 
         private static string UnformattedDocumentString(XDocument document)
