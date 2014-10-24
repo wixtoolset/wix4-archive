@@ -5,13 +5,9 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Wix source code style inspector and repair utility.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstaller.Tools
+namespace WixToolset
 {
     using System;
     using System.Collections;
@@ -22,10 +18,8 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
     using System.Reflection;
     using System.Xml;
 
-    using WixToolset;
-
     /// <summary>
-    /// The WiXCop application class.
+    /// Wix source code style inspector and repair utility.
     /// </summary>
     public class WixCop
     {
@@ -189,7 +183,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
                     }
                 }
 
-                this.inspector = new Inspector(this.errorsAsWarnings, this.ignoreErrorsHash, this.indentationAmount);
+                this.inspector = new Inspector(this.indentationAmount, this.errorsAsWarnings, this.ignoreErrorsHash);
 
                 int errors = this.InspectSubDirectories(Path.GetFullPath("."));
 
