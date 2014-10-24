@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="InspectorFixture.cs" company="Outercurve Foundation">
+// <copyright file="ConverterFixture.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -16,7 +16,7 @@ namespace WixTest.WixUnitTest
     using WixToolset;
     using Xunit;
 
-    public class InspectorFixture
+    public class ConverterFixture
     {
         private static readonly XNamespace Wix4Namespace = "http://wixtoolset.org/schemas/v4/wxs";
 
@@ -36,9 +36,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -57,9 +57,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(4, null, null);
+            Converter converter = new Converter(4, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             Assert.Equal(1, errors);
             Assert.Equal("1.0", document.Declaration.Version);
@@ -89,9 +89,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(4, null, null);
+            Converter converter = new Converter(4, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -122,9 +122,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -149,9 +149,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -177,9 +177,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -209,9 +209,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -238,9 +238,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -266,9 +266,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -294,9 +294,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -321,9 +321,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 
@@ -348,9 +348,9 @@ namespace WixTest.WixUnitTest
 
             XDocument document = XDocument.Parse(parse, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-            Inspector inspector = new Inspector(2, null, null);
+            Converter converter = new Converter(2, null, null);
 
-            int errors = inspector.InspectDocument(document);
+            int errors = converter.ConvertDocument(document);
 
             string actual = UnformattedDocumentString(document);
 

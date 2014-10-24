@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Inspector.cs" />
     <Compile Include="WixCop.cs" />
   </ItemGroup>
 

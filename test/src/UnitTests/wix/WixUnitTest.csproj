@@ -11,6 +11,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="CollapseDuplicateDirectoriesFixture.cs" />
     <Compile Include="CompilerFixture.cs" />
+    <Compile Include="ConverterFixture.cs" />
     <Compile Include="ExtensionManagerFixture.cs" />
     <Compile Include="IdentifierAccessModifiersFixture.cs" />
     <Compile Include="InlineDirectorySyntaxFixture.cs" />

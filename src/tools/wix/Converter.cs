@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="Inspector.cs" company="Outercurve Foundation">
+// <copyright file="Converter.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -18,9 +18,9 @@ namespace WixToolset
     using System.Xml.Linq;
 
     /// <summary>
-    /// WiX source code inspector.
+    /// WiX source code converter.
     /// </summary>
-    public class Inspector
+    public class Converter
     {
         private const string XDocumentNewLine = "\n"; // XDocument normlizes "\r\n" to just "\n".
         private static readonly XNamespace WixNamespace = "http://wixtoolset.org/schemas/v4/wxs";
@@ -62,133 +62,57 @@ namespace WixToolset
             { "http://schemas.microsoft.com/wix/2006/WixUnit", "http://wixtoolset.org/schemas/v4/wixunit" },
         };
 
-        private Dictionary<XName, Action<XElement>> InspectElementMapping;
+        private Dictionary<XName, Action<XElement>> ConvertElementMapping;
 
         /// <summary>
-        /// Instantiate a new Inspector class.
+        /// Instantiate a new Converter class.
         /// </summary>
         /// <param name="indentationAmount">Indentation value to use when validating leading whitespace.</param>
         /// <param name="errorsAsWarnings">Test errors to display as warnings.</param>
         /// <param name="ignoreErrors">Test errors to ignore.</param>
-        public Inspector(int indentationAmount, IEnumerable<string> errorsAsWarnings = null, IEnumerable<string> ignoreErrors = null)
+        public Converter(int indentationAmount, IEnumerable<string> errorsAsWarnings = null, IEnumerable<string> ignoreErrors = null)
         {
-            this.InspectElementMapping = new Dictionary<XName, Action<XElement>>()
+            this.ConvertElementMapping = new Dictionary<XName, Action<XElement>>()
             {
-                { FileElementName, this.InspectFileElement },
-                { ExePackageElementName, this.InspectChainPackageElement },
-                { MsiPackageElementName, this.InspectChainPackageElement },
-                { MspPackageElementName, this.InspectChainPackageElement },
-                { MsuPackageElementName, this.InspectChainPackageElement },
-                { PayloadElementName, this.InspectPayloadElement },
-                { WixElementWithoutNamespaceName, this.InspectWixElementWithoutNamespace },
+                { FileElementName, this.ConvertFileElement },
+                { ExePackageElementName, this.ConvertChainPackageElement },
+                { MsiPackageElementName, this.ConvertChainPackageElement },
+                { MspPackageElementName, this.ConvertChainPackageElement },
+                { MsuPackageElementName, this.ConvertChainPackageElement },
+                { PayloadElementName, this.ConvertPayloadElement },
+                { WixElementWithoutNamespaceName, this.ConvertWixElementWithoutNamespace },
             };
 
             this.IndentationAmount = indentationAmount;
 
-            this.ErrorsAsWarnings = new HashSet<InspectorTestType>(this.YieldInspectorTypes(errorsAsWarnings));
+            this.ErrorsAsWarnings = new HashSet<ConverterTestType>(this.YieldConverterTypes(errorsAsWarnings));
 
-            this.IgnoreErrors = new HashSet<InspectorTestType>(this.YieldInspectorTypes(ignoreErrors));
+            this.IgnoreErrors = new HashSet<ConverterTestType>(this.YieldConverterTypes(ignoreErrors));
         }
 
         private int Errors { get; set; }
 
-        private HashSet<InspectorTestType> ErrorsAsWarnings { get; set; }
+        private HashSet<ConverterTestType> ErrorsAsWarnings { get; set; }
 
-        private HashSet<InspectorTestType> IgnoreErrors { get; set; }
+        private HashSet<ConverterTestType> IgnoreErrors { get; set; }
 
         private int IndentationAmount { get; set; }
 
         private string SourceFile { get; set; }
 
         /// <summary>
-        /// Inspector test types.  These are used to condition error messages down to warnings.
+        /// Convert a file.
         /// </summary>
-        private enum InspectorTestType
-        {
-            /// <summary>
-            /// Internal-only: displayed when a string cannot be converted to an InspectorTestType.
-            /// </summary>
-            InspectorTestTypeUnknown,
-
-            /// <summary>
-            /// Displayed when an XML loading exception has occurred.
-            /// </summary>
-            XmlException,
-
-            /// <summary>
-            /// Displayed when a file cannot be accessed; typically when trying to save back a fixed file.
-            /// </summary>
-            UnauthorizedAccessException,
-
-            /// <summary>
-            /// Displayed when the encoding attribute in the XML declaration is not 'UTF-8'.
-            /// </summary>
-            DeclarationEncodingWrong,
-
-            /// <summary>
-            /// Displayed when the XML declaration is missing from the source file.
-            /// </summary>
-            DeclarationMissing,
-
-            /// <summary>
-            /// Displayed when the whitespace preceding a CDATA node is wrong.
-            /// </summary>
-            WhitespacePrecedingCDATAWrong,
-
-            /// <summary>
-            /// Displayed when the whitespace preceding a node is wrong.
-            /// </summary>
-            WhitespacePrecedingNodeWrong,
-
-            /// <summary>
-            /// Displayed when an element is not empty as it should be.
-            /// </summary>
-            NotEmptyElement,
-
-            /// <summary>
-            /// Displayed when the whitespace following a CDATA node is wrong.
-            /// </summary>
-            WhitespaceFollowingCDATAWrong,
-
-            /// <summary>
-            /// Displayed when the whitespace preceding an end element is wrong.
-            /// </summary>
-            WhitespacePrecedingEndElementWrong,
-
-            /// <summary>
-            /// Displayed when the xmlns attribute is missing from the document element.
-            /// </summary>
-            XmlnsMissing,
-
-            /// <summary>
-            /// Displayed when the xmlns attribute on the document element is wrong.
-            /// </summary>
-            XmlnsValueWrong,
-
-            /// <summary>
-            /// Assign an identifier to a File element when on Id attribute is specified.
-            /// </summary>
-            AssignAnonymousFileId,
-
-            /// <summary>
-            /// SuppressSignatureValidation attribute is deprecated and replaced with EnableSignatureValidation.
-            /// </summary>
-            SuppressSignatureValidationDeprecated,
-        }
-
-        /// <summary>
-        /// Inspect a file.
-        /// </summary>
-        /// <param name="inspectSourceFile">The file to inspect.</param>
-        /// <param name="fixErrors">Option to fix errors that are found.</param>
+        /// <param name="sourceFile">The file to convert.</param>
+        /// <param name="saveConvertedFile">Option to save the converted errors that are found.</param>
         /// <returns>The number of errors found.</returns>
-        public int InspectFile(string inspectSourceFile, bool fixErrors)
+        public int ConvertFile(string sourceFile, bool saveConvertedFile)
         {
             XDocument document;
 
             // Set the instance info.
             this.Errors = 0;
-            this.SourceFile = inspectSourceFile;
+            this.SourceFile = sourceFile;
 
             try
             {
@@ -196,16 +120,15 @@ namespace WixToolset
             }
             catch (XmlException e)
             {
-                this.OnError(InspectorTestType.XmlException, (XObject)null, "The xml is invalid.  Detail: '{0}'", e.Message);
+                this.OnError(ConverterTestType.XmlException, (XObject)null, "The xml is invalid.  Detail: '{0}'", e.Message);
 
                 return this.Errors;
             }
 
-            this.InspectDocument(document);
-
+            this.ConvertDocument(document);
 
             // Fix errors if requested and necessary.
-            if (fixErrors && 0 < this.Errors)
+            if (saveConvertedFile && 0 < this.Errors)
             {
                 try
                 {
@@ -216,7 +139,7 @@ namespace WixToolset
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    this.OnError(InspectorTestType.UnauthorizedAccessException, (XObject)null, "Could not write to file.");
+                    this.OnError(ConverterTestType.UnauthorizedAccessException, (XObject)null, "Could not write to file.");
                 }
             }
 
@@ -224,20 +147,20 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Inspect a document.
+        /// Convert a document.
         /// </summary>
-        /// <param name="document">The document to inspect.</param>
+        /// <param name="document">The document to convert.</param>
         /// <returns>The number of errors found.</returns>
-        public int InspectDocument(XDocument document)
+        public int ConvertDocument(XDocument document)
         {
             XDeclaration declaration = document.Declaration;
 
-            // inspect the declaration
+            // Convert the declaration.
             if (null != declaration)
             {
                 if (!String.Equals("utf-8", declaration.Encoding, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (this.OnError(InspectorTestType.DeclarationEncodingWrong, document.Root, "The XML declaration encoding is not properly set to 'utf-8'."))
+                    if (this.OnError(ConverterTestType.DeclarationEncodingWrong, document.Root, "The XML declaration encoding is not properly set to 'utf-8'."))
                     {
                         declaration.Encoding = "utf-8";
                     }
@@ -245,52 +168,52 @@ namespace WixToolset
             }
             else // missing declaration
             {
-                if (this.OnError(InspectorTestType.DeclarationMissing, (XNode)null, "This file is missing an XML declaration on the first line."))
+                if (this.OnError(ConverterTestType.DeclarationMissing, (XNode)null, "This file is missing an XML declaration on the first line."))
                 {
                     document.Declaration = new XDeclaration("1.0", "utf-8", null);
                     document.Root.AddBeforeSelf(new XText(XDocumentNewLine));
                 }
             }
 
-            // Start inspecting the nodes at the top.
-            this.InspectNode(document.Root, 0);
+            // Start converting the nodes at the top.
+            this.ConvertNode(document.Root, 0);
 
             return this.Errors;
         }
 
         /// <summary>
-        /// Inspect a single xml node.
+        /// Convert a single xml node.
         /// </summary>
-        /// <param name="node">The node to inspect.</param>
+        /// <param name="node">The node to convert.</param>
         /// <param name="level">The depth level of the node.</param>
-        /// <returns>The inspected node.</returns>
-        private void InspectNode(XNode node, int level)
+        /// <returns>The converted node.</returns>
+        private void ConvertNode(XNode node, int level)
         {
-            // Inspect this node's whitespace.
+            // Convert this node's whitespace.
             if ((XmlNodeType.Comment == node.NodeType && 0 > ((XComment)node).Value.IndexOf(XDocumentNewLine, StringComparison.Ordinal)) ||
                 XmlNodeType.CDATA == node.NodeType || XmlNodeType.Element == node.NodeType || XmlNodeType.ProcessingInstruction == node.NodeType)
             {
-                this.InspectWhitespace(node, level);
+                this.ConvertWhitespace(node, level);
             }
 
-            // Inspect this node if it is an element.
+            // Convert this node if it is an element.
             XElement element = node as XElement;
 
             if (null != element)
             {
-                this.InspectElement(element);
+                this.ConvertElement(element);
 
-                // inspect all children of this element.
+                // Convert all children of this element.
                 List<XNode> children = element.Nodes().ToList();
 
                 foreach (XNode child in children)
                 {
-                    this.InspectNode(child, level + 1);
+                    this.ConvertNode(child, level + 1);
                 }
             }
         }
 
-        private void InspectElement(XElement element)
+        private void ConvertElement(XElement element)
         {
             // Gather any deprecated namespaces, then update this element tree based on those deprecations.
             Dictionary<XNamespace, XNamespace> deprecatedToUpdatedNamespaces = new Dictionary<XNamespace, XNamespace>();
@@ -299,9 +222,9 @@ namespace WixToolset
             {
                 XNamespace ns;
 
-                if (Inspector.OldToNewNamespaceMapping.TryGetValue(declaration.Value, out ns))
+                if (Converter.OldToNewNamespaceMapping.TryGetValue(declaration.Value, out ns))
                 {
-                    if (this.OnError(InspectorTestType.XmlnsValueWrong, declaration, "The namespace '{0}' is out of date.  It must be '{1}'.", declaration.Value, ns.NamespaceName))
+                    if (this.OnError(ConverterTestType.XmlnsValueWrong, declaration, "The namespace '{0}' is out of date.  It must be '{1}'.", declaration.Value, ns.NamespaceName))
                     {
                         deprecatedToUpdatedNamespaces.Add(declaration.Value, ns);
                     }
@@ -313,16 +236,16 @@ namespace WixToolset
                 UpdateElementsWithDeprecatedNamespaces(element.DescendantsAndSelf(), deprecatedToUpdatedNamespaces);
             }
 
-            // Inspect the node in much greater detail.
+            // Convert the node in much greater detail.
             Action<XElement> convert;
 
-            if (this.InspectElementMapping.TryGetValue(element.Name, out convert))
+            if (this.ConvertElementMapping.TryGetValue(element.Name, out convert))
             {
                 convert(element);
             }
         }
 
-        private void InspectFileElement(XElement element)
+        private void ConvertFileElement(XElement element)
         {
             if (null == element.Attribute("Id"))
             {
@@ -341,7 +264,7 @@ namespace WixToolset
                 {
                     string name = Path.GetFileName(attribute.Value);
 
-                    if (this.OnError(InspectorTestType.AssignAnonymousFileId, element, "The file id is being updated to '{0}' to ensure it remains the same as the default", name))
+                    if (this.OnError(ConverterTestType.AssignAnonymousFileId, element, "The file id is being updated to '{0}' to ensure it remains the same as the default", name))
                     {
                         List<XAttribute> attributes = element.Attributes().ToList();
                         element.RemoveAttributes();
@@ -352,13 +275,13 @@ namespace WixToolset
             }
         }
 
-        private void InspectChainPackageElement(XElement element)
+        private void ConvertChainPackageElement(XElement element)
         {
             XAttribute suppressSignatureValidation = element.Attribute("SuppressSignatureValidation");
 
             if (null != suppressSignatureValidation)
             {
-                if (this.OnError(InspectorTestType.SuppressSignatureValidationDeprecated, element, "The chain package element contains deprecated '{0}' attribute. Use the 'EnableSignatureValidation' instead.", suppressSignatureValidation))
+                if (this.OnError(ConverterTestType.SuppressSignatureValidationDeprecated, element, "The chain package element contains deprecated '{0}' attribute. Use the 'EnableSignatureValidation' instead.", suppressSignatureValidation))
                 {
                     if ("no" == suppressSignatureValidation.Value)
                     {
@@ -370,13 +293,13 @@ namespace WixToolset
             }
         }
 
-        private void InspectPayloadElement(XElement element)
+        private void ConvertPayloadElement(XElement element)
         {
             XAttribute suppressSignatureValidation = element.Attribute("SuppressSignatureValidation");
 
             if (null != suppressSignatureValidation)
             {
-                if (this.OnError(InspectorTestType.SuppressSignatureValidationDeprecated, element, "The payload element contains deprecated '{0}' attribute. Use the 'EnableSignatureValidation' instead.", suppressSignatureValidation))
+                if (this.OnError(ConverterTestType.SuppressSignatureValidationDeprecated, element, "The payload element contains deprecated '{0}' attribute. Use the 'EnableSignatureValidation' instead.", suppressSignatureValidation))
                 {
                     if ("no" == suppressSignatureValidation.Value)
                     {
@@ -389,13 +312,13 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Inspects a Wix element.
+        /// Converts a Wix element.
         /// </summary>
-        /// <param name="element">The Wix element to inspect.</param>
-        /// <returns>The inspected element.</returns>
-        private void InspectWixElementWithoutNamespace(XElement element)
+        /// <param name="element">The Wix element to convert.</param>
+        /// <returns>The converted element.</returns>
+        private void ConvertWixElementWithoutNamespace(XElement element)
         {
-            if (this.OnError(InspectorTestType.XmlnsMissing, element, "The xmlns attribute is missing.  It must be present with a value of '{0}'.", WixNamespace.NamespaceName))
+            if (this.OnError(ConverterTestType.XmlnsMissing, element, "The xmlns attribute is missing.  It must be present with a value of '{0}'.", WixNamespace.NamespaceName))
             {
                 element.Name = WixNamespace.GetName(element.Name.LocalName);
 
@@ -409,11 +332,11 @@ namespace WixToolset
         }
 
         /// <summary>
-        /// Inspect the whitespace adjacent to a node.
+        /// Convert the whitespace adjacent to a node.
         /// </summary>
-        /// <param name="node">The node to inspect.</param>
+        /// <param name="node">The node to convert.</param>
         /// <param name="level">The depth level of the node.</param>
-        private void InspectWhitespace(XNode node, int level)
+        private void ConvertWhitespace(XNode node, int level)
         {
             // Fix the whitespace before this node.
             XText whitespace = node.PreviousNode as XText;
@@ -422,7 +345,7 @@ namespace WixToolset
             {
                 if (XmlNodeType.CDATA == node.NodeType)
                 {
-                    if (this.OnError(InspectorTestType.WhitespacePrecedingCDATAWrong, node, "There should be no whitespace preceding a CDATA node."))
+                    if (this.OnError(ConverterTestType.WhitespacePrecedingCDATAWrong, node, "There should be no whitespace preceding a CDATA node."))
                     {
                         whitespace.Remove();
                     }
@@ -431,7 +354,7 @@ namespace WixToolset
                 {
                     if (!IsLegalWhitespace(this.IndentationAmount, level, whitespace.Value))
                     {
-                        if (this.OnError(InspectorTestType.WhitespacePrecedingNodeWrong, node, "The whitespace preceding this node is incorrect."))
+                        if (this.OnError(ConverterTestType.WhitespacePrecedingNodeWrong, node, "The whitespace preceding this node is incorrect."))
                         {
                             FixWhitespace(this.IndentationAmount, level, whitespace);
                         }
@@ -448,7 +371,7 @@ namespace WixToolset
 
                 if (null != whitespace)
                 {
-                    if (this.OnError(InspectorTestType.WhitespaceFollowingCDATAWrong, node, "There should be no whitespace following a CDATA node."))
+                    if (this.OnError(ConverterTestType.WhitespaceFollowingCDATAWrong, node, "There should be no whitespace following a CDATA node."))
                     {
                         whitespace.Remove();
                     }
@@ -463,7 +386,7 @@ namespace WixToolset
                 {
                     if (!element.HasElements && !element.IsEmpty && String.IsNullOrEmpty(element.Value.Trim()))
                     {
-                        if (this.OnError(InspectorTestType.NotEmptyElement, element, "This should be an empty element since it contains nothing but whitespace."))
+                        if (this.OnError(ConverterTestType.NotEmptyElement, element, "This should be an empty element since it contains nothing but whitespace."))
                         {
                             element.RemoveNodes();
                         }
@@ -475,7 +398,7 @@ namespace WixToolset
                     {
                         if (!IsLegalWhitespace(this.IndentationAmount, level - 1, whitespace.Value))
                         {
-                            if (this.OnError(InspectorTestType.WhitespacePrecedingEndElementWrong, whitespace, "The whitespace preceding this end element is incorrect."))
+                            if (this.OnError(ConverterTestType.WhitespacePrecedingEndElementWrong, whitespace, "The whitespace preceding this end element is incorrect."))
                             {
                                 FixWhitespace(this.IndentationAmount, level - 1, whitespace);
                             }
@@ -485,21 +408,21 @@ namespace WixToolset
             }
         }
 
-        private IEnumerable<InspectorTestType> YieldInspectorTypes(IEnumerable<string> types)
+        private IEnumerable<ConverterTestType> YieldConverterTypes(IEnumerable<string> types)
         {
             if (null != types)
             {
                 foreach (string type in types)
                 {
-                    InspectorTestType itt;
+                    ConverterTestType itt;
 
-                    if (Enum.TryParse<InspectorTestType>(type, true, out itt))
+                    if (Enum.TryParse<ConverterTestType>(type, true, out itt))
                     {
                         yield return itt;
                     }
-                    else // not a known InspectorTestType
+                    else // not a known ConverterTestType
                     {
-                        this.OnError(InspectorTestType.InspectorTestTypeUnknown, (XObject)null, "Unknown error type: '{0}'.", type);
+                        this.OnError(ConverterTestType.ConverterTestTypeUnknown, (XObject)null, "Unknown error type: '{0}'.", type);
                     }
                 }
             }
@@ -614,14 +537,14 @@ namespace WixToolset
         /// <summary>
         /// Output an error message to the console.
         /// </summary>
-        /// <param name="inspectorTestType">The type of inspector test.</param>
+        /// <param name="converterTestType">The type of converter test.</param>
         /// <param name="node">The node that caused the error.</param>
         /// <param name="message">Detailed error message.</param>
         /// <param name="args">Additional formatted string arguments.</param>
         /// <returns>Returns true indicating that action should be taken on this error, and false if it should be ignored.</returns>
-        private bool OnError(InspectorTestType inspectorTestType, XObject node, string message, params object[] args)
+        private bool OnError(ConverterTestType converterTestType, XObject node, string message, params object[] args)
         {
-            if (this.IgnoreErrors.Contains(inspectorTestType)) // ignore the error
+            if (this.IgnoreErrors.Contains(converterTestType)) // ignore the error
             {
                 return false;
             }
@@ -631,7 +554,7 @@ namespace WixToolset
 
             // set the warning/error part of the message
             string warningError;
-            if (this.ErrorsAsWarnings.Contains(inspectorTestType)) // error as warning
+            if (this.ErrorsAsWarnings.Contains(converterTestType)) // error as warning
             {
                 warningError = "warning";
             }
@@ -642,13 +565,13 @@ namespace WixToolset
 
             if (null != node)
             {
-                Console.Error.WriteLine("{0}({1}) : {2} WXCP{3:0000} : {4} ({5})", this.SourceFile, ((IXmlLineInfo)node).LineNumber, warningError, (int)inspectorTestType, String.Format(CultureInfo.CurrentCulture, message, args), inspectorTestType.ToString());
+                Console.Error.WriteLine("{0}({1}) : {2} WXCP{3:0000} : {4} ({5})", this.SourceFile, ((IXmlLineInfo)node).LineNumber, warningError, (int)converterTestType, String.Format(CultureInfo.CurrentCulture, message, args), converterTestType.ToString());
             }
             else
             {
                 string source = this.SourceFile ?? "wixcop.exe";
 
-                Console.Error.WriteLine("{0} : {1} WXCP{2:0000} : {3} ({4})", source, warningError, (int)inspectorTestType, String.Format(CultureInfo.CurrentCulture, message, args), inspectorTestType.ToString());
+                Console.Error.WriteLine("{0} : {1} WXCP{2:0000} : {3} ({4})", source, warningError, (int)converterTestType, String.Format(CultureInfo.CurrentCulture, message, args), converterTestType.ToString());
             }
 
             return true;
@@ -674,6 +597,82 @@ namespace WixToolset
 
                 Console.WriteLine("{0} : {1}", source, String.Format(CultureInfo.CurrentCulture, message, args));
             }
+        }
+
+        /// <summary>
+        /// Converter test types.  These are used to condition error messages down to warnings.
+        /// </summary>
+        private enum ConverterTestType
+        {
+            /// <summary>
+            /// Internal-only: displayed when a string cannot be converted to an ConverterTestType.
+            /// </summary>
+            ConverterTestTypeUnknown,
+
+            /// <summary>
+            /// Displayed when an XML loading exception has occurred.
+            /// </summary>
+            XmlException,
+
+            /// <summary>
+            /// Displayed when a file cannot be accessed; typically when trying to save back a fixed file.
+            /// </summary>
+            UnauthorizedAccessException,
+
+            /// <summary>
+            /// Displayed when the encoding attribute in the XML declaration is not 'UTF-8'.
+            /// </summary>
+            DeclarationEncodingWrong,
+
+            /// <summary>
+            /// Displayed when the XML declaration is missing from the source file.
+            /// </summary>
+            DeclarationMissing,
+
+            /// <summary>
+            /// Displayed when the whitespace preceding a CDATA node is wrong.
+            /// </summary>
+            WhitespacePrecedingCDATAWrong,
+
+            /// <summary>
+            /// Displayed when the whitespace preceding a node is wrong.
+            /// </summary>
+            WhitespacePrecedingNodeWrong,
+
+            /// <summary>
+            /// Displayed when an element is not empty as it should be.
+            /// </summary>
+            NotEmptyElement,
+
+            /// <summary>
+            /// Displayed when the whitespace following a CDATA node is wrong.
+            /// </summary>
+            WhitespaceFollowingCDATAWrong,
+
+            /// <summary>
+            /// Displayed when the whitespace preceding an end element is wrong.
+            /// </summary>
+            WhitespacePrecedingEndElementWrong,
+
+            /// <summary>
+            /// Displayed when the xmlns attribute is missing from the document element.
+            /// </summary>
+            XmlnsMissing,
+
+            /// <summary>
+            /// Displayed when the xmlns attribute on the document element is wrong.
+            /// </summary>
+            XmlnsValueWrong,
+
+            /// <summary>
+            /// Assign an identifier to a File element when on Id attribute is specified.
+            /// </summary>
+            AssignAnonymousFileId,
+
+            /// <summary>
+            /// SuppressSignatureValidation attribute is deprecated and replaced with EnableSignatureValidation.
+            /// </summary>
+            SuppressSignatureValidationDeprecated,
         }
     }
 }

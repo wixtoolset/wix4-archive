@@ -7,7 +7,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace WixToolset
+namespace WixToolset.Tools
 {
     using System;
     using System.Collections;
@@ -19,7 +19,7 @@ namespace WixToolset
     using System.Xml;
 
     /// <summary>
-    /// Wix source code style inspector and repair utility.
+    /// Wix source code style inspector and converter.
     /// </summary>
     public class WixCop
     {
@@ -27,7 +27,7 @@ namespace WixToolset
         private string[] ignoreErrorsHash;
         private Hashtable exemptFiles;
         private bool fixErrors;
-        private Inspector inspector;
+        private Converter converter;
         private ArrayList searchPatterns;
         private Dictionary<string, bool> searchPatternResults;
         private string settingsFile1;
@@ -116,7 +116,7 @@ namespace WixToolset
                     if (!this.exemptFiles.Contains(file.Name.ToUpperInvariant()))
                     {
                         searchPatternResults[searchPattern] = true;
-                        errors += this.inspector.InspectFile(file.FullName, this.fixErrors);
+                        errors += this.converter.ConvertFile(file.FullName, this.fixErrors);
                     }
                 }
             }
@@ -183,7 +183,7 @@ namespace WixToolset
                     }
                 }
 
-                this.inspector = new Inspector(this.indentationAmount, this.errorsAsWarnings, this.ignoreErrorsHash);
+                this.converter = new Converter(this.indentationAmount, this.errorsAsWarnings, this.ignoreErrorsHash);
 
                 int errors = this.InspectSubDirectories(Path.GetFullPath("."));
 
