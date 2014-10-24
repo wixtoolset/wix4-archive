@@ -33,6 +33,7 @@
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerCore.cs" />
+    <Compile Include="Converter.cs" />
     <Compile Include="Differ.cs" />
     <Compile Include="ExtensionManager.cs" />
     <Compile Include="IfDefEventHandler.cs" />

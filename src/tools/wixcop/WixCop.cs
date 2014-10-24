@@ -5,13 +5,9 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Wix source code style inspector and repair utility.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstaller.Tools
+namespace WixToolset.Tools
 {
     using System;
     using System.Collections;
@@ -21,11 +17,10 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
     using System.IO;
     using System.Reflection;
     using System.Xml;
-
-    using WixToolset;
+    using WixToolset.Data;
 
     /// <summary>
-    /// The WiXCop application class.
+    /// Wix source code style inspector and converter.
     /// </summary>
     public class WixCop
     {
@@ -33,7 +28,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
         private string[] ignoreErrorsHash;
         private Hashtable exemptFiles;
         private bool fixErrors;
-        private Inspector inspector;
+        private Converter converter;
         private ArrayList searchPatterns;
         private Dictionary<string, bool> searchPatternResults;
         private string settingsFile1;
@@ -65,6 +60,9 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
         [STAThread]
         public static int Main(string[] args)
         {
+            AppCommon.PrepareConsoleForLocalization();
+            Messaging.Instance.InitializeAppName("WXCP", "wixcop.exe").Display += AppCommon.ConsoleDisplayMessage;
+
             WixCop wixCop = new WixCop();
             return wixCop.Run(args);
         }
@@ -122,7 +120,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
                     if (!this.exemptFiles.Contains(file.Name.ToUpperInvariant()))
                     {
                         searchPatternResults[searchPattern] = true;
-                        errors += this.inspector.InspectFile(file.FullName, this.fixErrors);
+                        errors += this.converter.ConvertFile(file.FullName, this.fixErrors);
                     }
                 }
             }
@@ -189,7 +187,7 @@ namespace Microsoft.Tools.WindowsInstaller.Tools
                     }
                 }
 
-                this.inspector = new Inspector(this.errorsAsWarnings, this.ignoreErrorsHash, this.indentationAmount);
+                this.converter = new Converter(this.indentationAmount, this.errorsAsWarnings, this.ignoreErrorsHash);
 
                 int errors = this.InspectSubDirectories(Path.GetFullPath("."));
 

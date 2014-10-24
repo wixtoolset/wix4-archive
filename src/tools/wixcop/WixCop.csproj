@@ -18,19 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Inspector.cs" />
-    <Compile Include="LineInfoAttribute.cs" />
-    <Compile Include="LineInfoCData.cs" />
-    <Compile Include="LineInfoComment.cs" />
-    <Compile Include="LineInfoDeclaration.cs" />
-    <Compile Include="LineInfoDocument.cs" />
-    <Compile Include="LineInfoDocumentType.cs" />
-    <Compile Include="LineInfoElement.cs" />
-    <Compile Include="LineInfoEntityReference.cs" />
-    <Compile Include="LineInfoProcessingInstruction.cs" />
-    <Compile Include="LineInfoSignificantWhitespace.cs" />
-    <Compile Include="LineInfoText.cs" />
-    <Compile Include="LineInfoWhitespace.cs" />
     <Compile Include="WixCop.cs" />
   </ItemGroup>
 
@@ -45,8 +32,13 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <ProjectReference Include="..\wconsole\wconsole.csproj" />
     <ProjectReference Include="..\Wix\Wix.csproj" />
+    <ProjectReference Include="..\..\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
