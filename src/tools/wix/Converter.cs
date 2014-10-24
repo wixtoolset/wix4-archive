@@ -256,11 +256,7 @@ namespace WixToolset
                     attribute = element.Attribute("Source");
                 }
 
-                if (null == attribute)
-                {
-                    // TODO: do something since we can't get an id for this file
-                }
-                else
+                if (null != attribute)
                 {
                     string name = Path.GetFileName(attribute.Value);
 
@@ -268,7 +264,7 @@ namespace WixToolset
                     {
                         List<XAttribute> attributes = element.Attributes().ToList();
                         element.RemoveAttributes();
-                        element.Add(new XAttribute("Id", name)); // TODO: make this a safe id.
+                        element.Add(new XAttribute("Id", Common.GetIdentifierFromName(name)));
                         element.Add(attributes);
                     }
                 }
