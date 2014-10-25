@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProcessMsuPackage.cs" company="Outercurve Foundation">
+// <copyright file="ProcessMsuPackageCommand.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -16,7 +16,7 @@ namespace WixToolset.Bind.Bundles
     /// <summary>
     /// Processes the Msu packages to add properties and payloads from the Msu packages.
     /// </summary>
-    internal class ProcessMsuPackage : ICommand
+    internal class ProcessMsuPackageCommand : ICommand
     {
         public RowDictionary<WixBundlePayloadRow> AuthoredPayloads { private get; set; }
 

@@ -50,7 +50,7 @@ namespace WixToolset.Bind
                         string value = WixVariableResolver.ResolveDelayedVariables(propertyRow.SourceLineNumbers, (string)delayedField.Field.Data, this.VariableCache);
 
                         // update the variable cache with the new value
-                        string key = String.Concat("property.", Demodularize(this.OutputType, this.ModularizationGuid, (string)propertyRow[0]));
+                        string key = String.Concat("property.", BindDatabaseCommand.Demodularize(this.OutputType, this.ModularizationGuid, (string)propertyRow[0]));
                         this.VariableCache[key] = value;
 
                         // update the field data
@@ -123,16 +123,6 @@ namespace WixToolset.Bind
                     continue;
                 }
             }
-        }
-
-        private string Demodularize(OutputType type, string modularizationGuid, string id)
-        {
-            if (OutputType.Module == type && id.EndsWith(String.Concat(".", modularizationGuid), StringComparison.Ordinal))
-            {
-                id = id.Substring(0, id.Length - 37);
-            }
-
-            return id;
         }
     }
 }

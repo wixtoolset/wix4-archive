@@ -202,13 +202,13 @@ namespace WixToolset.Bind.Databases
                 {
                     if (!String.IsNullOrEmpty(file.File.Version))
                     {
-                        string key = String.Format(CultureInfo.InvariantCulture, "fileversion.{0}", BindDatabaseCommand.Demodularize(this.Output, this.ModularizationGuid, file.File.File));
+                        string key = String.Format(CultureInfo.InvariantCulture, "fileversion.{0}", BindDatabaseCommand.Demodularize(this.Output.Type, this.ModularizationGuid, file.File.File));
                         this.VariableCache[key] = file.File.Version;
                     }
 
                     if (!String.IsNullOrEmpty(file.File.Language))
                     {
-                        string key = String.Format(CultureInfo.InvariantCulture, "filelanguage.{0}", BindDatabaseCommand.Demodularize(this.Output, ModularizationGuid, file.File.File));
+                        string key = String.Format(CultureInfo.InvariantCulture, "filelanguage.{0}", BindDatabaseCommand.Demodularize(this.Output.Type, ModularizationGuid, file.File.File));
                         this.VariableCache[key] = file.File.Language;
                     }
                 }
@@ -340,7 +340,7 @@ namespace WixToolset.Bind.Databases
                 // add the assembly name to the information cache
                 if (null != this.VariableCache)
                 {
-                    string fileId = BindDatabaseCommand.Demodularize(this.Output, this.ModularizationGuid, file.File.File);
+                    string fileId = BindDatabaseCommand.Demodularize(this.Output.Type, this.ModularizationGuid, file.File.File);
                     string key = String.Concat("assemblyfullname.", fileId);
                     string assemblyName = String.Concat(assemblyNameValues["name"], ", version=", assemblyNameValues["version"], ", culture=", assemblyNameValues["culture"], ", publicKeyToken=", String.IsNullOrEmpty(assemblyNameValues["publicKeyToken"]) ? "null" : assemblyNameValues["publicKeyToken"]);
                     if (assemblyNameValues.ContainsKey("processorArchitecture"))
@@ -537,7 +537,7 @@ namespace WixToolset.Bind.Databases
 
                 if (this.VariableCache != null)
                 {
-                    string key = String.Format(CultureInfo.InvariantCulture, "assembly{0}.{1}", name, BindDatabaseCommand.Demodularize(this.Output, this.ModularizationGuid, file.File.File)).ToLowerInvariant();
+                    string key = String.Format(CultureInfo.InvariantCulture, "assembly{0}.{1}", name, BindDatabaseCommand.Demodularize(this.Output.Type, this.ModularizationGuid, file.File.File)).ToLowerInvariant();
                     this.VariableCache[key] = (string)assemblyNameRow[2];
                 }
             }

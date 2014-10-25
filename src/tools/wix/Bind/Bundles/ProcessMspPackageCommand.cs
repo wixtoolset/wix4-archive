@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProcessMspPackage.cs" company="Outercurve Foundation">
+// <copyright file="ProcessMspPackageCommand.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -23,7 +23,7 @@ namespace WixToolset.Bind.Bundles
     /// <summary>
     /// Initializes package state from the Msp contents.
     /// </summary>
-    internal class ProcessMspPackage : ICommand
+    internal class ProcessMspPackageCommand : ICommand
     {
         private const string PatchMetadataFormat = "SELECT `Value` FROM `MsiPatchMetadata` WHERE `Property` = '{0}'";
         private static readonly Encoding XmlOutputEncoding = new UTF8Encoding(false);
@@ -55,15 +55,15 @@ namespace WixToolset.Bind.Bundles
                 {
                     if (String.IsNullOrEmpty(this.Facade.Package.DisplayName))
                     {
-                        this.Facade.Package.DisplayName = ProcessMspPackage.GetPatchMetadataProperty(db, "DisplayName");
+                        this.Facade.Package.DisplayName = ProcessMspPackageCommand.GetPatchMetadataProperty(db, "DisplayName");
                     }
 
                     if (String.IsNullOrEmpty(this.Facade.Package.Description))
                     {
-                        this.Facade.Package.Description = ProcessMspPackage.GetPatchMetadataProperty(db, "Description");
+                        this.Facade.Package.Description = ProcessMspPackageCommand.GetPatchMetadataProperty(db, "Description");
                     }
 
-                    this.Facade.MspPackage.Manufacturer = ProcessMspPackage.GetPatchMetadataProperty(db, "ManufacturerName");
+                    this.Facade.MspPackage.Manufacturer = ProcessMspPackageCommand.GetPatchMetadataProperty(db, "ManufacturerName");
                 }
 
                 this.ProcessPatchXml(packagePayload, sourcePath);
@@ -99,14 +99,14 @@ namespace WixToolset.Bind.Bundles
                 XmlNode targetCodeElement = node.SelectSingleNode("p:TargetProductCode", nsmgr);
                 WixBundlePatchTargetCodeAttributes attributes = WixBundlePatchTargetCodeAttributes.None;
 
-                if (ProcessMspPackage.TargetsCode(targetCodeElement))
+                if (ProcessMspPackageCommand.TargetsCode(targetCodeElement))
                 {
                     attributes = WixBundlePatchTargetCodeAttributes.TargetsProductCode;
                 }
                 else // maybe targets an upgrade code?
                 {
                     targetCodeElement = node.SelectSingleNode("p:UpgradeCode", nsmgr);
-                    if (ProcessMspPackage.TargetsCode(targetCodeElement))
+                    if (ProcessMspPackageCommand.TargetsCode(targetCodeElement))
                     {
                         attributes = WixBundlePatchTargetCodeAttributes.TargetsUpgradeCode;
                     }
@@ -139,7 +139,7 @@ namespace WixToolset.Bind.Bundles
             {
                 XmlWriterSettings settings = new XmlWriterSettings()
                 {
-                    Encoding = ProcessMspPackage.XmlOutputEncoding,
+                    Encoding = ProcessMspPackageCommand.XmlOutputEncoding,
                     Indent = false,
                     NewLineChars = string.Empty,
                     NewLineHandling = NewLineHandling.Replace,
@@ -179,7 +179,7 @@ namespace WixToolset.Bind.Bundles
             // TODO: Are there any other special characters we should be looking for?
             Debug.Assert(!property.Contains("'"));
 
-            return String.Format(CultureInfo.InvariantCulture, ProcessMspPackage.PatchMetadataFormat, property);
+            return String.Format(CultureInfo.InvariantCulture, ProcessMspPackageCommand.PatchMetadataFormat, property);
         }
 
         private static bool TargetsCode(XmlNode node)

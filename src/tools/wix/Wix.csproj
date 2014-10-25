@@ -28,7 +28,7 @@
     <Compile Include="Bind\Databases\UpdateFileFacadesCommand.cs" />
     <Compile Include="Bind\Databases\FileFacade.cs" />
     <Compile Include="Bind\Databases\ExtractMergeModuleFilesCommand.cs" />
-    <Compile Include="Bind\Databases\GetPackageFacadesCommand.cs" />
+    <Compile Include="Bind\Databases\GetFileFacadesCommand.cs" />
     <Compile Include="CommandLine.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
@@ -66,11 +66,11 @@
     <Compile Include="Bind\Bundles\CreateContainerCommand.cs" />
     <Compile Include="Bind\Bundles\GetPackageFacadesCommand.cs" />
     <Compile Include="Bind\Bundles\OrderPackagesAndRollbackBoundariesCommand.cs" />
-    <Compile Include="Bind\Bundles\ProcessMspPackage.cs" />
-    <Compile Include="Bind\Bundles\ProcessMsuPackage.cs" />
-    <Compile Include="Bind\Bundles\ProcessExePackage.cs" />
-    <Compile Include="Bind\Bundles\ProcessMsiPackage.cs" />
-    <Compile Include="Bind\Bundles\ProcessPayloads.cs" />
+    <Compile Include="Bind\Bundles\ProcessMspPackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessMsuPackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessExePackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessMsiPackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessPayloadsCommand.cs" />
     <Compile Include="Bind\Bundles\VerifyPayloadsWithCatalogCommand.cs" />
     <Compile Include="Bind\Databases\AssignMediaCommand.cs" />
     <Compile Include="Bind\Databases\BindSummaryInfoCommand.cs" />
