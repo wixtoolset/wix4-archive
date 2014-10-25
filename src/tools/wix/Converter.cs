@@ -76,11 +76,11 @@ namespace WixToolset
             this.ConvertElementMapping = new Dictionary<XName, Action<XElement>>()
             {
                 { FileElementName, this.ConvertFileElement },
-                { ExePackageElementName, this.ConvertChainPackageElement },
-                { MsiPackageElementName, this.ConvertChainPackageElement },
-                { MspPackageElementName, this.ConvertChainPackageElement },
-                { MsuPackageElementName, this.ConvertChainPackageElement },
-                { PayloadElementName, this.ConvertPayloadElement },
+                { ExePackageElementName, this.ConvertSuppressSignatureValidation },
+                { MsiPackageElementName, this.ConvertSuppressSignatureValidation },
+                { MspPackageElementName, this.ConvertSuppressSignatureValidation },
+                { MsuPackageElementName, this.ConvertSuppressSignatureValidation },
+                { PayloadElementName, this.ConvertSuppressSignatureValidation },
                 { WixElementWithoutNamespaceName, this.ConvertWixElementWithoutNamespace },
             };
 
@@ -205,7 +205,7 @@ namespace WixToolset
                 this.ConvertElement(element);
 
                 // Convert all children of this element.
-                List<XNode> children = element.Nodes().ToList();
+                IEnumerable<XNode> children = element.Nodes().ToList();
 
                 foreach (XNode child in children)
                 {
@@ -234,7 +234,7 @@ namespace WixToolset
 
             if (deprecatedToUpdatedNamespaces.Any())
             {
-                UpdateElementsWithDeprecatedNamespaces(element.DescendantsAndSelf(), deprecatedToUpdatedNamespaces);
+                Converter.UpdateElementsWithDeprecatedNamespaces(element.DescendantsAndSelf(), deprecatedToUpdatedNamespaces);
             }
 
             // Convert the node in much greater detail.
@@ -263,7 +263,7 @@ namespace WixToolset
 
                     if (this.OnError(ConverterTestType.AssignAnonymousFileId, element, "The file id is being updated to '{0}' to ensure it remains the same as the default", name))
                     {
-                        List<XAttribute> attributes = element.Attributes().ToList();
+                        IEnumerable<XAttribute> attributes = element.Attributes().ToList();
                         element.RemoveAttributes();
                         element.Add(new XAttribute("Id", Common.GetIdentifierFromName(name)));
                         element.Add(attributes);
@@ -272,31 +272,13 @@ namespace WixToolset
             }
         }
 
-        private void ConvertChainPackageElement(XElement element)
+        private void ConvertSuppressSignatureValidation(XElement element)
         {
             XAttribute suppressSignatureValidation = element.Attribute("SuppressSignatureValidation");
 
             if (null != suppressSignatureValidation)
             {
                 if (this.OnError(ConverterTestType.SuppressSignatureValidationDeprecated, element, "The chain package element contains deprecated '{0}' attribute. Use the 'EnableSignatureValidation' instead.", suppressSignatureValidation))
-                {
-                    if ("no" == suppressSignatureValidation.Value)
-                    {
-                        element.Add(new XAttribute("EnableSignatureValidation", "yes"));
-                    }
-                }
-
-                suppressSignatureValidation.Remove();
-            }
-        }
-
-        private void ConvertPayloadElement(XElement element)
-        {
-            XAttribute suppressSignatureValidation = element.Attribute("SuppressSignatureValidation");
-
-            if (null != suppressSignatureValidation)
-            {
-                if (this.OnError(ConverterTestType.SuppressSignatureValidationDeprecated, element, "The payload element contains deprecated '{0}' attribute. Use the 'EnableSignatureValidation' instead.", suppressSignatureValidation))
                 {
                     if ("no" == suppressSignatureValidation.Value)
                     {
@@ -349,11 +331,11 @@ namespace WixToolset
                 }
                 else
                 {
-                    if (!IsLegalWhitespace(this.IndentationAmount, level, whitespace.Value))
+                    if (!Converter.IsLegalWhitespace(this.IndentationAmount, level, whitespace.Value))
                     {
                         if (this.OnError(ConverterTestType.WhitespacePrecedingNodeWrong, node, "The whitespace preceding this node is incorrect."))
                         {
-                            FixWhitespace(this.IndentationAmount, level, whitespace);
+                            Converter.FixWhitespace(this.IndentationAmount, level, whitespace);
                         }
                     }
                 }
@@ -393,11 +375,11 @@ namespace WixToolset
 
                     if (null != whitespace)
                     {
-                        if (!IsLegalWhitespace(this.IndentationAmount, level - 1, whitespace.Value))
+                        if (!Converter.IsLegalWhitespace(this.IndentationAmount, level - 1, whitespace.Value))
                         {
                             if (this.OnError(ConverterTestType.WhitespacePrecedingEndElementWrong, whitespace, "The whitespace preceding this end element is incorrect."))
                             {
-                                FixWhitespace(this.IndentationAmount, level - 1, whitespace);
+                                Converter.FixWhitespace(this.IndentationAmount, level - 1, whitespace);
                             }
                         }
                     }
@@ -437,7 +419,7 @@ namespace WixToolset
                 }
 
                 // Remove all the attributes and add them back to with their namespace updated (as necessary).
-                List<XAttribute> attributes = element.Attributes().ToList();
+                IEnumerable<XAttribute> attributes = element.Attributes().ToList();
                 element.RemoveAttributes();
 
                 foreach (XAttribute attribute in attributes)
