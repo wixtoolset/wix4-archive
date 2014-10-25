@@ -238,7 +238,7 @@ namespace WixToolset.Bind
                     // Add the property name and value to the variableCache.
                     if (null != variableCache)
                     {
-                        string key = String.Concat("property.", Demodularize(this.Output, modularizationGuid, propertyRow.Property));
+                        string key = String.Concat("property.", Demodularize(this.Output.Type, modularizationGuid, propertyRow.Property));
                         variableCache[key] = propertyRow.Value;
                     }
                 }
@@ -691,13 +691,13 @@ namespace WixToolset.Bind
         /// <remarks>
         /// If the output type is a module, returns a demodularized version of an id. Otherwise, returns the id.
         /// </remarks>
-        /// <param name="output">The output to bind.</param>
+        /// <param name="outputType">The type of the output to bind.</param>
         /// <param name="modularizationGuid">The modularization GUID.</param>
         /// <param name="id">The id to demodularize.</param>
         /// <returns>The demodularized id.</returns>
-        internal static string Demodularize(Output output, string modularizationGuid, string id)
+        internal static string Demodularize(OutputType outputType, string modularizationGuid, string id)
         {
-            if (OutputType.Module == output.Type && id.EndsWith(String.Concat(".", modularizationGuid), StringComparison.Ordinal))
+            if (OutputType.Module == outputType && id.EndsWith(String.Concat(".", modularizationGuid), StringComparison.Ordinal))
             {
                 id = id.Substring(0, id.Length - 37);
             }

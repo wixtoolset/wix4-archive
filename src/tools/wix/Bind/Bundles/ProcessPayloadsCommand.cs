@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProcessPayloads.cs" company="Outercurve Foundation">
+// <copyright file="ProcessPayloadsCommand.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -19,7 +19,7 @@ namespace WixToolset.Bind.Bundles
     using WixToolset.Data;
     using WixToolset.Data.Rows;
 
-    internal class ProcessPayloads : ICommand
+    internal class ProcessPayloadsCommand : ICommand
     {
         private static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
 
@@ -147,7 +147,7 @@ namespace WixToolset.Bind.Bundles
                 // Use the fixed version info block for the file since the resource text may not be a dotted quad.
                 Version version = new Version(versionInfo.ProductMajorPart, versionInfo.ProductMinorPart, versionInfo.ProductBuildPart, versionInfo.ProductPrivatePart);
 
-                if (ProcessPayloads.EmptyVersion != version)
+                if (ProcessPayloadsCommand.EmptyVersion != version)
                 {
                     payload.Version = version.ToString();
                 }

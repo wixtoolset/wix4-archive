@@ -3732,9 +3732,10 @@
             <Parameter Type="System.String" Name="wixlib" />
           </Instance>
         </Message>
-        <Message Id="NoPerMachineDependencies" Number="1140" SourceLineNumbers="no">
+        <Message Id="NoPerMachineDependencies" Number="1140">
             <Instance>
-                Bundle dependencies will not be registered on per-machine packages for a per-user bundle. Either make sure that all packages are installed per-machine, or author any per-machine dependencies as permanent packages.
+                Bundle dependencies will not be registered on per-machine package '{0}' for a per-user bundle. Either make sure that all packages are installed per-machine, or author any per-machine dependencies as permanent packages.
+                <Parameter Type="System.String" Name="packageId" />
             </Instance>
         </Message>
         <Message Id="DownloadUrlNotSupportedForAttachedContainers" Number="1141">
@@ -3945,9 +3946,9 @@
                 <Parameter Type="System.String" Name="compression" />
             </Instance>
         </Message>
-        <Message Id="SwitchingToPerUserPackage" Number="9029" SourceLineNumbers="no">
+        <Message Id="SwitchingToPerUserPackage" Number="9029">
             <Instance>
-                Bundle switching from per-machine to per-user due to addition of per-user package: '{0}'.
+                Bundle switching from per-machine to per-user due to addition of per-user package '{0}'.
                 <Parameter Type="System.String" Name="path" />
             </Instance>
         </Message>

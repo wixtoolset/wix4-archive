@@ -935,10 +935,12 @@ namespace WixToolset.Data
                     throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot set column '{0}' with a null value because this is a required field.", this.name));
                 }
             }
-            else if (null != value) // check numerical values against their specified minimum and maximum values.
+            else // check numerical values against their specified minimum and maximum values.
             {
                 if (ColumnType.Number == this.type && !this.IsLocalizable)
                 {
+                    // For now all enums in the tables can be represented by integers. This if statement would need to
+                    // be enhanced if that ever changes.
                     if (value is int || value.GetType().IsEnum)
                     {
                         int intValue = (int)value;

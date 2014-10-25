@@ -16,10 +16,10 @@ namespace WixToolset.Bind
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using WixToolset.Bind.Bundles;
     using WixToolset.Data;
     using WixToolset.Data.Rows;
     using WixToolset.Extensibility;
-    using WixToolset.Bind.Bundles;
 
     /// <summary>
     /// Binds a this.bundle.
@@ -162,7 +162,7 @@ namespace WixToolset.Bind
             // Process the explicitly authored payloads.
             ISet<string> processedPayloads;
             {
-                ProcessPayloads command = new ProcessPayloads();
+                ProcessPayloadsCommand command = new ProcessPayloadsCommand();
                 command.Payloads = payloads.Values;
                 command.DefaultPackaging = bundleRow.DefaultPackagingType;
                 command.LayoutDirectory = layoutDirectory;
@@ -194,7 +194,7 @@ namespace WixToolset.Bind
                 {
                     case WixBundlePackageType.Exe:
                         {
-                            ProcessExePackage command = new ProcessExePackage();
+                            ProcessExePackageCommand command = new ProcessExePackageCommand();
                             command.AuthoredPayloads = payloads;
                             command.Facade = facade;
                             command.Execute();
@@ -203,7 +203,7 @@ namespace WixToolset.Bind
 
                     case WixBundlePackageType.Msi:
                         {
-                            ProcessMsiPackage command = new ProcessMsiPackage();
+                            ProcessMsiPackageCommand command = new ProcessMsiPackageCommand();
                             command.AuthoredPayloads = payloads;
                             command.Facade = facade;
                             command.FileManager = this.FileManagers.First();
@@ -217,7 +217,7 @@ namespace WixToolset.Bind
 
                     case WixBundlePackageType.Msp:
                         {
-                            ProcessMspPackage command = new ProcessMspPackage();
+                            ProcessMspPackageCommand command = new ProcessMspPackageCommand();
                             command.AuthoredPayloads = payloads;
                             command.Facade = facade;
                             command.WixBundlePatchTargetCodeTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePatchTargetCode"]);
@@ -227,7 +227,7 @@ namespace WixToolset.Bind
 
                     case WixBundlePackageType.Msu:
                         {
-                            ProcessMsuPackage command = new ProcessMsuPackage();
+                            ProcessMsuPackageCommand command = new ProcessMsuPackageCommand();
                             command.Facade = facade;
                             command.Execute();
                         }
@@ -246,7 +246,7 @@ namespace WixToolset.Bind
 
             // Process the payloads that were added by processing the packages.
             {
-                ProcessPayloads command = new ProcessPayloads();
+                ProcessPayloadsCommand command = new ProcessPayloadsCommand();
                 command.Payloads = payloads.Values.Where(r => !processedPayloads.Contains(r.Id)).ToList();
                 command.DefaultPackaging = bundleRow.DefaultPackagingType;
                 command.LayoutDirectory = layoutDirectory;
@@ -349,6 +349,7 @@ namespace WixToolset.Bind
                 VerifyPayloadsWithCatalogCommand command = new VerifyPayloadsWithCatalogCommand();
                 command.Catalogs = catalogs;
                 command.Payloads = payloads.Values;
+                command.Execute();
             }
 
             if (Messaging.Instance.EncounteredError)
@@ -386,7 +387,7 @@ namespace WixToolset.Bind
             // Import or generate dependency providers for packages in the manifest.
             this.ProcessDependencyProviders(this.Output, facades);
 
-            // Update the bundle per-machine/per-user scope based on chained the packages.
+            // Update the bundle per-machine/per-user scope based on the chained packages.
             this.ResolveBundleInstallScope(bundleRow, orderedFacades);
 
             // Generate the core-defined BA manifest tables...
@@ -681,7 +682,7 @@ namespace WixToolset.Bind
             {
                 if (bundleInfo.PerMachine && YesNoDefaultType.No == facade.Package.PerMachine)
                 {
-                    Messaging.Instance.OnMessage(WixVerboses.SwitchingToPerUserPackage(facade.Package.WixChainItemId));
+                    Messaging.Instance.OnMessage(WixVerboses.SwitchingToPerUserPackage(facade.Package.SourceLineNumbers, facade.Package.WixChainItemId));
 
                     bundleInfo.PerMachine = false;
                     break;
@@ -700,7 +701,7 @@ namespace WixToolset.Bind
                 // are in a different scope and not permanent (permanents typically don't need a ref-count).
                 if (!bundleInfo.PerMachine && YesNoDefaultType.Yes == facade.Package.PerMachine && !facade.Package.Permanent && 0 < facade.Provides.Count)
                 {
-                    Messaging.Instance.OnMessage(WixWarnings.NoPerMachineDependencies());
+                    Messaging.Instance.OnMessage(WixWarnings.NoPerMachineDependencies(facade.Package.SourceLineNumbers, facade.Package.WixChainItemId));
                 }
             }
         }

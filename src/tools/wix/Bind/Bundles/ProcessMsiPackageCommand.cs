@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProcessMsiPackage.cs" company="Outercurve Foundation">
+// <copyright file="ProcessMsiPackageCommand.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -26,7 +26,7 @@ namespace WixToolset.Bind.Bundles
     /// <summary>
     /// Initializes package state from the MSI contents.
     /// </summary>
-    internal class ProcessMsiPackage : ICommand
+    internal class ProcessMsiPackageCommand : ICommand
     {
         private const string PropertySqlFormat = "SELECT `Value` FROM `Property` WHERE `Property` = '{0}'";
 
@@ -76,11 +76,11 @@ namespace WixToolset.Bind.Bundles
 
                 using (Dtf.Database db = new Dtf.Database(sourcePath))
                 {
-                    this.Facade.MsiPackage.ProductCode = ProcessMsiPackage.GetProperty(db, "ProductCode");
-                    this.Facade.MsiPackage.UpgradeCode = ProcessMsiPackage.GetProperty(db, "UpgradeCode");
-                    this.Facade.MsiPackage.Manufacturer = ProcessMsiPackage.GetProperty(db, "Manufacturer");
-                    this.Facade.MsiPackage.ProductLanguage = Convert.ToInt32(ProcessMsiPackage.GetProperty(db, "ProductLanguage"), CultureInfo.InvariantCulture);
-                    this.Facade.MsiPackage.ProductVersion = ProcessMsiPackage.GetProperty(db, "ProductVersion");
+                    this.Facade.MsiPackage.ProductCode = ProcessMsiPackageCommand.GetProperty(db, "ProductCode");
+                    this.Facade.MsiPackage.UpgradeCode = ProcessMsiPackageCommand.GetProperty(db, "UpgradeCode");
+                    this.Facade.MsiPackage.Manufacturer = ProcessMsiPackageCommand.GetProperty(db, "Manufacturer");
+                    this.Facade.MsiPackage.ProductLanguage = Convert.ToInt32(ProcessMsiPackageCommand.GetProperty(db, "ProductLanguage"), CultureInfo.InvariantCulture);
+                    this.Facade.MsiPackage.ProductVersion = ProcessMsiPackageCommand.GetProperty(db, "ProductVersion");
 
                     if (!Common.IsValidModuleOrBundleVersion(this.Facade.MsiPackage.ProductVersion))
                     {
@@ -94,12 +94,12 @@ namespace WixToolset.Bind.Bundles
 
                     if (String.IsNullOrEmpty(this.Facade.Package.DisplayName))
                     {
-                        this.Facade.Package.DisplayName = ProcessMsiPackage.GetProperty(db, "ProductName");
+                        this.Facade.Package.DisplayName = ProcessMsiPackageCommand.GetProperty(db, "ProductName");
                     }
 
                     if (String.IsNullOrEmpty(this.Facade.Package.Description))
                     {
-                        this.Facade.Package.Description = ProcessMsiPackage.GetProperty(db, "ARPCOMMENTS");
+                        this.Facade.Package.Description = ProcessMsiPackageCommand.GetProperty(db, "ARPCOMMENTS");
                     }
 
                     ISet<string> payloadNames = this.GetPayloadTargetNames();
@@ -114,7 +114,7 @@ namespace WixToolset.Bind.Bundles
                     this.SetPackageVisibility(db, msiPropertyNames);
 
                     // Unless the MSI or setup code overrides the default, set MSIFASTINSTALL for best performance.
-                    if (!msiPropertyNames.Contains("MSIFASTINSTALL") && !ProcessMsiPackage.HasProperty(db, "MSIFASTINSTALL"))
+                    if (!msiPropertyNames.Contains("MSIFASTINSTALL") && !ProcessMsiPackageCommand.HasProperty(db, "MSIFASTINSTALL"))
                     {
                         this.AddMsiProperty("MSIFASTINSTALL", "7");
                     }
@@ -191,7 +191,7 @@ namespace WixToolset.Bind.Bundles
             }
             else
             {
-                string allusers = ProcessMsiPackage.GetProperty(db, "ALLUSERS");
+                string allusers = ProcessMsiPackageCommand.GetProperty(db, "ALLUSERS");
 
                 if (String.IsNullOrEmpty(allusers))
                 {
@@ -222,7 +222,7 @@ namespace WixToolset.Bind.Bundles
 
         private void SetPackageVisibility(Dtf.Database db, ISet<string> msiPropertyNames)
         {
-            bool alreadyVisible = !ProcessMsiPackage.HasProperty(db, "ARPSYSTEMCOMPONENT");
+            bool alreadyVisible = !ProcessMsiPackageCommand.HasProperty(db, "ARPSYSTEMCOMPONENT");
 
             if (alreadyVisible != this.Facade.Package.Visible) // if not already set to the correct visibility.
             {
@@ -551,7 +551,7 @@ namespace WixToolset.Bind.Bundles
             // TODO: Are there any other special characters we should be looking for?
             Debug.Assert(!property.Contains("'"));
 
-            return String.Format(CultureInfo.InvariantCulture, ProcessMsiPackage.PropertySqlFormat, property);
+            return String.Format(CultureInfo.InvariantCulture, ProcessMsiPackageCommand.PropertySqlFormat, property);
         }
     }
 }
