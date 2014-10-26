@@ -57,6 +57,15 @@ DAPI_(HRESULT) BalManifestLoad(
     );
 
 /*******************************************************************
+BalEvaluateCondition - evaluates a condition using variables in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalEvaluateCondition(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
+    );
+
+/*******************************************************************
 BalFormatString - formats a string using variables in the engine.
 
  Note: Use StrFree() to release psczOut.

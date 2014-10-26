@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//  Theme helper functions.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
@@ -332,7 +328,7 @@ DAPI_(HRESULT) ThemeLoadFromResource(
     hr = ResReadData(hModule, szResource, &pvResource, &cbResource);
     ExitOnFailure(hr, "Failed to read theme from resource.");
 
-    // Ensure returned resource buffer is null-terminated
+    // Ensure returned resource buffer is null-terminated.
     reinterpret_cast<BYTE *>(pvResource)[cbResource - 1] = '\0';
 
     hr = StrAllocStringAnsi(&sczXml, reinterpret_cast<LPCSTR>(pvResource), cbResource, CP_UTF8);
@@ -404,6 +400,7 @@ DAPI_(HRESULT) ThemeLoadControls(
 
     HRESULT hr = S_OK;
     RECT rcParent = { };
+    LPWSTR sczText = NULL;
 
     pTheme->hwndParent = hwndParent;
 
@@ -419,7 +416,7 @@ DAPI_(HRESULT) ThemeLoadControls(
 
         switch (pControl->type)
         {
-        case THEME_CONTROL_TYPE_BILLBOARD: // Billboards are basically just owner drawn static controls (where we draw different images).
+        case THEME_CONTROL_TYPE_BILLBOARD: // billboards are basically just owner drawn static controls (where we draw different images).
             if (pControl->cBillboards)
             {
                 wzWindowClass = WC_STATICW;
@@ -433,7 +430,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             break;
 
         case THEME_CONTROL_TYPE_CHECKBOX:
-            dwWindowBits |= BS_AUTOCHECKBOX | BS_MULTILINE; // Checkbox is basically a button with an extra bit tossed in.
+            dwWindowBits |= BS_AUTOCHECKBOX | BS_MULTILINE; // checkboxes are basically buttons with an extra bit tossed in.
             __fallthrough;
         case THEME_CONTROL_TYPE_BUTTON:
             wzWindowClass = WC_BUTTONW;
@@ -466,7 +463,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowExBits = WS_EX_CLIENTEDGE;
             break;
 
-        case THEME_CONTROL_TYPE_HYPERLINK: // Hyperlinks are basically just owner drawn buttons.
+        case THEME_CONTROL_TYPE_HYPERLINK: // hyperlinks are basically just owner drawn buttons.
             wzWindowClass = THEME_WC_HYPERLINK;
             dwWindowBits |= BS_OWNERDRAW | BTNS_NOPREFIX;
             break;
@@ -476,7 +473,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowBits |= LWS_NOPREFIX;
             break;
 
-        case THEME_CONTROL_TYPE_IMAGE: // Images are basically just owner drawn static controls (so we can draw .jpgs and .pngs instead of just bitmaps).
+        case THEME_CONTROL_TYPE_IMAGE: // images are basically just owner drawn static controls (so we can draw .jpgs and .pngs instead of just bitmaps).
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
                 wzWindowClass = WC_STATICW;
@@ -492,7 +489,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         case THEME_CONTROL_TYPE_PROGRESSBAR:
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
-                wzWindowClass = WC_STATICW; // No such thing as an owner drawn progress bar so we'll make our own out of a static control.
+                wzWindowClass = WC_STATICW; // no such thing as an owner drawn progress bar so we'll make our own out of a static control.
                 dwWindowBits |= SS_OWNERDRAW;
             }
             else
@@ -520,121 +517,129 @@ DAPI_(HRESULT) ThemeLoadControls(
             wzWindowClass = WC_STATICW;
             break;
         }
-        ExitOnFailure(hr, "Failed to configure control %u.", i);
+        ExitOnNull(wzWindowClass, hr, E_INVALIDDATA, "Failed to configure control %u because of unknown type: %u", i, pControl->type);
 
-        // If the control has a window, set the other information.
-        if (wzWindowClass)
+        // Default control ids to the theme id and its index in the control array, unless there
+        // is a specific id to assign to a named control.
+        WORD wControlId = MAKEWORD(i, pTheme->wId);
+        for (DWORD iAssignControl = 0; pControl->sczName && iAssignControl < cAssignControlIds; ++iAssignControl)
         {
-            // Default control ids to the theme id and its index in the control array, unless there
-            // is a specific id to assign to a named control.
-            WORD wControlId = MAKEWORD(i, pTheme->wId);
-            for (DWORD iAssignControl = 0; pControl->sczName && iAssignControl < cAssignControlIds; ++iAssignControl)
+            if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pControl->sczName, -1, rgAssignControlIds[iAssignControl].wzName, -1))
             {
-                if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pControl->sczName, -1, rgAssignControlIds[iAssignControl].wzName, -1))
+                wControlId = rgAssignControlIds[iAssignControl].wId;
+                break;
+            }
+        }
+
+        pControl->wId = wControlId;
+
+        int w, h, x, y;
+        GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
+
+        // Disable paged controls so their shortcut keys don't trigger when their page isn't being shown.
+        dwWindowBits |= 0 < pControl->wPageId ? WS_DISABLED : 0;
+        pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, pTheme->hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, NULL);
+        ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
+
+        if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+        {
+            if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE)
+            {
+                hr = ::SHAutoComplete(pControl->hWnd, SHACF_FILESYS_ONLY);
+            }
+        }
+        else if (THEME_CONTROL_TYPE_LISTVIEW == pControl->type)
+        {
+            ::SendMessageW(pControl->hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, pControl->dwExtendedStyle);
+
+            hr = SizeListViewColumns(pControl);
+            ExitOnFailure(hr, "Failed to get size of list view columns.");
+
+            for (DWORD j = 0; j < pControl->cColumns; ++j)
+            {
+                LVCOLUMNW lvc = { };
+                lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+                lvc.cx = pControl->ptcColumns[j].nWidth;
+                lvc.iSubItem = j;
+                lvc.pszText = pControl->ptcColumns[j].pszName;
+                lvc.fmt = LVCFMT_LEFT;
+                lvc.cchTextMax = 4;
+
+                if (-1 == ::SendMessageW(pControl->hWnd, LVM_INSERTCOLUMNW, (WPARAM)(int)(j), (LPARAM)(const LV_COLUMNW *)(&lvc)))
                 {
-                    wControlId = rgAssignControlIds[iAssignControl].wId;
-                    break;
+                    ExitWithLastError(hr, "Failed to insert listview column %u into tab control.", j);
+                }
+
+                // Return value tells us the old image list, we don't care.
+                if (pControl->rghImageList[0])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_NORMAL), reinterpret_cast<LPARAM>(pControl->rghImageList[0]));
+                }
+                else if (pControl->rghImageList[1])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_SMALL), reinterpret_cast<LPARAM>(pControl->rghImageList[1]));
+                }
+                else if (pControl->rghImageList[2])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_STATE), reinterpret_cast<LPARAM>(pControl->rghImageList[2]));
+                }
+                else if (pControl->rghImageList[3])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_GROUPHEADER), reinterpret_cast<LPARAM>(pControl->rghImageList[3]));
                 }
             }
-
-            pControl->wId = wControlId;
-
-            int w, h, x, y;
-            GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
-
-            // Disable paged controls so their shortcut keys don't trigger when their page isn't being shown.
-            dwWindowBits |= 0 < pControl->wPageId ? WS_DISABLED : 0;
-            pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, pTheme->hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, NULL);
-            ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
-
-            if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+        }
+        else if (THEME_CONTROL_TYPE_RICHEDIT == pControl->type)
+        {
+            ::SendMessageW(pControl->hWnd, EM_AUTOURLDETECT, static_cast<WPARAM>(TRUE), 0);
+            ::SendMessageW(pControl->hWnd, EM_SETEVENTMASK, 0, ENM_KEYEVENTS | ENM_LINK);
+        }
+        else if (THEME_CONTROL_TYPE_TAB == pControl->type)
+        {
+            ULONG_PTR hbrBackground = 0;
+            if (THEME_INVALID_ID != pControl->dwFontId)
             {
-                if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE)
+                hbrBackground = reinterpret_cast<ULONG_PTR>(pTheme->rgFonts[pControl->dwFontId].hBackground);
+            }
+            else
+            {
+                hbrBackground = ::GetClassLongPtr(pTheme->hwndParent, GCLP_HBRBACKGROUND);
+            }
+            ::SetClassLongPtr(pControl->hWnd, GCLP_HBRBACKGROUND, hbrBackground);
+
+            for (DWORD j = 0; j < pControl->cTabs; ++j)
+            {
+                TCITEMW tci = { };
+                tci.mask = TCIF_TEXT | TCIF_IMAGE;
+                tci.iImage = -1;
+                tci.pszText = pControl->pttTabs[j].pszName;
+
+                if (-1 == ::SendMessageW(pControl->hWnd, TCM_INSERTITEMW, (WPARAM)(int)(j), (LPARAM)(const TC_ITEMW *)(&tci)))
                 {
-                    hr = ::SHAutoComplete(pControl->hWnd, SHACF_FILESYS_ONLY);
+                    ExitWithLastError(hr, "Failed to insert tab %u into tab control.", j);
                 }
             }
-            else if (THEME_CONTROL_TYPE_LISTVIEW == pControl->type)
+        }
+
+        if (pControlFont)
+        {
+            ::SendMessageW(pControl->hWnd, WM_SETFONT, (WPARAM)pControlFont->hFont, FALSE);
+        }
+
+        // Initialize the text on all "application" (non-page) controls, best effort only.
+        if (pTheme->pfnFormatString && !pControl->wPageId && pControl->sczText && *pControl->sczText)
+        {
+            HRESULT hrFormat = pTheme->pfnFormatString(pControl->sczText, &sczText);
+            if (SUCCEEDED(hrFormat))
             {
-                ::SendMessageW(pControl->hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, pControl->dwExtendedStyle);
-
-                hr = SizeListViewColumns(pControl);
-                ExitOnFailure(hr, "Failed to get size of list view columns.");
-
-                for (DWORD j = 0; j < pControl->cColumns; ++j)
-                {
-                    LVCOLUMNW lvc = { };
-                    lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-                    lvc.cx = pControl->ptcColumns[j].nWidth;
-                    lvc.iSubItem = j;
-                    lvc.pszText = pControl->ptcColumns[j].pszName;
-                    lvc.fmt = LVCFMT_LEFT;
-                    lvc.cchTextMax = 4;
-
-                    if (-1 == ::SendMessageW(pControl->hWnd, LVM_INSERTCOLUMNW, (WPARAM)(int)(j), (LPARAM)(const LV_COLUMNW *)(&lvc)))
-                    {
-                        ExitWithLastError(hr, "Failed to insert listview column %u into tab control.", j);
-                    }
-
-                    // Return value tells us the old image list, we don't care.
-                    if (pControl->rghImageList[0])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_NORMAL), reinterpret_cast<LPARAM>(pControl->rghImageList[0]));
-                    }
-                    else if (pControl->rghImageList[1])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_SMALL), reinterpret_cast<LPARAM>(pControl->rghImageList[1]));
-                    }
-                    else if (pControl->rghImageList[2])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_STATE), reinterpret_cast<LPARAM>(pControl->rghImageList[2]));
-                    }
-                    else if (pControl->rghImageList[3])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_GROUPHEADER), reinterpret_cast<LPARAM>(pControl->rghImageList[3]));
-                    }
-                }
-            }
-            else if (THEME_CONTROL_TYPE_RICHEDIT == pControl->type)
-            {
-                ::SendMessageW(pControl->hWnd, EM_AUTOURLDETECT, static_cast<WPARAM>(TRUE), 0);
-                ::SendMessageW(pControl->hWnd, EM_SETEVENTMASK, 0, ENM_KEYEVENTS | ENM_LINK);
-            }
-            else if (THEME_CONTROL_TYPE_TAB == pControl->type)
-            {
-                ULONG_PTR hbrBackground = 0;
-                if (THEME_INVALID_ID != pControl->dwFontId)
-                {
-                    hbrBackground = reinterpret_cast<ULONG_PTR>(pTheme->rgFonts[pControl->dwFontId].hBackground);
-                }
-                else
-                {
-                    hbrBackground = ::GetClassLongPtr(pTheme->hwndParent, GCLP_HBRBACKGROUND);
-                }
-                ::SetClassLongPtr(pControl->hWnd, GCLP_HBRBACKGROUND, hbrBackground);
-
-                for (DWORD j = 0; j < pControl->cTabs; ++j)
-                {
-                    TCITEMW tci = { };
-                    tci.mask = TCIF_TEXT | TCIF_IMAGE;
-                    tci.iImage = -1;
-                    tci.pszText = pControl->pttTabs[j].pszName;
-
-                    if (-1 == ::SendMessageW(pControl->hWnd, TCM_INSERTITEMW, (WPARAM)(int)(j), (LPARAM)(const TC_ITEMW *)(&tci)))
-                    {
-                        ExitWithLastError(hr, "Failed to insert tab %u into tab control.", j);
-                    }
-                }
-            }
-
-            if (pControlFont)
-            {
-                ::SendMessageW(pControl->hWnd, WM_SETFONT, (WPARAM)pControlFont->hFont, FALSE);
+                ThemeSetTextControl(pTheme, pControl->wId, sczText);
             }
         }
     }
 
 LExit:
+    ReleaseStr(sczText);
+
     return hr;
 }
 
@@ -684,7 +689,7 @@ DAPI_(HRESULT) ThemeLocalize(
             ExitOnFailure(hr, "Failed to localize tab text.");
         }
 
-        // localize controls size, location, and text
+        // Localize controls size, location, and text.
         hr = LocGetControl(pWixLoc, pControl->sczName, &pLocControl);
         if (E_NOTFOUND == hr)
         {
@@ -889,7 +894,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
         case WM_NCHITTEST:
             if (pTheme->dwStyle & WS_POPUP)
             {
-                return HTCAPTION; // Allow pop-up windows to be moved by grabbing any non-control.
+                return HTCAPTION; // allow pop-up windows to be moved by grabbing any non-control.
             }
             break;
 
@@ -1202,7 +1207,7 @@ DAPI_(void) ThemeShowControl(
     HWND hWnd = ::GetDlgItem(pTheme->hwndParent, dwControl);
     ::ShowWindow(hWnd, nCmdShow);
 
-    // Save the controls visible state
+    // Save the controls visible state.
     THEME_CONTROL* pControl = const_cast<THEME_CONTROL*>(FindControlFromHWnd(pTheme, hWnd));
     if (pControl)
     {
@@ -2945,7 +2950,7 @@ static HRESULT ParseColumns(
     BSTR bstrText = NULL;
 
     hr = XmlSelectNodes(pixn, L"Column|c", &pixnl);
-    ExitOnFailure(hr, "Failed to select child column nodes");
+    ExitOnFailure(hr, "Failed to select child column nodes.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cColumns));
     ExitOnFailure(hr, "Failed to count the number of control columns.");
@@ -2962,7 +2967,7 @@ static HRESULT ParseColumns(
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
         {
             hr = XmlGetText(pixnChild, &bstrText);
-            ExitOnFailure(hr, "Failed to get inner text of column element");
+            ExitOnFailure(hr, "Failed to get inner text of column element.");
 
             hr = XmlGetAttributeNumber(pixnChild, L"Width", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
             if (S_FALSE == hr)
@@ -2983,7 +2988,7 @@ static HRESULT ParseColumns(
             ExitOnFailure(hr, "Failed to find expands attribute.");
 
             hr = StrAllocString(&(pControl->ptcColumns[i].pszName), bstrText, 0);
-            ExitOnFailure(hr, "Failed to copy column name");
+            ExitOnFailure(hr, "Failed to copy column name.");
 
             ++i;
             ReleaseNullBSTR(bstrText);
@@ -3012,7 +3017,7 @@ static HRESULT ParseTabs(
     BSTR bstrText = NULL;
 
     hr = XmlSelectNodes(pixn, L"Tab|t", &pixnl);
-    ExitOnFailure(hr, "Failed to select child tab nodes");
+    ExitOnFailure(hr, "Failed to select child tab nodes.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cTabs));
     ExitOnFailure(hr, "Failed to count the number of tabs.");
@@ -3029,10 +3034,10 @@ static HRESULT ParseTabs(
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
         {
             hr = XmlGetText(pixnChild, &bstrText);
-            ExitOnFailure(hr, "Failed to get inner text of tab element");
+            ExitOnFailure(hr, "Failed to get inner text of tab element.");
 
             hr = StrAllocString(&(pControl->pttTabs[i].pszName), bstrText, 0);
-            ExitOnFailure(hr, "Failed to copy tab name");
+            ExitOnFailure(hr, "Failed to copy tab name.");
 
             ++i;
             ReleaseNullBSTR(bstrText);

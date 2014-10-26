@@ -55,6 +55,26 @@ LExit:
 }
 
 
+DAPI_(HRESULT) BalEvaluateCondition(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->EvaluateCondition(wzCondition, pf);
+
+LExit:
+    return hr;
+}
+
+
 // The contents of psczOut may be sensitive, should keep encrypted and SecureZeroFree.
 DAPI_(HRESULT) BalFormatString(
     __in_z LPCWSTR wzFormat,

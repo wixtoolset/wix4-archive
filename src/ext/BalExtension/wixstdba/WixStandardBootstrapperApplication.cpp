@@ -1193,6 +1193,9 @@ private: // privates
         hr = ThemeLoadFromFile(sczThemePath, &m_pTheme);
         BalExitOnFailure(hr, "Failed to load theme from path: %ls", sczThemePath);
 
+        m_pTheme->pfnEvaluateCondition = &BalEvaluateCondition;
+        m_pTheme->pfnFormatString = &BalFormatString;
+
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
 
@@ -1223,7 +1226,7 @@ private: // privates
         DWORD cNodes = 0;
         LPWSTR scz = NULL;
 
-        // get the list of variables users can override on the command line
+        // Get the list of variables users can override on the command line.
         hr = XmlSelectNodes(pixdManifest, L"/BootstrapperApplicationData/WixStdbaOverridableVariable", &pNodes);
         if (S_FALSE == hr)
         {
@@ -1827,22 +1830,6 @@ private: // privates
         C_ASSERT(countof(m_rgdwPageIds) == countof(vrgwzPageNames));
 
         ThemeGetPageIds(m_pTheme, vrgwzPageNames, m_rgdwPageIds, countof(m_rgdwPageIds));
-
-        // Initialize the text on all "application" (non-page) controls.
-        for (DWORD i = 0; i < m_pTheme->cControls; ++i)
-        {
-            THEME_CONTROL* pControl = m_pTheme->rgControls + i;
-            if (!pControl->wPageId && pControl->sczText && *pControl->sczText)
-            {
-                // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-                // so don't go down the rabbit hole of making sure that this is securely freed.
-                HRESULT hrFormat = BalFormatString(pControl->sczText, &sczText);
-                if (SUCCEEDED(hrFormat))
-                {
-                    ThemeSetTextControl(m_pTheme, pControl->wId, sczText);
-                }
-            }
-        }
 
         // Load the RTF EULA control with text if the control exists.
         if (ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_EULA_RICHEDIT))
@@ -2779,12 +2766,8 @@ private: // privates
 
             if (!fResult)
             {
-                // Hope they didn't have hidden variables in their message, because it's going in the log in plaintext.
-                BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "%ls", m_sczFailedMessage);
-
                 hr = E_WIXSTDBA_CONDITION_FAILED;
-                // todo: remove in WiX v4, in case people are relying on v3.x logging behavior
-                BalExitOnFailure(hr, "Bundle condition evaluated to false: %ls", pCondition->sczCondition);
+                BalExitOnFailure(hr, "%ls", m_sczFailedMessage);
             }
         }
 

@@ -6,10 +6,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//  Theme helper functions.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #ifdef __cplusplus
@@ -17,6 +13,15 @@ extern "C" {
 #endif
 
 #define ReleaseTheme(p) if (p) { ThemeFree(p); p = NULL; }
+
+typedef HRESULT(CALLBACK *PFNTHM_EVALUATE_VARIABLE_CONDITION)(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
+    );
+typedef HRESULT(CALLBACK *PFNTHM_FORMAT_VARIABLE_STRING)(
+    __in_z LPCWSTR wzFormat,
+    __inout LPWSTR* psczOut
+    );
 
 typedef enum THEME_CONTROL_DATA
 {
@@ -188,6 +193,10 @@ struct THEME
     // state variables that should be ignored
     HWND hwndParent; // parent for loaded controls
     HWND hwndHover; // current hwnd hovered over
+
+    // callback functions
+    PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition;
+    PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString;
 };
 
 
