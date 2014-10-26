@@ -1185,7 +1185,6 @@ private: // privates
         HRESULT hr = S_OK;
         LPWSTR sczThemePath = NULL;
         LPCWSTR wzThemeFileName = m_fPrereq ? L"mbapreq.thm" : L"thm.xml";
-        LPWSTR sczCaption = NULL;
 
         hr = LocProbeForFile(wzModulePath, wzThemeFileName, wzLanguage, &sczThemePath);
         BalExitOnFailure(hr, "Failed to probe for theme file: %ls in path: %ls", wzThemeFileName, wzModulePath);
@@ -1200,7 +1199,6 @@ private: // privates
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
 
     LExit:
-        ReleaseStr(sczCaption);
         ReleaseStr(sczThemePath);
 
         return hr;
@@ -1808,7 +1806,6 @@ private: // privates
         )
     {
         HRESULT hr = S_OK;
-        LPWSTR sczText = NULL;
         LPWSTR sczLicenseFormatted = NULL;
         LPWSTR sczLicensePath = NULL;
         LPWSTR sczLicenseDirectory = NULL;
@@ -1873,7 +1870,6 @@ private: // privates
         ReleaseStr(sczLicenseDirectory);
         ReleaseStr(sczLicensePath);
         ReleaseStr(sczLicenseFormatted);
-        ReleaseStr(sczText);
 
         return SUCCEEDED(hr);
     }

@@ -536,8 +536,47 @@ DAPI_(HRESULT) ThemeLoadControls(
         int w, h, x, y;
         GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
 
-        // Disable paged controls so their shortcut keys don't trigger when their page isn't being shown.
-        dwWindowBits |= 0 < pControl->wPageId ? WS_DISABLED : 0;
+        BOOL fVisible = pControl->dwStyle & WS_VISIBLE;
+        BOOL fDisabled = pControl->dwStyle & WS_DISABLED;
+
+        // If the control is supposed to be initially visible and it has a VisibleCondition, check if it's true.
+        if (fVisible && pControl->sczVisibleCondition && pTheme->pfnEvaluateCondition)
+        {
+            hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
+            ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
+
+            if (!fVisible)
+            {
+                pControl->dwStyle &= ~WS_VISIBLE;
+            }
+        }
+
+        // Disable controls that aren't visible so their shortcut keys don't trigger.
+        if (!fVisible)
+        {
+            dwWindowBits |= WS_DISABLED;
+            fDisabled = TRUE;
+        }
+
+        // If the control is supposed to be initially enabled and it has an EnableCondition, check if it's true.
+        if (!fDisabled && pControl->sczEnableCondition && pTheme->pfnEvaluateCondition)
+        {
+            BOOL fEnable = TRUE;
+
+            hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnable);
+            ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
+
+            fDisabled = !fEnable;
+            dwWindowBits |= fDisabled ? WS_DISABLED : 0;
+        }
+
+        // Honor the HideWhenDisabled option.
+        if ((pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDE_WHEN_DISABLED) && fVisible && fDisabled)
+        {
+            fVisible = FALSE;
+            pControl->dwStyle &= ~WS_VISIBLE;
+        }
+
         pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, pTheme->hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, NULL);
         ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
 

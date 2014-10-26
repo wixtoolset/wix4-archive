@@ -694,7 +694,9 @@
         </xs:attribute>
         <xs:attribute name="VisibleCondition" type="xs:string">
             <xs:annotation>
-                <xs:documentation>A condition that determines if the control is visible.  If this condition is true or omitted, and Visible is set to "yes", then the control will be visible.</xs:documentation>
+                <xs:documentation>
+                    A condition that determines if the control is visible.  If this condition is true or omitted, then the control will be visible.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="Width" type="xs:int" use="required">
