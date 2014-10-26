@@ -98,6 +98,9 @@ struct THEME_CONTROL
     int nSourceY;
     UINT uStringId;
 
+    LPWSTR sczEnableCondition;
+    LPWSTR sczVisibleCondition;
+
     HBITMAP hImage;
 
     // Don't free these; it's just a handle to the central image lists stored in THEME. The handle is freed once, there.

@@ -1199,15 +1199,6 @@ private: // privates
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
 
-        // Update the caption if there are any formatted strings in it.
-        // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-        // so don't go down the rabbit hole of making sure that this is securely freed.
-        hr = BalFormatString(m_pTheme->sczCaption, &sczCaption);
-        if (SUCCEEDED(hr))
-        {
-            ThemeUpdateCaption(m_pTheme, sczCaption);
-        }
-
     LExit:
         ReleaseStr(sczCaption);
         ReleaseStr(sczThemePath);

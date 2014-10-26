@@ -666,9 +666,19 @@ DAPI_(HRESULT) ThemeLocalize(
 {
     HRESULT hr = S_OK;
     LOC_CONTROL* pLocControl = NULL;
+    LPWSTR sczCaption = NULL;
 
     hr = LocLocalizeString(pWixLoc, &pTheme->sczCaption);
     ExitOnFailure(hr, "Failed to localize theme caption.");
+
+    if (pTheme->pfnFormatString)
+    {
+        hr = pTheme->pfnFormatString(pTheme->sczCaption, &sczCaption);
+        if (SUCCEEDED(hr))
+        {
+            hr = ThemeUpdateCaption(pTheme, sczCaption);
+        }
+    }
 
     for (DWORD i = 0; i < pTheme->cControls; ++i)
     {
@@ -726,6 +736,8 @@ DAPI_(HRESULT) ThemeLocalize(
     }
 
 LExit:
+    ReleaseStr(sczCaption);
+
     return hr;
 }
 
@@ -2515,6 +2527,20 @@ static HRESULT ParseControl(
     }
     ExitOnFailure(hr, "Failed when querying control Name.");
 
+    hr = XmlGetAttributeEx(pixn, L"EnableCondition", &pControl->sczEnableCondition);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed when querying control EnableCondition attribute.");
+
+    hr = XmlGetAttributeEx(pixn, L"VisibleCondition", &pControl->sczVisibleCondition);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed when querying control VisibleCondition attribute.");
+
     hr = XmlGetAttributeNumber(pixn, L"X", reinterpret_cast<DWORD*>(&pControl->nX));
     if (S_FALSE == hr)
     {
@@ -3331,6 +3357,8 @@ static void FreeControl(
 
         ReleaseStr(pControl->sczName);
         ReleaseStr(pControl->sczText);
+        ReleaseStr(pControl->sczEnableCondition);
+        ReleaseStr(pControl->sczVisibleCondition);
 
         if (pControl->hImage)
         {
