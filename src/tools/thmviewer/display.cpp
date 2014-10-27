@@ -213,6 +213,7 @@ static DWORD WINAPI DisplayThreadProc(
                         // If a page id was provided also, show/hide those controls
                         if (dwPageId)
                         {
+                            //TODO: figure out what do with an error
                             ThemeShowPage(pCurrentHandle->pTheme, dwPageId, nCmdShow);
                         }
                     }

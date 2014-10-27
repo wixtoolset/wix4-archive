@@ -2284,6 +2284,7 @@ private: // privates
                     }
                 }
 
+                //TODO: figure out what do with an error
                 ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
                 ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
 

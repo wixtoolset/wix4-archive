@@ -100,6 +100,7 @@ struct THEME_CONTROL
 
     LPWSTR sczEnableCondition;
     LPWSTR sczVisibleCondition;
+    BOOL fDisableVariableFunctionality;
 
     HBITMAP hImage;
 
@@ -359,7 +360,7 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
  ThemeShowPage - shows or hides all of the controls in the page at one time.
 
  *******************************************************************/
-DAPI_(void) ThemeShowPage(
+DAPI_(HRESULT) ThemeShowPage(
     __in THEME* pTheme,
     __in DWORD dwPage,
     __in int nCmdShow

@@ -527,6 +527,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pControl->sczName, -1, rgAssignControlIds[iAssignControl].wzName, -1))
             {
                 wControlId = rgAssignControlIds[iAssignControl].wId;
+                pControl->fDisableVariableFunctionality = TRUE;
                 break;
             }
         }
@@ -540,7 +541,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         BOOL fDisabled = pControl->dwStyle & WS_DISABLED;
 
         // If the control is supposed to be initially visible and it has a VisibleCondition, check if it's true.
-        if (fVisible && pControl->sczVisibleCondition && pTheme->pfnEvaluateCondition)
+        if (fVisible && pControl->sczVisibleCondition && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
         {
             hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
             ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
@@ -559,7 +560,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         }
 
         // If the control is supposed to be initially enabled and it has an EnableCondition, check if it's true.
-        if (!fDisabled && pControl->sczEnableCondition && pTheme->pfnEvaluateCondition)
+        if (!fDisabled && pControl->sczEnableCondition && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
         {
             BOOL fEnable = TRUE;
 
@@ -1134,58 +1135,83 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
 }
 
 
-DAPI_(void) ThemeShowPage(
+DAPI_(HRESULT) ThemeShowPage(
     __in THEME* pTheme,
     __in DWORD dwPage,
     __in int nCmdShow
     )
 {
-    DWORD iPage = dwPage - 1;
+    HRESULT hr = S_OK;
     HWND hwndFocus = NULL;
 
-    if (iPage < pTheme->cPages)
+    // TODO: add ability to revert variable changes
+    for (DWORD i = 0; i < pTheme->cControls; ++i)
     {
-        const THEME_PAGE* pPage = pTheme->rgPages + iPage;
-        for (DWORD i = 0; i < pPage->cControlIndices; ++i)
-        {
-            const THEME_CONTROL* pControl = pTheme->rgControls + pPage->rgdwControlIndices[i];
-            HWND hWnd = pControl->hWnd;
+        const THEME_CONTROL* pControl = pTheme->rgControls + i;
 
-            if (((pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDE_WHEN_DISABLED) && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED)) 
-                || pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDDEN)
+        // Only look at non-page controls and the specified page's controls.
+        if (pControl->wPageId && pControl->wPageId != dwPage)
+        {
+            continue;
+        }
+
+        HWND hWnd = pControl->hWnd;
+        BOOL fEnabled = !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED);
+        BOOL fVisible = !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDDEN);
+
+        if (SW_HIDE != nCmdShow && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
+        {
+            // If the control has a VisibleCondition, check if it's true.
+            if (pControl->sczVisibleCondition)
             {
-                ::ShowWindow(hWnd, SW_HIDE);
+                hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
+                ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
+            }
+
+            // If the control has an EnableCondition, check if it's true.
+            if (pControl->sczEnableCondition)
+            {
+                hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnabled);
+                ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
+            }
+        }
+
+        if (!fVisible || (!fEnabled && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDE_WHEN_DISABLED)))
+        {
+            ::ShowWindow(hWnd, SW_HIDE);
+        }
+        else
+        {
+            ::EnableWindow(hWnd, SW_HIDE != nCmdShow && fEnabled);
+
+            if (!hwndFocus && SW_HIDE != nCmdShow && pControl->dwStyle & WS_TABSTOP)
+            {
+                hwndFocus = hWnd;
+            }
+
+            ::ShowWindow(hWnd, nCmdShow);
+        }
+
+        if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
+        {
+            if (SW_HIDE == nCmdShow || !fEnabled)
+            {
+                ThemeStopBillboard(pTheme, pControl->wId);
             }
             else
             {
-                ::EnableWindow(hWnd, SW_HIDE != nCmdShow && !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED));
-
-                if (!hwndFocus && SW_HIDE != nCmdShow && pControl->dwStyle & WS_TABSTOP)
-                {
-                    hwndFocus = hWnd;
-                }
-
-                ::ShowWindow(hWnd, nCmdShow);
+                ThemeStartBillboard(pTheme, pControl->wId, 0xFFFF);
             }
-
-            if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
-            {
-                if (SW_HIDE == nCmdShow || (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED))
-                {
-                    ThemeStopBillboard(pTheme, pControl->wId);
-                }
-                else
-                {
-                    ThemeStartBillboard(pTheme, pControl->wId, 0xFFFF);
-                }
-            }
-        }
-
-        if (hwndFocus)
-        {
-            ::SetFocus(hwndFocus);
         }
     }
+
+    if (hwndFocus)
+    {
+        ::SetFocus(hwndFocus);
+    }
+
+LExit:
+    return hr;
 }
 
 
