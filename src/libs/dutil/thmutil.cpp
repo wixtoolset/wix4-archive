@@ -1143,6 +1143,7 @@ DAPI_(HRESULT) ThemeShowPage(
 {
     HRESULT hr = S_OK;
     HWND hwndFocus = NULL;
+    LPWSTR sczText = NULL;
 
     // TODO: add ability to revert variable changes
     for (DWORD i = 0; i < pTheme->cControls; ++i)
@@ -1156,23 +1157,48 @@ DAPI_(HRESULT) ThemeShowPage(
         }
 
         HWND hWnd = pControl->hWnd;
+
+        if (SW_HIDE == nCmdShow && pControl->wPageId)
+        {
+            ::ShowWindow(hWnd, SW_HIDE);
+
+            if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
+            {
+                ThemeStopBillboard(pTheme, pControl->wId);
+            }
+
+            continue;
+        }
+
         BOOL fEnabled = !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED);
         BOOL fVisible = !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDDEN);
 
-        if (SW_HIDE != nCmdShow && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
+        if (!pControl->fDisableVariableFunctionality)
         {
-            // If the control has a VisibleCondition, check if it's true.
-            if (pControl->sczVisibleCondition)
+            if (pTheme->pfnEvaluateCondition)
             {
-                hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
-                ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
+                // If the control has a VisibleCondition, check if it's true.
+                if (pControl->sczVisibleCondition)
+                {
+                    hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
+                    ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
+                }
+
+                // If the control has an EnableCondition, check if it's true.
+                if (pControl->sczEnableCondition)
+                {
+                    hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnabled);
+                    ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
+                }
             }
 
-            // If the control has an EnableCondition, check if it's true.
-            if (pControl->sczEnableCondition)
+            if (pTheme->pfnFormatString && pControl->sczText && *pControl->sczText)
             {
-                hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnabled);
-                ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
+                hr = pTheme->pfnFormatString(pControl->sczText, &sczText);
+                if (SUCCEEDED(hr))
+                {
+                    ThemeSetTextControl(pTheme, pControl->wId, sczText);
+                }
             }
         }
 
@@ -1184,7 +1210,7 @@ DAPI_(HRESULT) ThemeShowPage(
         {
             ::EnableWindow(hWnd, SW_HIDE != nCmdShow && fEnabled);
 
-            if (!hwndFocus && SW_HIDE != nCmdShow && pControl->dwStyle & WS_TABSTOP)
+            if (!hwndFocus && pControl->wPageId && pControl->dwStyle & WS_TABSTOP)
             {
                 hwndFocus = hWnd;
             }
@@ -1192,15 +1218,15 @@ DAPI_(HRESULT) ThemeShowPage(
             ::ShowWindow(hWnd, nCmdShow);
         }
 
-        if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
+        if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type && pControl->wPageId)
         {
-            if (SW_HIDE == nCmdShow || !fEnabled)
+            if (fEnabled)
             {
-                ThemeStopBillboard(pTheme, pControl->wId);
+                ThemeStartBillboard(pTheme, pControl->wId, 0xFFFF);
             }
             else
             {
-                ThemeStartBillboard(pTheme, pControl->wId, 0xFFFF);
+                ThemeStopBillboard(pTheme, pControl->wId);
             }
         }
     }
@@ -1211,6 +1237,8 @@ DAPI_(HRESULT) ThemeShowPage(
     }
 
 LExit:
+    ReleaseStr(sczText);
+
     return hr;
 }
 

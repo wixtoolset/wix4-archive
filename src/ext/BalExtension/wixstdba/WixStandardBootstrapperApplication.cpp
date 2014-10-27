@@ -2269,26 +2269,21 @@ private: // privates
                                 }
                             }
                         }
-
-                        // Format the text in each of the new page's controls (if they have any text).
-                        if (pControl->sczText && *pControl->sczText)
-                        {
-                            // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-                            // so don't go down the rabbit hole of making sure that this is securely freed.
-                            HRESULT hr = BalFormatString(pControl->sczText, &sczText);
-                            if (SUCCEEDED(hr))
-                            {
-                                ThemeSetTextControl(m_pTheme, pControl->wId, sczText);
-                            }
-                        }
                     }
                 }
 
-                //TODO: figure out what do with an error
-                ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
-                ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
+                HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
+                if (FAILED(hr))
+                {
+                    BalLogError(hr, "Failed to hide page: %u", dwOldPageId);
+                }
+                hr = ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
+                if (FAILED(hr))
+                {
+                    BalLogError(hr, "Failed to show page: %u", dwOldPageId);
+                }
 
-                // On the install page set the focus to the install button or the next enabled control if install is disabled
+                // On the install page set the focus to the install button or the next enabled control if install is disabled.
                 if (m_rgdwPageIds[WIXSTDBA_PAGE_INSTALL] == dwNewPageId)
                 {
                     ThemeSetFocus(m_pTheme, WIXSTDBA_CONTROL_INSTALL_BUTTON);
