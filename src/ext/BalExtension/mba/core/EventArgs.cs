@@ -416,19 +416,20 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the detection for an update has completed.
     /// </summary>
     [Serializable]
-    public class DetectUpdateCompleteEventArgs : StatusEventArgs
+    public class DetectUpdateCompleteEventArgs : ResultStatusEventArgs
     {
         private string updateLocation;
-
+        
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateCompleteEventArgs"/> class.
         /// </summary>
         /// <param name="status">The return code of the operation.</param>
         /// <param name="updateLocation">The location of the updated bundle.</param>
-        public DetectUpdateCompleteEventArgs(int status, string updateLocation)
-            : base(status)
+        /// <param name="recommendation">The recommendation from the engine.</param>
+        public DetectUpdateCompleteEventArgs(int status, string updateLocation, int recommendation)
+            : base(status, recommendation)
         {
-            this.updateLocation = updateLocation;
+            this.updateLocation = updateLocation;            
         }
 
         /// <summary>

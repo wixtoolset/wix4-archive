@@ -257,7 +257,20 @@ extern "C" HRESULT DetectUpdate(
 LExit:
     if (fBeginCalled)
     {
-        pUX->pUserExperience->OnDetectUpdateComplete(hr, pUpdate->fUpdateAvailable ? pUpdate->sczUpdateSource : NULL);
+        nResult = pUX->pUserExperience->OnDetectUpdateComplete(hr, pUpdate->fUpdateAvailable ? pUpdate->sczUpdateSource : NULL, IDNOACTION);
+
+        switch (nResult)
+        {
+            case IDNOACTION: // No Action, leave the hr as is and let the engine decide.
+                break;
+            case IDOK: // Ok, ignore any errors and continue on.
+                hr = S_OK;
+                break;
+            case IDCANCEL:
+                hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+                break;
+            // Should we have a default handler here to die if the BA doesn't respond properly?
+        }
     }
 
     return hr;
