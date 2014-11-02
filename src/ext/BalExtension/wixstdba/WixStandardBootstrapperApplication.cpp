@@ -1194,6 +1194,8 @@ private: // privates
 
         m_pTheme->pfnEvaluateCondition = &BalEvaluateCondition;
         m_pTheme->pfnFormatString = &BalFormatString;
+        m_pTheme->pfnGetNumericVariable = &BalGetNumericVariable;
+        m_pTheme->pfnGetStringVariable = &BalGetStringVariable;
 
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
@@ -2205,71 +2207,6 @@ private: // privates
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT, fShowErrorMessage);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT, fShowRestartButton);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, fShowRestartButton);
-                }
-
-                // Process each control for special handling in the new page.
-                THEME_PAGE* pPage = ThemeGetPage(m_pTheme, dwNewPageId);
-                if (pPage)
-                {
-                    for (DWORD i = 0; i < pPage->cControlIndices; ++i)
-                    {
-                        THEME_CONTROL* pControl = m_pTheme->rgControls + pPage->rgdwControlIndices[i];
-
-                        // If we are on the install, options or modify pages and this is a named control, try to set its default state.
-                        if ((m_rgdwPageIds[WIXSTDBA_PAGE_INSTALL] == dwNewPageId ||
-                             m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] == dwNewPageId ||
-                             m_rgdwPageIds[WIXSTDBA_PAGE_MODIFY] == dwNewPageId) &&
-                             pControl->sczName && *pControl->sczName)
-                        {
-                            // If this is a checkbox control, try to set its default state to the state of a matching named Burn variable.
-                            if (THEME_CONTROL_TYPE_CHECKBOX == pControl->type && WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX != pControl->wId)
-                            {
-                                LONGLONG llValue = 0;
-                                HRESULT hr = BalGetNumericVariable(pControl->sczName, &llValue);
-
-                                ThemeSendControlMessage(m_pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
-                            }
-
-                            // If this is a button control with the BS_AUTORADIOBUTTON style, try to set its default
-                            // state to the state of a matching named Burn variable.
-                            if (THEME_CONTROL_TYPE_BUTTON == pControl->type && (BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)))
-                            {
-                                LONGLONG llValue = 0;
-                                HRESULT hr = BalGetNumericVariable(pControl->sczName, &llValue);
-
-                                // If the control value isn't set then disable it.
-                                if (!SUCCEEDED(hr))
-                                {
-                                    ThemeControlEnable(m_pTheme, pControl->wId, FALSE);
-                                }
-                                else
-                                {
-                                    ThemeSendControlMessage(m_pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
-                                }
-                            }
-
-                            // Hide or disable controls based on the control name with 'State' appended
-                            HRESULT hr = StrAllocFormatted(&sczControlName, L"%lsState", pControl->sczName);
-                            if (SUCCEEDED(hr))
-                            {
-                                hr = BalGetStringVariable(sczControlName, &sczControlState);
-                                if (SUCCEEDED(hr) && sczControlState && *sczControlState)
-                                {
-                                    if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, sczControlState, -1, L"disable", -1))
-                                    {
-                                        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Disable control %ls", pControl->sczName);
-                                        ThemeControlEnable(m_pTheme, pControl->wId, FALSE);
-                                    }
-                                    else if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, sczControlState, -1, L"hide", -1))
-                                    {
-                                        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Hide control %ls", pControl->sczName);
-                                        // TODO: This doesn't work
-                                        ThemeShowControl(m_pTheme, pControl->wId, SW_HIDE);
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
 
                 HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);

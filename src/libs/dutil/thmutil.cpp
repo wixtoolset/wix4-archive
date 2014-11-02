@@ -1145,7 +1145,6 @@ DAPI_(HRESULT) ThemeShowPage(
     HWND hwndFocus = NULL;
     LPWSTR sczText = NULL;
 
-    // TODO: add ability to revert variable changes
     for (DWORD i = 0; i < pTheme->cControls; ++i)
     {
         const THEME_CONTROL* pControl = pTheme->rgControls + i;
@@ -1192,11 +1191,47 @@ DAPI_(HRESULT) ThemeShowPage(
                 }
             }
 
-            if (pTheme->pfnFormatString && pControl->sczText && *pControl->sczText)
+            if (pTheme->pfnFormatString && pControl->sczText && *pControl->sczText && THEME_CONTROL_TYPE_EDITBOX != pControl->type)
             {
                 hr = pTheme->pfnFormatString(pControl->sczText, &sczText);
-                if (SUCCEEDED(hr))
+                ExitOnFailure(hr, "Failed to format string: %ls", pControl->sczText);
+
+                ThemeSetTextControl(pTheme, pControl->wId, sczText);
+            }
+
+            // If this is a named control, do variable magic.
+            if (pControl->sczName && *pControl->sczName)
+            {
+                // If this is a checkbox control or a button control with the BS_AUTORADIOBUTTON style,
+                // try to set its default state to the state of a matching named Burn variable.
+                if (pTheme->pfnGetNumericVariable &&
+                    (THEME_CONTROL_TYPE_CHECKBOX == pControl->type || 
+                    THEME_CONTROL_TYPE_BUTTON == pControl->type && (BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle))))
                 {
+                    LONGLONG llValue = 0;
+                    hr = pTheme->pfnGetNumericVariable(pControl->sczName, &llValue);
+                    if (E_NOTFOUND != hr)
+                    {
+                        ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
+                    }
+
+                    ThemeSendControlMessage(pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
+                }
+
+                // If this is an editbox control,
+                // try to set its default state to the state of a matching named Burn variable.
+                if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+                {
+                    hr = pTheme->pfnGetStringVariable(pControl->sczName, &sczText);
+                    if (E_NOTFOUND == hr)
+                    {
+                        ReleaseNullStr(sczText);
+                    }
+                    else
+                    {
+                        ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczName);
+                    }
+
                     ThemeSetTextControl(pTheme, pControl->wId, sczText);
                 }
             }

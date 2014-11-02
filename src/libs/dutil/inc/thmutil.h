@@ -22,6 +22,14 @@ typedef HRESULT(CALLBACK *PFNTHM_FORMAT_VARIABLE_STRING)(
     __in_z LPCWSTR wzFormat,
     __inout LPWSTR* psczOut
     );
+typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_NUMERIC)(
+    __in_z LPCWSTR wzVariable,
+    __out LONGLONG* pllValue
+    );
+typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_STRING)(
+    __in_z LPCWSTR wzVariable,
+    __inout LPWSTR* psczValue
+    );
 
 typedef enum THEME_CONTROL_DATA
 {
@@ -201,6 +209,8 @@ struct THEME
     // callback functions
     PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition;
     PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString;
+    PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable;
+    PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable;
 };
 
 
