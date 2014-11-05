@@ -179,11 +179,11 @@ namespace WixToolset
 
             BindPath bindPath = BindPath.Parse(args[index]);
 
-            if (File.Exists(bindPath.Path))
-            {
-                Messaging.Instance.OnMessage(WixErrors.ExpectedDirectoryGotFile(commandlineSwitch, bindPath.Path));
-                return null;
-            }
+            //if (File.Exists(bindPath.Path))
+            //{
+            //    Messaging.Instance.OnMessage(WixErrors.ExpectedDirectoryGotFile(commandlineSwitch, bindPath.Path));
+            //    return null;
+            //}
 
             bindPath.Path = VerifyPath(bindPath.Path, true);
             return String.IsNullOrEmpty(bindPath.Path) ? null : bindPath;

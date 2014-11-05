@@ -243,10 +243,22 @@ namespace WixTest.Utilities
         public static bool IsProductInstalled(string prodCode)
         {
             //look in all user's products (both per-machine and per-user)
-            foreach (ProductInstallation product in ProductInstallation.GetProducts(null, "s-1-1-0", UserContexts.All))
+            try
             {
-                if (product.ProductCode == prodCode)
-                    return true;
+                foreach (ProductInstallation product in ProductInstallation.GetProducts(null, "s-1-1-0", UserContexts.All))
+                {
+                    if (product.ProductCode == prodCode)
+                        return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                foreach (ProductInstallation product in ProductInstallation.GetProducts(null, null, UserContexts.All))
+                {
+                    if (product.ProductCode == prodCode)
+                        return true;
+                }
             }
             return false;
         }

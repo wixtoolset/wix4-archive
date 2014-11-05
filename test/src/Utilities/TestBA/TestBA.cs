@@ -26,6 +26,8 @@ namespace WixTest.BA
     /// </summary>
     public class TestBA : BootstrapperApplication
     {
+        private const string BurnBundleVersionVariable = "WixBundleVersion";
+
         private LaunchAction action;
         private ManualResetEvent wait;
         private int result;
@@ -47,12 +49,19 @@ namespace WixTest.BA
         }
 
         /// <summary>
+        /// Get the version of the install.
+        /// </summary>
+        public Version Version { get; private set; }
+
+        /// <summary>
         /// UI Thread entry point for TestUX.
         /// </summary>
         protected override void Run()
         {
             this.action = this.Command.Action;
             this.TestVariables();
+
+            this.Version = this.Engine.VersionVariables[BurnBundleVersionVariable];
 
             List<string> verifyArguments = this.ReadVerifyArguments();
 
@@ -67,6 +76,15 @@ namespace WixTest.BA
                     this.Engine.SetUpdate(this.updateBundlePath, null, info.Length, UpdateHashType.None, null);
 
                     this.action = LaunchAction.UpdateReplaceEmbedded;
+                }
+                else if (this.Command.Relation != RelationType.Update && arg.StartsWith("-checkupdate", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.action = LaunchAction.UpdateReplaceEmbedded;
+                    //for (int delay = 0; delay < 60; delay++)
+                    //{
+                    //    this.Log("Waiting...");
+                    //    Thread.Sleep(1000);
+                    //}
                 }
 
                 verifyArguments.Remove(arg);
@@ -103,6 +121,42 @@ namespace WixTest.BA
 
         protected override void OnDetectUpdateBegin(DetectUpdateBeginEventArgs args)
         {
+            this.Log("OnDetectUpdateBegin");
+            if ((LaunchAction.UpdateReplaceEmbedded == this.action)|(LaunchAction.UpdateReplace == this.action))
+            {
+                args.Result = Result.Ok;
+            }
+        }
+
+        protected override void OnDetectUpdate(DetectUpdateEventArgs e)
+        {
+            // The list of updates is sorted in descending version, so the first callback should be the largest update available.
+            // This update should be either larger than ours (so we are out of date), the same as ours (so we are current)
+            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.Result alone and
+            // enumerate all of the updates.
+            this.Log(String.Format("Potential update v{0} from '{1}'; current version: v{2}", e.Version, e.UpdateLocation, this.Version));
+            if (e.Version > this.Version)
+            {
+                this.Log(String.Format("Selected update v{0}", e.Version));
+                this.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
+                e.Result = Result.Ok;
+            }
+            else if (e.Version <= this.Version)
+            {
+                e.Result = Result.Cancel;
+            }
+        }
+
+        protected override void OnDetectUpdateComplete(DetectUpdateCompleteEventArgs e)
+        {
+            this.Log("OnDetectUpdateComplete");
+
+            // Failed to process an update, allow the existing bundle to still install.
+            if (!Hresult.Succeeded(e.Status))
+            {
+                this.Log(String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
+                e.Result = Result.Ok; // But continue on...
+            }
         }
 
         protected override void OnDetectComplete(DetectCompleteEventArgs args)
@@ -255,6 +309,14 @@ namespace WixTest.BA
             if (this.Command.Display == Display.Embedded)
             {
                 Engine.SendEmbeddedProgress(args.ProgressPercentage, args.OverallPercentage);
+            }
+        }
+
+        protected override void OnResolveSource(ResolveSourceEventArgs args)
+        {
+            if (!String.IsNullOrEmpty(args.DownloadSource))
+            {
+                args.Result = Result.Download;
             }
         }
 
