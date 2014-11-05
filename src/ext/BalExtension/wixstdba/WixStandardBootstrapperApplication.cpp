@@ -379,7 +379,7 @@ public: // IBootstrapperApplication
                 }
                 else if(pPackage->sczInstallCondition && *pPackage->sczInstallCondition)
                 {
-                    hr = m_pEngine->EvaluateCondition(pPackage->sczInstallCondition, &fInstall);
+                    hr = BalEvaluateCondition(pPackage->sczInstallCondition, &fInstall);
                     if (FAILED(hr))
                     {
                         fInstall = FALSE;
@@ -1195,7 +1195,9 @@ private: // privates
         m_pTheme->pfnEvaluateCondition = &BalEvaluateCondition;
         m_pTheme->pfnFormatString = &BalFormatString;
         m_pTheme->pfnGetNumericVariable = &BalGetNumericVariable;
+        m_pTheme->pfnSetNumericVariable = &BalSetNumericVariable;
         m_pTheme->pfnGetStringVariable = &BalGetStringVariable;
+        m_pTheme->pfnSetStringVariable = &BalSetStringVariable;
 
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
@@ -1713,58 +1715,63 @@ private: // privates
             return 0;
 
         case WM_COMMAND:
-            switch (LOWORD(wParam))
+            switch (HIWORD(wParam))
             {
-            case WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX:
-                pBA->OnClickAcceptCheckbox();
-                return 0;
+            case BN_CLICKED:
+                switch (LOWORD(wParam))
+                {
+                case WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX:
+                    pBA->OnClickAcceptCheckbox();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_OPTIONS_BUTTON:
-                pBA->OnClickOptionsButton();
-                return 0;
+                case WIXSTDBA_CONTROL_OPTIONS_BUTTON:
+                    pBA->OnClickOptionsButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_BROWSE_BUTTON:
-                pBA->OnClickOptionsBrowseButton();
-                return 0;
+                case WIXSTDBA_CONTROL_BROWSE_BUTTON:
+                    pBA->OnClickOptionsBrowseButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_OK_BUTTON:
-                pBA->OnClickOptionsOkButton();
-                return 0;
+                case WIXSTDBA_CONTROL_OK_BUTTON:
+                    pBA->OnClickOptionsOkButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_CANCEL_BUTTON:
-                pBA->OnClickOptionsCancelButton();
-                return 0;
+                case WIXSTDBA_CONTROL_CANCEL_BUTTON:
+                    pBA->OnClickOptionsCancelButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_INSTALL_BUTTON:
-                pBA->OnClickInstallButton();
-                return 0;
+                case WIXSTDBA_CONTROL_INSTALL_BUTTON:
+                    pBA->OnClickInstallButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_REPAIR_BUTTON:
-                pBA->OnClickRepairButton();
-                return 0;
+                case WIXSTDBA_CONTROL_REPAIR_BUTTON:
+                    pBA->OnClickRepairButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_UNINSTALL_BUTTON:
-                pBA->OnClickUninstallButton();
-                return 0;
+                case WIXSTDBA_CONTROL_UNINSTALL_BUTTON:
+                    pBA->OnClickUninstallButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_LAUNCH_BUTTON:
-                pBA->OnClickLaunchButton();
-                return 0;
+                case WIXSTDBA_CONTROL_LAUNCH_BUTTON:
+                    pBA->OnClickLaunchButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON:
-                pBA->OnClickRestartButton();
-                return 0;
+                case WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON:
+                    pBA->OnClickRestartButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_CLOSE_BUTTON:
-                pBA->OnClickCloseButton();
-                return 0;
+                case WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_CLOSE_BUTTON:
+                    pBA->OnClickCloseButton();
+                    return 0;
+                }
+                break;
             }
             break;
 
@@ -2209,12 +2216,13 @@ private: // privates
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, fShowRestartButton);
                 }
 
-                HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
+                HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE, !m_fStateChangeIsCancel);
                 if (FAILED(hr))
                 {
                     BalLogError(hr, "Failed to hide page: %u", dwOldPageId);
                 }
-                hr = ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
+
+                hr = ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW, TRUE);
                 if (FAILED(hr))
                 {
                     BalLogError(hr, "Failed to show page: %u", dwOldPageId);
@@ -2241,6 +2249,7 @@ private: // privates
     BOOL OnClose()
     {
         BOOL fClose = FALSE;
+        BOOL fCancel = FALSE;
 
         // If we've already succeeded or failed or showing the help page, just close (prompts are annoying if the bootstrapper is done).
         if (WIXSTDBA_STATE_APPLIED <= m_state || WIXSTDBA_STATE_HELP == m_state)
@@ -2250,18 +2259,28 @@ private: // privates
         else // prompt the user or force the cancel if there is no UI.
         {
             fClose = PromptCancel(m_hWnd, BOOTSTRAPPER_DISPLAY_FULL != m_command.display, m_sczConfirmCloseMessage ? m_sczConfirmCloseMessage : L"Are you sure you want to cancel?", m_pTheme->sczCaption);
+            fCancel = fClose;
         }
 
         // If we're doing progress then we never close, we just cancel to let rollback occur.
         if (WIXSTDBA_STATE_APPLYING <= m_state && WIXSTDBA_STATE_APPLIED > m_state)
         {
-            // If we canceled disable cancel button since clicking it again is silly.
+            // If we canceled, disable cancel button since clicking it again is silly.
             if (fClose)
             {
                 ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON, FALSE);
             }
 
             fClose = FALSE;
+        }
+
+        if (fClose)
+        {
+            DWORD dwCurrentPageId = 0;
+            DeterminePageId(m_state, &dwCurrentPageId);
+
+            // Hide the current page to let thmutil do its thing with variables.
+            ThemeShowPage(m_pTheme, dwCurrentPageId, SW_HIDE, !fCancel);
         }
 
         return fClose;
@@ -2283,7 +2302,6 @@ private: // privates
     //
     void OnClickOptionsButton()
     {
-        SavePageSettings(WIXSTDBA_PAGE_INSTALL);
         m_stateBeforeOptions = m_state;
         SetState(WIXSTDBA_STATE_OPTIONS, S_OK);
     }
@@ -2335,8 +2353,6 @@ private: // privates
             ExitOnFailure(hr, "Failed to set the install folder.");
         }
 
-        SavePageSettings(WIXSTDBA_PAGE_OPTIONS);
-
     LExit:
         SetState(m_stateBeforeOptions, S_OK);
         return;
@@ -2348,7 +2364,7 @@ private: // privates
     //
     void OnClickOptionsCancelButton()
     {
-        SetState(m_stateBeforeOptions, S_OK);
+        SetStateWithCancel(m_stateBeforeOptions, S_OK, TRUE);
     }
 
 
@@ -2357,8 +2373,6 @@ private: // privates
     //
     void OnClickInstallButton()
     {
-        SavePageSettings(WIXSTDBA_PAGE_INSTALL);
-
         this->OnPlan(BOOTSTRAPPER_ACTION_INSTALL);
     }
 
@@ -2557,6 +2571,19 @@ private: // privates
         __in HRESULT hrStatus
         )
     {
+        SetStateWithCancel(state, hrStatus, FALSE);
+    }
+
+
+    //
+    // SetStateWithCancel
+    //
+    void SetStateWithCancel(
+        __in WIXSTDBA_STATE state,
+        __in HRESULT hrStatus,
+        __in BOOL fIsCancel
+        )
+    {
         if (FAILED(hrStatus))
         {
             m_hrFinal = hrStatus;
@@ -2569,6 +2596,7 @@ private: // privates
 
         if (WIXSTDBA_STATE_OPTIONS == state || m_state < state)
         {
+            m_fStateChangeIsCancel = fIsCancel;
             ::PostMessageW(m_hWnd, WM_WIXSTDBA_CHANGE_STATE, 0, state);
         }
     }
@@ -2791,39 +2819,6 @@ private: // privates
     }
 
 
-    void SavePageSettings(
-        __in WIXSTDBA_PAGE page
-        )
-    {
-        THEME_PAGE* pPage = NULL;
-
-        pPage = ThemeGetPage(m_pTheme, m_rgdwPageIds[page]);
-        if (pPage)
-        {
-            for (DWORD i = 0; i < pPage->cControlIndices; ++i)
-            {
-                // Loop through all the checkbox controls (or buttons with BS_AUTORADIOBUTTON) with names and set a Burn variable with that name to true or false.
-                THEME_CONTROL* pControl = m_pTheme->rgControls + pPage->rgdwControlIndices[i];
-                if ((THEME_CONTROL_TYPE_CHECKBOX == pControl->type) ||
-                    (THEME_CONTROL_TYPE_BUTTON == pControl->type && (BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)) &&
-                    pControl->sczName && *pControl->sczName))
-                {
-                    BOOL bChecked = ThemeIsControlChecked(m_pTheme, pControl->wId);
-                    m_pEngine->SetVariableNumeric(pControl->sczName, bChecked ? 1 : 0);
-                }
-
-                // Loop through all the editbox controls with names and set a Burn variable with that name to the contents.
-                if (THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName && WIXSTDBA_CONTROL_FOLDER_EDITBOX != pControl->wId)
-                {
-                    LPWSTR sczValue = NULL;
-                    ThemeGetTextControl(m_pTheme, pControl->wId, &sczValue);
-                    m_pEngine->SetVariableString(pControl->sczName, sczValue);
-                }
-            }
-        }
-    }
-
-
 public:
     //
     // Constructor - initialize member variables.
@@ -2980,6 +2975,7 @@ private:
 
     WIXSTDBA_STATE m_state;
     WIXSTDBA_STATE m_stateBeforeOptions;
+    BOOL m_fStateChangeIsCancel;
     HRESULT m_hrFinal;
 
     BOOL m_fStartedExecution;

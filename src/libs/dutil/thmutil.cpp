@@ -1088,6 +1088,44 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                     return 0;
                 }
             }
+
+        case WM_COMMAND:
+            switch (HIWORD(wParam))
+            {
+            case BN_CLICKED:
+                if (pTheme->pfnSetNumericVariable)
+                {
+                    for (DWORD i = 0; i < pTheme->cControls; i++)
+                    {
+                        const THEME_CONTROL* pControl = pTheme->rgControls + i;
+
+                        // Verify that the control is on the current page?
+                        if (LOWORD(wParam) == pControl->wId)
+                        {
+                            if (!pControl->fDisableVariableFunctionality && pControl->sczName && *pControl->sczName &&
+                                (THEME_CONTROL_TYPE_CHECKBOX == pControl->type ||
+                                THEME_CONTROL_TYPE_BUTTON == pControl->type && BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)))
+                            {
+                                // TODO: control id conflict?
+                                if ((HWND)lParam != pControl->hWnd)
+                                {
+                                    break;
+                                }
+
+                                BOOL bChecked = ThemeIsControlChecked(pTheme, pControl->wId);
+                                pTheme->pfnSetNumericVariable(pControl->sczName, bChecked ? 1 : 0);
+
+                                //TODO: refresh page - but need to figure out multiple message thing first
+
+                                return 0;
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+            break;
         }
     }
 
@@ -1136,14 +1174,71 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
 
 
 DAPI_(HRESULT) ThemeShowPage(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwPage,
-    __in int nCmdShow
+    __in int nCmdShow,
+    __in BOOL fSave
     )
 {
     HRESULT hr = S_OK;
     HWND hwndFocus = NULL;
     LPWSTR sczText = NULL;
+    BOOL fHide = SW_HIDE == nCmdShow;
+    BOOL fSaveEditboxes = FALSE;
+    size_t cbAllocSize = 0;
+    DWORD iPageControl = 0;
+    THEME_SAVEDVARIABLE* pSavedVariable = NULL;
+
+    THEME_PAGE* pPage = ThemeGetPage(pTheme, dwPage);
+
+    if (pPage)
+    {
+        if (fHide)
+        {
+            if (fSave)
+            {
+                fSaveEditboxes = TRUE;
+
+                // Set the variables in the loop below.
+            }
+            else if (pPage->cSavedVariables && pTheme->pfnSetStringVariable)
+            {
+                // Best effort to cancel any changes to the variables.
+                for (DWORD v = 0; v < pPage->cSavedVariables; ++v)
+                {
+                    pSavedVariable = pPage->rgSavedVariables + v;
+                    if (pSavedVariable->wzName)
+                    {
+                        pTheme->pfnSetStringVariable(pSavedVariable->wzName, pSavedVariable->sczValue);
+                    }
+                }
+            }
+
+            pPage->cSavedVariables = 0;
+            ReleaseNullMem(pPage->rgSavedVariables);
+        }
+        else
+        {
+            if (fSave)
+            {
+                hr = ::SizeTMult(sizeof(THEME_SAVEDVARIABLE), pPage->cControlIndices, &cbAllocSize);
+                ExitOnFailure(hr, "Overflow while calculating allocation size for %u saved variables.", pPage->cControlIndices);
+
+                pPage->rgSavedVariables = static_cast<THEME_SAVEDVARIABLE*>(MemAlloc(cbAllocSize, TRUE));
+                ExitOnNull(pPage->rgSavedVariables, hr, E_OUTOFMEMORY, "Failed to allocate memory for saved variables.");
+
+                pPage->cSavedVariables = pPage->cControlIndices;
+
+                // Save the variables in the loop below.
+            }
+            else
+            {
+                // This shouldn't do anything if the caller always hides the current page before showing a new one.
+                pPage->cSavedVariables = 0;
+                ReleaseNullMem(pPage->rgSavedVariables);
+            }
+        }
+    }
 
     for (DWORD i = 0; i < pTheme->cControls; ++i)
     {
@@ -1157,8 +1252,19 @@ DAPI_(HRESULT) ThemeShowPage(
 
         HWND hWnd = pControl->hWnd;
 
-        if (SW_HIDE == nCmdShow && pControl->wPageId)
+        if (fHide && pControl->wPageId)
         {
+            // Save the editbox value if necessary (other control types save their values immediately).
+            if (fSave && pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
+                fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
+            {
+                hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
+                ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
+
+                hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText);
+                ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
+            }
+
             ::ShowWindow(hWnd, SW_HIDE);
 
             if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
@@ -1190,7 +1296,8 @@ DAPI_(HRESULT) ThemeShowPage(
                     ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
                 }
             }
-
+            
+            // Try to format each control's text, except for editboxes since their text comes from the user.
             if (pTheme->pfnFormatString && pControl->sczText && *pControl->sczText && THEME_CONTROL_TYPE_EDITBOX != pControl->type)
             {
                 hr = pTheme->pfnFormatString(pControl->sczText, &sczText);
@@ -1215,6 +1322,20 @@ DAPI_(HRESULT) ThemeShowPage(
                         ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
                     }
 
+                    if (pControl->wPageId)
+                    {
+                        pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                        pSavedVariable->wzName = pControl->sczName;
+
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = StrAllocFormattedSecure(&pSavedVariable->sczValue, L"%u", llValue);
+                            ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczName);
+                        }
+
+                        ++iPageControl;
+                    }
+
                     ThemeSendControlMessage(pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
                 }
 
@@ -1232,6 +1353,20 @@ DAPI_(HRESULT) ThemeShowPage(
                         ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczName);
                     }
 
+                    if (pControl->wPageId)
+                    {
+                        pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                        pSavedVariable->wzName = pControl->sczName;
+
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = StrAllocStringSecure(&pSavedVariable->sczValue, sczText, 0);
+                            ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczName);
+                        }
+
+                        ++iPageControl;
+                    }
+
                     ThemeSetTextControl(pTheme, pControl->wId, sczText);
                 }
             }
@@ -1243,7 +1378,7 @@ DAPI_(HRESULT) ThemeShowPage(
         }
         else
         {
-            ::EnableWindow(hWnd, SW_HIDE != nCmdShow && fEnabled);
+            ::EnableWindow(hWnd, !fHide && fEnabled);
 
             if (!hwndFocus && pControl->wPageId && pControl->dwStyle & WS_TABSTOP)
             {
@@ -1389,7 +1524,7 @@ DAPI_(BOOL) ThemePostControlMessage(
 
 
 DAPI_(LRESULT) ThemeSendControlMessage(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in UINT Msg,
     __in WPARAM wParam,
@@ -1697,7 +1832,7 @@ LExit:
 
 
 DAPI_(HRESULT) ThemeSetTextControl(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in_z LPCWSTR wzText
     )
@@ -3456,6 +3591,16 @@ static void FreePage(
     {
         ReleaseStr(pPage->sczName);
         ReleaseMem(pPage->rgdwControlIndices);
+
+        if (pPage->cSavedVariables)
+        {
+            for (DWORD i = 0; i < pPage->cSavedVariables; ++i)
+            {
+                ReleaseStr(pPage->rgSavedVariables[i].sczValue);
+            }
+        }
+
+        ReleaseMem(pPage->rgSavedVariables);
     }
 }
 

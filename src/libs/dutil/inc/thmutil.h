@@ -26,9 +26,17 @@ typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_NUMERIC)(
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     );
+typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_NUMERIC)(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue
+    );
 typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_STRING)(
     __in_z LPCWSTR wzVariable,
     __inout LPWSTR* psczValue
+    );
+typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_STRING)(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
     );
 
 typedef enum THEME_CONTROL_DATA
@@ -151,6 +159,12 @@ struct THEME_IMAGELIST
     HIMAGELIST hImageList;
 };
 
+struct THEME_SAVEDVARIABLE
+{
+    LPWSTR wzName;
+    LPWSTR sczValue;
+};
+
 struct THEME_PAGE
 {
     WORD wId;
@@ -158,6 +172,9 @@ struct THEME_PAGE
 
     DWORD cControlIndices;
     DWORD* rgdwControlIndices;
+
+    DWORD cSavedVariables;
+    THEME_SAVEDVARIABLE* rgSavedVariables;
 };
 
 struct THEME_FONT
@@ -210,7 +227,9 @@ struct THEME
     PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition;
     PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString;
     PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable;
+    PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable;
     PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable;
+    PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable;
 };
 
 
@@ -368,12 +387,16 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
 
 /********************************************************************
  ThemeShowPage - shows or hides all of the controls in the page at one time.
+                 When using variables, fSave controls whether to save
+                 or revert any changes made. It is expected that the
+                 current page is hidden before showing a new page.
 
  *******************************************************************/
 DAPI_(HRESULT) ThemeShowPage(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwPage,
-    __in int nCmdShow
+    __in int nCmdShow,
+    __in BOOL fSave
     );
 
 /********************************************************************
@@ -442,7 +465,7 @@ DAPI_(BOOL) ThemePostControlMessage(
     );
 
 DAPI_(LRESULT) ThemeSendControlMessage(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in UINT Msg,
     __in WPARAM wParam,
@@ -548,7 +571,7 @@ DAPI_(HRESULT) ThemeSetProgressControlColor(
 
 *******************************************************************/
 DAPI_(HRESULT) ThemeSetTextControl(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in_z LPCWSTR wzText
     );
