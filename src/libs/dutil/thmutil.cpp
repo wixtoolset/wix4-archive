@@ -36,6 +36,7 @@ enum INTERNAL_CONTROL_STYLE
     INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE = 0x0002,
     INTERNAL_CONTROL_STYLE_DISABLED = 0x0004,
     INTERNAL_CONTROL_STYLE_HIDDEN = 0x0008,
+    INTERNAL_CONTROL_STYLE_OWNER_DRAW = 0x0010,
 };
 
 struct MEMBUFFER_FOR_RICHEDIT
@@ -421,6 +422,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             {
                 wzWindowClass = WC_STATICW;
                 dwWindowBits |= SS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
             else
             {
@@ -437,6 +439,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
                 dwWindowBits |= BS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
             break;
 
@@ -478,6 +481,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             {
                 wzWindowClass = WC_STATICW;
                 dwWindowBits |= SS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
             else
             {
@@ -491,6 +495,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             {
                 wzWindowClass = WC_STATICW; // no such thing as an owner drawn progress bar so we'll make our own out of a static control.
                 dwWindowBits |= SS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
             else
             {
@@ -1088,6 +1093,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                     return 0;
                 }
             }
+            break;
 
         case WM_COMMAND:
             switch (HIWORD(wParam))
@@ -1099,19 +1105,12 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                     {
                         const THEME_CONTROL* pControl = pTheme->rgControls + i;
 
-                        // Verify that the control is on the current page?
                         if (LOWORD(wParam) == pControl->wId)
                         {
                             if (!pControl->fDisableVariableFunctionality && pControl->sczName && *pControl->sczName &&
                                 (THEME_CONTROL_TYPE_CHECKBOX == pControl->type ||
                                 THEME_CONTROL_TYPE_BUTTON == pControl->type && BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)))
                             {
-                                // TODO: control id conflict?
-                                if ((HWND)lParam != pControl->hWnd)
-                                {
-                                    break;
-                                }
-
                                 BOOL bChecked = ThemeIsControlChecked(pTheme, pControl->wId);
                                 pTheme->pfnSetNumericVariable(pControl->sczName, bChecked ? 1 : 0);
 
@@ -1768,7 +1767,7 @@ DAPI_(HRESULT) ThemeSetProgressControl(
                 DWORD dwColor = HIWORD(pControl->dwData);
                 pControl->dwData = MAKEDWORD(dwProgressPercentage, dwColor);
 
-                if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
+                if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_OWNER_DRAW)
                 {
                     if (!::InvalidateRect(hWnd, NULL, FALSE))
                     {
@@ -1807,7 +1806,7 @@ DAPI_(HRESULT) ThemeSetProgressControlColor(
         THEME_CONTROL* pControl = const_cast<THEME_CONTROL*>(FindControlFromHWnd(pTheme, hWnd));
 
         // Only set color on owner draw progress bars.
-        if (pControl && pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
+        if (pControl && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_OWNER_DRAW))
         {
             DWORD dwCurrentColor = HIWORD(pControl->dwData);
 
@@ -3564,7 +3563,7 @@ static BOOL DrawHoverControl(
 
     // Only hyperlinks and owner-drawn buttons have hover states.
     if (pControl && (THEME_CONTROL_TYPE_HYPERLINK == pControl->type ||
-        (THEME_CONTROL_TYPE_BUTTON == pControl->type && (pControl->hImage || pControl->nSourceX))))
+        (THEME_CONTROL_TYPE_BUTTON == pControl->type && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_OWNER_DRAW))))
     {
         if (fHover)
         {
