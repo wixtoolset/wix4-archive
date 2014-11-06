@@ -466,6 +466,55 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="RadioButton">
+        <xs:annotation>
+            <xs:documentation>Defines an individual tab within a set of tabs.</xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="RadioButtons" />
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>Text to display beside the radio button.</xs:documentation>
+                    </xs:annotation>
+                    <xs:attributeGroup ref="CommonControlAttributes" />
+                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                        <xs:annotation>
+                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="Value" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>Optional value used when setting the variable associated with the set of radio buttons.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="RadioButtons">
+        <xs:annotation>
+            <xs:documentation>Defines a set of radio buttons.</xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
+            </xs:appinfo>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="RadioButton" />
+            </xs:choice>
+            <xs:attribute name="Name" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Optional variable name for the set of radio buttons.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="Richedit">
         <xs:annotation>
             <xs:documentation>Defines a rich edit control.</xs:documentation>
@@ -648,6 +697,7 @@
             <xs:element ref="Image" />
             <xs:element ref="ListView" />
             <xs:element ref="Progressbar" />
+            <xs:element ref="RadioButtons" />
             <xs:element ref="Richedit" />
             <xs:element ref="Static" />
             <xs:element ref="Tabs" />

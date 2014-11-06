@@ -112,6 +112,14 @@ static HRESULT ParseColumns(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
     );
+static HRESULT ParseRadioButtons(
+    __in_opt HMODULE hModule,
+    __in_opt LPCWSTR wzRelativePath,
+    __in IXMLDOMNode* pixn,
+    __in THEME* pTheme,
+    __in THEME_PAGE* pPage,
+    __out DWORD* pdwProcessedControls
+    );
 static HRESULT ParseTabs(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
@@ -1101,7 +1109,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
             case BN_CLICKED:
                 if (pTheme->pfnSetNumericVariable)
                 {
-                    for (DWORD i = 0; i < pTheme->cControls; i++)
+                    for (DWORD i = 0; i < pTheme->cControls; ++i)
                     {
                         const THEME_CONTROL* pControl = pTheme->rgControls + i;
 
@@ -2584,19 +2592,25 @@ static HRESULT ParseControls(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixn = NULL;
     BSTR bstrType = NULL;
     DWORD cNewControls = 0;
+    DWORD cPreprocessedControls = 0;
     DWORD iControl = 0;
     DWORD iPageControl = 0;
+
+    hr = ParseRadioButtons(hModule, wzRelativePath, pElement, pTheme, pPage, &cPreprocessedControls);
+    ExitOnFailure(hr, "Failed to find parse radio buttons.");
 
     hr = XmlSelectNodes(pElement, L"*", &pixnl);
     ExitOnFailure(hr, "Failed to find control elements.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&cNewControls));
     ExitOnFailure(hr, "Failed to count the number of theme controls.");
+
+    // Subtract the preprocessed controls.
+    cNewControls -= cPreprocessedControls;
 
     // If we are creating top level controls (no page provided), subtract the font and
     // page elements and "application" element since they are all siblings and inflate
@@ -2613,20 +2627,18 @@ static HRESULT ParseControls(
 
     if (pPage)
     {
-        hr = ::SizeTMult(sizeof(DWORD), cNewControls, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u control indices.", cNewControls);
+        hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cNewControls);
+        ExitOnFailure(hr, "Failed to reallocate page controls.");
 
-        pPage->rgdwControlIndices = static_cast<DWORD*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pPage->rgdwControlIndices, hr, E_OUTOFMEMORY, "Failed to allocate theme page controls.");
-
-        pPage->cControlIndices = cNewControls;
+        iPageControl = pPage->cControlIndices;
+        pPage->cControlIndices += cNewControls;
     }
 
     iControl = pTheme->cControls;
     pTheme->cControls += cNewControls;
 
     hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cNewControls);
-    ExitOnFailure(hr, "Failed to allocate theme controls.");
+    ExitOnFailure(hr, "Failed to reallocate theme controls.");
 
     while (S_OK == (hr = XmlNextElement(pixnl, &pixn, &bstrType)))
     {
@@ -3010,6 +3022,11 @@ static HRESULT ParseControl(
         hr = ParseBillboards(hModule, wzRelativePath, pixn, pControl);
         ExitOnFailure(hr, "Failed to parse billboards.");
     }
+    else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
+    {
+        hr = E_NOTIMPL;
+        ExitOnFailure(hr, "Radio buttons are not implemented yet.");
+    }
     else if (THEME_CONTROL_TYPE_TEXT == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"Center", &fValue);
@@ -3287,6 +3304,87 @@ LExit:
     ReleaseObject(pixnl);
     ReleaseObject(pixnChild);
     ReleaseBSTR(bstrText);
+
+    return hr;
+}
+
+
+static HRESULT ParseRadioButtons(
+    __in_opt HMODULE hModule,
+    __in_opt LPCWSTR wzRelativePath,
+    __in IXMLDOMNode* pixn,
+    __in THEME* pTheme,
+    __in THEME_PAGE* pPage,
+    __inout DWORD* pdwProcessedControls
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD cRadioButtons = 0;
+    DWORD iControl = 0;
+    DWORD iPageControl = 0;
+    IXMLDOMNodeList* pixnlRadioButtons = NULL;
+    IXMLDOMNodeList* pixnl = NULL;
+    IXMLDOMNode* pixnRadioButtons = NULL;
+    IXMLDOMNode* pixnChild = NULL;
+    LPWSTR sczName = NULL;
+
+    hr = XmlSelectNodes(pixn, L"RadioButtons", &pixnlRadioButtons);
+    ExitOnFailure(hr, "Failed to select RadioButtons nodes.");
+
+    while (S_OK == (hr = XmlNextElement(pixnlRadioButtons, &pixnRadioButtons, NULL)))
+    {
+        hr = XmlGetAttributeEx(pixnRadioButtons, L"Name", &sczName);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed when querying RadioButtons Name.");
+
+        hr = XmlSelectNodes(pixn, L"RadioButton", &pixnl);
+        ExitOnFailure(hr, "Failed to select RadioButton nodes.");
+
+        hr = pixnl->get_length(reinterpret_cast<long*>(&cRadioButtons));
+        ExitOnFailure(hr, "Failed to count the number of RadioButton nodes.");
+
+        if (pPage)
+        {
+            hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cRadioButtons);
+            ExitOnFailure(hr, "Failed to reallocate page controls.");
+
+            iPageControl = pPage->cControlIndices;
+            pPage->cControlIndices += cRadioButtons;
+        }
+
+        hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cRadioButtons);
+        ExitOnFailure(hr, "Failed to reallocate theme controls.");
+
+        iControl = pTheme->cControls;
+        pTheme->cControls += cRadioButtons;
+
+        while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
+        {
+            hr = ParseControl(hModule, wzRelativePath, pixn, THEME_CONTROL_TYPE_RADIOBUTTON, pTheme, iControl);
+            ExitOnFailure(hr, "Failed to parse control.");
+
+            if (pPage)
+            {
+                pTheme->rgControls[iControl].wPageId = pPage->wId;
+                pPage->rgdwControlIndices[iPageControl] = iControl;
+                ++iPageControl;
+            }
+
+            ++iControl;
+        }
+
+        ++*pdwProcessedControls;
+    }
+
+LExit:
+    ReleaseStr(sczName);
+    ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseObject(pixnlRadioButtons);
+    ReleaseObject(pixnRadioButtons);
 
     return hr;
 }
