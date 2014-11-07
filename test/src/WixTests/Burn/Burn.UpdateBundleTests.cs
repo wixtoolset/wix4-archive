@@ -247,6 +247,14 @@ namespace WixTest.Tests.Burn
 
         public class ApplicationBootstrapper : Nancy.DefaultNancyBootstrapper
         {
+            enum UpdateFeed
+            {
+                None,
+                Invalid,
+                Version1,
+                Version2
+            }
+
             protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
             {
                 //container.Register<IRootPathProvider, RootPathProvider>().AsSingleton();
@@ -272,12 +280,10 @@ namespace WixTest.Tests.Burn
                 get { return new RootPathProvider(); }
             }
 
-
             protected override DiagnosticsConfiguration DiagnosticsConfiguration
             {
                 get { return new DiagnosticsConfiguration { Password = @"password" }; }
             }
-
 
             protected override void ConfigureConventions(NancyConventions nancyConventions)
             {
@@ -302,12 +308,20 @@ namespace WixTest.Tests.Burn
             string bundleB1 = this.GetBundleB().Output;
             string bundleB2 = this.GetBundleBv2().Output;
 
+            //string bundle2DisassemblyFolder = this.GetBundleBv2().Disassemble();
+
             // Install the v1 bundle.
             BundleInstaller installerB1 = new BundleInstaller(this, bundleB1).Install();
 
             // Test that v1 was correctly installed.
             Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
             Assert.False(MsiVerifier.IsPackageInstalled(packageB2));
+
+            // Run the v1 bundle requesting an update bundle.
+            installerB1.Modify(arguments: new string[]{"-checkupdate", "-expectNoUpdate"});
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB2));
+
 
             HostConfiguration hostConfigs = new HostConfiguration()
             {
@@ -319,7 +333,7 @@ namespace WixTest.Tests.Burn
             Directory.CreateDirectory(Path.Combine(this.TestContext.TestDirectory, "1.1"));
 
             // Copy v1.0 artifacts to the TestDataDirectory
-            File.Copy(bundleB1, Path.Combine(this.TestContext.TestDirectory, "1.0", Path.GetFileName(bundleB2)), true);
+            File.Copy(bundleB1, Path.Combine(this.TestContext.TestDirectory, "1.0", Path.GetFileName(bundleB1)), true);
             File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.0.xml"), Path.Combine(this.TestContext.TestDirectory, "1.0", "FeedB.xml"), true);
 
             // Copy v1.1 artifacts to the TestDataDirectory
@@ -331,13 +345,7 @@ namespace WixTest.Tests.Burn
             {
 
                 nancyHost.Start();
-                /*
-                for (int delay = 0; delay < 120; delay++)
-                {
-                    //this.Log("Waiting...");
-                    Thread.Sleep(1000);
-                }
-                */
+                
                 // Run the v1 bundle providing an update bundle.
                 installerB1.Modify(arguments: "-checkupdate");
 

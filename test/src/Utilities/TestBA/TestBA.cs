@@ -53,6 +53,8 @@ namespace WixTest.BA
         /// </summary>
         public Version Version { get; private set; }
 
+        private bool ExpectNoUpdate { get; set; }
+
         /// <summary>
         /// UI Thread entry point for TestUX.
         /// </summary>
@@ -62,6 +64,7 @@ namespace WixTest.BA
             this.TestVariables();
 
             this.Version = this.Engine.VersionVariables[BurnBundleVersionVariable];
+            this.Log("Version: {0}", this.Version);
 
             List<string> verifyArguments = this.ReadVerifyArguments();
 
@@ -79,16 +82,16 @@ namespace WixTest.BA
                 }
                 else if (this.Command.Relation != RelationType.Update && arg.StartsWith("-checkupdate", StringComparison.OrdinalIgnoreCase))
                 {
-                    this.action = LaunchAction.UpdateReplaceEmbedded;
-                    //for (int delay = 0; delay < 60; delay++)
-                    //{
-                    //    this.Log("Waiting...");
-                    //    Thread.Sleep(1000);
-                    //}
+                    this.action = LaunchAction.UpdateReplace;
+                }
+                else if (arg.StartsWith("-expectNoUpdate", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.ExpectNoUpdate = true;
                 }
 
                 verifyArguments.Remove(arg);
             }
+            this.Log("Action: {0}", this.action);
 
             // If there are any verification arguments left, error out.
             if (0 < verifyArguments.Count)
@@ -156,13 +159,17 @@ namespace WixTest.BA
             {
                 this.Log(String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
                 e.Result = Result.Ok; // But continue on...
+                if (this.ExpectNoUpdate)
+                {
+                    this.action = LaunchAction.Unknown;
+                }
             }
         }
 
         protected override void OnDetectComplete(DetectCompleteEventArgs args)
         {
             this.result = args.Status;
-            if (Hresult.Succeeded(this.result))
+            if (Hresult.Succeeded(this.result) && (LaunchAction.Unknown != this.action))
             {
                 this.Engine.Plan(this.action);
             }
@@ -267,6 +274,15 @@ namespace WixTest.BA
             {
                 this.retryExecuteFilesInUse = 0;
             }
+
+            //if (LaunchAction.UpdateReplace == this.action)
+            //{
+            //    System.Diagnostics.Debugger.Launch();
+            //}
+        }
+        protected override void OnCacheAcquireBegin(CacheAcquireBeginEventArgs args)
+        {
+            System.Diagnostics.Debugger.Launch();
         }
 
         protected override void OnExecuteFilesInUse(ExecuteFilesInUseEventArgs args)
@@ -296,6 +312,11 @@ namespace WixTest.BA
             {
                 Thread.Sleep(this.sleepDuringExecute);
             }
+        }
+
+        protected override void OnExecutePackageComplete(ExecutePackageCompleteEventArgs args)
+        {
+            //this.Log("OnExecutePackageComplete() - package: {0}, progress: {1}%, overall progress: {2}%", args.PackageId, args.ProgressPercentage, args.OverallPercentage);
         }
 
         protected override void OnExecutePatchTarget(ExecutePatchTargetEventArgs args)
@@ -328,6 +349,13 @@ namespace WixTest.BA
             this.result = args.Status;
             this.wait.Set();
         }
+
+        //protected override void OnUnregisterBegin(UnregisterBeginEventArgs args)
+        //{
+        //    this.Log("OnUnregisterBegin()");
+
+        //    Thread.Sleep(120 * 1000);
+        //}
 
         protected override void OnSystemShutdown(SystemShutdownEventArgs args)
         {
@@ -433,9 +461,12 @@ namespace WixTest.BA
         private string ReadPackageAction(string packageId, string state)
         {
             string testName = this.Engine.StringVariables["TestName"];
-            using (RegistryKey testKey = Registry.LocalMachine.OpenSubKey(String.Format(@"Software\WiX\Tests\TestBAControl\{0}\{1}", testName, String.IsNullOrEmpty(packageId) ? String.Empty : packageId)))
+            using (RegistryKey testKey = Registry.LocalMachine.OpenSubKey(String.Format(@"Software\WiX\Tests\TestBAControl\{0}", testName)))
+            using (RegistryKey testPackageKey = Registry.LocalMachine.OpenSubKey(String.Format(@"Software\WiX\Tests\TestBAControl\{0}\{1}", testName, String.IsNullOrEmpty(packageId) ? String.Empty : packageId)))
             {
-                return testKey == null ? null : testKey.GetValue(state) as string;
+
+
+                return testPackageKey == null ? (testKey == null ? null : testKey.GetValue(state) as string) : (testPackageKey.GetValue(state) as string);
             }
         }
 

@@ -863,7 +863,7 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
-        /// Called when the engine complets caching of the container or payload.
+        /// Called when the engine completes caching of the container or payload.
         /// </summary>
         /// <param name="args"></param>
         protected virtual void OnCacheAcquireComplete(CacheAcquireCompleteEventArgs args)

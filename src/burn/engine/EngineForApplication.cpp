@@ -15,6 +15,7 @@
 
 #include "precomp.h"
 
+static const LPCWSTR PSUEDOBUNDLE_UPDATE_ID  = L"{1360AD55-2BDB-4461-8A59-2E69586E4CA6}";
 
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
@@ -423,7 +424,9 @@ public: // IBootstrapperEngine
             hr = CoreRecreateCommandLine(&sczCommandline, BOOTSTRAPPER_ACTION_INSTALL, m_pEngineState->command.display, m_pEngineState->command.restart, BOOTSTRAPPER_RELATION_NONE, FALSE, m_pEngineState->registration.sczActiveParent, m_pEngineState->registration.sczAncestors, NULL, m_pEngineState->command.wzCommandLine);
             ExitOnFailure(hr, "Failed to recreate command-line for update bundle.");
 
-            hr = PseudoBundleInitialize(FILEMAKEVERSION(rmj, rmm, rup, 0), &m_pEngineState->update.package, FALSE, m_pEngineState->registration.sczId, BOOTSTRAPPER_RELATION_UPDATE, BOOTSTRAPPER_PACKAGE_STATE_ABSENT, m_pEngineState->registration.sczExecutableName, sczLocalSource ? sczLocalSource : wzLocalSource, wzDownloadSource, qwSize, TRUE, sczCommandline, NULL, NULL, NULL, rgbHash, cbHash);
+            // Hack, generate  NEW GUID to prevent 1.0 trying to cache 1.1 using 1.0 identifier, as the caching will just use the 1.0 file as it's already in the cache.
+            //m_pEngineState->registration.sczId
+            hr = PseudoBundleInitialize(FILEMAKEVERSION(rmj, rmm, rup, 0), &m_pEngineState->update.package, FALSE, PSUEDOBUNDLE_UPDATE_ID, BOOTSTRAPPER_RELATION_UPDATE, BOOTSTRAPPER_PACKAGE_STATE_ABSENT, m_pEngineState->registration.sczExecutableName, sczLocalSource ? sczLocalSource : wzLocalSource, wzDownloadSource, qwSize, TRUE, sczCommandline, NULL, NULL, NULL, rgbHash, cbHash);
             ExitOnFailure(hr, "Failed to set update bundle.");
 
             m_pEngineState->update.fUpdateAvailable = TRUE;
