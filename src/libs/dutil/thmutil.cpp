@@ -410,6 +410,7 @@ DAPI_(HRESULT) ThemeLoadControls(
     HRESULT hr = S_OK;
     RECT rcParent = { };
     LPWSTR sczText = NULL;
+    BOOL fStartNewGroup = FALSE;
 
     pTheme->hwndParent = hwndParent;
 
@@ -422,6 +423,12 @@ DAPI_(HRESULT) ThemeLoadControls(
         LPCWSTR wzWindowClass = NULL;
         DWORD dwWindowBits = WS_CHILD;
         DWORD dwWindowExBits = 0;
+
+        if (fStartNewGroup)
+        {
+            dwWindowBits |= WS_GROUP;
+            fStartNewGroup = FALSE;
+        }
 
         switch (pControl->type)
         {
@@ -448,6 +455,16 @@ DAPI_(HRESULT) ThemeLoadControls(
             {
                 dwWindowBits |= BS_OWNERDRAW;
                 pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
+            }
+            break;
+
+        case THEME_CONTROL_TYPE_RADIOBUTTON:
+            dwWindowBits |= BS_AUTORADIOBUTTON | BS_MULTILINE;
+            wzWindowClass = WC_BUTTONW;
+
+            if (pControl->fLastRadioButton)
+            {
+                fStartNewGroup = TRUE;
             }
             break;
 
@@ -1107,7 +1124,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
             switch (HIWORD(wParam))
             {
             case BN_CLICKED:
-                if (pTheme->pfnSetNumericVariable)
+                if (pTheme->pfnSetNumericVariable || pTheme->pfnSetStringVariable)
                 {
                     for (DWORD i = 0; i < pTheme->cControls; ++i)
                     {
@@ -1115,14 +1132,29 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
 
                         if (LOWORD(wParam) == pControl->wId)
                         {
-                            if (!pControl->fDisableVariableFunctionality && pControl->sczName && *pControl->sczName &&
-                                (THEME_CONTROL_TYPE_CHECKBOX == pControl->type ||
-                                THEME_CONTROL_TYPE_BUTTON == pControl->type && BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)))
+                            if (!pControl->fDisableVariableFunctionality)
                             {
-                                BOOL bChecked = ThemeIsControlChecked(pTheme, pControl->wId);
-                                pTheme->pfnSetNumericVariable(pControl->sczName, bChecked ? 1 : 0);
+                                switch (pControl->type)
+                                {
+                                case THEME_CONTROL_TYPE_CHECKBOX:
+                                    if (pTheme->pfnSetNumericVariable && pControl->sczName && *pControl->sczName)
+                                    {
+                                        BOOL bChecked = ThemeIsControlChecked(pTheme, pControl->wId);
+                                        pTheme->pfnSetNumericVariable(pControl->sczName, bChecked ? 1 : 0);
+                                    }
+                                    break;
+                                case THEME_CONTROL_TYPE_RADIOBUTTON:
+                                    if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable)
+                                    {
+                                        if (ThemeIsControlChecked(pTheme, pControl->wId))
+                                        {
+                                            pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue);
+                                        }
+                                    }
+                                    break;
+                                }
 
-                                //TODO: refresh page - but need to figure out multiple message thing first
+                                //TODO: refresh page
 
                                 return 0;
                             }
@@ -1316,11 +1348,9 @@ DAPI_(HRESULT) ThemeShowPage(
             // If this is a named control, do variable magic.
             if (pControl->sczName && *pControl->sczName)
             {
-                // If this is a checkbox control or a button control with the BS_AUTORADIOBUTTON style,
-                // try to set its default state to the state of a matching named Burn variable.
-                if (pTheme->pfnGetNumericVariable &&
-                    (THEME_CONTROL_TYPE_CHECKBOX == pControl->type || 
-                    THEME_CONTROL_TYPE_BUTTON == pControl->type && (BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle))))
+                // If this is a checkbox control,
+                // try to set its default state to the state of a matching named variable.
+                if (pTheme->pfnGetNumericVariable && THEME_CONTROL_TYPE_CHECKBOX == pControl->type)
                 {
                     LONGLONG llValue = 0;
                     hr = pTheme->pfnGetNumericVariable(pControl->sczName, &llValue);
@@ -1347,7 +1377,7 @@ DAPI_(HRESULT) ThemeShowPage(
                 }
 
                 // If this is an editbox control,
-                // try to set its default state to the state of a matching named Burn variable.
+                // try to set its default state to the state of a matching named variable.
                 if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_EDITBOX == pControl->type)
                 {
                     hr = pTheme->pfnGetStringVariable(pControl->sczName, &sczText);
@@ -1376,6 +1406,40 @@ DAPI_(HRESULT) ThemeShowPage(
 
                     ThemeSetTextControl(pTheme, pControl->wId, sczText);
                 }
+            }
+
+            // If this is a radio button associated with a variable,
+            // try to set its default state to the state of the variable.
+            if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_RADIOBUTTON == pControl->type && pControl->sczVariable && *pControl->sczVariable)
+            {
+                hr = pTheme->pfnGetStringVariable(pControl->sczVariable, &sczText);
+                if (E_NOTFOUND == hr)
+                {
+                    ReleaseNullStr(sczText);
+                }
+                else
+                {
+                    ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczVariable);
+                }
+
+                if (pControl->wPageId)
+                {
+                    if (pControl->fLastRadioButton)
+                    {
+                        pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                        pSavedVariable->wzName = pControl->sczVariable;
+
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = StrAllocStringSecure(&pSavedVariable->sczValue, sczText, 0);
+                            ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczVariable);
+                        }
+                    }
+
+                    ++iPageControl;
+                }
+
+                Button_SetCheck(pControl->hWnd, (!sczText && !pControl->sczValue) || CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, sczText, -1, pControl->sczValue, -1));
             }
         }
 
@@ -2627,7 +2691,7 @@ static HRESULT ParseControls(
 
     if (pPage)
     {
-        hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cNewControls);
+        hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices + cNewControls, sizeof(DWORD), cNewControls);
         ExitOnFailure(hr, "Failed to reallocate page controls.");
 
         iPageControl = pPage->cControlIndices;
@@ -2637,7 +2701,7 @@ static HRESULT ParseControls(
     iControl = pTheme->cControls;
     pTheme->cControls += cNewControls;
 
-    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cNewControls);
+    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls + cNewControls, sizeof(THEME_CONTROL), cNewControls);
     ExitOnFailure(hr, "Failed to reallocate theme controls.");
 
     while (S_OK == (hr = XmlNextElement(pixnl, &pixn, &bstrType)))
@@ -3024,8 +3088,12 @@ static HRESULT ParseControl(
     }
     else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
     {
-        hr = E_NOTIMPL;
-        ExitOnFailure(hr, "Radio buttons are not implemented yet.");
+        hr = XmlGetAttributeEx(pixn, L"Value", &pControl->sczValue);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed when querying RadioButton/@Value.");
     }
     else if (THEME_CONTROL_TYPE_TEXT == type)
     {
@@ -3327,6 +3395,8 @@ static HRESULT ParseRadioButtons(
     IXMLDOMNode* pixnRadioButtons = NULL;
     IXMLDOMNode* pixnChild = NULL;
     LPWSTR sczName = NULL;
+    THEME_CONTROL* pControl = NULL;
+    BOOL fFirst = FALSE;
 
     hr = XmlSelectNodes(pixn, L"RadioButtons", &pixnlRadioButtons);
     ExitOnFailure(hr, "Failed to select RadioButtons nodes.");
@@ -3340,40 +3410,61 @@ static HRESULT ParseRadioButtons(
         }
         ExitOnFailure(hr, "Failed when querying RadioButtons Name.");
 
-        hr = XmlSelectNodes(pixn, L"RadioButton", &pixnl);
+        hr = XmlSelectNodes(pixnRadioButtons, L"RadioButton", &pixnl);
         ExitOnFailure(hr, "Failed to select RadioButton nodes.");
 
         hr = pixnl->get_length(reinterpret_cast<long*>(&cRadioButtons));
         ExitOnFailure(hr, "Failed to count the number of RadioButton nodes.");
 
-        if (pPage)
+        if (cRadioButtons)
         {
-            hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cRadioButtons);
-            ExitOnFailure(hr, "Failed to reallocate page controls.");
-
-            iPageControl = pPage->cControlIndices;
-            pPage->cControlIndices += cRadioButtons;
-        }
-
-        hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cRadioButtons);
-        ExitOnFailure(hr, "Failed to reallocate theme controls.");
-
-        iControl = pTheme->cControls;
-        pTheme->cControls += cRadioButtons;
-
-        while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
-        {
-            hr = ParseControl(hModule, wzRelativePath, pixn, THEME_CONTROL_TYPE_RADIOBUTTON, pTheme, iControl);
-            ExitOnFailure(hr, "Failed to parse control.");
-
             if (pPage)
             {
-                pTheme->rgControls[iControl].wPageId = pPage->wId;
-                pPage->rgdwControlIndices[iPageControl] = iControl;
-                ++iPageControl;
+                hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices + cRadioButtons, sizeof(DWORD), cRadioButtons);
+                ExitOnFailure(hr, "Failed to reallocate page controls.");
+
+                iPageControl = pPage->cControlIndices;
+                pPage->cControlIndices += cRadioButtons;
             }
 
-            ++iControl;
+            hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls + cRadioButtons, sizeof(THEME_CONTROL), cRadioButtons);
+            ExitOnFailure(hr, "Failed to reallocate theme controls.");
+
+            iControl = pTheme->cControls;
+            pTheme->cControls += cRadioButtons;
+
+            fFirst = TRUE;
+
+            while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
+            {
+                hr = ParseControl(hModule, wzRelativePath, pixnChild, THEME_CONTROL_TYPE_RADIOBUTTON, pTheme, iControl);
+                ExitOnFailure(hr, "Failed to parse control.");
+
+                pControl = pTheme->rgControls + iControl;
+
+                if (fFirst)
+                {
+                    pControl->dwStyle |= WS_GROUP;
+                    fFirst = FALSE;
+                }
+
+                hr = StrAllocString(&pControl->sczVariable, sczName, 0);
+                ExitOnFailure(hr, "Failed to copy radio button variable.");
+
+                if (pPage)
+                {
+                    pControl->wPageId = pPage->wId;
+                    pPage->rgdwControlIndices[iPageControl] = iControl;
+                    ++iPageControl;
+                }
+
+                ++iControl;
+            }
+
+            if (!fFirst)
+            {
+                pControl->fLastRadioButton = TRUE;
+            }
         }
 
         ++*pdwProcessedControls;
@@ -3729,6 +3820,8 @@ static void FreeControl(
         ReleaseStr(pControl->sczText);
         ReleaseStr(pControl->sczEnableCondition);
         ReleaseStr(pControl->sczVisibleCondition);
+        ReleaseStr(pControl->sczValue);
+        ReleaseStr(pControl->sczVariable);
 
         if (pControl->hImage)
         {

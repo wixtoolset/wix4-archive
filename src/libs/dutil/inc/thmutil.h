@@ -143,6 +143,11 @@ struct THEME_CONTROL
     THEME_COLUMN *ptcColumns;
     DWORD cColumns;
 
+    // Used by radio button controls
+    BOOL fLastRadioButton;
+    LPWSTR sczValue;
+    LPWSTR sczVariable;
+
     // Used by tab controls
     THEME_TAB *pttTabs;
     DWORD cTabs;
