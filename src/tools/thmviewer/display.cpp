@@ -214,7 +214,7 @@ static DWORD WINAPI DisplayThreadProc(
                         if (dwPageId)
                         {
                             // Ignore error since we aren't using variables and it can only fail when using variables.
-                            ThemeShowPage(pCurrentHandle->pTheme, dwPageId, nCmdShow, TRUE);
+                            ThemeShowPage(pCurrentHandle->pTheme, dwPageId, nCmdShow);
                         }
                     }
                     else // display window isn't visible or it doesn't match the current handle.

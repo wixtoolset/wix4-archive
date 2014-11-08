@@ -64,6 +64,13 @@ typedef enum THEME_CONTROL_TYPE
     THEME_CONTROL_TYPE_TAB,
 } THEME_CONTROL_TYPE;
 
+typedef enum THEME_SHOW_PAGE_REASON
+{
+    THEME_SHOW_PAGE_REASON_DEFAULT,
+    THEME_SHOW_PAGE_REASON_CANCEL,
+    THEME_SHOW_PAGE_REASON_REFRESH,
+} THEME_SHOW_PAGE_REASON;
+
 
 struct THEME_BILLBOARD
 {
@@ -228,6 +235,7 @@ struct THEME
     // state variables that should be ignored
     HWND hwndParent; // parent for loaded controls
     HWND hwndHover; // current hwnd hovered over
+    DWORD dwCurrentPageId;
 
     // callback functions
     PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition;
@@ -393,16 +401,27 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
 
 /********************************************************************
  ThemeShowPage - shows or hides all of the controls in the page at one time.
-                 When using variables, fSave controls whether to save
-                 or revert any changes made. It is expected that the
-                 current page is hidden before showing a new page.
 
  *******************************************************************/
 DAPI_(HRESULT) ThemeShowPage(
-    __in const THEME* pTheme,
+    __in THEME* pTheme,
+    __in DWORD dwPage,
+    __in int nCmdShow
+    );
+
+/********************************************************************
+ThemeShowPageEx - shows or hides all of the controls in the page at one time.
+                  When using variables, TSPR_CANCEL reverts any changes made.
+                  TSPR_REFRESH forces reevaluation of conditions.
+                  It is expected that the current page is hidden before 
+                  showing a new page.
+
+*******************************************************************/
+DAPI_(HRESULT) ThemeShowPageEx(
+    __in THEME* pTheme,
     __in DWORD dwPage,
     __in int nCmdShow,
-    __in BOOL fSave
+    __in THEME_SHOW_PAGE_REASON reason
     );
 
 /********************************************************************

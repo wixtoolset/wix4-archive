@@ -2216,13 +2216,13 @@ private: // privates
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, fShowRestartButton);
                 }
 
-                HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE, !m_fStateChangeIsCancel);
+                HRESULT hr = ThemeShowPageEx(m_pTheme, dwOldPageId, SW_HIDE, m_fStateChangeIsCancel ? THEME_SHOW_PAGE_REASON_CANCEL : THEME_SHOW_PAGE_REASON_DEFAULT);
                 if (FAILED(hr))
                 {
                     BalLogError(hr, "Failed to hide page: %u", dwOldPageId);
                 }
 
-                hr = ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW, TRUE);
+                hr = ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
                 if (FAILED(hr))
                 {
                     BalLogError(hr, "Failed to show page: %u", dwOldPageId);
@@ -2280,7 +2280,7 @@ private: // privates
             DeterminePageId(m_state, &dwCurrentPageId);
 
             // Hide the current page to let thmutil do its thing with variables.
-            ThemeShowPage(m_pTheme, dwCurrentPageId, SW_HIDE, !fCancel);
+            ThemeShowPageEx(m_pTheme, dwCurrentPageId, SW_HIDE, fCancel ? THEME_SHOW_PAGE_REASON_CANCEL : THEME_SHOW_PAGE_REASON_DEFAULT);
         }
 
         return fClose;

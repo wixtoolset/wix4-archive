@@ -1134,27 +1134,31 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                         {
                             if (!pControl->fDisableVariableFunctionality)
                             {
+                                BOOL fRefresh = FALSE;
+
                                 switch (pControl->type)
                                 {
                                 case THEME_CONTROL_TYPE_CHECKBOX:
                                     if (pTheme->pfnSetNumericVariable && pControl->sczName && *pControl->sczName)
                                     {
-                                        BOOL bChecked = ThemeIsControlChecked(pTheme, pControl->wId);
-                                        pTheme->pfnSetNumericVariable(pControl->sczName, bChecked ? 1 : 0);
+                                        BOOL fChecked = ThemeIsControlChecked(pTheme, pControl->wId);
+                                        pTheme->pfnSetNumericVariable(pControl->sczName, fChecked ? 1 : 0);
+                                        fRefresh = TRUE;
                                     }
                                     break;
                                 case THEME_CONTROL_TYPE_RADIOBUTTON:
-                                    if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable)
+                                    if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable && ThemeIsControlChecked(pTheme, pControl->wId))
                                     {
-                                        if (ThemeIsControlChecked(pTheme, pControl->wId))
-                                        {
-                                            pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue);
-                                        }
+                                        pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue);
+                                        fRefresh = TRUE;
                                     }
                                     break;
                                 }
 
-                                //TODO: refresh page
+                                if (fRefresh)
+                                {
+                                    ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_SHOW, THEME_SHOW_PAGE_REASON_REFRESH);
+                                }
 
                                 return 0;
                             }
@@ -1213,10 +1217,20 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
 
 
 DAPI_(HRESULT) ThemeShowPage(
-    __in const THEME* pTheme,
+    __in THEME* pTheme,
+    __in DWORD dwPage,
+    __in int nCmdShow
+    )
+{
+    return ThemeShowPageEx(pTheme, dwPage, nCmdShow, THEME_SHOW_PAGE_REASON_DEFAULT);
+}
+
+
+DAPI_(HRESULT) ThemeShowPageEx(
+    __in THEME* pTheme,
     __in DWORD dwPage,
     __in int nCmdShow,
-    __in BOOL fSave
+    __in THEME_SHOW_PAGE_REASON reason
     )
 {
     HRESULT hr = S_OK;
@@ -1224,7 +1238,6 @@ DAPI_(HRESULT) ThemeShowPage(
     LPWSTR sczText = NULL;
     BOOL fHide = SW_HIDE == nCmdShow;
     BOOL fSaveEditboxes = FALSE;
-    size_t cbAllocSize = 0;
     DWORD iPageControl = 0;
     THEME_SAVEDVARIABLE* pSavedVariable = NULL;
 
@@ -1234,48 +1247,53 @@ DAPI_(HRESULT) ThemeShowPage(
     {
         if (fHide)
         {
-            if (fSave)
+            switch (reason)
             {
-                fSaveEditboxes = TRUE;
-
+            case THEME_SHOW_PAGE_REASON_DEFAULT:
                 // Set the variables in the loop below.
-            }
-            else if (pPage->cSavedVariables && pTheme->pfnSetStringVariable)
-            {
-                // Best effort to cancel any changes to the variables.
-                for (DWORD v = 0; v < pPage->cSavedVariables; ++v)
+                fSaveEditboxes = TRUE;
+                break;
+            case THEME_SHOW_PAGE_REASON_CANCEL:
+                if (pPage->cSavedVariables && pTheme->pfnSetStringVariable)
                 {
-                    pSavedVariable = pPage->rgSavedVariables + v;
-                    if (pSavedVariable->wzName)
+                    // Best effort to cancel any changes to the variables.
+                    for (DWORD v = 0; v < pPage->cSavedVariables; ++v)
                     {
-                        pTheme->pfnSetStringVariable(pSavedVariable->wzName, pSavedVariable->sczValue);
+                        pSavedVariable = pPage->rgSavedVariables + v;
+                        if (pSavedVariable->wzName)
+                        {
+                            pTheme->pfnSetStringVariable(pSavedVariable->wzName, pSavedVariable->sczValue);
+                        }
                     }
+                }
+                break;
+            }
+
+            if (THEME_SHOW_PAGE_REASON_REFRESH != reason)
+            {
+                pPage->cSavedVariables = 0;
+                if (pPage->rgSavedVariables)
+                {
+                    SecureZeroMemory(pPage->rgSavedVariables, MemSize(pPage->rgSavedVariables));
                 }
             }
 
-            pPage->cSavedVariables = 0;
-            ReleaseNullMem(pPage->rgSavedVariables);
+            pTheme->dwCurrentPageId = 0;
         }
         else
         {
-            if (fSave)
+            if (THEME_SHOW_PAGE_REASON_REFRESH != reason)
             {
-                hr = ::SizeTMult(sizeof(THEME_SAVEDVARIABLE), pPage->cControlIndices, &cbAllocSize);
-                ExitOnFailure(hr, "Overflow while calculating allocation size for %u saved variables.", pPage->cControlIndices);
-
-                pPage->rgSavedVariables = static_cast<THEME_SAVEDVARIABLE*>(MemAlloc(cbAllocSize, TRUE));
+                hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgSavedVariables), pPage->cControlIndices, sizeof(THEME_SAVEDVARIABLE), pPage->cControlIndices);
                 ExitOnNull(pPage->rgSavedVariables, hr, E_OUTOFMEMORY, "Failed to allocate memory for saved variables.");
 
+                SecureZeroMemory(pPage->rgSavedVariables, MemSize(pPage->rgSavedVariables));
                 pPage->cSavedVariables = pPage->cControlIndices;
 
                 // Save the variables in the loop below.
             }
-            else
-            {
-                // This shouldn't do anything if the caller always hides the current page before showing a new one.
-                pPage->cSavedVariables = 0;
-                ReleaseNullMem(pPage->rgSavedVariables);
-            }
+
+            pTheme->dwCurrentPageId = pPage->wId;
         }
     }
 
@@ -1294,7 +1312,7 @@ DAPI_(HRESULT) ThemeShowPage(
         if (fHide && pControl->wPageId)
         {
             // Save the editbox value if necessary (other control types save their values immediately).
-            if (fSave && pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
+            if (pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
                 fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
             {
                 hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
@@ -1359,7 +1377,7 @@ DAPI_(HRESULT) ThemeShowPage(
                         ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
                     }
 
-                    if (pControl->wPageId)
+                    if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId)
                     {
                         pSavedVariable = pPage->rgSavedVariables + iPageControl;
                         pSavedVariable->wzName = pControl->sczName;
@@ -1390,7 +1408,7 @@ DAPI_(HRESULT) ThemeShowPage(
                         ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczName);
                     }
 
-                    if (pControl->wPageId)
+                    if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId)
                     {
                         pSavedVariable = pPage->rgSavedVariables + iPageControl;
                         pSavedVariable->wzName = pControl->sczName;
@@ -1422,18 +1440,15 @@ DAPI_(HRESULT) ThemeShowPage(
                     ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczVariable);
                 }
 
-                if (pControl->wPageId)
+                if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId && pControl->fLastRadioButton)
                 {
-                    if (pControl->fLastRadioButton)
-                    {
-                        pSavedVariable = pPage->rgSavedVariables + iPageControl;
-                        pSavedVariable->wzName = pControl->sczVariable;
+                    pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                    pSavedVariable->wzName = pControl->sczVariable;
 
-                        if (SUCCEEDED(hr))
-                        {
-                            hr = StrAllocStringSecure(&pSavedVariable->sczValue, sczText, 0);
-                            ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczVariable);
-                        }
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = StrAllocStringSecure(&pSavedVariable->sczValue, sczText, 0);
+                        ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczVariable);
                     }
 
                     ++iPageControl;
@@ -1470,6 +1485,14 @@ DAPI_(HRESULT) ThemeShowPage(
                 ThemeStopBillboard(pTheme, pControl->wId);
             }
         }
+    }
+
+    // Without this, Text controls (and maybe others) don't erase the previous text before writing the new text.
+    // This feels like a hack, is there a better way?
+    if (!fHide && THEME_SHOW_PAGE_REASON_REFRESH == reason)
+    {
+        InvalidateRect(pTheme->hwndParent, NULL, TRUE);
+        UpdateWindow(pTheme->hwndParent);
     }
 
     if (hwndFocus)
