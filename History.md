@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:4149 - Add support for variables and radio buttons in thmutil, and update WixStdBA to use the new functionality.
+
 * FireGiant: WIXBUG:4561 - update WixCop to migrate v3 source code to v4.0.
 
 * RobMen: WIXBUG:4565 - add WixToolset.Data.dll and WixToolset.Extensibility.dll to binaries.zip.

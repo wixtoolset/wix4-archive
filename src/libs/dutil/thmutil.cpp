@@ -1293,7 +1293,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 // Save the variables in the loop below.
             }
 
-            pTheme->dwCurrentPageId = pPage->wId;
+            pTheme->dwCurrentPageId = dwPage;
         }
     }
 
@@ -1466,7 +1466,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
         {
             ::EnableWindow(hWnd, !fHide && fEnabled);
 
-            if (!hwndFocus && pControl->wPageId && pControl->dwStyle & WS_TABSTOP)
+            if (!hwndFocus && pControl->wPageId && (pControl->dwStyle & WS_TABSTOP))
             {
                 hwndFocus = hWnd;
             }
@@ -1489,7 +1489,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
 
     // Without this, Text controls (and maybe others) don't erase the previous text before writing the new text.
     // This feels like a hack, is there a better way?
-    if (!fHide && THEME_SHOW_PAGE_REASON_REFRESH == reason)
+    if (!fHide)
     {
         InvalidateRect(pTheme->hwndParent, NULL, TRUE);
         UpdateWindow(pTheme->hwndParent);
@@ -2721,11 +2721,11 @@ static HRESULT ParseControls(
         pPage->cControlIndices += cNewControls;
     }
 
-    iControl = pTheme->cControls;
-    pTheme->cControls += cNewControls;
-
     hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls + cNewControls, sizeof(THEME_CONTROL), cNewControls);
     ExitOnFailure(hr, "Failed to reallocate theme controls.");
+
+    iControl = pTheme->cControls;
+    pTheme->cControls += cNewControls;
 
     while (S_OK == (hr = XmlNextElement(pixnl, &pixn, &bstrType)))
     {

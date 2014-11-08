@@ -468,7 +468,7 @@
 
     <xs:element name="RadioButton">
         <xs:annotation>
-            <xs:documentation>Defines an individual tab within a set of tabs.</xs:documentation>
+            <xs:documentation>Defines an individual radio button within a set of radio buttons.</xs:documentation>
             <xs:appinfo>
                 <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="RadioButtons" />
             </xs:appinfo>
