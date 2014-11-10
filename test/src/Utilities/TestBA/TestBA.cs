@@ -136,7 +136,6 @@ namespace WixTest.BA
             if ((LaunchAction.UpdateReplaceEmbedded == this.action)|(LaunchAction.UpdateReplace == this.action))
             {
                 args.Result = Result.Ok;
-                //System.Diagnostics.Debugger.Launch();
             }
         }
 
@@ -170,18 +169,13 @@ namespace WixTest.BA
             {
                 this.Log(String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
                 e.Result = Result.Ok; // But continue on...
-                //if (this.ExpectNoUpdate)
-                //{
-                //    this.action = LaunchAction.Unknown;
-                //}
             }
         }
 
         protected override void OnDetectComplete(DetectCompleteEventArgs args)
         {
             this.result = args.Status;
-            //&& (LaunchAction.Unknown != this.action)
-            //((LaunchAction.UpdateReplaceEmbedded == this.action)|(LaunchAction.UpdateReplace == this.action))
+
             if (Hresult.Succeeded(this.result) && (this.UpdateAvailable | (!((LaunchAction.UpdateReplaceEmbedded == this.action) | (LaunchAction.UpdateReplace == this.action)))))
             {                
                 this.Engine.Plan(this.action);
@@ -292,10 +286,6 @@ namespace WixTest.BA
             //{
             //    System.Diagnostics.Debugger.Launch();
             //}
-        }
-        protected override void OnCacheAcquireBegin(CacheAcquireBeginEventArgs args)
-        {
-            //System.Diagnostics.Debugger.Launch();
         }
 
         protected override void OnExecuteFilesInUse(ExecuteFilesInUseEventArgs args)
