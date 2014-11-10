@@ -213,31 +213,6 @@ namespace WixTest.Tests.Burn
         }
 
         
-        //public class MainModule : Nancy.NancyModule
-        //{
-        //    //static public WixTestContext TestContext { get; set; }
-
-        //    public MainModule()
-        //    {
-        //        Get["/"] = x =>
-        //        {
-        //            return "Hello WiX!";
-        //        };
-        //        Get["/BundleB/feed"] = X =>
-        //        {
-        //            //return new GenericFileResponse(Path.Combine(MainModule.TestContext.TestDataDirectory, "feedB.xml"));
-        //            return new GenericFileResponse("feedB.xml");
-        //        };
-        //        Get["/BundleB/BundleB.exe"] = X =>
-        //        {
-        //            //return new GenericFileResponse(Path.Combine(MainModule.TestContext.TestDirectory, "BundleB.exe"));
-        //            return new GenericFileResponse("BundleB.exe");
-        //        };
-        //    }
-        //}
-
-
-
         public class RootPathProvider : IRootPathProvider
         {
             static public string RootPath { get; set; }
@@ -249,27 +224,10 @@ namespace WixTest.Tests.Burn
 
         public class ApplicationBootstrapper : Nancy.DefaultNancyBootstrapper
         {
-            //public enum UpdateFeedBehavior
-            //{
-            //    None,
-            //    Invalid,
-            //    Version1,
-            //    Version2
-            //}
-
-            //private readonly UpdateFeedBehavior updateFeedBehavior;
-
-            public ApplicationBootstrapper(/*UpdateFeedBehavior feedBehavior*/)
-            {
-                //this.updateFeedBehavior = feedBehavior;
-            }
-
             protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
             {
                 base.ApplicationStartup(container, pipelines);
-
                 StaticConfiguration.EnableRequestTracing = true;
-                StaticConfiguration.Caching.EnableRuntimeViewUpdates = true;
             }
 
             protected override IRootPathProvider RootPathProvider
@@ -280,35 +238,19 @@ namespace WixTest.Tests.Burn
             /* If you are having problems getting nancy working locally, uncomment this to get to the default _Nancy web management interface */
             protected override DiagnosticsConfiguration DiagnosticsConfiguration
             {
-                get { return new DiagnosticsConfiguration { Password = @"password" }; }
+                get { return new DiagnosticsConfiguration { Password = @"wix" }; }
             }
 
             protected override void ConfigureConventions(NancyConventions nancyConventions)
             {
-                //switch(this.updateFeedBehavior)
-                //{
-                //    case UpdateFeedBehavior.None:
-                //        break;
-                //    case UpdateFeedBehavior.Invalid:
-                //        nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed", "/1.0/BundleB.exe"));
-                //        break;
-                //    case UpdateFeedBehavior.Version1:
-                //        nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed", "/1.0/FeedBv1.0.xml"));
-                //        break;
-                //    case UpdateFeedBehavior.Version2:
-                //        nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed", "/1.1/FeedBv1.1.xml"));
-                //        break;
-                //}
-                //nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feedz/1.0", "/1.0/FeedBv1.0.xml"));
-                //nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feedz/1.1", "/1.1/FeedBv1.1.xml"));
-
+                nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed/1.0", "/1.0/FeedBv1.0.xml"));
+                nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed/1.1", "/1.1/FeedBv1.1.xml"));
                 nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/1.0/BundleB.exe", "/1.0/BundleB.exe"));
                 nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/1.1/BundleB.exe", "/1.1/BundleB.exe"));
-                base.ConfigureConventions(nancyConventions);
+                base.ConfigureConventions(nancyConventions);                
             }
         }
-
-
+        
         public class FeedModule: Nancy.NancyModule
         {
             public enum UpdateFeedBehavior
@@ -329,25 +271,19 @@ namespace WixTest.Tests.Burn
                         break;
                     case UpdateFeedBehavior.Invalid:
                         Get["/BundleB/feed"] = x => {
-                            //return new GenericFileResponse("1.0/BundleB.exe");
                             return Response.AsFile("1.0/BundleB.exe");
                         };
-                        //nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed", "/1.0/BundleB.exe"));
                         break;
                     case UpdateFeedBehavior.Version1:
-                        //nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed", "/1.0/FeedBv1.0.xml"));
                         Get["/BundleB/feed"] = x =>
                         {
-                            //return new GenericFileResponse("1.0/FeedBv1.0.xml");
                             return Response.AsFile("1.0/FeedBv1.0.xml");
                         };
                         break;
                     case UpdateFeedBehavior.Version2:
-                        //nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed", "/1.1/FeedBv1.1.xml"));
                         Get["/BundleB/feed"] = x =>
                         {
                             return Response.AsFile("1.1/FeedBv1.1.xml");
-                            //return new GenericFileResponse("1.1/FeedBv1.1.xml");
                         };
                         break;
                 }
@@ -377,7 +313,7 @@ namespace WixTest.Tests.Burn
 
             // Run the v1 bundle requesting an update bundle.
 
-            installerB1.Modify(arguments: new string[]{"-checkupdate", "-expectNoUpdate"});
+            installerB1.Modify(arguments: new string[]{"-checkupdate"});
             Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
             Assert.False(MsiVerifier.IsPackageInstalled(packageB2));
 
@@ -387,17 +323,20 @@ namespace WixTest.Tests.Burn
                 AllowChunkedEncoding = false // https://github.com/NancyFx/Nancy/issues/1337
             };
 
-            Directory.CreateDirectory(Path.Combine(this.TestContext.TestDirectory, "1.0"));
-            Directory.CreateDirectory(Path.Combine(this.TestContext.TestDirectory, "1.1"));
+            string rootDirectory = FileUtilities.GetUniqueFileName();
+            this.TestArtifacts.Add(new DirectoryInfo(rootDirectory));
+
+            Directory.CreateDirectory(Path.Combine(rootDirectory, "1.0"));
+            Directory.CreateDirectory(Path.Combine(rootDirectory, "1.1"));
 
             // Copy v1.0 artifacts to the TestDataDirectory
-            File.Copy(bundleB1, Path.Combine(this.TestContext.TestDirectory, "1.0", Path.GetFileName(bundleB1)), true);
-            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.0.xml"), Path.Combine(this.TestContext.TestDirectory, "1.0", "FeedBv1.0.xml"), true);
+            File.Copy(bundleB1, Path.Combine(rootDirectory, "1.0", Path.GetFileName(bundleB1)), true);
+            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.0.xml"), Path.Combine(rootDirectory, "1.0", "FeedBv1.0.xml"), true);
 
             // Copy v1.1 artifacts to the TestDataDirectory
-            File.Copy(bundleB2, Path.Combine(this.TestContext.TestDirectory, "1.1", Path.GetFileName(bundleB2)), true);
-            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.1.xml"), Path.Combine(this.TestContext.TestDirectory, "1.1", "FeedBv1.1.xml"), true);
-            RootPathProvider.RootPath = this.TestContext.TestDirectory;
+            File.Copy(bundleB2, Path.Combine(rootDirectory, "1.1", Path.GetFileName(bundleB2)), true);
+            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.1.xml"), Path.Combine(rootDirectory, "1.1", "FeedBv1.1.xml"), true);
+            RootPathProvider.RootPath = rootDirectory;
 
             FeedModule.FeedBehavior = FeedModule.UpdateFeedBehavior.None;
             // Verify bundle asking for update and getting a 404 doesn't update and doesn't modify state
@@ -407,7 +346,7 @@ namespace WixTest.Tests.Burn
                 nancyHost.Start();
 
                 // Run the v1 bundle providing an update bundle.
-                installerB1.Modify(arguments: new string[] { "-checkupdate", "-expectNoUpdate" });
+                installerB1.Modify(arguments: new string[] { "-checkupdate" });
 
                 // The modify -> update is asynchronous, so we need to wait until the real BundleB is done
                 System.Diagnostics.Process[] childBundles = System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(bundleB2));

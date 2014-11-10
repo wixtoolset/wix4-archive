@@ -54,11 +54,6 @@ namespace WixTest.BA
         public Version Version { get; private set; }
 
         /// <summary>
-        /// For testing alternative behaviors, should the BA expect the update to fail.
-        /// </summary>
-        private bool ExpectNoUpdate { get; set; }
-
-        /// <summary>
         /// Indicates if DetectUpdate found a newer version to update.
         /// </summary>
         private bool UpdateAvailable { get; set; }
@@ -91,10 +86,6 @@ namespace WixTest.BA
                 else if (this.Command.Relation != RelationType.Update && arg.StartsWith("-checkupdate", StringComparison.OrdinalIgnoreCase))
                 {
                     this.action = LaunchAction.UpdateReplace;
-                }
-                else if (arg.StartsWith("-expectNoUpdate", StringComparison.OrdinalIgnoreCase))
-                {
-                    this.ExpectNoUpdate = true;
                 }
 
                 verifyArguments.Remove(arg);
