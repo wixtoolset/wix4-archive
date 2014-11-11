@@ -35,7 +35,7 @@ namespace Bootstrapper
         {
         }
 
-        void TestInitialize() override
+        virtual void TestInitialize() override
         {
             WixTestBase::TestInitialize();
 
@@ -47,7 +47,7 @@ namespace Bootstrapper
             TestThrowOnFailure(hr, L"Failed to open log.");
         }
 
-        void TestUninitialize() override
+        virtual void TestUninitialize() override
         {
             LogUninitialize(FALSE);
 
