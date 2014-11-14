@@ -215,9 +215,15 @@ namespace WixToolset.Bind
                             command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleRelatedPackage"]);
                             command.Execute();
 
-                            // For package type specific variables, where should they be defined?
-                            //variableCache.Add(String.Concat("packageLanguage.", facade.Package.WixChainItemId), facade.MsiPackage.ProductLanguage.ToString());
-                            //variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.MsiPackage.Manufacturer);
+                            if (null != variableCache)
+                            {
+                                variableCache.Add(String.Concat("packageLanguage.", facade.Package.WixChainItemId), facade.MsiPackage.ProductLanguage.ToString());
+
+                                if (null != facade.MsiPackage.Manufacturer)
+                                {
+                                    variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.MsiPackage.Manufacturer);
+                                }
+                            }
                             
                         }
                         break;

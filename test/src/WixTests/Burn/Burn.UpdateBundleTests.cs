@@ -24,6 +24,7 @@ namespace WixTest.Tests.Burn
     using Nancy.Hosting.Self;
     using Nancy.Responses;
     using Nancy.TinyIoc;
+    using WixTest.Tests.Burn.UpdateBundle;
     using WixTest.Utilities;
     using WixTest.Verifiers;
     using WixToolset.Dtf.WindowsInstaller;
@@ -32,6 +33,9 @@ namespace WixTest.Tests.Burn
     public class UpdateBundleTests : BurnTests
     {
         private const string V2 = "2.0.0.0";
+        private const int UpdateUriPort = 9999;
+        private const string UpdateUriFmt = @"http://localhost:{0}/wix4/";
+        private readonly Uri UpdateUri;
 
         private WixTest.PackageBuilder packageA;
         private WixTest.PackageBuilder packageAv2;
@@ -41,6 +45,11 @@ namespace WixTest.Tests.Burn
         private WixTest.PackageBuilder packageBv2;
         private WixTest.BundleBuilder bundleB;
         private WixTest.BundleBuilder bundleBv2;
+
+        public UpdateBundleTests()
+        {
+            this.UpdateUri = new Uri(string.Format(UpdateBundleTests.UpdateUriFmt, UpdateBundleTests.UpdateUriPort));
+        }
 
         [NamedFact]
         [Priority(2)]
@@ -212,84 +221,7 @@ namespace WixTest.Tests.Burn
             }
         }
 
-        
-        public class RootPathProvider : IRootPathProvider
-        {
-            static public string RootPath { get; set; }
-            public string GetRootPath()
-            {
-                return RootPathProvider.RootPath;
-            }
-        }
-
-        public class ApplicationBootstrapper : Nancy.DefaultNancyBootstrapper
-        {
-            protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
-            {
-                base.ApplicationStartup(container, pipelines);
-                StaticConfiguration.EnableRequestTracing = true;
-            }
-
-            protected override IRootPathProvider RootPathProvider
-            {
-                get { return new RootPathProvider(); }
-            }
-
-            /* If you are having problems getting nancy working locally, uncomment this to get to the default _Nancy web management interface */
-            protected override DiagnosticsConfiguration DiagnosticsConfiguration
-            {
-                get { return new DiagnosticsConfiguration { Password = @"wix" }; }
-            }
-
-            protected override void ConfigureConventions(NancyConventions nancyConventions)
-            {
-                nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed/1.0", "/1.0/FeedBv1.0.xml"));
-                nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/feed/1.1", "/1.1/FeedBv1.1.xml"));
-                nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/1.0/BundleB.exe", "/1.0/BundleB.exe"));
-                nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddFile("/BundleB/1.1/BundleB.exe", "/1.1/BundleB.exe"));
-                base.ConfigureConventions(nancyConventions);                
-            }
-        }
-        
-        public class FeedModule: Nancy.NancyModule
-        {
-            public enum UpdateFeedBehavior
-            {
-                None,
-                Invalid,
-                Version1,
-                Version2
-            }
-
-            public static UpdateFeedBehavior FeedBehavior {get;set;}
-
-            public FeedModule()
-            {
-                switch (FeedModule.FeedBehavior)
-                {
-                    case UpdateFeedBehavior.None:
-                        break;
-                    case UpdateFeedBehavior.Invalid:
-                        Get["/BundleB/feed"] = x => {
-                            return Response.AsFile("1.0/BundleB.exe");
-                        };
-                        break;
-                    case UpdateFeedBehavior.Version1:
-                        Get["/BundleB/feed"] = x =>
-                        {
-                            return Response.AsFile("1.0/FeedBv1.0.xml");
-                        };
-                        break;
-                    case UpdateFeedBehavior.Version2:
-                        Get["/BundleB/feed"] = x =>
-                        {
-                            return Response.AsFile("1.1/FeedBv1.1.xml");
-                        };
-                        break;
-                }
-            }
-        }
-
+        /*
         [NamedFact]
         [Priority(2)]
         [Description("Installs bundle Bv1.0 then does an update to bundle Bv2.0 during modify.")]
@@ -327,15 +259,15 @@ namespace WixTest.Tests.Burn
             this.TestArtifacts.Add(new DirectoryInfo(rootDirectory));
 
             Directory.CreateDirectory(Path.Combine(rootDirectory, "1.0"));
-            Directory.CreateDirectory(Path.Combine(rootDirectory, "1.1"));
+            Directory.CreateDirectory(Path.Combine(rootDirectory, "2.0"));
 
             // Copy v1.0 artifacts to the TestDataDirectory
             File.Copy(bundleB1, Path.Combine(rootDirectory, "1.0", Path.GetFileName(bundleB1)), true);
             File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.0.xml"), Path.Combine(rootDirectory, "1.0", "FeedBv1.0.xml"), true);
 
             // Copy v1.1 artifacts to the TestDataDirectory
-            File.Copy(bundleB2, Path.Combine(rootDirectory, "1.1", Path.GetFileName(bundleB2)), true);
-            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.1.xml"), Path.Combine(rootDirectory, "1.1", "FeedBv1.1.xml"), true);
+            File.Copy(bundleB2, Path.Combine(rootDirectory, "2.0", Path.GetFileName(bundleB2)), true);
+            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv2.0.xml"), Path.Combine(rootDirectory, "2.0", "FeedBv2.0.xml"), true);
             RootPathProvider.RootPath = rootDirectory;
 
             FeedModule.FeedBehavior = FeedModule.UpdateFeedBehavior.None;
@@ -410,8 +342,237 @@ namespace WixTest.Tests.Burn
             Assert.Null(this.GetTestRegistryRoot());
 
             this.Complete();
+        }*/
+
+        [NamedFact]
+        [Priority(2)]
+        [Description("Installs bundle Bv1.0 then tries to update to bundle Bv2.0 during modify (but no server exists).")]
+        [RuntimeTest(NonPrivileged = true)]
+        public void Burn_UpdateInstalledPerUserBundleNoUpdateServer()
+        {
+            // Build the packages.
+            string packageB1 = this.GetPackageB().Output;
+
+            // Build the bundles.
+            string bundleB1 = this.GetBundleB().Output;
+
+            // Install the v1 bundle.
+            BundleInstaller installerB1 = new BundleInstaller(this, bundleB1).Install();
+
+            // Test that v1 was correctly installed.
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+
+
+            // Run the v1 bundle requesting an update bundle.
+
+            installerB1.Modify(arguments: new string[] { "-checkupdate" });
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+
+            // Attempt to uninstall v1.
+            installerB1.Uninstall();
+
+            // Test all packages are uninstalled.
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.Null(this.GetTestRegistryRoot());
+
+            this.Complete();
         }
 
+        [NamedFact]
+        [Priority(2)]
+        [Description("Installs bundle Bv1.0 then tries to update to bundle Bv2.0 during modify (server exists, no feed).")]
+        [RuntimeTest(NonPrivileged = true)]
+        public void Burn_UpdateInstalledPerUserBundleUpdateServerNoFeed()
+        {
+            // Build the packages.
+            string packageB1 = this.GetPackageB().Output;
+
+            // Build the bundles.
+            string bundleB1 = this.GetBundleB().Output;
+
+            // Install the v1 bundle.
+            BundleInstaller installerB1 = new BundleInstaller(this, bundleB1).Install();
+
+            // Test that v1 was correctly installed.
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+
+            HostConfiguration hostConfigs = new HostConfiguration()
+            {
+                UrlReservations = new UrlReservations() { CreateAutomatically = true },
+                AllowChunkedEncoding = false // https://github.com/NancyFx/Nancy/issues/1337
+            };
+            string rootDirectory = FileUtilities.GetUniqueFileName();
+            Directory.CreateDirectory(rootDirectory);
+            this.TestArtifacts.Add(new DirectoryInfo(rootDirectory));
+            RootPathProvider.RootPath = rootDirectory;
+
+            FeedModule.FeedBehavior = FeedModule.UpdateFeedBehavior.None;
+            // Verify bundle asking for update and getting a 404 doesn't update and doesn't modify state
+            using (NancyHost nancyHost = new NancyHost(this.UpdateUri, new ApplicationBootstrapper(), hostConfigs) { })
+            {
+
+                nancyHost.Start();
+
+                // Run the v1 bundle providing an update bundle.
+                installerB1.Modify(arguments: new string[] { "-checkupdate" });
+
+                // The modify -> update is asynchronous, so we need to wait until the real BundleB is done
+                System.Diagnostics.Process[] childBundles = System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(bundleB1));
+                foreach (var childBundle in childBundles)
+                {
+                    childBundle.WaitForExit();
+                }
+            }
+            // Test that only v1 packages is installed.
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+
+            installerB1.Uninstall();
+
+            // Test all packages are uninstalled.
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.Null(this.GetTestRegistryRoot());
+
+            this.Complete();
+        }
+
+        [NamedFact]
+        [Priority(2)]
+        [Description("Installs bundle Bv1.0 then tries to update to bundle Bv2.0 during modify (server exists, v1.0 feed).")]
+        [RuntimeTest(NonPrivileged = true)]
+        public void Burn_UpdateInstalledPerUserBundleUpdateServerCurrentFeed()
+        {
+            // Build the package.
+            string packageB1 = this.GetPackageB().Output;
+
+            // Build the bundle.
+            string bundleB1 = this.GetBundleB().Output;
+
+            // Install the v1 bundle.
+            BundleInstaller installerB1 = new BundleInstaller(this, bundleB1).Install();
+
+            // Test that v1 was correctly installed.
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+
+            HostConfiguration hostConfigs = new HostConfiguration()
+            {
+                UrlReservations = new UrlReservations() { CreateAutomatically = true },
+                AllowChunkedEncoding = false // https://github.com/NancyFx/Nancy/issues/1337
+            };
+
+            string rootDirectory = FileUtilities.GetUniqueFileName();
+            this.TestArtifacts.Add(new DirectoryInfo(rootDirectory));
+
+            Directory.CreateDirectory(Path.Combine(rootDirectory, "1.0"));
+
+            // Copy v1.0 artifacts to the TestDataDirectory
+            File.Copy(bundleB1, Path.Combine(rootDirectory, "1.0", Path.GetFileName(bundleB1)), true);
+            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.0.xml"), Path.Combine(rootDirectory, "1.0", "FeedBv1.0.xml"), true);
+
+            RootPathProvider.RootPath = rootDirectory;
+
+            // Verify bundle asking for update and getting a current feed doesn't update and doesn't modify state
+            FeedModule.FeedBehavior = FeedModule.UpdateFeedBehavior.Version1;
+            using (NancyHost nancyHost = new NancyHost(this.UpdateUri, new ApplicationBootstrapper(), hostConfigs) { })
+            {
+
+                nancyHost.Start();
+
+                // Run the v1 bundle providing an update bundle.
+                installerB1.Modify(arguments: new string[] { "-checkupdate" });
+
+                // The modify -> update is asynchronous, so we need to wait until the real BundleB is done
+                System.Diagnostics.Process[] childBundles = System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(bundleB1));
+                foreach (var childBundle in childBundles)
+                {
+                    childBundle.WaitForExit();
+                }
+            }
+            // Test that only v1 packages is installed.
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+
+            // Attempt to uninstall v1.
+            installerB1.Uninstall();
+
+            // Test all packages are uninstalled.
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.Null(this.GetTestRegistryRoot());
+
+            this.Complete();
+        }
+
+        [NamedFact]
+        [Priority(2)]
+        [Description("Installs bundle Bv1.0 then does an update to bundle Bv2.0 during modify (server exists, v2.0 feed).")]
+        [RuntimeTest(NonPrivileged = true)]
+        public void Burn_UpdateInstalledPerUserBundleUpdateServerUpdateFeed()
+        {
+            // Build the packages.
+            string packageB1 = this.GetPackageB().Output;
+            string packageB2 = this.GetPackageBv2().Output;
+
+            // Build the bundles.
+            string bundleB1 = this.GetBundleB().Output;
+            string bundleB2 = this.GetBundleBv2().Output;
+
+            // Install the v1 bundle.
+            BundleInstaller installerB1 = new BundleInstaller(this, bundleB1).Install();
+
+            // Test that v1 was correctly installed.
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB2));
+
+            HostConfiguration hostConfigs = new HostConfiguration()
+            {
+                UrlReservations = new UrlReservations() { CreateAutomatically = true },
+                AllowChunkedEncoding = false // https://github.com/NancyFx/Nancy/issues/1337
+            };
+
+            string rootDirectory = FileUtilities.GetUniqueFileName();
+            this.TestArtifacts.Add(new DirectoryInfo(rootDirectory));
+
+            Directory.CreateDirectory(Path.Combine(rootDirectory, "1.0"));
+            Directory.CreateDirectory(Path.Combine(rootDirectory, "2.0"));
+
+            // Copy v1.0 artifacts to the TestDataDirectory
+            File.Copy(bundleB1, Path.Combine(rootDirectory, "1.0", Path.GetFileName(bundleB1)), true);
+            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv1.0.xml"), Path.Combine(rootDirectory, "1.0", "FeedBv1.0.xml"), true);
+
+            // Copy v1.1 artifacts to the TestDataDirectory
+            File.Copy(bundleB2, Path.Combine(rootDirectory, "2.0", Path.GetFileName(bundleB2)), true);
+            File.Copy(Path.Combine(this.TestContext.TestDataDirectory, "FeedBv2.0.xml"), Path.Combine(rootDirectory, "2.0", "FeedBv2.0.xml"), true);
+            RootPathProvider.RootPath = rootDirectory;
+
+            // Verify bundle asking for update and getting an updated feed updates
+            FeedModule.FeedBehavior = FeedModule.UpdateFeedBehavior.Version2;
+            using (NancyHost nancyHost = new NancyHost(this.UpdateUri, new ApplicationBootstrapper(), hostConfigs) { })
+            {
+
+                nancyHost.Start();
+
+                // Run the v1 bundle providing an update bundle.
+                installerB1.Modify(arguments: "-checkupdate");
+
+                // The modify -> update is asynchronous, so we need to wait until the real BundleB is done
+                System.Diagnostics.Process[] childBundles = System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(bundleB2));
+                foreach (var childBundle in childBundles)
+                {
+                    childBundle.WaitForExit();
+                }
+            }
+            // Test that only v2 packages is installed.
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.True(MsiVerifier.IsPackageInstalled(packageB2));
+
+            // Attempt to uninstall v2.
+            BundleInstaller installerB2 = new BundleInstaller(this, bundleB2).Uninstall();
+
+            // Test all packages are uninstalled.
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB1));
+            Assert.False(MsiVerifier.IsPackageInstalled(packageB2));
+            Assert.Null(this.GetTestRegistryRoot());
+
+            this.Complete();
+        }
 
         private WixTest.PackageBuilder GetPackageA()
         {
@@ -459,7 +620,7 @@ namespace WixTest.Tests.Burn
         {
             if (null == bindPaths)
             {
-                string packageAPath = this.GetPackageB().Output;
+                string packageAPath = Path.GetDirectoryName(this.GetPackageB().Output);
                 bindPaths = new Dictionary<string, string>() { { "packageB", packageAPath } };
             }
 
@@ -470,7 +631,7 @@ namespace WixTest.Tests.Burn
         {
             if (null == bindPaths)
             {
-                string packageBPath = this.GetPackageBv2().Output;
+                string packageBPath = Path.GetDirectoryName(this.GetPackageBv2().Output);
                 bindPaths = new Dictionary<string, string>() { { "packageB", packageBPath } };
             }
 

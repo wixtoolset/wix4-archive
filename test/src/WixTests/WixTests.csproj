@@ -39,6 +39,9 @@
     <Compile Include="Burn\Burn.SearchTests.cs" />
     <Compile Include="Burn\Burn.SlipstreamTests.cs" />
     <Compile Include="Burn\Burn.UpdateBundleTests.cs" />
+    <Compile Include="Burn\UpdateBundle\ApplicationBootstrapper.cs" />
+    <Compile Include="Burn\UpdateBundle\FeedModule.cs" />
+    <Compile Include="Burn\UpdateBundle\RootPathProvider.cs" />
     <Compile Include="PackageBuilder.cs" />
     <Compile Include="PatchBuilder.cs" />
     <Compile Include="WixTests.cs" />
@@ -481,10 +484,9 @@
     <None Include="..\..\data\Burn\UpdateBundleTests\FeedBv1.0.xml">
       <Link>Burn\UpdateBundleTests\FeedBv1.0.xml</Link>
     </None>
-    <None Include="..\..\data\Burn\UpdateBundleTests\FeedBv1.1.xml">
-      <Link>Burn\UpdateBundleTests\FeedBv1.1.xml</Link>
+    <None Include="..\..\data\Burn\UpdateBundleTests\FeedBv2.0.xml">
+      <Link>Burn\UpdateBundleTests\FeedBv2.0.xml</Link>
     </None>
-	
     <None Include="packages.config" />
     <None Include="Tools\Light\Input.InputTests.mtx" />
     <None Include="Tools\Light\Output.OutputTests.mtx" />

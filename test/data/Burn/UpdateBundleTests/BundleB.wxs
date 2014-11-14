@@ -14,7 +14,7 @@
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <!-- Manufacturer="!(bind.packageManufacturer.PackageB)"  -->
-  <Bundle Name="~$(var.TestName) - Bundle B" Version="$(var.Version)" UpgradeCode="8CB79B2F-5EC5-4E2F-A474-F268D8F6FE6A" Manufacturer="Microsoft Corporation">
+  <Bundle Name="~$(var.TestName) - Bundle B" Version="$(var.Version)" UpgradeCode="8CB79B2F-5EC5-4E2F-A474-F268D8F6FE6A" Manufacturer="!(bind.packageManufacturer.PackageB)">
     <Log Prefix="~$(var.TestName)_BundleB"/>
 
     <Variable Name="TestName" Value="$(var.TestName)" />
@@ -28,7 +28,7 @@
     <WixVariable Id='WixMbaPrereqLicenseUrl' Value='ignored' />
 
     <Chain>
-      <MsiPackage Id="PackageB" Name="~$(var.TestName)_PackageB.msi" Compressed="yes" SourceFile="!(bindpath.packageB)" Vital="yes"/>
+      <MsiPackage Id="PackageB" Name="~$(var.TestName)_PackageB.msi" Compressed="yes" SourceFile="!(bindpath.packageB)B.msi" Vital="yes"/>
     </Chain>
   </Bundle>
 </Wix>
