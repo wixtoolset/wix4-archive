@@ -1,4 +1,4 @@
-* BMurri: WIXBUG:3750 - Add LaunchWorkingDir to wixstdba to facilitate processes that require a different working folder.
+* BMurri: WIXBUG:3750 - Add LaunchWorkingFolder to wixstdba to facilitate processes that require a different working folder.
 
 * SeanHall: WIXFEAT:4525 - Reimplement balutil in BootstrapperCore.
 

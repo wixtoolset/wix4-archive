@@ -242,7 +242,7 @@ namespace WixToolset.Extensions
                         case "LaunchHidden":
                             launchHidden = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
-                        case "LaunchWorkingDir":
+                        case "LaunchWorkingFolder":
                             launchWorkingDir = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseFile":
@@ -331,7 +331,7 @@ namespace WixToolset.Extensions
                 if (!String.IsNullOrEmpty(launchWorkingDir))
                 {
                     VariableRow row = (VariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
-                    row.Id = "LaunchWorkingDir";
+                    row.Id = "LaunchWorkingFolder";
                     row.Value = launchWorkingDir;
                     row.Type = "string";
                 }
