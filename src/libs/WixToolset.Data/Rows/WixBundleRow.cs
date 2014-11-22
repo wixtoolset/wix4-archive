@@ -212,7 +212,7 @@ namespace WixToolset.Data.Rows
                 return new Guid((string)this.Fields[20].Data);
             }
 
-            set { this.Fields[20].Data = null == value ? null : value.ToString(); }
+            set { this.Fields[20].Data = value.ToString(); }
         }
 
         public string ProviderKey

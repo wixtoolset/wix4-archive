@@ -55,6 +55,17 @@
                 <ComponentGroupRef Id="Votive2013Components" />
                 <ComponentGroupRef Id="FileAssociationComponents" />
             </Feature>
+
+            <Feature Id="Intellisense2015" Title="IntelliSense 2015" Description="Schema files for IntelliSense in the Visual Studio 2015 editor" AllowAdvertise="no" Display="expand" InstallDefault="local" Level="0" TypicalDefault="install">
+                <Condition Level="1">VS14DEVENV OR VS14_ROOT_FOLDER OR REMOVE</Condition>
+                <ComponentGroupRef Id="Votive2015SchemaComponents" />
+            </Feature>
+
+            <Feature Id="Votive2015" Title="Project Templates 2015" Description="Votive Package for Visual Studio 2013" AllowAdvertise="no" Display="expand" InstallDefault="local" Level="0" TypicalDefault="install">
+                <Condition Level="1">VS14DEVENV OR REMOVE</Condition>
+                <ComponentGroupRef Id="Votive2015Components" />
+                <ComponentGroupRef Id="FileAssociationComponents" />
+            </Feature>
             <?endif?>
         </Feature>
     </Product>

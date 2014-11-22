@@ -40,7 +40,8 @@ HRESULT ShellExec(
         HINSTANCE hinst = ::ShellExecuteW(NULL, NULL, wzTarget, NULL, sczWorkingDirectory, SW_SHOWDEFAULT);
         if (hinst <= HINSTANCE(32))
         {
-            switch (int(hinst))
+            LONG64 code = reinterpret_cast<LONG64>(hinst);
+            switch (code)
             {
             case ERROR_FILE_NOT_FOUND:
                 hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
@@ -73,7 +74,7 @@ HRESULT ShellExec(
                 hr = E_FAIL;
             }
 
-            ExitOnFailure(hr, "ShellExec failed with return code %d", int(hinst));
+            ExitOnFailure(hr, "ShellExec failed with return code %llu.", code);
         }
     }
 

@@ -10,7 +10,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <ComponentGroup Id="ProjectTemplates" Directory="VsProjectTemplatesWix$(var.VisualStudioTargetVersion)Folder">
-<?ifdef VS2010SdkAvailable ?>
+<?if $(var.VSSdkAvailable)=true ?>
           <Component>
             <File Source="votive$(var.NativeTemplatesFromVersion)\CustomActionCPP.zip" />
           </Component>
