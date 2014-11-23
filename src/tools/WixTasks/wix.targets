@@ -1212,7 +1212,7 @@
     <PropertyGroup>
       <CopyBuildOutputToOutputDirectory Condition="'$(CopyBuildOutputToOutputDirectory)'==''">true</CopyBuildOutputToOutputDirectory>
       <CopyOutputSymbolsToOutputDirectory Condition="'$(CopyOutputSymbolsToOutputDirectory)'==''">true</CopyOutputSymbolsToOutputDirectory>
-      <FullIntermediateOutputPath>$([System.IO.Path]::GetFullPath($(IntermediateOutputPath)))</FullIntermediateOutputPath>
+      <RelativeIntermediateOutputPath>$(IntermediateOutputPath)</RelativeIntermediateOutputPath>
     </PropertyGroup>
 
     <!-- Copy the bound files. -->
@@ -1220,13 +1220,18 @@
       <Output TaskParameter="Lines" ItemName="_FullPathToCopy"/>
     </ReadLinesFromFile>
 
+    <PropertyGroup>
+      <RelativeIntermediateOutputPath Condition=" '@(_FullPathToCopy)'=='' ">$(TargetDir)</RelativeIntermediateOutputPath>
+      <FullIntermediateOutputPath>$([System.IO.Path]::GetFullPath($(RelativeIntermediateOutputPath)))</FullIntermediateOutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
       <_FullPathToCopy Include="$(TargetPath)" Condition=" '@(_FullPathToCopy)'=='' " />
       <_RelativePath Include="$([MSBuild]::MakeRelative($(FullIntermediateOutputPath), %(_FullPathToCopy.Identity)))" />
     </ItemGroup>
 
     <Copy
-        SourceFiles="@(_RelativePath->'$(IntermediateOutputPath)%(Identity)')"
+        SourceFiles="@(_RelativePath->'$(RelativeIntermediateOutputPath)%(Identity)')"
         DestinationFiles="@(_RelativePath->'$(OutDir)%(Identity)')"
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
         OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
