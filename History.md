@@ -1,3 +1,5 @@
+* SeanHall: Merge in recent changes from wix3.
+
 * SeanHall: WIXBUG:4608 - Fix bug in mbapreq where it wouldn't reload the bootstrapper if there was a mix of installed and uninstalled prerequisites.
 
 * FireGiant: WIXBUG:4561 - update WixCop to migrate v3 source code to v4.0.
