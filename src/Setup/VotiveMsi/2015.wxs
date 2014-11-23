@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
-  <copyright file="2012.wxs" company="Outercurve Foundation">
+  <copyright file="2015.wxs" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
     This software is released under Microsoft Reciprocal License (MS-RL).
     The license and further copyright text can be found in the file
@@ -11,39 +11,36 @@
 <?include WixVer.wxi ?>
 
 <!-- Preprocessor definitions -->
-<?define VsVersion = "2012"?>
-<?define VsRegPath = "SOFTWARE\Microsoft\VisualStudio\11.0" ?>
+<?define VsVersion = "2015"?>
+<?define VsRegPath = "SOFTWARE\Microsoft\VisualStudio\14.0" ?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
     <Fragment>
-        <PropertyRef Id="VS2012DEVENV" />
-        <PropertyRef Id="VS2012_ROOT_FOLDER" />
-        <PropertyRef Id="VS2012_SCHEMAS_DIR" />
+        <PropertyRef Id="VS14DEVENV" />
+        <PropertyRef Id="VS14_ROOT_FOLDER" />
+        <PropertyRef Id="VS14_SCHEMAS_DIR" />
 
-        <CustomActionRef Id="VS2012Setup" />
+        <CustomActionRef Id="VS14Setup" />
         <UI>
-            <ProgressText Action="VS2012Setup" Template="[1]">Updating Visual Studio 2012 registration</ProgressText>
+            <ProgressText Action="VS14Setup" Template="[1]">Updating Visual Studio 2015 registration</ProgressText>
         </UI>
 
-        <ComponentGroup Id="Votive2012Components">
+        <ComponentGroup Id="Votive2015Components">
             <ComponentGroupRef Id="Votive2010BinaryComponents"/>
-            <ComponentGroupRef Id="Votive2012ExtensionComponents"/>
-            <ComponentGroupRef Id="Votive2012ItemTemplateComponents" />
-            <ComponentGroupRef Id="Votive2012ProjectTemplateComponents" />
+            <ComponentGroupRef Id="Votive2015ExtensionComponents"/>
+            <ComponentGroupRef Id="Votive2015ItemTemplateComponents" />
+            <ComponentGroupRef Id="Votive2015ProjectTemplateComponents" />
         </ComponentGroup>
     </Fragment>
 
     <Fragment>
-        <PropertyRef Id="VS2012_EXTENSIONS_DIR" />
-
-        <ComponentGroup Id="Votive$(var.VsVersion)ExtensionComponents" Directory="VsExtensions$(var.VsVersion)WixVersionFolder">
+        <ComponentGroup Id="Votive$(var.VsVersion)ExtensionComponents" Directory="VsExtensions$(var.VsVersion)MicrosoftWix">
             <Component>
                 <File Id="extension$(var.VsVersion).vsixmanifest" Source="extension.vsixmanifest"/>
             </Component>
 
             <Component>
                 <File Id="Votive$(var.VsVersion).pkgdef" Source="votive2010.pkgdef"/>
-                <util:TouchFile OnInstall="yes" OnReinstall="yes" OnUninstall="yes" Path="[VS2012_EXTENSIONS_DIR]extensions.configurationchanged" />
             </Component>
 
             <Component>
@@ -67,9 +64,7 @@
                 <File Id="TextFile$(var.VsVersion).zip" Source="templates\TextFile.zip" />
             </Component>
         </ComponentGroup>
-    </Fragment>
 
-    <Fragment>
         <ComponentGroup Id="Votive$(var.VsVersion)ProjectTemplateComponents" Directory="VsProjectTemplatesWix$(var.VsVersion)Folder">
             <Component>
                 <File Id="WixLibrary$(var.VsVersion).zip" Source="templates\WixLibrary.zip" />
@@ -87,7 +82,7 @@
     </Fragment>
 
     <Fragment>
-        <ComponentGroup Id="Votive$(var.VsVersion)SchemaComponents" Directory="VS2012_SCHEMAS_DIR">
+        <ComponentGroup Id="Votive$(var.VsVersion)SchemaComponents" Directory="VS14_SCHEMAS_DIR">
             <Component>
                 <File Id="LuxSchema$(var.VsVersion)" Source="lux\wixext\Xsd\lux.xsd" />
             </Component>
@@ -107,9 +102,6 @@
                 <File Id="ExtensionXsdDependency$(var.VsVersion)" Source="ext\DependencyExtension\wixext\Xsd\Dependency.xsd" />
             </Component>
             <Component>
-                <File Id="ExtensionXsdComplus$(var.VsVersion)" Source="ext\ComPlusExtension\wixext\xsd\complus.xsd" />
-            </Component>
-            <Component>
                 <File Id="ExtensionXsdDifxApp$(var.VsVersion)" Source="ext\DifxAppExtension\wixext\Xsd\difxapp.xsd" />
             </Component>
             <Component>
@@ -120,9 +112,6 @@
             </Component>
             <Component>
                 <File Id="ExtensionXsdIis$(var.VsVersion)" Source="ext\IIsExtension\wixext\xsd\iis.xsd" />
-            </Component>
-            <Component>
-                <File Id="ExtensionXsdMsmq$(var.VsVersion)" Source="ext\MsmqExtension\wixext\xsd\msmq.xsd" />
             </Component>
             <Component>
                 <File Id="ExtensionXsdNetFx$(var.VsVersion)" Source="ext\NetFxExtension\wixext\Xsd\netfx.xsd" />
