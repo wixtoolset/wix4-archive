@@ -14,17 +14,17 @@
     <Name>Documentation</Name>
 
     <!-- SHFB properties -->
-    <SHFBSchemaVersion>1.8.0.3</SHFBSchemaVersion>
+    <SHFBSchemaVersion>1.9.9.0</SHFBSchemaVersion>
     <HtmlHelpName>DTFAPI</HtmlHelpName>
-    <ProjectSummary></ProjectSummary>
     <MissingTags>Namespace, TypeParameter</MissingTags>
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, SealedProtected</VisibleItems>
 
+    <RootNamespaceContainer>True</RootNamespaceContainer>
     <RootNamespaceTitle>Deployment Tools Foundation Namespaces</RootNamespaceTitle>
     <HelpTitle>Deployment Tools Foundation</HelpTitle>
     <FeedbackEMailAddress>wix-users%40lists.sourceforge.net</FeedbackEMailAddress>
     <FooterText>&amp;lt%3bscript src=&amp;quot%3bhelplink.js&amp;quot%3b&amp;gt%3b&amp;lt%3b/script&amp;gt%3b</FooterText>
-    <PresentationStyle>Prototype</PresentationStyle>
+    <PresentationStyle>VS2013</PresentationStyle>
     <NamingMethod>MemberName</NamingMethod>
   </PropertyGroup>
 
