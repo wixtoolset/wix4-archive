@@ -1199,37 +1199,51 @@
   CopyFilesToOutputDirectory - OVERRIDE Target
 
   Copy all build outputs, satellites and other necessary files to the final directory.
-  ============================================================
+  
+  We don't work like the CopyFilesToOutputDirectory target in Microsoft.Common.CurrentVersion.targets,
+  which flattens the output by copying all output files into one folder.  Instead, we try to copy the
+  output files along with their folder structure.
+  ==================================================================================================
   -->
   <Target
       Name="CopyFilesToOutputDirectory">
 
     <PropertyGroup>
-      <!-- By default we're using hard links to copy to the output directory, disabling this could slow the build significantly -->
+      <!-- By default we're using hard links to copy to the output directory, disabling this could slow the build significantly. -->
       <CreateHardLinksForCopyFilesToOutputDirectoryIfPossible Condition=" '$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)' == '' ">true</CreateHardLinksForCopyFilesToOutputDirectoryIfPossible>
     </PropertyGroup>
 
     <PropertyGroup>
       <CopyBuildOutputToOutputDirectory Condition="'$(CopyBuildOutputToOutputDirectory)'==''">true</CopyBuildOutputToOutputDirectory>
       <CopyOutputSymbolsToOutputDirectory Condition="'$(CopyOutputSymbolsToOutputDirectory)'==''">true</CopyOutputSymbolsToOutputDirectory>
+      
+      <!-- We have to assume that all bound files are built under the IntermediateOutputPath folder in order to preserve the folder structure. -->
       <RelativeIntermediateOutputPath>$(IntermediateOutputPath)</RelativeIntermediateOutputPath>
     </PropertyGroup>
 
-    <!-- Copy the bound files. -->
+    <!-- Get the list of the bound files from the BindOutputsFile. -->
     <ReadLinesFromFile File="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(BindOutputsFile)">
       <Output TaskParameter="Lines" ItemName="_FullPathToCopy"/>
     </ReadLinesFromFile>
 
     <PropertyGroup>
+      <!-- Some project types, like wixlib, don't have any bound files.  They write the generated output directly to TargetPath. -->
+      <!-- We have to assume that all TargetPath items are built under the TargetDir folder in order to preserve the folder structure. -->
       <RelativeIntermediateOutputPath Condition=" '@(_FullPathToCopy)'=='' ">$(TargetDir)</RelativeIntermediateOutputPath>
+      
       <FullIntermediateOutputPath>$([System.IO.Path]::GetFullPath($(RelativeIntermediateOutputPath)))</FullIntermediateOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- Some project types, like wixlib, don't have any bound files.  They write the generated output directly to TargetPath. -->
       <_FullPathToCopy Include="$(TargetPath)" Condition=" '@(_FullPathToCopy)'=='' " />
       <_RelativePath Include="$([MSBuild]::MakeRelative($(FullIntermediateOutputPath), %(_FullPathToCopy.Identity)))" />
     </ItemGroup>
 
+    <!--
+    Copy the output files to OutDir.
+    If any items in _FullPathToCopy weren't underneath FullIntermediateOutputPath, then their relative path will cause them to be copied outside of OutDir.
+    -->
     <Copy
         SourceFiles="@(_RelativePath->'$(RelativeIntermediateOutputPath)%(Identity)')"
         DestinationFiles="@(_RelativePath->'$(OutDir)%(Identity)')"
