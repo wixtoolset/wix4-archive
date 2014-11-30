@@ -57,9 +57,6 @@
     <xs:element name="Font">
         <xs:annotation>
             <xs:documentation>Defines a font including the size and color.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -105,9 +102,6 @@
     <xs:element name="ImageList">
         <xs:annotation>
             <xs:documentation>List of images which can be shared between multiple controls.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
@@ -126,9 +120,6 @@
     <xs:element name="Page">
         <xs:annotation>
             <xs:documentation>Named set of controls that can be shown and hidden collectively.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:group ref="ControlElements" maxOccurs="unbounded"/>
@@ -146,9 +137,6 @@
     <xs:element name="Window">
         <xs:annotation>
             <xs:documentation>Defines the overall look of the main window.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -222,10 +210,6 @@
     <xs:element name="Billboard">
         <xs:annotation>
             <xs:documentation>Defines a control that rotates through a set of images on a specified interval.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
@@ -248,10 +232,6 @@
     <xs:element name="Button">
         <xs:annotation>
             <xs:documentation>Defines a button.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -283,10 +263,6 @@
     <xs:element name="Checkbox">
         <xs:annotation>
             <xs:documentation>Defines a checkbox.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -308,10 +284,6 @@
     <xs:element name="Editbox">
         <xs:annotation>
             <xs:documentation>Defines an edit box.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes" />
@@ -331,10 +303,6 @@
     <xs:element name="Hyperlink">
         <xs:annotation>
             <xs:documentation>Defines a hyperlink.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -366,10 +334,6 @@
     <xs:element name="Hypertext">
         <xs:annotation>
             <xs:documentation>Defines a text block with support for HTML &lt;a&gt; tags.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -391,10 +355,6 @@
     <xs:element name="Image">
         <xs:annotation>
             <xs:documentation>Defines an image.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes" />
@@ -414,10 +374,6 @@
     <xs:element name="ListView">
         <xs:annotation>
             <xs:documentation>Defines a listview.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
@@ -460,10 +416,6 @@
     <xs:element name="Progressbar">
         <xs:annotation>
             <xs:documentation>Defines a progress bar.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes" />
@@ -483,9 +435,6 @@
     <xs:element name="RadioButton">
         <xs:annotation>
             <xs:documentation>Defines an individual radio button within a set of radio buttons.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="RadioButtons" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -512,10 +461,6 @@
     <xs:element name="RadioButtons">
         <xs:annotation>
             <xs:documentation>Defines a set of radio buttons.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
@@ -532,10 +477,6 @@
     <xs:element name="Richedit">
         <xs:annotation>
             <xs:documentation>Defines a rich edit control.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes" />
@@ -550,10 +491,6 @@
     <xs:element name="Static">
         <xs:annotation>
             <xs:documentation>Defines a straight line.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes" />
@@ -563,9 +500,6 @@
     <xs:element name="Tab">
         <xs:annotation>
             <xs:documentation>Defines an individual tab within a set of tabs.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Tabs" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -598,10 +532,6 @@
     <xs:element name="Text">
         <xs:annotation>
             <xs:documentation>Defines text.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Page" />
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="Theme" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -672,9 +602,6 @@
     <xs:element name="Column">
         <xs:annotation>
             <xs:documentation>A column of a list.</xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/thmutil" ref="ListView" />
-            </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
