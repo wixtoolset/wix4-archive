@@ -21,8 +21,11 @@
     <xs:import namespace="http://www.w3.org/1999/xhtml" />
 
     <xs:element name="Theme">
-        <xs:annotation><xs:documentation>
-        </xs:documentation></xs:annotation>
+        <xs:annotation>
+            <xs:documentation>
+                This is the top-level container element for every thmutil Theme file.
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
                 <xs:element ref="Font" />
@@ -33,8 +36,19 @@
             </xs:choice>
             <xs:attribute name="ImageFile" type="xs:string">
                 <xs:annotation>
-                    <xs:documentation>Relative path to an image file that can serve as a single source for images in the rest of the
-                    theme. This image is referenced by controls using the SourceX and SourceY attributes.</xs:documentation>
+                    <xs:documentation>
+                        Relative path to an image file that can serve as a single source for images in the rest of the theme.
+                        This image is referenced by controls using the SourceX and SourceY attributes.
+                        Mutually exclusive with the ImageResource attribute.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ImageResource" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references an image resource in the module for the window.
+                        Mutually exclusive with the ImageFile attribute.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>

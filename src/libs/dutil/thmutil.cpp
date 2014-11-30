@@ -2050,14 +2050,6 @@ static HRESULT ParseTheme(
     hr = ParseImage(hModule, wzRelativePath, pThemeElement, &pTheme->hImage);
     ExitOnFailure(hr, "Failed while parsing theme image.");
 
-    // Parse the optional window style.
-    hr = XmlGetAttributeNumberBase(pThemeElement, L"HexStyle", 16, &pTheme->dwStyle);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumberBase(pThemeElement, L"s", 16, &pTheme->dwStyle);
-    }
-    ExitOnFailure(hr, "Failed to get theme window style (t@s) attribute.");
-
     // Parse the application element.
     hr = ParseApplication(hModule, wzRelativePath, pThemeElement, pTheme);
     ExitOnFailure(hr, "Failed to parse theme application element.");
