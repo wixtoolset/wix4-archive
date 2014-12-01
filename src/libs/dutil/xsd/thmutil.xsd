@@ -252,7 +252,10 @@
             <xs:simpleContent>
                 <xs:extension base="xs:string">
                     <xs:annotation>
-                        <xs:documentation>Text to display in the button.</xs:documentation>
+                        <xs:documentation>
+                            Text to display in the button.
+                            Mutually exclusive with the StringId attribute.
+                        </xs:documentation>
                     </xs:annotation>
                     <xs:attributeGroup ref="CommonControlAttributes" />
                     <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -262,12 +265,27 @@
                     </xs:attribute>
                     <xs:attribute name="ImageFile" type="xs:string">
                         <xs:annotation>
-                            <xs:documentation>Relative path to an image file to define an graphic button. The image must be 3x the height to represent the button in 3 states: unselected, hover, selected. Mutually exclusive with ImageResource and SourceX and SourceY attributes.</xs:documentation>
+                            <xs:documentation>
+                                Relative path to an image file to define a graphic button.
+                                The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
+                                Mutually exclusive with ImageResource and SourceX and SourceY attributes.
+                            </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attribute name="ImageResource" type="xs:string">
                         <xs:annotation>
-                            <xs:documentation>Identifier that references an image resource in the module for the control. The image must be 3x the height to represent the button in 3 states: unselected, hover, selected. Mutually exclusive with ImageFile and SourceX and SourceY attributes.</xs:documentation>
+                            <xs:documentation>
+                                Identifier that references an image resource in the module to define a graphic button.
+                                The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
+                                Mutually exclusive with ImageFile and SourceX and SourceY attributes.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Identifier that references a string resource in the module to define the text for the control.
+                            </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                 </xs:extension>
