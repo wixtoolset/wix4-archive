@@ -2682,8 +2682,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_BILLBOARD;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Button", -1) ||
-            CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"b", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Button", -1))
         {
             type = THEME_CONTROL_TYPE_BUTTON;
         }
