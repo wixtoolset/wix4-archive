@@ -2690,8 +2690,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_CHECKBOX;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Editbox", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"eb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Editbox", -1))
         {
             type = THEME_CONTROL_TYPE_EDITBOX;
         }
@@ -2939,17 +2938,6 @@ static HRESULT ParseControl(
         }
     }
 
-    hr = XmlGetYesNoAttribute(pixn, L"FileSystemAutoComplete", &fValue);
-    if (E_NOTFOUND != hr)
-    {
-        ExitOnFailure(hr, "Failed when querying control FileSystemAutoComplete attribute.");
-
-        if (fValue)
-        {
-            pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE;
-        }
-    }
-
     hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pControl->uStringId));
     ExitOnFailure(hr, "Failed when querying control StringId attribute.");
 
@@ -2978,7 +2966,7 @@ static HRESULT ParseControl(
         hr = XmlGetYesNoAttribute(pixn, L"Loop", &pControl->fBillboardLoops);
         if (E_NOTFOUND != hr)
         {
-            ExitOnFailure(hr, "Failed to get Billboard/@Loop attribute.");
+            ExitOnFailure(hr, "Failed when querying Billboard/@Loop attribute.");
         }
 
         pControl->wBillboardInterval = 5000;
@@ -2987,10 +2975,23 @@ static HRESULT ParseControl(
         {
             pControl->wBillboardInterval = static_cast<WORD>(dwValue & 0xFFFF);
         }
-        ExitOnFailure(hr, "Failed to get Billboard/@Interval.");
+        ExitOnFailure(hr, "Failed when querying Billboard/@Interval attribute.");
 
         hr = ParseBillboards(hModule, wzRelativePath, pixn, pControl);
         ExitOnFailure(hr, "Failed to parse billboards.");
+    }
+    else if (THEME_CONTROL_TYPE_EDITBOX == type)
+    {
+        hr = XmlGetYesNoAttribute(pixn, L"FileSystemAutoComplete", &fValue);
+        if (E_NOTFOUND != hr)
+        {
+            ExitOnFailure(hr, "Failed when querying Editbox/@FileSystemAutoComplete attribute.");
+
+            if (fValue)
+            {
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE;
+            }
+        }
     }
     else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
     {
@@ -2999,7 +3000,7 @@ static HRESULT ParseControl(
         {
             hr = S_OK;
         }
-        ExitOnFailure(hr, "Failed when querying RadioButton/@Value.");
+        ExitOnFailure(hr, "Failed when querying RadioButton/@Value attribute.");
     }
     else if (THEME_CONTROL_TYPE_TEXT == type)
     {
