@@ -231,7 +231,9 @@
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="Interval" type="xs:positiveInteger">
                 <xs:annotation>
-                    <xs:documentation>.</xs:documentation>
+                    <xs:documentation>
+                        Specifies the time to wait before showing the next image, in milliseconds.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="Loop" type="YesNoType">
@@ -721,7 +723,9 @@
     </xs:attributeGroup>
 
     <xs:simpleType name="YesNoType">
-        <xs:annotation><xs:documentation>Values of this type will either be "yes" or "no".</xs:documentation></xs:annotation>
+        <xs:annotation>
+            <xs:documentation>Values of this type will either be "yes" or "no".</xs:documentation>
+        </xs:annotation>
         <xs:restriction base="xs:NMTOKEN">
             <xs:enumeration value="no"/>
             <xs:enumeration value="yes"/>

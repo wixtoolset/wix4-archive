@@ -75,7 +75,6 @@ typedef enum THEME_SHOW_PAGE_REASON
 struct THEME_BILLBOARD
 {
     HBITMAP hImage;
-    LPWSTR sczUrl;
 };
 
 
@@ -143,7 +142,6 @@ struct THEME_CONTROL
     THEME_BILLBOARD* ptbBillboards;
     DWORD cBillboards;
     WORD wBillboardInterval;
-    WORD wBillboardUrls;
     BOOL fBillboardLoops;
 
     // Used by listview controls

@@ -2629,7 +2629,7 @@ static HRESULT ParseControls(
     DWORD iPageControl = 0;
 
     hr = ParseRadioButtons(hModule, wzRelativePath, pElement, pTheme, pPage, &cPreprocessedControls);
-    ExitOnFailure(hr, "Failed to find parse radio buttons.");
+    ExitOnFailure(hr, "Failed to parse radio buttons.");
 
     hr = XmlSelectNodes(pElement, L"*", &pixnl);
     ExitOnFailure(hr, "Failed to find control elements.");
@@ -3193,17 +3193,6 @@ static HRESULT ParseBillboards(
             hr = ParseImage(hModule, wzRelativePath, pixnChild, &pControl->ptbBillboards[i].hImage);
             ExitOnFailure(hr, "Failed to get billboard image.");
 
-            hr = XmlGetText(pixnChild, &bstrText);
-            ExitOnFailure(hr, "Failed to get inner text of the Billboard/@Image element.");
-
-            if (S_OK == hr && bstrText && *bstrText)
-            {
-                hr = StrAllocString(&(pControl->ptbBillboards[i].sczUrl), bstrText, 0);
-                ExitOnFailure(hr, "Failed to copy image URL.");
-
-                pControl->wBillboardUrls |= (1 << i);
-            }
-
             ++i;
             ReleaseNullBSTR(bstrText);
         }
@@ -3762,7 +3751,6 @@ static void FreeBillboard(
     __in THEME_BILLBOARD* pBillboard
     )
 {
-    ReleaseStr(pBillboard->sczUrl);
     if (pBillboard->hImage)
     {
         ::DeleteBitmap(pBillboard->hImage);
