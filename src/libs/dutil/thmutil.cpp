@@ -2722,6 +2722,10 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_STATIC;
         }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tabs", -1))
+        {
+            type = THEME_CONTROL_TYPE_TAB;
+        }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Text", -1) ||
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"t", 1))
         {
@@ -2732,12 +2736,6 @@ static HRESULT ParseControls(
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tv", 2))
         {
             type = THEME_CONTROL_TYPE_TREEVIEW;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tabs", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tab", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tb", 2))
-        {
-            type = THEME_CONTROL_TYPE_TAB;
         }
 
         if (THEME_CONTROL_TYPE_UNKNOWN != type)
@@ -3376,7 +3374,7 @@ static HRESULT ParseTabs(
     IXMLDOMNode* pixnChild = NULL;
     BSTR bstrText = NULL;
 
-    hr = XmlSelectNodes(pixn, L"Tab|t", &pixnl);
+    hr = XmlSelectNodes(pixn, L"Tab", &pixnl);
     ExitOnFailure(hr, "Failed to select child tab nodes.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cTabs));
