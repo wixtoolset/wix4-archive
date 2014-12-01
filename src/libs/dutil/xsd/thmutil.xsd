@@ -704,6 +704,11 @@
         </xs:annotation>
         <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes"/>
+            <xs:attribute name="AlwaysShowSelect">
+                <xs:annotation>
+                    <xs:documentation>Specifies whether the row always appears selected even when the treeview has lost focus.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="EnableDragDrop">
                 <xs:annotation>
                     <xs:documentation>Specifies whether drag and drop is enabled for the treeview.</xs:documentation>
@@ -714,24 +719,19 @@
                     <xs:documentation>Specifies whether an entire row is selected for the treeview.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="asButtons">
+            <xs:attribute name="HasButtons">
                 <xs:annotation>
                     <xs:documentation>Specifies whether the treeview will show buttons.</xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="AlwaysShowSelect">
-                <xs:annotation>
-                    <xs:documentation>Specifies whether the row always appears selected even when the treeview has lost focus.</xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="LinesAtRoot">
-                <xs:annotation>
-                    <xs:documentation>Specifies whether the root nodes have lines beside them.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="HasLines">
                 <xs:annotation>
                     <xs:documentation>Specifies whether lines appear for all treeview items.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="LinesAtRoot">
+                <xs:annotation>
+                    <xs:documentation>Specifies whether the root nodes have lines beside them.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
