@@ -2324,7 +2324,7 @@ static HRESULT ParseFonts(
     COLORREF crForeground = THEME_INVISIBLE_COLORREF;
     COLORREF crBackground = THEME_INVISIBLE_COLORREF;
 
-    hr = XmlSelectNodes(pElement, L"Font|f", &pixnl);
+    hr = XmlSelectNodes(pElement, L"Font", &pixnl);
     ExitOnFailure(hr, "Failed to find font elements.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pTheme->cFonts));
@@ -2345,11 +2345,7 @@ static HRESULT ParseFonts(
         hr = XmlGetAttributeNumber(pixn, L"Id", &dwId);
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumber(pixn, L"id", &dwId);
-            if (S_FALSE == hr)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            }
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
         ExitOnFailure(hr, "Failed to find font id.");
 
@@ -2372,58 +2368,38 @@ static HRESULT ParseFonts(
         hr = XmlGetAttributeNumber(pixn, L"Height", reinterpret_cast<DWORD*>(&lf.lfHeight));
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumber(pixn, L"h", reinterpret_cast<DWORD*>(&lf.lfHeight));
-            if (S_FALSE == hr)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            }
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
         ExitOnFailure(hr, "Failed to find font height attribute.");
 
         hr = XmlGetAttributeNumber(pixn, L"Weight", reinterpret_cast<DWORD*>(&lf.lfWeight));
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumber(pixn, L"w", reinterpret_cast<DWORD*>(&lf.lfWeight));
-            if (S_FALSE == hr)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            }
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
         ExitOnFailure(hr, "Failed to find font weight attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"Underline", reinterpret_cast<BOOL*>(&lf.lfUnderline));
         if (E_NOTFOUND == hr)
         {
-            hr = XmlGetYesNoAttribute(pixn, L"u", reinterpret_cast<BOOL*>(&lf.lfUnderline));
-            if (E_NOTFOUND == hr)
-            {
-                lf.lfUnderline = FALSE;
-                hr = S_OK;
-            }
+            lf.lfUnderline = FALSE;
+            hr = S_OK;
         }
         ExitOnFailure(hr, "Failed to find font underline attribute.");
 
         hr = XmlGetAttributeNumberBase(pixn, L"Foreground", 16, &crForeground);
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumberBase(pixn, L"f", 16, &crForeground);
-            if (S_FALSE == hr)
-            {
-                crForeground = THEME_INVISIBLE_COLORREF;
-                hr = S_OK;
-            }
+            crForeground = THEME_INVISIBLE_COLORREF;
+            hr = S_OK;
         }
         ExitOnFailure(hr, "Failed to find font foreground color.");
 
         hr = XmlGetAttributeNumberBase(pixn, L"Background", 16, &crBackground);
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumberBase(pixn, L"b", 16, &crBackground);
-            if (S_FALSE == hr)
-            {
-                crBackground = THEME_INVISIBLE_COLORREF;
-                hr = S_OK;
-            }
+            crBackground = THEME_INVISIBLE_COLORREF;
+            hr = S_OK;
         }
         ExitOnFailure(hr, "Failed to find font background color.");
 
@@ -2435,7 +2411,7 @@ static HRESULT ParseFonts(
         }
 
         pFont->hFont = ::CreateFontIndirectW(&lf);
-        ExitOnNullWithLastError(pFont->hFont, hr, "Failed to create product title font.");
+        ExitOnNullWithLastError(pFont->hFont, hr, "Failed to create font %u.", dwId);
 
         pFont->crForeground = crForeground;
         if (THEME_INVISIBLE_COLORREF != pFont->crForeground)
