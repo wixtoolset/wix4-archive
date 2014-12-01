@@ -452,6 +452,47 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="Label">
+        <xs:annotation>
+            <xs:documentation>Defines a label.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Text for the label to display.
+                            Mutually exclusive with the StringId attribute.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:attributeGroup ref="CommonControlAttributes" />
+                    <xs:attribute name="Center" type="YesNoType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>Specifies whether the text should be centered horizontally in the width of the control. Default is "no".</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="DisablePrefix" type="YesNoType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation>By default ampersands (&amp;) in the text will underline the next character and treat it as an accelerator key. Set this attribute to "yes" to disable that behavior. Default is "no".</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                        <xs:annotation>
+                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Identifier that references a string resource in the module to define the text for the label.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="ListView">
         <xs:annotation>
             <xs:documentation>Defines a listview.</xs:documentation>
@@ -657,47 +698,6 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="Text">
-        <xs:annotation>
-            <xs:documentation>Defines a label.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text for the label to display.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="Center" type="YesNoType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation>Specifies whether the text should be centered horizontally in the width of the control. Default is "no".</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="DisablePrefix" type="YesNoType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation>By default ampersands (&amp;) in the text will underline the next character and treat it as an accelerator key. Set this attribute to "yes" to disable that behavior. Default is "no".</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the label.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
-        </xs:complexType>
-    </xs:element>
-
     <xs:element name="TreeView">
         <xs:annotation>
             <xs:documentation>Defines a treeview.</xs:documentation>
@@ -785,13 +785,13 @@
             <xs:element ref="Hyperlink" />
             <xs:element ref="Hypertext" />
             <xs:element ref="Image" />
+            <xs:element ref="Label" />
             <xs:element ref="ListView" />
             <xs:element ref="Progressbar" />
             <xs:element ref="RadioButtons" />
             <xs:element ref="Richedit" />
             <xs:element ref="Static" />
             <xs:element ref="Tabs" />
-            <xs:element ref="Text" />
             <xs:element ref="TreeView" />
         </xs:choice>
     </xs:group>
