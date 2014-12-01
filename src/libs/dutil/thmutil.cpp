@@ -458,33 +458,6 @@ DAPI_(HRESULT) ThemeLoadControls(
             }
             break;
 
-        case THEME_CONTROL_TYPE_RADIOBUTTON:
-            dwWindowBits |= BS_AUTORADIOBUTTON | BS_MULTILINE;
-            wzWindowClass = WC_BUTTONW;
-
-            if (pControl->fLastRadioButton)
-            {
-                fStartNewGroup = TRUE;
-            }
-            break;
-
-        case THEME_CONTROL_TYPE_LISTVIEW:
-            // If thmutil is handling the image list for this listview, tell Windows not to free it when the control is destroyed.
-            if (pControl->rghImageList[0] || pControl->rghImageList[1] || pControl->rghImageList[2] || pControl->rghImageList[3])
-            {
-                pControl->dwStyle |= LVS_SHAREIMAGELISTS;
-            }
-            wzWindowClass = WC_LISTVIEWW;
-            break;
-
-        case THEME_CONTROL_TYPE_TREEVIEW:
-            wzWindowClass = WC_TREEVIEWW;
-            break;
-
-        case THEME_CONTROL_TYPE_TAB:
-            wzWindowClass = WC_TABCONTROLW;
-            break;
-
         case THEME_CONTROL_TYPE_EDITBOX:
             wzWindowClass = WC_EDITW;
             dwWindowBits |= ES_LEFT | ES_AUTOHSCROLL;
@@ -515,6 +488,19 @@ DAPI_(HRESULT) ThemeLoadControls(
             }
             break;
 
+        case THEME_CONTROL_TYPE_LABEL:
+            wzWindowClass = WC_STATICW;
+            break;
+
+        case THEME_CONTROL_TYPE_LISTVIEW:
+            // If thmutil is handling the image list for this listview, tell Windows not to free it when the control is destroyed.
+            if (pControl->rghImageList[0] || pControl->rghImageList[1] || pControl->rghImageList[2] || pControl->rghImageList[3])
+            {
+                pControl->dwStyle |= LVS_SHAREIMAGELISTS;
+            }
+            wzWindowClass = WC_LISTVIEWW;
+            break;
+
         case THEME_CONTROL_TYPE_PROGRESSBAR:
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
@@ -525,6 +511,16 @@ DAPI_(HRESULT) ThemeLoadControls(
             else
             {
                 wzWindowClass = PROGRESS_CLASSW;
+            }
+            break;
+
+        case THEME_CONTROL_TYPE_RADIOBUTTON:
+            dwWindowBits |= BS_AUTORADIOBUTTON | BS_MULTILINE;
+            wzWindowClass = WC_BUTTONW;
+
+            if (pControl->fLastRadioButton)
+            {
+                fStartNewGroup = TRUE;
             }
             break;
 
@@ -543,8 +539,12 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowBits |= SS_ETCHEDHORZ;
             break;
 
-        case THEME_CONTROL_TYPE_LABEL:
-            wzWindowClass = WC_STATICW;
+        case THEME_CONTROL_TYPE_TAB:
+            wzWindowClass = WC_TABCONTROLW;
+            break;
+
+        case THEME_CONTROL_TYPE_TREEVIEW:
+            wzWindowClass = WC_TREEVIEWW;
             break;
         }
         ExitOnNull(wzWindowClass, hr, E_INVALIDDATA, "Failed to configure control %u because of unknown type: %u", i, pControl->type);
@@ -2983,15 +2983,6 @@ static HRESULT ParseControl(
         }
         ExitOnFailure(hr, "Failed when querying control SelectedFontId attribute.");
     }
-    else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
-    {
-        hr = XmlGetAttributeEx(pixn, L"Value", &pControl->sczValue);
-        if (E_NOTFOUND == hr)
-        {
-            hr = S_OK;
-        }
-        ExitOnFailure(hr, "Failed when querying RadioButton/@Value attribute.");
-    }
     else if (THEME_CONTROL_TYPE_LABEL == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"Center", &fValue);
@@ -3060,6 +3051,20 @@ static HRESULT ParseControl(
 
         hr = ParseColumns(pixn, pControl);
         ExitOnFailure(hr, "Failed to parse columns.");
+    }
+    else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
+    {
+        hr = XmlGetAttributeEx(pixn, L"Value", &pControl->sczValue);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed when querying RadioButton/@Value attribute.");
+    }
+    else if (THEME_CONTROL_TYPE_TAB == type)
+    {
+        hr = ParseTabs(pixn, pControl);
+        ExitOnFailure(hr, "Failed to parse tabs");
     }
     else if (THEME_CONTROL_TYPE_TREEVIEW == type)
     {
@@ -3130,11 +3135,6 @@ static HRESULT ParseControl(
             pControl->dwStyle |= TVS_HASLINES;
         }
         ExitOnFailure(hr, "Failed when querying TreeView/@HasLines attribute.");
-    }
-    else if (THEME_CONTROL_TYPE_TAB == type)
-    {
-        hr = ParseTabs(pixn, pControl);
-        ExitOnFailure(hr, "Failed to parse tabs");
     }
 
 LExit:
