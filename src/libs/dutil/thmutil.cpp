@@ -2792,16 +2792,9 @@ static HRESULT ParseControl(
     HRESULT hr = S_OK;
     DWORD dwId = 0;
     THEME_CONTROL* pControl = NULL;
-    DWORD dwValue = 0;
+    DWORD dwValue = iControl;
     BOOL fValue = FALSE;
     BSTR bstrText = NULL;
-
-    hr = XmlGetAttributeNumber(pixn, L"id", &dwId);
-    if (S_FALSE == hr)
-    {
-        dwId = iControl;
-    }
-    ExitOnFailure(hr, "Failed to find control id.");
 
     if (pTheme->cControls <= dwId)
     {
@@ -2823,7 +2816,7 @@ static HRESULT ParseControl(
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed when querying control Name.");
+    ExitOnFailure(hr, "Failed when querying control Name attribute.");
 
     hr = XmlGetAttributeEx(pixn, L"EnableCondition", &pControl->sczEnableCondition);
     if (E_NOTFOUND == hr)
@@ -2842,46 +2835,30 @@ static HRESULT ParseControl(
     hr = XmlGetAttributeNumber(pixn, L"X", reinterpret_cast<DWORD*>(&pControl->nX));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"x", reinterpret_cast<DWORD*>(&pControl->nX));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
     ExitOnFailure(hr, "Failed to find control X attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Y", reinterpret_cast<DWORD*>(&pControl->nY));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"y", reinterpret_cast<DWORD*>(&pControl->nY));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
     ExitOnFailure(hr, "Failed to find control Y attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Height", reinterpret_cast<DWORD*>(&pControl->nHeight));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"h", reinterpret_cast<DWORD*>(&pControl->nHeight));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
-    ExitOnFailure(hr, "Failed to find control height attribute.");
+    ExitOnFailure(hr, "Failed to find control Height attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Width", reinterpret_cast<DWORD*>(&pControl->nWidth));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"w", reinterpret_cast<DWORD*>(&pControl->nWidth));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
-    ExitOnFailure(hr, "Failed to find control width attribute.");
+    ExitOnFailure(hr, "Failed to find control Width attribute.");
 
     // Parse the optional background resource image.
     hr = ParseImage(hModule, wzRelativePath, pixn, &pControl->hImage);
@@ -2890,98 +2867,69 @@ static HRESULT ParseControl(
     hr = XmlGetAttributeNumber(pixn, L"SourceX", reinterpret_cast<DWORD*>(&pControl->nSourceX));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sx", reinterpret_cast<DWORD*>(&pControl->nSourceX));
-        if (S_FALSE == hr)
-        {
-            pControl->nSourceX = -1;
-        }
+        pControl->nSourceX = -1;
     }
-    ExitOnFailure(hr, "Failed to find control source X attribute.");
+    ExitOnFailure(hr, "Failed when querying control SourceX attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"SourceY", reinterpret_cast<DWORD*>(&pControl->nSourceY));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sy", reinterpret_cast<DWORD*>(&pControl->nSourceY));
-        if (S_FALSE == hr)
-        {
-            pControl->nSourceY = -1;
-        }
+        pControl->nSourceY = -1;
     }
-    ExitOnFailure(hr, "Failed to find control source Y attribute.");
+    ExitOnFailure(hr, "Failed when querying control SourceY attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"FontId", &pControl->dwFontId);
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"f", &pControl->dwFontId);
-        if (S_FALSE == hr)
-        {
-            pControl->dwFontId = THEME_INVALID_ID;
-        }
+        pControl->dwFontId = THEME_INVALID_ID;
     }
-    ExitOnFailure(hr, "Failed to find font for control.");
+    ExitOnFailure(hr, "Failed when querying control FontId attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"HoverFontId", &pControl->dwFontHoverId);
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"fh", &pControl->dwFontHoverId);
-        if (S_FALSE == hr)
-        {
-            pControl->dwFontHoverId = THEME_INVALID_ID;
-        }
+        pControl->dwFontHoverId = THEME_INVALID_ID;
     }
-    ExitOnFailure(hr, "Failed to find hover font for control.");
+    ExitOnFailure(hr, "Failed when querying control HoverFontId attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"SelectedFontId", &pControl->dwFontSelectedId);
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"fs", &pControl->dwFontSelectedId);
-        if (S_FALSE == hr)
-        {
-            pControl->dwFontSelectedId = THEME_INVALID_ID;
-        }
+        pControl->dwFontSelectedId = THEME_INVALID_ID;
     }
-    ExitOnFailure(hr, "Failed to find selected font for control.");
+    ExitOnFailure(hr, "Failed when querying control SelectedFontId attribute.");
 
     // Parse the optional window style.
     hr = XmlGetAttributeNumberBase(pixn, L"HexStyle", 16, &pControl->dwStyle);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumberBase(pixn, L"s", 16, &pControl->dwStyle);
-        ExitOnFailure(hr, "Failed to get control window style (@s) attribute.");
-    }
+    ExitOnFailure(hr, "Failed when querying control HexStyle attribute.");
 
     // Parse the tabstop bit "shortcut nomenclature", this could have been set with the style above.
     hr = XmlGetYesNoAttribute(pixn, L"TabStop", &fValue);
-    if (E_NOTFOUND == hr)
+    if (E_NOTFOUND != hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"t", &dwValue);
-        if (S_OK == hr && dwValue)
-        {
-            fValue = TRUE;
-        }
-    }
-    ExitOnFailure(hr, "Failed to tell if the control is a tab stop.");
+        ExitOnFailure(hr, "Failed when querying control TabStop attribute.");
 
-    if (S_OK == hr && fValue)
-    {
-        pControl->dwStyle |= WS_TABSTOP;
+        if (fValue)
+        {
+            pControl->dwStyle |= WS_TABSTOP;
+        }
     }
 
     hr = XmlGetYesNoAttribute(pixn, L"Visible", &fValue);
-    if (E_NOTFOUND == hr)
+    if (E_NOTFOUND != hr)
     {
-        hr = S_OK;
+        ExitOnFailure(hr, "Failed when querying control Visible attribute.");
+
+        if (fValue)
+        {
+            pControl->dwStyle |= WS_VISIBLE;
+        }
     }
-    else if (fValue)
-    {
-        pControl->dwStyle |= WS_VISIBLE;
-    }
-    ExitOnFailure(hr, "Failed to tell if the control is visible.");
 
     hr = XmlGetYesNoAttribute(pixn, L"HideWhenDisabled", &fValue);
     if (E_NOTFOUND != hr)
     {
-        ExitOnFailure(hr, "Failed to parse if the control should be hidden when disabled.");
+        ExitOnFailure(hr, "Failed when querying control HideWhenDisabled attribute.");
 
         if (fValue)
         {
@@ -2992,7 +2940,7 @@ static HRESULT ParseControl(
     hr = XmlGetYesNoAttribute(pixn, L"FileSystemAutoComplete", &fValue);
     if (E_NOTFOUND != hr)
     {
-        ExitOnFailure(hr, "Failed to parse if the control autocomplete.");
+        ExitOnFailure(hr, "Failed when querying control FileSystemAutoComplete attribute.");
 
         if (fValue)
         {
@@ -3001,11 +2949,7 @@ static HRESULT ParseControl(
     }
 
     hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pControl->uStringId));
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumber(pixn, L"sid", reinterpret_cast<DWORD*>(&pControl->uStringId));
-    }
-    ExitOnFailure(hr, "Failed to get control text id attribute.");
+    ExitOnFailure(hr, "Failed when querying control StringId attribute.");
 
     if (S_FALSE == hr)
     {
