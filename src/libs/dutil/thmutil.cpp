@@ -543,7 +543,7 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowBits |= SS_ETCHEDHORZ;
             break;
 
-        case THEME_CONTROL_TYPE_TEXT:
+        case THEME_CONTROL_TYPE_LABEL:
             wzWindowClass = WC_STATICW;
             break;
         }
@@ -2706,6 +2706,10 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_IMAGE;
         }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Label", -1))
+        {
+            type = THEME_CONTROL_TYPE_LABEL;
+        }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ListView", -1))
         {
             type = THEME_CONTROL_TYPE_LISTVIEW;
@@ -2725,10 +2729,6 @@ static HRESULT ParseControls(
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tabs", -1))
         {
             type = THEME_CONTROL_TYPE_TAB;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Text", -1))
-        {
-            type = THEME_CONTROL_TYPE_TEXT;
         }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1))
         {
@@ -2992,7 +2992,7 @@ static HRESULT ParseControl(
         }
         ExitOnFailure(hr, "Failed when querying RadioButton/@Value attribute.");
     }
-    else if (THEME_CONTROL_TYPE_TEXT == type)
+    else if (THEME_CONTROL_TYPE_LABEL == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"Center", &fValue);
         if (E_NOTFOUND == hr)
@@ -3003,7 +3003,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= SS_CENTER;
         }
-        ExitOnFailure(hr, "Failed when querying Text/@Center attribute.");
+        ExitOnFailure(hr, "Failed when querying Label/@Center attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"DisablePrefix", &fValue);
         if (E_NOTFOUND == hr)
@@ -3014,7 +3014,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= SS_NOPREFIX;
         }
-        ExitOnFailure(hr, "Failed when querying Text/@DisablePrefix attribute.");
+        ExitOnFailure(hr, "Failed when querying Label/@DisablePrefix attribute.");
     }
     else if (THEME_CONTROL_TYPE_LISTVIEW == type)
     {
