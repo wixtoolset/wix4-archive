@@ -2718,8 +2718,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_RICHEDIT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Static", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"s", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Static", -1))
         {
             type = THEME_CONTROL_TYPE_STATIC;
         }
