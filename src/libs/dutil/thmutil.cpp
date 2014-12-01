@@ -2710,8 +2710,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_LISTVIEW;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Progressbar", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"pb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Progressbar", -1))
         {
             type = THEME_CONTROL_TYPE_PROGRESSBAR;
         }
