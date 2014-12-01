@@ -473,22 +473,30 @@
             </xs:attribute>
             <xs:attribute name="ImageList" type="xs:string">
                 <xs:annotation>
-                    <xs:documentation>The name of the Image List to assign to this listview with type LVSIL_NORMAL.</xs:documentation>
+                    <xs:documentation>
+                        The name of the ImageList to assign to this listview with type LVSIL_NORMAL.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="ImageListSmall" type="xs:string">
                 <xs:annotation>
-                    <xs:documentation>The name of the Image List to assign to this listview with type LVSIL_SMALL.</xs:documentation>
+                    <xs:documentation>
+                        The name of the ImageList to assign to this listview with type LVSIL_SMALL.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="ImageListState" type="xs:string">
                 <xs:annotation>
-                    <xs:documentation>The name of the Image List to assign to this listview with type LVSIL_STATE.</xs:documentation>
+                    <xs:documentation>
+                        The name of the ImageList to assign to this listview with type LVSIL_STATE.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="ImageListGroupHeader" type="xs:string">
                 <xs:annotation>
-                    <xs:documentation>The name of the Image List to assign to this listview with type LVSIL_GROUPHEADER.</xs:documentation>
+                    <xs:documentation>
+                        The name of the ImageList to assign to this listview with type LVSIL_GROUPHEADER.
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
