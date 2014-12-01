@@ -59,19 +59,19 @@
             <xs:simpleContent>
                 <xs:extension base="xs:string">
                     <xs:annotation>
-                        <xs:documentation>Name of the font face.</xs:documentation>
+                        <xs:documentation>Name of the font face (required).</xs:documentation>
                     </xs:annotation>
-                    <xs:attribute name="Id" type="xs:nonNegativeInteger">
+                    <xs:attribute name="Id" type="xs:nonNegativeInteger" use="required">
                         <xs:annotation>
                             <xs:documentation>Numeric identifier for the font. Due to limitations in thmutil the first Font must start with "0" and each subsequent Font must increment the Id by 1. Failure to ensure the Font identifiers follow this strict ordering will create unexpected behavior or crashes.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="Height" type="xs:int">
+                    <xs:attribute name="Height" type="xs:int" use="required">
                         <xs:annotation>
                             <xs:documentation>Font size. Use negative numbers to specify the font in pixels.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="Weight" type="xs:nonNegativeInteger">
+                    <xs:attribute name="Weight" type="xs:nonNegativeInteger" use="required">
                         <xs:annotation>
                             <xs:documentation>Font weight.</xs:documentation>
                         </xs:annotation>
