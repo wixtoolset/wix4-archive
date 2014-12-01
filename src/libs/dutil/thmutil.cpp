@@ -2726,8 +2726,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_TAB;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Text", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"t", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Text", -1))
         {
             type = THEME_CONTROL_TYPE_TEXT;
         }
@@ -3006,7 +3005,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= SS_CENTER;
         }
-        ExitOnFailure(hr, "Failed to tell if the text control should be centered.");
+        ExitOnFailure(hr, "Failed when querying Text/@Center attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"DisablePrefix", &fValue);
         if (E_NOTFOUND == hr)
@@ -3017,7 +3016,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= SS_NOPREFIX;
         }
-        ExitOnFailure(hr, "Failed to tell if the text control should disable prefix.");
+        ExitOnFailure(hr, "Failed when querying Text/@DisablePrefix attribute.");
     }
     else if (THEME_CONTROL_TYPE_LISTVIEW == type)
     {
