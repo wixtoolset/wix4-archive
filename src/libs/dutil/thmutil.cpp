@@ -2158,93 +2158,73 @@ static HRESULT ParseWindow(
     BSTR bstr = NULL;
     LPWSTR sczIconFile = NULL;
 
-    hr = XmlSelectSingleNode(pElement, L"Window|Application|App|a", &pixn);
+    hr = XmlSelectSingleNode(pElement, L"Window", &pixn);
     if (S_FALSE == hr)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
-    ExitOnFailure(hr, "Failed to find application element.");
+    ExitOnFailure(hr, "Failed to find window element.");
 
     hr = XmlGetYesNoAttribute(pixn, L"AutoResize", &pTheme->fAutoResize);
     if (E_NOTFOUND == hr)
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to get AutoResize attribute.");
+    ExitOnFailure(hr, "Failed to get window AutoResize attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Width", reinterpret_cast<DWORD*>(&pTheme->nWidth));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"w", reinterpret_cast<DWORD*>(&pTheme->nWidth));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application width attribute.");
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Failed to find window Width attribute.");
     }
-    ExitOnFailure(hr, "Failed to get application width attribute.");
+    ExitOnFailure(hr, "Failed to get window Width attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Height", reinterpret_cast<DWORD*>(&pTheme->nHeight));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"h", reinterpret_cast<DWORD*>(&pTheme->nHeight));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application height attribute.");
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Failed to find window Height attribute.");
     }
-    ExitOnFailure(hr, "Failed to get application height attribute.");
+    ExitOnFailure(hr, "Failed to get window Height attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"MinimumWidth", reinterpret_cast<DWORD*>(&pTheme->nMinimumWidth));
     if (S_FALSE == hr)
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to get application minimum width attribute.");
+    ExitOnFailure(hr, "Failed to get window MinimumWidth attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"MinimumHeight", reinterpret_cast<DWORD*>(&pTheme->nMinimumHeight));
     if (S_FALSE == hr)
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to get application minimum height attribute.");
+    ExitOnFailure(hr, "Failed to get window MinimumHeight attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"FontId", &pTheme->dwFontId);
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"f", &pTheme->dwFontId);
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application font attribute.");
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Failed to find window FontId attribute.");
     }
-    ExitOnFailure(hr, "Failed to get application font attribute.");
+    ExitOnFailure(hr, "Failed to get window FontId attribute.");
 
-    // Get the optional application icon from a resource.
+    // Get the optional window icon from a resource.
     hr = XmlGetAttribute(pixn, L"IconResource", &bstr);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttribute(pixn, L"i", &bstr);
-    }
-    ExitOnFailure(hr, "Failed to get application icon resource attribute.");
+    ExitOnFailure(hr, "Failed to get window IconResource attribute.");
 
     if (S_OK == hr)
     {
         pTheme->hIcon = ::LoadIconW(hModule, bstr);
-        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load application icon.");
+        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load window icon from IconResource.");
 
         ReleaseNullBSTR(bstr);
     }
 
-    // Get the optional application icon from a file.
+    // Get the optional window icon from a file.
     hr = XmlGetAttribute(pixn, L"IconFile", &bstr);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttribute(pixn, L"if", &bstr);
-    }
-    ExitOnFailure(hr, "Failed to get application icon file attribute.");
+    ExitOnFailure(hr, "Failed to get window IconFile attribute.");
 
     if (S_OK == hr)
     {
@@ -2258,33 +2238,26 @@ static HRESULT ParseWindow(
             hr = PathRelativeToModule(&sczIconFile, bstr, hModule);
             ExitOnFailure(hr, "Failed to get icon filename.");
         }
-        ReleaseNullBSTR(bstr);
 
         pTheme->hIcon = ::LoadImageW(NULL, sczIconFile, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
-        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load application icon: %ls.", bstr);
+        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load window icon from IconFile: %ls.", bstr);
+
+        ReleaseNullBSTR(bstr);
     }
 
     hr = XmlGetAttributeNumber(pixn, L"SourceX", reinterpret_cast<DWORD*>(&pTheme->nSourceX));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sx", reinterpret_cast<DWORD*>(&pTheme->nSourceX));
-        if (S_FALSE == hr)
-        {
-            pTheme->nSourceX = -1;
-        }
+        pTheme->nSourceX = -1;
     }
-    ExitOnFailure(hr, "Failed to get application source X attribute.");
+    ExitOnFailure(hr, "Failed to get window SourceX attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"SourceY", reinterpret_cast<DWORD*>(&pTheme->nSourceY));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sy", reinterpret_cast<DWORD*>(&pTheme->nSourceY));
-        if (S_FALSE == hr)
-        {
-            pTheme->nSourceY = -1;
-        }
+        pTheme->nSourceY = -1;
     }
-    ExitOnFailure(hr, "Failed to get application source Y attribute.");
+    ExitOnFailure(hr, "Failed to get window SourceY attribute.");
 
     // Parse the optional window style.
     hr = XmlGetAttributeNumberBase(pixn, L"HexStyle", 16, &pTheme->dwStyle);
@@ -2297,27 +2270,23 @@ static HRESULT ParseWindow(
     }
 
     hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pTheme->uStringId));
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumber(pixn, L"sid", reinterpret_cast<DWORD*>(&pTheme->uStringId));
-    }
-    ExitOnFailure(hr, "Failed to get application caption id attribute.");
+    ExitOnFailure(hr, "Failed to get window StringId attribute.");
 
     if (S_FALSE == hr)
     {
         pTheme->uStringId = UINT_MAX;
 
-        hr = XmlGetText(pixn, &bstr);
-        ExitOnFailure(hr, "Failed to get application caption.");
+        hr = XmlGetAttribute(pixn, L"Caption", &bstr);
+        ExitOnFailure(hr, "Failed to get window Caption attribute.");
 
         if (S_FALSE == hr)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application caption.");
+            ExitOnRootFailure(hr, "Window elements must contain the Caption or StringId attribute.");
         }
 
         hr = StrAllocString(&pTheme->sczCaption, bstr, 0);
-        ExitOnFailure(hr, "Failed to copy application caption.");
+        ExitOnFailure(hr, "Failed to copy window Caption attribute.");
     }
 
     // Parse any image lists.
