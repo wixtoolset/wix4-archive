@@ -135,14 +135,16 @@ struct THEME_CONTROL
     DWORD dwInternalStyle;
 
     DWORD dwFontId;
-    DWORD dwFontHoverId;
-    DWORD dwFontSelectedId;
 
     // Used by billboard controls
     THEME_BILLBOARD* ptbBillboards;
     DWORD cBillboards;
     WORD wBillboardInterval;
     BOOL fBillboardLoops;
+
+    // Used by hyperlink controls
+    DWORD dwFontHoverId;
+    DWORD dwFontSelectedId;
 
     // Used by listview controls
     THEME_COLUMN *ptcColumns;

@@ -2694,8 +2694,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_EDITBOX;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Hyperlink", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"l", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Hyperlink", -1))
         {
             type = THEME_CONTROL_TYPE_HYPERLINK;
         }
@@ -2886,20 +2885,6 @@ static HRESULT ParseControl(
     }
     ExitOnFailure(hr, "Failed when querying control FontId attribute.");
 
-    hr = XmlGetAttributeNumber(pixn, L"HoverFontId", &pControl->dwFontHoverId);
-    if (S_FALSE == hr)
-    {
-        pControl->dwFontHoverId = THEME_INVALID_ID;
-    }
-    ExitOnFailure(hr, "Failed when querying control HoverFontId attribute.");
-
-    hr = XmlGetAttributeNumber(pixn, L"SelectedFontId", &pControl->dwFontSelectedId);
-    if (S_FALSE == hr)
-    {
-        pControl->dwFontSelectedId = THEME_INVALID_ID;
-    }
-    ExitOnFailure(hr, "Failed when querying control SelectedFontId attribute.");
-
     // Parse the optional window style.
     hr = XmlGetAttributeNumberBase(pixn, L"HexStyle", 16, &pControl->dwStyle);
     ExitOnFailure(hr, "Failed when querying control HexStyle attribute.");
@@ -2992,6 +2977,22 @@ static HRESULT ParseControl(
                 pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE;
             }
         }
+    }
+    else if (THEME_CONTROL_TYPE_HYPERLINK == type)
+    {
+        hr = XmlGetAttributeNumber(pixn, L"HoverFontId", &pControl->dwFontHoverId);
+        if (S_FALSE == hr)
+        {
+            pControl->dwFontHoverId = THEME_INVALID_ID;
+        }
+        ExitOnFailure(hr, "Failed when querying control HoverFontId attribute.");
+
+        hr = XmlGetAttributeNumber(pixn, L"SelectedFontId", &pControl->dwFontSelectedId);
+        if (S_FALSE == hr)
+        {
+            pControl->dwFontSelectedId = THEME_INVALID_ID;
+        }
+        ExitOnFailure(hr, "Failed when querying control SelectedFontId attribute.");
     }
     else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
     {
