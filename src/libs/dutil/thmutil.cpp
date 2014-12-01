@@ -2551,10 +2551,10 @@ static HRESULT ParseImageLists(
         ExitOnFailure(hr, "Failed to get ImageList/@Name attribute.");
 
         hr = StrAllocString(&pTheme->rgImageLists[dwImageListIndex].sczName, bstr, 0);
-        ExitOnFailure(hr, "Failed to make copy of ImageList name");
+        ExitOnFailure(hr, "Failed to make copy of ImageList name.");
 
-        hr = XmlSelectNodes(pixnImageList, L"Image|i", &pixnlImages);
-        ExitOnFailure(hr, "Failed to select child Image|i nodes");
+        hr = XmlSelectNodes(pixnImageList, L"Image", &pixnlImages);
+        ExitOnFailure(hr, "Failed to select child Image nodes.");
 
         hr = pixnlImages->get_length(reinterpret_cast<long*>(&dwImageCount));
         ExitOnFailure(hr, "Failed to count the number of images in list.");
@@ -2577,7 +2577,7 @@ static HRESULT ParseImageLists(
                     ::GetObjectW(hBitmap, sizeof(BITMAP), &bm);
 
                     pTheme->rgImageLists[dwImageListIndex].hImageList = ImageList_Create(bm.bmWidth, bm.bmHeight, ILC_COLOR24, dwImageCount, 0);
-                    ExitOnNullWithLastError(pTheme->rgImageLists[dwImageListIndex].hImageList, hr, "Failed to create image list");
+                    ExitOnNullWithLastError(pTheme->rgImageLists[dwImageListIndex].hImageList, hr, "Failed to create image list.");
                 }
 
                 iRetVal = ImageList_Add(pTheme->rgImageLists[dwImageListIndex].hImageList, hBitmap, NULL);
