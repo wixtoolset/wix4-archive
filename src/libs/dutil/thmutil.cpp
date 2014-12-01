@@ -2714,8 +2714,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_PROGRESSBAR;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Richedit", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"rt", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Richedit", -1))
         {
             type = THEME_CONTROL_TYPE_RICHEDIT;
         }
