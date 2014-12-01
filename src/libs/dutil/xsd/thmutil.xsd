@@ -104,7 +104,7 @@
             <xs:choice maxOccurs="unbounded">
                 <xs:element ref="Image" />
             </xs:choice>
-            <xs:attribute name="Name" type="xs:string">
+            <xs:attribute name="Name" type="xs:string" use="required">
                 <xs:annotation>
                     <xs:documentation>
                         Name of the ImageList, to be referenced by other controls.

@@ -2548,7 +2548,11 @@ static HRESULT ParseImageLists(
     while (S_OK == (hr = XmlNextElement(pixnlImageLists, &pixnImageList, NULL)))
     {
         hr = XmlGetAttribute(pixnImageList, L"Name", &bstr);
-        ExitOnFailure(hr, "Failed to get ImageList/@Name attribute.");
+        if (S_FALSE == hr)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        }
+        ExitOnFailure(hr, "Failed to find ImageList/@Name attribute.");
 
         hr = StrAllocString(&pTheme->rgImageLists[dwImageListIndex].sczName, bstr, 0);
         ExitOnFailure(hr, "Failed to make copy of ImageList name.");
