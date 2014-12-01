@@ -2686,8 +2686,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_BUTTON;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Checkbox", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"cb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Checkbox", -1))
         {
             type = THEME_CONTROL_TYPE_CHECKBOX;
         }
