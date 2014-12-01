@@ -2706,6 +2706,10 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_IMAGE;
         }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ListView", -1))
+        {
+            type = THEME_CONTROL_TYPE_LISTVIEW;
+        }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Progressbar", -1) ||
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"pb", 2))
         {
@@ -2725,12 +2729,6 @@ static HRESULT ParseControls(
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"t", 1))
         {
             type = THEME_CONTROL_TYPE_TEXT;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ListView", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Listview", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"lv", 2))
-        {
-            type = THEME_CONTROL_TYPE_LISTVIEW;
         }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1) ||
                  CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Treeview", -1) ||
@@ -3030,50 +3028,46 @@ static HRESULT ParseControl(
     {
         // Parse the optional extended window style.
         hr = XmlGetAttributeNumberBase(pixn, L"HexExtendedStyle", 16, &pControl->dwExtendedStyle);
-        if (S_FALSE == hr)
-        {
-            hr = XmlGetAttributeNumberBase(pixn, L"xs", 16, &pControl->dwExtendedStyle);
-        }
-        ExitOnFailure(hr, "Failed to get theme ListView extended style (ListView/@HexExtendedStyle) attribute.");
+        ExitOnFailure(hr, "Failed when querying ListView/@HexExtendedStyle attribute.");
 
         hr = XmlGetAttribute(pixn, L"ImageList", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageList) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageList attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[0]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imagelist for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageList for ListView.", bstrText);
         }
 
         hr = XmlGetAttribute(pixn, L"ImageListSmall", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageListSmall) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageListSmall attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[1]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imagelistsmall for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageListSmall for ListView.", bstrText);
         }
 
         hr = XmlGetAttribute(pixn, L"ImageListState", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageListState) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageListState attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[2]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imageliststate for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageListState for ListView.", bstrText);
         }
 
         hr = XmlGetAttribute(pixn, L"ImageListGroupHeader", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageListGroupHeader) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageListGroupHeader attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[3]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imagelistgroupheader for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageListGroupHeader for ListView.", bstrText);
         }
 
         hr = ParseColumns(pixn, pControl);
-        ExitOnFailure(hr, "Failed to parse columns");
+        ExitOnFailure(hr, "Failed to parse columns.");
     }
     else if (THEME_CONTROL_TYPE_TREEVIEW == type)
     {
