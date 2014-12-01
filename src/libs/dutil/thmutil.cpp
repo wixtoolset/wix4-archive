@@ -2730,9 +2730,7 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_TEXT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Treeview", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tv", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1))
         {
             type = THEME_CONTROL_TYPE_TREEVIEW;
         }
@@ -3076,7 +3074,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle &= ~TVS_DISABLEDRAGDROP;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control control enables drag and drop.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@EnableDragDrop attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"FullRowSelect", &fValue);
         if (E_NOTFOUND == hr)
@@ -3087,7 +3085,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_FULLROWSELECT;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control enables full row select.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@FullRowSelect attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"HasButtons", &fValue);
         if (E_NOTFOUND == hr)
@@ -3098,7 +3096,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_HASBUTTONS;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control show buttons.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@HasButtons attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"AlwaysShowSelect", &fValue);
         if (E_NOTFOUND == hr)
@@ -3109,7 +3107,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_SHOWSELALWAYS;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control always displays the selection.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@AlwaysShowSelect attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"LinesAtRoot", &fValue);
         if (E_NOTFOUND == hr)
@@ -3120,7 +3118,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_LINESATROOT;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control shows lines at the root.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@LinesAtRoot attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"HasLines", &fValue);
         if (E_NOTFOUND == hr)
@@ -3131,7 +3129,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_HASLINES;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control shows lines.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@HasLines attribute.");
     }
     else if (THEME_CONTROL_TYPE_TAB == type)
     {
