@@ -27,13 +27,10 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:choice maxOccurs="unbounded">
-                <xs:element ref="Font" />
-                <xs:element ref="ImageList" />
-                <xs:element ref="Page" />
+            <xs:sequence>
+                <xs:element ref="Font" maxOccurs="unbounded" />
                 <xs:element ref="Window" />
-                <xs:group ref="ControlElements" maxOccurs="unbounded" />
-            </xs:choice>
+            </xs:sequence>
             <xs:attribute name="ImageFile" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>
@@ -139,11 +136,11 @@
             <xs:documentation>Defines the overall look of the main window.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>Caption for the window.</xs:documentation>
-                    </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="ImageList" />
+                <xs:element ref="Page" />
+                <xs:group ref="ControlElements" minOccurs="0" maxOccurs="unbounded" />
+            </xs:choice>
                     <xs:attribute name="AutoResize" type="YesNoType">
                         <xs:annotation>
                             <xs:documentation>Specifies whether the ThmUtil default window proc should process WM_SIZE and WM_SIZING events.</xs:documentation>
@@ -202,8 +199,6 @@
                             <xs:documentation>Width of the window.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
         </xs:complexType>
     </xs:element>
 

@@ -65,7 +65,7 @@ static HRESULT ParseImage(
     __in IXMLDOMNode* pElement,
     __out HBITMAP* phImage
     );
-static HRESULT ParseApplication(
+static HRESULT ParseWindow(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
     __in IXMLDOMElement* pElement,
@@ -78,13 +78,13 @@ static HRESULT ParseFonts(
 static HRESULT ParsePages(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     );
 static HRESULT ParseImageLists(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     );
 static HRESULT ParseControls(
@@ -2050,25 +2050,13 @@ static HRESULT ParseTheme(
     hr = ParseImage(hModule, wzRelativePath, pThemeElement, &pTheme->hImage);
     ExitOnFailure(hr, "Failed while parsing theme image.");
 
-    // Parse the application element.
-    hr = ParseApplication(hModule, wzRelativePath, pThemeElement, pTheme);
-    ExitOnFailure(hr, "Failed to parse theme application element.");
-
     // Parse the fonts.
     hr = ParseFonts(pThemeElement, pTheme);
     ExitOnFailure(hr, "Failed to parse theme fonts.");
 
-    // Parse any imagelists.
-    hr = ParseImageLists(hModule, wzRelativePath, pThemeElement, pTheme);
-    ExitOnFailure(hr, "Failed to parse image lists.");
-
-    // Parse the pages.
-    hr = ParsePages(hModule, wzRelativePath, pThemeElement, pTheme);
-    ExitOnFailure(hr, "Failed to parse theme pages.");
-
-    // Parse the non-paged controls.
-    hr = ParseControls(hModule, wzRelativePath, pThemeElement, pTheme, NULL);
-    ExitOnFailure(hr, "Failed to parse theme controls.");
+    // Parse the window element.
+    hr = ParseWindow(hModule, wzRelativePath, pThemeElement, pTheme);
+    ExitOnFailure(hr, "Failed to parse theme window element.");
 
     *ppTheme = pTheme;
     pTheme = NULL;
@@ -2158,7 +2146,7 @@ LExit:
     return hr;
 }
 
-static HRESULT ParseApplication(
+static HRESULT ParseWindow(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
     __in IXMLDOMElement* pElement,
@@ -2332,6 +2320,18 @@ static HRESULT ParseApplication(
         ExitOnFailure(hr, "Failed to copy application caption.");
     }
 
+    // Parse any image lists.
+    hr = ParseImageLists(hModule, wzRelativePath, pixn, pTheme);
+    ExitOnFailure(hr, "Failed to parse image lists.");
+
+    // Parse the pages.
+    hr = ParsePages(hModule, wzRelativePath, pixn, pTheme);
+    ExitOnFailure(hr, "Failed to parse theme pages.");
+
+    // Parse the non-paged controls.
+    hr = ParseControls(hModule, wzRelativePath, pixn, pTheme, NULL);
+    ExitOnFailure(hr, "Failed to parse theme controls.");
+
 LExit:
     ReleaseStr(sczIconFile);
     ReleaseBSTR(bstr);
@@ -2504,7 +2504,7 @@ LExit:
 static HRESULT ParsePages(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     )
 {
@@ -2569,7 +2569,7 @@ LExit:
 static HRESULT ParseImageLists(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     )
 {
