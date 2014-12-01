@@ -123,8 +123,7 @@
             <xs:attribute name="Name" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>
-                        Relative path to an image file that can serve as a single source for images in the rest of the
-                        theme. This image is referenced by controls using the SourceX and SourceY attributes.
+                        Optional name for the page.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
