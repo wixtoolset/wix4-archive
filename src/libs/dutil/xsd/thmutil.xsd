@@ -623,8 +623,18 @@
             <xs:simpleContent>
                 <xs:extension base="xs:string">
                     <xs:annotation>
-                        <xs:documentation>Caption of the tab.</xs:documentation>
+                        <xs:documentation>
+                            Caption of the tab.
+                            Mutually exclusive with the StringId attribute.
+                        </xs:documentation>
                     </xs:annotation>
+                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Identifier that references a string resource in the module to define the caption of the tab.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
