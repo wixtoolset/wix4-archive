@@ -3212,7 +3212,7 @@ static HRESULT ParseColumns(
     IXMLDOMNode* pixnChild = NULL;
     BSTR bstrText = NULL;
 
-    hr = XmlSelectNodes(pixn, L"Column|c", &pixnl);
+    hr = XmlSelectNodes(pixn, L"Column", &pixnl);
     ExitOnFailure(hr, "Failed to select child column nodes.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cColumns));
@@ -3235,11 +3235,7 @@ static HRESULT ParseColumns(
             hr = XmlGetAttributeNumber(pixnChild, L"Width", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
             if (S_FALSE == hr)
             {
-                hr = XmlGetAttributeNumber(pixnChild, L"w", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
-                if (S_FALSE == hr)
-                {
-                    pControl->ptcColumns[i].nBaseWidth = 100;
-                }
+                pControl->ptcColumns[i].nBaseWidth = 100;
             }
             ExitOnFailure(hr, "Failed to get column width attribute.");
 
@@ -3248,7 +3244,7 @@ static HRESULT ParseColumns(
             {
                 hr = S_OK;
             }
-            ExitOnFailure(hr, "Failed to find expands attribute.");
+            ExitOnFailure(hr, "Failed to get expands attribute.");
 
             hr = StrAllocString(&(pControl->ptcColumns[i].pszName), bstrText, 0);
             ExitOnFailure(hr, "Failed to copy column name.");
