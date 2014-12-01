@@ -409,12 +409,23 @@
             <xs:simpleContent>
                 <xs:extension base="xs:string">
                     <xs:annotation>
-                        <xs:documentation>Text to display as the link. Use HTML &lt;a href="URL"&gt; to create a link.</xs:documentation>
+                        <xs:documentation>
+                            Text to display as the link.
+                            Use HTML &lt;a href="URL"&gt; to create a link.
+                            Mutually exclusive with the StringId attribute.
+                        </xs:documentation>
                     </xs:annotation>
                     <xs:attributeGroup ref="CommonControlAttributes" />
                     <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
                         <xs:annotation>
                             <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Identifier that references a string resource in the module to define the text for the control.
+                            </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                 </xs:extension>
