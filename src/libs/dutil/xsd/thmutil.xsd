@@ -248,48 +248,47 @@
         <xs:annotation>
             <xs:documentation>Defines a button.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text to display in the button.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="ImageFile" type="xs:string">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Relative path to an image file to define a graphic button.
-                                The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
-                                Mutually exclusive with ImageResource and SourceX and SourceY attributes.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="ImageResource" type="xs:string">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references an image resource in the module to define a graphic button.
-                                The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
-                                Mutually exclusive with ImageFile and SourceX and SourceY attributes.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text to display in the button.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ImageFile" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Relative path to an image file to define a graphic button.
+                        The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
+                        Mutually exclusive with ImageResource and SourceX and SourceY attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ImageResource" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references an image resource in the module to define a graphic button.
+                        The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
+                        Mutually exclusive with ImageFile and SourceX and SourceY attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -297,30 +296,29 @@
         <xs:annotation>
             <xs:documentation>Defines a checkbox.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text to display beside the checkbox.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text to display beside the checkbox.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -364,40 +362,39 @@
         <xs:annotation>
             <xs:documentation>Defines a hyperlink.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text to display as the link.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the unselected font.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="HoverFontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is hovered over.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="SelectedFontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is selected.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text to display as the link.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the unselected font.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="HoverFontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is hovered over.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="SelectedFontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is selected.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -405,31 +402,30 @@
         <xs:annotation>
             <xs:documentation>Defines a text block with support for HTML &lt;a&gt; tags.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text to display as the link.
-                            Use HTML &lt;a href="URL"&gt; to create a link.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text to display as the link.
+                    Use HTML &lt;a href="URL"&gt; to create a link.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -456,40 +452,39 @@
         <xs:annotation>
             <xs:documentation>Defines a label.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text for the label to display.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="Center" type="YesNoType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation>Specifies whether the text should be centered horizontally in the width of the control. Default is "no".</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="DisablePrefix" type="YesNoType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation>By default ampersands (&amp;) in the text will underline the next character and treat it as an accelerator key. Set this attribute to "yes" to disable that behavior. Default is "no".</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the label.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text for the label to display.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="Center" type="YesNoType" use="optional">
+                <xs:annotation>
+                    <xs:documentation>Specifies whether the text should be centered horizontally in the width of the control. Default is "no".</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="DisablePrefix" type="YesNoType" use="optional">
+                <xs:annotation>
+                    <xs:documentation>By default ampersands (&amp;) in the text will underline the next character and treat it as an accelerator key. Set this attribute to "yes" to disable that behavior. Default is "no".</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the label.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -566,35 +561,34 @@
         <xs:annotation>
             <xs:documentation>Defines an individual radio button within a set of radio buttons.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Text to display beside the radio button.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the text for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="Value" type="xs:string">
-                        <xs:annotation>
-                            <xs:documentation>Optional value used when setting the variable associated with the set of radio buttons.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text to display beside the radio button.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Value" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Optional value used when setting the variable associated with the set of radio buttons.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -618,32 +612,31 @@
         <xs:annotation>
             <xs:documentation>Defines a rich edit control.</xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:annotation>
-                        <xs:documentation>
-                            Initial text for the control.
-                            Mutually exclusive with the StringId attribute.
-                        </xs:documentation>
-                    </xs:annotation>
-                    <xs:attributeGroup ref="CommonControlAttributes" />
-                    <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Numeric identifier to the Font element that serves as the font for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="StringId" type="xs:nonNegativeInteger">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Identifier that references a string resource in the module to define the initial text for the control.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:extension>
-            </xs:simpleContent>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Initial text for the control.
+                    Mutually exclusive with the StringId attribute.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Numeric identifier to the Font element that serves as the font for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the initial text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -695,6 +688,34 @@
                     <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="Text">
+        <xs:annotation>
+            <xs:documentation>
+                Defines text for the parent control based on a condition.
+                If multiple Text elements are given for one control, the conditions should be mutually exclusive (when multiple conditions are true, the behavior is undefined and may be changed at any time).
+                If none of the conditions of a control's Text elements are true, then it uses the text of the Text element without the Condition attribute.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Text for the parent control.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute name="Condition" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The condition that determines when the parent control will use this text.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>                
+            </xs:simpleContent>
         </xs:complexType>
     </xs:element>
 

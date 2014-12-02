@@ -124,6 +124,10 @@ static HRESULT ParseTabs(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
     );
+static HRESULT ParseText(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    );
 static HRESULT FindImageList(
     __in THEME* pTheme,
     __in_z LPCWSTR wzImageListName,
@@ -178,6 +182,9 @@ static void FreePage(
     );
 static void FreeControl(
     __in THEME_CONTROL* pControl
+    );
+static void FreeConditionalText(
+    __in THEME_CONDITIONAL_TEXT* pConditionalText
     );
 static void FreeImageList(
     __in THEME_IMAGELIST* pImageList
@@ -756,6 +763,12 @@ DAPI_(HRESULT) ThemeLocalize(
 
         hr = LocLocalizeString(pWixLoc, &pControl->sczText);
         ExitOnFailure(hr, "Failed to localize control text.");
+
+        for (DWORD j = 0; j < pControl->cConditionalText; ++j)
+        {
+            hr = LocLocalizeString(pWixLoc, &pControl->rgConditionalText[j].sczText);
+            ExitOnFailure(hr, "Failed to localize conditional text.");
+        }
 
         for (DWORD j = 0; j < pControl->cColumns; ++j)
         {
@@ -1354,11 +1367,44 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 }
             }
             
-            // Try to format each control's text, except for editboxes since their text comes from the user.
-            if (pTheme->pfnFormatString && pControl->sczText && *pControl->sczText && THEME_CONTROL_TYPE_EDITBOX != pControl->type)
+            // Try to format each control's text based on context, except for editboxes since their text comes from the user.
+            if (pTheme->pfnFormatString && ((pControl->sczText && *pControl->sczText) || pControl->cConditionalText) && THEME_CONTROL_TYPE_EDITBOX != pControl->type)
             {
-                hr = pTheme->pfnFormatString(pControl->sczText, &sczText);
-                ExitOnFailure(hr, "Failed to format string: %ls", pControl->sczText);
+                LPWSTR wzText = pControl->sczText;
+
+                if (pTheme->pfnEvaluateCondition)
+                {
+                    // As documented in the xsd, if there are multiple conditions that are true at the same time then the behavior is undefined.
+                    // This is the current implementation and can change at any time.
+                    for (DWORD j = 0; j < pControl->cConditionalText; ++j)
+                    {
+                        THEME_CONDITIONAL_TEXT* pConditionalText = pControl->rgConditionalText + j;
+
+                        if (pConditionalText->sczCondition)
+                        {
+                            BOOL fCondition = FALSE;
+
+                            hr = pTheme->pfnEvaluateCondition(pConditionalText->sczCondition, &fCondition);
+                            ExitOnFailure(hr, "Failed to evaluate condition: %ls", pConditionalText->sczCondition);
+
+                            if (fCondition)
+                            {
+                                wzText = pConditionalText->sczText;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (wzText && *wzText)
+                {
+                    hr = pTheme->pfnFormatString(wzText, &sczText);
+                    ExitOnFailure(hr, "Failed to format string: %ls", wzText);
+                }
+                else
+                {
+                    ReleaseNullStr(sczText);
+                }
 
                 ThemeSetTextControl(pTheme, pControl->wId, sczText);
             }
@@ -2640,12 +2686,12 @@ static HRESULT ParseControls(
     // Subtract the preprocessed controls.
     cNewControls -= cPreprocessedControls;
 
-    // If we are creating top level controls (no page provided), subtract the font and
-    // page elements and "application" element since they are all siblings and inflate
-    // the count.
+    // If we are creating top level controls (no page provided),
+    // subtract the Page elements and ImageList elements
+    // since they are all siblings and inflate the count.
     if (!pPage)
     {
-        cNewControls = cNewControls - pTheme->cFonts - pTheme->cPages - pTheme->cImageLists - 1;
+        cNewControls = cNewControls - pTheme->cPages - pTheme->cImageLists;
     }
 
     if (!cNewControls)
@@ -2655,14 +2701,14 @@ static HRESULT ParseControls(
 
     if (pPage)
     {
-        hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices + cNewControls, sizeof(DWORD), cNewControls);
+        hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cNewControls);
         ExitOnFailure(hr, "Failed to reallocate page controls.");
 
         iPageControl = pPage->cControlIndices;
         pPage->cControlIndices += cNewControls;
     }
 
-    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls + cNewControls, sizeof(THEME_CONTROL), cNewControls);
+    hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cNewControls);
     ExitOnFailure(hr, "Failed to reallocate theme controls.");
 
     iControl = pTheme->cControls;
@@ -2760,6 +2806,8 @@ static HRESULT ParseControls(
         hr = S_OK;
     }
 
+    AssertSz(iControl == pTheme->cControls, "The number of parsed controls didn't match the number of expected controls.");
+
 LExit:
     ReleaseBSTR(bstrType);
     ReleaseObject(pixn);
@@ -2779,9 +2827,9 @@ static HRESULT ParseControl(
     )
 {
     HRESULT hr = S_OK;
-    DWORD dwId = 0;
+    DWORD dwId = iControl;
     THEME_CONTROL* pControl = NULL;
-    DWORD dwValue = iControl;
+    DWORD dwValue = 0;
     BOOL fValue = FALSE;
     BSTR bstrText = NULL;
 
@@ -2912,26 +2960,36 @@ static HRESULT ParseControl(
         }
     }
 
-    hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pControl->uStringId));
-    ExitOnFailure(hr, "Failed when querying control StringId attribute.");
+    hr = ParseText(pixn, pControl);
+    ExitOnFailure(hr, "Failed to parse text nodes of the control.");
 
-    if (S_FALSE == hr)
+    if (pControl->cConditionalText)
     {
         pControl->uStringId = UINT_MAX;
+    }
+    else
+    {
+        hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pControl->uStringId));
+        ExitOnFailure(hr, "Failed when querying control StringId attribute.");
 
-        hr = XmlGetText(pixn, &bstrText);
-        ExitOnFailure(hr, "Failed to get control text.");
-
-        if (S_OK == hr)
+        if (S_FALSE == hr)
         {
-            hr = StrAllocString(&pControl->sczText, bstrText, 0);
-            ExitOnFailure(hr, "Failed to copy control text.");
+            pControl->uStringId = UINT_MAX;
 
-            ReleaseNullBSTR(bstrText);
-        }
-        else if (S_FALSE == hr)
-        {
-            hr = S_OK;
+            hr = XmlGetText(pixn, &bstrText);
+            ExitOnFailure(hr, "Failed to get control text.");
+
+            if (S_OK == hr)
+            {
+                hr = StrAllocString(&pControl->sczText, bstrText, 0);
+                ExitOnFailure(hr, "Failed to copy control text.");
+
+                ReleaseNullBSTR(bstrText);
+            }
+            else if (S_FALSE == hr)
+            {
+                hr = S_OK;
+            }
         }
     }
 
@@ -3152,7 +3210,6 @@ static HRESULT ParseBillboards(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     DWORD i = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixnChild = NULL;
@@ -3166,11 +3223,8 @@ static HRESULT ParseBillboards(
 
     if (0 < pControl->cBillboards)
     {
-        hr = ::SizeTMult(sizeof(THEME_BILLBOARD), pControl->cBillboards, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_BILLBOARD structs.", pControl->cBillboards);
-
-        pControl->ptbBillboards = static_cast<THEME_BILLBOARD*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pControl->ptbBillboards, hr, E_OUTOFMEMORY, "Failed to allocate billboard image structs.");
+        hr = MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->ptbBillboards), sizeof(THEME_BILLBOARD), pControl->cBillboards);
+        ExitOnFailure(hr, "Failed to allocate billboard image structs.");
 
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
@@ -3198,7 +3252,6 @@ static HRESULT ParseColumns(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     DWORD i = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixnChild = NULL;
@@ -3212,11 +3265,8 @@ static HRESULT ParseColumns(
 
     if (0 < pControl->cColumns)
     {
-        hr = ::SizeTMult(sizeof(THEME_COLUMN), pControl->cColumns, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs.", pControl->cColumns);
-
-        pControl->ptcColumns = static_cast<THEME_COLUMN*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pControl->ptcColumns, hr, E_OUTOFMEMORY, "Failed to allocate column structs.");
+        hr = MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->ptcColumns), sizeof(THEME_COLUMN), pControl->cColumns);
+        ExitOnFailure(hr, "Failed to allocate column structs.");
 
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
@@ -3298,14 +3348,14 @@ static HRESULT ParseRadioButtons(
         {
             if (pPage)
             {
-                hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices + cRadioButtons, sizeof(DWORD), cRadioButtons);
+                hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cRadioButtons);
                 ExitOnFailure(hr, "Failed to reallocate page controls.");
 
                 iPageControl = pPage->cControlIndices;
                 pPage->cControlIndices += cRadioButtons;
             }
 
-            hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls + cRadioButtons, sizeof(THEME_CONTROL), cRadioButtons);
+            hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cRadioButtons);
             ExitOnFailure(hr, "Failed to reallocate theme controls.");
 
             iControl = pTheme->cControls;
@@ -3365,7 +3415,6 @@ static HRESULT ParseTabs(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     DWORD i = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixnChild = NULL;
@@ -3379,11 +3428,8 @@ static HRESULT ParseTabs(
 
     if (0 < pControl->cTabs)
     {
-        hr = ::SizeTMult(sizeof(THEME_TAB), pControl->cTabs, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_TAB structs.", pControl->cTabs);
-
-        pControl->pttTabs = static_cast<THEME_TAB*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pControl->pttTabs, hr, E_OUTOFMEMORY, "Failed to allocate tab structs.");
+        hr = MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->pttTabs), sizeof(THEME_TAB), pControl->cTabs);
+        ExitOnFailure(hr, "Failed to allocate tab structs.");
 
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
@@ -3393,6 +3439,76 @@ static HRESULT ParseTabs(
 
             hr = StrAllocString(&(pControl->pttTabs[i].pszName), bstrText, 0);
             ExitOnFailure(hr, "Failed to copy tab name.");
+
+            ++i;
+            ReleaseNullBSTR(bstrText);
+        }
+    }
+
+LExit:
+    ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseBSTR(bstrText);
+
+    return hr;
+}
+
+
+static HRESULT ParseText(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD i = 0;
+    IXMLDOMNodeList* pixnl = NULL;
+    IXMLDOMNode* pixnChild = NULL;
+    BSTR bstrText = NULL;
+
+    hr = XmlSelectNodes(pixn, L"Text", &pixnl);
+    ExitOnFailure(hr, "Failed to select child Text nodes.");
+
+    hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cConditionalText));
+    ExitOnFailure(hr, "Failed to count the number of Text nodes.");
+
+    if (0 < pControl->cConditionalText)
+    {
+        MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->rgConditionalText), sizeof(THEME_CONDITIONAL_TEXT), pControl->cConditionalText);
+        ExitOnNull(pControl->rgConditionalText, hr, E_OUTOFMEMORY, "Failed to allocate THEME_CONDITIONAL_TEXT structs.");
+
+        i = 0;
+        while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
+        {
+            THEME_CONDITIONAL_TEXT* pConditionalText = pControl->rgConditionalText + i;
+
+            hr = XmlGetAttributeEx(pixnChild, L"Condition", &pConditionalText->sczCondition);
+            if (E_NOTFOUND != hr)
+            {
+                ExitOnFailure(hr, "Failed when querying Text/@Condition attribute.");
+            }
+
+            hr = XmlGetText(pixnChild, &bstrText);
+            ExitOnFailure(hr, "Failed to get inner text of Text element.");
+
+            if (S_OK == hr)
+            {
+                if (pConditionalText->sczCondition)
+                {
+                    hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to conditional text.");
+                }
+                else
+                {
+                    if (pControl->sczText)
+                    {
+                        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                        ExitOnFailure(hr, "The text for the '%ls' control is specified multiple times.", pControl->sczName);
+                    }
+
+                    hr = StrAllocString(&pControl->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to control.");
+                }
+            }
 
             ++i;
             ReleaseNullBSTR(bstrText);
@@ -3716,6 +3832,11 @@ static void FreeControl(
             FreeColumn(&(pControl->ptcColumns[i]));
         }
 
+        for (DWORD i = 0; i < pControl->cConditionalText; ++i)
+        {
+            FreeConditionalText(&(pControl->rgConditionalText[i]));
+        }
+
         for (DWORD i = 0; i < pControl->cTabs; ++i)
         {
             FreeTab(&(pControl->pttTabs[i]));
@@ -3723,6 +3844,7 @@ static void FreeControl(
 
         ReleaseMem(pControl->ptbBillboards)
         ReleaseMem(pControl->ptcColumns);
+        ReleaseMem(pControl->rgConditionalText);
         ReleaseMem(pControl->pttTabs);
     }
 }
@@ -3744,6 +3866,15 @@ static void FreeColumn(
     )
 {
     ReleaseStr(pColumn->pszName);
+}
+
+
+static void FreeConditionalText(
+    __in THEME_CONDITIONAL_TEXT* pConditionalText
+    )
+{
+    ReleaseStr(pConditionalText->sczCondition);
+    ReleaseStr(pConditionalText->sczText);
 }
 
 

@@ -94,6 +94,12 @@ struct THEME_TAB
     UINT uStringId;
 };
 
+struct THEME_CONDITIONAL_TEXT
+{
+    LPWSTR sczCondition;
+    LPWSTR sczText;
+};
+
 // THEME_ASSIGN_CONTROL_ID - Used to apply a specific id to a named control (usually
 //                           to set the WM_COMMAND).
 struct THEME_ASSIGN_CONTROL_ID
@@ -158,6 +164,10 @@ struct THEME_CONTROL
     // Used by tab controls
     THEME_TAB *pttTabs;
     DWORD cTabs;
+
+    // Used by controls that have text
+    DWORD cConditionalText;
+    THEME_CONDITIONAL_TEXT* rgConditionalText;
 
     // state variables that should be ignored
     HWND hWnd;
