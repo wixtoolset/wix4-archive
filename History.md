@@ -1,3 +1,5 @@
+* SeanHall: Make major breaking changes to thmutil schema while implementing the new Text element to allow setting the text based on context.
+
 * SeanHall: WIXFEAT:4149 - Add support for variables and radio buttons in thmutil, and update WixStdBA to use the new functionality.
 
 * FireGiant: WIXBUG:4561 - update WixCop to migrate v3 source code to v4.0.
