@@ -26,6 +26,7 @@ namespace WixToolset.Extensions
     public sealed class BalCompiler : CompilerExtension
     {
         private SourceLineNumber addedConditionLineNumber;
+        private Dictionary<string, Row> prereqInfoRows;
 
         /// <summary>
         /// Instantiate a new BalCompiler.
@@ -33,6 +34,7 @@ namespace WixToolset.Extensions
         public BalCompiler()
         {
             this.addedConditionLineNumber = null;
+            prereqInfoRows = new Dictionary<string, Row>();
             this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/bal";
         }
 
@@ -88,6 +90,7 @@ namespace WixToolset.Extensions
         public override void ParseAttribute(XElement parentElement, XAttribute attribute, IDictionary<string, string> context)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(parentElement);
+            Row row;
 
             switch (parentElement.Name.LocalName)
             {
@@ -104,11 +107,78 @@ namespace WixToolset.Extensions
                     {
                         switch (attribute.Name.LocalName)
                         {
-                            case "PrereqSupportPackage":
+                            case "PrereqLicenseFile":
+
+                                if (!prereqInfoRows.TryGetValue(packageId, out row))
+                                {
+                                    // at the time the extension attribute is parsed, the compiler might not yet have
+                                    // parsed the PrereqPackage attribute, so we need to get it directly from the parent element.
+                                    XAttribute prereqPackage = parentElement.Attribute(this.Namespace + "PrereqPackage");
+
+                                    if (null != prereqPackage && YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, prereqPackage))
+                                    {
+                                        row = this.Core.CreateRow(sourceLineNumbers, "WixMbaPrereqInformation");
+                                        row[0] = packageId;
+
+                                        prereqInfoRows.Add(packageId, row);
+                                    }
+                                    else
+                                    {
+                                        this.Core.OnMessage(BalErrors.AttributeRequiresPrereqPackage(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseFile"));
+                                        break;
+                                    }
+                                }
+
+                                if (null != row[2])
+                                {
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseFile", "PrereqLicenseUrl"));
+                                }
+                                else
+                                {
+                                    row[1] = this.Core.GetAttributeValue(sourceLineNumbers, attribute);
+                                }
+                                break;
+                            case "PrereqLicenseUrl":
+
+                                if (!prereqInfoRows.TryGetValue(packageId, out row))
+                                {
+                                    // at the time the extension attribute is parsed, the compiler might not yet have
+                                    // parsed the PrereqPackage attribute, so we need to get it directly from the parent element.
+                                    XAttribute prereqPackage = parentElement.Attribute(this.Namespace + "PrereqPackage");
+
+                                    if (null != prereqPackage && YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, prereqPackage))
+                                    {
+                                        row = this.Core.CreateRow(sourceLineNumbers, "WixMbaPrereqInformation");
+                                        row[0] = packageId;
+
+                                        prereqInfoRows.Add(packageId, row);
+                                    }
+                                    else
+                                    {
+                                        this.Core.OnMessage(BalErrors.AttributeRequiresPrereqPackage(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseUrl"));
+                                        break;
+                                    }
+                                }
+
+                                if (null != row[1])
+                                {
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseUrl", "PrereqLicenseFile"));
+                                }
+                                else
+                                {
+                                    row[2] = this.Core.GetAttributeValue(sourceLineNumbers, attribute);
+                                }
+                                break;
+                            case "PrereqPackage":
                                 if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
                                 {
-                                    Row row = this.Core.CreateRow(sourceLineNumbers, "MbaPrerequisiteSupportPackage");
-                                    row[0] = packageId;
+                                    if (!prereqInfoRows.TryGetValue(packageId, out row))
+                                    {
+                                        row = this.Core.CreateRow(sourceLineNumbers, "WixMbaPrereqInformation");
+                                        row[0] = packageId;
+
+                                        prereqInfoRows.Add(packageId, row);
+                                    }
                                 }
                                 break;
                             default:
@@ -132,7 +202,7 @@ namespace WixToolset.Extensions
                             case "Overridable":
                                 if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
                                 {
-                                    Row row = this.Core.CreateRow(sourceLineNumbers, "WixStdbaOverridableVariable");
+                                    row = this.Core.CreateRow(sourceLineNumbers, "WixStdbaOverridableVariable");
                                     row[0] = variableName;
                                 }
                                 break;
@@ -398,12 +468,9 @@ namespace WixToolset.Extensions
         private void ParseWixManagedBootstrapperApplicationHostElement(XElement node)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
-            string licenseFile = null;
-            string licenseUrl = null;
             string logoFile = null;
             string themeFile = null;
             string localizationFile = null;
-            string netFxPackageId = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -411,12 +478,6 @@ namespace WixToolset.Extensions
                 {
                     switch (attrib.Name.LocalName)
                     {
-                        case "LicenseFile":
-                            licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            break;
-                        case "LicenseUrl":
-                            licenseUrl = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            break;
                         case "LogoFile":
                             logoFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
@@ -425,9 +486,6 @@ namespace WixToolset.Extensions
                             break;
                         case "LocalizationFile":
                             localizationFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            break;
-                        case "NetFxPackageId":
-                            netFxPackageId = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.Core.UnexpectedAttribute(node, attrib);
@@ -442,27 +500,8 @@ namespace WixToolset.Extensions
 
             this.Core.ParseForExtensionElements(node);
 
-            if (String.IsNullOrEmpty(licenseFile) == String.IsNullOrEmpty(licenseUrl))
-            {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "LicenseFile", "LicenseUrl", true));
-            }
-
             if (!this.Core.EncounteredError)
             {
-                if (!String.IsNullOrEmpty(licenseFile))
-                {
-                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
-                    wixVariableRow.Id = "WixMbaPrereqLicenseRtf";
-                    wixVariableRow.Value = licenseFile;
-                }
-
-                if (!String.IsNullOrEmpty(licenseUrl))
-                {
-                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
-                    wixVariableRow.Id = "WixMbaPrereqLicenseUrl";
-                    wixVariableRow.Value = licenseUrl;
-                }
-
                 if (!String.IsNullOrEmpty(logoFile))
                 {
                     WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
@@ -482,13 +521,6 @@ namespace WixToolset.Extensions
                     WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
                     wixVariableRow.Id = "PreqbaThemeWxl";
                     wixVariableRow.Value = localizationFile;
-                }
-
-                if (!String.IsNullOrEmpty(netFxPackageId))
-                {
-                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
-                    wixVariableRow.Id = "WixMbaPrereqPackageId";
-                    wixVariableRow.Value = netFxPackageId;
                 }
             }
         }
