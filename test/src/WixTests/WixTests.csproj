@@ -38,6 +38,7 @@
     <Compile Include="Burn\Burn.SearchTests.cs" />
     <Compile Include="Burn\Burn.SlipstreamTests.cs" />
     <Compile Include="Burn\Burn.UpdateBundleTests.cs" />
+    <Compile Include="Extensions\VSExtension\VSExtension.VSExtensionFixture.cs" />
     <Compile Include="PackageBuilder.cs" />
     <Compile Include="PatchBuilder.cs" />
     <Compile Include="WixTests.cs" />

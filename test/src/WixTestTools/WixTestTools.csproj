@@ -116,6 +116,7 @@
     <Compile Include="WixprojMSBuild.cs" />
     <Compile Include="WixTestBase.cs" />
     <Compile Include="WixTestContext.cs" />
+    <Compile Include="WixTestFixture.cs" />
     <Compile Include="WixTool.cs" />
     <Compile Include="Torch.cs" />
     <Compile Include="WixToolArguments.cs" />

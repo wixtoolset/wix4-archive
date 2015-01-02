@@ -27,37 +27,37 @@ namespace WixTest
         }
 
         /// <summary>
-        /// Folder for extracted files
+        /// Folder for extracted files.
         /// </summary>
         public static readonly string ExtractedFilesFolder = "extracted";
 
         /// <summary>
-        /// Folder for .msi file types
+        /// Folder for .msi file types.
         /// </summary>
         public static readonly string MsiFolder = "msis";
 
         /// <summary>
-        /// Folder for .msm file types
+        /// Folder for .msm file types.
         /// </summary>
         public static readonly string MsmFolder = "msms";
 
         /// <summary>
-        /// Folder for .msp file types
+        /// Folder for .msp file types.
         /// </summary>
         public static readonly string MspFolder = "msps";
 
         /// <summary>
-        /// Folder for .mst file types
+        /// Folder for .mst file types.
         /// </summary>
         public static readonly string MstFolder = "msts";
 
         /// <summary>
-        /// Folder for .wixobj file types
+        /// Folder for .wixobj file types.
         /// </summary>
         public static readonly string WixobjFolder = "wixobjs";
 
         /// <summary>
-        /// Folder for .wixout file types
+        /// Folder for .wixout file types.
         /// </summary>
         public static readonly string WixoutFolder = "wixouts";
 
@@ -69,7 +69,7 @@ namespace WixTest
         /// <summary>
         /// The build flavor for test runs.
         /// </summary>
-        public static string Flavor {get; set; }
+        public static string Flavor { get; set; }
 
         /// <summary>
         /// The default location for MSBuild.

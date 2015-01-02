@@ -28,43 +28,36 @@ namespace Bootstrapper
     using namespace WixTest;
     using namespace Xunit;
 
-    public ref class BurnUnitTest :
-        public WixTestBase,
-        public IDisposable
+    public ref class BurnUnitTest : WixTestBase, IUseFixture<BurnTestFixture^>
     {
-    public: 
-        // Run code before running the first test in the class
+    public:
         BurnUnitTest()
         {
-            HRESULT hr = XmlInitialize();
-            TestThrowOnFailure(hr, L"Failed to initialize XML support.");
-
-            hr = RegInitialize();
-            TestThrowOnFailure(hr, L"Failed to initialize Regutil.");
-        }
-
-        // Run code after all tests in a class have run
-        ~BurnUnitTest()
-        {
-            XmlUninitialize();
-            RegUninitialize();
         }
 
         void TestInitialize() override
         {
+            WixTestBase::TestInitialize();
+
             HRESULT hr = S_OK;
 
             LogInitialize(::GetModuleHandleW(NULL));
 
             hr = LogOpen(NULL, L"BurnUnitTest", NULL, L"txt", FALSE, FALSE, NULL);
             TestThrowOnFailure(hr, L"Failed to open log.");
-
-            PlatformInitialize();
         }
 
         void TestUninitialize() override
         {
             LogUninitialize(FALSE);
+
+            WixTestBase::TestUninitialize();
+        }
+
+        virtual void SetFixture(BurnTestFixture^ fixture)
+        {
+            // Don't care about the fixture, just need it to be created and disposed.
+            UNREFERENCED_PARAMETER(fixture);
         }
     }; 
 }
