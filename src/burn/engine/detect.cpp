@@ -38,7 +38,7 @@ static HRESULT DownloadUpdateFeed(
     __in_z LPCWSTR wzBundleId,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_UPDATE* pUpdate,
-    __out LPWSTR* psczTempFile
+    __deref_inout_z LPWSTR* psczTempFile
     );
 
 // function definitions
@@ -337,7 +337,7 @@ static HRESULT DownloadUpdateFeed(
     __in_z LPCWSTR wzBundleId,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_UPDATE* pUpdate,
-    __out LPWSTR* psczTempFile
+    __deref_inout_z LPWSTR* ppwzTempFile
     )
 {
     HRESULT hr = S_OK;
@@ -350,10 +350,10 @@ static HRESULT DownloadUpdateFeed(
     DWORD64 qwDownloadSize = 0;
 
     // Always do our work in the working folder, even if cached.
-    hr = PathCreateTimeBasedTempFile(NULL, L"UpdateFeed", NULL, L"xml", psczTempFile, NULL);
+    hr = PathCreateTimeBasedTempFile(NULL, L"UpdateFeed", NULL, L"xml", ppwzTempFile, NULL);
     ExitOnFailure(hr, "Failed to create UpdateFeed based on current system time.");
 
-    // Do we need a means of the BA to pass in a username and password? If so, we should copy it to downloadSource here
+    // Do we need a means of the BA to pass in a user name and password? If so, we should copy it to downloadSource here
     hr = StrAllocString(&downloadSource.sczUrl, pUpdate->sczUpdateSource, 0);
     ExitOnFailure(hr, "Failed to copy update url.");
 
@@ -367,10 +367,20 @@ static HRESULT DownloadUpdateFeed(
     authenticationCallback.pv =  static_cast<LPVOID>(&authenticationData);
     authenticationCallback.pfnAuthenticate = &AuthenticationRequired;
 
-    hr = DownloadUrl(&downloadSource, qwDownloadSize, *psczTempFile, &cacheCallback, &authenticationCallback);
-    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, *psczTempFile);
+    hr = DownloadUrl(&downloadSource, qwDownloadSize, *ppwzTempFile, &cacheCallback, &authenticationCallback);
+    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, *ppwzTempFile);
 
 LExit:
+    if (FAILED(hr))
+    {
+        if (*ppwzTempFile)
+        {
+            FileEnsureDelete(*ppwzTempFile);
+        }
+
+        ReleaseNullStr(*ppwzTempFile);
+    }
+
     ReleaseStr(downloadSource.sczUrl);
     ReleaseStr(downloadSource.sczUser);
     ReleaseStr(downloadSource.sczPassword);
