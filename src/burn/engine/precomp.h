@@ -46,6 +46,7 @@
 #include <dirutil.h>
 #include <fileutil.h>
 #include <gdiputil.h>
+#include <guidutil.h>
 #include <logutil.h>
 #include <memutil.h>
 #include <osutil.h>

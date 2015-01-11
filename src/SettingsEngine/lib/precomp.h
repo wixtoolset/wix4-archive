@@ -36,6 +36,7 @@
 #include "dirutil.h"
 #include "pathutil.h"
 #include "fileutil.h"
+#include "guidutil.h"
 #include "iniutil.h"
 #include "logutil.h"
 #include "memutil.h"

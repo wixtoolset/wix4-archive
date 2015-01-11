@@ -74,6 +74,7 @@
     <ClCompile Include="eseutil.cpp" />
     <ClCompile Include="fileutil.cpp" />
     <ClCompile Include="gdiputil.cpp" />
+    <ClCompile Include="guidutil.cpp" />
     <ClCompile Include="iis7util.cpp" />
     <ClCompile Include="inetutil.cpp" />
     <ClCompile Include="iniutil.cpp" />
@@ -130,6 +131,7 @@
     <ClInclude Include="inc\eseutil.h" />
     <ClInclude Include="inc\fileutil.h" />
     <ClInclude Include="inc\gdiputil.h" />
+    <ClInclude Include="inc\guidutil.h" />
     <ClInclude Include="inc\inetutil.h" />
     <ClInclude Include="inc\iniutil.h" />
     <ClInclude Include="inc\jsonutil.h" />
