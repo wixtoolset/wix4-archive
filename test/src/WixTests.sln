@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixTests", "WixTests\WixTests.csproj", "{31FCC013-485E-487D-89D8-6C19EDCDD9A3}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBA", "Utilities\TestBA\TestBA.csproj", "{A8BCF495-43BD-4953-B2AD-67DC58EEAECF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SettingsEngineTest", "SettingsEngineTests\SettingsEngineTest.vcxproj", "{0808C9BC-B0FF-4B13-8A40-40C225D3FEAD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WixCppCliTestTools", "WixCppCliTestTools\WixCppCliTestTools.vcxproj", "{95BABD97-FBDB-453A-AF8A-FA031A07B599}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -243,6 +245,28 @@ Global
 		{0808C9BC-B0FF-4B13-8A40-40C225D3FEAD}.Release|x64.ActiveCfg = Release|Win32
 		{0808C9BC-B0FF-4B13-8A40-40C225D3FEAD}.Release|x86.ActiveCfg = Release|Win32
 		{0808C9BC-B0FF-4B13-8A40-40C225D3FEAD}.Release|x86.Build.0 = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|arm.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|ia64.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|Itanium.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|Win32.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|Win32.Build.0 = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|x64.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|x86.ActiveCfg = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Debug|x86.Build.0 = Debug|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|Any CPU.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|arm.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|ia64.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|Itanium.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|Win32.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|Win32.Build.0 = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|x64.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|x86.ActiveCfg = Release|Win32
+		{95BABD97-FBDB-453A-AF8A-FA031A07B599}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

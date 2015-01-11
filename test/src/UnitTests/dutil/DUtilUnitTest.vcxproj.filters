@@ -24,13 +24,22 @@
     <ClCompile Include="DirUtilTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemUtilTest.cpp">
+    <ClCompile Include="FileUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GuidUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IniUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileUtilTest.cpp">
+    <ClCompile Include="MemUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MonUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PathUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StrUtilTest.cpp">

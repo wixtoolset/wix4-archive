@@ -10,9 +10,8 @@
 #include "precomp.h"
 
 using namespace System;
-using namespace System::Text;
-using namespace System::Collections::Generic;
 using namespace Xunit;
+using namespace WixCppCliTestTools;
 
 const DWORD numIterations = 100000;
 
@@ -49,79 +48,79 @@ namespace DutilTests
             LPWSTR sczExpectedKey = NULL;
             STRINGDICT_HANDLE sdValues = NULL;
 
-            hr = DictCreateWithEmbeddedKey(&sdValues, 0, (void **)&rgValues, offsetof(Value, sczKey), dfFlags);
-            ExitOnFailure(hr, "Failed to create dictionary of values");
-
-            for (DWORD i = 0; i < dwNumIterations; ++i)
+            try
             {
-                cValues++;
+                hr = DictCreateWithEmbeddedKey(&sdValues, 0, (void **)&rgValues, offsetof(Value, sczKey), dfFlags);
+                NativeAssert::Succeeded(hr, "Failed to create dictionary of values");
 
-                hr = MemEnsureArraySize((void **)&rgValues, cValues, sizeof(Value), 5);
-                ExitOnFailure(hr, "Failed to grow value array");
-
-                hr = StrAllocFormatted(&rgValues[i].sczKey, L"%u_a_%u", i, i);
-                ExitOnFailure(hr, "Failed to allocate key for value %u", i, i);
-
-                hr = DictAddValue(sdValues, rgValues + i);
-                ExitOnFailure(hr, "Failed to add item to dict");
-            }
-
-            for (DWORD i = 0; i < dwNumIterations; ++i)
-            {
-                hr = StrAllocFormatted(&sczExpectedKey, L"%u_a_%u", i, i);
-                ExitOnFailure(hr, "Failed to alloc expected key");
-
-                hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
-                ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
-
-                if (0 != wcscmp(sczExpectedKey, valueFound->sczKey))
+                for (DWORD i = 0; i < dwNumIterations; ++i)
                 {
-                    ExitOnFailure(hr, "Item found doesn't match!");
+                    cValues++;
+
+                    hr = MemEnsureArraySize((void **)&rgValues, cValues, sizeof(Value), 5);
+                    NativeAssert::Succeeded(hr, "Failed to grow value array");
+
+                    hr = StrAllocFormatted(&rgValues[i].sczKey, L"%u_a_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate key for value {0}", i);
+
+                    hr = DictAddValue(sdValues, rgValues + i);
+                    NativeAssert::Succeeded(hr, "Failed to add item {0} to dict", i);
                 }
 
-                hr = StrAllocFormatted(&sczExpectedKey, L"%u_A_%u", i, i);
-                ExitOnFailure(hr, "Failed to alloc expected key");
-
-                hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
-
-                if (dfFlags & DICT_FLAG_CASEINSENSITIVE)
+                for (DWORD i = 0; i < dwNumIterations; ++i)
                 {
-                    ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
+                    hr = StrAllocFormatted(&sczExpectedKey, L"%u_a_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate expected key {0}", i);
 
-                    if (0 != _wcsicmp(sczExpectedKey, valueFound->sczKey))
+                    hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
+                    NativeAssert::Succeeded(hr, "Failed to find value {0}", sczExpectedKey);
+
+                    NativeAssert::StringEqual(sczExpectedKey, valueFound->sczKey);
+
+                    hr = StrAllocFormatted(&sczExpectedKey, L"%u_A_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate uppercase expected key {0}", i);
+
+                    hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
+
+                    if (dfFlags & DICT_FLAG_CASEINSENSITIVE)
                     {
-                        hr = E_FAIL;
-                        ExitOnFailure(hr, "Item found doesn't match!");
+                        NativeAssert::Succeeded(hr, "Failed to find value {0}", sczExpectedKey);
+
+                        NativeAssert::StringEqual(sczExpectedKey, valueFound->sczKey, TRUE);
                     }
-                }
-                else
-                {
+                    else
+                    {
+                        if (E_NOTFOUND != hr)
+                        {
+                            hr = E_FAIL;
+                            ExitOnFailure(hr, "This embedded key is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
+                        }
+                    }
+
+                    hr = StrAllocFormatted(&sczExpectedKey, L"%u_b_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate unexpected key {0}", i);
+
+                    hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
                     if (E_NOTFOUND != hr)
                     {
                         hr = E_FAIL;
-                        ExitOnFailure(hr, "This embedded key is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
+                        ExitOnFailure(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
                     }
                 }
-
-                hr = StrAllocFormatted(&sczExpectedKey, L"%u_b_%u", i, i);
-                ExitOnFailure(hr, "Failed to alloc expected key");
-
-                hr = DictGetValue(sdValues, sczExpectedKey, (void **)&valueFound);
-                if (E_NOTFOUND != hr)
+            }
+            finally
+            {
+                for (DWORD i = 0; i < cValues; ++i)
                 {
-                    hr = E_FAIL;
-                    ExitOnFailure(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
+                    ReleaseStr(rgValues[i].sczKey);
                 }
+                ReleaseMem(rgValues);
+                ReleaseStr(sczExpectedKey);
+                ReleaseDict(sdValues);
             }
 
         LExit:
-            for (DWORD i = 0; i < cValues; ++i)
-            {
-                ReleaseStr(rgValues[i].sczKey);
-            }
-            ReleaseMem(rgValues);
-            ReleaseStr(sczExpectedKey);
-            ReleaseDict(sdValues);
+            return;
         }
 
         void StringListTestHelper(DICT_FLAG dfFlags, DWORD dwNumIterations)
@@ -131,58 +130,65 @@ namespace DutilTests
             LPWSTR sczExpectedKey = NULL;
             STRINGDICT_HANDLE sdValues = NULL;
 
-            hr = DictCreateStringList(&sdValues, 0, dfFlags);
-            ExitOnFailure(hr, "Failed to create dictionary of keys");
-
-            for (DWORD i = 0; i < dwNumIterations; ++i)
+            try
             {
-                hr = StrAllocFormatted(&sczKey, L"%u_a_%u", i, i);
-                ExitOnFailure(hr, "Failed to allocate key for value %u", i, i);
+                hr = DictCreateStringList(&sdValues, 0, dfFlags);
+                NativeAssert::Succeeded(hr, "Failed to create dictionary of keys");
 
-                hr = DictAddKey(sdValues, sczKey);
-                ExitOnFailure(hr, "Failed to add key to dict");
-            }
-
-            for (DWORD i = 0; i < dwNumIterations; ++i)
-            {
-                hr = StrAllocFormatted(&sczExpectedKey, L"%u_a_%u", i, i);
-                ExitOnFailure(hr, "Failed to alloc expected key");
-
-                hr = DictKeyExists(sdValues, sczExpectedKey);
-                ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
-
-                hr = StrAllocFormatted(&sczExpectedKey, L"%u_A_%u", i, i);
-                ExitOnFailure(hr, "Failed to alloc expected key");
-
-                hr = DictKeyExists(sdValues, sczExpectedKey);
-                if (dfFlags & DICT_FLAG_CASEINSENSITIVE)
+                for (DWORD i = 0; i < dwNumIterations; ++i)
                 {
-                    ExitOnFailure(hr, "Failed to find value %ls", sczExpectedKey);
+                    hr = StrAllocFormatted(&sczKey, L"%u_a_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate key for value {0}", i);
+
+                    hr = DictAddKey(sdValues, sczKey);
+                    NativeAssert::Succeeded(hr, "Failed to add key {0} to dict", i);
                 }
-                else
+
+                for (DWORD i = 0; i < dwNumIterations; ++i)
                 {
+                    hr = StrAllocFormatted(&sczExpectedKey, L"%u_a_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate expected key {0}", i);
+
+                    hr = DictKeyExists(sdValues, sczExpectedKey);
+                    NativeAssert::Succeeded(hr, "Failed to find value {0}", sczExpectedKey);
+
+                    hr = StrAllocFormatted(&sczExpectedKey, L"%u_A_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate uppercase expected key {0}", i);
+
+                    hr = DictKeyExists(sdValues, sczExpectedKey);
+                    if (dfFlags & DICT_FLAG_CASEINSENSITIVE)
+                    {
+                        NativeAssert::Succeeded(hr, "Failed to find value {0}", sczExpectedKey);
+                    }
+                    else
+                    {
+                        if (E_NOTFOUND != hr)
+                        {
+                            hr = E_FAIL;
+                            ExitOnFailure(hr, "This stringlist dict is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
+                        }
+                    }
+
+                    hr = StrAllocFormatted(&sczExpectedKey, L"%u_b_%u", i, i);
+                    NativeAssert::Succeeded(hr, "Failed to allocate unexpected key {0}", i);
+
+                    hr = DictKeyExists(sdValues, sczExpectedKey);
                     if (E_NOTFOUND != hr)
                     {
                         hr = E_FAIL;
-                        ExitOnFailure(hr, "This stringlist dict is case sensitive, but it seemed to have found something case using case insensitivity!: %ls", sczExpectedKey);
+                        ExitOnFailure(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
                     }
-                }
-
-                hr = StrAllocFormatted(&sczExpectedKey, L"%u_b_%u", i, i);
-                ExitOnFailure(hr, "Failed to alloc expected key");
-
-                hr = DictKeyExists(sdValues, sczExpectedKey);
-                if (E_NOTFOUND != hr)
-                {
-                    hr = E_FAIL;
-                    ExitOnFailure(hr, "Item shouldn't have been found in dictionary: %ls", sczExpectedKey);
-                }
+                }                
+            }
+            finally
+            {
+                ReleaseStr(sczKey);
+                ReleaseStr(sczExpectedKey);
+                ReleaseDict(sdValues);
             }
 
         LExit:
-            ReleaseStr(sczKey);
-            ReleaseStr(sczExpectedKey);
-            ReleaseDict(sdValues);
+            return;
         }
     };
 }
