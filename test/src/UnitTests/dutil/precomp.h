@@ -31,6 +31,10 @@
 #include <strutil.h>
 #include <monutil.h>
 #include <regutil.h>
+#include <varutil.h>
+#include <condutil.h>
+
+#include "VarHelpers.h"
 
 #pragma managed
 #include <vcclr.h>

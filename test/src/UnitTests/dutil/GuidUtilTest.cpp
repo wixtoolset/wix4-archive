@@ -11,7 +11,7 @@
 
 using namespace System;
 using namespace Xunit;
-using namespace WixCppCliTestTools;
+using namespace WixTest;
 
 namespace DutilTests
 {

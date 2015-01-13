@@ -9,16 +9,15 @@
 
 #pragma once
 
-namespace WixCppCliTestTools {
+namespace WixTest {
 
     using namespace System;
     using namespace System::Collections::Generic;
     using namespace System::Linq;
     using namespace Xunit;
-    using namespace WixTest;
 
     public ref class NativeAssert : WixAssert
-	{
+    {
     public:
         static void NotNull(LPCWSTR wz)
         {
@@ -52,7 +51,7 @@ namespace WixCppCliTestTools {
             Assert::Equal(NativeAssert::LPWSTRToString(expected), NativeAssert::LPWSTRToString(actual), comparer);
         }
 
-        static void Succeeded(HRESULT hr, LPCSTR wzFormat, LPCSTR zArg, ... array<LPCSTR>^ zArgs)
+        static void Succeeded(HRESULT hr, LPCSTR zFormat, LPCSTR zArg, ... array<LPCSTR>^ zArgs)
         {
             array<Object^>^ formatArgs = gcnew array<Object^, 1>(zArgs->Length + 1);
             formatArgs[0] = NativeAssert::LPSTRToString(zArg);
@@ -60,17 +59,17 @@ namespace WixCppCliTestTools {
             {
                 formatArgs[i + 1] = NativeAssert::LPSTRToString(zArgs[i]);
             }
-            WixAssert::Succeeded(hr, gcnew String(wzFormat), formatArgs);
+            WixAssert::Succeeded(hr, gcnew String(zFormat), formatArgs);
         }
 
-        static void Succeeded(HRESULT hr, LPCSTR wzFormat, ... array<LPCWSTR>^ wzArgs)
+        static void Succeeded(HRESULT hr, LPCSTR zFormat, ... array<LPCWSTR>^ wzArgs)
         {
             array<Object^>^ formatArgs = gcnew array<Object^, 1>(wzArgs->Length);
             for (int i = 0; i < wzArgs->Length; ++i)
             {
                 formatArgs[i] = NativeAssert::LPWSTRToString(wzArgs[i]);
             }
-            WixAssert::Succeeded(hr, gcnew String(wzFormat), formatArgs);
+            WixAssert::Succeeded(hr, gcnew String(zFormat), formatArgs);
         }
 
         static void ValidReturnCode(HRESULT hr, ... array<HRESULT>^ validReturnCodes)
@@ -87,5 +86,5 @@ namespace WixCppCliTestTools {
         {
             return wz ? gcnew String(wz) : nullptr;
         }
-	};
+    };
 }

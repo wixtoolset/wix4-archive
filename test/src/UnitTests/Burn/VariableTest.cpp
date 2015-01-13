@@ -414,11 +414,7 @@ namespace Bootstrapper
                 Assert::True(EvaluateConditionHelper(&variables, L"VersionMsi >= v1.1"));
 
                 // VersionNT
-                Version^ osVersion = Environment::OSVersion->Version;
-                pin_ptr<const WCHAR> wzOsVersionCondition1 = PtrToStringChars(String::Format(L"VersionNT = v{0}.{1}", osVersion->Major, osVersion->Minor));
-                Assert::True(EvaluateConditionHelper(&variables, wzOsVersionCondition1));
-                pin_ptr<const WCHAR> wzOsVersionCondition2 = PtrToStringChars(String::Format(L"VersionNT <> v{0}.{1}", osVersion->Major, osVersion->Minor));
-                Assert::False(EvaluateConditionHelper(&variables, wzOsVersionCondition2));
+                Assert::True(EvaluateConditionHelper(&variables, L"VersionNT <> v0.0.0.0"));
 
                 // VersionNT64
                 if (nullptr == Environment::GetEnvironmentVariable("ProgramFiles(x86)"))

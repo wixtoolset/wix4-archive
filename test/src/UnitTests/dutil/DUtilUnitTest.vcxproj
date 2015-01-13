@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="CondUtilTest.cpp" />
     <ClCompile Include="DictUtilTest.cpp" />
     <ClCompile Include="DirUtilTests.cpp" />
     <ClCompile Include="FileUtilTest.cpp" />
@@ -43,10 +44,13 @@
     <ClCompile Include="MonUtilTest.cpp" />
     <ClCompile Include="PathUtilTest.cpp" />
     <ClCompile Include="StrUtilTest.cpp" />
+    <ClCompile Include="VarHelpers.cpp" />
+    <ClCompile Include="VarUtilTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />
     <ClInclude Include="error.h" />
+    <ClInclude Include="VarHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UnitTest.rc" />
