@@ -1,3 +1,5 @@
+* SeanHall: Reimplement multiple prereq packages for v4.
+
 * SeanHall: WIXBUG:4609 - Fix incorrect use of BVariantCopy by creating the new method BVariantSetValue.
 
 * SeanHall: Merge in recent changes from wix3.

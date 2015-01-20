@@ -189,7 +189,6 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
 typedef struct _WIXSTDBA_PREREQ_PACKAGE
 {
     LPWSTR sczPackageId;
-    BOOL fAlwaysInstall;
     BOOL fWasAlreadyInstalled;
     BOOL fPlannedToBeInstalled;
     BOOL fSuccessfullyInstalled;
@@ -373,11 +372,7 @@ public: // IBootstrapperApplication
             hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
             if (SUCCEEDED(hr) && pPackage)
             {
-                if (pPrereqPackage->fAlwaysInstall)
-                {
-                    fInstall = TRUE;
-                }
-                else if(pPackage->sczInstallCondition && *pPackage->sczInstallCondition)
+                if (pPackage->sczInstallCondition && *pPackage->sczInstallCondition)
                 {
                     hr = m_pEngine->EvaluateCondition(pPackage->sczInstallCondition, &fInstall);
                     if (FAILED(hr))
@@ -1276,91 +1271,81 @@ private: // privates
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
         BAL_INFO_PACKAGE* pPackage = NULL;
 
-        hr = XmlSelectSingleNode(pixdManifest, L"/BootstrapperApplicationData/WixMbaPrereqInformation", &pNode);
+        hr = XmlSelectNodes(pixdManifest, L"/BootstrapperApplicationData/WixMbaPrereqInformation", &pNodes);
         if (S_FALSE == hr)
         {
             hr = E_INVALIDARG;
+            BalExitOnFailure(hr, "BootstrapperApplication.xml manifest is missing prerequisite information.");
         }
-        BalExitOnFailure(hr, "BootstrapperApplication.xml manifest is missing prerequisite information.");
-
-        hr = XmlGetAttributeEx(pNode, L"PackageId", &m_sczPrereqPackage);
-        BalExitOnFailure(hr, "Failed to get prerequisite package identifier.");
-
-        hr = XmlGetAttributeEx(pNode, L"LicenseUrl", &m_sczLicenseUrl);
-        if (E_NOTFOUND == hr)
-        {
-            hr = S_OK;
-        }
-        BalExitOnFailure(hr, "Failed to get prerequisite license URL.");
-
-        hr = XmlGetAttributeEx(pNode, L"LicenseFile", &m_sczLicenseFile);
-        if (E_NOTFOUND == hr)
-        {
-            hr = S_OK;
-        }
-        BalExitOnFailure(hr, "Failed to get prerequisite license file.");
-
-        // get the list of prerequisite support packages
-        hr = XmlSelectNodes(pixdManifest, L"/BootstrapperApplicationData/MbaPrerequisiteSupportPackage", &pNodes);
-        if (S_FALSE == hr)
-        {
-            ExitFunction1(hr = S_OK);
-        }
-        ExitOnFailure(hr, "Failed to select prerequisite support package nodes.");
+        BalExitOnFailure(hr, "Failed to select prerequisite information nodes.");
 
         hr = pNodes->get_length((long*)&cNodes);
-        ExitOnFailure(hr, "Failed to get prerequisite support package node count.");
+        BalExitOnFailure(hr, "Failed to get prerequisite information node count.");
 
-        m_cPrereqPackages = cNodes + 1;
+        m_cPrereqPackages = cNodes;
         m_rgPrereqPackages = static_cast<WIXSTDBA_PREREQ_PACKAGE*>(MemAlloc(sizeof(WIXSTDBA_PREREQ_PACKAGE) * m_cPrereqPackages, TRUE));
 
         hr = DictCreateWithEmbeddedKey(&m_shPrereqSupportPackages, m_cPrereqPackages, reinterpret_cast<void **>(&m_rgPrereqPackages), offsetof(WIXSTDBA_PREREQ_PACKAGE, sczPackageId), DICT_FLAG_NONE);
-        ExitOnFailure(hr, "Failed to create the prerequisite package dictionary.");
-
-        pPrereqPackage = m_rgPrereqPackages;
-        pPrereqPackage->sczPackageId = m_sczPrereqPackage;
-        pPrereqPackage->fAlwaysInstall = TRUE;
-        hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
-        ExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
+        BalExitOnFailure(hr, "Failed to create the prerequisite package dictionary.");
 
         for (DWORD i = 0; i < cNodes; ++i)
         {
             hr = XmlNextElement(pNodes, &pNode, NULL);
-            ExitOnFailure(hr, "Failed to get next node.");
+            BalExitOnFailure(hr, "Failed to get next node.");
 
-            // @PackageId
             hr = XmlGetAttributeEx(pNode, L"PackageId", &scz);
-            ExitOnFailure(hr, "Failed to get @PackageId.");
+            BalExitOnFailure(hr, "Failed to get @PackageId.");
 
             hr = DictGetValue(m_shPrereqSupportPackages, scz, reinterpret_cast<void **>(&pPrereqPackage));
             if (SUCCEEDED(hr))
             {
-                if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, scz, -1, m_sczPrereqPackage, -1))
-                {
-                    pPrereqPackage->fAlwaysInstall = FALSE;
-                }
-                ReleaseNullObject(pNode);
-                continue;
+                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                BalExitOnFailure(hr, "Duplicate prerequisite information: %ls", scz);
             }
             else if (E_NOTFOUND != hr)
             {
-                ExitOnFailure(hr, "Failed to check if \"%ls\" was in the prerequisite package dictionary.", scz);
+                BalExitOnFailure(hr, "Failed to check if \"%ls\" was in the prerequisite package dictionary.", scz);
             }
 
             hr = BalInfoFindPackageById(&m_Bundle.packages, scz, &pPackage);
-            if (SUCCEEDED(hr))
+            BalExitOnFailure(hr, "Failed to get info about \"%ls\" from BootstrapperApplicationData.", scz);
+
+            pPrereqPackage = &m_rgPrereqPackages[i];
+            pPrereqPackage->sczPackageId = pPackage->sczId;
+            hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
+            BalExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
+
+            hr = XmlGetAttributeEx(pNode, L"LicenseFile", &scz);
+            if (E_NOTFOUND != hr)
             {
-                pPrereqPackage = &m_rgPrereqPackages[i + 1];
-                pPrereqPackage->sczPackageId = pPackage->sczId;
-                hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
-                ExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
-            }
-            else
-            {
-                BalLogError(hr, "Failed to get info about \"%ls\" from BootstrapperApplicationData.", scz);
+                BalExitOnFailure(hr, "Failed to get @LicenseFile.");
+
+                if (m_sczLicenseFile)
+                {
+                    hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                    BalExitOnFailure(hr, "More than one license file specified in prerequisite info.");
+                }
+
+                m_sczLicenseFile = scz;
+                scz = NULL;
             }
 
-            // prepare next iteration
+            hr = XmlGetAttributeEx(pNode, L"LicenseUrl", &scz);
+            if (E_NOTFOUND != hr)
+            {
+                BalExitOnFailure(hr, "Failed to get @LicenseUrl.");
+
+                if (m_sczLicenseUrl)
+                {
+                    hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                    BalExitOnFailure(hr, "More than one license URL specified in prerequisite info.");
+                }
+
+                m_sczLicenseUrl = scz;
+                scz = NULL;
+            }
+
+            // Prepare next iteration.
             ReleaseNullObject(pNode);
         }
 
@@ -3007,7 +2992,6 @@ public:
         m_fTriedToLaunchElevated = FALSE;
 
         m_fPrereq = fPrereq;
-        m_sczPrereqPackage = NULL;
         m_fPrereqInstalled = FALSE;
         m_fPrereqAlreadyInstalled = FALSE;
 
@@ -3040,7 +3024,6 @@ public:
         ReleaseStr(m_sczLanguage);
         ReleaseStr(m_sczLicenseFile);
         ReleaseStr(m_sczLicenseUrl);
-        ReleaseStr(m_sczPrereqPackage);
         ReleaseStr(m_sczAfterForcedRestartPackage);
         ReleaseNullObject(m_pEngine);
 
@@ -3099,7 +3082,6 @@ private:
     STRINGDICT_HANDLE m_shPrereqSupportPackages;
 
     BOOL m_fPrereq;
-    LPWSTR m_sczPrereqPackage;
     BOOL m_fPrereqInstalled;
     BOOL m_fPrereqAlreadyInstalled;
 

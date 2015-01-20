@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
         .NET Framework installation state properties
@@ -38,7 +38,8 @@
           DownloadUrl="$(var.NetFx452WebLink)"
           LogPathVariable="NetFx452FullWebLog"
           Compressed="no"
-          Name="redist\NDP452-KB2901954-Web.exe">
+          Name="redist\NDP452-KB2901954-Web.exe"
+          bal:PrereqPackage="yes">
         <RemotePayload CertificatePublicKey="B78FE7F6917E1BC5F4A9C77BA3D555A0E807B9E0"
                        CertificateThumbprint="67B1757863E3EFF760EA9EBB02849AF07D3A8080"
                        Description="Microsoft .NET Framework 4.5.2 Setup"
@@ -67,7 +68,8 @@
           DownloadUrl="$(var.NetFx452RedistLink)"
           LogPathVariable="NetFx452FullLog"
           Compressed="no"
-          Name="redist\NDP452-KB2901907-x86-x64-AllOS-ENU.exe">
+          Name="redist\NDP452-KB2901907-x86-x64-AllOS-ENU.exe"
+          bal:PrereqPackage="yes">
         <RemotePayload 
           CertificatePublicKey="B78FE7F6917E1BC5F4A9C77BA3D555A0E807B9E0"
           CertificateThumbprint="67B1757863E3EFF760EA9EBB02849AF07D3A8080"

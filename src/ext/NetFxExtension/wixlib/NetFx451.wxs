@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
         .NET Framework installation state properties
@@ -38,7 +38,8 @@
           DownloadUrl="$(var.NetFx451WebLink)"
           LogPathVariable="NetFx451FullWebLog"
           Compressed="no"
-          Name="redist\NDP451-KB2859818-Web.exe">
+          Name="redist\NDP451-KB2859818-Web.exe"
+          bal:PrereqPackage="yes">
         <RemotePayload
             Size="1021432"
             Version="4.5.50938.18408"
@@ -68,7 +69,8 @@
           DownloadUrl="$(var.NetFx451RedistLink)"
           LogPathVariable="NetFx451FullLog"
           Compressed="no"
-          Name="redist\NDP451-KB2858728-x86-x64-AllOS-ENU.exe">
+          Name="redist\NDP451-KB2858728-x86-x64-AllOS-ENU.exe"
+          bal:PrereqPackage="yes">
         <RemotePayload
             Size="70087104"
             Version="4.5.50938.18408"

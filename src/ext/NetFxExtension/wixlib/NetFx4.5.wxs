@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
         .NET Framework installation state properties
@@ -35,9 +35,6 @@
   <Fragment>
     <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
 
-    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx45Web" />
-    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx45EulaLink)" />
-
     <PackageGroup Id="NetFx45Web">
       <ExePackage
           InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx45FullWebLog].html&quot;"
@@ -52,7 +49,9 @@
           DownloadUrl="$(var.NetFx45WebLink)"
           LogPathVariable="NetFx45FullWebLog"
           Compressed="no"
-          Name="redist\dotNetFx45_Full_setup.exe">
+          Name="redist\dotNetFx45_Full_setup.exe"
+          bal:PrereqPackage="yes"
+          bal:PrereqLicenseUrl="$(var.NetFx45EulaLink)">
         <RemotePayload
             Size="1005568"
             Version="4.5.50709.17929"
@@ -68,9 +67,6 @@
   <Fragment>
     <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
 
-    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx45Redist" />
-    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx45EulaLink)" />
-
     <PackageGroup Id="NetFx45Redist">
       <ExePackage
           InstallCommand="/q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx45FullLog].html&quot;"
@@ -85,7 +81,9 @@
           DownloadUrl="$(var.NetFx45RedistLink)"
           LogPathVariable="NetFx45FullLog"
           Compressed="no"
-          Name="redist\dotNetFx45_Full_x86_x64.exe">
+          Name="redist\dotNetFx45_Full_x86_x64.exe"
+          bal:PrereqPackage="yes"
+          bal:PrereqLicenseUrl="$(var.NetFx45EulaLink)">
         <RemotePayload
             Size="50352408" 
             Version="4.5.50709.17929"
