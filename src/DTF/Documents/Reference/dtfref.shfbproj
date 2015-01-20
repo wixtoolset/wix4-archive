@@ -19,12 +19,11 @@
     <MissingTags>Namespace, TypeParameter</MissingTags>
     <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, SealedProtected</VisibleItems>
 
-    <RootNamespaceContainer>True</RootNamespaceContainer>
     <RootNamespaceTitle>Deployment Tools Foundation Namespaces</RootNamespaceTitle>
     <HelpTitle>Deployment Tools Foundation</HelpTitle>
     <FeedbackEMailAddress>wix-users%40lists.sourceforge.net</FeedbackEMailAddress>
     <FooterText>&amp;lt%3bscript src=&amp;quot%3bhelplink.js&amp;quot%3b&amp;gt%3b&amp;lt%3b/script&amp;gt%3b</FooterText>
-    <PresentationStyle>VS2013</PresentationStyle>
+    <PresentationStyle>Prototype</PresentationStyle>
     <NamingMethod>MemberName</NamingMethod>
   </PropertyGroup>
 
