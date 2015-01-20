@@ -57,6 +57,15 @@ DAPI_(HRESULT) BalManifestLoad(
     );
 
 /*******************************************************************
+BalEvaluateCondition - evaluates a condition using variables in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalEvaluateCondition(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
+    );
+
+/*******************************************************************
 BalFormatString - formats a string using variables in the engine.
 
  Note: Use StrFree() to release psczOut.
@@ -77,6 +86,15 @@ DAPI_(HRESULT) BalGetNumericVariable(
     );
 
 /*******************************************************************
+BalSetNumericVariable - sets a numeric variable in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalSetNumericVariable(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue
+    );
+
+/*******************************************************************
 BalStringVariableExists - checks if a string variable exists in the engine.
 
 ********************************************************************/
@@ -92,6 +110,15 @@ BalGetStringVariable - gets a string from a variable in the engine.
 DAPI_(HRESULT) BalGetStringVariable(
     __in_z LPCWSTR wzVariable,
     __inout LPWSTR* psczValue
+    );
+
+/*******************************************************************
+BalSetStringVariable - sets a string variable in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalSetStringVariable(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
     );
 
 /*******************************************************************

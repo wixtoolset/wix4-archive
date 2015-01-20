@@ -55,6 +55,26 @@ LExit:
 }
 
 
+DAPI_(HRESULT) BalEvaluateCondition(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->EvaluateCondition(wzCondition, pf);
+
+LExit:
+    return hr;
+}
+
+
 // The contents of psczOut may be sensitive, should keep encrypted and SecureZeroFree.
 DAPI_(HRESULT) BalFormatString(
     __in_z LPCWSTR wzFormat,
@@ -113,6 +133,26 @@ LExit:
 }
 
 
+DAPI_(HRESULT) BalSetNumericVariable(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->SetVariableNumeric(wzVariable, llValue);
+
+LExit:
+    return hr;
+}
+
+
 DAPI_(BOOL) BalStringVariableExists(
     __in_z LPCWSTR wzVariable
     )
@@ -164,6 +204,25 @@ DAPI_(HRESULT) BalGetStringVariable(
 
         hr = vpEngine->GetVariableString(wzVariable, *psczValue, &cch);
     }
+
+LExit:
+    return hr;
+}
+
+DAPI_(HRESULT) BalSetStringVariable(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->SetVariableString(wzVariable, wzValue);
 
 LExit:
     return hr;
