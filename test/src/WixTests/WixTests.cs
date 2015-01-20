@@ -14,20 +14,11 @@
 namespace WixTest.Tests
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Runtime.InteropServices;
     using System.Threading;
-    using System.Reflection;
     using WixTest;
-    using WixTest.Verifiers;
-    using Microsoft.Win32;
-    using Xunit;
-    using Xunit.Sdk;
 
     /// <summary>
-    /// Contains variables and methods used by this test assembly
+    /// Contains variables and methods used by this test assembly.
     /// </summary>
     public abstract class WixTests : WixTestBase
     {
@@ -68,7 +59,7 @@ namespace WixTest.Tests
 
         static WixTests()
         {
-            WixTests.SetTestFalvor();
+            WixTests.SetTestFlavor();
         }
 
         /// <summary>
@@ -97,7 +88,7 @@ namespace WixTest.Tests
             }
         }
 
-        private static void SetTestFalvor()
+        private static void SetTestFlavor()
         {
             string flavor = Environment.GetEnvironmentVariable(WixTests.envFlavor);
             if (String.IsNullOrEmpty(flavor))

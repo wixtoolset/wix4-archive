@@ -65,6 +65,7 @@
     <ClCompile Include="cabcutil.cpp" />
     <ClCompile Include="cabutil.cpp" />
     <ClCompile Include="certutil.cpp" />
+    <ClCompile Include="condutil.cpp" />
     <ClCompile Include="conutil.cpp" />
     <ClCompile Include="cryputil.cpp" />
     <ClCompile Include="dictutil.cpp" />
@@ -74,6 +75,7 @@
     <ClCompile Include="eseutil.cpp" />
     <ClCompile Include="fileutil.cpp" />
     <ClCompile Include="gdiputil.cpp" />
+    <ClCompile Include="guidutil.cpp" />
     <ClCompile Include="iis7util.cpp" />
     <ClCompile Include="inetutil.cpp" />
     <ClCompile Include="iniutil.cpp" />
@@ -108,6 +110,7 @@
     <ClCompile Include="uncutil.cpp" />
     <ClCompile Include="uriutil.cpp" />
     <ClCompile Include="userutil.cpp" />
+    <ClCompile Include="varutil.cpp" />
     <ClCompile Include="wiutil.cpp" />
     <ClCompile Include="wuautil.cpp" />
     <ClCompile Include="xmlutil.cpp" />
@@ -121,6 +124,7 @@
     <ClInclude Include="inc\cabcutil.h" />
     <ClInclude Include="inc\cabutil.h" />
     <ClInclude Include="inc\certutil.h" />
+    <ClInclude Include="inc\condutil.h" />
     <ClInclude Include="inc\conutil.h" />
     <ClInclude Include="inc\cryputil.h" />
     <ClInclude Include="inc\dictutil.h" />
@@ -130,6 +134,7 @@
     <ClInclude Include="inc\eseutil.h" />
     <ClInclude Include="inc\fileutil.h" />
     <ClInclude Include="inc\gdiputil.h" />
+    <ClInclude Include="inc\guidutil.h" />
     <ClInclude Include="inc\inetutil.h" />
     <ClInclude Include="inc\iniutil.h" />
     <ClInclude Include="inc\jsonutil.h" />
@@ -158,6 +163,7 @@
     <ClInclude Include="inc\timeutil.h" />
     <ClInclude Include="inc\uriutil.h" />
     <ClInclude Include="inc\userutil.h" />
+    <ClInclude Include="inc\varutil.h" />
     <ClInclude Include="inc\wiutil.h" />
     <ClInclude Include="inc\wuautil.h" />
     <ClInclude Include="inc\xmlutil.h" />

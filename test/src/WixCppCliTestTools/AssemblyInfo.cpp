@@ -18,12 +18,7 @@ using namespace System::Runtime::InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute("CfgTests")];
-[assembly:AssemblyDescriptionAttribute("")];
-[assembly:AssemblyConfigurationAttribute("")];
-[assembly:AssemblyCompanyAttribute("")];
-[assembly:AssemblyProductAttribute("CfgTests")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c)  2010")];
-[assembly:AssemblyTrademarkAttribute("")];
-[assembly:AssemblyCultureAttribute("")];
-[assembly:ComVisible(false)];
+[assembly: AssemblyTitleAttribute("WixCppCliTestTools")];
+[assembly: AssemblyDescriptionAttribute("")];
+[assembly: AssemblyCultureAttribute("")];
+[assembly: ComVisible(false)];

@@ -70,6 +70,7 @@
     <Compile Include="PriorityAttribute.cs" />
     <Compile Include="QuickTest.cs" />
     <Compile Include="QuickTestStaticMethods.cs" />
+    <Compile Include="SucceededException.cs" />
     <Compile Include="Utilities\FileUtilities.cs" />
     <Compile Include="Utilities\MsiUtilities.cs" />
     <Compile Include="Utilities\UacUtilities.cs" />
@@ -110,12 +111,14 @@
     <Compile Include="MSIVersions.cs" />
     <Compile Include="Verifiers\MsiVerifier.cs" />
     <Compile Include="Verifiers\Verifier.cs" />
+    <Compile Include="WixAssert.cs" />
     <Compile Include="WixCop.cs" />
     <Compile Include="WixCopArguments.cs" />
     <Compile Include="WixMessage.cs" />
     <Compile Include="WixprojMSBuild.cs" />
     <Compile Include="WixTestBase.cs" />
     <Compile Include="WixTestContext.cs" />
+    <Compile Include="WixTestFixture.cs" />
     <Compile Include="WixTool.cs" />
     <Compile Include="Torch.cs" />
     <Compile Include="WixToolArguments.cs" />

@@ -40,10 +40,5 @@ namespace WixTest
         /// Gets the test data directory for the current test case.
         /// </summary>
         public string TestDataDirectory { get; internal set; }
-
-        /// <summary>
-        /// Gets the test result for the current test case.
-        /// </summary>
-        public ITestResult TestResult { get; internal set; }
     }
 }

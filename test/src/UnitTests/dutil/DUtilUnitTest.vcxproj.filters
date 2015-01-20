@@ -18,25 +18,40 @@
     <ClCompile Include="AssemblyInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CondUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="DictUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DirUtilTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemUtilTest.cpp">
+    <ClCompile Include="FileUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GuidUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IniUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileUtilTest.cpp">
+    <ClCompile Include="MemUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MonUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PathUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StrUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(WixRoot)src\common\precomp.cpp">
+    <ClCompile Include="VarHelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VarUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,6 +65,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VarHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

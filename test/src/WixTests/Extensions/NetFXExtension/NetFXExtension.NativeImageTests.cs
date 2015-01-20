@@ -196,9 +196,9 @@ namespace WixTest.Tests.Extensions.NetFXExtension
 
         protected override void TestUninitialize()
         {
-            base.TestUninitialize();
-
             NativeImageTests.EnableWindowsInstallerRollBack();
+
+            base.TestUninitialize();
         }
 
         #region Helper Methods
