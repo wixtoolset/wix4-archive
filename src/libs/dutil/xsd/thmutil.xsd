@@ -434,7 +434,6 @@
             <xs:documentation>Defines an image.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="ImageFile" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>Relative path to an image file. Mutually exclusive with ImageResource and SourceX and SourceY attributes.</xs:documentation>
