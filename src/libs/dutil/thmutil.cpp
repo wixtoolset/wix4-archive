@@ -404,6 +404,32 @@ DAPI_(void) ThemeFree(
     }
 }
 
+DAPI_(HRESULT) ThemeRegisterVariableCallbacks(
+    __in THEME* pTheme,
+    __in_opt PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition,
+    __in_opt PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString,
+    __in_opt PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable,
+    __in_opt PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable,
+    __in_opt PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable,
+    __in_opt PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable,
+    __in_opt LPVOID pvContext
+    )
+{
+    HRESULT hr = S_OK;
+    ExitOnNull(pTheme, hr, S_FALSE, "Theme must be loaded first.");
+
+    pTheme->pfnEvaluateCondition = pfnEvaluateCondition;
+    pTheme->pfnFormatString = pfnFormatString;
+    pTheme->pfnGetNumericVariable = pfnGetNumericVariable;
+    pTheme->pfnSetNumericVariable = pfnSetNumericVariable;
+    pTheme->pfnGetStringVariable = pfnGetStringVariable;
+    pTheme->pfnSetStringVariable = pfnSetStringVariable;
+    pTheme->pvVariableContext = pvContext;
+
+LExit:
+    return hr;
+}
+
 
 DAPI_(HRESULT) ThemeLoadControls(
     __in THEME* pTheme,
@@ -580,7 +606,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         // If the control is supposed to be initially visible and it has a VisibleCondition, check if it's true.
         if (fVisible && pControl->sczVisibleCondition && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
         {
-            hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
+            hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible, pTheme->pvVariableContext);
             ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
 
             if (!fVisible)
@@ -601,7 +627,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         {
             BOOL fEnable = TRUE;
 
-            hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnable);
+            hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnable, pTheme->pvVariableContext);
             ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
 
             fDisabled = !fEnable;
@@ -706,7 +732,7 @@ DAPI_(HRESULT) ThemeLoadControls(
         // Initialize the text on all "application" (non-page) controls, best effort only.
         if (pTheme->pfnFormatString && !pControl->wPageId && pControl->sczText && *pControl->sczText)
         {
-            HRESULT hrFormat = pTheme->pfnFormatString(pControl->sczText, &sczText);
+            HRESULT hrFormat = pTheme->pfnFormatString(pControl->sczText, &sczText, pTheme->pvVariableContext);
             if (SUCCEEDED(hrFormat))
             {
                 ThemeSetTextControl(pTheme, pControl->wId, sczText);
@@ -750,7 +776,7 @@ DAPI_(HRESULT) ThemeLocalize(
 
     if (pTheme->pfnFormatString)
     {
-        hr = pTheme->pfnFormatString(pTheme->sczCaption, &sczCaption);
+        hr = pTheme->pfnFormatString(pTheme->sczCaption, &sczCaption, pTheme->pvVariableContext);
         if (SUCCEEDED(hr))
         {
             hr = ThemeUpdateCaption(pTheme, sczCaption);
@@ -1155,14 +1181,14 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                                     if (pTheme->pfnSetNumericVariable && pControl->sczName && *pControl->sczName)
                                     {
                                         BOOL fChecked = ThemeIsControlChecked(pTheme, pControl->wId);
-                                        pTheme->pfnSetNumericVariable(pControl->sczName, fChecked ? 1 : 0);
+                                        pTheme->pfnSetNumericVariable(pControl->sczName, fChecked ? 1 : 0, pTheme->pvVariableContext);
                                         fRefresh = TRUE;
                                     }
                                     break;
                                 case THEME_CONTROL_TYPE_RADIOBUTTON:
                                     if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable && ThemeIsControlChecked(pTheme, pControl->wId))
                                     {
-                                        pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue);
+                                        pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue, pTheme->pvVariableContext);
                                         fRefresh = TRUE;
                                     }
                                     break;
@@ -1275,7 +1301,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
                         pSavedVariable = pPage->rgSavedVariables + v;
                         if (pSavedVariable->wzName)
                         {
-                            pTheme->pfnSetStringVariable(pSavedVariable->wzName, pSavedVariable->sczValue);
+                            pTheme->pfnSetStringVariable(pSavedVariable->wzName, pSavedVariable->sczValue, pTheme->pvVariableContext);
                         }
                     }
                 }
@@ -1331,7 +1357,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
                 ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
 
-                hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText);
+                hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText, pTheme->pvVariableContext);
                 ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
             }
 
@@ -1355,14 +1381,14 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 // If the control has a VisibleCondition, check if it's true.
                 if (pControl->sczVisibleCondition)
                 {
-                    hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible);
+                    hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible, pTheme->pvVariableContext);
                     ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
                 }
 
                 // If the control has an EnableCondition, check if it's true.
                 if (pControl->sczEnableCondition)
                 {
-                    hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnabled);
+                    hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnabled, pTheme->pvVariableContext);
                     ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
                 }
             }
@@ -1384,7 +1410,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
                         {
                             BOOL fCondition = FALSE;
 
-                            hr = pTheme->pfnEvaluateCondition(pConditionalText->sczCondition, &fCondition);
+                            hr = pTheme->pfnEvaluateCondition(pConditionalText->sczCondition, &fCondition, pTheme->pvVariableContext);
                             ExitOnFailure(hr, "Failed to evaluate condition: %ls", pConditionalText->sczCondition);
 
                             if (fCondition)
@@ -1398,7 +1424,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
 
                 if (wzText && *wzText)
                 {
-                    hr = pTheme->pfnFormatString(wzText, &sczText);
+                    hr = pTheme->pfnFormatString(wzText, &sczText, pTheme->pvVariableContext);
                     ExitOnFailure(hr, "Failed to format string: %ls", wzText);
                 }
                 else
@@ -1417,7 +1443,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 if (pTheme->pfnGetNumericVariable && THEME_CONTROL_TYPE_CHECKBOX == pControl->type)
                 {
                     LONGLONG llValue = 0;
-                    hr = pTheme->pfnGetNumericVariable(pControl->sczName, &llValue);
+                    hr = pTheme->pfnGetNumericVariable(pControl->sczName, &llValue, pTheme->pvVariableContext);
                     if (E_NOTFOUND != hr)
                     {
                         ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
@@ -1444,7 +1470,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 // try to set its default state to the state of a matching named variable.
                 if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_EDITBOX == pControl->type)
                 {
-                    hr = pTheme->pfnGetStringVariable(pControl->sczName, &sczText);
+                    hr = pTheme->pfnGetStringVariable(pControl->sczName, &sczText, pTheme->pvVariableContext);
                     if (E_NOTFOUND == hr)
                     {
                         ReleaseNullStr(sczText);
@@ -1476,7 +1502,7 @@ DAPI_(HRESULT) ThemeShowPageEx(
             // try to set its default state to the state of the variable.
             if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_RADIOBUTTON == pControl->type && pControl->sczVariable && *pControl->sczVariable)
             {
-                hr = pTheme->pfnGetStringVariable(pControl->sczVariable, &sczText);
+                hr = pTheme->pfnGetStringVariable(pControl->sczVariable, &sczText, pTheme->pvVariableContext);
                 if (E_NOTFOUND == hr)
                 {
                     ReleaseNullStr(sczText);
