@@ -361,7 +361,7 @@ extern "C" HRESULT NetFxRunChainer(
     HRESULT hrInternalError = 0;
 
     // Create the unique name suffix.
-    hr = GuidCreate(wzGuid);
+    hr = GuidFixedCreate(wzGuid);
     ExitOnRootFailure(hr, "Failed to create netfx chainer guid.");
 
     hr = StrAllocFormatted(&sczSectionName, L"NetFxSection.%ls", wzGuid);
