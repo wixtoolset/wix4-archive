@@ -194,6 +194,39 @@ typedef struct _WIXSTDBA_PREREQ_PACKAGE
     BOOL fSuccessfullyInstalled;
 } WIXSTDBA_PREREQ_PACKAGE;
 
+
+static HRESULT DAPI EvaluateVariableConditionCallback(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI FormatVariableStringCallback(
+    __in_z LPCWSTR wzFormat,
+    __inout LPWSTR* psczOut,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI GetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __out LONGLONG* pllValue,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI SetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI GetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __inout LPWSTR* psczValue,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI SetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue,
+    __in_opt LPVOID pvContext
+    );
+
+
 class CWixStandardBootstrapperApplication : public CBalBaseBootstrapperApplication
 {
 public: // IBootstrapperApplication
@@ -1187,12 +1220,8 @@ private: // privates
         hr = ThemeLoadFromFile(sczThemePath, &m_pTheme);
         BalExitOnFailure(hr, "Failed to load theme from path: %ls", sczThemePath);
 
-        m_pTheme->pfnEvaluateCondition = &BalEvaluateCondition;
-        m_pTheme->pfnFormatString = &BalFormatString;
-        m_pTheme->pfnGetNumericVariable = &BalGetNumericVariable;
-        m_pTheme->pfnSetNumericVariable = &BalSetNumericVariable;
-        m_pTheme->pfnGetStringVariable = &BalGetStringVariable;
-        m_pTheme->pfnSetStringVariable = &BalSetStringVariable;
+        hr = ThemeRegisterVariableCallbacks(m_pTheme, EvaluateVariableConditionCallback, FormatVariableStringCallback, GetVariableNumericCallback, SetVariableNumericCallback, GetVariableStringCallback, SetVariableStringCallback, NULL);
+        BalExitOnFailure(hr, "Failed to register variable theme callbacks.");
 
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
@@ -3019,4 +3048,64 @@ HRESULT CreateBootstrapperApplication(
 LExit:
     ReleaseObject(pApplication);
     return hr;
+}
+
+
+static HRESULT DAPI EvaluateVariableConditionCallback(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalEvaluateCondition(wzCondition, pf);
+}
+
+
+static HRESULT DAPI FormatVariableStringCallback(
+    __in_z LPCWSTR wzFormat,
+    __inout LPWSTR* psczOut,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalFormatString(wzFormat, psczOut);
+}
+
+
+static HRESULT DAPI GetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __out LONGLONG* pllValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalGetNumericVariable(wzVariable, pllValue);
+}
+
+
+static HRESULT DAPI SetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalSetNumericVariable(wzVariable, llValue);
+}
+
+
+static HRESULT DAPI GetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __inout LPWSTR* psczValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalGetStringVariable(wzVariable, psczValue);
+}
+
+
+static HRESULT DAPI SetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalSetStringVariable(wzVariable, wzValue);
 }

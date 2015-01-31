@@ -16,27 +16,33 @@ extern "C" {
 
 typedef HRESULT(CALLBACK *PFNTHM_EVALUATE_VARIABLE_CONDITION)(
     __in_z LPCWSTR wzCondition,
-    __out BOOL* pf
+    __out BOOL* pf,
+    __in_opt LPVOID pvContext
     );
 typedef HRESULT(CALLBACK *PFNTHM_FORMAT_VARIABLE_STRING)(
     __in_z LPCWSTR wzFormat,
-    __inout LPWSTR* psczOut
+    __inout LPWSTR* psczOut,
+    __in_opt LPVOID pvContext
     );
 typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_NUMERIC)(
     __in_z LPCWSTR wzVariable,
-    __out LONGLONG* pllValue
+    __out LONGLONG* pllValue,
+    __in_opt LPVOID pvContext
     );
 typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_NUMERIC)(
     __in_z LPCWSTR wzVariable,
-    __in LONGLONG llValue
+    __in LONGLONG llValue,
+    __in_opt LPVOID pvContext
     );
 typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_STRING)(
     __in_z LPCWSTR wzVariable,
-    __inout LPWSTR* psczValue
+    __inout LPWSTR* psczValue,
+    __in_opt LPVOID pvContext
     );
 typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_STRING)(
     __in_z LPCWSTR wzVariable,
-    __in_z_opt LPCWSTR wzValue
+    __in_z_opt LPCWSTR wzValue,
+    __in_opt LPVOID pvContext
     );
 
 typedef enum THEME_CONTROL_DATA
@@ -254,6 +260,8 @@ struct THEME
     PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable;
     PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable;
     PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable;
+
+    LPVOID pvVariableContext;
 };
 
 
@@ -266,7 +274,7 @@ DAPI_(HRESULT) ThemeInitialize(
     );
 
 /********************************************************************
- ThemeUninitialize - unitialize theme management.
+ ThemeUninitialize - uninitialize theme management.
 
 *******************************************************************/
 DAPI_(void) ThemeUninitialize();
@@ -297,6 +305,22 @@ DAPI_(HRESULT) ThemeLoadFromResource(
 *******************************************************************/
 DAPI_(void) ThemeFree(
     __in THEME* pTheme
+    );
+
+/********************************************************************
+ThemeRegisterVariableCallbacks - registers a context and callbacks
+                                 for working with variables.
+
+*******************************************************************/
+DAPI_(HRESULT) ThemeRegisterVariableCallbacks(
+    __in THEME* pTheme,
+    __in_opt PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition,
+    __in_opt PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString,
+    __in_opt PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable,
+    __in_opt PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable,
+    __in_opt PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable,
+    __in_opt PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable,
+    __in_opt LPVOID pvContext
     );
 
 /********************************************************************

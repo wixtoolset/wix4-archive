@@ -25,13 +25,16 @@ namespace DutilTests
             WCHAR wzGuid1[GUID_STRING_LENGTH];
             WCHAR wzGuid2[GUID_STRING_LENGTH];
 
-            hr = GuidCreate(wzGuid1);
+            hr = GuidFixedCreate(wzGuid1);
             NativeAssert::Succeeded(hr, "Failed to create first guid.");
+            Guid firstGuid = Guid::Parse(gcnew String(wzGuid1));
 
-            hr = GuidCreate(wzGuid2);
+            hr = GuidFixedCreate(wzGuid2);
             NativeAssert::Succeeded(hr, "Failed to create second guid.");
+            Guid secondGuid = Guid::Parse(gcnew String(wzGuid2));
 
             NativeAssert::NotStringEqual(wzGuid1, wzGuid2);
+            NativeAssert::NotEqual(firstGuid, secondGuid);
         }
 
         [Fact]
@@ -43,13 +46,16 @@ namespace DutilTests
 
             try
             {
-                hr = GuidCreateScz(&sczGuid1);
+                hr = GuidCreate(&sczGuid1);
                 NativeAssert::Succeeded(hr, "Failed to create first guid.");
+                Guid firstGuid = Guid::Parse(gcnew String(sczGuid1));
 
-                hr = GuidCreateScz(&sczGuid2);
+                hr = GuidCreate(&sczGuid2);
                 NativeAssert::Succeeded(hr, "Failed to create second guid.");
+                Guid secondGuid = Guid::Parse(gcnew String(sczGuid2));
 
                 NativeAssert::NotStringEqual(sczGuid1, sczGuid2);
+                NativeAssert::NotEqual(firstGuid, secondGuid);
             }
             finally
             {

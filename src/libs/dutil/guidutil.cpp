@@ -9,7 +9,7 @@
 
 #include "precomp.h"
 
-extern "C" HRESULT DAPI GuidCreate(
+extern "C" HRESULT DAPI GuidFixedCreate(
     _Out_z_cap_c_(GUID_STRING_LENGTH) WCHAR* wzGuid
     )
 {
@@ -29,7 +29,7 @@ LExit:
     return hr;
 }
 
-extern "C" HRESULT DAPI GuidCreateScz(
+extern "C" HRESULT DAPI GuidCreate(
     __deref_out_z LPWSTR* psczGuid
     )
 {
@@ -38,7 +38,7 @@ extern "C" HRESULT DAPI GuidCreateScz(
     hr = StrAlloc(psczGuid, GUID_STRING_LENGTH);
     ExitOnFailure(hr, "Failed to allocate space for guid");
 
-    hr = GuidCreate(*psczGuid);
+    hr = GuidFixedCreate(*psczGuid);
     ExitOnFailure(hr, "Failed to create new guid.");
 
 LExit:

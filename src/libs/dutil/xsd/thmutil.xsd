@@ -434,6 +434,24 @@
             <xs:documentation>Defines an image.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
+            <xs:attribute name="ImageFile" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Relative path to an image file. Mutually exclusive with ImageResource.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ImageResource" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Identifier that references an image resource in the module. Mutually exclusive with ImageFile.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ImageControl">
+        <xs:annotation>
+            <xs:documentation>Defines an image.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="ImageFile" type="xs:string">
                 <xs:annotation>
@@ -805,7 +823,7 @@
             <xs:element ref="Editbox" />
             <xs:element ref="Hyperlink" />
             <xs:element ref="Hypertext" />
-            <xs:element ref="Image" />
+            <xs:element ref="ImageControl" />
             <xs:element ref="Label" />
             <xs:element ref="ListView" />
             <xs:element ref="Progressbar" />

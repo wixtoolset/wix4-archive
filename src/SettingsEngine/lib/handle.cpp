@@ -217,7 +217,7 @@ HRESULT HandleEnsureSummaryDataTable(
 
     if (fEmpty)
     {
-        hr = GuidCreateScz(&pcdb->sczGuid);
+        hr = GuidCreate(&pcdb->sczGuid);
         ExitOnRootFailure(hr, "Failed to generate guid string");
 
         hr = SceBeginTransaction(pcdb->psceDb);

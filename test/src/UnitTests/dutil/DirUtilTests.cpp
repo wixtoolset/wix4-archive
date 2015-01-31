@@ -29,7 +29,7 @@ namespace DutilTests
 
             try
             {
-                hr = GuidCreateScz(&sczGuid);
+                hr = GuidCreate(&sczGuid);
                 NativeAssert::Succeeded(hr, "Failed to create guid.");
 
                 hr = DirGetCurrent(&sczCurrentDir);

@@ -15,11 +15,11 @@ extern "C" {
 
 #define GUID_STRING_LENGTH 39
 
-HRESULT DAPI GuidCreate(
+HRESULT DAPI GuidFixedCreate(
     _Out_z_cap_c_(GUID_STRING_LENGTH) WCHAR* wzGuid
     );
 
-HRESULT DAPI GuidCreateScz(
+HRESULT DAPI GuidCreate(
     __deref_out_z LPWSTR* psczGuid
     );
 

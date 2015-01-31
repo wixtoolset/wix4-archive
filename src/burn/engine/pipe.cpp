@@ -215,14 +215,14 @@ extern "C" HRESULT PipeCreateNameAndSecret(
     LPWSTR sczSecret = NULL;
 
     // Create the unique pipe name.
-    hr = GuidCreate(wzGuid);
+    hr = GuidFixedCreate(wzGuid);
     ExitOnRootFailure(hr, "Failed to create pipe guid.");
 
     hr = StrAllocFormatted(&sczConnectionName, L"BurnPipe.%s", wzGuid);
     ExitOnFailure(hr, "Failed to allocate pipe name.");
 
     // Create the unique client secret.
-    hr = GuidCreate(wzGuid);
+    hr = GuidFixedCreate(wzGuid);
     ExitOnRootFailure(hr, "Failed to create pipe secret.");
 
     hr = StrAllocString(&sczSecret, wzGuid, 0);
