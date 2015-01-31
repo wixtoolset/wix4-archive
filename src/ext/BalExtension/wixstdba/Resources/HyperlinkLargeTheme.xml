@@ -7,7 +7,7 @@
     <Font Id="4" Height="-12" Weight="500" Foreground="ff0000" Background="FFFFFF" Underline="yes">Segoe UI</Font>
 
     <Window Width="500" Height="390" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)">
-        <Image X="11" Y="11" Width="64" Height="64" ImageFile="logo.png" Visible="yes"/>
+        <ImageControl X="11" Y="11" Width="64" Height="64" ImageFile="logo.png" Visible="yes"/>
         <Label X="80" Y="11" Width="-11" Height="64" FontId="1" Visible="yes" DisablePrefix="yes">#(loc.Title)</Label>
 
         <Page Name="Help">
