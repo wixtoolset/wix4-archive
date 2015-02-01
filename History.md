@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4610 - Write RegisterPerfmonManifest CustomActionData correctly.
+
 * BobArnson: WIXBUG:4553 - Fix Lux generator to exclude any files with non-fragment sections. Fix Lux custom actions to have proper config.
 
 * PhillHogland: WIXBUG:4592 - Register named process, in another user's context with Restart Manager.  If Access Denied, continue install rather than fail.
