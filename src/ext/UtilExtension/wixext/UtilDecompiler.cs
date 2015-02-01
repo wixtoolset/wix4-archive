@@ -71,7 +71,7 @@ namespace WixToolset.Extensions
         /// <param name="tables">The collection of all tables.</param>
         private void CleanupSecureCustomProperties(TableIndexedCollection tables)
         {
-            Table propertyTable = tables["Property"];
+            ITable propertyTable = tables["Property"];
 
             if (null != propertyTable)
             {
@@ -114,7 +114,7 @@ namespace WixToolset.Extensions
         private void CleanupInternetShortcutRemoveFileTables(TableIndexedCollection tables)
         {
             // index the WixInternetShortcut table
-            Table wixInternetShortcutTable = tables["WixInternetShortcut"];
+            ITable wixInternetShortcutTable = tables["WixInternetShortcut"];
             Hashtable wixInternetShortcuts = new Hashtable();
             if (null != wixInternetShortcutTable)
             {
@@ -125,7 +125,7 @@ namespace WixToolset.Extensions
             }
 
             // remove the RemoveFile rows with primary keys that match the WixInternetShortcut table's
-            Table removeFileTable = tables["RemoveFile"];
+            ITable removeFileTable = tables["RemoveFile"];
             if (null != removeFileTable)
             {
                 for (int i = removeFileTable.Rows.Count - 1; 0 <= i; i--)
@@ -142,7 +142,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -219,7 +219,7 @@ namespace WixToolset.Extensions
         /// Decompile the WixCloseApplication table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixCloseApplicationTable(Table table)
+        private void DecompileWixCloseApplicationTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -271,7 +271,7 @@ namespace WixToolset.Extensions
         /// Decompile the WixRemoveFolderEx table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixRemoveFolderExTable(Table table)
+        private void DecompileWixRemoveFolderExTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -318,7 +318,7 @@ namespace WixToolset.Extensions
         /// Decompile the WixRestartResource table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixRestartResourceTable(Table table)
+        private void DecompileWixRestartResourceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -375,7 +375,7 @@ namespace WixToolset.Extensions
         /// Decompile the FileShare table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFileShareTable(Table table)
+        private void DecompileFileShareTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -411,7 +411,7 @@ namespace WixToolset.Extensions
         /// Decompile the FileSharePermissions table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFileSharePermissionsTable(Table table)
+        private void DecompileFileSharePermissionsTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -526,7 +526,7 @@ namespace WixToolset.Extensions
         /// Decompile the Group table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileGroupTable(Table table)
+        private void DecompileGroupTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -554,7 +554,7 @@ namespace WixToolset.Extensions
         /// Decompile the WixInternetShortcut table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixInternetShortcutTable(Table table)
+        private void DecompileWixInternetShortcutTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -593,7 +593,7 @@ namespace WixToolset.Extensions
         /// Decompile the Perfmon table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePerfmonTable(Table table)
+        private void DecompilePerfmonTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -609,7 +609,7 @@ namespace WixToolset.Extensions
         /// Decompile the PerfmonManifest table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePerfmonManifestTable(Table table)
+        private void DecompilePerfmonManifestTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -625,7 +625,7 @@ namespace WixToolset.Extensions
         /// Decompile the EventManifest table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileEventManifestTable(Table table)
+        private void DecompileEventManifestTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -638,7 +638,7 @@ namespace WixToolset.Extensions
         /// Decompile the SecureObjects table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSecureObjectsTable(Table table)
+        private void DecompileSecureObjectsTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -816,7 +816,7 @@ namespace WixToolset.Extensions
         /// Decompile the ServiceConfig table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileServiceConfigTable(Table table)
+        private void DecompileServiceConfigTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -909,7 +909,7 @@ namespace WixToolset.Extensions
         /// Decompile the User table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUserTable(Table table)
+        private void DecompileUserTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1009,7 +1009,7 @@ namespace WixToolset.Extensions
         /// Decompile the UserGroup table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUserGroupTable(Table table)
+        private void DecompileUserGroupTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1034,7 +1034,7 @@ namespace WixToolset.Extensions
         /// Decompile the XmlConfig table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileXmlConfigTable(Table table)
+        private void DecompileXmlConfigTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1121,7 +1121,7 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizePerfmonTable(TableIndexedCollection tables)
         {
-            Table perfmonTable = tables["Perfmon"];
+            ITable perfmonTable = tables["Perfmon"];
 
             if (null != perfmonTable)
             {
@@ -1160,7 +1160,7 @@ namespace WixToolset.Extensions
         /// <param name="tables">The collection of all tables.</param>
         private void FinalizePerfmonManifestTable(TableIndexedCollection tables)
         {
-            Table perfmonManifestTable = tables["PerfmonManifest"];
+            ITable perfmonManifestTable = tables["PerfmonManifest"];
 
             if (null != perfmonManifestTable)
             {
@@ -1203,8 +1203,8 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeSecureObjectsTable(TableIndexedCollection tables)
         {
-            Table createFolderTable = tables["CreateFolder"];
-            Table secureObjectsTable = tables["SecureObjects"];
+            ITable createFolderTable = tables["CreateFolder"];
+            ITable secureObjectsTable = tables["SecureObjects"];
 
             Hashtable createFolders = new Hashtable();
 
@@ -1277,8 +1277,8 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeServiceConfigTable(TableIndexedCollection tables)
         {
-            Table serviceConfigTable = tables["ServiceConfig"];
-            Table serviceInstallTable = tables["ServiceInstall"];
+            ITable serviceConfigTable = tables["ServiceConfig"];
+            ITable serviceInstallTable = tables["ServiceInstall"];
 
             Hashtable serviceInstalls = new Hashtable();
 
@@ -1349,7 +1349,7 @@ namespace WixToolset.Extensions
         /// <param name="tables">Collection of all tables.</param>
         private void FinalizeXmlConfigTable(TableIndexedCollection tables)
         {
-            Table xmlConfigTable = tables["XmlConfig"];
+            ITable xmlConfigTable = tables["XmlConfig"];
 
             if (null != xmlConfigTable)
             {
@@ -1398,8 +1398,8 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeXmlFileTable(TableIndexedCollection tables)
         {
-            Table xmlFileTable = tables["XmlFile"];
-            Table eventManifestTable = tables["EventManifest"];
+            ITable xmlFileTable = tables["XmlFile"];
+            ITable eventManifestTable = tables["EventManifest"];
 
             if (null != xmlFileTable)
             {
@@ -1517,7 +1517,7 @@ namespace WixToolset.Extensions
         /// <param name="tables">The collection of all tables.</param>
         private void FinalizeEventManifestTable(TableIndexedCollection tables)
         {
-            Table eventManifestTable = tables["EventManifest"];
+            ITable eventManifestTable = tables["EventManifest"];
 
             if (null != eventManifestTable)
             {

@@ -59,7 +59,7 @@ namespace WixToolset.Extensions
                 return;
             }
 
-            Table wixBindUpdateFilesTable = output.Tables["WixBindUpdatedFiles"];
+            ITable wixBindUpdateFilesTable = output.Tables["WixBindUpdatedFiles"];
 
             // We'll end up re-writing the tag files but this time we may have the ProductCode
             // now to use as the unique id.
@@ -84,10 +84,10 @@ namespace WixToolset.Extensions
 
             this.overallRegid = null; // always reset overall regid on initialize.
 
-            Table tagTable = output.Tables["WixBundleTag"];
+            ITable tagTable = output.Tables["WixBundleTag"];
             if (null != tagTable)
             {
-                Table table = output.Tables["WixBundle"];
+                ITable table = output.Tables["WixBundle"];
                 WixBundleRow bundleInfo = (WixBundleRow)table.Rows[0];
                 Version bundleVersion = TagBinder.CreateFourPartVersion(bundleInfo.Version);
 
@@ -118,7 +118,7 @@ namespace WixToolset.Extensions
             List<WixFileRow> updatedFileRows = new List<WixFileRow>();
             SourceLineNumber sourceLineNumbers = null;
 
-            Table tagTable = output.Tables["WixProductTag"];
+            ITable tagTable = output.Tables["WixProductTag"];
             if (null != tagTable)
             {
                 string productCode = null;
@@ -126,7 +126,7 @@ namespace WixToolset.Extensions
                 Version productVersion = null;
                 string manufacturer = null;
 
-                Table properties = output.Tables["Property"];
+                ITable properties = output.Tables["Property"];
                 foreach (Row property in properties.Rows)
                 {
                     switch ((string)property[0])
@@ -167,7 +167,7 @@ namespace WixToolset.Extensions
                     }
                 }
 
-                Table wixFileTable = output.Tables["WixFile"];
+                ITable wixFileTable = output.Tables["WixFile"];
                 foreach (Row tagRow in tagTable.Rows)
                 {
                     string fileId = (string)tagRow[0];
@@ -208,7 +208,7 @@ namespace WixToolset.Extensions
                             Row swidRow;
                             if (!this.swidRows.TryGetValue(fileId, out swidRow))
                             {
-                                Table swid = output.Tables["SoftwareIdentificationTag"];
+                                ITable swid = output.Tables["SoftwareIdentificationTag"];
                                 swidRow = swid.CreateRow(wixFileRow.SourceLineNumbers);
                                 swidRow[0] = fileId;
                                 swidRow[1] = this.overallRegid;
@@ -230,7 +230,7 @@ namespace WixToolset.Extensions
             // a WixVariable to map to the regid.
             if (null != sourceLineNumbers)
             {
-                Table wixVariableTable = output.EnsureTable(this.Core.TableDefinitions["WixVariable"]);
+                ITable wixVariableTable = output.EnsureTable(this.Core.TableDefinitions["WixVariable"]);
                 WixVariableRow wixVariableRow = (WixVariableRow)wixVariableTable.CreateRow(sourceLineNumbers);
                 wixVariableRow.Id = "WixTagRegid";
                 wixVariableRow.Value = this.overallRegid;
@@ -252,10 +252,10 @@ namespace WixToolset.Extensions
         private static IList<SoftwareTag> CollectPackageTags(Output bundle)
         {
             List<SoftwareTag> tags = new List<SoftwareTag>();
-            Table packageTable = bundle.Tables["WixBundlePackage"];
+            ITable packageTable = bundle.Tables["WixBundlePackage"];
             if (null != packageTable)
             {
-                Table payloadTable = bundle.Tables["WixBundlePayload"];
+                ITable payloadTable = bundle.Tables["WixBundlePayload"];
                 RowDictionary<WixBundlePayloadRow> payloads = new RowDictionary<WixBundlePayloadRow>(payloadTable);
 
                 foreach (WixBundlePackageRow row in packageTable.RowsAs<WixBundlePackageRow>())

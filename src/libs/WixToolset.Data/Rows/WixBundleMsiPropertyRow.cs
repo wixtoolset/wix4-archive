@@ -19,7 +19,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this Upgrade row belongs to and should get its column definitions from.</param>
-        public WixBundleMsiPropertyRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundleMsiPropertyRow(SourceLineNumber sourceLineNumbers, ITable table) :
             base(sourceLineNumbers, table)
         {
         }

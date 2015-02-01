@@ -47,13 +47,13 @@ namespace WixToolset.Data
         }
 
         /// <summary>
-        /// Creates and populates a <see cref="RowDictionary"/> with the rows from the given <see cref="Table"/>.
+        /// Creates and populates a <see cref="RowDictionary"/> with the rows from the given <see cref="ITable"/>.
         /// </summary>
         /// <param name="table">The table to index.</param>
         /// <remarks>
         /// Rows added to the index are not automatically added to the given <paramref name="table"/>.
         /// </remarks>
-        public RowIndexedList(Table table)
+        public RowIndexedList(ITable table)
             : this()
         {
             if (null != table)

@@ -38,7 +38,7 @@ namespace WixToolset.Bind
         {
             List<DelayedField> delayedFields = this.SupportDelayedResolution ? new List<DelayedField>() : null;
 
-            foreach (Table table in this.Tables)
+            foreach (ITable table in this.Tables)
             {
                 foreach (Row row in table.Rows)
                 {

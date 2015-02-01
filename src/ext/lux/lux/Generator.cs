@@ -158,7 +158,7 @@ namespace WixToolset.Lux
                             this.inputFragments.Add(file);
                         }
 
-                        Table unitTestTable = section.Tables["WixUnitTest"];
+                        ITable unitTestTable = section.Tables["WixUnitTest"];
                         if (null != unitTestTable)
                         {
                             foreach (Row row in unitTestTable.Rows)

@@ -18,13 +18,13 @@ namespace WixToolset.Bind.Databases
 
     internal class GetFileFacadesCommand : ICommand
     {
-        public Table FileTable { private get; set; }
+        public ITable FileTable { private get; set; }
 
-        public Table WixFileTable { private get; set; }
+        public ITable WixFileTable { private get; set; }
 
-        public Table WixDeltaPatchFileTable { private get; set; }
+        public ITable WixDeltaPatchFileTable { private get; set; }
 
-        public Table WixDeltaPatchSymbolPathsTable { private get; set; }
+        public ITable WixDeltaPatchSymbolPathsTable { private get; set; }
 
         public List<FileFacade> FileFacades { get; private set; }
 

@@ -36,7 +36,7 @@ namespace WixToolset.Bind.Databases
 
         public Func<MediaRow, string, string, string> ResolveMedia { private get; set; }
 
-        public Table WixMediaTable { private get; set; }
+        public ITable WixMediaTable { private get; set; }
 
         public IEnumerable<FileTransfer> FileTransfers { get; private set; }
 

@@ -28,7 +28,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this Component row belongs to and should get its column definitions from.</param>
-        public ComponentRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public ComponentRow(SourceLineNumber sourceLineNumbers, ITable table) :
             base(sourceLineNumbers, table)
         {
         }

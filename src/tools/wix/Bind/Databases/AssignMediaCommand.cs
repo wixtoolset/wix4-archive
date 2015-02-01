@@ -61,8 +61,8 @@ namespace WixToolset.Bind.Databases
             List<FileFacade> uncompressedFiles = new List<FileFacade>();
 
             MediaRow mergeModuleMediaRow = null;
-            Table mediaTable = this.Output.Tables["Media"];
-            Table mediaTemplateTable = this.Output.Tables["WixMediaTemplate"];
+            ITable mediaTable = this.Output.Tables["Media"];
+            ITable mediaTemplateTable = this.Output.Tables["WixMediaTemplate"];
 
             // If both tables are authored, it is an error.
             if ((mediaTemplateTable != null && mediaTemplateTable.Rows.Count > 0) && (mediaTable != null && mediaTable.Rows.Count > 1))
@@ -73,7 +73,7 @@ namespace WixToolset.Bind.Databases
             // When building merge module, all the files go to "#MergeModule.CABinet".
             if (OutputType.Module == this.Output.Type)
             {
-                Table mergeModuleMediaTable = new Table(null, this.TableDefinitions["Media"]);
+                ITable mergeModuleMediaTable = new Table(null, this.TableDefinitions["Media"]);
                 mergeModuleMediaRow = (MediaRow)mergeModuleMediaTable.CreateRow(null);
                 mergeModuleMediaRow.Cabinet = "#MergeModule.CABinet";
 
@@ -105,7 +105,7 @@ namespace WixToolset.Bind.Databases
         /// Assign files to cabinets based on MediaTemplate authoring.
         /// </summary>
         /// <param name="fileFacades">FileRowCollection</param>
-        private void AutoAssignFiles(Table mediaTable, IEnumerable<FileFacade> fileFacades, Dictionary<MediaRow, List<FileFacade>> filesByCabinetMedia, RowDictionary<MediaRow> mediaRows, List<FileFacade> uncompressedFiles)
+        private void AutoAssignFiles(ITable mediaTable, IEnumerable<FileFacade> fileFacades, Dictionary<MediaRow, List<FileFacade>> filesByCabinetMedia, RowDictionary<MediaRow> mediaRows, List<FileFacade> uncompressedFiles)
         {
             const int MaxCabIndex = 999;
 
@@ -116,7 +116,7 @@ namespace WixToolset.Bind.Databases
 
             MediaRow currentMediaRow = null;
 
-            Table mediaTemplateTable = this.Output.Tables["WixMediaTemplate"];
+            ITable mediaTemplateTable = this.Output.Tables["WixMediaTemplate"];
 
             // Auto assign files to cabinets based on maximum uncompressed media size
             mediaTable.Rows.Clear();
@@ -222,7 +222,7 @@ namespace WixToolset.Bind.Databases
         /// <param name="mediaTable"></param>
         /// <param name="mergeModuleMediaRow"></param>
         /// <param name="fileFacades"></param>
-        private void ManuallyAssignFiles(Table mediaTable, MediaRow mergeModuleMediaRow, IEnumerable<FileFacade> fileFacades, Dictionary<MediaRow, List<FileFacade>> filesByCabinetMedia, RowDictionary<MediaRow> mediaRows, List<FileFacade> uncompressedFiles)
+        private void ManuallyAssignFiles(ITable mediaTable, MediaRow mergeModuleMediaRow, IEnumerable<FileFacade> fileFacades, Dictionary<MediaRow, List<FileFacade>> filesByCabinetMedia, RowDictionary<MediaRow> mediaRows, List<FileFacade> uncompressedFiles)
         {
             if (OutputType.Module != this.Output.Type)
             {
@@ -304,13 +304,13 @@ namespace WixToolset.Bind.Databases
         /// <param name="mediaTable"></param>
         /// <param name="cabIndex"></param>
         /// <returns></returns>
-        private MediaRow AddMediaRow(WixMediaTemplateRow mediaTemplateRow, Table mediaTable, int cabIndex)
+        private MediaRow AddMediaRow(WixMediaTemplateRow mediaTemplateRow, ITable mediaTable, int cabIndex)
         {
             MediaRow currentMediaRow = (MediaRow)mediaTable.CreateRow(mediaTemplateRow.SourceLineNumbers);
             currentMediaRow.DiskId = cabIndex;
             currentMediaRow.Cabinet = String.Format(CultureInfo.InvariantCulture, this.CabinetNameTemplate, cabIndex);
 
-            Table wixMediaTable = this.Output.EnsureTable(this.TableDefinitions["WixMedia"]);
+            ITable wixMediaTable = this.Output.EnsureTable(this.TableDefinitions["WixMedia"]);
             WixMediaRow row = (WixMediaRow)wixMediaTable.CreateRow(mediaTemplateRow.SourceLineNumbers);
             row.DiskId = cabIndex;
             row.CompressionLevel = mediaTemplateRow.CompressionLevel;

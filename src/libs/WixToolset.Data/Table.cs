@@ -22,7 +22,7 @@ namespace WixToolset.Data
     /// <summary>
     /// Object that represents a table in a database.
     /// </summary>
-    public sealed class Table
+    public sealed class Table : ITable
     {
         /// <summary>
         /// Creates a table in a section.
@@ -222,7 +222,7 @@ namespace WixToolset.Data
         /// <param name="section">Section to populate with persisted data.</param>
         /// <param name="tableDefinitions">TableDefinitions to use in the intermediate.</param>
         /// <returns>The parsed table.</returns>
-        internal static Table Read(XmlReader reader, Section section, TableDefinitionCollection tableDefinitions)
+        internal static ITable Read(XmlReader reader, Section section, TableDefinitionCollection tableDefinitions)
         {
             Debug.Assert("table" == reader.LocalName);
 
@@ -338,7 +338,7 @@ namespace WixToolset.Data
         [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification = "Changing the way this string normalizes would result " +
                          "in a change to the way the intermediate files are generated, potentially causing extra churn in patches on an MSI built from an older version of WiX. " +
                          "Furthermore, there is no security hole here, as the strings won't need to make a round trip")]
-        internal void Write(XmlWriter writer)
+        public void Write(XmlWriter writer)
         {
             if (null == writer)
             {

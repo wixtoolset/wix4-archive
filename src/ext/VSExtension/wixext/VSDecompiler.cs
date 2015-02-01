@@ -45,7 +45,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -77,7 +77,7 @@ namespace WixToolset.Extensions
         /// Decompile the HelpFile table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileHelpFileTable(Table table)
+        private void DecompileHelpFileTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -133,7 +133,7 @@ namespace WixToolset.Extensions
         /// Decompile the HelpFileToNamespace table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileHelpFileToNamespaceTable(Table table)
+        private void DecompileHelpFileToNamespaceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -157,7 +157,7 @@ namespace WixToolset.Extensions
         /// Decompile the HelpFilter table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileHelpFilterTable(Table table)
+        private void DecompileHelpFilterTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -185,7 +185,7 @@ namespace WixToolset.Extensions
         /// Decompile the HelpFilterToNamespace table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileHelpFilterToNamespaceTable(Table table)
+        private void DecompileHelpFilterToNamespaceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -209,7 +209,7 @@ namespace WixToolset.Extensions
         /// Decompile the HelpNamespace table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileHelpNamespaceTable(Table table)
+        private void DecompileHelpNamespaceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -247,7 +247,7 @@ namespace WixToolset.Extensions
         /// Decompile the HelpPlugin table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileHelpPluginTable(Table table)
+        private void DecompileHelpPluginTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {

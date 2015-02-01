@@ -45,7 +45,7 @@ namespace WixToolset.Extensibility
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        void DecompileTable(Table table);
+        void DecompileTable(ITable table);
 
         /// <summary>
         /// Finalize decompilation.

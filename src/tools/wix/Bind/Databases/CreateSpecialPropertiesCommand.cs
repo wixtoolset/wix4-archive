@@ -16,9 +16,9 @@ namespace WixToolset.Bind.Databases
 
     internal class CreateSpecialPropertiesCommand : ICommand
     {
-        public Table PropertyTable { private get; set; }
+        public ITable PropertyTable { private get; set; }
 
-        public Table WixPropertyTable { private get; set; }
+        public ITable WixPropertyTable { private get; set; }
 
         public void Execute()
         {
@@ -48,7 +48,7 @@ namespace WixToolset.Bind.Databases
                     }
                 }
 
-                Table propertyTable = this.PropertyTable;
+                ITable propertyTable = this.PropertyTable;
                 if (0 < adminProperties.Count)
                 {
                     PropertyRow row = (PropertyRow)propertyTable.CreateRow(null);

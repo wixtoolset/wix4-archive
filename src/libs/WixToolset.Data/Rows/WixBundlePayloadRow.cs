@@ -32,7 +32,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this Media row belongs to and should get its column definitions from.</param>
-        public WixBundlePayloadRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundlePayloadRow(SourceLineNumber sourceLineNumbers, ITable table) :
             base(sourceLineNumbers, table)
         {
         }

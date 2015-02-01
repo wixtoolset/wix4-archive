@@ -16,7 +16,7 @@ namespace WixToolset.Bind.Bundles
 
     internal class OrderPackagesAndRollbackBoundariesCommand : ICommand
     {
-        public Table WixGroupTable { private get; set; }
+        public ITable WixGroupTable { private get; set; }
 
         public RowDictionary<WixBundleRollbackBoundaryRow> Boundaries { private get; set; }
 

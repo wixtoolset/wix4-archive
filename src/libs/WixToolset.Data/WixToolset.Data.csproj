@@ -22,6 +22,8 @@
     <Compile Include="ComplexReferenceChildType.cs" />
     <Compile Include="ComplexReferenceParentType.cs" />
     <Compile Include="CompressionLevel.cs" />
+    <Compile Include="ITable.cs" />
+    <Compile Include="ITableExtensions.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
     <Compile Include="DisplayEventArgs.cs" />
     <Compile Include="DuplicateSymbolsException.cs" />
@@ -113,7 +115,6 @@
     <Compile Include="SourceLineNumber.cs" />
     <Compile Include="SubStorage.cs" />
     <Compile Include="Symbol.cs" />
-    <Compile Include="TableExtensions.cs" />
     <Compile Include="Table.cs" />
     <Compile Include="TableIndexedCollection.cs" />
     <Compile Include="TableDefinition.cs" />

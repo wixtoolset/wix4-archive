@@ -26,7 +26,7 @@ namespace WixToolset.Data.Rows
         /// Creates the keyed collection from existing rows in a table.
         /// </summary>
         /// <param name="table">The summary information table to index.</param>
-        public SummaryInfoRowCollection(Table table)
+        public SummaryInfoRowCollection(ITable table)
         {
             if (0 != String.CompareOrdinal("_SummaryInformation", table.Name))
             {

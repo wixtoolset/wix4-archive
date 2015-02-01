@@ -50,7 +50,7 @@ namespace WixToolset.Extensibility
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public virtual void DecompileTable(Table table)
+        public virtual void DecompileTable(ITable table)
         {
             this.Core.UnexpectedTable(table);
         }

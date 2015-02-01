@@ -16,23 +16,23 @@ namespace WixToolset.Data
     /// <summary>
     /// Collection for tables.
     /// </summary>
-    public sealed class TableIndexedCollection : ICollection<Table>
+    public sealed class TableIndexedCollection : ICollection<ITable>
     {
-        private Dictionary<string, Table> collection;
+        private Dictionary<string, ITable> collection;
 
         /// <summary>
         /// Instantiate a new empty collection.
         /// </summary>
         public TableIndexedCollection()
         {
-            this.collection = new Dictionary<string,Table>();
+            this.collection = new Dictionary<string,ITable>();
         }
 
         /// <summary>
         /// Instantiate a new collection populated with a set of tables.
         /// </summary>
         /// <param name="tables">Set of tables.</param>
-        public TableIndexedCollection(IEnumerable<Table> tables)
+        public TableIndexedCollection(IEnumerable<ITable> tables)
         {
             this.collection = tables.ToDictionary(t => t.Name);
         }
@@ -47,7 +47,7 @@ namespace WixToolset.Data
         }
 
         /// <summary>
-        /// Table indexed collection is never read only.
+        /// ITable indexed collection is never read only.
         /// </summary>
         public bool IsReadOnly
         {
@@ -57,9 +57,9 @@ namespace WixToolset.Data
         /// <summary>
         /// Adds a table to the collection.
         /// </summary>
-        /// <param name="table">Table to add to the collection.</param>
+        /// <param name="table">ITable to add to the collection.</param>
         /// <remarks>Indexes the table by name.</remarks>
-        public void Add(Table table)
+        public void Add(ITable table)
         {
             this.collection.Add(table.Name, table);
         }
@@ -75,9 +75,9 @@ namespace WixToolset.Data
         /// <summary>
         /// Determines if a table is in the collection.
         /// </summary>
-        /// <param name="table">Table to check if it is in the collection.</param>
+        /// <param name="table">ITable to check if it is in the collection.</param>
         /// <returns>True if the table name is in the collection, otherwise false.</returns>
-        public bool Contains(Table table)
+        public bool Contains(ITable table)
         {
             return this.collection.ContainsKey(table.Name);
         }
@@ -87,7 +87,7 @@ namespace WixToolset.Data
         /// </summary>
         /// <param name="array">Array to copy the collection into.</param>
         /// <param name="arrayIndex">Index to start copying from.</param>
-        public void CopyTo(Table[] array, int arrayIndex)
+        public void CopyTo(ITable[] array, int arrayIndex)
         {
             this.collection.Values.CopyTo(array, arrayIndex);
         }
@@ -95,7 +95,7 @@ namespace WixToolset.Data
         /// <summary>
         /// Remove a table from the collection by name.
         /// </summary>
-        /// <param name="tableName">Table name to remove from the collection.</param>
+        /// <param name="tableName">ITable name to remove from the collection.</param>
         public void Remove(string tableName)
         {
             this.collection.Remove(tableName);
@@ -104,8 +104,8 @@ namespace WixToolset.Data
         /// <summary>
         /// Remove a table from the collection.
         /// </summary>
-        /// <param name="table">Table with matching name to remove from the collection.</param>
-        public bool Remove(Table table)
+        /// <param name="table">ITable with matching name to remove from the collection.</param>
+        public bool Remove(ITable table)
         {
             return this.collection.Remove(table.Name);
         }
@@ -114,7 +114,7 @@ namespace WixToolset.Data
         /// Gets an enumerator over the whole collection.
         /// </summary>
         /// <returns>Collection enumerator.</returns>
-        public IEnumerator<Table> GetEnumerator()
+        public IEnumerator<ITable> GetEnumerator()
         {
             return this.collection.Values.GetEnumerator();
         }
@@ -132,11 +132,11 @@ namespace WixToolset.Data
         /// Gets a table by name.
         /// </summary>
         /// <param name="tableName">Name of table to locate.</param>
-        public Table this[string tableName]
+        public ITable this[string tableName]
         {
             get
             {
-                Table table;
+                ITable table;
                 return this.collection.TryGetValue(tableName, out table) ? table : null;
             }
 
@@ -149,10 +149,10 @@ namespace WixToolset.Data
         /// <summary>
         /// Tries to find a table by name.
         /// </summary>
-        /// <param name="tableName">Table name to locate.</param>
+        /// <param name="tableName">ITable name to locate.</param>
         /// <param name="table">Found table.</param>
         /// <returns>True if table with table name was found, otherwise false.</returns>
-        public bool TryGetTable(string tableName, out Table table)
+        public bool TryGetTable(string tableName, out ITable table)
         {
             return this.collection.TryGetValue(tableName, out table);
         }

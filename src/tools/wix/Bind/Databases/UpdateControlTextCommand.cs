@@ -16,13 +16,13 @@ namespace WixToolset.Bind.Databases
 
     internal class UpdateControlTextCommand : ICommand
     {
-        public Table BBControlTable { private get; set; }
+        public ITable BBControlTable { private get; set; }
 
-        public Table WixBBControlTable { private get; set; }
+        public ITable WixBBControlTable { private get; set; }
 
-        public Table ControlTable { private get; set; }
+        public ITable ControlTable { private get; set; }
 
-        public Table WixControlTable { private get; set; }
+        public ITable WixControlTable { private get; set; }
 
         public void Execute()
         {

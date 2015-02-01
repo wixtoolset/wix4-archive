@@ -287,7 +287,7 @@ namespace WixToolset
         private string GetModuleId(Output wixout)
         {
             // get the moduleId from the wixout
-            Table moduleSignatureTable = wixout.Tables["ModuleSignature"];
+            ITable moduleSignatureTable = wixout.Tables["ModuleSignature"];
             if (null == moduleSignatureTable || 0 >= moduleSignatureTable.Rows.Count)
             {
                 this.core.OnMessage(WixErrors.ExpectedTableInMergeModule("ModuleSignature"));
@@ -357,7 +357,7 @@ namespace WixToolset
         {
             string wixVariable = String.Format(CultureInfo.InvariantCulture, "!(wix.{0}", this.id);
 
-            foreach (Table table in wixout.Tables)
+            foreach (ITable table in wixout.Tables)
             {
                 // Determine if the table has a feature foreign key
                 bool hasFeatureForeignKey = false;

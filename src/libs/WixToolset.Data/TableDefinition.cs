@@ -134,7 +134,7 @@ namespace WixToolset.Data
         /// Adds the validation rows to the _Validation table.
         /// </summary>
         /// <param name="validationTable">The _Validation table.</param>
-        public void AddValidationRows(Table validationTable)
+        public void AddValidationRows(ITable validationTable)
         {
             foreach (ColumnDefinition columnDef in this.Columns)
             {

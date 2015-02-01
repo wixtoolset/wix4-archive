@@ -56,7 +56,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this PatchTargetCode row belongs to and should get its column definitions from.</param>
-        public WixBundlePatchTargetCodeRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundlePatchTargetCodeRow(SourceLineNumber sourceLineNumbers, ITable table) :
             base(sourceLineNumbers, table)
         {
         }

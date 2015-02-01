@@ -47,7 +47,7 @@ namespace WixToolset.Bind.Databases
             this.InstallerVersion = 0;
             this.ModularizationGuid = null;
 
-            Table summaryInformationTable = this.Output.Tables["_SummaryInformation"];
+            ITable summaryInformationTable = this.Output.Tables["_SummaryInformation"];
 
             if (null != summaryInformationTable)
             {

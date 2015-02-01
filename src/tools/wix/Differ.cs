@@ -123,31 +123,31 @@ namespace WixToolset
             }
 
             // compare the contents of the tables
-            foreach (Table targetTable in targetOutput.Tables)
+            foreach (ITable targetTable in targetOutput.Tables)
             {
-                Table updatedTable = updatedOutput.Tables[targetTable.Name];
+                ITable updatedTable = updatedOutput.Tables[targetTable.Name];
                 TableOperation operation = TableOperation.None;
 
                 List<Row> rows = this.CompareTables(targetOutput, targetTable, updatedTable, out operation);
 
                 if (TableOperation.Drop == operation)
                 {
-                    Table droppedTable = transform.EnsureTable(targetTable.Definition);
+                    ITable droppedTable = transform.EnsureTable(targetTable.Definition);
                     droppedTable.Operation = TableOperation.Drop;
                 }
                 else if (TableOperation.None == operation)
                 {
-                    Table modified = transform.EnsureTable(updatedTable.Definition);
+                    ITable modified = transform.EnsureTable(updatedTable.Definition);
                     rows.ForEach(r => modified.Rows.Add(r));
                 }
             }
 
             // added tables
-            foreach (Table updatedTable in updatedOutput.Tables)
+            foreach (ITable updatedTable in updatedOutput.Tables)
             {
                 if (null == targetOutput.Tables[updatedTable.Name])
                 {
-                    Table addedTable = transform.EnsureTable(updatedTable.Definition);
+                    ITable addedTable = transform.EnsureTable(updatedTable.Definition);
                     addedTable.Operation = TableOperation.Add;
 
                     foreach (Row updatedRow in updatedTable.Rows)
@@ -162,7 +162,7 @@ namespace WixToolset
             // set summary information properties
             if (!this.suppressKeepingSpecialRows)
             {
-                Table summaryInfoTable = transform.Tables["_SummaryInformation"];
+                ITable summaryInfoTable = transform.Tables["_SummaryInformation"];
                 this.UpdateTransformSummaryInformationTable(summaryInfoTable, validationFlags);
             }
 
@@ -243,7 +243,7 @@ namespace WixToolset
             }
         }
 
-        private Row CompareRows(Table targetTable, Row targetRow, Row updatedRow, out RowOperation operation, out bool keepRow)
+        private Row CompareRows(ITable targetTable, Row targetRow, Row updatedRow, out RowOperation operation, out bool keepRow)
         {
             Row comparedRow = null;
             keepRow = false;
@@ -364,7 +364,7 @@ namespace WixToolset
             return comparedRow;
         }
 
-        private List<Row> CompareTables(Output targetOutput, Table targetTable, Table updatedTable, out TableOperation operation)
+        private List<Row> CompareTables(Output targetOutput, ITable targetTable, ITable updatedTable, out TableOperation operation)
         {
             List<Row> rows = new List<Row>();
             operation = TableOperation.None;
@@ -432,7 +432,7 @@ namespace WixToolset
             return rows;
         }
 
-        private void IndexPrimaryKeys(Table targetTable, SortedList targetPrimaryKeys, Table updatedTable, SortedList updatedPrimaryKeys)
+        private void IndexPrimaryKeys(ITable targetTable, SortedList targetPrimaryKeys, ITable updatedTable, SortedList updatedPrimaryKeys)
         {
             // index the target rows
             foreach (Row row in targetTable.Rows)
@@ -513,7 +513,7 @@ namespace WixToolset
             }
         }
 
-        private void UpdateTransformSummaryInformationTable(Table summaryInfoTable, TransformFlags validationFlags)
+        private void UpdateTransformSummaryInformationTable(ITable summaryInfoTable, TransformFlags validationFlags)
         {
             // calculate the minimum version of MSI required to process the transform
             int targetMin;

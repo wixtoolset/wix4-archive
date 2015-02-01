@@ -60,9 +60,9 @@ namespace WixToolset.Bind
             // We shouldn't really get past the linker phase if there are
             // no group items... that means that there's no UX, no Chain,
             // *and* no Containers!
-            Table chainPackageTable = this.GetRequiredTable("WixBundlePackage");
+            ITable chainPackageTable = this.GetRequiredTable("WixBundlePackage");
 
-            Table wixGroupTable = this.GetRequiredTable("WixGroup");
+            ITable wixGroupTable = this.GetRequiredTable("WixGroup");
 
             // Ensure there is one and only one row in the WixBundle table.
             // The compiler and linker behavior should have colluded to get
@@ -564,9 +564,9 @@ namespace WixToolset.Bind
             this.ContentFilePaths = payloads.Values.Where(p => p.ContentFile).Select(p => p.FullFileName).ToList();
         }
 
-        private Table GetRequiredTable(string tableName)
+        private ITable GetRequiredTable(string tableName)
         {
-            Table table = this.Output.Tables[tableName];
+            ITable table = this.Output.Tables[tableName];
             if (null == table || 0 == table.Rows.Count)
             {
                 throw new WixException(WixErrors.MissingBundleInformation(tableName));
@@ -577,7 +577,7 @@ namespace WixToolset.Bind
 
         private Row GetSingleRowTable(string tableName)
         {
-            Table table = this.Output.Tables[tableName];
+            ITable table = this.Output.Tables[tableName];
             if (null == table || 1 != table.Rows.Count)
             {
                 throw new WixException(WixErrors.MissingBundleInformation(tableName));
@@ -589,7 +589,7 @@ namespace WixToolset.Bind
         private List<WixSearchInfo> OrderSearches()
         {
             Dictionary<string, WixSearchInfo> allSearches = new Dictionary<string, WixSearchInfo>();
-            Table wixFileSearchTable = this.Output.Tables["WixFileSearch"];
+            ITable wixFileSearchTable = this.Output.Tables["WixFileSearch"];
             if (null != wixFileSearchTable && 0 < wixFileSearchTable.Rows.Count)
             {
                 foreach (Row row in wixFileSearchTable.Rows)
@@ -599,7 +599,7 @@ namespace WixToolset.Bind
                 }
             }
 
-            Table wixRegistrySearchTable = this.Output.Tables["WixRegistrySearch"];
+            ITable wixRegistrySearchTable = this.Output.Tables["WixRegistrySearch"];
             if (null != wixRegistrySearchTable && 0 < wixRegistrySearchTable.Rows.Count)
             {
                 foreach (Row row in wixRegistrySearchTable.Rows)
@@ -609,7 +609,7 @@ namespace WixToolset.Bind
                 }
             }
 
-            Table wixComponentSearchTable = this.Output.Tables["WixComponentSearch"];
+            ITable wixComponentSearchTable = this.Output.Tables["WixComponentSearch"];
             if (null != wixComponentSearchTable && 0 < wixComponentSearchTable.Rows.Count)
             {
                 foreach (Row row in wixComponentSearchTable.Rows)
@@ -619,7 +619,7 @@ namespace WixToolset.Bind
                 }
             }
 
-            Table wixProductSearchTable = this.Output.Tables["WixProductSearch"];
+            ITable wixProductSearchTable = this.Output.Tables["WixProductSearch"];
             if (null != wixProductSearchTable && 0 < wixProductSearchTable.Rows.Count)
             {
                 foreach (Row row in wixProductSearchTable.Rows)
@@ -632,7 +632,7 @@ namespace WixToolset.Bind
             // Merge in the variable/condition info and get the canonical ordering for
             // the searches.
             List<WixSearchInfo> orderedSearches = new List<WixSearchInfo>();
-            Table wixSearchTable = this.Output.Tables["WixSearch"];
+            ITable wixSearchTable = this.Output.Tables["WixSearch"];
             if (null != wixSearchTable && 0 < wixSearchTable.Rows.Count)
             {
                 orderedSearches.Capacity = wixSearchTable.Rows.Count;
@@ -784,7 +784,7 @@ namespace WixToolset.Bind
         private void ProcessDependencyProviders(Output bundle, IDictionary<string, PackageFacade> facades)
         {
             // First import any authored dependencies. These may merge with imported provides from MSI packages.
-            Table wixDependencyProviderTable = bundle.Tables["WixDependencyProvider"];
+            ITable wixDependencyProviderTable = bundle.Tables["WixDependencyProvider"];
             if (null != wixDependencyProviderTable && 0 < wixDependencyProviderTable.Rows.Count)
             {
                 // Add package information for each dependency provider authored into the manifest.
@@ -871,7 +871,7 @@ namespace WixToolset.Bind
             // From DependencyCommon.cs in the WixDependencyExtension.
             const int ProvidesAttributesBundle = 0x10000;
 
-            Table wixDependencyProviderTable = bundle.Tables["WixDependencyProvider"];
+            ITable wixDependencyProviderTable = bundle.Tables["WixDependencyProvider"];
             if (null != wixDependencyProviderTable && 0 < wixDependencyProviderTable.Rows.Count)
             {
                 // Search the WixDependencyProvider table for the single bundle provider key.

@@ -843,7 +843,7 @@ namespace WixTest
 
                 // index the target rows for better error messages
                 Hashtable targetRows = new Hashtable();
-                Table targetTable = targetOutput.Tables[table.Name];
+                ITable targetTable = targetOutput.Tables[table.Name];
                 if (null != targetTable)
                 {
                     foreach (Row row in targetTable.Rows)

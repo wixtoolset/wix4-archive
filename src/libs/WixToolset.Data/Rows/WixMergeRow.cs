@@ -36,7 +36,7 @@ namespace WixToolset.Data.Rows
         /// <summary>Creates a Merge row that belongs to a table.</summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this Merge row belongs to and should get its column definitions from.</param>
-        public WixMergeRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixMergeRow(SourceLineNumber sourceLineNumbers, ITable table) :
             base(sourceLineNumbers, table)
         {
         }

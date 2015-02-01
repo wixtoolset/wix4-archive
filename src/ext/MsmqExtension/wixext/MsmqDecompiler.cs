@@ -48,7 +48,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -71,7 +71,7 @@ namespace WixToolset.Extensions
         /// Decompile the MessageQueue table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMessageQueueTable(Table table)
+        private void DecompileMessageQueueTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -159,7 +159,7 @@ namespace WixToolset.Extensions
         /// Decompile the MessageQueueUserPermission table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMessageQueueUserPermissionTable(Table table)
+        private void DecompileMessageQueueUserPermissionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -192,7 +192,7 @@ namespace WixToolset.Extensions
         /// Decompile the MessageQueueGroupPermission table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMessageQueueGroupPermissionTable(Table table)
+        private void DecompileMessageQueueGroupPermissionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {

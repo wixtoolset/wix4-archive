@@ -45,8 +45,8 @@ namespace WixToolset.Bind.Databases
 
             Dictionary<int, RowDictionary<WixFileRow>> patchMediaFileRows = new Dictionary<int, RowDictionary<WixFileRow>>();
 
-            Table patchActualFileTable = this.Output.EnsureTable(this.TableDefinitions["File"]);
-            Table patchFileTable = this.Output.EnsureTable(this.TableDefinitions["WixFile"]);
+            ITable  patchActualFileTable = this.Output.EnsureTable(this.TableDefinitions["File"]);
+            ITable  patchFileTable = this.Output.EnsureTable(this.TableDefinitions["WixFile"]);
 
             if (copyFromPatch)
             {
@@ -64,7 +64,7 @@ namespace WixToolset.Bind.Databases
                     mediaFileRows.Add(patchFileRow);
                 }
 
-                Table patchMediaTable = this.Output.EnsureTable(this.TableDefinitions["Media"]);
+                ITable  patchMediaTable = this.Output.EnsureTable(this.TableDefinitions["Media"]);
                 patchMediaRows = new RowDictionary<MediaRow>(patchMediaTable);
             }
 
@@ -90,21 +90,21 @@ namespace WixToolset.Bind.Databases
                     }
 
                     Output mainTransform = substorage.Data;
-                    Table mainWixFileTable = mainTransform.Tables["WixFile"];
-                    Table mainMsiFileHashTable = mainTransform.Tables["MsiFileHash"];
+                    ITable  mainWixFileTable = mainTransform.Tables["WixFile"];
+                    ITable  mainMsiFileHashTable = mainTransform.Tables["MsiFileHash"];
 
                     this.FileManagerCore.ActiveSubStorage = substorage;
 
                     RowDictionary<WixFileRow> mainWixFiles = new RowDictionary<WixFileRow>(mainWixFileTable);
                     RowDictionary<Row> mainMsiFileHashIndex = new RowDictionary<Row>();
 
-                    Table mainFileTable = mainTransform.Tables["File"];
+                    ITable  mainFileTable = mainTransform.Tables["File"];
                     Output pairedTransform = (Output)pairedTransforms[substorage.Name];
 
                     // copy Media.LastSequence and index the MsiFileHash table if it exists.
                     if (copyFromPatch)
                     {
-                        Table pairedMediaTable = pairedTransform.Tables["Media"];
+                        ITable  pairedMediaTable = pairedTransform.Tables["Media"];
                         foreach (MediaRow pairedMediaRow in pairedMediaTable.Rows)
                         {
                             MediaRow patchMediaRow = patchMediaRows.Get(pairedMediaRow.DiskId);
@@ -121,7 +121,7 @@ namespace WixToolset.Bind.Databases
                     }
 
                     // Index File table of pairedTransform
-                    Table pairedFileTable = pairedTransform.Tables["File"];
+                    ITable  pairedFileTable = pairedTransform.Tables["File"];
                     RowDictionary<FileRow> pairedFileRows = new RowDictionary<FileRow>(pairedFileTable);
 
                     if (null != mainFileTable)
@@ -309,7 +309,7 @@ namespace WixToolset.Bind.Databases
 
                                     if (null != patchHashRow)
                                     {
-                                        Table mainHashTable = mainTransform.EnsureTable(this.TableDefinitions["MsiFileHash"]);
+                                        ITable  mainHashTable = mainTransform.EnsureTable(this.TableDefinitions["MsiFileHash"]);
                                         Row mainHashRow = mainHashTable.CreateRow(mainFileRow.SourceLineNumbers);
                                         for (int i = 0; i < patchHashRow.Fields.Length; i++)
                                         {
@@ -329,7 +329,7 @@ namespace WixToolset.Bind.Databases
                                     List<Row> patchAssemblyNameRows = patchFileRow.AssemblyNames;
                                     if (null != patchAssemblyNameRows)
                                     {
-                                        Table mainAssemblyNameTable = mainTransform.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
+                                        ITable  mainAssemblyNameTable = mainTransform.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
                                         foreach (Row patchAssemblyNameRow in patchAssemblyNameRows)
                                         {
                                             // Copy if there isn't an identical modified/added row already in the transform.
@@ -366,7 +366,7 @@ namespace WixToolset.Bind.Databases
                                         AddPatchFilesActionToSequenceTable(SequenceTable.InstallExecuteSequence, mainTransform, pairedTransform, mainFileRow);
 
                                         // Add to Patch table
-                                        Table patchTable = pairedTransform.EnsureTable(this.TableDefinitions["Patch"]);
+                                        ITable  patchTable = pairedTransform.EnsureTable(this.TableDefinitions["Patch"]);
                                         if (0 == patchTable.Rows.Count)
                                         {
                                             patchTable.Operation = TableOperation.Add;
@@ -384,7 +384,7 @@ namespace WixToolset.Bind.Databases
                                         if (MsiInterop.MsiMaxStreamNameLength < streamName.Length)
                                         {
                                             streamName = "_" + Guid.NewGuid().ToString("D").ToUpperInvariant().Replace('-', '_');
-                                            Table patchHeadersTable = pairedTransform.EnsureTable(this.TableDefinitions["MsiPatchHeaders"]);
+                                            ITable  patchHeadersTable = pairedTransform.EnsureTable(this.TableDefinitions["MsiPatchHeaders"]);
                                             if (0 == patchHeadersTable.Rows.Count)
                                             {
                                                 patchHeadersTable.Operation = TableOperation.Add;
@@ -455,7 +455,7 @@ namespace WixToolset.Bind.Databases
                     ref seqDuplicateFiles);
             if (!hasPatchFilesAction)
             {
-                Table iesTable = pairedTransform.EnsureTable(this.TableDefinitions[tableName]);
+                ITable iesTable = pairedTransform.EnsureTable(this.TableDefinitions[tableName]);
                 if (0 == iesTable.Rows.Count)
                 {
                     iesTable.Operation = TableOperation.Add;
@@ -501,7 +501,7 @@ namespace WixToolset.Bind.Databases
         /// <param name="hasPatchFilesAction">Set to true if PatchFiles action is found. Left unchanged otherwise.</param>
         /// <param name="seqInstallFiles">Set to sequence value of InstallFiles action if found. Left unchanged otherwise.</param>
         /// <param name="seqDuplicateFiles">Set to sequence value of DuplicateFiles action if found. Left unchanged otherwise.</param>
-        private static void TestSequenceTableForPatchFilesAction(Table iesTable, ref bool hasPatchFilesAction, ref int seqInstallFiles, ref int seqDuplicateFiles)
+        private static void TestSequenceTableForPatchFilesAction(ITable iesTable, ref bool hasPatchFilesAction, ref int seqInstallFiles, ref int seqDuplicateFiles)
         {
             if (null != iesTable)
             {
@@ -529,8 +529,8 @@ namespace WixToolset.Bind.Databases
         /// <param name="output">The output to validate.</param>
         private void ValidateFileRowChanges(Output transform)
         {
-            Table componentTable = transform.Tables["Component"];
-            Table fileTable = transform.Tables["File"];
+            ITable componentTable = transform.Tables["Component"];
+            ITable fileTable = transform.Tables["File"];
 
             // There's no sense validating keypaths if the transform has no component or file table
             if (componentTable == null || fileTable == null)

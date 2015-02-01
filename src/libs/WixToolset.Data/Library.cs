@@ -151,7 +151,7 @@ namespace WixToolset.Data
             // Resolve paths to files that are to be embedded in the library.
             if (null != resolver)
             {
-                foreach (Table table in this.sections.SelectMany(s => s.Tables))
+                foreach (ITable table in this.sections.SelectMany(s => s.Tables))
                 {
                     foreach (Row row in table.Rows)
                     {

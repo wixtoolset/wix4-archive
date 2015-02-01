@@ -36,13 +36,13 @@ namespace WixToolset.Bind.Bundles
 
         public IBinderFileManager FileManager { private get; set; }
 
-        public Table MsiFeatureTable { private get; set; }
+        public ITable MsiFeatureTable { private get; set; }
 
-        public Table MsiPropertyTable { private get; set; }
+        public ITable MsiPropertyTable { private get; set; }
 
-        public Table PayloadTable { private get; set; }
+        public ITable PayloadTable { private get; set; }
 
-        public Table RelatedPackageTable { private get; set; }
+        public ITable RelatedPackageTable { private get; set; }
 
         /// <summary>
         /// Processes the MSI packages to add properties and payloads from the MSI packages.

@@ -488,7 +488,7 @@ namespace WixToolset
         internal Row CreateRow(SourceLineNumber sourceLineNumbers, string tableName, Section section, Identifier identifier = null)
         {
             TableDefinition tableDefinition = this.tableDefinitions[tableName];
-            Table table = section.EnsureTable(tableDefinition);
+            ITable table = section.EnsureTable(tableDefinition);
             Row row = table.CreateRow(sourceLineNumbers);
 
             if (null != identifier)

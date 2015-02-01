@@ -48,7 +48,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -126,7 +126,7 @@ namespace WixToolset.Extensions
         /// Decompile the Certificate table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileCertificateTable(Table table)
+        private void DecompileCertificateTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -225,7 +225,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsAppPool table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsAppPoolTable(Table table)
+        private void DecompileIIsAppPoolTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -381,7 +381,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsPropertyTable(Table table)
+        private void DecompileIIsPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -429,7 +429,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsHttpHeader table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsHttpHeaderTable(Table table)
+        private void DecompileIIsHttpHeaderTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -449,7 +449,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsMimeMap table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsMimeMapTable(Table table)
+        private void DecompileIIsMimeMapTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -471,7 +471,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebAddress table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebAddressTable(Table table)
+        private void DecompileIIsWebAddressTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -504,7 +504,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebApplication table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebApplicationTable(Table table)
+        private void DecompileIIsWebApplicationTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -650,7 +650,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebDirProperties table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebDirPropertiesTable(Table table)
+        private void DecompileIIsWebDirPropertiesTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -855,7 +855,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebError table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebErrorTable(Table table)
+        private void DecompileIIsWebErrorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -885,7 +885,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsFilter table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsFilterTable(Table table)
+        private void DecompileIIsFilterTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -956,7 +956,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebLog table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebLogTable(Table table)
+        private void DecompileIIsWebLogTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -994,7 +994,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebServiceExtension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebServiceExtensionTable(Table table)
+        private void DecompileIIsWebServiceExtensionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1046,7 +1046,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebSite table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebSiteTable(Table table)
+        private void DecompileIIsWebSiteTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1150,7 +1150,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebVirtualDir table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebVirtualDirTable(Table table)
+        private void DecompileIIsWebVirtualDirTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1179,7 +1179,7 @@ namespace WixToolset.Extensions
         /// Decompile the IIsWebSiteCertificates table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIIsWebSiteCertificatesTable(Table table)
+        private void DecompileIIsWebSiteCertificatesTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1201,7 +1201,7 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeIIsHttpHeaderTable(TableIndexedCollection tables)
         {
-            Table iisHttpHeaderTable = tables["IIsHttpHeader"];
+            ITable iisHttpHeaderTable = tables["IIsHttpHeader"];
 
             if (null != iisHttpHeaderTable)
             {
@@ -1247,7 +1247,7 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeIIsMimeMapTable(TableIndexedCollection tables)
         {
-            Table iisMimeMapTable = tables["IIsMimeMap"];
+            ITable iisMimeMapTable = tables["IIsMimeMap"];
 
             if (null != iisMimeMapTable)
             {
@@ -1288,9 +1288,9 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeIIsWebApplicationTable(TableIndexedCollection tables)
         {
-            Table iisWebApplicationTable = tables["IIsWebApplication"];
-            Table iisWebSiteTable = tables["IIsWebSite"];
-            Table iisWebVirtualDirTable = tables["IIsWebVirtualDir"];
+            ITable iisWebApplicationTable = tables["IIsWebApplication"];
+            ITable iisWebSiteTable = tables["IIsWebSite"];
+            ITable iisWebVirtualDirTable = tables["IIsWebVirtualDir"];
 
             Hashtable addedWebApplications = new Hashtable();
 
@@ -1362,7 +1362,7 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeIIsWebErrorTable(TableIndexedCollection tables)
         {
-            Table iisWebErrorTable = tables["IIsWebError"];
+            ITable iisWebErrorTable = tables["IIsWebError"];
 
             if (null != iisWebErrorTable)
             {
@@ -1415,8 +1415,8 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeIIsWebVirtualDirTable(TableIndexedCollection tables)
         {
-            Table iisWebSiteTable = tables["IIsWebSite"];
-            Table iisWebVirtualDirTable = tables["IIsWebVirtualDir"];
+            ITable iisWebSiteTable = tables["IIsWebSite"];
+            ITable iisWebVirtualDirTable = tables["IIsWebVirtualDir"];
 
             Hashtable iisWebSiteRows = new Hashtable();
 
@@ -1477,7 +1477,7 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeIIsWebSiteCertificatesTable(TableIndexedCollection tables)
         {
-            Table IIsWebSiteCertificatesTable = tables["IIsWebSiteCertificates"];
+            ITable IIsWebSiteCertificatesTable = tables["IIsWebSiteCertificates"];
 
             if (null != IIsWebSiteCertificatesTable)
             {
@@ -1508,8 +1508,8 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeWebAddressTable(TableIndexedCollection tables)
         {
-            Table iisWebAddressTable = tables["IIsWebAddress"];
-            Table iisWebSiteTable = tables["IIsWebSite"];
+            ITable iisWebAddressTable = tables["IIsWebAddress"];
+            ITable iisWebSiteTable = tables["IIsWebSite"];
 
             Hashtable addedWebAddresses = new Hashtable();
 

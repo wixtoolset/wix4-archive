@@ -281,7 +281,7 @@ namespace WixToolset.Tools
 
             Pdb inputPdb = Pdb.Load(this.inputPdbFile, true);
 
-            Table wixFileTable = inputPdb.Output.Tables["WixFile"];
+            ITable wixFileTable = inputPdb.Output.Tables["WixFile"];
             if (null != wixFileTable)
             {
                 foreach (Row row in wixFileTable.Rows)

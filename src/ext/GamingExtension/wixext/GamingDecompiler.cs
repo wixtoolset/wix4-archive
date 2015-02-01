@@ -49,7 +49,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -66,7 +66,7 @@ namespace WixToolset.Extensions
         /// Decompile the WixGameExplorer table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixGameExplorerTable(Table table)
+        private void DecompileWixGameExplorerTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {

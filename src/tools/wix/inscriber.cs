@@ -195,8 +195,8 @@ namespace WixToolset
                 Dictionary<string, string> certificates = new Dictionary<string, string>();
 
                 // Reset the in-memory tables for this new database
-                Table digitalSignatureTable = new Table(null, this.tableDefinitions["MsiDigitalSignature"]);
-                Table digitalCertificateTable = new Table(null, this.tableDefinitions["MsiDigitalCertificate"]);
+                ITable digitalSignatureTable = new Table(null, this.tableDefinitions["MsiDigitalSignature"]);
+                ITable digitalCertificateTable = new Table(null, this.tableDefinitions["MsiDigitalCertificate"]);
 
                 // If any digital signature records exist that are not of the media type, preserve them
                 if (database.TableExists("MsiDigitalSignature"))

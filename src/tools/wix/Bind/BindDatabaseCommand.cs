@@ -146,13 +146,13 @@ namespace WixToolset.Bind
             {
                 // Gather all the suppress modularization identifiers
                 HashSet<string> suppressModularizationIdentifiers = null;
-                Table wixSuppressModularizationTable = this.Output.Tables["WixSuppressModularization"];
+                ITable wixSuppressModularizationTable = this.Output.Tables["WixSuppressModularization"];
                 if (null != wixSuppressModularizationTable)
                 {
                     suppressModularizationIdentifiers = new HashSet<string>(wixSuppressModularizationTable.Rows.Select(row => (string)row[0]));
                 }
 
-                foreach (Table table in this.Output.Tables)
+                foreach (ITable table in this.Output.Tables)
                 {
                     table.Modularize(modularizationGuid, suppressModularizationIdentifiers);
                 }
@@ -204,7 +204,7 @@ namespace WixToolset.Bind
             }
 
             // Add binder variables for all properties.
-            Table propertyTable = this.Output.Tables["Property"];
+            ITable propertyTable = this.Output.Tables["Property"];
             if (null != propertyTable)
             {
                 foreach (PropertyRow propertyRow in propertyTable.Rows)
@@ -223,7 +223,7 @@ namespace WixToolset.Bind
                                 continue;
                             }
 
-                            Table instanceSummaryInformationTable = subStorageOutput.Tables["_SummaryInformation"];
+                            ITable instanceSummaryInformationTable = subStorageOutput.Tables["_SummaryInformation"];
                             foreach (Row row in instanceSummaryInformationTable.Rows)
                             {
                                 if ((int)SummaryInformation.Transform.ProductCodes == row.FieldAsInteger(0))
@@ -254,7 +254,7 @@ namespace WixToolset.Bind
             if (OutputType.Product == this.Output.Type)
             {
                 // Retrieve files and their information from merge modules.
-                Table wixMergeTable = this.Output.Tables["WixMerge"];
+                ITable wixMergeTable = this.Output.Tables["WixMerge"];
 
                 if (null != wixMergeTable)
                 {
@@ -348,7 +348,7 @@ namespace WixToolset.Bind
 
             // Extended binder extensions can be called now that fields are resolved.
             {
-                Table updatedFiles = this.Output.EnsureTable(this.TableDefinitions["WixBindUpdatedFiles"]);
+                ITable updatedFiles = this.Output.EnsureTable(this.TableDefinitions["WixBindUpdatedFiles"]);
 
                 foreach (BinderExtension extension in this.Extensions)
                 {
@@ -435,14 +435,14 @@ namespace WixToolset.Bind
             // add back suppressed tables which must be present prior to merging in modules
             if (OutputType.Product == this.Output.Type)
             {
-                Table wixMergeTable = this.Output.Tables["WixMerge"];
+                ITable wixMergeTable = this.Output.Tables["WixMerge"];
 
                 if (null != wixMergeTable && 0 < wixMergeTable.Rows.Count)
                 {
                     foreach (SequenceTable sequence in Enum.GetValues(typeof(SequenceTable)))
                     {
                         string sequenceTableName = sequence.ToString();
-                        Table sequenceTable = this.Output.Tables[sequenceTableName];
+                        ITable sequenceTable = this.Output.Tables[sequenceTableName];
 
                         if (null == sequenceTable)
                         {
@@ -571,7 +571,7 @@ namespace WixToolset.Bind
         /// <param name="tables">The tables to localize.</param>
         private void LocalizeUI(TableIndexedCollection tables)
         {
-            Table dialogTable = tables["Dialog"];
+            ITable dialogTable = tables["Dialog"];
             if (null != dialogTable)
             {
                 foreach (Row row in dialogTable.Rows)
@@ -610,7 +610,7 @@ namespace WixToolset.Bind
                 }
             }
 
-            Table controlTable = tables["Control"];
+            ITable controlTable = tables["Control"];
             if (null != controlTable)
             {
                 foreach (Row row in controlTable.Rows)
@@ -796,7 +796,7 @@ namespace WixToolset.Bind
         /// <param name="output">Internal representation of the database to operate on.</param>
         private void SetComponentGuids(Output output)
         {
-            Table componentTable = output.Tables["Component"];
+            ITable componentTable = output.Tables["Component"];
             if (null != componentTable)
             {
                 Hashtable registryKeyRows = null;
@@ -818,7 +818,7 @@ namespace WixToolset.Bind
                         {
                             if (null == registryKeyRows)
                             {
-                                Table registryTable = output.Tables["Registry"];
+                                ITable registryTable = output.Tables["Registry"];
 
                                 registryKeyRows = new Hashtable(registryTable.Rows.Count);
 
@@ -843,7 +843,7 @@ namespace WixToolset.Bind
                             // of directory ids to target names do that now.
                             if (null == directories)
                             {
-                                Table directoryTable = output.Tables["Directory"];
+                                ITable directoryTable = output.Tables["Directory"];
 
                                 int numDirectoryTableRows = (null != directoryTable) ? directoryTable.Rows.Count : 0;
 
@@ -872,7 +872,7 @@ namespace WixToolset.Bind
                             // from the WixDirectory table do that now.
                             if (null == componentIdGenSeeds)
                             {
-                                Table wixDirectoryTable = output.Tables["WixDirectory"];
+                                ITable wixDirectoryTable = output.Tables["WixDirectory"];
 
                                 int numWixDirectoryRows = (null != wixDirectoryTable) ? wixDirectoryTable.Rows.Count : 0;
 
@@ -893,7 +893,7 @@ namespace WixToolset.Bind
                             // then do that now
                             if (null == fileRows)
                             {
-                                Table fileTable = output.Tables["File"];
+                                ITable fileTable = output.Tables["File"];
 
                                 int numFileRows = (null != fileTable) ? fileTable.Rows.Count : 0;
 
@@ -974,15 +974,15 @@ namespace WixToolset.Bind
         private void CreateInstanceTransforms(Output output)
         {
             // Create and add substorages for instance transforms.
-            Table wixInstanceTransformsTable = output.Tables["WixInstanceTransforms"];
+            ITable wixInstanceTransformsTable = output.Tables["WixInstanceTransforms"];
             if (null != wixInstanceTransformsTable && 0 <= wixInstanceTransformsTable.Rows.Count)
             {
                 string targetProductCode = null;
                 string targetUpgradeCode = null;
                 string targetProductVersion = null;
 
-                Table targetSummaryInformationTable = output.Tables["_SummaryInformation"];
-                Table targetPropertyTable = output.Tables["Property"];
+                ITable targetSummaryInformationTable = output.Tables["_SummaryInformation"];
+                ITable targetPropertyTable = output.Tables["Property"];
 
                 // Get the data from target database
                 foreach (Row propertyRow in targetPropertyTable.Rows)
@@ -1003,7 +1003,7 @@ namespace WixToolset.Bind
 
                 // Index the Instance Component Rows.
                 Dictionary<string, ComponentRow> instanceComponentGuids = new Dictionary<string, ComponentRow>();
-                Table targetInstanceComponentTable = output.Tables["WixInstanceComponent"];
+                ITable targetInstanceComponentTable = output.Tables["WixInstanceComponent"];
                 if (null != targetInstanceComponentTable && 0 < targetInstanceComponentTable.Rows.Count)
                 {
                     foreach (Row row in targetInstanceComponentTable.Rows)
@@ -1012,7 +1012,7 @@ namespace WixToolset.Bind
                         instanceComponentGuids.Add((string)row[0], null);
                     }
 
-                    Table targetComponentTable = output.Tables["Component"];
+                    ITable targetComponentTable = output.Tables["Component"];
                     foreach (ComponentRow componentRow in targetComponentTable.Rows)
                     {
                         string component = (string)componentRow[0];
@@ -1032,7 +1032,7 @@ namespace WixToolset.Bind
                     instanceTransform.Type = OutputType.Transform;
                     instanceTransform.Codepage = output.Codepage;
 
-                    Table instanceSummaryInformationTable = instanceTransform.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
+                    ITable instanceSummaryInformationTable = instanceTransform.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
                     string targetPlatformAndLanguage = null;
 
                     foreach (Row summaryInformationRow in targetSummaryInformationTable.Rows)
@@ -1049,7 +1049,7 @@ namespace WixToolset.Bind
                     }
 
                     // Modify the appropriate properties.
-                    Table propertyTable = instanceTransform.EnsureTable(this.TableDefinitions["Property"]);
+                    ITable propertyTable = instanceTransform.EnsureTable(this.TableDefinitions["Property"]);
 
                     // Change the ProductCode property
                     string productCode = (string)instanceRow[2];
@@ -1091,11 +1091,11 @@ namespace WixToolset.Bind
                         upgradeCodeRow[1] = instanceRow[4];
 
                         // Change the Upgrade table
-                        Table targetUpgradeTable = output.Tables["Upgrade"];
+                        ITable targetUpgradeTable = output.Tables["Upgrade"];
                         if (null != targetUpgradeTable && 0 <= targetUpgradeTable.Rows.Count)
                         {
                             string upgradeId = (string)instanceRow[4];
-                            Table upgradeTable = instanceTransform.EnsureTable(this.TableDefinitions["Upgrade"]);
+                            ITable upgradeTable = instanceTransform.EnsureTable(this.TableDefinitions["Upgrade"]);
                             foreach (Row row in targetUpgradeTable.Rows)
                             {
                                 // In case they are upgrading other codes to this new product, leave the ones that don't match the
@@ -1135,7 +1135,7 @@ namespace WixToolset.Bind
                     // If there are instance Components generate new GUIDs for them.
                     if (0 < instanceComponentGuids.Count)
                     {
-                        Table componentTable = instanceTransform.EnsureTable(this.TableDefinitions["Component"]);
+                        ITable componentTable = instanceTransform.EnsureTable(this.TableDefinitions["Component"]);
                         foreach (ComponentRow targetComponentRow in instanceComponentGuids.Values)
                         {
                             string guid = targetComponentRow.Guid;
@@ -1211,7 +1211,7 @@ namespace WixToolset.Bind
         /// </remarks>
         private void ValidateComponentGuids(Output output)
         {
-            Table componentTable = output.Tables["Component"];
+            ITable componentTable = output.Tables["Component"];
             if (null != componentTable)
             {
                 Dictionary<string, bool> componentGuidConditions = new Dictionary<string, bool>(componentTable.Rows.Count);

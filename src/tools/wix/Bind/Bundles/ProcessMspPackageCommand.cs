@@ -32,7 +32,7 @@ namespace WixToolset.Bind.Bundles
 
         public PackageFacade Facade { private get; set; }
 
-        public Table WixBundlePatchTargetCodeTable { private get; set; }
+        public ITable WixBundlePatchTargetCodeTable { private get; set; }
 
         /// <summary>
         /// Processes the Msp packages to add properties and payloads from the Msp packages.

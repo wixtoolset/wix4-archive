@@ -56,7 +56,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -95,7 +95,7 @@ namespace WixToolset.Extensions
         /// Decompiles the WixDependencyProvider table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixDependencyProviderTable(Table table)
+        private void DecompileWixDependencyProviderTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -147,7 +147,7 @@ namespace WixToolset.Extensions
         /// Decompiles the WixDependency table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixDependencyTable(Table table)
+        private void DecompileWixDependencyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -192,7 +192,7 @@ namespace WixToolset.Extensions
         /// Decompiles the WixDependencyRef table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileWixDependencyRefTable(Table table)
+        private void DecompileWixDependencyRefTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -252,7 +252,7 @@ namespace WixToolset.Extensions
         /// <param name="tables">The collection of tables.</param>
         private void FinalizeRegistryTable(TableIndexedCollection tables)
         {
-            Table registryTable = tables["Registry"];
+            ITable registryTable = tables["Registry"];
             if (null != registryTable)
             {
                 foreach (Row registryRow in registryTable.Rows)

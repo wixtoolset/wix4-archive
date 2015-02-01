@@ -23,7 +23,7 @@ namespace WixToolset.Bind.Databases
     {
         public IEnumerable<FileFacade> FileFacades { private get; set; }
 
-        public Table WixPatchIdTable { private get; set; }
+        public ITable WixPatchIdTable { private get; set; }
 
         public string TempFilesLocation { private get; set; }
 

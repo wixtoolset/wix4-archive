@@ -49,7 +49,7 @@ namespace WixToolset.Extensions
         /// <param name="output">Output containing the tables to process.</param>
         private void ReorderWixSearch(Output output)
         {
-            Table wixSearchTable = output.Tables["WixSearch"];
+            ITable wixSearchTable = output.Tables["WixSearch"];
             if (null == wixSearchTable || wixSearchTable.Rows.Count == 0)
             {
                 // nothing to do!
@@ -63,7 +63,7 @@ namespace WixToolset.Extensions
             }
 
             Constraints constraints = new Constraints();
-            Table wixSearchRelationTable = output.Tables["WixSearchRelation"];
+            ITable wixSearchRelationTable = output.Tables["WixSearchRelation"];
             if (null != wixSearchRelationTable && wixSearchRelationTable.Rows.Count > 0)
             {
                 // add relational info to our data...

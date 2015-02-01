@@ -154,7 +154,7 @@ namespace WixToolset.Bind.Databases
 
                     if (null == file.Hash)
                     {
-                        Table msiFileHashTable = this.Output.EnsureTable(this.TableDefinitions["MsiFileHash"]);
+                        ITable msiFileHashTable = this.Output.EnsureTable(this.TableDefinitions["MsiFileHash"]);
                         file.Hash = msiFileHashTable.CreateRow(file.File.SourceLineNumbers);
                     }
 
@@ -280,7 +280,7 @@ namespace WixToolset.Bind.Databases
                     return;
                 }
 
-                Table assemblyNameTable = this.Output.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
+                ITable assemblyNameTable = this.Output.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
                 if (assemblyNameValues.ContainsKey("name"))
                 {
                     this.SetMsiAssemblyName(assemblyNameTable, file, "name", assemblyNameValues["name"]);
@@ -448,7 +448,7 @@ namespace WixToolset.Bind.Databases
                     Messaging.Instance.OnMessage(WixErrors.InvalidXml(new SourceLineNumber(fileManifest.WixFile.Source), "manifest", xe.Message));
                 }
 
-                Table assemblyNameTable = this.Output.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
+                ITable assemblyNameTable = this.Output.EnsureTable(this.TableDefinitions["MsiAssemblyName"]);
                 if (!String.IsNullOrEmpty(win32Name))
                 {
                     this.SetMsiAssemblyName(assemblyNameTable, file, "name", win32Name);
@@ -484,7 +484,7 @@ namespace WixToolset.Bind.Databases
         /// <param name="file">FileFacade containing the assembly read for the MsiAssemblyName row.</param>
         /// <param name="name">MsiAssemblyName name.</param>
         /// <param name="value">MsiAssemblyName value.</param>
-        private void SetMsiAssemblyName(Table assemblyNameTable, FileFacade file, string name, string value)
+        private void SetMsiAssemblyName(ITable assemblyNameTable, FileFacade file, string name, string value)
         {
             // check for null value (this can occur when grabbing the file version from an assembly without one)
             if (String.IsNullOrEmpty(value))

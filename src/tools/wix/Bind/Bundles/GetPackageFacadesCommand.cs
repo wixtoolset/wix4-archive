@@ -15,15 +15,15 @@ namespace WixToolset.Bind.Bundles
 
     internal class GetPackageFacadesCommand : ICommand
     {
-        public Table PackageTable { private get; set; }
+        public ITable PackageTable { private get; set; }
 
-        public Table ExePackageTable { private get; set; }
+        public ITable ExePackageTable { private get; set; }
 
-        public Table MsiPackageTable { private get; set; }
+        public ITable MsiPackageTable { private get; set; }
 
-        public Table MspPackageTable { private get; set; }
+        public ITable MspPackageTable { private get; set; }
 
-        public Table MsuPackageTable { private get; set; }
+        public ITable MsuPackageTable { private get; set; }
 
         public IDictionary<string, PackageFacade> PackageFacades { get; private set; }
 

@@ -31,7 +31,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this RelatedBundle row belongs to and should get its column definitions from.</param>
-        public WixRelatedBundleRow(SourceLineNumber sourceLineNumbers, Table table)
+        public WixRelatedBundleRow(SourceLineNumber sourceLineNumbers, ITable table)
             : base(sourceLineNumbers, table)
         {
         }

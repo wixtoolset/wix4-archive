@@ -297,7 +297,7 @@ namespace WixToolset
             {
                 using (SummaryInformation summaryInformation = new SummaryInformation(database))
                 {
-                    Table table = new Table(null, this.tableDefinitions["_SummaryInformation"]);
+                    ITable table = new Table(null, this.tableDefinitions["_SummaryInformation"]);
 
                     for (int i = 1; 19 >= i; i++)
                     {
@@ -491,7 +491,7 @@ namespace WixToolset
                                     tableDefinition = this.tableDefinitions[tableName];
                                 }
 
-                                Table table = new Table(null, tableDefinition);
+                                ITable table = new Table(null, tableDefinition);
 
                                 while (true)
                                 {
@@ -626,7 +626,7 @@ namespace WixToolset
             // set the modularization guid as the PackageCode
             if (null != modularizationGuid)
             {
-                Table table = output.Tables["_SummaryInformation"];
+                ITable table = output.Tables["_SummaryInformation"];
 
                 foreach (Row row in table.Rows)
                 {
@@ -671,7 +671,7 @@ namespace WixToolset
             Hashtable serviceInstallSectionIdIndex = ConnectTableToSectionAndIndex(output.Tables["ServiceInstall"], componentSectionIdIndex, 11, 0);
 
             // Now handle all the tables which only rely on previous indexes and order does not matter.
-            foreach (Table table in output.Tables)
+            foreach (ITable table in output.Tables)
             {
                 switch (table.Name)
                 {
@@ -767,7 +767,7 @@ namespace WixToolset
         /// <param name="table">The table to add sections to.</param>
         /// <param name="rowPrimaryKeyIndex">The index of the column which is used by other tables to reference this table.</param>
         /// <returns>A Hashtable containing the tables key for each row paired with its assigned section id.</returns>
-        private Hashtable AssignSectionIdsToTable(Table table, int rowPrimaryKeyIndex)
+        private Hashtable AssignSectionIdsToTable(ITable table, int rowPrimaryKeyIndex)
         {
             Hashtable hashtable = new Hashtable();
             if (null != table)
@@ -787,7 +787,7 @@ namespace WixToolset
         /// <param name="table">The table containing rows that need to be connected to sections.</param>
         /// <param name="sectionIdIndex">A hashtable containing keys to map table to its section.</param>
         /// <param name="rowIndex">The index of the column which is used as the foreign key in to the sectionIdIndex.</param>
-        private static void ConnectTableToSection(Table table, Hashtable sectionIdIndex, int rowIndex)
+        private static void ConnectTableToSection(ITable table, Hashtable sectionIdIndex, int rowIndex)
         {
             if (null != table)
             {
@@ -809,7 +809,7 @@ namespace WixToolset
         /// <param name="rowIndex">The index of the column which is used as the foreign key in to the sectionIdIndex.</param>
         /// <param name="rowPrimaryKeyIndex">The index of the column which is used by other tables to reference this table.</param>
         /// <returns>A Hashtable containing the tables key for each row paired with its assigned section id.</returns>
-        private static Hashtable ConnectTableToSectionAndIndex(Table table, Hashtable sectionIdIndex, int rowIndex, int rowPrimaryKeyIndex)
+        private static Hashtable ConnectTableToSectionAndIndex(ITable table, Hashtable sectionIdIndex, int rowIndex, int rowPrimaryKeyIndex)
         {
             Hashtable newHashTable = new Hashtable();
             if (null != table)
@@ -851,7 +851,7 @@ namespace WixToolset
             string adminRootPath = Path.GetDirectoryName(databaseFile);
 
             Hashtable componentDirectoryIndex = new Hashtable();
-            Table componentTable = output.Tables["Component"];
+            ITable componentTable = output.Tables["Component"];
             foreach (Row row in componentTable.Rows)
             {
                 componentDirectoryIndex.Add(row[0], row[2]);
@@ -861,7 +861,7 @@ namespace WixToolset
             Hashtable directoryDirectoryParentIndex = new Hashtable();
             Hashtable directoryFullPathIndex = new Hashtable();
             Hashtable directorySourceNameIndex = new Hashtable();
-            Table directoryTable = output.Tables["Directory"];
+            ITable directoryTable = output.Tables["Directory"];
             foreach (Row row in directoryTable.Rows)
             {
                 directoryDirectoryParentIndex.Add(row[0], row[1]);
@@ -883,8 +883,8 @@ namespace WixToolset
                 }
             }
 
-            Table fileTable = output.Tables["File"];
-            Table wixFileTable = output.EnsureTable(this.tableDefinitions["WixFile"]);
+            ITable fileTable = output.Tables["File"];
+            ITable wixFileTable = output.EnsureTable(this.tableDefinitions["WixFile"]);
             foreach (Row row in fileTable.Rows)
             {
                 WixFileRow wixFileRow = new WixFileRow(null, this.tableDefinitions["WixFile"]);
@@ -1033,7 +1033,7 @@ namespace WixToolset
             // retrieve the transforms (they are in substorages)
             using (Storage storage = Storage.Open(patchFile, StorageMode.Read | StorageMode.ShareDenyWrite))
             {
-                Table summaryInformationTable = patch.Tables["_SummaryInformation"];
+                ITable summaryInformationTable = patch.Tables["_SummaryInformation"];
                 foreach (Row row in summaryInformationTable.Rows)
                 {
                     if (8 == (int)row[0]) // PID_LASTAUTHOR
@@ -1101,7 +1101,7 @@ namespace WixToolset
             // get the summary information table
             using (SummaryInformation summaryInformation = new SummaryInformation(transformFile))
             {
-                Table table = transform.EnsureTable(this.tableDefinitions["_SummaryInformation"]);
+                ITable table = transform.EnsureTable(this.tableDefinitions["_SummaryInformation"]);
 
                 for (int i = 1; 19 >= i; i++)
                 {
@@ -1129,7 +1129,7 @@ namespace WixToolset
             }
 
             Hashtable addedRows = new Hashtable();
-            Table transformViewTable;
+            ITable transformViewTable;
 
             // Bind the schema msi.
             this.GenerateDatabase(schemaOutput, msiDatabaseFile);
@@ -1178,7 +1178,7 @@ namespace WixToolset
                     // ignore information for added rows
                     if (!addedRows.Contains(index))
                     {
-                        Table table = schemaOutput.Tables[tableName];
+                        ITable table = schemaOutput.Tables[tableName];
                         this.CreateRow(table, primaryKeys, true);
                     }
                 }
@@ -1214,7 +1214,7 @@ namespace WixToolset
 
                 // index all the rows to easily find modified rows
                 Hashtable rows = new Hashtable();
-                foreach (Table table in output.Tables)
+                foreach (ITable table in output.Tables)
                 {
                     foreach (Row row in table.Rows)
                     {
@@ -1229,7 +1229,7 @@ namespace WixToolset
                     string columnName = (string)row[1];
                     string primaryKeys = (string)row[2];
 
-                    Table table = transform.EnsureTable(this.tableDefinitions[tableName]);
+                    ITable table = transform.EnsureTable(this.tableDefinitions[tableName]);
 
                     if ("CREATE" == columnName) // added table
                     {
@@ -1335,7 +1335,7 @@ namespace WixToolset
         /// <param name="primaryKeys">The primary keys of the row.</param>
         /// <param name="setRequiredFields">Option to set all required fields with placeholder values.</param>
         /// <returns>The new row.</returns>
-        private Row CreateRow(Table table, string primaryKeys, bool setRequiredFields)
+        private Row CreateRow(ITable table, string primaryKeys, bool setRequiredFields)
         {
             Row row = table.CreateRow(null);
 

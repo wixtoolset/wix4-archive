@@ -296,7 +296,7 @@ namespace WixToolset.Data
 
             // loop through the rest of the xml building up the Output object
             TableDefinitionCollection tableDefinitions = null;
-            List<Table> tables = new List<Table>();
+            List<ITable> tables = new List<ITable>();
             if (!empty)
             {
                 bool done = false;
@@ -348,9 +348,9 @@ namespace WixToolset.Data
         /// <param name="tableDefinition">Definition of the table that should exist.</param>
         /// <param name="section">Optional section to use for the table. If one is not provided, the entry section will be used.</param>
         /// <returns>The table in this output.</returns>
-        public Table EnsureTable(TableDefinition tableDefinition, Section section = null)
+        public ITable EnsureTable(TableDefinition tableDefinition, Section section = null)
         {
-            Table table;
+            ITable table;
             if (!this.Tables.TryGetTable(tableDefinition.Name, out table))
             {
                 table = new Table(section ?? this.entrySection, tableDefinition);
@@ -379,13 +379,13 @@ namespace WixToolset.Data
 
             // Collect all the table definitions and write them.
             TableDefinitionCollection tableDefinitions = new TableDefinitionCollection();
-            foreach (Table table in this.Tables)
+            foreach (ITable table in this.Tables)
             {
                 tableDefinitions.Add(table.Definition);
             }
             tableDefinitions.Write(writer);
 
-            foreach (Table table in this.Tables.OrderBy(t => t.Name))
+            foreach (ITable table in this.Tables.OrderBy(t => t.Name))
             {
                 table.Write(writer);
             }

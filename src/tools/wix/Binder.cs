@@ -257,7 +257,7 @@ namespace WixToolset
             }
 
             // Gather all the wix variables.
-            Table wixVariableTable = output.Tables["WixVariable"];
+            ITable wixVariableTable = output.Tables["WixVariable"];
             if (null != wixVariableTable)
             {
                 foreach (WixVariableRow wixVariableRow in wixVariableTable.Rows)
@@ -349,7 +349,7 @@ namespace WixToolset
         /// <param name="databaseFile">The output file if OutputFile not set.</param>
         private void WriteBuildInfoTable(Output output, string outputFile)
         {
-            Table buildInfoTable = output.EnsureTable(this.core.TableDefinitions["WixBuildInfo"]);
+            ITable buildInfoTable = output.EnsureTable(this.core.TableDefinitions["WixBuildInfo"]);
             Row buildInfoRow = buildInfoTable.CreateRow(null);
 
             Assembly executingAssembly = Assembly.GetExecutingAssembly();

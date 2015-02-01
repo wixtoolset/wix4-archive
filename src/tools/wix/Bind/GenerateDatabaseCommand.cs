@@ -53,9 +53,9 @@ namespace WixToolset.Bind
             // Add the _Validation rows.
             if (!this.SuppressAddingValidationRows)
             {
-                Table validationTable = this.Output.EnsureTable(this.TableDefinitions["_Validation"]);
+                ITable validationTable = this.Output.EnsureTable(this.TableDefinitions["_Validation"]);
 
-                foreach (Table table in this.Output.Tables)
+                foreach (ITable table in this.Output.Tables)
                 {
                     if (!table.Definition.Unreal)
                     {
@@ -105,9 +105,9 @@ namespace WixToolset.Bind
                         this.SetDatabaseCodepage(db, this.Output.Codepage);
                     }
 
-                    foreach (Table table in this.Output.Tables)
+                    foreach (ITable table in this.Output.Tables)
                     {
-                        Table importTable = table;
+                        ITable importTable = table;
                         bool hasBinaryColumn = false;
 
                         // Skip all unreal tables other than _Streams.

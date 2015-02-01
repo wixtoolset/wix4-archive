@@ -53,7 +53,7 @@ namespace WixToolset.Bind
             string targetUpgradeCode = null;
             string updatedUpgradeCode = null;
 
-            Table propertyTable = this.Transform.Tables["Property"];
+            ITable propertyTable = this.Transform.Tables["Property"];
             if (null != propertyTable)
             {
                 for (int i = propertyTable.Rows.Count - 1; i >= 0; i--)
@@ -72,10 +72,10 @@ namespace WixToolset.Bind
                 }
             }
 
-            Table targetSummaryInfo = targetOutput.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
-            Table updatedSummaryInfo = updatedOutput.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
-            Table targetPropertyTable = targetOutput.EnsureTable(this.TableDefinitions["Property"]);
-            Table updatedPropertyTable = updatedOutput.EnsureTable(this.TableDefinitions["Property"]);
+            ITable targetSummaryInfo = targetOutput.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
+            ITable updatedSummaryInfo = updatedOutput.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
+            ITable targetPropertyTable = targetOutput.EnsureTable(this.TableDefinitions["Property"]);
+            ITable updatedPropertyTable = updatedOutput.EnsureTable(this.TableDefinitions["Property"]);
 
             // process special summary information values
             foreach (Row row in this.Transform.Tables["_SummaryInformation"].Rows)
@@ -118,8 +118,8 @@ namespace WixToolset.Bind
                     string[] propertyData = ((string)row[1]).Split(';');
                     string lang = 2 == propertyData.Length ? propertyData[1] : "0";
 
-                    Table tempSummaryInfo = (int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ? targetSummaryInfo : updatedSummaryInfo;
-                    Table tempPropertyTable = (int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ? targetPropertyTable : updatedPropertyTable;
+                    ITable tempSummaryInfo = (int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ? targetSummaryInfo : updatedSummaryInfo;
+                    ITable tempPropertyTable = (int)SummaryInformation.Transform.TargetPlatformAndLanguage == (int)row[0] ? targetPropertyTable : updatedPropertyTable;
 
                     Row productLanguageRow = tempPropertyTable.CreateRow(null);
                     productLanguageRow[0] = "ProductLanguage";
@@ -209,7 +209,7 @@ namespace WixToolset.Bind
 
             string emptyFile = null;
 
-            foreach (Table table in this.Transform.Tables)
+            foreach (ITable table in this.Transform.Tables)
             {
                 // Ignore unreal tables when building transforms except the _Stream table.
                 // These tables are ignored when generating the database so there is no reason
@@ -240,11 +240,11 @@ namespace WixToolset.Bind
                     switch (row.Operation)
                     {
                         case RowOperation.Add:
-                            Table updatedTable = updatedOutput.EnsureTable(table.Definition);
+                            ITable updatedTable = updatedOutput.EnsureTable(table.Definition);
                             updatedTable.Rows.Add(row);
                             continue;
                         case RowOperation.Delete:
-                            Table targetTable = targetOutput.EnsureTable(table.Definition);
+                            ITable targetTable = targetOutput.EnsureTable(table.Definition);
                             targetTable.Rows.Add(row);
 
                             // fill-in non-primary key values
@@ -376,10 +376,10 @@ namespace WixToolset.Bind
                             "ProductVersion" == (string)row[0] ||
                             "UpgradeCode" == (string)row[0])))
                     {
-                        Table targetTable = targetOutput.EnsureTable(table.Definition);
+                        ITable targetTable = targetOutput.EnsureTable(table.Definition);
                         targetTable.Rows.Add(targetRow);
 
-                        Table updatedTable = updatedOutput.EnsureTable(table.Definition);
+                        ITable updatedTable = updatedOutput.EnsureTable(table.Definition);
                         updatedTable.Rows.Add(updatedRow);
                     }
                 }

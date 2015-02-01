@@ -65,7 +65,7 @@ namespace WixToolset.Bind.Databases
 
         public TableDefinitionCollection TableDefinitions { private get; set; }
 
-        public Table WixMediaTable { private get; set; }
+        public ITable WixMediaTable { private get; set; }
 
         public IEnumerable<FileTransfer> FileTransfers { get { return this.fileTransfers; } }
 
@@ -242,7 +242,7 @@ namespace WixToolset.Bind.Databases
 
             if (mediaRow.Cabinet.StartsWith("#", StringComparison.Ordinal))
             {
-                Table streamsTable = output.EnsureTable(this.TableDefinitions["_Streams"]);
+                ITable streamsTable = output.EnsureTable(this.TableDefinitions["_Streams"]);
 
                 Row streamRow = streamsTable.CreateRow(mediaRow.SourceLineNumbers);
                 streamRow[0] = mediaRow.Cabinet.Substring(1);
@@ -337,8 +337,8 @@ namespace WixToolset.Bind.Databases
                 }
 
                 // Add the new Cabinets to media table using LastSequence of Base Cabinet
-                Table mediaTable = this.Output.Tables["Media"];
-                Table wixFileTable = this.Output.Tables["WixFile"];
+                ITable mediaTable = this.Output.Tables["Media"];
+                ITable wixFileTable = this.Output.Tables["WixFile"];
                 int diskIDForLastSplitCabAdded = 0; // The DiskID value for the first cab in this cabinet split chain
                 int lastSequenceForLastSplitCabAdded = 0; // The LastSequence value for the first cab in this cabinet split chain
                 bool lastSplitCabinetFound = false; // Used for Error Handling
@@ -433,7 +433,7 @@ namespace WixToolset.Bind.Databases
             ulong testOverFlow = 0;
 
             // Supply Compile MediaTemplate Attributes to Cabinet Builder
-            Table mediaTemplateTable = this.Output.Tables["WixMediaTemplate"];
+            ITable mediaTemplateTable = this.Output.Tables["WixMediaTemplate"];
             if (mediaTemplateTable != null)
             {
                 WixMediaTemplateRow mediaTemplateRow = (WixMediaTemplateRow)mediaTemplateTable.Rows[0];

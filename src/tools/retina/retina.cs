@@ -201,7 +201,7 @@ namespace WixToolset.Tools
 
             foreach (Section section in library.Sections)
             {
-                foreach (Table table in section.Tables)
+                foreach (ITable table in section.Tables)
                 {
                     foreach (Row row in table.Rows)
                     {

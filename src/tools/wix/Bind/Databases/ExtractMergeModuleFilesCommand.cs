@@ -29,11 +29,11 @@ namespace WixToolset.Bind.Databases
     {
         public IEnumerable<FileFacade> FileFacades { private get; set; }
 
-        public Table FileTable { private get; set; }
+        public ITable FileTable { private get; set; }
 
-        public Table WixFileTable { private get; set; }
+        public ITable WixFileTable { private get; set; }
 
-        public Table WixMergeTable { private get; set; }
+        public ITable WixMergeTable { private get; set; }
 
         public int OutputInstallerVersion { private get; set; }
 

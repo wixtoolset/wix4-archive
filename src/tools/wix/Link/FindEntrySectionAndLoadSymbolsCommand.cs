@@ -74,7 +74,7 @@ namespace WixToolset.Link
                 }
 
                 // Load all the symbols from the section's tables that create symbols.
-                foreach (Table table in section.Tables.Where(t => t.Definition.CreateSymbols))
+                foreach (ITable table in section.Tables.Where(t => t.Definition.CreateSymbols))
                 {
                     foreach (Row row in table.Rows)
                     {

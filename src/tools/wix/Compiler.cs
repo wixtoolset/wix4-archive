@@ -2480,7 +2480,7 @@ namespace WixToolset
 
                     WixVariableResolver resolver = new WixVariableResolver();
                     resolver.AddVariable(autoId, keyPath);
-                    foreach (Table table in this.core.ActiveSection.Tables)
+                    foreach (ITable table in this.core.ActiveSection.Tables)
                     {
                         foreach (Row row in table.Rows)
                         {

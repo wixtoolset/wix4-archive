@@ -37,7 +37,7 @@ namespace WixToolset.Data
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
         /// <remarks>The compiler should use this constructor exclusively.</remarks>
-        public Row(SourceLineNumber sourceLineNumbers, Table table)
+        public Row(SourceLineNumber sourceLineNumbers, ITable table)
             : this(sourceLineNumbers, table.Definition)
         {
             this.Table = table;
@@ -117,13 +117,13 @@ namespace WixToolset.Data
         /// <summary>
         /// Gets the table this row belongs to.
         /// </summary>
-        /// <value>null if Row does not belong to a Table, or owner Table otherwise.</value>
-        public Table Table { get; private set; }
+        /// <value>null if Row does not belong to a ITable, or owner ITable otherwise.</value>
+        public ITable Table { get; private set; }
 
         /// <summary>
         /// Gets the table definition for this row.
         /// </summary>
-        /// <remarks>A Row always has a TableDefinition, even if the Row does not belong to a Table.</remarks>
+        /// <remarks>A Row always has a TableDefinition, even if the Row does not belong to a ITable.</remarks>
         /// <value>TableDefinition for Row.</value>
         public TableDefinition TableDefinition { get; private set; }
 
@@ -298,9 +298,9 @@ namespace WixToolset.Data
         /// Creates a Row from the XmlReader.
         /// </summary>
         /// <param name="reader">Reader to get data from.</param>
-        /// <param name="table">Table for this row.</param>
+        /// <param name="table">ITable for this row.</param>
         /// <returns>New row object.</returns>
-        internal static Row Read(XmlReader reader, Table table)
+        internal static Row Read(XmlReader reader, ITable table)
         {
             Debug.Assert("row" == reader.LocalName);
 

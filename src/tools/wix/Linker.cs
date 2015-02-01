@@ -286,7 +286,7 @@ namespace WixToolset
                         sectionId = "wix.section." + sectionCount.ToString(CultureInfo.InvariantCulture);
                     }
 
-                    foreach (Table table in section.Tables)
+                    foreach (ITable table in section.Tables)
                     {
                         bool copyRows = true; // by default, copy rows.
 
@@ -495,7 +495,7 @@ namespace WixToolset
 
                         if (copyRows)
                         {
-                            Table outputTable = this.activeOutput.EnsureTable(this.tableDefinitions[table.Name]);
+                            ITable outputTable = this.activeOutput.EnsureTable(this.tableDefinitions[table.Name]);
                             this.CopyTableRowsToOutputTable(table, outputTable, sectionId);
                         }
                     }
@@ -504,7 +504,7 @@ namespace WixToolset
                 // copy the module to feature connections into the output
                 if (0 < modulesToFeatures.Count)
                 {
-                    Table wixFeatureModulesTable = this.activeOutput.EnsureTable(this.tableDefinitions["WixFeatureModules"]);
+                    ITable wixFeatureModulesTable = this.activeOutput.EnsureTable(this.tableDefinitions["WixFeatureModules"]);
 
                     foreach (ConnectToFeature connectToFeature in modulesToFeatures)
                     {
@@ -541,7 +541,7 @@ namespace WixToolset
                 // copy all the suppress action rows to the output to suppress actions from merge modules
                 if (0 < suppressActionRows.Count)
                 {
-                    Table suppressActionTable = this.activeOutput.EnsureTable(this.tableDefinitions["WixSuppressAction"]);
+                    ITable suppressActionTable = this.activeOutput.EnsureTable(this.tableDefinitions["WixSuppressAction"]);
                     suppressActionRows.ForEach(r => suppressActionTable.Rows.Add(r));
                 }
 
@@ -560,9 +560,9 @@ namespace WixToolset
                         this.activeOutput.EnsureTable(this.tableDefinitions["ModuleSignature"]);
                         break;
                     case OutputType.PatchCreation:
-                        Table imageFamiliesTable = this.activeOutput.Tables["ImageFamilies"];
-                        Table targetImagesTable = this.activeOutput.Tables["TargetImages"];
-                        Table upgradedImagesTable = this.activeOutput.Tables["UpgradedImages"];
+                        ITable imageFamiliesTable = this.activeOutput.Tables["ImageFamilies"];
+                        ITable targetImagesTable = this.activeOutput.Tables["TargetImages"];
+                        ITable upgradedImagesTable = this.activeOutput.Tables["UpgradedImages"];
 
                         if (null == imageFamiliesTable || 1 > imageFamiliesTable.Rows.Count)
                         {
@@ -593,7 +593,7 @@ namespace WixToolset
                 foreach (Row row in customRows)
                 {
                     TableDefinition customTableDefinition = (TableDefinition)customTableDefinitions[row[0].ToString()];
-                    Table customTable = this.activeOutput.EnsureTable(customTableDefinition);
+                    ITable customTable = this.activeOutput.EnsureTable(customTableDefinition);
                     Row customRow = customTable.CreateRow(row.SourceLineNumbers);
 
                     customRow.SectionId = row.SectionId;
@@ -666,7 +666,7 @@ namespace WixToolset
                 if (this.sectionIdOnRows)
                 {
                     Hashtable componentSectionIds = new Hashtable();
-                    Table componentTable = output.Tables["Component"];
+                    ITable componentTable = output.Tables["Component"];
 
                     if (null != componentTable)
                     {
@@ -676,7 +676,7 @@ namespace WixToolset
                         }
                     }
 
-                    Table featureComponentsTable = output.Tables["FeatureComponents"];
+                    ITable featureComponentsTable = output.Tables["FeatureComponents"];
 
                     if (null != featureComponentsTable)
                     {
@@ -693,7 +693,7 @@ namespace WixToolset
                 // add the ModuleSubstitution table to the ModuleIgnoreTable
                 if (containsModuleSubstitution)
                 {
-                    Table moduleIgnoreTableTable = this.activeOutput.EnsureTable(this.tableDefinitions["ModuleIgnoreTable"]);
+                    ITable moduleIgnoreTableTable = this.activeOutput.EnsureTable(this.tableDefinitions["ModuleIgnoreTable"]);
 
                     Row moduleIgnoreTableRow = moduleIgnoreTableTable.CreateRow(null);
                     moduleIgnoreTableRow[0] = "ModuleSubstitution";
@@ -702,14 +702,14 @@ namespace WixToolset
                 // add the ModuleConfiguration table to the ModuleIgnoreTable
                 if (containsModuleConfiguration)
                 {
-                    Table moduleIgnoreTableTable = this.activeOutput.EnsureTable(this.tableDefinitions["ModuleIgnoreTable"]);
+                    ITable moduleIgnoreTableTable = this.activeOutput.EnsureTable(this.tableDefinitions["ModuleIgnoreTable"]);
 
                     Row moduleIgnoreTableRow = moduleIgnoreTableTable.CreateRow(null);
                     moduleIgnoreTableRow[0] = "ModuleConfiguration";
                 }
 
                 // index all the file rows
-                Table fileTable = this.activeOutput.Tables["File"];
+                ITable fileTable = this.activeOutput.Tables["File"];
                 RowDictionary<FileRow> indexedFileRows = (null == fileTable) ? new RowDictionary<FileRow>() : new RowDictionary<FileRow>(fileTable);
 
                 // flag all the generated short file name collisions
@@ -756,7 +756,7 @@ namespace WixToolset
                 // copy the wix variable rows to the output after all overriding has been accounted for.
                 if (0 < wixVariables.Count)
                 {
-                    Table wixVariableTable = output.EnsureTable(this.tableDefinitions["WixVariable"]);
+                    ITable wixVariableTable = output.EnsureTable(this.tableDefinitions["WixVariable"]);
 
                     foreach (WixVariableRow row in wixVariables.Values)
                     {
@@ -798,7 +798,7 @@ namespace WixToolset
         /// </summary>
         /// <param name="table">The table to link.</param>
         /// <param name="customTableDefinitions">Receives the linked definition of the custom table.</param>
-        private void LinkCustomTable(Table table, TableDefinitionCollection customTableDefinitions)
+        private void LinkCustomTable(ITable table, TableDefinitionCollection customTableDefinitions)
         {
             foreach (Row row in table.Rows)
             {
@@ -1014,7 +1014,7 @@ namespace WixToolset
         /// <param name="output">The output to check.</param>
         private void CheckForIllegalTables(Output output)
         {
-            foreach (Table table in output.Tables)
+            foreach (ITable table in output.Tables)
             {
                 switch (output.Type)
                 {
@@ -1109,7 +1109,7 @@ namespace WixToolset
         {
             // Get the output's minimum installer version
             int outputInstallerVersion = int.MinValue;
-            Table summaryInformationTable = output.Tables["_SummaryInformation"];
+            ITable summaryInformationTable = output.Tables["_SummaryInformation"];
             if (null != summaryInformationTable)
             {
                 foreach (Row row in summaryInformationTable.Rows)
@@ -1131,7 +1131,7 @@ namespace WixToolset
             // check for the presence of tables/rows/columns that require MSI 1.1 or later
             if (110 > outputInstallerVersion)
             {
-                Table isolatedComponentTable = output.Tables["IsolatedComponent"];
+                ITable isolatedComponentTable = output.Tables["IsolatedComponent"];
                 if (null != isolatedComponentTable)
                 {
                     foreach (Row row in isolatedComponentTable.Rows)
@@ -1144,7 +1144,7 @@ namespace WixToolset
             // check for the presence of tables/rows/columns that require MSI 4.0 or later
             if (400 > outputInstallerVersion)
             {
-                Table shortcutTable = output.Tables["Shortcut"];
+                ITable shortcutTable = output.Tables["Shortcut"];
                 if (null != shortcutTable)
                 {
                     foreach (Row row in shortcutTable.Rows)
@@ -1200,7 +1200,7 @@ namespace WixToolset
 
             foreach (Section section in sections)
             {
-                Table wixComplexReferenceTable = section.Tables["WixComplexReference"];
+                ITable wixComplexReferenceTable = section.Tables["WixComplexReference"];
 
                 if (null != wixComplexReferenceTable)
                 {
@@ -1238,7 +1238,7 @@ namespace WixToolset
                                         }
 
                                         // add a row to the FeatureComponents table
-                                        Table featureComponentsTable = output.EnsureTable(this.tableDefinitions["FeatureComponents"]);
+                                        ITable featureComponentsTable = output.EnsureTable(this.tableDefinitions["FeatureComponents"]);
                                         Row row = featureComponentsTable.CreateRow(null);
                                         if (this.sectionIdOnRows)
                                         {
@@ -1309,7 +1309,7 @@ namespace WixToolset
                                             componentsToModules.Add(wixComplexReferenceRow.ChildId, wixComplexReferenceRow); // should always be new
 
                                             // add a row to the ModuleComponents table
-                                            Table moduleComponentsTable = output.EnsureTable(this.tableDefinitions["ModuleComponents"]);
+                                            ITable moduleComponentsTable = output.EnsureTable(this.tableDefinitions["ModuleComponents"]);
                                             Row row = moduleComponentsTable.CreateRow(null);
                                             if (this.sectionIdOnRows)
                                             {
@@ -1390,7 +1390,7 @@ namespace WixToolset
             // now and after processing added back in Step 3 below.
             foreach (Section section in sections)
             {
-                Table wixComplexReferenceTable = section.Tables["WixComplexReference"];
+                ITable wixComplexReferenceTable = section.Tables["WixComplexReference"];
 
                 if (null != wixComplexReferenceTable)
                 {
@@ -1483,7 +1483,7 @@ namespace WixToolset
             foreach (string parentGroup in parentGroups.Keys)
             {
                 Section section = (Section)parentGroupsSections[parentGroup];
-                Table wixComplexReferenceTable = section.Tables["WixComplexReference"];
+                ITable wixComplexReferenceTable = section.Tables["WixComplexReference"];
 
                 foreach (WixComplexReferenceRow wixComplexReferenceRow in (ArrayList)parentGroups[parentGroup])
                 {
@@ -1637,7 +1637,7 @@ namespace WixToolset
                     Console.WriteLine(header);
                     foreach (Section section in sections)
                     {
-                        Table wixComplexReferenceTable = section.Tables["WixComplexReference"];
+                        ITable wixComplexReferenceTable = section.Tables["WixComplexReference"];
 
                         foreach (WixComplexReferenceRow cref in wixComplexReferenceTable.Rows)
                         {
@@ -1708,7 +1708,7 @@ namespace WixToolset
         /// <param name="table">Source table to copy rows from.</param>
         /// <param name="outputTable">Destination table in output to copy rows into.</param>
         /// <param name="sectionId">Id of the section that the table lives in.</param>
-        private void CopyTableRowsToOutputTable(Table table, Table outputTable, string sectionId)
+        private void CopyTableRowsToOutputTable(ITable table, ITable outputTable, string sectionId)
         {
             int[] localizedColumns = new int[table.Definition.Columns.Count];
             int localizedColumnCount = 0;
@@ -1807,7 +1807,7 @@ namespace WixToolset
             }
 
             // gather the required actions for each table
-            foreach (Table table in this.activeOutput.Tables)
+            foreach (ITable table in this.activeOutput.Tables)
             {
                 switch (table.Name)
                 {
@@ -2297,7 +2297,7 @@ namespace WixToolset
                 }
 
                 // create the action sequence row in the output
-                Table sequenceTable = this.activeOutput.EnsureTable(sequenceTableDefinition);
+                ITable sequenceTable = this.activeOutput.EnsureTable(sequenceTableDefinition);
                 Row row = sequenceTable.CreateRow(actionRow.SourceLineNumbers);
                 if (this.sectionIdOnRows)
                 {

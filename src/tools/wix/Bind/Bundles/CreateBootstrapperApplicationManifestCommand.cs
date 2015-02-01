@@ -58,7 +58,7 @@ namespace WixToolset.Bind.Bundles
 
         private void GenerateBAManifestBundleTables()
         {
-            Table wixBundlePropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleProperties"]);
+            ITable wixBundlePropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleProperties"]);
 
             Row row = wixBundlePropertiesTable.CreateRow(this.BundleRow.SourceLineNumbers);
             row[0] = this.BundleRow.Name;
@@ -71,7 +71,7 @@ namespace WixToolset.Bind.Bundles
 
         private void GenerateBAManifestPackageTables()
         {
-            Table wixPackagePropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixPackageProperties"]);
+            ITable wixPackagePropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixPackageProperties"]);
 
             foreach (PackageFacade package in this.ChainPackages)
             {
@@ -142,7 +142,7 @@ namespace WixToolset.Bind.Bundles
 
         private void GenerateBAManifestMsiFeatureTables()
         {
-            Table wixPackageFeatureInfoTable = this.Output.EnsureTable(this.TableDefinitions["WixPackageFeatureInfo"]);
+            ITable wixPackageFeatureInfoTable = this.Output.EnsureTable(this.TableDefinitions["WixPackageFeatureInfo"]);
 
             foreach (WixBundleMsiFeatureRow feature in this.MsiFeatures)
             {
@@ -163,7 +163,7 @@ namespace WixToolset.Bind.Bundles
 
         private void GenerateBAManifestPayloadTables()
         {
-            Table wixPayloadPropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixPayloadProperties"]);
+            ITable wixPayloadPropertiesTable = this.Output.EnsureTable(this.TableDefinitions["WixPayloadProperties"]);
 
             foreach (WixBundlePayloadRow payload in this.Payloads.Values)
             {
@@ -186,7 +186,7 @@ namespace WixToolset.Bind.Bundles
                 writer.WriteStartDocument();
                 writer.WriteStartElement("BootstrapperApplicationData", "http://wixtoolset.org/schemas/v4/2010/BootstrapperApplicationData");
 
-                foreach (Table table in this.Output.Tables)
+                foreach (ITable table in this.Output.Tables)
                 {
                     if (table.Definition.BootstrapperApplicationData)
                     {
@@ -225,7 +225,7 @@ namespace WixToolset.Bind.Bundles
 
         private WixBundlePayloadRow CreateBootstrapperApplicationManifestPayloadRow(string baManifestPath)
         {
-            Table payloadTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePayload"]);
+            ITable payloadTable = this.Output.EnsureTable(this.TableDefinitions["WixBundlePayload"]);
             WixBundlePayloadRow row = (WixBundlePayloadRow)payloadTable.CreateRow(this.BundleRow.SourceLineNumbers);
             row.Id = Common.GenerateIdentifier("ux", "BootstrapperApplicationData.xml");
             row.Name = "BootstrapperApplicationData.xml";

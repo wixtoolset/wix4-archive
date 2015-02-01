@@ -20,9 +20,9 @@ namespace WixToolset.Bind.Bundles
     {
         public IEnumerable<PackageFacade> PackageFacades { private get; set; }
 
-        public Table WixBundlePatchTargetCodeTable { private get; set; }
+        public ITable WixBundlePatchTargetCodeTable { private get; set; }
 
-        public Table SlipstreamMspTable { private get; set; }
+        public ITable SlipstreamMspTable { private get; set; }
 
         public void Execute()
         {

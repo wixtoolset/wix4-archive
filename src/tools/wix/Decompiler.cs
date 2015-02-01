@@ -186,7 +186,7 @@ namespace WixToolset
 
             // collect the table definitions from the output
             this.tableDefinitions.Clear();
-            foreach (Table table in output.Tables)
+            foreach (ITable table in output.Tables)
             {
                 this.tableDefinitions.Add(table.Definition);
             }
@@ -938,8 +938,8 @@ namespace WixToolset
                 return;
             }
 
-            Table checkBoxTable = tables["CheckBox"];
-            Table controlTable = tables["Control"];
+            ITable checkBoxTable = tables["CheckBox"];
+            ITable controlTable = tables["Control"];
 
             Hashtable checkBoxes = new Hashtable();
             Hashtable checkBoxProperties = new Hashtable();
@@ -1001,10 +1001,10 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeComponentTable(TableIndexedCollection tables)
         {
-            Table componentTable = tables["Component"];
-            Table fileTable = tables["File"];
-            Table odbcDataSourceTable = tables["ODBCDataSource"];
-            Table registryTable = tables["Registry"];
+            ITable componentTable = tables["Component"];
+            ITable fileTable = tables["File"];
+            ITable odbcDataSourceTable = tables["ODBCDataSource"];
+            ITable registryTable = tables["Registry"];
 
             // set the component keypaths
             if (null != componentTable)
@@ -1144,8 +1144,8 @@ namespace WixToolset
                 return;
             }
 
-            Table controlTable = tables["Control"];
-            Table dialogTable = tables["Dialog"];
+            ITable controlTable = tables["Control"];
+            ITable dialogTable = tables["Dialog"];
 
             Hashtable addedControls = new Hashtable();
             Hashtable controlRows = new Hashtable();
@@ -1268,8 +1268,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeDuplicateMoveFileTables(TableIndexedCollection tables)
         {
-            Table duplicateFileTable = tables["DuplicateFile"];
-            Table moveFileTable = tables["MoveFile"];
+            ITable duplicateFileTable = tables["DuplicateFile"];
+            ITable moveFileTable = tables["MoveFile"];
 
             if (null != duplicateFileTable)
             {
@@ -1327,9 +1327,9 @@ namespace WixToolset
         /// <param name="tables">The collection of all tables.</param>
         private void FinalizeFamilyFileRangesTable(TableIndexedCollection tables)
         {
-            Table externalFilesTable = tables["ExternalFiles"];
-            Table familyFileRangesTable = tables["FamilyFileRanges"];
-            Table targetFiles_OptionalDataTable = tables["TargetFiles_OptionalData"];
+            ITable externalFilesTable = tables["ExternalFiles"];
+            ITable familyFileRangesTable = tables["FamilyFileRanges"];
+            ITable targetFiles_OptionalDataTable = tables["TargetFiles_OptionalData"];
 
             Hashtable usedProtectRanges = new Hashtable();
 
@@ -1398,8 +1398,8 @@ namespace WixToolset
 
             if (null != targetFiles_OptionalDataTable)
             {
-                Table targetImagesTable = tables["TargetImages"];
-                Table upgradedImagesTable = tables["UpgradedImages"];
+                ITable targetImagesTable = tables["TargetImages"];
+                ITable upgradedImagesTable = tables["UpgradedImages"];
 
                 Hashtable targetImageRows = new Hashtable();
                 Hashtable upgradedImagesRows = new Hashtable();
@@ -1488,12 +1488,12 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeFeatureComponentsTable(TableIndexedCollection tables)
         {
-            Table classTable = tables["Class"];
-            Table extensionTable = tables["Extension"];
-            Table msiAssemblyTable = tables["MsiAssembly"];
-            Table publishComponentTable = tables["PublishComponent"];
-            Table shortcutTable = tables["Shortcut"];
-            Table typeLibTable = tables["TypeLib"];
+            ITable classTable = tables["Class"];
+            ITable extensionTable = tables["Extension"];
+            ITable msiAssemblyTable = tables["MsiAssembly"];
+            ITable publishComponentTable = tables["PublishComponent"];
+            ITable shortcutTable = tables["Shortcut"];
+            ITable typeLibTable = tables["TypeLib"];
 
             if (null != classTable)
             {
@@ -1558,10 +1558,10 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeFileTable(TableIndexedCollection tables)
         {
-            Table fileTable = tables["File"];
-            Table mediaTable = tables["Media"];
-            Table msiAssemblyTable = tables["MsiAssembly"];
-            Table typeLibTable = tables["TypeLib"];
+            ITable fileTable = tables["File"];
+            ITable mediaTable = tables["Media"];
+            ITable msiAssemblyTable = tables["MsiAssembly"];
+            ITable typeLibTable = tables["TypeLib"];
 
             // index the media table by media id
             RowDictionary<MediaRow> mediaRows;
@@ -1701,8 +1701,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeMIMETable(TableIndexedCollection tables)
         {
-            Table extensionTable = tables["Extension"];
-            Table mimeTable = tables["MIME"];
+            ITable extensionTable = tables["Extension"];
+            ITable mimeTable = tables["MIME"];
 
             Hashtable comExtensions = new Hashtable();
 
@@ -1771,10 +1771,10 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeProgIdTable(TableIndexedCollection tables)
         {
-            Table classTable = tables["Class"];
-            Table progIdTable = tables["ProgId"];
-            Table extensionTable = tables["Extension"];
-            Table componentTable = tables["Component"];
+            ITable classTable = tables["Class"];
+            ITable progIdTable = tables["ProgId"];
+            ITable extensionTable = tables["Extension"];
+            ITable componentTable = tables["Component"];
 
             Hashtable addedProgIds = new Hashtable();
             Hashtable classes = new Hashtable();
@@ -1903,8 +1903,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizePropertyTable(TableIndexedCollection tables)
         {
-            Table propertyTable = tables["Property"];
-            Table customActionTable = tables["CustomAction"];
+            ITable propertyTable = tables["Property"];
+            ITable customActionTable = tables["CustomAction"];
 
             if (null != propertyTable && null != customActionTable)
             {
@@ -1935,7 +1935,7 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeRemoveFileTable(TableIndexedCollection tables)
         {
-            Table removeFileTable = tables["RemoveFile"];
+            ITable removeFileTable = tables["RemoveFile"];
 
             if (null != removeFileTable)
             {
@@ -1991,8 +1991,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeLockPermissionsTable(TableIndexedCollection tables)
         {
-            Table createFolderTable = tables["CreateFolder"];
-            Table lockPermissionsTable = tables["LockPermissions"];
+            ITable createFolderTable = tables["CreateFolder"];
+            ITable lockPermissionsTable = tables["LockPermissions"];
 
             Hashtable createFolders = new Hashtable();
 
@@ -2065,8 +2065,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeMsiLockPermissionsExTable(TableIndexedCollection tables)
         {
-            Table createFolderTable = tables["CreateFolder"];
-            Table msiLockPermissionsExTable = tables["MsiLockPermissionsEx"];
+            ITable createFolderTable = tables["CreateFolder"];
+            ITable msiLockPermissionsExTable = tables["MsiLockPermissionsEx"];
 
             Hashtable createFolders = new Hashtable();
 
@@ -2136,9 +2136,9 @@ namespace WixToolset
         /// <remarks>Does all the complex linking required for the search tables.</remarks>
         private void FinalizeSearchTables(TableIndexedCollection tables)
         {
-            Table appSearchTable = tables["AppSearch"];
-            Table ccpSearchTable = tables["CCPSearch"];
-            Table drLocatorTable = tables["DrLocator"];
+            ITable appSearchTable = tables["AppSearch"];
+            ITable ccpSearchTable = tables["CCPSearch"];
+            ITable drLocatorTable = tables["DrLocator"];
 
             Hashtable appSearches = new Hashtable();
             Hashtable ccpSearches = new Hashtable();
@@ -2201,7 +2201,7 @@ namespace WixToolset
             string[] locatorTableNames = new string[] { "CompLocator", "RegLocator", "IniLocator", "DrLocator", "Signature" };
             foreach (string locatorTableName in locatorTableNames)
             {
-                Table locatorTable = tables[locatorTableName];
+                ITable locatorTable = tables[locatorTableName];
 
                 if (null != locatorTable)
                 {
@@ -2587,8 +2587,8 @@ namespace WixToolset
                         continue;
                     }
 
-                    Table actionsTable = new Table(null, this.tableDefinitions["WixAction"]);
-                    Table table = tables[sequenceTable.ToString()];
+                    ITable actionsTable = new Table(null, this.tableDefinitions["WixAction"]);
+                    ITable table = tables[sequenceTable.ToString()];
 
                     if (null != table)
                     {
@@ -2724,8 +2724,8 @@ namespace WixToolset
                         continue;
                     }
 
-                    Table actionsTable = new Table(null, this.tableDefinitions["WixAction"]);
-                    Table table = tables[String.Concat("Module", sequenceTable.ToString())];
+                    ITable actionsTable = new Table(null, this.tableDefinitions["WixAction"]);
+                    ITable table = tables[String.Concat("Module", sequenceTable.ToString())];
 
                     if (null != table)
                     {
@@ -2784,8 +2784,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeUpgradeTable(TableIndexedCollection tables)
         {
-            Table launchConditionTable = tables["LaunchCondition"];
-            Table upgradeTable = tables["Upgrade"];
+            ITable launchConditionTable = tables["LaunchCondition"];
+            ITable upgradeTable = tables["Upgrade"];
             string downgradeErrorMessage = null;
             string disallowUpgradeErrorMessage = null;
             Wix.MajorUpgrade majorUpgrade = new Wix.MajorUpgrade();
@@ -2877,8 +2877,8 @@ namespace WixToolset
         /// </remarks>
         private void FinalizeVerbTable(TableIndexedCollection tables)
         {
-            Table extensionTable = tables["Extension"];
-            Table verbTable = tables["Verb"];
+            ITable extensionTable = tables["Extension"];
+            ITable verbTable = tables["Verb"];
 
             Hashtable extensionElements = new Hashtable();
 
@@ -3076,7 +3076,7 @@ namespace WixToolset
                 {
                     foreach (Section section in library.Sections)
                     {
-                        foreach (Table table in section.Tables)
+                        foreach (ITable table in section.Tables)
                         {
                             foreach (Row row in table.Rows)
                             {
@@ -3126,7 +3126,7 @@ namespace WixToolset
                 string tableName = kvp.Key;
                 HashSet<string> indexedExtensionRows = kvp.Value;
 
-                Table table = tables[tableName];
+                ITable table = tables[tableName];
                 if (null != table)
                 {
                     RowDictionary<Row> originalRows = new RowDictionary<Row>(table);
@@ -3155,7 +3155,7 @@ namespace WixToolset
 
             foreach (string tableName in sortedTableNames)
             {
-                Table table = output.Tables[tableName];
+                ITable table = output.Tables[tableName];
 
                 // table does not exist in this database or should not be decompiled
                 if (null == table || !this.DecompilableTable(output, tableName))
@@ -3602,7 +3602,7 @@ namespace WixToolset
         /// Decompile the _SummaryInformation table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void Decompile_SummaryInformationTable(Table table)
+        private void Decompile_SummaryInformationTable(ITable table)
         {
             if (OutputType.Module == this.outputType || OutputType.Product == this.outputType)
             {
@@ -3804,7 +3804,7 @@ namespace WixToolset
         /// Decompile the ActionText table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileActionTextTable(Table table)
+        private void DecompileActionTextTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -3830,7 +3830,7 @@ namespace WixToolset
         /// Decompile the AppId table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileAppIdTable(Table table)
+        private void DecompileAppIdTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -3879,7 +3879,7 @@ namespace WixToolset
         /// Decompile the BBControl table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileBBControlTable(Table table)
+        private void DecompileBBControlTable(ITable table)
         {
             foreach (BBControlRow bbControlRow in table.Rows)
             {
@@ -3923,7 +3923,7 @@ namespace WixToolset
         /// Decompile the Billboard table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileBillboardTable(Table table)
+        private void DecompileBillboardTable(ITable table)
         {
             Hashtable billboardActions = new Hashtable();
             SortedList billboards = new SortedList();
@@ -3963,7 +3963,7 @@ namespace WixToolset
         /// Decompile the Binary table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileBinaryTable(Table table)
+        private void DecompileBinaryTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -3981,7 +3981,7 @@ namespace WixToolset
         /// Decompile the BindImage table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileBindImageTable(Table table)
+        private void DecompileBindImageTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4002,7 +4002,7 @@ namespace WixToolset
         /// Decompile the Class table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileClassTable(Table table)
+        private void DecompileClassTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4131,7 +4131,7 @@ namespace WixToolset
         /// Decompile the ComboBox table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComboBoxTable(Table table)
+        private void DecompileComboBoxTable(ITable table)
         {
             Wix.ComboBox comboBox = null;
             SortedList comboBoxRows = new SortedList();
@@ -4170,7 +4170,7 @@ namespace WixToolset
         /// Decompile the Control table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileControlTable(Table table)
+        private void DecompileControlTable(ITable table)
         {
             foreach (ControlRow controlRow in table.Rows)
             {
@@ -4417,7 +4417,7 @@ namespace WixToolset
         /// Decompile the ControlCondition table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileControlConditionTable(Table table)
+        private void DecompileControlConditionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4463,7 +4463,7 @@ namespace WixToolset
         /// Decompile the ControlEvent table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileControlEventTable(Table table)
+        private void DecompileControlEventTable(ITable table)
         {
             SortedList controlEvents = new SortedList();
 
@@ -4517,7 +4517,7 @@ namespace WixToolset
         /// Decompile a custom table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileCustomTable(Table table)
+        private void DecompileCustomTable(ITable table)
         {
             if (0 < table.Rows.Count || this.suppressDroppingEmptyTables)
             {
@@ -4743,7 +4743,7 @@ namespace WixToolset
         /// Decompile the CreateFolder table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileCreateFolderTable(Table table)
+        private void DecompileCreateFolderTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4768,7 +4768,7 @@ namespace WixToolset
         /// Decompile the CustomAction table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileCustomActionTable(Table table)
+        private void DecompileCustomActionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4934,7 +4934,7 @@ namespace WixToolset
         /// Decompile the CompLocator table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileCompLocatorTable(Table table)
+        private void DecompileCompLocatorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4968,7 +4968,7 @@ namespace WixToolset
         /// Decompile the Complus table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComplusTable(Table table)
+        private void DecompileComplusTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -4992,7 +4992,7 @@ namespace WixToolset
         /// Decompile the Component table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComponentTable(Table table)
+        private void DecompileComponentTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5079,7 +5079,7 @@ namespace WixToolset
         /// Decompile the Condition table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileConditionTable(Table table)
+        private void DecompileConditionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5108,7 +5108,7 @@ namespace WixToolset
         /// Decompile the Dialog table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileDialogTable(Table table)
+        private void DecompileDialogTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5198,7 +5198,7 @@ namespace WixToolset
         /// Decompile the Directory table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileDirectoryTable(Table table)
+        private void DecompileDirectoryTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5286,7 +5286,7 @@ namespace WixToolset
         /// Decompile the DrLocator table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileDrLocatorTable(Table table)
+        private void DecompileDrLocatorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5312,7 +5312,7 @@ namespace WixToolset
         /// Decompile the DuplicateFile table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileDuplicateFileTable(Table table)
+        private void DecompileDuplicateFileTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5355,7 +5355,7 @@ namespace WixToolset
         /// Decompile the Environment table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileEnvironmentTable(Table table)
+        private void DecompileEnvironmentTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5443,7 +5443,7 @@ namespace WixToolset
         /// Decompile the Error table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileErrorTable(Table table)
+        private void DecompileErrorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5461,7 +5461,7 @@ namespace WixToolset
         /// Decompile the EventMapping table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileEventMappingTable(Table table)
+        private void DecompileEventMappingTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5487,7 +5487,7 @@ namespace WixToolset
         /// Decompile the Extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileExtensionTable(Table table)
+        private void DecompileExtensionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5546,7 +5546,7 @@ namespace WixToolset
         /// Decompile the ExternalFiles table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileExternalFilesTable(Table table)
+        private void DecompileExternalFilesTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5636,7 +5636,7 @@ namespace WixToolset
         /// Decompile the Feature table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFeatureTable(Table table)
+        private void DecompileFeatureTable(ITable table)
         {
             SortedList sortedFeatures = new SortedList();
 
@@ -5760,7 +5760,7 @@ namespace WixToolset
         /// Decompile the FeatureComponents table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFeatureComponentsTable(Table table)
+        private void DecompileFeatureComponentsTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5785,7 +5785,7 @@ namespace WixToolset
         /// Decompile the File table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFileTable(Table table)
+        private void DecompileFileTable(ITable table)
         {
             foreach (FileRow fileRow in table.Rows)
             {
@@ -5859,7 +5859,7 @@ namespace WixToolset
         /// Decompile the FileSFPCatalog table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFileSFPCatalogTable(Table table)
+        private void DecompileFileSFPCatalogTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5883,7 +5883,7 @@ namespace WixToolset
         /// Decompile the Font table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileFontTable(Table table)
+        private void DecompileFontTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5911,7 +5911,7 @@ namespace WixToolset
         /// Decompile the Icon table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIconTable(Table table)
+        private void DecompileIconTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5929,7 +5929,7 @@ namespace WixToolset
         /// Decompile the ImageFamilies table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileImageFamiliesTable(Table table)
+        private void DecompileImageFamiliesTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -5971,7 +5971,7 @@ namespace WixToolset
         /// Decompile the IniFile table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIniFileTable(Table table)
+        private void DecompileIniFileTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6041,7 +6041,7 @@ namespace WixToolset
         /// Decompile the IniLocator table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIniLocatorTable(Table table)
+        private void DecompileIniLocatorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6101,7 +6101,7 @@ namespace WixToolset
         /// Decompile the IsolatedComponent table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileIsolatedComponentTable(Table table)
+        private void DecompileIsolatedComponentTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6125,7 +6125,7 @@ namespace WixToolset
         /// Decompile the LaunchCondition table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileLaunchConditionTable(Table table)
+        private void DecompileLaunchConditionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6148,7 +6148,7 @@ namespace WixToolset
         /// Decompile the ListBox table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileListBoxTable(Table table)
+        private void DecompileListBoxTable(ITable table)
         {
             Wix.ListBox listBox = null;
             SortedList listBoxRows = new SortedList();
@@ -6187,7 +6187,7 @@ namespace WixToolset
         /// Decompile the ListView table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileListViewTable(Table table)
+        private void DecompileListViewTable(ITable table)
         {
             Wix.ListView listView = null;
             SortedList listViewRows = new SortedList();
@@ -6231,7 +6231,7 @@ namespace WixToolset
         /// Decompile the LockPermissions table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileLockPermissionsTable(Table table)
+        private void DecompileLockPermissionsTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6389,7 +6389,7 @@ namespace WixToolset
         /// Decompile the Media table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMediaTable(Table table)
+        private void DecompileMediaTable(ITable table)
         {
             foreach (MediaRow mediaRow in table.Rows)
             {
@@ -6429,7 +6429,7 @@ namespace WixToolset
         /// Decompile the MIME table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMIMETable(Table table)
+        private void DecompileMIMETable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6450,7 +6450,7 @@ namespace WixToolset
         /// Decompile the ModuleConfiguration table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileModuleConfigurationTable(Table table)
+        private void DecompileModuleConfigurationTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6540,7 +6540,7 @@ namespace WixToolset
         /// Decompile the ModuleDependency table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileModuleDependencyTable(Table table)
+        private void DecompileModuleDependencyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6563,7 +6563,7 @@ namespace WixToolset
         /// Decompile the ModuleExclusion table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileModuleExclusionTable(Table table)
+        private void DecompileModuleExclusionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6599,7 +6599,7 @@ namespace WixToolset
         /// Decompile the ModuleIgnoreTable table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileModuleIgnoreTableTable(Table table)
+        private void DecompileModuleIgnoreTableTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6621,7 +6621,7 @@ namespace WixToolset
         /// Decompile the ModuleSignature table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileModuleSignatureTable(Table table)
+        private void DecompileModuleSignatureTable(ITable table)
         {
             if (1 == table.Rows.Count)
             {
@@ -6646,7 +6646,7 @@ namespace WixToolset
         /// Decompile the ModuleSubstitution table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileModuleSubstitutionTable(Table table)
+        private void DecompileModuleSubstitutionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6671,7 +6671,7 @@ namespace WixToolset
         /// Decompile the MoveFile table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMoveFileTable(Table table)
+        private void DecompileMoveFileTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6729,7 +6729,7 @@ namespace WixToolset
         /// Decompile the MsiDigitalCertificate table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiDigitalCertificateTable(Table table)
+        private void DecompileMsiDigitalCertificateTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6747,7 +6747,7 @@ namespace WixToolset
         /// Decompile the MsiDigitalSignature table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiDigitalSignatureTable(Table table)
+        private void DecompileMsiDigitalSignatureTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6784,7 +6784,7 @@ namespace WixToolset
         /// Decompile the MsiEmbeddedChainer table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiEmbeddedChainerTable(Table table)
+        private void DecompileMsiEmbeddedChainerTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -6823,7 +6823,7 @@ namespace WixToolset
         /// Decompile the MsiEmbeddedUI table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiEmbeddedUITable(Table table)
+        private void DecompileMsiEmbeddedUITable(ITable table)
         {
             Wix.EmbeddedUI embeddedUI = new Wix.EmbeddedUI();
             bool foundEmbeddedUI = false;
@@ -6969,7 +6969,7 @@ namespace WixToolset
         /// Decompile the MsiLockPermissionsEx table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiLockPermissionsExTable(Table table)
+        private void DecompileMsiLockPermissionsExTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7004,7 +7004,7 @@ namespace WixToolset
         /// Decompile the MsiPackageCertificate table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiPackageCertificateTable(Table table)
+        private void DecompileMsiPackageCertificateTable(ITable table)
         {
             if (0 < table.Rows.Count)
             {
@@ -7018,7 +7018,7 @@ namespace WixToolset
         /// Decompile the MsiPatchCertificate table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiPatchCertificateTable(Table table)
+        private void DecompileMsiPatchCertificateTable(ITable table)
         {
             if (0 < table.Rows.Count)
             {
@@ -7033,7 +7033,7 @@ namespace WixToolset
         /// </summary>
         /// <param name="table">The table being decompiled.</param>
         /// <param name="parent">DigitalCertificate parent</param>
-        private void AddCertificates(Table table, Wix.IParentElement parent)
+        private void AddCertificates(ITable table, Wix.IParentElement parent)
         {
             foreach (Row row in table.Rows)
             {
@@ -7054,7 +7054,7 @@ namespace WixToolset
         /// Decompile the MsiShortcutProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileMsiShortcutPropertyTable(Table table)
+        private void DecompileMsiShortcutPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7079,7 +7079,7 @@ namespace WixToolset
         /// Decompile the ODBCAttribute table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileODBCAttributeTable(Table table)
+        private void DecompileODBCAttributeTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7108,7 +7108,7 @@ namespace WixToolset
         /// Decompile the ODBCDataSource table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileODBCDataSourceTable(Table table)
+        private void DecompileODBCDataSourceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7141,7 +7141,7 @@ namespace WixToolset
         /// Decompile the ODBCDriver table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileODBCDriverTable(Table table)
+        private void DecompileODBCDriverTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7175,7 +7175,7 @@ namespace WixToolset
         /// Decompile the ODBCSourceAttribute table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileODBCSourceAttributeTable(Table table)
+        private void DecompileODBCSourceAttributeTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7204,7 +7204,7 @@ namespace WixToolset
         /// Decompile the ODBCTranslator table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileODBCTranslatorTable(Table table)
+        private void DecompileODBCTranslatorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7237,7 +7237,7 @@ namespace WixToolset
         /// Decompile the PatchMetadata table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePatchMetadataTable(Table table)
+        private void DecompilePatchMetadataTable(ITable table)
         {
             if (0 < table.Rows.Count)
             {
@@ -7357,7 +7357,7 @@ namespace WixToolset
         /// Decompile the PatchSequence table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePatchSequenceTable(Table table)
+        private void DecompilePatchSequenceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7397,7 +7397,7 @@ namespace WixToolset
         /// Decompile the ProgId table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileProgIdTable(Table table)
+        private void DecompileProgIdTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7458,7 +7458,7 @@ namespace WixToolset
         /// Decompile the Properties table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePropertiesTable(Table table)
+        private void DecompilePropertiesTable(ITable table)
         {
             Wix.PatchCreation patchCreation = (Wix.PatchCreation)this.core.RootElement;
 
@@ -7569,7 +7569,7 @@ namespace WixToolset
         /// Decompile the Property table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePropertyTable(Table table)
+        private void DecompilePropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7659,7 +7659,7 @@ namespace WixToolset
         /// Decompile the PublishComponent table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompilePublishComponentTable(Table table)
+        private void DecompilePublishComponentTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7690,7 +7690,7 @@ namespace WixToolset
         /// Decompile the RadioButton table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileRadioButtonTable(Table table)
+        private void DecompileRadioButtonTable(ITable table)
         {
             SortedList radioButtons = new SortedList();
             Hashtable radioButtonGroups = new Hashtable();
@@ -7760,7 +7760,7 @@ namespace WixToolset
         /// Decompile the Registry table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileRegistryTable(Table table)
+        private void DecompileRegistryTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7894,7 +7894,7 @@ namespace WixToolset
         /// Decompile the RegLocator table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileRegLocatorTable(Table table)
+        private void DecompileRegLocatorTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -7967,7 +7967,7 @@ namespace WixToolset
         /// Decompile the RemoveFile table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileRemoveFileTable(Table table)
+        private void DecompileRemoveFileTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8059,7 +8059,7 @@ namespace WixToolset
         /// Decompile the RemoveIniFile table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileRemoveIniFileTable(Table table)
+        private void DecompileRemoveIniFileTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8121,7 +8121,7 @@ namespace WixToolset
         /// Decompile the RemoveRegistry table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileRemoveRegistryTable(Table table)
+        private void DecompileRemoveRegistryTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8187,7 +8187,7 @@ namespace WixToolset
         /// Decompile the ReserveCost table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileReserveCostTable(Table table)
+        private void DecompileReserveCostTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8220,7 +8220,7 @@ namespace WixToolset
         /// Decompile the SelfReg table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSelfRegTable(Table table)
+        private void DecompileSelfRegTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8248,7 +8248,7 @@ namespace WixToolset
         /// Decompile the ServiceControl table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileServiceControlTable(Table table)
+        private void DecompileServiceControlTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8343,7 +8343,7 @@ namespace WixToolset
         /// Decompile the ServiceInstall table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileServiceInstallTable(Table table)
+        private void DecompileServiceInstallTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8482,7 +8482,7 @@ namespace WixToolset
         /// Decompile the SFPCatalog table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSFPCatalogTable(Table table)
+        private void DecompileSFPCatalogTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8526,7 +8526,7 @@ namespace WixToolset
         /// Decompile the Shortcut table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileShortcutTable(Table table)
+        private void DecompileShortcutTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8651,7 +8651,7 @@ namespace WixToolset
         /// Decompile the Signature table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSignatureTable(Table table)
+        private void DecompileSignatureTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8721,7 +8721,7 @@ namespace WixToolset
         /// Decompile the TargetFiles_OptionalData table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileTargetFiles_OptionalDataTable(Table table)
+        private void DecompileTargetFiles_OptionalDataTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8808,7 +8808,7 @@ namespace WixToolset
         /// Decompile the TargetImages table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileTargetImagesTable(Table table)
+        private void DecompileTargetImagesTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8861,7 +8861,7 @@ namespace WixToolset
         /// Decompile the TextStyle table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileTextStyleTable(Table table)
+        private void DecompileTextStyleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8917,7 +8917,7 @@ namespace WixToolset
         /// Decompile the TypeLib table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileTypeLibTable(Table table)
+        private void DecompileTypeLibTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -8966,7 +8966,7 @@ namespace WixToolset
         /// Decompile the Upgrade table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUpgradeTable(Table table)
+        private void DecompileUpgradeTable(ITable table)
         {
             Hashtable upgradeElements = new Hashtable();
 
@@ -9052,7 +9052,7 @@ namespace WixToolset
         /// Decompile the UpgradedFiles_OptionalData table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUpgradedFiles_OptionalDataTable(Table table)
+        private void DecompileUpgradedFiles_OptionalDataTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -9102,7 +9102,7 @@ namespace WixToolset
         /// Decompile the UpgradedFilesToIgnore table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUpgradedFilesToIgnoreTable(Table table)
+        private void DecompileUpgradedFilesToIgnoreTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -9135,7 +9135,7 @@ namespace WixToolset
         /// Decompile the UpgradedImages table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUpgradedImagesTable(Table table)
+        private void DecompileUpgradedImagesTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -9181,7 +9181,7 @@ namespace WixToolset
         /// Decompile the UIText table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileUITextTable(Table table)
+        private void DecompileUITextTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -9199,7 +9199,7 @@ namespace WixToolset
         /// Decompile the Verb table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileVerbTable(Table table)
+        private void DecompileVerbTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -9300,7 +9300,7 @@ namespace WixToolset
             int sequenceInstallExecute = 0;
             int sequenceInstallExecuteAgain = 0;
 
-            Table installExecuteSequenceTable = tables["InstallExecuteSequence"];
+            ITable installExecuteSequenceTable = tables["InstallExecuteSequence"];
             if (null != installExecuteSequenceTable)
             {
                 int removeExistingProductsRow = -1;

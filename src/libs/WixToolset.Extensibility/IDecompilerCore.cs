@@ -75,6 +75,6 @@ namespace WixToolset.Extensibility
         /// Indicates the decompiler encountered and unexpected table to decompile.
         /// </summary>
         /// <param name="table">Unknown decompiled table.</param>
-        void UnexpectedTable(Table table);
+        void UnexpectedTable(ITable table);
 }
 }

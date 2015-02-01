@@ -81,9 +81,9 @@ namespace WixToolset.Data
         /// </summary>
         /// <param name="tableDefinition">Table definition for the table.</param>
         /// <returns>Table in the section.</returns>
-        public Table EnsureTable(TableDefinition tableDefinition)
+        public ITable EnsureTable(TableDefinition tableDefinition)
         {
-            Table table;
+            ITable table;
             if (!this.Tables.TryGetTable(tableDefinition.Name, out table))
             {
                 table = new Table(this, tableDefinition);
@@ -159,7 +159,7 @@ namespace WixToolset.Data
             Section section = new Section(id, type, codepage);
             section.SourceLineNumbers = SourceLineNumber.CreateFromUri(reader.BaseURI);
 
-            List<Table> tables = new List<Table>();
+            List<ITable> tables = new List<ITable>();
             if (!empty)
             {
                 bool done = false;
@@ -236,7 +236,7 @@ namespace WixToolset.Data
             }
 
             // save the rows in table order
-            foreach (Table table in this.Tables.OrderBy(t => t.Name))
+            foreach (ITable table in this.Tables.OrderBy(t => t.Name))
             {
                 table.Write(writer);
             }

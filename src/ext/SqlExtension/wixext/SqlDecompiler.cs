@@ -42,7 +42,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -78,7 +78,7 @@ namespace WixToolset.Extensions
         /// Decompile the SqlDatabase table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSqlDatabaseTable(Table table)
+        private void DecompileSqlDatabaseTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -175,7 +175,7 @@ namespace WixToolset.Extensions
         /// Decompile the SqlScript table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSqlScriptTable(Table table)
+        private void DecompileSqlScriptTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -242,7 +242,7 @@ namespace WixToolset.Extensions
         /// Decompile the SqlString table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileSqlStringTable(Table table)
+        private void DecompileSqlStringTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -317,8 +317,8 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeSqlFileSpecTable(TableIndexedCollection tables)
         {
-            Table sqlDatabaseTable = tables["SqlDatabase"];
-            Table sqlFileSpecTable = tables["SqlFileSpec"];
+            ITable sqlDatabaseTable = tables["SqlDatabase"];
+            ITable sqlFileSpecTable = tables["SqlFileSpec"];
 
             if (null != sqlDatabaseTable && null != sqlFileSpecTable)
             {
@@ -430,9 +430,9 @@ namespace WixToolset.Extensions
         /// </remarks>
         private void FinalizeSqlScriptAndSqlStringTables(TableIndexedCollection tables)
         {
-            Table sqlDatabaseTable = tables["SqlDatabase"];
-            Table sqlScriptTable = tables["SqlScript"];
-            Table sqlStringTable = tables["SqlString"];
+            ITable sqlDatabaseTable = tables["SqlDatabase"];
+            ITable sqlScriptTable = tables["SqlScript"];
+            ITable sqlStringTable = tables["SqlString"];
 
             Hashtable sqlDatabaseRows = new Hashtable();
 

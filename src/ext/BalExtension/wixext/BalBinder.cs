@@ -27,7 +27,7 @@ namespace WixToolset.Extensions
                 return;
             }
 
-            Table baTable = output.Tables["WixBootstrapperApplication"];
+            ITable baTable = output.Tables["WixBootstrapperApplication"];
             Row baRow = baTable.Rows[0];
             string baId = (string)baRow[0];
 
@@ -36,7 +36,7 @@ namespace WixToolset.Extensions
                 return;
             }
 
-            Table prereqInfoTable = output.Tables["WixMbaPrereqInformation"];
+            ITable prereqInfoTable = output.Tables["WixMbaPrereqInformation"];
             if (null == prereqInfoTable || prereqInfoTable.Rows.Count == 0)
             {
                 this.Core.OnMessage(BalErrors.MissingPrereq());

@@ -48,7 +48,7 @@ namespace WixToolset.Extensions
         /// Decompiles an extension table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        public override void DecompileTable(Table table)
+        public override void DecompileTable(ITable table)
         {
             switch (table.Name)
             {
@@ -134,7 +134,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusPartition table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusPartitionTable(Table table)
+        private void DecompileComPlusPartitionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -176,7 +176,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusPartitionProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusPartitionPropertyTable(Table table)
+        private void DecompileComPlusPartitionPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -230,7 +230,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusPartitionRole table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusPartitionRoleTable(Table table)
+        private void DecompileComPlusPartitionRoleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -256,7 +256,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusUserInPartitionRole table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusUserInPartitionRoleTable(Table table)
+        private void DecompileComPlusUserInPartitionRoleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -282,7 +282,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusGroupInPartitionRole table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusGroupInPartitionRoleTable(Table table)
+        private void DecompileComPlusGroupInPartitionRoleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -308,7 +308,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusPartitionUser table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusPartitionUserTable(Table table)
+        private void DecompileComPlusPartitionUserTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -334,7 +334,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusApplication table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusApplicationTable(Table table)
+        private void DecompileComPlusApplicationTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -377,7 +377,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusApplicationProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusApplicationPropertyTable(Table table)
+        private void DecompileComPlusApplicationPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -884,7 +884,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusApplicationRole table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusApplicationRoleTable(Table table)
+        private void DecompileComPlusApplicationRoleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -922,7 +922,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusApplicationRoleProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusApplicationRolePropertyTable(Table table)
+        private void DecompileComPlusApplicationRolePropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -948,7 +948,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusUserInApplicationRole table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusUserInApplicationRoleTable(Table table)
+        private void DecompileComPlusUserInApplicationRoleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -974,7 +974,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusGroupInApplicationRole table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusGroupInApplicationRoleTable(Table table)
+        private void DecompileComPlusGroupInApplicationRoleTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1000,7 +1000,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusAssembly table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusAssemblyTable(Table table)
+        private void DecompileComPlusAssemblyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1068,7 +1068,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusAssemblyDependency table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusAssemblyDependencyTable(Table table)
+        private void DecompileComPlusAssemblyDependencyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1092,7 +1092,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusComponent table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusComponentTable(Table table)
+        private void DecompileComPlusComponentTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1127,7 +1127,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusComponentProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusComponentPropertyTable(Table table)
+        private void DecompileComPlusComponentPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1508,7 +1508,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusRoleForComponent table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusRoleForComponentTable(Table table)
+        private void DecompileComPlusRoleForComponentTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1534,7 +1534,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusInterface table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusInterfaceTable(Table table)
+        private void DecompileComPlusInterfaceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1569,7 +1569,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusInterfaceProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusInterfacePropertyTable(Table table)
+        private void DecompileComPlusInterfacePropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1609,7 +1609,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusRoleForInterface table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusRoleForInterfaceTable(Table table)
+        private void DecompileComPlusRoleForInterfaceTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1635,7 +1635,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusMethod table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusMethodTable(Table table)
+        private void DecompileComPlusMethodTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1670,7 +1670,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusMethodProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusMethodPropertyTable(Table table)
+        private void DecompileComPlusMethodPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1710,7 +1710,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusRoleForMethod table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusRoleForMethodTable(Table table)
+        private void DecompileComPlusRoleForMethodTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1736,7 +1736,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusSubscription table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusSubscriptionTable(Table table)
+        private void DecompileComPlusSubscriptionTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {
@@ -1766,7 +1766,7 @@ namespace WixToolset.Extensions
         /// Decompile the ComPlusSubscriptionProperty table.
         /// </summary>
         /// <param name="table">The table to decompile.</param>
-        private void DecompileComPlusSubscriptionPropertyTable(Table table)
+        private void DecompileComPlusSubscriptionPropertyTable(ITable table)
         {
             foreach (Row row in table.Rows)
             {

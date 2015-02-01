@@ -248,7 +248,7 @@ namespace WixToolset.Extensibility
                     this.indexedSourceLineNumbers = new Hashtable();
 
                     // index each real table
-                    foreach (Table table in this.output.Tables)
+                    foreach (ITable table in this.output.Tables)
                     {
                         // skip unreal tables
                         if (table.Definition.Unreal)

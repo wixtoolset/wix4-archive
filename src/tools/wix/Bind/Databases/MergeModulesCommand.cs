@@ -47,8 +47,8 @@ namespace WixToolset.Bind.Databases
         {
             Debug.Assert(OutputType.Product == this.Output.Type);
 
-            Table wixMergeTable = this.Output.Tables["WixMerge"];
-            Table wixFeatureModulesTable = this.Output.Tables["WixFeatureModules"];
+            ITable wixMergeTable = this.Output.Tables["WixMerge"];
+            ITable wixFeatureModulesTable = this.Output.Tables["WixFeatureModules"];
 
             // check for merge rows to see if there is any work to do
             if (null == wixMergeTable || 0 == wixMergeTable.Rows.Count)
@@ -220,7 +220,7 @@ namespace WixToolset.Bind.Databases
 
             using (Database db = new Database(this.OutputPath, OpenDatabase.Direct))
             {
-                Table suppressActionTable = this.Output.Tables["WixSuppressAction"];
+                ITable suppressActionTable = this.Output.Tables["WixSuppressAction"];
 
                 // suppress individual actions
                 if (null != suppressActionTable)

@@ -39,9 +39,9 @@ namespace WixToolset.Extensions
 
             this.output = output;
 
-            Table wixDependencyTable = output.Tables["WixDependency"];
-            Table wixDependencyProviderTable = output.Tables["WixDependencyProvider"];
-            Table wixDependencyRefTable = output.Tables["WixDependencyRef"];
+            ITable wixDependencyTable = output.Tables["WixDependency"];
+            ITable wixDependencyProviderTable = output.Tables["WixDependencyProvider"];
+            ITable wixDependencyRefTable = output.Tables["WixDependencyRef"];
 
             // Make sure there's something to do.
             if (null != wixDependencyRefTable)
@@ -138,7 +138,7 @@ namespace WixToolset.Extensions
 
             // Create the row from the main tables, which were populated during link anyway.
             // We still associate the table with the dependency row's section to maintain servicing.
-            Table table = this.output.EnsureTable(tableDefinition, referenceRow.Table.Section);
+            ITable table = this.output.EnsureTable(tableDefinition, referenceRow.Table.Section);
             Row row = table.CreateRow(referenceRow.SourceLineNumbers);
             
             // Set the section ID for patching and return the new row.
@@ -155,7 +155,7 @@ namespace WixToolset.Extensions
             /// Initializes the <see cref="KeyedRowCollection"/> class with all rows from the specified <paramref name="table"/>.
             /// </summary>
             /// <param name="table">The <see cref="Table"/> containing rows to index.</param>
-            internal KeyedRowCollection(Table table)
+            internal KeyedRowCollection(ITable table)
             {
                 if (null != table)
                 {

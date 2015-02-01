@@ -183,7 +183,7 @@ namespace WixToolset.Link
         {
             List<int> sortedIndexes = this.rowsUsed.Distinct().OrderByDescending(i => i).ToList();
 
-            Table wixGroupTable = this.output.Tables["WixGroup"];
+            ITable wixGroupTable = this.output.Tables["WixGroup"];
             Debug.Assert(null != wixGroupTable);
             Debug.Assert(sortedIndexes[0] < wixGroupTable.Rows.Count);
 
@@ -205,7 +205,7 @@ namespace WixToolset.Link
             // does WiX (although they do, currently). We probably want to "upgrade" this to a new
             // table that includes a sequence number, and then change the code that uses ordered
             // groups to read from that table instead.
-            Table wixGroupTable = this.output.Tables["WixGroup"];
+            ITable wixGroupTable = this.output.Tables["WixGroup"];
             Debug.Assert(null != wixGroupTable);
 
             foreach (Item item in orderedItems)
@@ -265,7 +265,7 @@ namespace WixToolset.Link
         /// </summary>
         private void LoadGroups()
         {
-            Table wixGroupTable = this.output.Tables["WixGroup"];
+            ITable wixGroupTable = this.output.Tables["WixGroup"];
             if (null == wixGroupTable || 0 == wixGroupTable.Rows.Count)
             {
                 // TODO: Change message name to make it *not* Bundle specific?
@@ -385,7 +385,7 @@ namespace WixToolset.Link
         /// </summary>
         private void LoadOrdering()
         {
-            Table wixOrderingTable = output.Tables["WixOrdering"];
+            ITable wixOrderingTable = output.Tables["WixOrdering"];
             if (null == wixOrderingTable || 0 == wixOrderingTable.Rows.Count)
             {
                 // TODO: Do we need a message here?

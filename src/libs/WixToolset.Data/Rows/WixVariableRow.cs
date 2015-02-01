@@ -36,7 +36,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this WixVariable row belongs to and should get its column definitions from.</param>
-        public WixVariableRow(SourceLineNumber sourceLineNumbers, Table table) : base(sourceLineNumbers, table)
+        public WixVariableRow(SourceLineNumber sourceLineNumbers, ITable table) : base(sourceLineNumbers, table)
         {
         }
 

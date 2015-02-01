@@ -58,7 +58,7 @@ namespace WixToolset
         public void Validate()
         {
             // Changing the ProdocutCode in a patch transform is not recommended.
-            Table propertyTable = this.Transform.Tables["Property"];
+            ITable propertyTable = this.Transform.Tables["Property"];
             if (null != propertyTable)
             {
                 foreach (Row row in propertyTable.Rows)
@@ -75,15 +75,15 @@ namespace WixToolset
             }
 
             // If there is nothing in the component table we can return early because the remaining checks are component based.
-            Table componentTable = this.Transform.Tables["Component"];
+            ITable componentTable = this.Transform.Tables["Component"];
             if (null == componentTable)
             {
                 return;
             }
 
             // Index Feature table row operations
-            Table featureTable = this.Transform.Tables["Feature"];
-            Table featureComponentsTable = this.Transform.Tables["FeatureComponents"];
+            ITable featureTable = this.Transform.Tables["Feature"];
+            ITable featureComponentsTable = this.Transform.Tables["FeatureComponents"];
             Hashtable featureOps = null;
             if (null != featureTable)
             {
@@ -130,7 +130,7 @@ namespace WixToolset
             }
 
             // Verify changes in the file table
-            Table fileTable = this.Transform.Tables["File"];
+            ITable fileTable = this.Transform.Tables["File"];
             if (null != fileTable)
             {
                 Hashtable componentWithChangedKeyPath = new Hashtable();
@@ -164,7 +164,7 @@ namespace WixToolset
                                 bool foundRemoveFileEntry = false;
                                 string filename = Msi.Installer.GetName((string)row[2], false, true);
 
-                                Table removeFileTable = this.Transform.Tables["RemoveFile"];
+                                ITable removeFileTable = this.Transform.Tables["RemoveFile"];
                                 if (null != removeFileTable)
                                 {
                                     foreach (Row removeFileRow in removeFileTable.Rows)

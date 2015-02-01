@@ -40,7 +40,7 @@ namespace WixToolset.Extensions
         /// <param name="tables">The collection of all tables.</param>
         public override void Initialize(TableIndexedCollection tables)
         {
-            Table propertyTable = tables["Property"];
+            ITable propertyTable = tables["Property"];
 
             if (null != propertyTable)
             {

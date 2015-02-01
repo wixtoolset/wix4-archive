@@ -389,7 +389,7 @@ namespace WixToolset.Msi
         /// <summary>
         /// Verifies the existence or absence of a table.
         /// </summary>
-        /// <param name="tableName">Table name to to verify the existence of.</param>
+        /// <param name="tableName">Table name to verify the existence of.</param>
         /// <returns>Returns true if the table exists, false if it does not.</returns>
         public bool TableExists(string tableName)
         {
@@ -424,7 +424,7 @@ namespace WixToolset.Msi
         /// <param name="table">Table to import into database.</param>
         /// <param name="baseDirectory">The base directory where intermediate files are created.</param>
         /// <param name="keepAddedColumns">Whether to keep columns added in a transform.</param>
-        public void ImportTable(int codepage, Table table, string baseDirectory, bool keepAddedColumns)
+        public void ImportTable(int codepage, ITable table, string baseDirectory, bool keepAddedColumns)
         {
             // write out the table to an IDT file
             string idtPath = Path.Combine(baseDirectory, String.Concat(table.Name, ".idt"));
