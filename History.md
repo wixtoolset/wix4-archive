@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4611 - Eliminate mysteriously doubled .pkgdef content.
+
 * BobArnson: WIXBUG:4610 - Write RegisterPerfmonManifest CustomActionData correctly.
 
 * BobArnson: WIXBUG:4553 - Fix Lux generator to exclude any files with non-fragment sections. Fix Lux custom actions to have proper config.
