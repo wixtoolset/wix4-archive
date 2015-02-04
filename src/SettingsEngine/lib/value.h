@@ -170,9 +170,8 @@ void ValueFree(
     );
 HRESULT ValueFindRow(
     __in CFGDB_STRUCT *pcdb,
-    __in DWORD dwTableIndex,
-    __in DWORD dwDword,
-    __in_z LPCWSTR wzString,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
     __out SCE_ROW_HANDLE *pRowHandle
     );
 HRESULT ValueForget(

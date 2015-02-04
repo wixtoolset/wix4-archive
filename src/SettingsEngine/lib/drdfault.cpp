@@ -75,7 +75,7 @@ HRESULT DirDefaultReadFile(
     hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
     ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczValueName, &sceValueRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, sczValueName, &sceValueRow);
     if (S_OK == hr)
     {
         hr = ValueRead(pcdb, sceValueRow, &cvExistingValue);

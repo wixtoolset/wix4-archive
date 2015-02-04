@@ -378,7 +378,7 @@ extern "C" HRESULT CfgGetDword(
         ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME));
     }
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -507,7 +507,7 @@ extern "C" HRESULT CfgGetQword(
         ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME));
     }
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -639,7 +639,7 @@ extern "C" HRESULT CfgGetString(
     ExitOnFailure(hr, "Failed to lock handle when getting string");
     fLocked = TRUE;
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -772,7 +772,7 @@ extern "C" HRESULT CFGAPI CfgGetBool(
     ExitOnFailure(hr, "Failed to lock handle when getting bool");
     fLocked = TRUE;
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -999,7 +999,7 @@ extern "C" HRESULT CFGAPI CfgGetBlob(
     ExitOnFailure(hr, "Failed to lock handle when getting blob");
     fLocked = TRUE;
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();

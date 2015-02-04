@@ -366,7 +366,7 @@ HRESULT ValueWrite(
     CONFIG_VALUE cvExistingValue = { };
     SYSTEMTIME stNow = { };
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, dwAppID, wzName, &sceRow);
     if (E_NOTFOUND == hr)
     {
         hr = S_OK;
@@ -565,7 +565,7 @@ HRESULT ValueMatch(
 
     *pfResult = FALSE;
 
-    hr = ValueFindRow(pcdb2, VALUE_INDEX_TABLE, pcdb2->dwAppID, sczName, &sceRow2);
+    hr = ValueFindRow(pcdb2, pcdb2->dwAppID, sczName, &sceRow2);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
@@ -661,30 +661,29 @@ void ValueFree(
 
 HRESULT ValueFindRow(
     __in CFGDB_STRUCT *pcdb,
-    __in DWORD dwTableIndex,
-    __in DWORD dwDword,
-    __in_z LPCWSTR wzString,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
     __out SCE_ROW_HANDLE *pRowHandle
     )
 {
     HRESULT hr = S_OK;
     SCE_QUERY_HANDLE sqhHandle = NULL;
 
-    hr = SceBeginQuery(pcdb->psceDb, dwTableIndex, 0, &sqhHandle);
-    ExitOnFailure(hr, "Failed to begin query into table: %u", dwTableIndex);
+    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_TABLE, 0, &sqhHandle);
+    ExitOnFailure(hr, "Failed to begin query into VALUE_INDEX_TABLE table");
 
-    hr = SceSetQueryColumnDword(sqhHandle, dwDword);
-    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwDword);
+    hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
 
-    hr = SceSetQueryColumnString(sqhHandle, wzString);
-    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzString);
+    hr = SceSetQueryColumnString(sqhHandle, wzValueName);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzValueName);
 
     hr = SceRunQueryExact(&sqhHandle, pRowHandle);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
     }
-    ExitOnFailure(hr, "Failed to query for value appID: %u, named: %ls", dwDword, wzString);
+    ExitOnFailure(hr, "Failed to query for value appID: %u, named: %ls", dwAppID, wzValueName);
 
 LExit:
     ReleaseSceQuery(sqhHandle);
