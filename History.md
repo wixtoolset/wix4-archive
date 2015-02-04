@@ -1,3 +1,5 @@
+## WixBuild: Version 4.0.2603.0
+
 * SeanHall: Make major breaking changes to thmutil schema while implementing the new Text element to allow setting the text based on context.
 
 * SeanHall: WIXFEAT:4149 - Add support for variables and radio buttons in thmutil, and update WixStdBA to use the new functionality.
