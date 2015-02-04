@@ -83,6 +83,13 @@ namespace CfgTests
         void ExpectDatabaseInEnum(CFG_ENUMERATION_HANDLE cehHandle, LPCWSTR wzExpectedFriendlyName, BOOL fExpectedSyncByDefault, LPCWSTR wzExpectedPath);
         void ExpectNoDatabaseInEnum(CFG_ENUMERATION_HANDLE cehHandle, LPCWSTR wzExpectedFriendlyName);
 
+        // Past values enumeration verification
+        void VerifyHistoryString(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, LPCWSTR wzValue);
+        void VerifyHistoryDword(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, DWORD dwInValue);
+        void VerifyHistoryBool(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, BOOL fInValue);
+        void VerifyHistoryBlob(CFGDB_HANDLE cdhLocal, CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, const BYTE *pbExpected, SIZE_T cbExpected);
+        void VerifyHistoryDeleted(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex);
+
     protected:
         TestContext *m_pContext;
 

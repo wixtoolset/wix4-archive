@@ -1,3 +1,5 @@
+* MikeGC: Fix an issue in ValueMatch() where we can in certain scenarios create unnecessary extra history entries. This is related to upcoming settings expiration feature.
+
 ## WixBuild: Version 4.0.2603.0
 
 * SeanHall: Make major breaking changes to thmutil schema while implementing the new Text element to allow setting the text based on context.

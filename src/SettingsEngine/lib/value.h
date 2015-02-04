@@ -174,6 +174,14 @@ HRESULT ValueFindRow(
     __in_z LPCWSTR wzValueName,
     __out SCE_ROW_HANDLE *pRowHandle
     );
+HRESULT ValueFindHistoryRow(
+    __in CFGDB_STRUCT *pcdb,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
+    __in const SYSTEMTIME *pWhen,
+    __in LPCWSTR wzBy,
+    __out SCE_ROW_HANDLE *pRowHandle
+    );
 HRESULT ValueForget(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,
