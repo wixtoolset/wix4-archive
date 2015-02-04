@@ -604,29 +604,29 @@ HRESULT ValueMatch(
         // with this timestamp (history values can have identical values and timestamps, as long as they have different sources)
         else if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, cvValue1.sczBy, -1, cvValue2.sczBy, -2))
         {
-			hr = ValueFindHistoryRow(pcdb1, pcdb1->dwAppID, sczName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
-			if (E_NOTFOUND == hr)
-			{
+            hr = ValueFindHistoryRow(pcdb1, pcdb1->dwAppID, sczName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
+            if (E_NOTFOUND == hr)
+            {
                 hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (2's source missing from 1)");
-			}
-			else
-			{
-				ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
-			}
-			ReleaseNullSceRow(sceRetrievedHistoryRow);
+            }
+            else
+            {
+                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
+            }
+            ReleaseNullSceRow(sceRetrievedHistoryRow);
 
-			hr = ValueFindHistoryRow(pcdb2, pcdb2->dwAppID, sczName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
-			if (E_NOTFOUND == hr)
-			{
+            hr = ValueFindHistoryRow(pcdb2, pcdb2->dwAppID, sczName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
+            if (E_NOTFOUND == hr)
+            {
                 hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (1's source missing from 2)");
-			}
-			else
-			{
-				ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
-			}
-			ReleaseNullSceRow(sceRetrievedHistoryRow);
+            }
+            else
+            {
+                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
+            }
+            ReleaseNullSceRow(sceRetrievedHistoryRow);
         }
     }
 
