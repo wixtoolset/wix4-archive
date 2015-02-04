@@ -1447,6 +1447,8 @@ static HRESULT CreateSqlCe(
     )
 {
     HRESULT hr = S_OK;
+    LPWSTR sczCurrentDirectory = NULL;
+    LPWSTR sczDllFullPath = NULL;
 
     if (NULL == wzSqlCeDllPath)
     {
@@ -1455,15 +1457,21 @@ static HRESULT CreateSqlCe(
     }
     else
     {
-        *phSqlCeDll = ::LoadLibraryW(wzSqlCeDllPath);
-        ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", wzSqlCeDllPath);
+        hr = DirGetCurrent(&sczCurrentDirectory);
+        ExitOnFailure(hr, "Failed to get current directory");
+
+        hr = PathConcat(sczCurrentDirectory, wzSqlCeDllPath, &sczDllFullPath);
+        ExitOnFailure(hr, "Failed to concatenate current directory and DLL filename");
+
+        *phSqlCeDll = ::LoadLibraryW(sczDllFullPath);
+        ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", sczDllFullPath);
 
         HRESULT (WINAPI *pfnGetFactory)(REFCLSID, REFIID, void**);
         pfnGetFactory = (HRESULT (WINAPI *)(REFCLSID, REFIID, void**))GetProcAddress(*phSqlCeDll, "DllGetClassObject");
 
         IClassFactory* pFactory = NULL;
         hr = pfnGetFactory(CLSID_SQLSERVERCE, IID_IClassFactory, (void**)&pFactory);
-        ExitOnFailure(hr, "Failed to get factory for IID_IDBInitialize from DLL: %ls", wzSqlCeDllPath);
+        ExitOnFailure(hr, "Failed to get factory for IID_IDBInitialize from DLL: %ls", sczDllFullPath);
         ExitOnNull(pFactory, hr, E_UNEXPECTED, "GetFactory returned success, but pFactory was NULL");
 
         hr = pFactory->CreateInstance(NULL, IID_IDBInitialize, (void**)ppIDBInitialize);
@@ -1471,6 +1479,9 @@ static HRESULT CreateSqlCe(
     }
 
 LExit:
+    ReleaseStr(sczCurrentDirectory);
+    ReleaseStr(sczDllFullPath);
+
     return hr;
 }
 

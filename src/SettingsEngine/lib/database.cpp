@@ -20,7 +20,7 @@ LPCWSTR wzUserDatabasePath = NULL;
 LPCWSTR wzAdminDatabasePath = NULL;
 LPCWSTR wzArpPath = DEFAULT_ARP_PATH;
 LPCWSTR wzApplicationsPath = DEFAULT_APPLICATIONS_PATH;
-LPCWSTR wzSqlCeDllPath = L".\\sqlceoledb40.dll";
+LPCWSTR wzSqlCeDllPath = L"sqlceoledb40.dll";
 
 #define ASSIGN_INDEX_STRUCT(a, b, c) {a.wzName = c; a.rgColumns = b; a.cColumns = countof(b);};
 
