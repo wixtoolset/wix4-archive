@@ -21,7 +21,7 @@
   <String Id="InstallAcceptCheckbox">I &amp;agree to the license terms and conditions</String>
   <String Id="InstallOptionsButton">&amp;Options</String>
   <String Id="InstallInstallButton">&amp;Install</String>
-  <String Id="InstallCloseButton">&amp;Close</String>
+  <String Id="InstallCancelButton">&amp;Cancel</String>
   <String Id="OptionsHeader">Setup Options</String>
   <String Id="OptionsLocationLabel">Install location:</String>
   <String Id="OptionsBrowseButton">&amp;Browse</String>
@@ -34,7 +34,7 @@
   <String Id="ModifyHeader">Modify Setup</String>
   <String Id="ModifyRepairButton">&amp;Repair</String>
   <String Id="ModifyUninstallButton">&amp;Uninstall</String>
-  <String Id="ModifyCloseButton">&amp;Close</String>
+  <String Id="ModifyCancelButton">&amp;Cancel</String>
   <String Id="SuccessHeader">Setup Successful</String>
   <String Id="SuccessLaunchButton">&amp;Launch</String>
   <String Id="SuccessRestartText">You must restart your computer before you can use the software.</String>
