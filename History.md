@@ -1,3 +1,5 @@
+* SeanHall: Update builtin WixStdBA themes to use the new thmutil functionality.
+
 * SeanHall: WIXFEAT:4411 - Be consistent about when a WixStdBA button is called Close or Cancel.
 
 * SeanHall: WIXFEAT:4658 - Add builtin button functionality in thmutil.

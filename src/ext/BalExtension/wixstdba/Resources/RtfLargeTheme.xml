@@ -21,9 +21,12 @@
         <Page Name="Install">
             <Label X="11" Y="80" Width="-11" Height="-70" TabStop="no" FontId="2" HexStyle="800000" DisablePrefix="yes" />
             <Richedit Name="EulaRichedit" X="12" Y="81" Width="-12" Height="-71" TabStop="yes" FontId="0" />
-            <Label Name="InstallVersion" X="11" Y="-41" Width="210" Height="17" FontId="3" DisablePrefix="yes" HideWhenDisabled="yes">#(loc.InstallVersion)</Label>
+            <Label Name="InstallVersion" X="11" Y="-41" Width="210" Height="17" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBAShowVersion">#(loc.InstallVersion)</Label>
             <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-41" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-            <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
+            <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" VisibleCondition="NOT WixStdBASuppressOptionsUI">
+                <Text>#(loc.InstallOptionsButton)</Text>
+                <ChangePageAction Page="Options" />
+            </Button>
             <Button Name="InstallButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
             <Button Name="InstallCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">
                 <Text>#(loc.InstallCancelButton)</Text>
@@ -33,10 +36,19 @@
         <Page Name="Options">
             <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.OptionsHeader)</Label>
             <Label X="11" Y="121" Width="-11" Height="17" FontId="3" DisablePrefix="yes">#(loc.OptionsLocationLabel)</Label>
-            <Editbox Name="FolderEditbox" X="11" Y="143" Width="-91" Height="21" TabStop="yes" FontId="3" FileSystemAutoComplete="yes" />
-            <Button Name="BrowseButton" X="-11" Y="142" Width="75" Height="23" TabStop="yes" FontId="3">#(loc.OptionsBrowseButton)</Button>
-            <Button Name="OptionsOkButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.OptionsOkButton)</Button>
-            <Button Name="OptionsCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.OptionsCancelButton)</Button>
+            <Editbox Name="InstallFolder" X="11" Y="143" Width="-91" Height="21" TabStop="yes" FontId="3" FileSystemAutoComplete="yes" />
+            <Button Name="BrowseButton" X="-11" Y="142" Width="75" Height="23" TabStop="yes" FontId="3">
+                <Text>#(loc.OptionsBrowseButton)</Text>
+                <BrowseDirectoryAction VariableName="InstallFolder" />
+            </Button>
+            <Button Name="OptionsOkButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">
+                <Text>#(loc.OptionsOkButton)</Text>
+                <ChangePageAction Page="Install" />
+            </Button>
+            <Button Name="OptionsCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">
+                <Text>#(loc.OptionsCancelButton)</Text>
+                <ChangePageAction Page="Install" Cancel="yes" />
+            </Button>
         </Page>
         <Page Name="Progress">
             <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.ProgressHeader)</Label>
