@@ -1304,7 +1304,11 @@ DAPI_(HRESULT) ThemeShowPageEx(
         }
         else
         {
-            if (THEME_SHOW_PAGE_REASON_REFRESH != reason)
+            if (THEME_SHOW_PAGE_REASON_REFRESH == reason)
+            {
+                fSaveEditboxes = TRUE;
+            }
+            else
             {
                 hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgSavedVariables), pPage->cControlIndices, sizeof(THEME_SAVEDVARIABLE), pPage->cControlIndices);
                 ExitOnNull(pPage->rgSavedVariables, hr, E_OUTOFMEMORY, "Failed to allocate memory for saved variables.");
@@ -1329,21 +1333,21 @@ DAPI_(HRESULT) ThemeShowPageEx(
             continue;
         }
 
+        // Save the editbox value if necessary (other control types save their values immediately).
+        if (pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
+            fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
+        {
+            hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
+            ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
+
+            hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText, pTheme->pvVariableContext);
+            ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
+        }
+
         HWND hWnd = pControl->hWnd;
 
         if (fHide && pControl->wPageId)
         {
-            // Save the editbox value if necessary (other control types save their values immediately).
-            if (pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
-                fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
-            {
-                hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
-                ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
-
-                hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText, pTheme->pvVariableContext);
-                ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
-            }
-
             ::ShowWindow(hWnd, SW_HIDE);
 
             if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
@@ -2027,7 +2031,7 @@ DAPI_(HRESULT) ThemeGetTextControl(
     for (;;)
     {
         cchTextRead = ::GetWindowTextW(hWnd, *psczText, cchText);
-        if (cchTextRead < cchText)
+        if (cchTextRead + 1 < cchText)
         {
             break;
         }
@@ -4138,13 +4142,39 @@ static void OnBrowseDirectory(
     browseInfo.lpszTitle = pTheme->sczCaption;
     browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
     pidl = ::SHBrowseForFolderW(&browseInfo);
-    if (pidl && ::SHGetPathFromIDListW(pidl, wzPath) && pTheme->pfnSetStringVariable)
+    if (pidl && ::SHGetPathFromIDListW(pidl, wzPath))
     {
-        hr = pTheme->pfnSetStringVariable(pAction->BrowseDirectory.sczVariableName, wzPath, pTheme->pvVariableContext);
-        ExitOnFailure(hr, "Failed to set variable: %ls", pAction->BrowseDirectory.sczVariableName);
+        // Since editbox changes aren't immediately saved off, we have to treat them differently.
+        THEME_CONTROL* pTargetControl = NULL;
 
-        // TODO: When refeshing a page, any user changes to an editbox are lost.
-        //       The quick fix of saving the changes during refresh will break this use case.
+        for (DWORD i = 0; i < pTheme->cControls; ++i)
+        {
+            THEME_CONTROL* pControl = pTheme->rgControls + i;
+
+            if ((!pControl->wPageId || pControl->wPageId == pTheme->dwCurrentPageId) &&
+                CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pControl->sczName, -1, pAction->BrowseDirectory.sczVariableName, -1))
+            {
+                pTargetControl = pControl;
+                break;
+            }
+        }
+
+        if (pTargetControl && THEME_CONTROL_TYPE_EDITBOX == pTargetControl->type && !pTargetControl->fDisableVariableFunctionality)
+        {
+            hr = ThemeSetTextControl(pTheme, pTargetControl->wId, wzPath);
+            ExitOnFailure(hr, "Failed to set text on editbox: %ls", pTargetControl->sczName);
+        }
+        else if (pTheme->pfnSetStringVariable)
+        {
+            hr = pTheme->pfnSetStringVariable(pAction->BrowseDirectory.sczVariableName, wzPath, pTheme->pvVariableContext);
+            ExitOnFailure(hr, "Failed to set variable: %ls", pAction->BrowseDirectory.sczVariableName);
+        }
+        else if (pTargetControl)
+        {
+            hr = ThemeSetTextControl(pTheme, pTargetControl->wId, wzPath);
+            ExitOnFailure(hr, "Failed to set text on control: %ls", pTargetControl->sczName);
+        }
+
         ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_SHOW, THEME_SHOW_PAGE_REASON_REFRESH);
     }
 
@@ -4166,28 +4196,31 @@ static BOOL OnButtonClicked(
 
     if (THEME_CONTROL_TYPE_BUTTON == pControl->type)
     {
-        if (pControl->cActions && pTheme->pfnEvaluateCondition)
+        if (pControl->cActions)
         {
             fHandled = TRUE;
             THEME_ACTION* pChosenAction = pControl->pDefaultAction;
 
-            // As documented in the xsd, if there are multiple conditions that are true at the same time then the behavior is undefined.
-            // This is the current implementation and can change at any time.
-            for (DWORD j = 0; j < pControl->cActions; ++j)
+            if (pTheme->pfnEvaluateCondition)
             {
-                THEME_ACTION* pAction = pControl->rgActions + j;
-
-                if (pAction->sczCondition)
+                // As documented in the xsd, if there are multiple conditions that are true at the same time then the behavior is undefined.
+                // This is the current implementation and can change at any time.
+                for (DWORD j = 0; j < pControl->cActions; ++j)
                 {
-                    BOOL fCondition = FALSE;
+                    THEME_ACTION* pAction = pControl->rgActions + j;
 
-                    hr = pTheme->pfnEvaluateCondition(pAction->sczCondition, &fCondition, pTheme->pvVariableContext);
-                    ExitOnFailure(hr, "Failed to evaluate condition: %ls", pAction->sczCondition);
-
-                    if (fCondition)
+                    if (pAction->sczCondition)
                     {
-                        pChosenAction = pAction;
-                        break;
+                        BOOL fCondition = FALSE;
+
+                        hr = pTheme->pfnEvaluateCondition(pAction->sczCondition, &fCondition, pTheme->pvVariableContext);
+                        ExitOnFailure(hr, "Failed to evaluate condition: %ls", pAction->sczCondition);
+
+                        if (fCondition)
+                        {
+                            pChosenAction = pAction;
+                            break;
+                        }
                     }
                 }
             }
