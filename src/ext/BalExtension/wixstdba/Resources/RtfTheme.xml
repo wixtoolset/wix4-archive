@@ -65,9 +65,18 @@
             </Button>
         </Page>
         <Page Name="Success">
-            <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.SuccessHeader)</Label>
+            <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">
+                <Text>#(loc.SuccessHeader)</Text>
+                <Text Condition="WixBundleAction = 2">#(loc.SuccessLayoutHeader)</Text>
+                <Text Condition="WixBundleAction = 3">#(loc.SuccessUninstallHeader)</Text>
+                <Text Condition="WixBundleAction = 4">#(loc.SuccessInstallHeader)</Text>
+                <Text Condition="WixBundleAction = 6">#(loc.SuccessRepairHeader)</Text>
+            </Label>
             <Button Name="LaunchButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessLaunchButton)</Button>
-            <Label Name="SuccessRestartText" X="-11" Y="-51" Width="400" Height="34" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessRestartText)</Label>
+            <Label X="-11" Y="-51" Width="400" Height="34" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">
+                <Text>#(loc.SuccessRestartText)</Text>
+                <Text Condition="WixBundleAction = 3">#(loc.SuccessUninstallRestartText)</Text>
+            </Label>
             <Button Name="SuccessRestartButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessRestartButton)</Button>
             <Button Name="SuccessCloseButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">
                 <Text>#(loc.SuccessCloseButton)</Text>
@@ -75,10 +84,16 @@
             </Button>
         </Page>
         <Page Name="Failure">
-            <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.FailureHeader)</Label>
+            <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">
+                <Text>#(loc.FailureHeader)</Text>
+                <Text Condition="WixBundleAction = 2">#(loc.FailureLayoutHeader)</Text>
+                <Text Condition="WixBundleAction = 3">#(loc.FailureUninstallHeader)</Text>
+                <Text Condition="WixBundleAction = 4">#(loc.FailureInstallHeader)</Text>
+                <Text Condition="WixBundleAction = 6">#(loc.FailureRepairHeader)</Text>
+            </Label>
             <Hypertext Name="FailureLogFileLink" X="11" Y="121" Width="-11" Height="42" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
             <Hypertext Name="FailureMessageText" X="22" Y="163" Width="-11" Height="51" FontId="3" TabStop="yes" HideWhenDisabled="yes" />
-            <Label Name="FailureRestartText" X="-11" Y="-51" Width="400" Height="34" FontId="3" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRestartText)</Label>
+            <Label X="-11" Y="-51" Width="400" Height="34" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">#(loc.FailureRestartText)</Label>
             <Button Name="FailureRestartButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
             <Button Name="FailureCloseButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">
                 <Text>#(loc.FailureCloseButton)</Text>
