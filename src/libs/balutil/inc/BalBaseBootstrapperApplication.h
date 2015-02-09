@@ -499,23 +499,6 @@ public: // IBootstrapperApplication
         return FAILED(hr) ? IDERROR : CheckCanceled() ? IDCANCEL : nResult;
     }
 
-    virtual STDMETHODIMP_(int) OnDownloadPayloadBegin(
-        __in_z LPCWSTR /*wzPayloadId*/,
-        __in_z LPCWSTR /*wzPayloadFileName*/
-        )
-    {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnDownloadPayloadComplete(
-        __in_z LPCWSTR /*wzPayloadId*/,
-        __in_z LPCWSTR /*wzPayloadFileName*/,
-        __in HRESULT /*hrStatus*/
-        )
-    {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
     virtual STDMETHODIMP_(int) OnExecuteProgress(
         __in_z LPCWSTR /*wzPackageId*/,
         __in DWORD /*dwProgressPercentage*/,
@@ -566,7 +549,7 @@ public: // IBootstrapperApplication
         __in int nRecommendation
         )
     {
-        int nResult = CheckCanceled() ? IDCANCEL : CheckCanceled() ? IDCANCEL : BalRetryEndPackage(BALRETRY_TYPE_EXECUTE, wzPackageId, NULL, hrExitCode);
+        int nResult = CheckCanceled() ? IDCANCEL : BalRetryEndPackage(BALRETRY_TYPE_EXECUTE, wzPackageId, NULL, hrExitCode);
         return IDNOACTION == nResult ? nRecommendation : nResult;
     }
 
