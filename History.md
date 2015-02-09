@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:3747 - Remove define statements for Log and LogLine.
+
 ## WixBuild: Version 4.0.2603.0
 
 * SeanHall: Make major breaking changes to thmutil schema while implementing the new Text element to allow setting the text based on context.

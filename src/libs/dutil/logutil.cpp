@@ -387,7 +387,7 @@ extern "C" REPORT_LEVEL DAPI LogSetLevel(
                 break;
             }
 
-            LogLine(REPORT_STANDARD, "--- logging level: %hs ---", szLevel);
+            LogStringLine(REPORT_STANDARD, "--- logging level: %hs ---", szLevel);
         }
     }
 
@@ -617,7 +617,7 @@ extern "C" HRESULT DAPI LogErrorStringArgs(
     hr = StrAllocFormattedArgs(&sczMessage, sczFormat, args);
     ExitOnFailure(hr, "Failed to format error message: \"%ls\"", sczFormat);
 
-    hr = LogLine(REPORT_ERROR, "Error 0x%x: %ls", hrError, sczMessage);
+    hr = LogStringLine(REPORT_ERROR, "Error 0x%x: %ls", hrError, sczMessage);
 
 LExit:
     ReleaseStr(sczFormat);
@@ -700,9 +700,9 @@ extern "C" HRESULT DAPI LogHeader()
     //
     // write data to the log
     //
-    LogLine(REPORT_STANDARD, "=== Logging started: %ls ===", sczCurrentDateTime);
-    LogLine(REPORT_STANDARD, "Executable: %ls v%d.%d.%d.%d", wzPath, dwMajorVersion >> 16, dwMajorVersion & 0xFFFF, dwMinorVersion >> 16, dwMinorVersion & 0xFFFF);
-    LogLine(REPORT_STANDARD, "Computer  : %ls", wzComputerName);
+    LogStringLine(REPORT_STANDARD, "=== Logging started: %ls ===", sczCurrentDateTime);
+    LogStringLine(REPORT_STANDARD, "Executable: %ls v%d.%d.%d.%d", wzPath, dwMajorVersion >> 16, dwMajorVersion & 0xFFFF, dwMinorVersion >> 16, dwMinorVersion & 0xFFFF);
+    LogStringLine(REPORT_STANDARD, "Computer  : %ls", wzComputerName);
     switch (LogUtil_rlCurrent)
     {
     case REPORT_WARNING:
@@ -721,7 +721,7 @@ extern "C" HRESULT DAPI LogHeader()
         szLevel = LOGUTIL_NONE;
         break;
     }
-    LogLine(REPORT_STANDARD, "--- logging level: %hs ---", szLevel);
+    LogStringLine(REPORT_STANDARD, "--- logging level: %hs ---", szLevel);
 
     hr = S_OK;
 
