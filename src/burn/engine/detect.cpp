@@ -383,7 +383,7 @@ static HRESULT DetectAtomFeedUpdate(
 {
     Assert(pUpdate && pUpdate->sczUpdateSource && *pUpdate->sczUpdateSource);
 #ifdef DEBUG
-    LogLine(REPORT_STANDARD, "DetectAtomFeedUpdate() - update location: %ls", pUpdate->sczUpdateSource);
+    LogStringLine(REPORT_STANDARD, "DetectAtomFeedUpdate() - update location: %ls", pUpdate->sczUpdateSource);
 #endif
 
 
