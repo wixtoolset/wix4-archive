@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4647 - Format ConfirmCancelMessage in WixStdBA.
+
 * SeanHall: WIXBUG:4646 - Allow sharing the whole drive with util:FileShare.
 
 ## WixBuild: Version 4.0.2603.0
