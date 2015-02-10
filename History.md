@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4480 - Remove non-standard and unnecessary regex contructs from wix.xsd.
+
 * SeanHall: WIXBUG:4647 - Format ConfirmCancelMessage in WixStdBA.
 
 * SeanHall: WIXBUG:4646 - Allow sharing the whole drive with util:FileShare.
