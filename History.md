@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4669 - Fix bug in mbahost where it assumed that the CLRCreateInstance function was implemented when it exists.
+
 * SeanHall: WIXBUG:3747 - Remove define statements for Log and LogLine.
 
 * SeanHall: WIXBUG:4480 - Remove non-standard and unnecessary regex contructs from wix.xsd.
