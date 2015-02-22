@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4662 - Add WIX_IS_NETFRAMEWORK_4XX_OR_LATER_INSTALLED SetProperty custom actions to WixNetfxExtension.
+
 * SeanHall: WIXBUG:4669 - Fix bug in mbahost where it assumed that the CLRCreateInstance function was implemented when it exists.
 
 * SeanHall: WIXBUG:3747 - Remove define statements for Log and LogLine.
