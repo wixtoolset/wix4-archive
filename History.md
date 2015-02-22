@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4654 - Add VS14 properties and custom actions. And, as it's a long topic, added anchors and links.
+
 * SeanHall: WIXBUG:4669 - Fix bug in mbahost where it assumed that the CLRCreateInstance function was implemented when it exists.
 
 * SeanHall: WIXBUG:3747 - Remove define statements for Log and LogLine.
