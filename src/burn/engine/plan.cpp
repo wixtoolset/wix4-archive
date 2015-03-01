@@ -161,7 +161,8 @@ static HRESULT PlanDependencyActions(
 static HRESULT CalculateExecuteActions(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BURN_PACKAGE* pPackage,
-    __in BURN_VARIABLES* pVariables
+    __in BURN_VARIABLES* pVariables,
+    __out_opt BOOL* pfBARequestedCache
     );
 static BOOL NeedsCache(
     __in BURN_PLAN* pPlan,
@@ -909,7 +910,7 @@ static HRESULT ProcessPackage(
         {
             // Make sure the package is properly ref-counted even if no plan is requested.
             hr = PlanDependencyActions(fBundlePerMachine, pPlan, pPackage);
-            ExitOnFailure1(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
+            ExitOnFailure(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
         }
     }
 
@@ -1024,12 +1025,13 @@ extern "C" HRESULT PlanCachePackage(
     )
 {
     HRESULT hr = S_OK;
+    BOOL fBARequestedCache = FALSE;
 
     // Calculate the execute actions because we need them to decide whether the package should be cached.
-    hr = CalculateExecuteActions(pUserExperience, pPackage, pVariables);
-    ExitOnFailure1(hr, "Failed to calculate execute actions for package: %ls", pPackage->sczId);
+    hr = CalculateExecuteActions(pUserExperience, pPackage, pVariables, &fBARequestedCache);
+    ExitOnFailure(hr, "Failed to calculate execute actions for package: %ls", pPackage->sczId);
 
-    if (NeedsCache(pPlan, pPackage))
+    if (fBARequestedCache || NeedsCache(pPlan, pPackage))
     {
         hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
         ExitOnFailure(hr, "Failed to plan cache package.");
@@ -1044,7 +1046,7 @@ extern "C" HRESULT PlanCachePackage(
 
     // Make sure the package is properly ref-counted.
     hr = PlanDependencyActions(fPerMachine, pPlan, pPackage);
-    ExitOnFailure1(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
 
 LExit:
     return hr;
@@ -1062,15 +1064,16 @@ extern "C" HRESULT PlanExecutePackage(
     )
 {
     HRESULT hr = S_OK;
+    BOOL fBARequestedCache = FALSE;
 
-    hr = CalculateExecuteActions(pUserExperience, pPackage, pVariables);
+    hr = CalculateExecuteActions(pUserExperience, pPackage, pVariables, &fBARequestedCache);
     ExitOnFailure(hr, "Failed to calculate plan actions for package: %ls", pPackage->sczId);
 
     // Calculate package states based on reference count and plan certain dependency actions prior to planning the package execute action.
     hr = DependencyPlanPackageBegin(fPerMachine, pPackage, pPlan);
     ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
 
-    if (NeedsCache(pPlan, pPackage))
+    if (fBARequestedCache || NeedsCache(pPlan, pPackage))
     {
         hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
         ExitOnFailure(hr, "Failed to plan cache package.");
@@ -1408,7 +1411,7 @@ extern "C" HRESULT PlanRelatedBundlesComplete(
 
         if (BOOTSTRAPPER_REQUEST_STATE_NONE != pRelatedBundle->package.requested)
         {
-            hr = ExeEnginePlanCalculatePackage(&pRelatedBundle->package);
+            hr = ExeEnginePlanCalculatePackage(&pRelatedBundle->package, NULL);
             ExitOnFailure(hr, "Failed to calcuate plan for related bundle: %ls", pRelatedBundle->package.sczId);
 
             // Calculate package states based on reference count for addon and patch related bundles.
@@ -2770,13 +2773,13 @@ static HRESULT PlanDependencyActions(
     HRESULT hr = S_OK;
 
     hr = DependencyPlanPackageBegin(fBundlePerMachine, pPackage, pPlan);
-    ExitOnFailure1(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
 
     hr = DependencyPlanPackage(NULL, pPackage, pPlan);
     ExitOnFailure(hr, "Failed to plan package dependency actions.");
 
     hr = DependencyPlanPackageComplete(pPackage, pPlan);
-    ExitOnFailure1(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
+    ExitOnFailure(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
 
 LExit:
     return hr;
@@ -2785,7 +2788,8 @@ LExit:
 static HRESULT CalculateExecuteActions(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BURN_PACKAGE* pPackage,
-    __in BURN_VARIABLES* pVariables
+    __in BURN_VARIABLES* pVariables,
+    __out_opt BOOL* pfBARequestedCache
     )
 {
     HRESULT hr = S_OK;
@@ -2794,19 +2798,19 @@ static HRESULT CalculateExecuteActions(
     switch (pPackage->type)
     {
     case BURN_PACKAGE_TYPE_EXE:
-        hr = ExeEnginePlanCalculatePackage(pPackage);
+        hr = ExeEnginePlanCalculatePackage(pPackage, pfBARequestedCache);
         break;
 
     case BURN_PACKAGE_TYPE_MSI:
-        hr = MsiEnginePlanCalculatePackage(pPackage, pVariables, pUserExperience);
+        hr = MsiEnginePlanCalculatePackage(pPackage, pVariables, pUserExperience, pfBARequestedCache);
         break;
 
     case BURN_PACKAGE_TYPE_MSP:
-        hr = MspEnginePlanCalculatePackage(pPackage, pUserExperience);
+        hr = MspEnginePlanCalculatePackage(pPackage, pUserExperience, pfBARequestedCache);
         break;
 
     case BURN_PACKAGE_TYPE_MSU:
-        hr = MsuEnginePlanCalculatePackage(pPackage);
+        hr = MsuEnginePlanCalculatePackage(pPackage, pfBARequestedCache);
         break;
 
     default:
