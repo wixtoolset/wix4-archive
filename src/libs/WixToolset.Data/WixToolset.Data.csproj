@@ -72,7 +72,7 @@
     <Compile Include="Rows\WixBundleMsiPropertyRow.cs" />
     <Compile Include="Rows\WixBundleRollbackBoundaryRow.cs" />
     <Compile Include="Rows\WixBundleMsuPackageRow.cs" />
-    <Compile Include="Rows\BundleMspPackageRow.cs" />
+    <Compile Include="Rows\WixBundleMspPackageRow.cs" />
     <Compile Include="Rows\WixBundlePackageRow.cs" />
     <Compile Include="Rows\WixBundleMsiPackageRow.cs" />
     <Compile Include="Rows\ComponentRow.cs" />

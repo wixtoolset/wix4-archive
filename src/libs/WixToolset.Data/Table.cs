@@ -94,7 +94,7 @@ namespace WixToolset.Data
                     row = new WixBundleMsiPackageRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleMspPackage":
-                    row = new BundleMspPackageRow(sourceLineNumbers, this);
+                    row = new WixBundleMspPackageRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleMsuPackage":
                     row = new WixBundleMsuPackageRow(sourceLineNumbers, this);
@@ -150,8 +150,14 @@ namespace WixToolset.Data
                 case "WixBundle":
                     row = new WixBundleRow(sourceLineNumbers, this);
                     break;
+                case "WixBundlePackageExitCode":
+                    row = new WixBundlePackageExitCodeRow(sourceLineNumbers, this);
+                    break;
                 case "WixBundlePatchTargetCode":
                     row = new WixBundlePatchTargetCodeRow(sourceLineNumbers, this);
+                    break;
+                case "WixBundleSlipstreamMsp":
+                    row = new WixBundleSlipstreamMspRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleUpdate":
                     row = new WixBundleUpdateRow(sourceLineNumbers, this);
