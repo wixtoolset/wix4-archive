@@ -180,6 +180,7 @@ namespace WixToolset.Bootstrapper
         Unknown,
         Help,
         Layout,
+        Cache,
         Uninstall,
         Install,
         Modify,

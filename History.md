@@ -1,3 +1,5 @@
+* ErnestT: WIXBUG:4432 - Add burn support for only caching packages
+
 ## WixBuild: Version 4.0.3226.0
 
 * HeathS: WIXBUG:4775 - Always set WixBundleOriginalSourceFolder if not already set
