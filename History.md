@@ -1,3 +1,5 @@
+* thfabba: WIXBUG:4681 - Corrected return type on the lone WOW64 redirection function that returns a BOOLEAN instead of BOOL.
+
 * SeanHall: WIXBUG:4689 - Fix hidden numeric and version variables.
 
 * SeanHall: WIXBUG:4685 - Fix bug in mbahost where it didn't bind as the LegacyV2Runtime when necessary.
