@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4689 - Fix hidden numeric and version variables.
+
 * SeanHall: WIXBUG:4685 - Fix bug in mbahost where it didn't bind as the LegacyV2Runtime when necessary.
 
 * BobArnson: WIXBUG:4654 - Add VS14 properties and custom actions. And, as it's a long topic, added anchors and links.

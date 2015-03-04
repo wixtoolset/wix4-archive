@@ -447,11 +447,11 @@ static HRESULT BVariantEncryptNumeric(
 
     if (fEncrypt)
     {
-        hr = CrypEncryptMemory(&pVariant->llValue, sizeof(pVariant->llValue), VARIANT_ENCRYPTION_SCOPE);
+        hr = CrypEncryptMemory(&pVariant->llValue, sizeof(pVariant->encryptionPadding), VARIANT_ENCRYPTION_SCOPE);
     }
     else
     {
-        hr = CrypDecryptMemory(&pVariant->llValue, sizeof(pVariant->llValue), VARIANT_ENCRYPTION_SCOPE);
+        hr = CrypDecryptMemory(&pVariant->llValue, sizeof(pVariant->encryptionPadding), VARIANT_ENCRYPTION_SCOPE);
     }
 
 //LExit:
@@ -516,11 +516,11 @@ static HRESULT BVariantEncryptVersion(
 
     if (fEncrypt)
     {
-        hr = CrypEncryptMemory(&pVariant->qwValue, sizeof(pVariant->qwValue), VARIANT_ENCRYPTION_SCOPE);
+        hr = CrypEncryptMemory(&pVariant->qwValue, sizeof(pVariant->encryptionPadding), VARIANT_ENCRYPTION_SCOPE);
     }
     else
     {
-        hr = CrypDecryptMemory(&pVariant->qwValue, sizeof(pVariant->qwValue), VARIANT_ENCRYPTION_SCOPE);
+        hr = CrypDecryptMemory(&pVariant->qwValue, sizeof(pVariant->encryptionPadding), VARIANT_ENCRYPTION_SCOPE);
     }
 
 //LExit:
