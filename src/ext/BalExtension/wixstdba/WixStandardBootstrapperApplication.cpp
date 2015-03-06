@@ -13,13 +13,17 @@
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
 static const LPCWSTR WIXSTDBA_WINDOW_CLASS = L"WixStdBA";
+
 static const LPCWSTR WIXSTDBA_VARIABLE_INSTALL_FOLDER = L"InstallFolder";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH = L"LaunchTarget";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID = L"LaunchTargetElevatedId";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS = L"LaunchArguments";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_HIDDEN = L"LaunchHidden";
+
 static const DWORD WIXSTDBA_ACQUIRE_PERCENTAGE = 30;
+
 static const LPCWSTR WIXSTDBA_VARIABLE_BUNDLE_FILE_VERSION = L"WixBundleFileVersion";
+static const LPCWSTR WIXSTDBA_VARIABLE_LANGUAGE = L"WixStdBaLanguage";
 
 enum WIXSTDBA_STATE
 {
@@ -1191,6 +1195,9 @@ private: // privates
         if (WIX_LOCALIZATION_LANGUAGE_NOT_SET != m_pWixLoc->dwLangId)
         {
             ::SetThreadLocale(m_pWixLoc->dwLangId);
+
+            hr = m_pEngine->SetVariableNumeric(WIXSTDBA_VARIABLE_LANGUAGE, m_pWixLoc->dwLangId);
+            BalExitOnFailure(hr, "Failed to set WixStdBaLcid variable.");
         }
 
         hr = StrAllocString(&m_sczConfirmCloseMessage, L"#(loc.ConfirmCancelMessage)", 0);

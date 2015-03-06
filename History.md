@@ -1,3 +1,5 @@
+* BobArnson: Add WixStdBaLanguage language and documentation.
+
 * BobArnson: WIXBUG:4617 - Added 4.5.2 package group information to doc. Also mentioned that some properties are new to WiX v3.10.
 
 * BobArnson: WIXBUG:4611 - Eliminate mysteriously doubled .pkgdef content.
