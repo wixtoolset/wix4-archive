@@ -54,7 +54,7 @@ namespace Test
 {
 namespace Bootstrapper
 {
-    public ref class SearchTest : BurnUnitTest
+    public ref class SearchTest : BurnSdkIntegrationTest
     {
     public:
         [NamedFact]
