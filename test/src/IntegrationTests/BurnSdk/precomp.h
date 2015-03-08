@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Precompiled header for Burn unit tests.
+//    Precompiled header for Burn SDK integration tests.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
@@ -84,6 +84,6 @@
 
 #include "BurnTestException.h"
 #include "BurnTestFixture.h"
-#include "BurnUnitTest.h"
+#include "BurnSdkIntegrationTest.h"
 #include "VariableHelpers.h"
 #include "ManifestHelpers.h"

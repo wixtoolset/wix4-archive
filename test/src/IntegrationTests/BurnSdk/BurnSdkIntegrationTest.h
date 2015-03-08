@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="BurnUnitTest.h" company="Outercurve Foundation">
+// <copyright file="BurnSdkIntegrationTest.h" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -7,7 +7,7 @@
 // </copyright>
 //
 // <summary>
-//    Base class for Burn Unit tests.
+//    Base class for Burn SDK Integration tests.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
@@ -28,10 +28,10 @@ namespace Bootstrapper
     using namespace WixTest;
     using namespace Xunit;
 
-    public ref class BurnUnitTest : WixTestBase, IUseFixture<BurnTestFixture^>
+    public ref class BurnSdkIntegrationTest : WixTestBase, IUseFixture<BurnTestFixture^>
     {
     public:
-        BurnUnitTest()
+        BurnSdkIntegrationTest()
         {
         }
 
@@ -43,7 +43,7 @@ namespace Bootstrapper
 
             LogInitialize(::GetModuleHandleW(NULL));
 
-            hr = LogOpen(NULL, L"BurnUnitTest", NULL, L"txt", FALSE, FALSE, NULL);
+            hr = LogOpen(NULL, L"BurnSdkIntegrationTest", NULL, L"txt", FALSE, FALSE, NULL);
             TestThrowOnFailure(hr, L"Failed to open log.");
         }
 

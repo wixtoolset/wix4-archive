@@ -29,7 +29,7 @@ namespace Bootstrapper
     using namespace WixTest;
     using namespace Xunit;
 
-    public ref class CacheTest : BurnUnitTest
+    public ref class CacheTest : BurnSdkIntegrationTest
     {
     public:
         [NamedFact]

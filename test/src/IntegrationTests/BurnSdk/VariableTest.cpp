@@ -28,7 +28,7 @@ namespace Bootstrapper
     using namespace System;
     using namespace Xunit;
 
-    public ref class VariableTest : BurnUnitTest
+    public ref class VariableTest : BurnSdkIntegrationTest
     {
     public:
         [NamedFact]

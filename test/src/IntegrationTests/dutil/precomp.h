@@ -7,7 +7,7 @@
 // </copyright>
 // 
 // <summary>
-//    Precompiled header for DUtil unit tests.
+//    Precompiled header for DUtil integration tests.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
