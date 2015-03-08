@@ -12,15 +12,12 @@
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
+#include "cryputilhelpers.h"
 
-static PFN_RTLENCRYPTMEMORY vpfnRtlEncryptMemory = NULL;
-static PFN_RTLDECRYPTMEMORY vpfnRtlDecryptMemory = NULL;
-static PFN_CRYPTPROTECTMEMORY vpfnCryptProtectMemory = NULL;
-static PFN_CRYPTUNPROTECTMEMORY vpfnCryptUnprotectMemory = NULL;
+static CrypUtilFunctions vFunctions = { NULL, NULL, NULL, NULL };
 
 static HMODULE vhAdvApi32Dll = NULL;
 static HMODULE vhCrypt32Dll = NULL;
-static BOOL vfCrypInitialized = FALSE;
 
 // function definitions
 
@@ -28,36 +25,36 @@ static BOOL vfCrypInitialized = FALSE;
  CrypInitialize - initializes cryputil
 
 *********************************************************************/
-extern "C" HRESULT DAPI CrypInitialize(
+DAPI_(HRESULT) CrypInitialize(
     )
 {
     HRESULT hr = S_OK;
 
-    hr = LoadSystemLibrary(L"AdvApi32.dll", &vhAdvApi32Dll);
+    hr = LoadSystemLibrary(L"Crypt32.dll", &vhCrypt32Dll);
     if (SUCCEEDED(hr))
     {
-        // Ignore failures - if these don't exist, we'll try the Crypt methods.
-        vpfnRtlEncryptMemory = reinterpret_cast<PFN_RTLENCRYPTMEMORY>(::GetProcAddress(vhAdvApi32Dll, "SystemFunction040"));
-        vpfnRtlDecryptMemory = reinterpret_cast<PFN_RTLDECRYPTMEMORY>(::GetProcAddress(vhAdvApi32Dll, "SystemFunction041"));
-    }
-    if (!vpfnRtlEncryptMemory || !vpfnRtlDecryptMemory)
-    {
-        hr = LoadSystemLibrary(L"Crypt32.dll", &vhCrypt32Dll);
-        ExitOnFailure(hr, "Failed to load Crypt32.dll");
-        
-        vpfnCryptProtectMemory = reinterpret_cast<PFN_CRYPTPROTECTMEMORY>(::GetProcAddress(vhCrypt32Dll, "CryptProtectMemory"));
-        if (!vpfnRtlEncryptMemory && !vpfnCryptProtectMemory)
-        {
-            ExitWithLastError(hr, "Failed to load an encryption method");
-        }
-        vpfnCryptUnprotectMemory = reinterpret_cast<PFN_CRYPTUNPROTECTMEMORY>(::GetProcAddress(vhCrypt32Dll, "CryptUnprotectMemory"));
-        if (!vpfnRtlDecryptMemory && !vpfnCryptUnprotectMemory)
-        {
-            ExitWithLastError(hr, "Failed to load a decryption method");
-        }
+        // Ignore failures - if these don't exist, we'll try the Rtl methods.
+        vFunctions.pfnCryptProtectMemory = reinterpret_cast<PFN_CRYPTPROTECTMEMORY>(::GetProcAddress(vhCrypt32Dll, "CryptProtectMemory"));
+        vFunctions.pfnCryptUnprotectMemory = reinterpret_cast<PFN_CRYPTUNPROTECTMEMORY>(::GetProcAddress(vhCrypt32Dll, "CryptUnprotectMemory"));
     }
 
-    vfCrypInitialized = TRUE;
+    if (!vFunctions.pfnCryptProtectMemory || !vFunctions.pfnCryptUnprotectMemory)
+    {
+        hr = LoadSystemLibrary(L"AdvApi32.dll", &vhAdvApi32Dll);
+        ExitOnFailure(hr, "Failed to load AdvApi32.dll");
+
+        vFunctions.pfnRtlEncryptMemory = reinterpret_cast<PFN_RTLENCRYPTMEMORY>(::GetProcAddress(vhAdvApi32Dll, "SystemFunction040"));
+        if (!vFunctions.pfnRtlEncryptMemory && !vFunctions.pfnCryptProtectMemory)
+        {
+            ExitWithLastError(hr, "Failed to load an encryption method.");
+        }
+
+        vFunctions.pfnRtlDecryptMemory = reinterpret_cast<PFN_RTLDECRYPTMEMORY>(::GetProcAddress(vhAdvApi32Dll, "SystemFunction041"));
+        if (!vFunctions.pfnRtlDecryptMemory && !vFunctions.pfnCryptUnprotectMemory)
+        {
+            ExitWithLastError(hr, "Failed to load a decryption method.");
+        }
+    }
 
 LExit:
     return hr;
@@ -68,29 +65,27 @@ LExit:
  CrypUninitialize - uninitializes cryputil
 
 *********************************************************************/
-extern "C" void DAPI CrypUninitialize(
+DAPI_(void) CrypUninitialize(
     )
 {
     if (vhAdvApi32Dll)
     {
         ::FreeLibrary(vhAdvApi32Dll);
         vhAdvApi32Dll = NULL;
-        vpfnRtlEncryptMemory = NULL;
-        vpfnRtlDecryptMemory = NULL;
+        vFunctions.pfnRtlEncryptMemory = NULL;
+        vFunctions.pfnRtlDecryptMemory = NULL;
     }
     
     if (vhCrypt32Dll)
     {
         ::FreeLibrary(vhCrypt32Dll);
         vhCrypt32Dll = NULL;
-        vpfnCryptProtectMemory = NULL;
-        vpfnCryptUnprotectMemory = NULL;
+        vFunctions.pfnCryptProtectMemory = NULL;
+        vFunctions.pfnCryptUnprotectMemory = NULL;
     }
-
-    vfCrypInitialized = FALSE;
 }
 
-extern "C" HRESULT DAPI CrypDecodeObject(
+DAPI_(HRESULT) CrypDecodeObject(
     __in_z LPCSTR szStructType,
     __in_ecount(cbData) const BYTE* pbData,
     __in DWORD cbData,
@@ -131,7 +126,7 @@ LExit:
 }
 
 
-extern "C" HRESULT DAPI CrypMsgGetParam(
+DAPI_(HRESULT) CrypMsgGetParam(
     __in HCRYPTMSG hCryptMsg,
     __in DWORD dwType,
     __in DWORD dwIndex,
@@ -171,7 +166,7 @@ LExit:
 }
 
 
-extern "C" HRESULT DAPI CrypHashFile(
+DAPI_(HRESULT) CrypHashFile(
     __in LPCWSTR wzFilePath,
     __in DWORD dwProvType,
     __in ALG_ID algid,
@@ -200,7 +195,7 @@ LExit:
 }
 
 
-extern "C" HRESULT DAPI CrypHashFileHandle(
+DAPI_(HRESULT) CrypHashFileHandle(
     __in HANDLE hFile,
     __in DWORD dwProvType,
     __in ALG_ID algid,
@@ -275,7 +270,7 @@ LExit:
     return hr;
 }
 
-HRESULT DAPI CrypHashBuffer(
+DAPI_(HRESULT) CrypHashBuffer(
     __in_bcount(cbBuffer) const BYTE* pbBuffer,
     __in SIZE_T cbBuffer,
     __in DWORD dwProvType,
@@ -324,66 +319,42 @@ LExit:
     return hr;
 }
 
-HRESULT DAPI CrypEncryptMemory(
+DAPI_(HRESULT) CrypEncryptMemory(
 	__inout LPVOID pData,
 	__in DWORD cbData,
 	__in DWORD dwFlags
     )
 {
-    HRESULT hr = E_FAIL;
+    HRESULT hr = S_OK;
 
-    if (0 != cbData % CRYP_ENCRYPT_MEMORY_SIZE)
+    if (!vFunctions.pfnCryptProtectMemory && !vFunctions.pfnRtlEncryptMemory)
     {
-        hr = E_INVALIDARG;
+        hr = E_INVALIDSTATE;
+        ExitOnFailure(hr, "CrypInitialize() must be called first.");
     }
-    else if (vpfnRtlEncryptMemory)
-    {
-        hr = static_cast<HRESULT>(vpfnRtlEncryptMemory(pData, cbData, dwFlags));
-    }
-    else if (vpfnCryptProtectMemory)
-    {
-        if (vpfnCryptProtectMemory(pData, cbData, dwFlags))
-        {
-            hr = S_OK;
-        }
-        else
-        {
-            hr = HRESULT_FROM_WIN32(::GetLastError());
-        }
-    }
-    ExitOnFailure(hr, "Failed to encrypt memory");
+
+    hr = CrypEncryptMemoryHelper(&vFunctions, pData, cbData, dwFlags);
+
 LExit:
     return hr;
 }
 
-HRESULT DAPI CrypDecryptMemory(
+DAPI_(HRESULT) CrypDecryptMemory(
 	__inout LPVOID pData,
 	__in DWORD cbData,
 	__in DWORD dwFlags
     )
 {
-    HRESULT hr = E_FAIL;
-    
-    if (0 != cbData % CRYP_ENCRYPT_MEMORY_SIZE)
+    HRESULT hr = S_OK;
+
+    if (!vFunctions.pfnCryptUnprotectMemory && !vFunctions.pfnRtlDecryptMemory)
     {
-        hr = E_INVALIDARG;
+        hr = E_INVALIDSTATE;
+        ExitOnFailure(hr, "CrypInitialize() must be called first.");
     }
-    else if (vpfnRtlDecryptMemory)
-    {
-        hr = static_cast<HRESULT>(vpfnRtlDecryptMemory(pData, cbData, dwFlags));
-    }
-    else if (vpfnCryptUnprotectMemory)
-    {
-        if (vpfnCryptUnprotectMemory(pData, cbData, dwFlags))
-        {
-            hr = S_OK;
-        }
-        else
-        {
-            hr = HRESULT_FROM_WIN32(::GetLastError());
-        }
-    }
-    ExitOnFailure(hr, "Failed to decrypt memory");
+
+    hr = CrypDecryptMemoryHelper(&vFunctions, pData, cbData, dwFlags);
+
 LExit:
     return hr;
 }

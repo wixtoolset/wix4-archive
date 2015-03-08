@@ -30,11 +30,12 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
   <PropertyGroup>
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc</ProjectAdditionalIncludeDirectories>
-    <ProjectAdditionalLinkLibraries>rpcrt4.lib;dutil.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
+    <ProjectAdditionalLinkLibraries>crypt32.lib;rpcrt4.lib;dutil.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="CondUtilTest.cpp" />
+    <ClCompile Include="CrypUtilTest.cpp" />
     <ClCompile Include="DictUtilTest.cpp" />
     <ClCompile Include="DirUtilTests.cpp" />
     <ClCompile Include="FileUtilTest.cpp" />

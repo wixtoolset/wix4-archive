@@ -25,6 +25,9 @@
     <ClCompile Include="VrntUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CrypUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DUtilUnitTests.rc">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VrntUtilHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CrypUtilHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

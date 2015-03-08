@@ -21,6 +21,7 @@
 #include "error.h"
 #include <dutil.h>
 
+#include <cryputil.h>
 #include <dictutil.h>
 #include <dirutil.h>
 #include <fileutil.h>
