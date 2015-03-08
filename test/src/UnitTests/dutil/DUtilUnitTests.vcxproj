@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  <copyright file="DUtilUnitTests.vcxproj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectTypes>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</ProjectTypes>
+    <ProjectGuid>{6176819B-A877-4CCD-B18F-8AF2DFB00835}</ProjectGuid>
+    <Keyword>ManagedCProj</Keyword>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
+  <PropertyGroup>
+    <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\libs\dutil</ProjectAdditionalIncludeDirectories>
+    <ProjectAdditionalLinkLibraries>rpcrt4.lib;dutil.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="VrntUtilTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="precomp.h" />
+    <ClInclude Include="VrntUtilHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DUtilUnitTests.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="xunit">
+      <HintPath>$(XunitPath)\xunit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\libs\dutil\dutil.vcxproj" />
+    <ProjectReference Include="..\..\WixCppCliTestTools\WixCppCliTestTools.vcxproj">
+      <Project>{95BABD97-FBDB-453A-AF8A-FA031A07B599}</Project>
+      <Name>WixCppCliTestTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\WixTestTools\WixTestTools.csproj">
+      <Project>{55CB1042-647B-4347-9876-3EA607AF8DCE}</Project>
+      <Name>WixTestTools</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

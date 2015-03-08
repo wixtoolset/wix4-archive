@@ -311,6 +311,11 @@ HRESULT DAPI StrSecureZeroFreeString(
     __in LPWSTR pwz
     );
 
+
+typedef HRESULT(DAPI *PFN_STRSECUREZEROFREESTRING)(
+    __in LPWSTR pwz
+    );
+
 #ifdef __cplusplus
 }
 #endif

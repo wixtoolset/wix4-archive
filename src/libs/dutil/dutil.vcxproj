@@ -111,6 +111,7 @@
     <ClCompile Include="uriutil.cpp" />
     <ClCompile Include="userutil.cpp" />
     <ClCompile Include="varutil.cpp" />
+    <ClCompile Include="vrntutil.cpp" />
     <ClCompile Include="wiutil.cpp" />
     <ClCompile Include="wuautil.cpp" />
     <ClCompile Include="xmlutil.cpp" />
@@ -164,10 +165,12 @@
     <ClInclude Include="inc\uriutil.h" />
     <ClInclude Include="inc\userutil.h" />
     <ClInclude Include="inc\varutil.h" />
+    <ClInclude Include="inc\vrntutil.h" />
     <ClInclude Include="inc\wiutil.h" />
     <ClInclude Include="inc\wuautil.h" />
     <ClInclude Include="inc\xmlutil.h" />
     <ClInclude Include="precomp.h" />
+    <ClInclude Include="vrntutilhelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="xsd\thmutil.xsd" />
