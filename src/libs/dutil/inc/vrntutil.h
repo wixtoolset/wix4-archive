@@ -29,8 +29,11 @@ typedef struct _VRNTUTIL_VARIANT
         LONGLONG llValue;
         DWORD64 qwValue;
         LPWSTR sczValue;
+        BYTE encryptionPadding[CRYP_ENCRYPT_MEMORY_SIZE];
     };
+
     VRNTUTIL_VARIANT_TYPE Type;
+    BOOL fValueIsEncrypted;
 } VRNTUTIL_VARIANT;
 
 /********************************************************************
@@ -108,6 +111,7 @@ HRESULT DAPI VrntSetVersion(
 VrntSetValue - Convenience function that calls VrntUninitialize,
                VrntSetNumeric, VrntSetString, or VrntSetVersion
                based on the type of pValue.
+               The encryption state of pVariant is preserved.
 
 ********************************************************************/
 HRESULT DAPI VrntSetValue(
@@ -117,11 +121,24 @@ HRESULT DAPI VrntSetValue(
 
 /********************************************************************
 VrntCopy - creates a copy of pSource.
+           The encryption state of pTarget is set to
+           the encryption state of pSource.
 
 ********************************************************************/
 HRESULT DAPI VrntCopy(
     __in VRNTUTIL_VARIANT* pSource,
     __out VRNTUTIL_VARIANT* pTarget
+    );
+
+/********************************************************************
+VrntSetEncryption - sets the encryption state of pVariant.
+                    If the encryption state matches the requested state,
+                    this function does nothing.
+
+********************************************************************/
+HRESULT DAPI VrntSetEncryption(
+    __in VRNTUTIL_VARIANT* pVariant,
+    __in BOOL fEncrypt
     );
 
 #if defined(__cplusplus)
