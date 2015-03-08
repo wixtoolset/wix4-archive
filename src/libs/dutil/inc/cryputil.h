@@ -20,6 +20,8 @@ extern "C" {
 
 
 // Use CRYPTPROTECTMEMORY_BLOCK_SIZE, because it's larger and thus more restrictive than RTL_ENCRYPT_MEMORY_SIZE.
+
+// The size of the pData buffer for the Encrypt and Decrypt functions must be a multiple of this constant.
 #define CRYP_ENCRYPT_MEMORY_SIZE CRYPTPROTECTMEMORY_BLOCK_SIZE
 #define SHA1_HASH_LEN 20
 

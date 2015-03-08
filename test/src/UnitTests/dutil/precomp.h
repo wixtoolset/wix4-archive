@@ -13,15 +13,23 @@
 
 #pragma once
 
+#define WIN32_NO_STATUS
 #include <windows.h>
+#undef WIN32_NO_STATUS
+
+#include <intsafe.h>
+#include <ntstatus.h>
 #include <strsafe.h>
 #include <ShlObj.h>
 
 #include <dutil.h>
+#include <cryputil.h>
 #include <fileutil.h>
+#include <memutil.h>
 #include <strutil.h>
 #include <vrntutil.h>
 
+#include "CrypUtilHelper.h"
 #include "VrntUtilHelper.h"
 
 #pragma managed
