@@ -162,6 +162,9 @@
     <ClCompile Include="varutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vrntutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="wiutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -326,13 +329,13 @@
     <ClInclude Include="inc\varutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\vrntutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\wiutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\xmlutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="precomp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\svcutil.h">
@@ -348,6 +351,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\polcutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="precomp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vrntutilhelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,12 +19,25 @@ namespace WixTest {
     public ref class NativeAssert : WixAssert
     {
     public:
+        static void NotNull(void* pv)
+        {
+            if (!pv)
+            {
+                Assert::NotNull(nullptr);
+            }
+        }
+
         static void NotNull(LPCWSTR wz)
         {
             if (!wz)
             {
                 Assert::NotNull(nullptr);
             }
+        }
+
+        static void NotPointerEqual(void* expected, void* actual)
+        {
+            Assert::NotEqual((IntPtr)expected, (IntPtr)actual);
         }
 
         // For some reason, naming these NotStringEqual methods "NotEqual" breaks Intellisense in files that call any overload of the NotEqual method.
@@ -37,6 +50,11 @@ namespace WixTest {
         {
             IEqualityComparer<String^>^ comparer = ignoreCase ? StringComparer::InvariantCultureIgnoreCase : StringComparer::InvariantCulture;
             Assert::NotEqual(NativeAssert::LPWSTRToString(expected), NativeAssert::LPWSTRToString(actual), comparer);
+        }
+
+        static void PointerEqual(void* expected, void* actual)
+        {
+            Assert::Equal((IntPtr)expected, (IntPtr)actual);
         }
 
         // For some reason, naming these StringEqual methods "Equal" breaks Intellisense in files that call any overload of the Equal method.
