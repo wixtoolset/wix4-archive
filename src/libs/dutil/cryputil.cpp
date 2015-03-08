@@ -14,7 +14,7 @@
 #include "precomp.h"
 #include "cryputilhelpers.h"
 
-static CrypUtilFunctions vFunctions = { NULL, NULL, NULL, NULL };
+static CrypMockableFunctions vFunctions = { NULL, NULL, NULL, NULL };
 
 static HMODULE vhAdvApi32Dll = NULL;
 static HMODULE vhCrypt32Dll = NULL;
@@ -316,6 +316,50 @@ LExit:
         ::CryptReleaseContext(hProv, 0);
     }
 
+    return hr;
+}
+
+DAPI_(HRESULT) CrypReallocForEncryption(
+    __deref_out LPVOID* ppData,
+    __out_opt SIZE_T* pcbData
+    )
+{
+    HRESULT hr = S_OK;
+    SIZE_T cbData;
+
+    cbData = MemSize(*ppData);
+    if ((SIZE_T)-1 == cbData)
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Failed to get the size of the buffer.");
+    }
+
+    DWORD remainder = cbData % CRYP_ENCRYPT_MEMORY_SIZE;
+    DWORD extraNeeded = remainder ? CRYP_ENCRYPT_MEMORY_SIZE - remainder : 0;
+
+    if ((MAXDWORD - extraNeeded) < cbData)
+    {
+        hr = E_INVALIDDATA;
+        ExitOnFailure(hr, "The buffer is too big to be encrypted all at once: size %u", cbData);
+    }
+
+    if (extraNeeded)
+    {
+        cbData += extraNeeded;
+
+        LPVOID pvNew = NULL;
+        hr = MemReAllocSecure(*ppData, cbData, TRUE, &pvNew);
+        ExitOnFailure(hr, "Failed to resize the buffer so it could be encrypted.");
+
+        *ppData = pvNew;
+    }
+
+    if (pcbData)
+    {
+        *pcbData = cbData;
+    }
+
+LExit:
     return hr;
 }
 

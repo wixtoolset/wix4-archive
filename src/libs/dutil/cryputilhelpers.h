@@ -9,16 +9,16 @@
 
 #pragma once
 
-typedef struct _CrypUtilFunctions
+typedef struct _CrypMockableFunctions
 {
     PFN_RTLENCRYPTMEMORY pfnRtlEncryptMemory;
     PFN_RTLDECRYPTMEMORY pfnRtlDecryptMemory;
     PFN_CRYPTPROTECTMEMORY pfnCryptProtectMemory;
     PFN_CRYPTUNPROTECTMEMORY pfnCryptUnprotectMemory;
-} CrypUtilFunctions;
+} CrypMockableFunctions;
 
 static HRESULT CrypEncryptMemoryHelper(
-    __in CrypUtilFunctions* pFunctions,
+    __in CrypMockableFunctions* pFunctions,
 	__inout LPVOID pData,
 	__in DWORD cbData,
 	__in DWORD dwFlags
@@ -56,7 +56,7 @@ LExit:
 }
 
 static HRESULT CrypDecryptMemoryHelper(
-    __in CrypUtilFunctions* pFunctions,
+    __in CrypMockableFunctions* pFunctions,
 	__inout LPVOID pData,
 	__in DWORD cbData,
 	__in DWORD dwFlags

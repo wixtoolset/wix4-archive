@@ -10,9 +10,11 @@
 #include "precomp.h"
 #include "vrntutilhelpers.h"
 
-static VrntCoreFunctions vFunctions = 
+static VrntMockableFunctions vFunctions = 
 {
-    StrSecureZeroFreeString
+    StrSecureZeroFreeString,
+    CrypEncryptMemory,
+    CrypDecryptMemory,
 };
 
 DAPI_(void) VrntUninitialize(
@@ -85,4 +87,12 @@ DAPI_(HRESULT) VrntCopy(
     )
 {
     return VrntCopyHelper(&vFunctions, pSource, pTarget);
+}
+
+DAPI_(HRESULT) VrntSetEncryption(
+    __in VRNTUTIL_VARIANT* pVariant,
+    __in BOOL fEncrypt
+    )
+{
+    return VrntSetEncryptionHelper(&vFunctions, pVariant, fEncrypt);
 }

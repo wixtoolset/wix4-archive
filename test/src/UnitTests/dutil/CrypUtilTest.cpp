@@ -32,7 +32,7 @@ namespace DutilTests
             CrypUtilHelper^ crypHelper = gcnew CrypUtilHelper();
             crypHelper->ExpectedFlags = encryptionFlags;
             crypHelper->AddMapping(wzPlainText, wzCipherText);
-            CrypUtilFunctions functions = { NULL, NULL, NULL, NULL };
+            CrypMockableFunctions functions = { NULL, NULL, NULL, NULL };
 
             try
             {
