@@ -258,7 +258,7 @@ LExit:
     if (fBeginCalled)
     {
         nResult = pUX->pUserExperience->OnDetectUpdateComplete(hr, pUpdate->fUpdateAvailable ? pUpdate->sczUpdateSource : NULL, IDNOACTION);
-
+        nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
         switch (nResult)
         {
             case IDNOACTION: // No Action, leave the hr as is and let the engine decide.
@@ -269,7 +269,6 @@ LExit:
             case IDCANCEL:
                 hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
                 break;
-            // Should we have a default handler here to die if the BA doesn't respond properly?
         }
     }
 
