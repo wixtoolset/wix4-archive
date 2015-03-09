@@ -18,81 +18,81 @@ static VrntMockableFunctions vFunctions =
 };
 
 DAPI_(void) VrntUninitialize(
-    __in VRNTUTIL_VARIANT* pVariant
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant
     )
 {
-    VrntUninitializeHelper(&vFunctions, pVariant);
+    VrntUninitializeHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant);
 }
 
 DAPI_(HRESULT) VrntGetNumeric(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __out LONGLONG* pllValue
     )
 {
-    return VrntGetNumericHelper(&vFunctions, pVariant, pllValue);
+    return VrntGetNumericHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, pllValue);
 }
 
 DAPI_(HRESULT) VrntGetString(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __out_z LPWSTR* psczValue
     )
 {
-    return VrntGetStringHelper(&vFunctions, pVariant, psczValue);
+    return VrntGetStringHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, psczValue);
 }
 
 DAPI_(HRESULT) VrntGetVersion(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __out DWORD64* pqwValue
     )
 {
-    return VrntGetVersionHelper(&vFunctions, pVariant, pqwValue);
+    return VrntGetVersionHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, pqwValue);
 }
 
 DAPI_(HRESULT) VrntSetNumeric(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __in LONGLONG llValue
     )
 {
-    return VrntSetNumericHelper(&vFunctions, pVariant, llValue);
+    return VrntSetNumericHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, llValue);
 }
 
 DAPI_(HRESULT) VrntSetString(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __in_z_opt LPCWSTR wzValue,
     __in DWORD_PTR cchValue
     )
 {
-    return VrntSetStringHelper(&vFunctions, pVariant, wzValue, cchValue);
+    return VrntSetStringHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, wzValue, cchValue);
 }
 
 DAPI_(HRESULT) VrntSetVersion(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __in DWORD64 qwValue
     )
 {
-    return VrntSetVersionHelper(&vFunctions, pVariant, qwValue);
+    return VrntSetVersionHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, qwValue);
 }
 
 DAPI_(HRESULT) VrntSetValue(
-    __in VRNTUTIL_VARIANT* pVariant,
-    __in VRNTUTIL_VARIANT* pValue
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pValue
     )
 {
-    return VrntSetValueHelper(&vFunctions, pVariant, pValue);
+    return VrntSetValueHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, (VRNTUTIL_VARIANT*)pValue);
 }
 
 DAPI_(HRESULT) VrntCopy(
-    __in VRNTUTIL_VARIANT* pSource,
-    __out VRNTUTIL_VARIANT* pTarget
+    __in VRNTUTIL_VARIANT_HANDLE* pSource,
+    __out VRNTUTIL_VARIANT_HANDLE* pTarget
     )
 {
-    return VrntCopyHelper(&vFunctions, pSource, pTarget);
+    return VrntCopyHelper(&vFunctions, (VRNTUTIL_VARIANT*)pSource, (VRNTUTIL_VARIANT*)pTarget);
 }
 
 DAPI_(HRESULT) VrntSetEncryption(
-    __in VRNTUTIL_VARIANT* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
     __in BOOL fEncrypt
     )
 {
-    return VrntSetEncryptionHelper(&vFunctions, pVariant, fEncrypt);
+    return VrntSetEncryptionHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, fEncrypt);
 }
