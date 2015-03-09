@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4545 - Resized button for de-DE.
+
 * BobArnson: Add WixStdBALanguageId language and documentation.
 
 * BobArnson: WIXBUG:4617 - Added 4.5.2 package group information to doc. Also mentioned that some properties are new to WiX v3.10.
