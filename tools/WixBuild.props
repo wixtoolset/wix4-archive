@@ -239,7 +239,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'!='' ">
+  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'!='' and ('$(DisableSigning)' != 'true') ">
     <AssemblyOriginatorKeyFile>$(OFFICIAL_WIX_BUILD)</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>
