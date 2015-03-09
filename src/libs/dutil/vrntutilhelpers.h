@@ -16,6 +16,22 @@ typedef struct _VrntMockableFunctions
     PFN_CRYPDECRYPTMEMORY pfnCrypDecryptMemory;
 } VrntMockableFunctions;
 
+typedef struct _VRNTUTIL_VARIANT
+{
+    union
+    {
+        LONGLONG llValue;
+        DWORD64 qwValue;
+        LPWSTR sczValue;
+        BYTE encryptionPadding[CRYP_ENCRYPT_MEMORY_SIZE];
+    };
+
+    VRNTUTIL_VARIANT_TYPE Type;
+    BOOL fValueIsEncrypted;
+} VRNTUTIL_VARIANT;
+
+const int VRNTUTIL_VARIANT_HANDLE_BYTES = sizeof(VRNTUTIL_VARIANT);
+
 #define VARIANT_ENCRYPTION_SCOPE CRYPTPROTECTMEMORY_SAME_PROCESS
 
 static void DAPI VrntUninitializeHelper(
