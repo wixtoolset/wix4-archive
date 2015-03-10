@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4686 - Fix compiling WixBundlePackageExitCodeRow and WixBundleSlipstreamMsp.
+
 * SeanHall: WIXBUG:4393 - Fix BOOTSTRAPPER_REQUEST_STATE_CACHE.
 
 * SeanHall: WIXBUG:4689 - Fix hidden numeric and version variables.

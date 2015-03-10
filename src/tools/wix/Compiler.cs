@@ -19830,7 +19830,7 @@ namespace WixToolset
                         mspAttributes |= (YesNoType.Yes == displayInternalUI) ? WixBundleMspPackageAttributes.DisplayInternalUI : 0;
                         mspAttributes |= (YesNoType.Yes == slipstream) ? WixBundleMspPackageAttributes.Slipstream : 0;
 
-                        BundleMspPackageRow mspRow = (BundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
+                        WixBundleMspPackageRow mspRow = (WixBundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
                         mspRow.Attributes = mspAttributes;
                         break;
 
@@ -20173,9 +20173,9 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
-                row[0] = packageId;
-                row[1] = id;
+                WixBundleSlipstreamMspRow row = (WixBundleSlipstreamMspRow)this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
+                row.ChainPackageId = packageId;
+                row.MspPackageId = id;
             }
         }
 
