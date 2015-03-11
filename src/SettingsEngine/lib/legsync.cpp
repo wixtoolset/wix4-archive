@@ -151,7 +151,7 @@ HRESULT LegacySyncSetProduct(
     hr = DictCreateWithEmbeddedKey(&pSyncProductSession->product.detect.shCachedDetectionPropertyValues, offsetof(LEGACY_CACHED_DETECTION_RESULT, sczPropertyName), reinterpret_cast<void **>(&pSyncProductSession->product.detect.rgCachedDetectionProperties), 0, DICT_FLAG_CASEINSENSITIVE);
     ExitOnFailure(hr, "Failed to create cached detection property values dictionary");
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
+    hr = ValueFindRow(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
     ExitOnFailure(hr, "Failed to find config value for legacy manifest (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
 
     hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
@@ -170,7 +170,7 @@ HRESULT LegacySyncSetProduct(
 
         ReleaseNullSceRow(sceManifestValueRow);
         ReleaseNullCfgValue(cvManifestContents);
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
+        hr = ValueFindRow(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
         ExitOnFailure(hr, "Failed to find config value for legacy manifest after conversion (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
 
         hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);

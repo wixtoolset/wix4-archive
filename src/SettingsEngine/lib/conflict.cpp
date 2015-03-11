@@ -32,7 +32,7 @@ HRESULT ConflictResolve(
 
     if (RESOLUTION_LOCAL == rcChoice)
     {
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzValueName, &sceRow);
+        hr = ValueFindRow(pcdb, pcdb->dwAppID, wzValueName, &sceRow);
         ExitOnFailure(hr, "Failed to find existing value row in remote while resolving conflicts");
 
         hr = SceGetColumnSystemTime(sceRow, VALUE_COMMON_WHEN, &stValue);
@@ -65,7 +65,7 @@ HRESULT ConflictResolve(
     }
     else if (RESOLUTION_REMOTE == rcChoice)
     {
-        hr = ValueFindRow(pcdb->pcdbLocal, VALUE_INDEX_TABLE, pcdb->pcdbLocal->dwAppID, wzValueName, &sceRow);
+        hr = ValueFindRow(pcdb->pcdbLocal, pcdb->pcdbLocal->dwAppID, wzValueName, &sceRow);
         ExitOnFailure(hr, "Failed to find existing value row in remote while resolving conflicts");
 
         hr = SceGetColumnSystemTime(sceRow, VALUE_COMMON_WHEN, &stValue);
