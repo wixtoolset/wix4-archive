@@ -1,3 +1,5 @@
+* thfabba: WIXBUG:4681 - Corrected return type on the lone WOW64 redirection function that returns a BOOLEAN instead of BOOL.
+
 * MikeGC: Fix an issue in ValueMatch() where we can in certain scenarios create unnecessary extra history entries. This is related to upcoming settings expiration feature.
 
 * BobArnson: WIXBUG:4662 - Add WIX_IS_NETFRAMEWORK_4XX_OR_LATER_INSTALLED SetProperty custom actions to WixNetfxExtension.
