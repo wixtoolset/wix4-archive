@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4662 - Add WIX_IS_NETFRAMEWORK_4XX_OR_LATER_INSTALLED SetProperty custom actions to WixNetfxExtension.
+
 * BobArnson: WixBroadcastSettingChange and WixBroadcastEnvironmentChange custom actions to WixUtilExtension.
 
 * SeanHall: WIXBUG:4686 - Fix compiling WixBundlePackageExitCodeRow and WixBundleSlipstreamMsp.
