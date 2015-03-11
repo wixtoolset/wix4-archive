@@ -7,30 +7,35 @@
 // </copyright>
 // 
 // <summary>
-//    Precompiled header for DUtil unit tests.
+//    Precompiled header for DUtil integration tests.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
 
-#define WIN32_NO_STATUS
 #include <windows.h>
-#undef WIN32_NO_STATUS
-
-#include <intsafe.h>
-#include <ntstatus.h>
 #include <strsafe.h>
 #include <ShlObj.h>
 
+// Include error.h before dutil.h
+#include "error.h"
 #include <dutil.h>
-#include <cryputil.h>
-#include <fileutil.h>
-#include <memutil.h>
-#include <strutil.h>
-#include <vrntutil.h>
 
-#include "CrypUtilHelper.h"
-#include "VrntUtilHelper.h"
+#include <cryputil.h>
+#include <dictutil.h>
+#include <dirutil.h>
+#include <fileutil.h>
+#include <guidutil.h>
+#include <iniutil.h>
+#include <memutil.h>
+#include <pathutil.h>
+#include <strutil.h>
+#include <monutil.h>
+#include <regutil.h>
+#include <varutil.h>
+#include <condutil.h>
+
+#include "VarHelpers.h"
 
 #pragma managed
 #include <vcclr.h>

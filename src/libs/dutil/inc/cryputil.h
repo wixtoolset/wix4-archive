@@ -20,6 +20,8 @@ extern "C" {
 
 
 // Use CRYPTPROTECTMEMORY_BLOCK_SIZE, because it's larger and thus more restrictive than RTL_ENCRYPT_MEMORY_SIZE.
+
+// The size of the pData buffer for the Encrypt and Decrypt functions must be a multiple of this constant.
 #define CRYP_ENCRYPT_MEMORY_SIZE CRYPTPROTECTMEMORY_BLOCK_SIZE
 #define SHA1_HASH_LEN 20
 
@@ -42,6 +44,18 @@ typedef BOOL (APIENTRY *PFN_CRYPTPROTECTMEMORY)(
     );
 
 typedef BOOL (APIENTRY *PFN_CRYPTUNPROTECTMEMORY)(
+    __inout LPVOID pData,
+    __in DWORD cbData,
+    __in DWORD dwFlags
+    );
+
+typedef HRESULT(APIENTRY *PFN_CRYPENCRYPTMEMORY)(
+    __inout LPVOID pData,
+    __in DWORD cbData,
+    __in DWORD dwFlags
+    );
+
+typedef HRESULT(APIENTRY *PFN_CRYPDECRYPTMEMORY)(
     __inout LPVOID pData,
     __in DWORD cbData,
     __in DWORD dwFlags
@@ -94,6 +108,11 @@ HRESULT DAPI CrypHashBuffer(
     __in ALG_ID algid,
     __out_bcount(cbHash) BYTE* pbHash,
     __in DWORD cbHash
+    );
+
+HRESULT DAPI CrypReallocForEncryption(
+    __deref_out LPVOID* ppData,
+    __out_opt SIZE_T* pcbData
     );
 
 HRESULT DAPI CrypEncryptMemory(

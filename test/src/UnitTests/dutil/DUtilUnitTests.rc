@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="precomp.cpp" company="Outercurve Foundation">
+// <copyright file="DUtilIntegrationTests.rc" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -7,4 +7,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-#include "precomp.h"
+#define VER_APP
+#define VER_ORIGINAL_FILENAME "DUtilIntegrationTests.dll"
+#define VER_INTERNAL_NAME "setup"
+#define VER_FILE_DESCRIPTION "WiX Toolset Dutil integration tests"
+#include "wix.rc"

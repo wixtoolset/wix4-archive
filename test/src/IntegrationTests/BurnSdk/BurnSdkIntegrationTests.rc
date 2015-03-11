@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="resource.h" company="Outercurve Foundation">
+// <copyright file="BurnSdkIntegrationTests.rc" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -7,6 +7,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by app.rc
+#define VER_APP
+#define VER_ORIGINAL_FILENAME "BurnSdkIntegrationTests.dll"
+#define VER_INTERNAL_NAME "setup"
+#define VER_FILE_DESCRIPTION "WiX Toolset Bootstrapper SDK integration tests"
+#include "wix.rc"

@@ -65,7 +65,7 @@ namespace Bootstrapper
     using namespace WixTest;
     using namespace Xunit;
 
-    public ref class RegistrationTest : BurnUnitTest
+    public ref class RegistrationTest : BurnSdkIntegrationTest
     {
     public:
         [NamedFact]
@@ -87,7 +87,7 @@ namespace Bootstrapper
 
                 Registry::CurrentUser->CreateSubKey(gcnew String(HKCU_PATH));
 
-                logging.sczPath = L"BurnUnitTest.txt";
+                logging.sczPath = L"BurnSdkIntegrationTest.txt";
 
                 LPCWSTR wzDocument =
                     L"<Bundle>"
@@ -126,7 +126,7 @@ namespace Bootstrapper
                 Assert::True(File::Exists(Path::Combine(cacheDirectory, gcnew String(L"setup.exe"))));
 
                 Assert::Equal(Int32(BURN_RESUME_MODE_ACTIVE), (Int32)Registry::GetValue(gcnew String(TEST_UNINSTALL_KEY), gcnew String(L"Resume"), nullptr));
-                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnUnitTest.txt\" /burn.runonce"), (String^)(Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr)));
+                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnSdkIntegrationTest.txt\" /burn.runonce"), (String^)(Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr)));
 
                 // end session
                 hr = RegistrationSessionEnd(&registration, BURN_RESUME_MODE_NONE, BOOTSTRAPPER_APPLY_RESTART_NONE, BURN_DEPENDENCY_REGISTRATION_ACTION_UNREGISTER);
@@ -175,7 +175,7 @@ namespace Bootstrapper
 
                 Registry::CurrentUser->CreateSubKey(gcnew String(HKCU_PATH));
 
-                logging.sczPath = L"BurnUnitTest.txt";
+                logging.sczPath = L"BurnSdkIntegrationTest.txt";
 
                 LPCWSTR wzDocument =
                     L"<Bundle>"
@@ -215,7 +215,7 @@ namespace Bootstrapper
 
                 // verify that registration was created
                 Assert::Equal(Int32(BURN_RESUME_MODE_ACTIVE), (Int32)Registry::GetValue(gcnew String(TEST_UNINSTALL_KEY), gcnew String(L"Resume"), nullptr));
-                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnUnitTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
+                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnSdkIntegrationTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
 
                 // complete registration
                 hr = RegistrationSessionEnd(&registration, BURN_RESUME_MODE_ARP, BOOTSTRAPPER_APPLY_RESTART_NONE, BURN_DEPENDENCY_REGISTRATION_ACTION_REGISTER);
@@ -237,7 +237,7 @@ namespace Bootstrapper
                 // verify that registration was updated
                 Assert::Equal(Int32(BURN_RESUME_MODE_ACTIVE), (Int32)Registry::GetValue(gcnew String(TEST_UNINSTALL_KEY), gcnew String(L"Resume"), nullptr));
                 Assert::Equal(1, (Int32)Registry::GetValue(gcnew String(TEST_UNINSTALL_KEY), gcnew String(L"Installed"), nullptr));
-                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnUnitTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
+                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnSdkIntegrationTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
 
                 // delete registration
                 hr = RegistrationSessionEnd(&registration, BURN_RESUME_MODE_NONE, BOOTSTRAPPER_APPLY_RESTART_NONE, BURN_DEPENDENCY_REGISTRATION_ACTION_UNREGISTER);
@@ -285,7 +285,7 @@ namespace Bootstrapper
 
                 Registry::CurrentUser->CreateSubKey(gcnew String(HKCU_PATH));
 
-                logging.sczPath = L"BurnUnitTest.txt";
+                logging.sczPath = L"BurnSdkIntegrationTest.txt";
 
                 LPCWSTR wzDocument =
                     L"<Bundle>"
@@ -327,7 +327,7 @@ namespace Bootstrapper
 
                 // verify that registration was created
                 Assert::Equal(Int32(BURN_RESUME_MODE_ACTIVE), (Int32)Registry::GetValue(gcnew String(TEST_UNINSTALL_KEY), gcnew String(L"Resume"), nullptr));
-                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnUnitTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
+                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnSdkIntegrationTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
 
                 // finish registration
                 hr = RegistrationSessionEnd(&registration, BURN_RESUME_MODE_ARP, BOOTSTRAPPER_APPLY_RESTART_NONE, BURN_DEPENDENCY_REGISTRATION_ACTION_REGISTER);
@@ -360,7 +360,7 @@ namespace Bootstrapper
 
                 // verify that registration was updated
                 Assert::Equal(Int32(BURN_RESUME_MODE_ACTIVE), (Int32)Registry::GetValue(gcnew String(TEST_UNINSTALL_KEY), gcnew String(L"Resume"), nullptr));
-                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnUnitTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
+                Assert::Equal(String::Concat(L"\"", Path::Combine(cacheDirectory, gcnew String(L"setup.exe")), L"\" /burn.log.append \"BurnSdkIntegrationTest.txt\" /burn.runonce"), (String^)Registry::GetValue(gcnew String(TEST_RUN_KEY), gcnew String(L"{D54F896D-1952-43e6-9C67-B5652240618C}"), nullptr));
 
                 // delete registration
                 hr = RegistrationSessionEnd(&registration, BURN_RESUME_MODE_NONE, BOOTSTRAPPER_APPLY_RESTART_NONE, BURN_DEPENDENCY_REGISTRATION_ACTION_UNREGISTER);
@@ -417,7 +417,7 @@ namespace Bootstrapper
 
                 Registry::CurrentUser->CreateSubKey(gcnew String(HKCU_PATH));
 
-                logging.sczPath = L"BurnUnitTest.txt";
+                logging.sczPath = L"BurnSdkIntegrationTest.txt";
 
                 LPCWSTR wzDocument =
                     L"<Bundle>"

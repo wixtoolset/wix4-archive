@@ -53,7 +53,7 @@ namespace Bootstrapper
     using namespace WixTest;
     using namespace Xunit;
 
-    public ref class ElevationTest : BurnUnitTest
+    public ref class ElevationTest : BurnSdkIntegrationTest
     {
     public:
         [NamedFact]
