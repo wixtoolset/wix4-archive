@@ -655,7 +655,7 @@ static DWORD WINAPI CoordinatorThread(
     hr = CreateMonWindow(pm, &pm->hwnd);
     ExitOnFailure(hr, "Failed to create window for status update thread");
 
-    WSAStartup(MAKEWORD(2, 2), &wsaData);
+    ::WSAStartup(MAKEWORD(2, 2), &wsaData);
 
     hr = WaitForNetworkChanges(&hMonitor, pm);
     ExitOnFailure(hr, "Failed to wait for network changes");
@@ -926,6 +926,12 @@ LExit:
             }
         }
     }
+
+    if (hMonitor != NULL)
+    {
+        ::WSALookupServiceEnd(hMonitor);
+    }
+
     // Now confirm they're actually shut down before returning
     for (DWORD i = 0; i < pm->cWaiterThreads; ++i)
     {
@@ -951,6 +957,8 @@ LExit:
     }
     MonRemoveMessageDestroy(pRemoveMessage);
     MonRemoveMessageDestroy(pTempRemoveMessage);
+
+    ::WSACleanup();
 
     return hr;
 }
@@ -1905,11 +1913,11 @@ static HRESULT WaitForNetworkChanges(
 
     if (NULL != *phMonitor)
     {
-        WSALookupServiceEnd(*phMonitor);
+        ::WSALookupServiceEnd(*phMonitor);
         *phMonitor = NULL;
     }
 
-    if (WSALookupServiceBegin(&qsRestrictions, LUP_RETURN_ALL, phMonitor))
+    if (::WSALookupServiceBegin(&qsRestrictions, LUP_RETURN_ALL, phMonitor))
     {
         hr = HRESULT_FROM_WIN32(::WSAGetLastError());
         ExitOnFailure(hr, "WSALookupServiceBegin() failed");
@@ -1918,7 +1926,7 @@ static HRESULT WaitForNetworkChanges(
     wsaCompletion.Type = NSP_NOTIFY_HWND;
     wsaCompletion.Parameters.WindowMessage.hWnd = pm->hwnd;
     wsaCompletion.Parameters.WindowMessage.uMsg = MON_MESSAGE_NETWORK_STATUS_UPDATE;
-    nResult = WSANSPIoctl(*phMonitor, SIO_NSP_NOTIFY_CHANGE, NULL, 0, NULL, 0, &dwBytesReturned, &wsaCompletion);
+    nResult = ::WSANSPIoctl(*phMonitor, SIO_NSP_NOTIFY_CHANGE, NULL, 0, NULL, 0, &dwBytesReturned, &wsaCompletion);
     if (SOCKET_ERROR != nResult || WSA_IO_PENDING != ::WSAGetLastError())
     {
         hr = HRESULT_FROM_WIN32(::WSAGetLastError());
