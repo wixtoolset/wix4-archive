@@ -680,6 +680,7 @@ static HRESULT GetArpProducts(
         }
 
     Skip:
+        ReleaseRegKey(hkSubkey);
         ++dwEnumIndex;
     }
 
