@@ -1444,10 +1444,11 @@ DAPI_(HRESULT) ThemeShowPageEx(
                 {
                     LONGLONG llValue = 0;
                     hr = pTheme->pfnGetNumericVariable(pControl->sczName, &llValue, pTheme->pvVariableContext);
-                    if (E_NOTFOUND != hr)
+                    if (E_NOTFOUND == hr)
                     {
-                        ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
+                        hr = S_OK;
                     }
+                    ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
 
                     if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId)
                     {
@@ -2954,7 +2955,11 @@ static HRESULT ParseControl(
 
     // Parse the tabstop bit "shortcut nomenclature", this could have been set with the style above.
     hr = XmlGetYesNoAttribute(pixn, L"TabStop", &fValue);
-    if (E_NOTFOUND != hr)
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    else
     {
         ExitOnFailure(hr, "Failed when querying control TabStop attribute.");
 
@@ -2965,7 +2970,11 @@ static HRESULT ParseControl(
     }
 
     hr = XmlGetYesNoAttribute(pixn, L"Visible", &fValue);
-    if (E_NOTFOUND != hr)
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    else
     {
         ExitOnFailure(hr, "Failed when querying control Visible attribute.");
 
@@ -2976,7 +2985,11 @@ static HRESULT ParseControl(
     }
 
     hr = XmlGetYesNoAttribute(pixn, L"HideWhenDisabled", &fValue);
-    if (E_NOTFOUND != hr)
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    else
     {
         ExitOnFailure(hr, "Failed when querying control HideWhenDisabled attribute.");
 
@@ -3022,10 +3035,11 @@ static HRESULT ParseControl(
     if (THEME_CONTROL_TYPE_BILLBOARD == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"Loop", &pControl->fBillboardLoops);
-        if (E_NOTFOUND != hr)
+        if (E_NOTFOUND == hr)
         {
-            ExitOnFailure(hr, "Failed when querying Billboard/@Loop attribute.");
+            hr = S_OK;
         }
+        ExitOnFailure(hr, "Failed when querying Billboard/@Loop attribute.");
 
         pControl->wBillboardInterval = 5000;
         hr = XmlGetAttributeNumber(pixn, L"Interval", &dwValue);
@@ -3041,7 +3055,11 @@ static HRESULT ParseControl(
     else if (THEME_CONTROL_TYPE_EDITBOX == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"FileSystemAutoComplete", &fValue);
-        if (E_NOTFOUND != hr)
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        else
         {
             ExitOnFailure(hr, "Failed when querying Editbox/@FileSystemAutoComplete attribute.");
 
@@ -3508,10 +3526,11 @@ static HRESULT ParseText(
             THEME_CONDITIONAL_TEXT* pConditionalText = pControl->rgConditionalText + i;
 
             hr = XmlGetAttributeEx(pixnChild, L"Condition", &pConditionalText->sczCondition);
-            if (E_NOTFOUND != hr)
+            if (E_NOTFOUND == hr)
             {
-                ExitOnFailure(hr, "Failed when querying Text/@Condition attribute.");
+                hr = S_OK;
             }
+            ExitOnFailure(hr, "Failed when querying Text/@Condition attribute.");
 
             hr = XmlGetText(pixnChild, &bstrText);
             ExitOnFailure(hr, "Failed to get inner text of Text element.");
