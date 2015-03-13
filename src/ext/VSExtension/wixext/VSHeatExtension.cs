@@ -11,6 +11,9 @@
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
+using System.Net.Mime;
+using System.Text.RegularExpressions;
+
 namespace WixToolset.Extensions
 {
     using System;
@@ -153,6 +156,15 @@ namespace WixToolset.Extensions
                         bool found = false;
                         foreach (string availableOutputGroup in allOutputGroups)
                         {
+                            // Allow for specifying the name along with a Metadata filter that can be applied to include/exclude items
+                            // The syntax for that will be "{pogName}:{Metadata Filter Expression}"
+                            // eg.  References:CopyLocal=true   or References:CopyLocal!=true
+                            Match expressive = Regex.Match(pogName, "([^:]+):(.*)", RegexOptions.IgnoreCase);
+                            if (expressive.Success)
+                            {
+                                pogName = expressive.Groups[1].Value;
+                                VSProjectHarvester.SetMetadataFilter(pogName, expressive.Groups[2].Value);
+                            }
                             if (String.Equals(pogName, availableOutputGroup, StringComparison.Ordinal))
                             {
                                 outputGroups.Add(availableOutputGroup);
