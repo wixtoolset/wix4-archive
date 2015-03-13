@@ -1,0 +1,22 @@
+﻿use vsix
+
+package name=fb4d7825-f3d8-4d85-9c84-48453669f32b
+        displayName=WixToolset.Simplified.LanguageService
+        description="Language services for Simplified WiX."
+        manufacturer="WiX Team"
+        version="0.1"
+
+prerequisite on=netfx version=4.0 maxVersion=4.5
+prerequisite on=vs version=10.0 vsix.product.edition=ultimate
+prerequisite on=vs version=10.0 vsix.product.edition=premium
+prerequisite on=vs version=10.0 vsix.product.edition=professional
+prerequisite on=vs version=10.0 vsix.product.edition=rascalpro
+
+dependency name=Microsoft.VisualStudio.MPF publisher="Visual Studio MPF" version=10.0
+
+vsix.vspackage file=WixToolset.Simplified.LanguageService.pkgdef
+
+file WixToolset.BlockDeflateStream.dll
+file WixToolset.Simplified.LanguageService.dll
+file WixToolset.Simplified.LanguageService.pkgdef
+file swcore.dll

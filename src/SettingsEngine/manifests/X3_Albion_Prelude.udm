@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="X3_Albion_Prelude">
+        <Detect>
+            <Arp DisplayName="X3: Albion Prelude"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: we could pickup HKCU\Software\EGOSOFT\X3AP, but it appears to contain a bunch of per-machine stuff like resolution. Consider adding later. -->
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Egosoft\X3AP\save\" />
+        </Data>
+
+        <DisplayName LCID="1033">X3: Albion Prelude</DisplayName>
+    </Product>
+</LegacySettings>

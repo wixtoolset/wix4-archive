@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Cities_in_Motion">
+        <Detect>
+            <Arp DisplayName="Cities in Motion"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: Make CfgFile element for controls.keys - need support for value pre & postfix to do properly -->
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Cities In Motion\" />
+        </Data>
+
+        <Filter>
+            <Ignore Name="Data:\log_metro.txt"/>
+            <!-- This contains per-machine stuff: resolution, sound volume, etc -->
+            <Ignore Name="Data:\settings.script"/>
+            <Ignore Prefix="Data:\MapPreviews\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Cities in Motion</DisplayName>
+    </Product>
+</LegacySettings>

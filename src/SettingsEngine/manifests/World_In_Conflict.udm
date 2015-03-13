@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="World_In_Conflict">
+        <Detect>
+            <Arp DisplayName="World in Conflict"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\World in Conflict\">
+                <CfgFile Namespace="PlayerProfile.txt" Location="Player Profile.txt" Encoding="UTF8">
+                    <Value Separator=" "/>
+                </CfgFile>
+                <CfgFile Namespace="MegamapOptions.txt" Location="Megamap Options.txt" Encoding="UTF8NoBOM">
+                    <Value Separator=" "/>
+                </CfgFile>
+                <CfgFile Namespace="GameOptions.txt" Location="Game Options.txt" Encoding="UTF8NoBOM">
+                    <Value Separator=" "/>
+                </CfgFile>
+                <CfgFile Namespace="ControllerOptions.txt" Location="Controller Options.txt" Encoding="UTF8NoBOM">
+                    <Comment Prefix="//"/>
+                    <Value Separator=" ">
+                       <SeparatorException Prefix="bind "/>
+                    </Value>
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\Savegames\"/>
+            
+            <!-- Player Profile.txt thankfully adds missing values -->
+            <Ignore Name="PlayerProfile.txt:\myDebugViewFlags"/>
+            <Ignore Name="PlayerProfile.txt:\myHasDetectedSA"/>
+
+            <!-- Game Options.txt also adds missing values. This file is mostly graphics quality / resolution settings,
+                 but has a few user setting values as well. -->
+            <Ignore Name="GameOptions.txt:\myShowBatteryLevelsFlag"/>
+            <Ignore Name="GameOptions.txt:\myShowWirelessFlag"/>
+            <Ignore Name="GameOptions.txt:\myGraphicsCardId"/>
+            <Ignore Name="GameOptions.txt:\myAdapterId"/>
+            <Ignore Name="GameOptions.txt:\myBrightnessValue"/>
+            <Ignore Name="GameOptions.txt:\myGammaValue"/>
+            <Ignore Name="GameOptions.txt:\myXPos"/>
+            <Ignore Name="GameOptions.txt:\myYPos"/>
+            <Ignore Name="GameOptions.txt:\myWidth"/>
+            <Ignore Name="GameOptions.txt:\myHeight"/>
+            <Ignore Name="GameOptions.txt:\myRefreshRate"/>
+            <Ignore Name="GameOptions.txt:\mySoundEffectsVolume"/>
+            <Ignore Name="GameOptions.txt:\myMusicVolume"/>
+            <Ignore Name="GameOptions.txt:\myMovieVolume"/>
+            <Ignore Name="GameOptions.txt:\myVoiceVolume"/>
+            <Ignore Name="GameOptions.txt:\myVoipInVolume"/>
+            <Ignore Name="GameOptions.txt:\myVoipOutVolume"/>
+            <Ignore Name="GameOptions.txt:\myVoipThreshold"/>
+            <Ignore Name="GameOptions.txt:\mySoundTroubleShootingValue"/>
+            <Ignore Name="GameOptions.txt:\myForcePipelineSync"/>
+            <Ignore Name="GameOptions.txt:\myUseVertexShaderVersion"/>
+            <Ignore Name="GameOptions.txt:\myUsePixelShaderVersion"/>
+            <Ignore Name="GameOptions.txt:\myFullscreenFlag"/>
+            <Ignore Name="GameOptions.txt:\myVSyncFlag"/>
+            <Ignore Name="GameOptions.txt:\myFSAA"/>
+            <Ignore Name="GameOptions.txt:\myPhysicsDetail"/>
+            <Ignore Name="GameOptions.txt:\myAnisotropicFiltering"/>
+            <Ignore Name="GameOptions.txt:\myObjectLODLevelDistance"/>
+            <Ignore Name="GameOptions.txt:\myObjectLODLevelMeshLOD"/>
+            <Ignore Name="GameOptions.txt:\myParticleEmissionLevel"/>
+            <Ignore Name="GameOptions.txt:\myWaterReflectionSize"/>
+            <Ignore Name="GameOptions.txt:\myWiresQuality"/>
+            <Ignore Name="GameOptions.txt:\mySpeedTreeLodFactor"/>
+            <Ignore Name="GameOptions.txt:\myShadowQuality"/>
+            <Ignore Name="GameOptions.txt:\myWaterQuality"/>
+            <Ignore Name="GameOptions.txt:\myTextureQuality"/>
+            <Ignore Name="GameOptions.txt:\myTerrainTextureQuality"/>
+            <Ignore Name="GameOptions.txt:\myUITextureQuality"/>
+            <Ignore Name="GameOptions.txt:\myUseHighestLod"/>
+            <Ignore Name="GameOptions.txt:\myDisplayWindowsMesh"/>
+            <Ignore Name="GameOptions.txt:\myDisplayDetailMesh"/>
+            <Ignore Name="GameOptions.txt:\myWreckFxFlag"/>
+            <Ignore Name="GameOptions.txt:\myUnitTracksFlag"/>
+            <Ignore Name="GameOptions.txt:\myUnitTracksLength"/>
+            <Ignore Name="GameOptions.txt:\myDecalsFlag"/>
+            <Ignore Name="GameOptions.txt:\myAutopropsFlag"/>
+            <Ignore Name="GameOptions.txt:\myGrassFlag"/>
+            <Ignore Name="GameOptions.txt:\myCratersFlag"/>
+            <Ignore Name="GameOptions.txt:\myHighQualityTerrainFlag"/>
+            <Ignore Name="GameOptions.txt:\myWaterReflectClouds"/>
+            <Ignore Name="GameOptions.txt:\myWaterReflectUnits"/>
+            <Ignore Name="GameOptions.txt:\myWaterReflectProps"/>
+            <Ignore Name="GameOptions.txt:\myWaterReflectEffects"/>
+            <Ignore Name="GameOptions.txt:\myWaterCrestsFlag"/>
+            <Ignore Name="GameOptions.txt:\myWaterTrailsFlag"/>
+            <Ignore Name="GameOptions.txt:\myRoadsFlag"/>
+            <Ignore Name="GameOptions.txt:\myCloudsFlag"/>
+            <Ignore Name="GameOptions.txt:\myCameraWarpEffectFlag"/>
+            <Ignore Name="GameOptions.txt:\myZFeatherFlag"/>
+            <Ignore Name="GameOptions.txt:\myParticlePhysicsFlag"/>
+            <Ignore Name="GameOptions.txt:\myPostFXFlag"/>
+            <Ignore Name="GameOptions.txt:\myPostFXSoftShadowsFlag"/>
+            <Ignore Name="GameOptions.txt:\myPostFXBloomFlag"/>
+            <Ignore Name="GameOptions.txt:\myPostFXHeatHazeFlag"/>
+            <Ignore Name="GameOptions.txt:\mySpeedTreeShadowsFlag"/>
+            <Ignore Name="GameOptions.txt:\mySpeedtreeHQShadersFlag"/>
+            <Ignore Name="GameOptions.txt:\myTransparencyAAFlag"/>
+            <Ignore Name="GameOptions.txt:\myVeryLowQualityFlag"/>
+            <Ignore Name="GameOptions.txt:\myMaxFPS"/>
+            <Ignore Name="GameOptions.txt:\mySurfaceQuality"/>
+            <Ignore Name="GameOptions.txt:\myDualScreenFlag"/>
+            <Ignore Name="GameOptions.txt:\myDualScreenWidth"/>
+            <Ignore Name="GameOptions.txt:\myDualScreenHeight"/>
+            <Ignore Name="GameOptions.txt:\myDX10Flag"/>
+            <Ignore Name="GameOptions.txt:\myCloudShadowsFlag"/>
+            <Ignore Name="GameOptions.txt:\myQuadCoreLineOfSight"/>
+            <Ignore Name="GameOptions.txt:\myExplosionDebris"/>
+
+            <!-- Controller Options.txt also adds missing values, as well as all the helpful documentation-style comments at the end -->
+            <Ignore Name="ControllerOptions.txt:\mouse_sensitivity"/>
+            <Ignore Name="ControllerOptions.txt:\mouselook_sensitivity"/>
+        </Filter>
+
+        <DisplayName LCID="1033">World in Conflict</DisplayName>
+    </Product>
+</LegacySettings>

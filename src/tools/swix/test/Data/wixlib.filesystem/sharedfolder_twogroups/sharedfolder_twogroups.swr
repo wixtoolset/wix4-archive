@@ -1,0 +1,11 @@
+﻿folder id=ExternalFolder external=true
+
+group test
+  folder ExternalFolder:\
+    folder childFolder
+      file a.txt
+
+group test2
+  folder ExternalFolder:\
+    folder childFolder
+      file b.txt

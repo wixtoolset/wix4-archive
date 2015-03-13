@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Master_of_Magic">
+        <Detect>
+            <Arp DisplayName="Master of Magic" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\SAVE" Postfix=".GAM"/>
+            <Normal Name="Data:\MAGIC.SET"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Master of Magic</DisplayName>
+    </Product>
+</LegacySettings>

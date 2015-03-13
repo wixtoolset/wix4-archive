@@ -1,0 +1,6 @@
+﻿folder id=JavaScriptProjTemp external=true
+
+group test
+    file JavaScriptProjTemp:\blankwj\default.html
+    file JavaScriptProjTemp:\splitwj\default.html
+

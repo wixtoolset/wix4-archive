@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="CfgTestDetectDirectory" Manufacturer="CfgTestManufacturer" >
+        <Detect>
+            <Arp InstallLocation="InstallDir" UninstallStringDir="UninstallDir" DisplayName="Cfg Test Displayname"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="File" Location="InstallDir:\SubDir\" >
+                <CfgFile Namespace="Ini" Location="data.ini" Encoding="UTF16">
+                    <SectionOpenTag Prefix="[" Postfix="]" />
+
+                    <!-- The fact that we have no SectionCloseTag means that the data sections
+                        aren't hierarchical -->
+
+                    <!-- TODO: Some cfg files might require specifying how to escape
+                        some of the below characters - i.e. if = is in the value name,
+                        is it represented by "eq;", or "\=", or what?
+                        Same for SectionOpenTag / SectionCloseTag -->
+                    <Value Separator="=">
+                        <SeparatorException Prefix="Name="/>
+                    </Value>
+
+                    <Comment Prefix=";" />
+                </CfgFile>
+            </Directory>
+            <Directory Namespace="UninstallFile" Location="UninstallDir:\SubDir\" />
+            <File Name="IndividualFile" Location="InstallDir:\File.txt" />
+        </Data>
+
+        <Filter>
+            <Ignore Name="File:\Ignored.txt"/>
+            <Ignore Prefix="Ini:\IgnoreMe"/>
+            <Ignore Postfix=".ign"/>
+            <Ignore Prefix="Ini:\Ign" Postfix="red"/>
+            <Normal Name="Ini:\Ignared"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Cfg Test Displayname</DisplayName>
+    </Product>
+</LegacySettings>

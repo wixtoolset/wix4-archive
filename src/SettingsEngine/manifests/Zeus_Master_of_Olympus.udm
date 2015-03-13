@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Zeus_Master_of_Olympus">
+        <Detect>
+            <Arp DisplayName="Zeus and Poseidon" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\Save\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Zeus: Master of Olympus</DisplayName>
+    </Product>
+</LegacySettings>

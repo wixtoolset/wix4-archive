@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <?include $(var.caerrwxi)?>
+
+    <Fragment>
+        <!-- Todo: add ProgressText & Error Messages -->
+
+        <CustomAction Id="SchedCfgProductsInstall" BinaryKey="WixCfgCA" DllEntry="SchedCfgProductsInstall" Execute="immediate" Return="check" SuppressModularization="yes" />
+        <CustomAction Id="SchedCfgProductsUninstall" BinaryKey="WixCfgCA" DllEntry="SchedCfgProductsUninstall" Execute="immediate" Return="check" SuppressModularization="yes" />
+        <CustomAction Id="WixRollbackCfgProductsInstall" BinaryKey="WixCfgCA" DllEntry="ExecCfgProducts" Execute="rollback" Impersonate="no" Return="check" SuppressModularization="yes" />
+        <CustomAction Id="WixExecCfgProductsInstall" BinaryKey="WixCfgCA" DllEntry="ExecCfgProducts" Execute="deferred" Impersonate="no" Return="check" SuppressModularization="yes" />
+        <CustomAction Id="WixRollbackCfgProductsUninstall" BinaryKey="WixCfgCA" DllEntry="ExecCfgProducts" Execute="rollback" Impersonate="no" Return="check" SuppressModularization="yes" />
+        <CustomAction Id="WixExecCfgProductsUninstall" BinaryKey="WixCfgCA" DllEntry="ExecCfgProducts" Execute="deferred" Impersonate="no" Return="check" SuppressModularization="yes" />
+
+        <InstallExecuteSequence>
+            <Custom Action="SchedCfgProductsInstall" Before="RemoveFiles" Overridable="yes" />
+            <Custom Action="SchedCfgProductsUninstall" After="InstallFiles" Overridable="yes" />
+        </InstallExecuteSequence>
+    </Fragment>
+
+    <!-- Cfg Custom Action DLL Definitions -->
+    <Fragment>
+        <Binary Id="WixCfgCA" SourceFile="$(var.cfgcaDll)" />
+    </Fragment>
+</Wix>

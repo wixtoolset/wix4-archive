@@ -1,0 +1,37 @@
+﻿<!--
+  <copyright file="SettingsEngineWixLib.wixproj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{1322cef9-7d80-4f7d-8d1d-abf46977d631}</ProjectGuid>
+    <OutputName>SettingsEngine</OutputName>
+    <OutputType>Library</OutputType>
+    <BindFiles>True</BindFiles>
+    <Pedantic>True</Pedantic>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CfgExtension.wxs" />
+    <EmbeddedResource Include="en-us.wxl" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DefineConstants>
+      $(DefineConstants);
+      caerrwxi=$(OutputPath)caerr.wxi;
+      cfgcaDll=$(OutputPath)cfgca.dll;
+    </DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ca\SettingsEngineCa.vcxproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

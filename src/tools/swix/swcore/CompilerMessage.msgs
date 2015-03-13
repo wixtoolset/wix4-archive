@@ -1,0 +1,214 @@
+﻿# -------------------------------------------------------------------------------------------------
+# <copyright file="AssemblyInfo.cs" company="Outercurve Foundation">
+#   Copyright (c) 2004, Outercurve Foundation.
+#   This software is released under Microsoft Reciprocal License (MS-RL).
+#   The license and further copyright text can be found in the file
+#   LICENSE.TXT at the root directory of the distribution.
+# </copyright>
+#
+# <summary>
+# Assembly information for Simplified WiX compiler.
+# </summary>
+# -------------------------------------------------------------------------------------------------
+
+# Compiler Messages for Simplified Wix
+#
+# This file is processed with the TypedMessageGenerator (also in SimplifiedWix.sln)
+# to create strongly-typed methods in CompilerMessage.Generated.cs.  Any time you
+# need to edit this file, you will also need to check out the generated file.  If
+# the generator doesn't seem to be running, you may need to install the .vsix in the
+# output directory after building TypedMessageGenerator.
+
+# Message Types
+#
+# The 'lexerError' type is a subset of the overall error range, to make highlighting in
+# the VS editor easier.
+
+type lexerError 1000 1099
+type error 1100 1999
+type warning 2000 2999
+type information 3000 3999
+type verbose 4000 4999
+
+# Messages
+#
+# Replacement parameters are surrounded by curly braces.  Within the braces, the
+# format is:
+#
+#    [ '[' { type | position | { type ',' position } } ']' ] name [ ',' alignment ] [ ':' format ]
+#
+#    type:      a complete .NET type name, or 'string', 'int', 'uint', 'object'.
+#    position:  a zero-based position, if the as-authored order isn't sufficient.
+#    name:      the name of the parameter
+#    alignment: .NET composite string formatting alignment
+#    format:    .NET composite string formatting format
+
+error InternalError 0
+    {message}
+
+lexerError DanglingAssignmentNoMember
+    Dangling assignment operator. You must provide a member to assign the value to.
+
+lexerError DanglingAssignmentNoValue
+    Dangling assignment. There must be a value to assign to the member.
+
+lexerError DoubledAssignment
+    Doubled assignment operator. You should only use a single '='.
+
+lexerError MustAssignToMember
+    Must assign to a member.
+
+lexerError ValueHasEmbeddedQuote
+    Values cannot contain embedded quote characters. If the quote is required, quote the entire value and escape the embedded quote using \\".
+
+lexerError UnclosedQuotedValue
+    String literal must be closed.
+
+error InfiniteLoopInSubsitution
+    Infinite loop detected while processing substitution: '{value}'.
+
+error UnknownSubstitution
+    Unknown known substitution: '{name}'.
+
+error GroupMissingId
+    Group does not have an Id. That's more than kinda' silly. You need to add a Group/@Id attribute.
+
+error FileMissingNameAndSource
+    Must specify File/@Name or File/@Source. Specify one or both attributes.
+
+error InvalidIdResolution
+    Expected the property {targetPropertyName}='{lookup}' to resolve to a {targetTypeName} instead of {actualTypeName}. Ensure the property references the correct item.
+
+error UnknownIdResolution
+    Could not find an object {[2]targetTypeName}/@Id='{[1]lookup}' for property {[0]targetPropertyName}. Ensure the property references an existing item.
+
+error UnknownFileSystemResolution
+    Could not resolve property {targetPropertyName}='{lookup}' to a {targetTypeName}. Ensure the property references an existing item with the correct type.
+
+warning OverwritingImplicitProperty
+    Overriding implicit value for property: '{targetPropertyName}' with result from reference: '{lookup}'.
+
+error ApplicationNameRequired
+    The Application/@Name is required.
+
+error FileNotFound
+    Could not find file at path: {path}.
+
+error InvalidFileName
+    Invalid file name: {filename}
+
+error PathTooLong
+    Path exceeds maximum number of characters allowed by the operating system. Use a shorter path for: {path}
+
+error CannotTransferFile
+    Failed to transfer file from: '{sourcePath}' to: '{destinationPath}'. Verify the source file is accessible and the target file can be created.
+
+verbose CopyFile
+    Copying file from: '{sourcePath}' to: '{destinationPath}'.
+
+verbose MoveFile
+    Moving file from: '{sourcePath}' to: '{destinationPath}'.
+
+verbose RemovingDestinationFile
+    Removing file: '{file}'.
+
+verbose CompressFile
+    Compressing file: '{file}'.
+
+error UnexpectedValidationError
+    An unexpected internal validation error occurred. The compiler should have caught the error in your source file before hitting this error. Please send email to swix@microsoft.com with this error message and the source files necessary to reproduce the problem. Detail: {detail}
+
+warning DeprecatedItem
+    The '{deprecatedElement}' element has been deprecated. The compiler ignored the element.
+    The '{deprecatedElement}' element has been deprecated. Use the '{replacementElement}' element instead. The compiler automatically translated for you.
+
+error RequiredAttribute
+    The '{element}' element requires attribute '{attribute}'.
+
+error DeprecatedPackageFrameworkAttribute
+    The 'Framework' attribute is now a native attribute on the 'Package' element. Use that instead of the 'appx.package.framework' attribute.
+
+warning DeprecatedAttribute
+    The '{[1]deprecatedAttribute}' attribute on the '{[0]element}' element has been deprecated. The compiler ignored the attribute.
+    The '{[1]deprecatedAttribute}' attribute on the '{[0]element}' element has been deprecated. Use the '{[3]replacementAttribute}' attribute on the '{[2]replacementElement}' element instead.
+
+warning DeprecatedAttributeValue
+    The '{[1]attribute}' attribute on the '{[0]element}' element with value '{[object]deprecatedValue}' has been deprecated. The compiler ignored the attribute.
+    The '{[1]attribute}' attribute on the '{[0]element}' element with value '{[object]deprecatedValue}' has been deprecated. Use the '{replacementValue}' value instead.
+
+error HighlanderElement
+    The '{element}' element can exist only once.
+    The '{[1]childElement}' element can exist only once as a child of the '{[0]parentElement}' element.
+
+error HighlanderElementWithAttributeValue
+    The '{element}' element with attribute '{attribute}' value '{value}' can exist only once.
+
+error RequiredElement
+    The '{requiredElement}' element is required.
+    The '{[1]requiredChildElement}' element is required as a child of the '{[0]parentElement}' element. Add a '{requiredChildElement}' element.
+
+error InvalidAttributeValue
+    The value '{[2]invalidValue}' is not valid for '{[1]attribute}' attribute on the '{[0]element}' element.
+
+verbose SavedManifest
+    Saved invalid manifest to path: {path}
+
+error XamlParseError
+    Error while parsing: {message}
+
+error XamlWriteError
+    Error while writing: {message}
+
+error InvalidExtension
+    The extension '{extension}' could not be loaded due to the following reason: {message}
+
+error InvalidExtensionType
+    The extension '{extension}' is the wrong type: '{[Type]actualType}'.  The expected type was '{[Type]expectedType}'.
+
+error InvalidExtensionClassName
+    The extension '{extension}' with class name '{className}' could not be loaded due to the following reason: {message}
+
+error ExpectedDefaultCompilerExtensionAttribute
+    Could not find the default compiler extension attribute in the extension '{extension}'. Either specify the '{[Type]attribute}' attribute in the extension or provide an explicit class name to load from the extension.
+
+error WebAppDoesNotAllowAttribute
+    A web application or extension to a web application cannot have attribute '{attribute}'. Remove the attribute or change the 'File' attribute to point to an executable (file name ends with '.exe').
+
+error AttributeRequiresAttribute
+    The attribute '{attribute}' also requires the attribute '{otherAttribute}' to be specified. Either remove the '{attribute}' attribute or add the '{otherAttribute}' attribute.
+
+warning AttributeIgnoringDuplicateValue
+    The attribute '{[1]attribute}' on element '{[0]element}' with value '{[object]value}' was duplicated. Ignoring the duplicate and continuing.
+
+error InvalidFolderReference
+    The id '{[0]id}' resolved to a '{[1]type}' instead of a 'Folder'.
+
+error UnknownNamespacePrefix
+    The namespace prefix '{prefix}' is unknown.
+
+error ExpectedToken
+    Expected to find '{token}' instead of '{value}'.
+
+error UnknownItem
+    Unknown item '{[1]item}' in namespace '{[0]typenamespace}'.
+
+error AttachedPropertyRequiresNamespace
+    Attached property '{name}' requires a namespace specification.
+
+error UnknownAttachedProperty
+    Unknown attached property type '{typenamespace}'.'{property}'.
+
+error UnknownAttachedPropertyValue
+    Unknown attached property '{[2]name}' on attached property type '{[0]typenamespace}'.'{[1]property}'.
+
+error CannotAssignAttachedPropertyVale
+    Cannot assign value '{[3]value}' to attached property '{[0]typenamespace}'.'{[1]property}'.'{[2]name}'.
+
+error PropertyCannotSpecifyNamespace
+    Item property '{property}' cannot provide a namespace specification. Remove the namespace '{typenamespace}' from the property.
+
+error UnknownProperty
+    Unknown item property '{property}'.
+
+error CannotAssignPropertyValue
+    Cannot assign value '{[1]value}' to item property '{[0]property}'.

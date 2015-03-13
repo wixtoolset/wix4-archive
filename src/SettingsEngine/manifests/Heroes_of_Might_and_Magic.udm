@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Heroes_of_Might_and_Magic">
+        <Detect>
+            <Arp DisplayName="Heroes of Might and Magic" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Games" Location="InstallDir:\Games\"/>
+            <File Name="Heroes.cfg" Location="InstallDir:\HEROES.CFG"/>
+            <File Name="Campaign.hs" Location="InstallDir:\DDATA\CAMPAIGN.HS"/>
+            <File Name="Standard.hs" Location="InstallDir:\DDATA\STANDARD.HS"/>
+        </Data>
+
+        <DisplayName LCID="1033">Heroes of Might and Magic</DisplayName>
+    </Product>
+</LegacySettings>

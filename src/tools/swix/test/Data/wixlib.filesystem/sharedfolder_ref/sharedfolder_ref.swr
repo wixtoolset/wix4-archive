@@ -1,0 +1,4 @@
+﻿group test
+  folder id=ExternalFolder external=true
+    file childFolder\a.txt
+    file childFolder\b.txt

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Medieval_2_Total_War">
+        <Detect>
+            <Arp DisplayName="Medieval II: Total War" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <File Name="Descr_Strat.txt" Location="InstallDir:\data\world\maps\campaign\imperial_campaign\descr_strat.txt" />
+            <File Name="TeutonicDescr_Strat.txt" Location="InstallDir:\mods\teutonic\data\world\maps\campaign\imperial_campaign\descr_strat.txt" />
+            <Directory Namespace="MainSaves" Location="InstallDir:\saves\" />
+            <Directory Namespace="AmericasSaves" Location="InstallDir:\mods\americas\saves\" />
+            <Directory Namespace="British_IslesSaves" Location="InstallDir:\mods\british_isles\saves\" />
+            <Directory Namespace="CrusadesSaves" Location="InstallDir:\mods\crusades\saves\" />
+            <Directory Namespace="TeutonicSaves" Location="InstallDir:\mods\teutonic\saves\" />
+        </Data>
+
+        <DisplayName LCID="1033">Medieval II: Total War</DisplayName>
+    </Product>
+</LegacySettings>

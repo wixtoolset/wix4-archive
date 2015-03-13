@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Heroes_of_Might_and_Magic_2">
+        <Detect>
+            <Arp DisplayName="Heroes of Might and Magic 2 GOLD" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Games" Location="InstallDir:\Games\"/>
+            <File Name="Heroes2.cfg" Location="InstallDir:\HEROES2.CFG"/>
+            <File Name="Campaign.hs" Location="InstallDir:\DATA\CAMPAIGN.HS"/>
+            <File Name="Standard.hs" Location="InstallDir:\DATA\STANDARD.HS"/>
+        </Data>
+
+        <DisplayName LCID="1033">Heroes of Might and Magic II</DisplayName>
+    </Product>
+</LegacySettings>

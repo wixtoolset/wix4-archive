@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  <copyright file="browse.vcxproj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2E9E7C00-538B-4FC1-B7E7-C362A35C1A42}</ProjectGuid>
+    <ConfigurationType>Application</ConfigurationType>
+    <TargetName>CfgBrowser</TargetName>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
+  <PropertyGroup>
+    <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;..\lib\inc</ProjectAdditionalIncludeDirectories>
+    <ProjectAdditionalLinkLibraries>cabinet.lib;crypt32.lib;cfg.lib;gdiplus.lib;comctl32.lib;Rpcrt4.lib;Shlwapi.lib;msi.lib;msimg32.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ClCompile Include="browse.cpp" />
+    <ClCompile Include="message.cpp" />
+    <ClCompile Include="tray.cpp" />
+    <ClCompile Include="ui.cpp" />
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="window.cpp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="message.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ui.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="window.h" />
+
+    <ClInclude Include="precomp.h" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ResourceCompile Include="browse.rc">
+        <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(WixRoot)\src\votive\icons\</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="en-us.wxl" />
+    <None Include="thm.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <Content Include="*.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\lib\cfglib.vcxproj" />
+    <ProjectReference Include="..\..\libs\dutil\dutil.vcxproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

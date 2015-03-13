@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Darklands">
+        <Detect>
+            <Arp DisplayName="Darklands" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- This game may not have any per-machine settings? I can't find resolution settings, for example. TODO: investigate & confirm. -->
+            <Directory Namespace="Saves" Location="InstallDir:\DARKLAND\SAVES\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Name="Saves:\DEFAULT"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Darklands</DisplayName>
+    </Product>
+</LegacySettings>

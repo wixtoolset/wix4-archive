@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Dins_Curse">
+        <Detect>
+            <Arp DisplayName="Din&apos;s Curse"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="LocalAppDataFolder:\DinsCurse">
+                <CfgFile Namespace="User.cfg" Location="User\user.cfg" Encoding="UTF8NoBOM">
+                    <Value Separator=" ">
+                       <SeparatorException Prefix="VirtualKey "/>
+                    </Value>
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\User\"/>
+            <Ignore Name="Data:\User\log.txt"/>
+
+
+            <!-- Ignore a bunch of machine-specific settings from the user.cfg.
+                Not all games can do this, but luckily Drox Operative gracefully handles missing config values. -->
+            <Ignore Prefix="User.cfg:\r_"/>
+            <Ignore Prefix="User.cfg:\s_"/>
+            <Ignore Name="User.cfg:\autoBuildTextures"/>
+            <Ignore Name="User.cfg:\bps"/>
+            <Ignore Name="User.cfg:\compressedTextures"/>
+            <Ignore Name="User.cfg:\filteringQuality"/>
+            <Ignore Name="User.cfg:\fps"/>
+            <Ignore Name="User.cfg:\maxFps"/>
+            <Ignore Name="User.cfg:\monitorSync"/>
+            <Ignore Name="User.cfg:\n_clientLowBandwidth"/>
+            <Ignore Name="User.cfg:\n_clientRecvDataRate"/>
+            <Ignore Name="User.cfg:\n_clientSendFrameRate"/>
+            <Ignore Name="User.cfg:\n_serverMaxDataRate"/>
+            <Ignore Name="User.cfg:\PortClient"/>
+            <Ignore Name="User.cfg:\PortMSClient"/>
+            <Ignore Name="User.cfg:\PortServer"/>
+            <Ignore Name="User.cfg:\ShowCombatEffects"/>
+            <Ignore Name="User.cfg:\smoothfps"/>
+            <Ignore Name="User.cfg:\ui_hardwareCursor"/>
+            <Ignore Name="User.cfg:\ui_maxTextEventsShown"/>
+            <Ignore Name="User.cfg:\ui_showClock"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Din&apos;s Curse</DisplayName>
+    </Product>
+</LegacySettings>

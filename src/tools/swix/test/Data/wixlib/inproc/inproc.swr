@@ -1,0 +1,3 @@
+﻿file example.dll
+    inprocServer
+        class id=8eda329e-ebaf-494a-8d24-45dbcd3b2c9e threadingModel=neutral implementation=Contoso.Example.InprocServer.1.0

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Hearts_of_Iron_3">
+        <Detect>
+            <Arp DisplayName="Hearts of Iron III" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- We could pick up "HKCU\Software\Arcen Games, LLC\AI War" - except that it seems to be all
+                 resolution and other per-machine settings -->
+            <Directory Namespace="SaveGames" Location="InstallDir:\save games\"/>
+
+            <!-- TODO: pickup anything from InstallDir:\settings.txt? CfgFile may not support it today,
+                 and it's almost entirely machine-specific settings -->
+        </Data>
+
+        <DisplayName LCID="1033">Hearts of Iron III</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Theme_Park">
+        <Detect>
+            <Arp DisplayName="Theme Park" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\SAVE\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Theme Park</DisplayName>
+    </Product>
+</LegacySettings>

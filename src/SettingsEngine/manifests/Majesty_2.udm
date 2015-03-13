@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Majesty_2">
+        <Detect>
+            <Arp DisplayName="Majesty 2"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\majesty2\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\" Postfix=".log"/>
+            <Ignore Prefix="Data:\" Postfix=".log.old"/>
+
+            <Ignore Prefix="Data:\user_maps\editor_demo"/>
+            <Ignore Prefix="Data:\shader_cache"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Majesty 2</DisplayName>
+    </Product>
+</LegacySettings>

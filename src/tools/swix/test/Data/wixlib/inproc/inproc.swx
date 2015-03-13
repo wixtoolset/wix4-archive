@@ -1,0 +1,8 @@
+﻿<?xml version="1.0"?>
+<Swix xmlns="http://wixtoolset.org/schemas/v4/swx">
+    <File Name="example.dll">
+        <InprocServer>
+            <Class Id="8eda329e-ebaf-494a-8d24-45dbcd3b2c9e" ThreadingModel="neutral" Implementation="Contoso.Example.InprocServer.1.0" />
+        </InprocServer>
+    </File>
+</Swix>

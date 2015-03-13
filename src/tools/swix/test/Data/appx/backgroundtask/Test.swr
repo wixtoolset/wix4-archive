@@ -1,0 +1,20 @@
+﻿use appx
+
+package name=Contoso.BT displayName="Contoso BT" description="Contoso's BT"
+        manufacturer="Contoso Corporation" version="1.0.0.0"
+        publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US"
+        image=images\Logo.png
+
+application name=Contoso.backgroundTask displayName="Contoso BT" description="BT"
+            File=bt.exe Implementation=Contoso.AppBt
+            appx.application.toastCapable=true
+    appx.tile foreground=dark background="#FFFFFF"  image=images\Logo.png smallImage=images\Logo.png
+    appx.splashScreen background=blue image=images\Logo.png
+
+    appx.backgroundTask name=controlChannel File=bt.exe implementation="Contoso.SomethingBt"
+
+    appx.backgroundTask name=controlChannel File=bt.exe implementation="Contoso.NotificationBt"
+
+file bt.exe
+folder images
+    file Logo.png

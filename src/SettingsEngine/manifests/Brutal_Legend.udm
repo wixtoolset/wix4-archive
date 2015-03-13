@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Brutal_Legend">
+        <Detect>
+            <Arp DisplayName="Br&#252;tal Legend"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\Doublefine\BrutalLegend"/>
+        </Data>
+
+        <Filter>
+            <!-- This includes screen res & refresh rate -->
+            <Ignore Name="Data:\screen.dat"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Br&#252;tal Legend</DisplayName>
+    </Product>
+</LegacySettings>

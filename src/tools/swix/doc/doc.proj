@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  <copyright file="doc.proj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project InitialTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="..\..\bin\version.targets"/>
+
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+
+        <MarkdownHeader>header.html</MarkdownHeader>
+        <MarkdownFooter>footer.html</MarkdownFooter>
+        <MarkdownDefines>Title="Simplified WiX Documentation v$(FullBuildVersionString)";Version=$(FullBuildVersionString)</MarkdownDefines>
+        <OutputName>SimplifiedWix.html</OutputName>
+        <OutputPath>..\..\build\$(Configuration)\doc\</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <MarkdownFile Include="SimplifiedWix.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <DataFile Include="images\wixlogo.jpg" />
+    </ItemGroup>
+
+    <Target Name="Build"
+            Inputs="$(MarkdownHeader);$(MarkdownFooter);@(MarkdownFile);@(DataFile)"
+            Outputs="$(OutputPath)$(OutputName);@(DataFile->'$(OutputPath)\%(Identity)')">
+        <ItemGroup>
+            <_MarkdownDefine Include="$(MarkdownDefines)" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <_MarkdownHeader Condition=" '$(MarkdownHeader)'!='' ">-header $(MarkdownHeader)</_MarkdownHeader>
+            <_MarkdownFooter Condition=" '$(MarkdownFooter)'!='' ">-footer $(MarkdownFooter)</_MarkdownFooter>
+            <_MarkdownDefines Condition=" '@(_MarkdownDefine)'!='' ">-d @(_MarkdownDefine, ' -d ')</_MarkdownDefines>
+            <_Output Condition=" '$(OutputName)'!='' ">-o $(OutputPath)$(OutputName)</_Output>
+        </PropertyGroup>
+
+        <Exec Command="..\..\bin\md2html.exe @(MarkdownFile, ' ') $(_MarkdownHeader) $(_MarkdownFooter) $(_MarkdownDefines) $(_Output)" />
+        <Copy SourceFiles="@(DataFile)" DestinationFiles="@(DataFile->'$(OutputPath)\%(Identity)')" />
+    </Target>
+</Project>

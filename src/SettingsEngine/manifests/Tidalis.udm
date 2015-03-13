@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Tidalis">
+        <Detect>
+            <Arp DisplayName="Tidalis" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- We could pick up "HKCU\Software\Arcen Games, LLC\Tidalis" - except that it seems to be all
+                 resolution and other per-machine settings -->
+            <Directory Namespace="Save" Location="InstallDir:\RuntimeData\Save\" />
+            <!-- TODO: pickup and parse InstallDir:\RuntimeData\settings.dat as a CfgFile -->
+        </Data>
+
+        <DisplayName LCID="1033">Tidalis</DisplayName>
+    </Product>
+</LegacySettings>

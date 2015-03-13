@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Conquest_of_the_New_World">
+        <Detect>
+            <Arp DisplayName="Conquest of the New World" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- Conquest of the New World put its save games in their own directory,
+                 they're all right next to the main EXE, so we'll use filters to only pickup
+                 *.se2, *.ge2, and *.te2 - each save seems to be both a .ge2 and .te2
+                 scenarios appear to be .se2 -->
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".ge2"/>
+            <Normal Prefix="Data:\" Postfix=".se2"/>
+            <Normal Prefix="Data:\" Postfix=".te2"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Conquest of the New World</DisplayName>
+    </Product>
+</LegacySettings>

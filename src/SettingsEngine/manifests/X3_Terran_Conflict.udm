@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="X3_Terran_Conflict">
+        <Detect>
+            <Arp DisplayName="X3: Terran Conflict"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: we could pickup HKCU\Software\EGOSOFT\X3TC, but it appears to contain a bunch of per-machine stuff like resolution. Consider adding later. -->
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Egosoft\X3TC\save\" />
+        </Data>
+
+        <DisplayName LCID="1033">X3: Terran Conflict</DisplayName>
+    </Product>
+</LegacySettings>

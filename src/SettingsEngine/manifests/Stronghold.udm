@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Stronghold">
+        <Detect>
+            <Arp DisplayName="Stronghold"/>
+        </Detect>
+
+        <Data>
+            <!-- This picks up stronghold.cfg, which is a binary blob file that unfortunately holds machine-specific settings such as resolution and sound volume,
+                 however since it's not easily parse-able and it's necessary to get the actual player profile (to track campaign progress for example),
+                 it seems to be the best we can do -->
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Stronghold"/>
+        </Data>
+
+        <DisplayName LCID="1033">Stronghold</DisplayName>
+    </Product>
+</LegacySettings>

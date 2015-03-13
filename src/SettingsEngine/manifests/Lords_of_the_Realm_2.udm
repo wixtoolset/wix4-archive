@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Lords_of_the_Realm_2">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both Lords of the Realm 1 & 2.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Lords of the Realm - Royal Edition" InstallLocation="RoyalInstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="RoyalInstallDir:\Lords of the Realm II\"/>
+        </Data>
+
+        <Filter>
+            <!-- There is also a Castles.dat file written during each run. Not sure what that is. -->
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".sav"/>
+            <Normal Name="Data:\Lords2.inf"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Lords of the Realm II</DisplayName>
+    </Product>
+</LegacySettings>

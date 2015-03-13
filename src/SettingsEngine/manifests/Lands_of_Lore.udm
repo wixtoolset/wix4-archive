@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Lands_of_Lore">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both Lands of Lore 1 & 2.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Lands Of Lore 1 and 2" InstallLocation="ComboInstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- There is also a mysterious _LEVEL1.TMP that appears, but doesn't appear to be useful. TODO: investigate -->
+            <Directory Namespace="Data" Location="ComboInstallDir:\Lands of Lore 1\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\_SAVE" Postfix=".DAT"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Lands of Lore</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (c) Microsoft Corporation.  All rights reserved.
+
+    The table definitions for the Windows Installer XML Toolset Gaming Extension.
+-->
+<tableDefinitions xmlns="http://schemas.microsoft.com/wix/2006/tables">
+    <tableDefinition name="WixCfgProducts">
+        <columnDefinition name="Name" type="string" length="72" primaryKey="yes" modularize="column"
+            description="Name of the product to register." />
+        <columnDefinition name="Version" type="string" length="72" primaryKey="yes" modularize="column"
+            description="Version of the product to register." />
+        <columnDefinition name="PublicKey" type="string" length="72" primaryKey="yes" modularize="column"
+            description="Public key of the product to register." />
+        <columnDefinition name="Component_" type="string" length="72" modularize="column"
+            keyTable="Component" keyColumn="1" category="identifier" description="Foreign key into the Component table referencing component that controls the product registration."/>
+    </tableDefinition>
+</tableDefinitions>

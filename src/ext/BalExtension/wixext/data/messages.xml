@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  <copyright file="messages.xml" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<!--
+  The messages for the WiX Toolset Bal Extension.
+-->
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="BalErrors" ContainerName="BalErrorEventArgs" BaseContainerName="MessageEventArgs" Level="Error">
+        <Message Id="AttributeRequiresPrereqPackage" Number="6801">
+            <Instance>
+                When the {0}/@{1} attribute is specified, the {0}/@PrereqPackage attribute must be set to "yes".
+                <Parameter Type="System.String" Name="elementName" />
+                <Parameter Type="System.String" Name="attributeName" />
+            </Instance>
+        </Message>
+        <Message Id="MissingPrereq" Number="6802" SourceLineNumbers="no">
+            <Instance>
+                There must be at least one PrereqPackage when using the ManagedBootstrapperApplicationHost.
+            </Instance>
+        </Message>
+        <Message Id="MultiplePrereqLicenses" Number="6803">
+            <Instance>
+                There may only be one package in the bundle that has either the PrereqLicenseFile attribute or the PrereqLicenseUrl attribute.
+            </Instance>
+        </Message>
+    </Class>
+</Messages>

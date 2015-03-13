@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
+
+    <Identity Name="Contoso.Suite"
+              Publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US"
+              Version="1.0.0.0" />
+
+    <Properties>
+        <DisplayName>Contoso Suite</DisplayName>
+        <PublisherDisplayName>Contoso Corporation</PublisherDisplayName>
+        <Description>Contoso's Suite</Description>
+        <Logo>images\Logo.png</Logo>
+    </Properties>
+
+    <Resources>
+        <Resource Language="en-US"/>
+    </Resources>
+
+    <Prerequisites>
+        <OSMinVersion>6.2</OSMinVersion>
+        <OSMaxVersionTested>6.2</OSMaxVersionTested>
+    </Prerequisites>
+
+    <Capabilities>
+        <Capability Name="documentsLibrary"/>
+      <Capability Name="internetClient"/>
+      <Capability Name="privateNetworkClientServer"/>
+    </Capabilities>
+
+    <Applications>
+        <Application Id="Contoso.TaxCalculator" StartPage="taxcalculator\index.html" >
+            
+            <VisualElements
+                DisplayName="Contoso Tax Calculator"
+                Logo="images\taxCalc.png"
+                SmallLogo="images\taxCalc-small.png"
+                Description="Contoso's World Famous Tax Calculator"
+                ForegroundText="light"
+                BackgroundColor="#0084FF" >
+                <DefaultTile ShortName="TaxCalc" ShowName="wideLogoOnly" WideLogo="barLogo.png"/>
+                <LockScreen Notification="badgeAndTileText" BadgeLogo="images\lockscreenimage.png"/>
+                <SplashScreen BackgroundColor="blue" Image="ContosoCalculator.jpg"/>
+            </VisualElements>
+
+            <Extensions>
+                <Extension Category="windows.fileTypeAssociation">
+                    <FileTypeAssociation Name="taxdocument">
+                        <InfoTip>Contoso Tax Document</InfoTip>
+                        <SupportedFileTypes>
+                            <FileType>.tax</FileType>
+                        </SupportedFileTypes>
+                    </FileTypeAssociation>
+                </Extension>
+            </Extensions>
+            
+            <ApplicationContentUriRules>
+                <Rule Type="include" Match="http://www.contoso.net/"/>
+                <Rule Type="exclude" Match="*.xls"/>
+            </ApplicationContentUriRules>
+        </Application>
+    </Applications>
+</Package>

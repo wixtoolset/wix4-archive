@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Baldurs_Gate_2">
+        <Detect>
+            <Arp DisplayName="Baldur&apos;s Gate 2 Complete" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\Save\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Baldur's Gate 2</DisplayName>
+    </Product>
+</LegacySettings>
