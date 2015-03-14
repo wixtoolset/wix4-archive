@@ -175,7 +175,7 @@ namespace WixToolset
             // Add sections from the extensions with data.
             foreach (IExtensionData data in this.extensionData)
             {
-                Library library = data.GetLibrary(this.tableDefinitions, false);
+                Library library = data.GetLibrary(this.tableDefinitions, true);
 
                 if (null != library)
                 {
@@ -273,6 +273,11 @@ namespace WixToolset
             int sectionCount = 0;
             foreach (Section section in output.Sections)
             {
+                if (section.IsIncomplete)
+                {
+                    throw new WixMissingTableDefinitionException(string.Join(", ", section.MissingTableNames));
+                }
+
                 sectionCount++;
                 string sectionId = section.Id;
                 if (null == sectionId && this.sectionIdOnRows)

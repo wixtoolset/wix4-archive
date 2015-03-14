@@ -196,6 +196,30 @@ namespace WixToolset.Data
                                         if (allowIncompleteSection)
                                         {
                                             section.MissingTableNames.Add(missingTableDefExc.TableName);
+
+                                            // Read the rest of the table.
+                                            if (!reader.IsEmptyElement)
+                                            {
+                                                int depth = 1;
+
+                                                while (0 < depth && reader.Read())
+                                                {
+                                                    switch (reader.NodeType)
+                                                    {
+                                                        case XmlNodeType.Element:
+                                                            depth++;
+                                                            break;
+                                                        case XmlNodeType.EndElement:
+                                                            --depth;
+                                                            break;
+                                                    }
+                                                }
+
+                                                if (0 != depth)
+                                                {
+                                                    throw new XmlException();
+                                                }
+                                            }
                                         }
                                         else
                                         {
