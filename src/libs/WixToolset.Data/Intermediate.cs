@@ -60,8 +60,9 @@ namespace WixToolset.Data
         /// <param name="path">Path to intermediate file saved on disk.</param>
         /// <param name="tableDefinitions">Collection containing TableDefinitions to use when reconstituting the intermediate.</param>
         /// <param name="suppressVersionCheck">Suppress checking for wix.dll version mismatches.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>Returns the loaded intermediate.</returns>
-        public static Intermediate Load(string path, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck)
+        public static Intermediate Load(string path, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck, bool allowIncompleteSections = false)
         {
             using (FileStream stream = File.OpenRead(path))
             using (FileStructure fs = FileStructure.Read(stream))
@@ -77,7 +78,7 @@ namespace WixToolset.Data
                     try
                     {
                         reader.MoveToContent();
-                        return Intermediate.Read(reader, tableDefinitions, suppressVersionCheck);
+                        return Intermediate.Read(reader, tableDefinitions, suppressVersionCheck, allowIncompleteSections);
                     }
                     catch (XmlException xe)
                     {
@@ -111,8 +112,9 @@ namespace WixToolset.Data
         /// <param name="reader">XmlReader where the intermediate is persisted.</param>
         /// <param name="tableDefinitions">TableDefinitions to use in the intermediate.</param>
         /// <param name="suppressVersionCheck">Suppress checking for wix.dll version mismatch.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>The parsed Intermediate.</returns>
-        private static Intermediate Read(XmlReader reader, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck)
+        private static Intermediate Read(XmlReader reader, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck, bool allowIncompleteSections)
         {
             if ("wixObject" != reader.LocalName)
             {
@@ -156,7 +158,7 @@ namespace WixToolset.Data
                             switch (reader.LocalName)
                             {
                                 case "section":
-                                    intermediate.AddSection(Section.Read(reader, tableDefinitions));
+                                    intermediate.AddSection(Section.Read(reader, tableDefinitions, allowIncompleteSections));
                                     break;
                                 default:
                                     throw new XmlException();

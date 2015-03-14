@@ -9,7 +9,7 @@ The [WixNetfxExtension](~/xsd/netfx/index.html) includes a set of custom actions
 
 ## PackageGroups
 
-The WixNetfxExtension includes package groups that make it easier to include .NET in your bundles.
+The WixNetfxExtension includes package groups that make it easier to include .NET in your bundles.  When using these package groups, the WixBalExtension must also be given on the command line to light, or referenced in the .wixproj file.
 
 <table cellspacing="0" cellpadding="4" class="style1" border="1">
   <tr>

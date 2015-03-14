@@ -68,7 +68,7 @@ namespace WixToolset.Data
                 TableDefinition table;
                 if (!this.collection.TryGetValue(tableName, out table))
                 {
-                    throw new WixMissingTableDefinitionException(WixDataErrors.MissingTableDefinition(tableName));
+                    throw new WixMissingTableDefinitionException(tableName);
                 }
 
                 return table;

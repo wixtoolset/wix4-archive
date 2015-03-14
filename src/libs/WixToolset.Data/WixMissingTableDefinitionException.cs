@@ -24,10 +24,13 @@ namespace WixToolset.Data
         /// <summary>
         /// Instantiate new WixMissingTableDefinitionException.
         /// </summary>
-        /// <param name="error">Localized error information.</param>
-        public WixMissingTableDefinitionException(MessageEventArgs error)
-            : base(error)
+        /// <param name="tableName">Name of the missing table.</param>
+        public WixMissingTableDefinitionException(string tableName)
+            : base(WixDataErrors.MissingTableDefinition(tableName))
         {
+            TableName = tableName;
         }
+
+        public string TableName { get; private set; }
     }
 }
