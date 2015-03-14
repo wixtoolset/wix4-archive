@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT: 4703 - Don't always require WixBalExtension when using WixNetFxExtension.
+
 * thfabba: WIXBUG:4681 - Corrected return type on the lone WOW64 redirection function that returns a BOOLEAN instead of BOOL.
 
 * MikeGC: Fix an issue in ValueMatch() where we can in certain scenarios create unnecessary extra history entries. This is related to upcoming settings expiration feature.
