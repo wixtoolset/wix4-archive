@@ -20,7 +20,7 @@ namespace WixToolset.Extensibility
         /// <summary>
         /// Gets the optional table definitions for this extension.
         /// </summary>
-        /// <value>Table definisions for this extension or null if there are no table definitions.</value>
+        /// <value>Table definitions for this extension or null if there are no table definitions.</value>
         public virtual TableDefinitionCollection TableDefinitions
         {
             get { return null; }
@@ -39,8 +39,9 @@ namespace WixToolset.Extensibility
         /// Gets the optional library associated with this extension.
         /// </summary>
         /// <param name="tableDefinitions">The table definitions to use while loading the library.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>The library for this extension or null if there is no library.</returns>
-        public virtual Library GetLibrary(TableDefinitionCollection tableDefinitions)
+        public virtual Library GetLibrary(TableDefinitionCollection tableDefinitions, bool allowIncompleteSections)
         {
             return null;
         }
@@ -51,8 +52,9 @@ namespace WixToolset.Extensibility
         /// <param name="assembly">The assembly containing the embedded resource.</param>
         /// <param name="resourceName">The name of the embedded resource being requested.</param>
         /// <param name="tableDefinitions">The table definitions to use while loading the library.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>The loaded library.</returns>
-        protected static Library LoadLibraryHelper(Assembly assembly, string resourceName, TableDefinitionCollection tableDefinitions)
+        protected static Library LoadLibraryHelper(Assembly assembly, string resourceName, TableDefinitionCollection tableDefinitions, bool allowIncompleteSections)
         {
             using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
             {
@@ -60,7 +62,7 @@ namespace WixToolset.Extensibility
                 uriBuilder.Scheme = "embeddedresource";
                 uriBuilder.Fragment = resourceName;
 
-                return Library.Load(resourceStream, uriBuilder.Uri, tableDefinitions, false);
+                return Library.Load(resourceStream, uriBuilder.Uri, tableDefinitions, false, allowIncompleteSections);
             }
         }
 

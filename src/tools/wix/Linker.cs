@@ -175,7 +175,7 @@ namespace WixToolset
             // Add sections from the extensions with data.
             foreach (IExtensionData data in this.extensionData)
             {
-                Library library = data.GetLibrary(this.tableDefinitions);
+                Library library = data.GetLibrary(this.tableDefinitions, false);
 
                 if (null != library)
                 {

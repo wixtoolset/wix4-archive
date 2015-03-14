@@ -23,19 +23,22 @@ namespace WixToolset.Extensions
         /// Gets the library associated with this extension.
         /// </summary>
         /// <param name="tableDefinitions">The table definitions to use while loading the library.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>The loaded library.</returns>
-        public override Library GetLibrary(TableDefinitionCollection tableDefinitions)
+        public override Library GetLibrary(TableDefinitionCollection tableDefinitions, bool allowIncompleteSections)
         {
-            return PSExtensionData.GetExtensionLibrary(tableDefinitions);
+            return PSExtensionData.GetExtensionLibrary(tableDefinitions, allowIncompleteSections);
         }
 
         /// <summary>
         /// Internal mechanism to access the extension's library.
         /// </summary>
+        /// <param name="tableDefinitions">The table definitions to use while loading the library.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>Extension's library.</returns>
-        internal static Library GetExtensionLibrary(TableDefinitionCollection tableDefinitions)
+        internal static Library GetExtensionLibrary(TableDefinitionCollection tableDefinitions, bool allowIncompleteSections = false)
         {
-            return ExtensionData.LoadLibraryHelper(Assembly.GetExecutingAssembly(), "WixToolset.Extensions.Data.ps.wixlib", tableDefinitions);
+            return ExtensionData.LoadLibraryHelper(Assembly.GetExecutingAssembly(), "WixToolset.Extensions.Data.ps.wixlib", tableDefinitions, allowIncompleteSections);
         }
     }
 }

@@ -33,6 +33,7 @@ namespace WixToolset.Data
             this.Type = type;
             this.Codepage = codepage;
 
+            this.MissingTableNames = new List<string>();
             this.Tables = new TableIndexedCollection();
         }
 
@@ -77,6 +78,19 @@ namespace WixToolset.Data
         public string LibraryId { get; internal set; }
 
         /// <summary>
+        /// Gets the missing table definitions in the section.
+        /// </summary>
+        public IList<string> MissingTableNames { get; private set; }
+
+        /// <summary>
+        /// Gets whether the section references missing table definitions.
+        /// </summary>
+        public bool IsIncomplete
+        {
+            get { return MissingTableNames.Any(); }
+        }
+
+        /// <summary>
         /// Ensures a table is added to the section's table collection.
         /// </summary>
         /// <param name="tableDefinition">Table definition for the table.</param>
@@ -98,8 +112,9 @@ namespace WixToolset.Data
         /// </summary>
         /// <param name="reader">XmlReader where the intermediate is persisted.</param>
         /// <param name="tableDefinitions">TableDefinitions to use in the intermediate.</param>
+        /// <param name="allowIncompleteSection">If true, catch WixMissingTableDefinitionExceptions and report the missing tables in MissingTableNames.</param>
         /// <returns>The parsed Section.</returns>
-        internal static Section Read(XmlReader reader, TableDefinitionCollection tableDefinitions)
+        internal static Section Read(XmlReader reader, TableDefinitionCollection tableDefinitions, bool allowIncompleteSection = false)
         {
             Debug.Assert("section" == reader.LocalName);
 
@@ -172,7 +187,21 @@ namespace WixToolset.Data
                             switch (reader.LocalName)
                             {
                                 case "table":
-                                    tables.Add(Table.Read(reader, section, tableDefinitions));
+                                    try
+                                    {
+                                        tables.Add(Table.Read(reader, section, tableDefinitions));
+                                    }
+                                    catch (WixMissingTableDefinitionException missingTableDefExc)
+                                    {
+                                        if (allowIncompleteSection)
+                                        {
+                                            section.MissingTableNames.Add(missingTableDefExc.TableName);
+                                        }
+                                        else
+                                        {
+                                            throw;
+                                        }
+                                    }
                                     break;
                                 default:
                                     throw new XmlException();

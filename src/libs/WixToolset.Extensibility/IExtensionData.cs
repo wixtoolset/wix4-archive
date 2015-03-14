@@ -32,7 +32,8 @@ namespace WixToolset.Extensibility
         /// Gets the library associated with this extension.
         /// </summary>
         /// <param name="tableDefinitions">The table definitions to use while loading the library.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>The library for this extension or null if there is no library.</returns>
-        Library GetLibrary(TableDefinitionCollection tableDefinitions);
+        Library GetLibrary(TableDefinitionCollection tableDefinitions, bool allowIncompleteSections);
     }
 }

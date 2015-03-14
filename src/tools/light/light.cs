@@ -233,12 +233,12 @@ namespace WixToolset.Tools
                         switch (format)
                         {
                             case FileFormat.Wixobj:
-                                Intermediate intermediate = Intermediate.Load(inputFileFullPath, linker.TableDefinitions, this.commandLine.SuppressVersionCheck);
+                                Intermediate intermediate = Intermediate.Load(inputFileFullPath, linker.TableDefinitions, this.commandLine.SuppressVersionCheck, false);
                                 sections.AddRange(intermediate.Sections);
                                 break;
 
                             case FileFormat.Wixlib:
-                                Library library = Library.Load(inputFileFullPath, linker.TableDefinitions, this.commandLine.SuppressVersionCheck);
+                                Library library = Library.Load(inputFileFullPath, linker.TableDefinitions, this.commandLine.SuppressVersionCheck, false);
                                 AddLibraryLocalizationsToLocalizer(library, this.commandLine.Cultures, localizer);
                                 sections.AddRange(library.Sections);
                                 break;
@@ -400,7 +400,7 @@ namespace WixToolset.Tools
                 // Load localizations provided by extensions with data.
                 foreach (IExtensionData data in this.extensionData)
                 {
-                    Library library = data.GetLibrary(tableDefinitions);
+                    Library library = data.GetLibrary(tableDefinitions, false);
                     if (null != library)
                     {
                         // Load the extension's default culture if it provides one and no cultures were specified.

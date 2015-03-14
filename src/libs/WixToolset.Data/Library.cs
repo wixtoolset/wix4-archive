@@ -98,12 +98,13 @@ namespace WixToolset.Data
         /// <param name="path">Path to library file saved on disk.</param>
         /// <param name="tableDefinitions">Collection containing TableDefinitions to use when reconstituting the intermediates.</param>
         /// <param name="suppressVersionCheck">Suppresses wix.dll version mismatch check.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>Returns the loaded library.</returns>
-        public static Library Load(string path, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck)
+        public static Library Load(string path, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck, bool allowIncompleteSections = false)
         {
             using (FileStream stream = File.OpenRead(path))
             {
-                return Load(stream, new Uri(Path.GetFullPath(path)), tableDefinitions, suppressVersionCheck);
+                return Load(stream, new Uri(Path.GetFullPath(path)), tableDefinitions, suppressVersionCheck, allowIncompleteSections);
             }
         }
 
@@ -114,8 +115,9 @@ namespace WixToolset.Data
         /// <param name="uri">Uri for finding this stream.</param>
         /// <param name="tableDefinitions">Collection containing TableDefinitions to use when reconstituting the intermediates.</param>
         /// <param name="suppressVersionCheck">Suppresses wix.dll version mismatch check.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>Returns the loaded library.</returns>
-        public static Library Load(Stream stream, Uri uri, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck)
+        public static Library Load(Stream stream, Uri uri, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck, bool allowIncompleteSections = false)
         {
             using (FileStructure fs = FileStructure.Read(stream))
             {
@@ -129,7 +131,7 @@ namespace WixToolset.Data
                     try
                     {
                         reader.MoveToContent();
-                        return Library.Read(reader, tableDefinitions, suppressVersionCheck);
+                        return Library.Read(reader, tableDefinitions, suppressVersionCheck, allowIncompleteSections);
                     }
                     catch (XmlException xe)
                     {
@@ -207,8 +209,9 @@ namespace WixToolset.Data
         /// <param name="reader">XmlReader with library persisted as Xml.</param>
         /// <param name="tableDefinitions">Collection containing TableDefinitions to use when reconstituting the intermediates.</param>
         /// <param name="suppressVersionCheck">Suppresses check for wix.dll version mismatch.</param>
+        /// <param name="allowIncompleteSections">Whether a WixMissingTableDefinitionException should be thrown if a section has a table without a table definition.</param>
         /// <returns>The parsed Library.</returns>
-        private static Library Read(XmlReader reader, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck)
+        private static Library Read(XmlReader reader, TableDefinitionCollection tableDefinitions, bool suppressVersionCheck, bool allowIncompleteSections)
         {
             if (!reader.LocalName.Equals("wixLibrary"))
             {
@@ -253,7 +256,7 @@ namespace WixToolset.Data
                                     library.localizations.Add(localization.Culture, localization);
                                     break;
                                 case "section":
-                                    Section section = Section.Read(reader, tableDefinitions);
+                                    Section section = Section.Read(reader, tableDefinitions, allowIncompleteSections);
                                     section.LibraryId = library.id;
                                     library.sections.Add(section);
                                     break;
