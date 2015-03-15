@@ -143,7 +143,7 @@ namespace DutilTests
             VarEscapeStringHelper(L" [TEXT] ", L" [\\[]TEXT[\\]] ");
         }
 
-        [NamedFact(Skip = "varutil Not Implemented Yet.")]
+        [NamedFact(Skip = "condutil Not Implemented Yet.")]
         void VarUtilConditionTest()
         {
             HRESULT hr = S_OK;
