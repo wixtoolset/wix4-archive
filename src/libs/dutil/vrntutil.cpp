@@ -18,14 +18,14 @@ static VrntMockableFunctions vFunctions =
 };
 
 DAPI_(void) VrntUninitialize(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant
+    __in VRNTUTIL_VARIANT_HANDLE pVariant
     )
 {
     VrntUninitializeHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant);
 }
 
 DAPI_(HRESULT) VrntGetNumeric(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out LONGLONG* pllValue
     )
 {
@@ -33,7 +33,7 @@ DAPI_(HRESULT) VrntGetNumeric(
 }
 
 DAPI_(HRESULT) VrntGetString(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out_z LPWSTR* psczValue
     )
 {
@@ -41,7 +41,7 @@ DAPI_(HRESULT) VrntGetString(
 }
 
 DAPI_(HRESULT) VrntGetVersion(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out DWORD64* pqwValue
     )
 {
@@ -49,7 +49,7 @@ DAPI_(HRESULT) VrntGetVersion(
 }
 
 DAPI_(HRESULT) VrntSetNumeric(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in LONGLONG llValue
     )
 {
@@ -57,7 +57,7 @@ DAPI_(HRESULT) VrntSetNumeric(
 }
 
 DAPI_(HRESULT) VrntSetString(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in_z_opt LPCWSTR wzValue,
     __in DWORD_PTR cchValue
     )
@@ -66,7 +66,7 @@ DAPI_(HRESULT) VrntSetString(
 }
 
 DAPI_(HRESULT) VrntSetVersion(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in DWORD64 qwValue
     )
 {
@@ -74,23 +74,23 @@ DAPI_(HRESULT) VrntSetVersion(
 }
 
 DAPI_(HRESULT) VrntSetValue(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
-    __in VRNTUTIL_VARIANT_HANDLE* pValue
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pValue
     )
 {
     return VrntSetValueHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, (VRNTUTIL_VARIANT*)pValue);
 }
 
 DAPI_(HRESULT) VrntCopy(
-    __in VRNTUTIL_VARIANT_HANDLE* pSource,
-    __out VRNTUTIL_VARIANT_HANDLE* pTarget
+    __in VRNTUTIL_VARIANT_HANDLE pSource,
+    __out VRNTUTIL_VARIANT_HANDLE pTarget
     )
 {
     return VrntCopyHelper(&vFunctions, (VRNTUTIL_VARIANT*)pSource, (VRNTUTIL_VARIANT*)pTarget);
 }
 
 DAPI_(HRESULT) VrntSetEncryption(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in BOOL fEncrypt
     )
 {

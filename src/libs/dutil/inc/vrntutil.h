@@ -30,7 +30,7 @@ VrntUninitialize - resets the variant and frees any memory that it's using.
 
 ********************************************************************/
 void DAPI VrntUninitialize(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant
+    __in VRNTUTIL_VARIANT_HANDLE pVariant
     );
 
 /********************************************************************
@@ -40,7 +40,7 @@ VrntGetNumeric - returns the current value in numeric form.
 
 ********************************************************************/
 HRESULT DAPI VrntGetNumeric(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out LONGLONG* pllValue
     );
 
@@ -51,7 +51,7 @@ VrntGetString - returns the current value in string form.
 
 ********************************************************************/
 HRESULT DAPI VrntGetString(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out_z LPWSTR* psczValue
     );
 
@@ -62,7 +62,7 @@ VrntGetVersion - returns the current value in version form.
 
 ********************************************************************/
 HRESULT DAPI VrntGetVersion(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out DWORD64* pqwValue
     );
 
@@ -71,7 +71,7 @@ VrntSetNumeric - sets the type to numeric and sets the value.
 
 ********************************************************************/
 HRESULT DAPI VrntSetNumeric(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in LONGLONG llValue
     );
 
@@ -82,7 +82,7 @@ NOTE: cchSource does not have to equal the length of wzValue
 NOTE: if cchSource == 0, length of wzValue is used instead
 ********************************************************************/
 HRESULT DAPI VrntSetString(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in_z_opt LPCWSTR wzValue,
     __in DWORD_PTR cchValue
     );
@@ -92,7 +92,7 @@ VrntSetVersion - sets the type to version and sets the value.
 
 ********************************************************************/
 HRESULT DAPI VrntSetVersion(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in DWORD64 qwValue
     );
 
@@ -104,8 +104,8 @@ VrntSetValue - Convenience function that calls VrntUninitialize,
 
 ********************************************************************/
 HRESULT DAPI VrntSetValue(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
-    __in VRNTUTIL_VARIANT_HANDLE* pValue
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pValue
     );
 
 /********************************************************************
@@ -115,8 +115,8 @@ VrntCopy - creates a copy of pSource.
 
 ********************************************************************/
 HRESULT DAPI VrntCopy(
-    __in VRNTUTIL_VARIANT_HANDLE* pSource,
-    __out VRNTUTIL_VARIANT_HANDLE* pTarget
+    __in VRNTUTIL_VARIANT_HANDLE pSource,
+    __out VRNTUTIL_VARIANT_HANDLE pTarget
     );
 
 /********************************************************************
@@ -126,7 +126,7 @@ VrntSetEncryption - sets the encryption state of pVariant.
 
 ********************************************************************/
 HRESULT DAPI VrntSetEncryption(
-    __in VRNTUTIL_VARIANT_HANDLE* pVariant,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in BOOL fEncrypt
     );
 

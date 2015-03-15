@@ -12,7 +12,7 @@
 typedef struct _VARUTIL_VARIABLE
 {
     LPWSTR sczName;
-    VRNTUTIL_VARIANT_HANDLE* value;
+    VRNTUTIL_VARIANT_HANDLE value;
     BOOL fHidden;
     LPVOID pvContext;
 } VARUTIL_VARIABLE;
@@ -123,7 +123,7 @@ static HRESULT FindVariableIndexByName(
 static HRESULT ForceGetVariant(
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
-    __out VRNTUTIL_VARIANT_HANDLE** ppVariant
+    __out VRNTUTIL_VARIANT_HANDLE* ppVariant
     );
 static HRESULT InsertVariable(
     __in VARIABLES_STRUCT* pVariables,
@@ -326,7 +326,7 @@ static HRESULT VarSetNumericHelper(
     )
 {
     HRESULT hr = S_OK;
-    VRNTUTIL_VARIANT_HANDLE* pVariant = NULL;
+    VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
     hr = ForceGetVariant(pVariables, wzVariable, &pVariant);
     ExitOnFailure(hr, "Failed to get variable '&ls' variant.", wzVariable);
@@ -344,7 +344,7 @@ static HRESULT VarSetStringHelper(
     )
 {
     HRESULT hr = S_OK;
-    VRNTUTIL_VARIANT_HANDLE* pVariant = NULL;
+    VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
     hr = ForceGetVariant(pVariables, wzVariable, &pVariant);
     ExitOnFailure(hr, "Failed to get variable '&ls' variant.", wzVariable);
@@ -362,7 +362,7 @@ static HRESULT VarSetVersionHelper(
     )
 {
     HRESULT hr = S_OK;
-    VRNTUTIL_VARIANT_HANDLE* pVariant = NULL;
+    VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
     hr = ForceGetVariant(pVariables, wzVariable, &pVariant);
     ExitOnFailure(hr, "Failed to get variable '&ls' variant.", wzVariable);
@@ -460,7 +460,7 @@ LExit:
 static HRESULT ForceGetVariant(
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
-    __out VRNTUTIL_VARIANT_HANDLE** ppVariant
+    __out VRNTUTIL_VARIANT_HANDLE* ppVariant
     )
 {
     HRESULT hr = S_OK;
@@ -535,7 +535,7 @@ static HRESULT InsertVariable(
     ExitOnFailure(hr, "Failed to copy variable name.");
 
     // Allocate value.
-    pVariables->rgVariables[iPosition].value = reinterpret_cast<VRNTUTIL_VARIANT_HANDLE*>(MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, TRUE));
+    pVariables->rgVariables[iPosition].value = reinterpret_cast<VRNTUTIL_VARIANT_HANDLE>(MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, TRUE));
     ExitOnNull(pVariables->rgVariables[iPosition].value, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
 LExit:
