@@ -359,6 +359,9 @@
     <ClInclude Include="precomp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="varutilhelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="vrntutilhelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>

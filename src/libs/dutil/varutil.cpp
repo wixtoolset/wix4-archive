@@ -8,274 +8,158 @@
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
-
-struct VARIABLE_ENUM_STRUCT
-{
-};
-
-struct VARIABLES_STRUCT
-{
-};
-
-const int VARIABLE_ENUM_HANDLE_BYTES = sizeof(VARIABLE_ENUM_STRUCT);
-const int VARIABLES_HANDLE_BYTES = sizeof(VARIABLES_STRUCT);
+#include "varutilhelpers.h"
 
 // function definitions
 
-/********************************************************************
-VarCreate - creates a variables group.
-********************************************************************/
-extern "C" HRESULT DAPI VarCreate(
+DAPI_(HRESULT) VarCreate(
     __out_bcount(VARIABLES_HANDLE_BYTES) VARIABLES_HANDLE* ppVariables
     )
 {
-    UNREFERENCED_PARAMETER(ppVariables);
-    return E_NOTIMPL;
+    return VarCreateHelper(reinterpret_cast<VARIABLES_STRUCT**>(ppVariables));
 }
 
-/********************************************************************
-VarDestroy - destroys a variables group, accepting an optional callback
-             to help free the variable contexts.
-********************************************************************/
-extern "C" void DAPI VarDestroy(
+DAPI_(void) VarDestroy(
     __in_bcount(VARIABLES_HANDLE_BYTES) VARIABLES_HANDLE pVariables,
-    __in_opt PFN_FREEVARIABLECONTEXT vpfFreeVariableContext
+    __in_opt PFN_FREEVARIABLECONTEXT pfnFreeVariableContext
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(vpfFreeVariableContext);
+    VarDestroyHelper(reinterpret_cast<VARIABLES_STRUCT*>(pVariables), pfnFreeVariableContext);
 }
 
-/********************************************************************
-VarFreeValue - frees a variable value.
-********************************************************************/
-extern "C" void DAPI VarFreeValue(
+DAPI_(void) VarFreeEnumValue(
+    __in VARIABLE_ENUM_VALUE* pValue
+    )
+{
+    VarFreeEnumValueHelper(pValue);
+}
+
+DAPI_(void) VarFreeValue(
     __in VARIABLE_VALUE* pValue
     )
 {
-    UNREFERENCED_PARAMETER(pValue);
+    VarFreeValueHelper(pValue);
 }
 
-/********************************************************************
-VarEscapeString - escapes special characters in wzIn so that it can
-                  be used in conditions or variable values.
-********************************************************************/
-extern "C" HRESULT DAPI VarEscapeString(
+DAPI_(HRESULT) VarEscapeString(
     __in_z LPCWSTR wzIn,
     __out_z LPWSTR* psczOut
     )
 {
-    UNREFERENCED_PARAMETER(wzIn);
-    UNREFERENCED_PARAMETER(psczOut);
-    return E_NOTIMPL;
+    return VarEscapeStringHelper(wzIn, psczOut);
 }
 
-/********************************************************************
-VarFormatString - similar to MsiFormatRecord.
-********************************************************************/
-extern "C" HRESULT DAPI VarFormatString(
+DAPI_(HRESULT) VarFormatString(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzIn);
-    UNREFERENCED_PARAMETER(psczOut);
-    UNREFERENCED_PARAMETER(pcchOut);
-    return E_NOTIMPL;
+    return VarFormatStringHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
 }
 
-/********************************************************************
-VarGetFormatted - gets the formatted value of a single variable.
-********************************************************************/
-extern "C" HRESULT DAPI VarGetFormatted(
+DAPI_(HRESULT) VarGetFormatted(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(psczValue);
-    return E_NOTIMPL;
+    return VarGetFormattedHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, psczValue);
 }
 
-/********************************************************************
-VarGetNumeric - gets the numeric value of a variable.  If the type of
-                the variable is not numeric, it will attempt to
-                convert the value into a number.
-********************************************************************/
-extern "C" HRESULT DAPI VarGetNumeric(
+DAPI_(HRESULT) VarGetNumeric(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(pllValue);
-    return E_NOTIMPL;
+    return VarGetNumericHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, pllValue);
 }
 
-/********************************************************************
-VarGetString - gets the unformatted string value of a variable.  If
-               the type of the variable is not string, it will
-               convert the value to a string.
-********************************************************************/
-extern "C" HRESULT DAPI VarGetString(
+DAPI_(HRESULT) VarGetString(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(psczValue);
-    return E_NOTIMPL;
+    return VarGetStringHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, psczValue);
 }
 
-/********************************************************************
-VarGetVersion - gets the version value of a variable.  If the type of
-                the variable is not version, it will attempt to
-                convert the value into a version.
-********************************************************************/
-extern "C" HRESULT DAPI VarGetVersion(
+DAPI_(HRESULT) VarGetVersion(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(pqwValue);
-    return E_NOTIMPL;
+    return VarGetVersionHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, pqwValue);
 }
 
-/********************************************************************
-VarGetValue - gets the value of a variable along with its metadata.
-********************************************************************/
-extern "C" HRESULT DAPI VarGetValue(
+DAPI_(HRESULT) VarGetValue(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(ppValue);
-    return E_NOTIMPL;
+    return VarGetValueHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, ppValue);
 }
 
-/********************************************************************
-VarSetNumeric - sets the value of the variable to a number, the type
-                of the variable to numeric, and adds the variable to
-                the group if necessary.
-********************************************************************/
-extern "C" HRESULT DAPI VarSetNumeric(
+DAPI_(HRESULT) VarSetNumeric(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in LONGLONG llValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(llValue);
-    return E_NOTIMPL;
+    return VarSetNumericHelper(reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, llValue);
 }
 
-/********************************************************************
-VarSetString - sets the value of the variable to a string, the type
-               of the variable to string, and adds the variable to
-               the group if necessary.
-********************************************************************/
-extern "C" HRESULT DAPI VarSetString(
+DAPI_(HRESULT) VarSetString(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in_z_opt LPCWSTR wzValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(wzValue);
-    return E_NOTIMPL;
+    return VarSetStringHelper(reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, wzValue);
 }
 
-/********************************************************************
-VarSetVersion - sets the value of the variable to a version, the type
-                of the variable to version, and adds the variable to
-                the group if necessary.
-********************************************************************/
-extern "C" HRESULT DAPI VarSetVersion(
+DAPI_(HRESULT) VarSetVersion(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64 qwValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(qwValue);
-    return E_NOTIMPL;
+    return VarSetVersionHelper(reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, qwValue);
 }
 
-/********************************************************************
-VarSetValue - sets the value of the variable along with its metadata.
-              Also adds the variable to the group if necessary.
-********************************************************************/
-extern "C" HRESULT DAPI VarSetValue(
+DAPI_(HRESULT) VarSetValue(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in VARIABLE_VALUE* pValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(pValue);
-    return E_NOTIMPL;
+    return VarSetValueHelper(reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pValue);
 }
 
-/********************************************************************
-VarStartEnum - starts the enumeration of the variable group.  There
-               is no guarantee for the order of the variable enumeration.
-
-NOTE: caller is responsible for calling VarFinishEnum even if function fails
-********************************************************************/
-extern "C" HRESULT DAPI VarStartEnum(
-    __in VARIABLES_HANDLE pVariables,
+DAPI_(HRESULT) VarStartEnum(
+    __in C_VARIABLES_HANDLE pVariables,
     __out_bcount(VARIABLE_ENUM_HANDLE_BYTES) VARIABLE_ENUM_HANDLE* ppEnum,
-    __out VARIABLE_VALUE** ppValue
+    __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(ppEnum);
-    UNREFERENCED_PARAMETER(ppValue);
-    return E_NOTIMPL;
+    return VarStartEnumHelper(reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), reinterpret_cast<VARIABLE_ENUM_STRUCT**>(ppEnum), ppValue);
 }
 
-/********************************************************************
-VarNextVariable - continues the enumeration of the variable group. It
-                  will fail if any variables were added or removed
-                  during the enumeration.
-
-NOTE: caller is responsible for calling VarFinishEnum even if function fails
-********************************************************************/
-extern "C" HRESULT DAPI VarNextVariable(
+DAPI_(HRESULT) VarNextVariable(
     __in_bcount(VARIABLE_ENUM_HANDLE_BYTES) VARIABLE_ENUM_HANDLE pEnum,
-    __out VARIABLE_VALUE** ppValue
+    __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
-    UNREFERENCED_PARAMETER(pEnum);
-    UNREFERENCED_PARAMETER(ppValue);
-    return E_NOTIMPL;
+    return VarNextVariableHelper(reinterpret_cast<VARIABLE_ENUM_STRUCT*>(pEnum), ppValue);
 }
 
-/********************************************************************
-VarFinishEnum - cleans up resources used for the enumeration.
-********************************************************************/
-extern "C" void DAPI VarFinishEnum(
+DAPI_(void) VarFinishEnum(
     __in_bcount(VARIABLE_ENUM_HANDLE_BYTES) VARIABLE_ENUM_HANDLE pEnum
     )
 {
-    UNREFERENCED_PARAMETER(pEnum);
+    VarFinishEnumHelper(reinterpret_cast<VARIABLE_ENUM_STRUCT*>(pEnum));
 }

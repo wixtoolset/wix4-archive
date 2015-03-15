@@ -34,7 +34,7 @@ namespace DutilTests
     public ref class VarUtil
     {
     public:
-        [NamedFact(Skip = "varutil Not Implemented Yet.")]
+        [NamedFact]
         void VarUtilBasicTest()
         {
             HRESULT hr = S_OK;
@@ -360,7 +360,7 @@ namespace DutilTests
             VARIABLES_HANDLE pVariables = NULL;
             VARIABLE_ENUM_HANDLE pEnum = NULL;
             VARIABLE_VALUE values[dwIndex];
-            VARIABLE_VALUE* pValue = NULL;
+            VARIABLE_ENUM_VALUE* pValue = NULL;
 
             try
             {
@@ -386,7 +386,7 @@ namespace DutilTests
                 {
                     NativeAssert::ValidReturnCode(hr, S_OK);
 
-                    VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->pvContext);
+                    VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->value.pvContext);
                     pContext->dw += 1;
 
                     hr = VarNextVariable(pEnum, &pValue);
@@ -409,7 +409,7 @@ namespace DutilTests
                 {
                     NativeAssert::ValidReturnCode(hr, S_OK);
 
-                    VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->pvContext);
+                    VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->value.pvContext);
                     pContext->dw += 1;
 
                     hr = VarNextVariable(pEnum, &pValue);
@@ -426,7 +426,7 @@ namespace DutilTests
             finally
             {
                 VarFinishEnum(pEnum);
-                ReleaseVariableValue(pValue);
+                ReleaseVariableEnumValue(pValue);
                 VarDestroy(pVariables, FreeValueContext);
             }
         }

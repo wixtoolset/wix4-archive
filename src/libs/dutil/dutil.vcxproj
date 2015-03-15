@@ -171,6 +171,7 @@
     <ClInclude Include="inc\xmlutil.h" />
     <ClInclude Include="cryputilhelpers.h" />
     <ClInclude Include="precomp.h" />
+    <ClInclude Include="varutilhelpers.h" />
     <ClInclude Include="vrntutilhelpers.h" />
   </ItemGroup>
   <ItemGroup>
