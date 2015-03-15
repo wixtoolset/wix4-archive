@@ -15,7 +15,7 @@ namespace DutilTests
     using namespace System;
     using namespace WixTest;
 
-    void VarSetStringHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LPCWSTR wzValue)
+    void VarSetStringTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LPCWSTR wzValue)
     {
         HRESULT hr = S_OK;
 
@@ -23,7 +23,7 @@ namespace DutilTests
         NativeAssert::Succeeded(hr, "Failed to set {0} to: {1}", wzVariable, wzValue);
     }
 
-    void VarSetNumericHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LONGLONG llValue)
+    void VarSetNumericTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LONGLONG llValue)
     {
         HRESULT hr = S_OK;
 
@@ -31,7 +31,7 @@ namespace DutilTests
         NativeAssert::Succeeded(hr, gcnew String("Failed to set {0} to: {1}"), gcnew String(wzVariable), llValue);
     }
 
-    void VarSetVersionHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, DWORD64 qwValue)
+    void VarSetVersionTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, DWORD64 qwValue)
     {
         HRESULT hr = S_OK;
 
@@ -39,7 +39,7 @@ namespace DutilTests
         NativeAssert::Succeeded(hr, gcnew String("Failed to set {0} to: 0x{1:X8}"), gcnew String(wzVariable), qwValue);
     }
 
-    void VarGetStringHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LPCWSTR wzExpectedValue)
+    void VarGetStringTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LPCWSTR wzExpectedValue)
     {
         HRESULT hr = S_OK;
         LPWSTR scz = NULL;
@@ -56,7 +56,7 @@ namespace DutilTests
         }
     }
 
-    void VarGetNumericHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LONGLONG llExpectedValue)
+    void VarGetNumericTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LONGLONG llExpectedValue)
     {
         HRESULT hr = S_OK;
         LONGLONG llValue = 0;
@@ -66,7 +66,7 @@ namespace DutilTests
         NativeAssert::Equal(llExpectedValue, llValue);
     }
 
-    void VarGetVersionHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, DWORD64 qwExpectedValue)
+    void VarGetVersionTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, DWORD64 qwExpectedValue)
     {
         HRESULT hr = S_OK;
         DWORD64 qwValue = 0;
@@ -76,7 +76,7 @@ namespace DutilTests
         NativeAssert::Equal(qwExpectedValue, qwValue);
     }
 
-    void VarGetFormattedHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LPCWSTR wzExpectedValue)
+    void VarGetFormattedTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzVariable, LPCWSTR wzExpectedValue)
     {
         HRESULT hr = S_OK;
         LPWSTR scz = NULL;
@@ -93,7 +93,7 @@ namespace DutilTests
         }
     }
 
-    void VarFormatStringHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzIn, LPCWSTR wzExpectedValue)
+    void VarFormatStringTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzIn, LPCWSTR wzExpectedValue)
     {
         HRESULT hr = S_OK;
         LPWSTR scz = NULL;
@@ -110,7 +110,7 @@ namespace DutilTests
         }
     }
 
-    void VarEscapeStringHelper(LPCWSTR wzIn, LPCWSTR wzExpectedValue)
+    void VarEscapeStringTestHelper(LPCWSTR wzIn, LPCWSTR wzExpectedValue)
     {
         HRESULT hr = S_OK;
         LPWSTR scz = NULL;
@@ -127,7 +127,7 @@ namespace DutilTests
         }
     }
 
-    bool EvaluateConditionHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzCondition)
+    bool EvaluateConditionTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzCondition)
     {
         HRESULT hr = S_OK;
         BOOL f = FALSE;
@@ -138,7 +138,7 @@ namespace DutilTests
         return f ? true : false;
     }
 
-    bool EvaluateFailureConditionHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzCondition)
+    bool EvaluateFailureConditionTestHelper(VARIABLES_HANDLE pVariables, LPCWSTR wzCondition)
     {
         HRESULT hr = S_OK;
         BOOL f = FALSE;
