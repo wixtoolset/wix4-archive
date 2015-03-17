@@ -1,3 +1,17 @@
+* BobArnson: WIXBUG:4545 - Resized button for de-DE.
+
+* BobArnson: Add WixStdBALanguageId language and documentation.
+
+* BobArnson: WIXBUG:4617 - Added 4.5.2 package group information to doc. Also mentioned that some properties are new to WiX v3.10.
+
+* BobArnson: WIXBUG:4611 - Eliminate mysteriously doubled .pkgdef content.
+
+* BobArnson: WIXBUG:4610 - Write RegisterPerfmonManifest CustomActionData correctly.
+
+* BobArnson: WIXBUG:4553 - Fix Lux generator to exclude any files with non-fragment sections. Fix Lux custom actions to have proper config.
+
+* PhillHogland: WIXBUG:4592 - Register named process, in another user's context with Restart Manager.  If Access Denied, continue install rather than fail.
+
 * thfabba: WIXBUG:4681 - Corrected return type on the lone WOW64 redirection function that returns a BOOLEAN instead of BOOL.
 
 * MikeGC: Fix an issue in ValueMatch() where we can in certain scenarios create unnecessary extra history entries. This is related to upcoming settings expiration feature.
