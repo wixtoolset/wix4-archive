@@ -84,7 +84,28 @@ namespace WixToolset.Bind.Bundles
 
                     if (!Common.IsValidModuleOrBundleVersion(this.Facade.MsiPackage.ProductVersion))
                     {
-                        Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath));
+                        // not a proper .NET version (e.g., five fields); can we get a valid four-part version number?
+                        string version = null;
+                        string[] versionParts = this.Facade.MsiPackage.ProductVersion.Split('.');
+                        int count = versionParts.Length;
+                        if (0 < count)
+                        {
+                            version = versionParts[0];
+                            for (int i = 1; i < 4 && i < count; ++i)
+                            {
+                                version = String.Concat(version, ".", versionParts[i]);
+                            }
+                        }
+                        
+                        if (!String.IsNullOrEmpty(version) && Common.IsValidModuleOrBundleVersion(version))
+                        {
+                            Messaging.Instance.OnMessage(WixWarnings.VersionTruncated(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath, version));
+                            this.Facade.MsiPackage.ProductVersion = version;
+                        }
+                        else
+                        {
+                            Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath));
+                        }
                     }
 
                     if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
