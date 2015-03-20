@@ -1,3 +1,5 @@
+## WixBuild: Version 4.0.2719.0
+
 * BobArnson: WIXBUG:4520 - Added blurb about using a PayloadGroup to get offline capability for .NET redist.
 
 * BobArnson: WIXBUG:4589 - Catch exceptions from Version when passing in arbitrary strings. For bundles, try to recover a four-part version number.
