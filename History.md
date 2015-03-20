@@ -1,3 +1,7 @@
+* BobArnson: Project reference tweaks: 
+  - Removed unnecessary reference to setupicons from x64msi.
+  - Move BuildInParallel=false from global to just project that needs it
+
 * HeathS: Add VSIX property for VS2015 and fix searches for previous versions.
 
 * HeathS: WIXBUG:3060 - Do not redownload package payloads when /layout is restarted.
