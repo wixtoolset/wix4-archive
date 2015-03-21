@@ -139,10 +139,11 @@ DAPI_(HRESULT) VarSetVersion(
 DAPI_(HRESULT) VarSetValue(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
-    __in VARIABLE_VALUE* pValue
+    __in VARIABLE_VALUE* pValue,
+    __in BOOL fLog
     )
 {
-    return VarSetValueHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pValue);
+    return VarSetValueHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pValue, fLog);
 }
 
 DAPI_(HRESULT) VarStartEnum(

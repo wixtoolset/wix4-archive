@@ -121,15 +121,14 @@ static HRESULT VarSetValueHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
-    __in VARIABLE_VALUE* pValue
+    __in VARIABLE_VALUE* pValue,
+    __in BOOL fLog
     );
 static HRESULT VarSetVrntHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in LPCWSTR wzVariable,
-    __in VRNTUTIL_VARIANT_HANDLE pVariant,
-    __in BOOL fLog,
-    __out_opt VARUTIL_VARIABLE** ppVariable
+    __in VRNTUTIL_VARIANT_HANDLE pVariant
     );
 static HRESULT VarStartEnumHelper(
     __in VarMockableFunctions* pFunctions,
@@ -146,6 +145,11 @@ static void VarFinishEnumHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_STRUCT* pEnum
     );
+static HRESULT ConvertVarVariableToVarValue(
+    __in VarMockableFunctions* pFunctions,
+    __in VARUTIL_VARIABLE* pVariable,
+    __out VARIABLE_VALUE** ppValue
+    );
 static HRESULT FindVariableIndexByName(
     __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
@@ -157,6 +161,12 @@ static HRESULT InsertVariable(
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD iPosition
+    );
+static HRESULT SetVariableValue(
+    __in VarMockableFunctions* pFunctions,
+    __in VARUTIL_VARIABLE* pVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __in BOOL fLog
     );
 
 static HRESULT VarCreateHelper(
@@ -355,11 +365,21 @@ static HRESULT VarGetValueHelper(
     __out VARIABLE_VALUE** ppValue
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(ppValue);
-    return E_NOTIMPL;
+    HRESULT hr = S_OK;
+    DWORD iVariable = 0;
+
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
+    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
+
+    if (S_FALSE == hr)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
+
+    hr = ConvertVarVariableToVarValue(pFunctions, pVariables->rgVariables + iVariable, ppValue);
+
+LExit:
+    return hr;
 }
 
 static HRESULT VarSetNumericHelper(
@@ -378,7 +398,7 @@ static HRESULT VarSetNumericHelper(
     hr = VrntSetNumeric(pVariant, llValue);
     ExitOnFailure(hr, "Failed to set numeric variant.");
 
-    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant, TRUE, NULL);
+    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant);
 
 LExit:
     if (pVariant)
@@ -406,7 +426,7 @@ static HRESULT VarSetStringHelper(
     hr = VrntSetString(pVariant, wzValue, 0);
     ExitOnFailure(hr, "Failed to set string variant.");
 
-    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant, TRUE, NULL);
+    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant);
 
 LExit:
     if (pVariant)
@@ -434,7 +454,7 @@ static HRESULT VarSetVersionHelper(
     hr = VrntSetVersion(pVariant, qwValue);
     ExitOnFailure(hr, "Failed to set version variant.");
 
-    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant, TRUE, NULL);
+    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant);
 
 LExit:
     if (pVariant)
@@ -450,32 +470,42 @@ static HRESULT VarSetValueHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
-    __in VARIABLE_VALUE* pValue
-    )
-{
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(pValue);
-    return E_NOTIMPL;
-}
-
-static HRESULT VarSetVrntHelper(
-    __in VarMockableFunctions* pFunctions,
-    __in VARIABLES_STRUCT* pVariables,
-    __in LPCWSTR wzVariable,
-    __in VRNTUTIL_VARIANT_HANDLE pVariant,
-    __in BOOL fLog,
-    __out_opt VARUTIL_VARIABLE** ppVariable
+    __in VARIABLE_VALUE* pValue,
+    __in BOOL fLog
     )
 {
     HRESULT hr = S_OK;
     DWORD iVariable = 0;
-    LONGLONG llValue = 0;
-    LPWSTR sczValue = NULL;
-    DWORD64 qwValue = 0;
-    VARUTIL_VARIABLE* pVariable;
-    VRNTUTIL_VARIANT_TYPE variantType;
+    VARUTIL_VARIABLE* pVariable = NULL;
+    VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
+
+    pVariant = MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, FALSE);
+    ExitOnNull(pVariant, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
+
+    switch (pValue->type)
+    {
+    case VARIABLE_VALUE_TYPE_NONE:
+        VrntUninitialize(pVariant);
+        break;
+
+    case VARIABLE_VALUE_TYPE_NUMERIC:
+        hr = VrntSetNumeric(pVariant, pValue->llValue);
+        break;
+
+    case VARIABLE_VALUE_TYPE_STRING:
+        hr = VrntSetString(pVariant, pValue->sczValue, 0);
+        break;
+
+    case VARIABLE_VALUE_TYPE_VERSION:
+        hr = VrntSetVersion(pVariant, pValue->qwValue);
+        break;
+
+    default:
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Unknown variable type: %u", pValue->type);
+        break;
+    }
+    ExitOnFailure(hr, "Failed to set variant value for variable: %ls", wzVariable);
 
     hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
@@ -487,87 +517,43 @@ static HRESULT VarSetVrntHelper(
     }
 
     pVariable = pVariables->rgVariables + iVariable;
+    pVariable->fHidden = pValue->fHidden;
+    pVariable->pvContext = pValue->pvContext;
 
-    if (fLog)
-    {
-        if (pVariable->fHidden)
-        {
-            pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting hidden variable '%ls'", wzVariable);
-        }
-        else
-        {
-            hr = VrntGetType(pVariant, &variantType);
-            ExitOnFailure(hr, "Failed to get variant type.");
-
-            switch (variantType)
-            {
-            case VRNTUTIL_VARIANT_TYPE_NONE:
-                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", wzVariable);
-
-                VrntUninitialize(pVariable->value);
-                break;
-
-            case VRNTUTIL_VARIANT_TYPE_NUMERIC:
-                hr = VrntGetNumeric(pVariant, &llValue);
-                ExitOnFailure(hr, "Failed to get variant numeric value.");
-
-                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting numeric variable '%ls' to value %lld", wzVariable, llValue);
-
-                hr = VrntSetNumeric(pVariable->value, llValue);
-                break;
-
-            case VRNTUTIL_VARIANT_TYPE_STRING:
-                hr = VrntGetString(pVariant, &sczValue);
-                ExitOnFailure(hr, "Failed to get variant string value.");
-
-                if (!sczValue)
-                {
-                    pFunctions->pfnLogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", wzVariable);
-                }
-                else
-                {
-                    pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting string variable '%ls' to value '%ls'", wzVariable, sczValue);
-                }
-
-                hr = VrntSetString(pVariable->value, sczValue, 0);
-                break;
-
-            case VRNTUTIL_VARIANT_TYPE_VERSION:
-                hr = VrntGetVersion(pVariant, &qwValue);
-                ExitOnFailure(hr, "Failed to get variant version value.");
-
-                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting version variable '%ls' to value '%hu.%hu.%hu.%hu'", wzVariable, (WORD)(qwValue >> 48), (WORD)(qwValue >> 32), (WORD)(qwValue >> 16), (WORD)(qwValue));
-
-                hr = VrntSetVersion(pVariable->value, qwValue);
-                break;
-
-            default:
-                hr = E_INVALIDARG;
-                ExitOnFailure(hr, "Unknown variant type: %u", variantType);
-                break;
-            }
-        }
-    }
-    else
-    {
-        hr = VrntSetValue(pVariable->value, pVariant);
-    }
-    ExitOnFailure(hr, "Failed to set value of variable: %ls", wzVariable);
-
-    if (ppVariable)
-    {
-        *ppVariable = pVariable;
-    }
+    hr = SetVariableValue(pFunctions, pVariable, pVariant, fLog);
 
 LExit:
-    SecureZeroMemory(&llValue, sizeof(LONGLONG));
-    SecureZeroMemory(&qwValue, sizeof(DWORD64));
-    StrSecureZeroFreeString(sczValue);
-
-    if (FAILED(hr) && fLog)
+    if (pVariant)
     {
-        pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting variable failed: ID '%ls', HRESULT 0x%x", wzVariable, hr);
+        VrntUninitialize(pVariant);
+        ReleaseMem(pVariant);
     }
+
+    return hr;
+}
+
+static HRESULT VarSetVrntHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in LPCWSTR wzVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD iVariable = 0;
+
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
+    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
+
+    if (S_FALSE == hr)
+    {
+        hr = InsertVariable(pFunctions, pVariables, wzVariable, iVariable);
+        ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
+    }
+
+    hr = SetVariableValue(pFunctions, pVariables->rgVariables + iVariable, pVariant, TRUE);
+
+LExit:
 
     return hr;
 }
@@ -605,6 +591,66 @@ static void VarFinishEnumHelper(
 {
     UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pEnum);
+}
+
+static HRESULT ConvertVarVariableToVarValue(
+    __in VarMockableFunctions* pFunctions,
+    __in VARUTIL_VARIABLE* pVariable,
+    __out VARIABLE_VALUE** ppValue
+    )
+{
+    HRESULT hr = S_OK;
+    VARIABLE_VALUE* pValue = NULL;
+    VRNTUTIL_VARIANT_TYPE variantType = VRNTUTIL_VARIANT_TYPE_NONE;
+
+    pValue = reinterpret_cast<VARIABLE_VALUE*>(MemAlloc(sizeof(VARIABLE_VALUE), TRUE));
+    ExitOnNull(pValue, hr, E_OUTOFMEMORY, "Failed to allocate memory for VarValue.");
+
+    pValue->fHidden = pVariable->fHidden;
+    pValue->pvContext = pVariable->pvContext;
+    
+    hr = VrntGetType(pVariable->value, &variantType);
+    ExitOnFailure(hr, "Failed to get the type of variable: %ls", pVariable->sczName);
+
+    switch (variantType)
+    {
+    case VRNTUTIL_VARIANT_TYPE_NONE:
+        pValue->type = VARIABLE_VALUE_TYPE_NONE;
+        break;
+
+    case VRNTUTIL_VARIANT_TYPE_NUMERIC:
+        pValue->type = VARIABLE_VALUE_TYPE_NUMERIC;
+        hr = VrntGetNumeric(pVariable->value, &pValue->llValue);
+        ExitOnFailure(hr, "Failed to get the numeric value of variable: %ls", pVariable->sczName);
+        break;
+
+    case VRNTUTIL_VARIANT_TYPE_STRING:
+        pValue->type = VARIABLE_VALUE_TYPE_STRING;
+        hr = VrntGetString(pVariable->value, &pValue->sczValue);
+        ExitOnFailure(hr, "Failed to get the string value of variable: %ls", pVariable->sczName);
+        break;
+
+    case VRNTUTIL_VARIANT_TYPE_VERSION:
+        pValue->type = VARIABLE_VALUE_TYPE_VERSION;
+        hr = VrntGetVersion(pVariable->value, &pValue->qwValue);
+        ExitOnFailure(hr, "Failed to get the version value of variable: %ls", pVariable->sczName);
+        break;
+
+    default:
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Unknown variant type: %u", variantType);
+        break;
+    }
+
+    *ppValue = pValue;
+    pValue = NULL;
+
+LExit:
+    if (pValue)
+    {
+        VarFreeValueHelper(pFunctions, pValue);
+    }
+    return hr;
 }
 
 static HRESULT FindVariableIndexByName(
@@ -710,5 +756,98 @@ static HRESULT InsertVariable(
     ExitOnNull(pVariables->rgVariables[iPosition].value, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
 LExit:
+    return hr;
+}
+
+static HRESULT SetVariableValue(
+    __in VarMockableFunctions* pFunctions,
+    __in VARUTIL_VARIABLE* pVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __in BOOL fLog
+    )
+{
+    HRESULT hr = S_OK;
+    LONGLONG llValue = 0;
+    LPWSTR sczValue = NULL;
+    DWORD64 qwValue = 0;
+    VRNTUTIL_VARIANT_TYPE variantType;
+
+    if (fLog)
+    {
+        if (pVariable->fHidden)
+        {
+            pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting hidden variable '%ls'", pVariable->sczName);
+            hr = VrntSetValue(pVariable->value, pVariant);
+        }
+        else
+        {
+            hr = VrntGetType(pVariant, &variantType);
+            ExitOnFailure(hr, "Failed to get variant type.");
+
+            switch (variantType)
+            {
+            case VRNTUTIL_VARIANT_TYPE_NONE:
+                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", pVariable->sczName);
+
+                VrntUninitialize(pVariable->value);
+                break;
+
+            case VRNTUTIL_VARIANT_TYPE_NUMERIC:
+                hr = VrntGetNumeric(pVariant, &llValue);
+                ExitOnFailure(hr, "Failed to get variant numeric value.");
+
+                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting numeric variable '%ls' to value %lld", pVariable->sczName, llValue);
+
+                hr = VrntSetNumeric(pVariable->value, llValue);
+                break;
+
+            case VRNTUTIL_VARIANT_TYPE_STRING:
+                hr = VrntGetString(pVariant, &sczValue);
+                ExitOnFailure(hr, "Failed to get variant string value.");
+
+                if (!sczValue)
+                {
+                    pFunctions->pfnLogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", pVariable->sczName);
+                }
+                else
+                {
+                    pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting string variable '%ls' to value '%ls'", pVariable->sczName, sczValue);
+                }
+
+                hr = VrntSetString(pVariable->value, sczValue, 0);
+                break;
+
+            case VRNTUTIL_VARIANT_TYPE_VERSION:
+                hr = VrntGetVersion(pVariant, &qwValue);
+                ExitOnFailure(hr, "Failed to get variant version value.");
+
+                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting version variable '%ls' to value '%hu.%hu.%hu.%hu'", pVariable->sczName, (WORD)(qwValue >> 48), (WORD)(qwValue >> 32), (WORD)(qwValue >> 16), (WORD)(qwValue));
+
+                hr = VrntSetVersion(pVariable->value, qwValue);
+                break;
+
+            default:
+                hr = E_INVALIDARG;
+                ExitOnFailure(hr, "Unknown variant type: %u", variantType);
+                break;
+            }
+        }
+    }
+    else
+    {
+        hr = VrntSetValue(pVariable->value, pVariant);
+    }
+    ExitOnFailure(hr, "Failed to set value of variable: %ls", pVariable->sczName);
+
+LExit:
+    SecureZeroMemory(&llValue, sizeof(LONGLONG));
+    SecureZeroMemory(&qwValue, sizeof(DWORD64));
+    StrSecureZeroFreeString(sczValue);
+
+    if (FAILED(hr) && fLog)
+    {
+        pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting variable failed: ID '%ls', HRESULT 0x%x", pVariable->sczName, hr);
+    }
+
     return hr;
 }

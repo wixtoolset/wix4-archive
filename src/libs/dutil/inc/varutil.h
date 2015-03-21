@@ -211,7 +211,8 @@ VarSetValue - sets the value of the variable along with its metadata.
 HRESULT DAPI VarSetValue(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
-    __in VARIABLE_VALUE* pValue
+    __in VARIABLE_VALUE* pValue,
+    __in BOOL fLog
     );
 
 /********************************************************************

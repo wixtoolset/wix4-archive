@@ -44,10 +44,14 @@ namespace DutilTests
 
             hr = LogOpen(NULL, L"VarUtilIntegrationTest", NULL, L"txt", FALSE, FALSE, NULL);
             NativeAssert::Succeeded(hr, "Failed to open log.");
+
+            hr = CrypInitialize();
+            NativeAssert::Succeeded(hr, "CrypInitialize failed.");
         }
 
         void TestUninitialize() override
         {
+            CrypUninitialize();
             LogUninitialize(FALSE);
 
             WixTestBase::TestUninitialize();
@@ -338,7 +342,7 @@ namespace DutilTests
             }
         }
 
-        [NamedFact(Skip = "varutil Not Implemented Yet.")]
+        [NamedFact]
         void VarUtilValueTest()
         {
             HRESULT hr = S_OK;
@@ -453,57 +457,58 @@ namespace DutilTests
     private:
         void InitNoneValue(VARIABLES_HANDLE pVariables, VARIABLE_VALUE* pValue, BOOL fHidden, DWORD dw, LPCWSTR wz)
         {
+            InitValueContext(pValue, dw, wz);
+
             pValue->type = VARIABLE_VALUE_TYPE_NONE;
             pValue->fHidden = fHidden;
 
-            InitValueContext(pValue, dw, wz);
-
-            HRESULT hr = VarSetValue(pVariables, wz, pValue);
+            HRESULT hr = VarSetValue(pVariables, wz, pValue, TRUE);
             NativeAssert::Succeeded(hr, "Failed to set value for variable {0}", wz);
         }
 
         void InitNumericValue(VARIABLES_HANDLE pVariables, VARIABLE_VALUE* pValue, LONGLONG llValue, BOOL fHidden, DWORD dw, LPCWSTR wz)
         {
+            InitValueContext(pValue, dw, wz);
+
             pValue->type = VARIABLE_VALUE_TYPE_NUMERIC;
             pValue->fHidden = fHidden;
 
             pValue->llValue = llValue;
 
-            InitValueContext(pValue, dw, wz);
-
-            HRESULT hr = VarSetValue(pVariables, wz, pValue);
+            HRESULT hr = VarSetValue(pVariables, wz, pValue, TRUE);
             NativeAssert::Succeeded(hr, "Failed to set value for variable {0}", wz);
         }
 
         void InitStringValue(VARIABLES_HANDLE pVariables, VARIABLE_VALUE* pValue, LPWSTR wzValue, BOOL fHidden, DWORD dw, LPCWSTR wz)
         {
+            InitValueContext(pValue, dw, wz);
+
             pValue->type = VARIABLE_VALUE_TYPE_STRING;
             pValue->fHidden = fHidden;
 
             HRESULT hr = StrAllocString(&pValue->sczValue, wzValue, 0);
             NativeAssert::Succeeded(hr, "Failed to alloc string: {0}", wzValue);
 
-            InitValueContext(pValue, dw, wz);
-
-            hr = VarSetValue(pVariables, wz, pValue);
+            hr = VarSetValue(pVariables, wz, pValue, TRUE);
             NativeAssert::Succeeded(hr, "Failed to set value for variable {0}", wz);
         }
 
         void InitVersionValue(VARIABLES_HANDLE pVariables, VARIABLE_VALUE* pValue, DWORD64 qwValue, BOOL fHidden, DWORD dw, LPCWSTR wz)
         {
+            InitValueContext(pValue, dw, wz);
+
             pValue->type = VARIABLE_VALUE_TYPE_VERSION;
             pValue->fHidden = fHidden;
 
             pValue->qwValue = qwValue;
 
-            InitValueContext(pValue, dw, wz);
-
-            HRESULT hr = VarSetValue(pVariables, wz, pValue);
+            HRESULT hr = VarSetValue(pVariables, wz, pValue, TRUE);
             NativeAssert::Succeeded(hr, "Failed to set value for variable {0}", wz);
         }
 
         void InitValueContext(VARIABLE_VALUE* pValue, DWORD dw, LPCWSTR wz)
         {
+            memset(pValue, 0, sizeof(VARIABLE_VALUE));
             pValue->pvContext = MemAlloc(sizeof(VarUtilContext), TRUE);
             VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->pvContext);
             if (!pContext)
@@ -526,11 +531,13 @@ namespace DutilTests
                 VarUtilContext* pExpectedContext = reinterpret_cast<VarUtilContext*>(pExpectedValue->pvContext);
                 NativeAssert::True(NULL != pExpectedContext);
 
+                LogStringLine(REPORT_STANDARD, "Verifying Variable: %ls", pExpectedContext->scz);
+
                 HRESULT hr = VarGetValue(pVariables, pExpectedContext->scz, &pActualValue);
                 NativeAssert::Succeeded(hr, "Failed to get value: {0}", pExpectedContext->scz);
 
                 NativeAssert::Equal<DWORD>(pExpectedValue->type, pActualValue->type);
-                NativeAssert::InRange<DWORD>(pExpectedValue->type, VARIABLE_VALUE_TYPE_NONE, VARIABLE_VALUE_TYPE_STRING);
+                NativeAssert::InRange<DWORD>(pExpectedValue->type, VARIABLE_VALUE_TYPE_NONE, VARIABLE_VALUE_TYPE_VERSION);
 
                 switch (pExpectedValue->type)
                 {
