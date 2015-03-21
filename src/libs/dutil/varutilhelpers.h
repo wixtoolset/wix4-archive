@@ -9,6 +9,11 @@
 
 #pragma once
 
+typedef struct _VarMockableFunctions
+{
+    PFN_LOGSTRINGLINE pfnLogStringLine;
+} VarMockableFunctions;
+
 typedef struct _VARUTIL_VARIABLE
 {
     LPWSTR sczName;
@@ -36,102 +41,126 @@ const int VARIABLES_HANDLE_BYTES = sizeof(VARIABLES_STRUCT);
 const DWORD GROW_VARIABLE_ARRAY = 3;
 
 static HRESULT VarCreateHelper(
+    __in VarMockableFunctions* pFunctions,
     __out VARIABLES_STRUCT** ppVariables
     );
 static void VarDestroyHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_opt PFN_FREEVARIABLECONTEXT pfnFreeVariableContext
     );
 static void VarFreeEnumValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_VALUE* pValue
     );
 static void VarFreeValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_VALUE* pValue
     );
 static HRESULT VarEscapeStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in_z LPCWSTR wzIn,
     __out_z LPWSTR* psczOut
     );
 static HRESULT VarFormatStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     );
 static HRESULT VarGetFormattedHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     );
 static HRESULT VarGetNumericHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     );
 static HRESULT VarGetStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     );
 static HRESULT VarGetVersionHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
     );
 static HRESULT VarGetValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     );
 static HRESULT VarSetNumericHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in LONGLONG llValue
     );
 static HRESULT VarSetStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in_z_opt LPCWSTR wzValue
     );
 static HRESULT VarSetVersionHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64 qwValue
     );
 static HRESULT VarSetValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in VARIABLE_VALUE* pValue
     );
+static HRESULT VarSetVrntHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in LPCWSTR wzVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __in BOOL fLog,
+    __out_opt VARUTIL_VARIABLE** ppVariable
+    );
 static HRESULT VarStartEnumHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __out VARIABLE_ENUM_STRUCT** ppEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     );
 static HRESULT VarNextVariableHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_STRUCT* pEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     );
 static void VarFinishEnumHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_STRUCT* pEnum
     );
 static HRESULT FindVariableIndexByName(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out DWORD* piVariable
     );
-static HRESULT ForceGetVariant(
-    __in VARIABLES_STRUCT* pVariables,
-    __in_z LPCWSTR wzVariable,
-    __out VRNTUTIL_VARIANT_HANDLE* ppVariant
-    );
 static HRESULT InsertVariable(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD iPosition
     );
 
 static HRESULT VarCreateHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
     __out VARIABLES_STRUCT** ppVariables
     )
 {
@@ -149,6 +178,7 @@ LExit:
 }
 
 static void VarDestroyHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
     __in VARIABLES_STRUCT* pVariables,
     __in_opt PFN_FREEVARIABLECONTEXT pfnFreeVariableContext
     )
@@ -179,17 +209,19 @@ static void VarDestroyHelper(
 }
 
 static void VarFreeEnumValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_VALUE* pValue
     )
 {
     if (pValue)
     {
         ReleaseStr(pValue->sczName);
-        VarFreeValueHelper(&pValue->value);
+        VarFreeValueHelper(pFunctions, &pValue->value);
     }
 }
 
 static void VarFreeValueHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
     __in VARIABLE_VALUE* pValue
     )
 {
@@ -203,22 +235,26 @@ static void VarFreeValueHelper(
 }
 
 static HRESULT VarEscapeStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in_z LPCWSTR wzIn,
     __out_z LPWSTR* psczOut
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(wzIn);
     UNREFERENCED_PARAMETER(psczOut);
     return E_NOTIMPL;
 }
 
 static HRESULT VarFormatStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pVariables);
     UNREFERENCED_PARAMETER(wzIn);
     UNREFERENCED_PARAMETER(psczOut);
@@ -227,11 +263,13 @@ static HRESULT VarFormatStringHelper(
 }
 
 static HRESULT VarGetFormattedHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pVariables);
     UNREFERENCED_PARAMETER(wzVariable);
     UNREFERENCED_PARAMETER(psczValue);
@@ -239,6 +277,7 @@ static HRESULT VarGetFormattedHelper(
 }
 
 static HRESULT VarGetNumericHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
@@ -247,7 +286,7 @@ static HRESULT VarGetNumericHelper(
     HRESULT hr = S_OK;
     DWORD iVariable = 0;
 
-    hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
     if (S_FALSE == hr)
@@ -262,6 +301,7 @@ LExit:
 }
 
 static HRESULT VarGetStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
@@ -270,7 +310,7 @@ static HRESULT VarGetStringHelper(
     HRESULT hr = S_OK;
     DWORD iVariable = 0;
 
-    hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
     if (S_FALSE == hr)
@@ -285,6 +325,7 @@ LExit:
 }
 
 static HRESULT VarGetVersionHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
@@ -293,7 +334,7 @@ static HRESULT VarGetVersionHelper(
     HRESULT hr = S_OK;
     DWORD iVariable = 0;
 
-    hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
     if (S_FALSE == hr)
@@ -308,11 +349,13 @@ LExit:
 }
 
 static HRESULT VarGetValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pVariables);
     UNREFERENCED_PARAMETER(wzVariable);
     UNREFERENCED_PARAMETER(ppValue);
@@ -320,6 +363,7 @@ static HRESULT VarGetValueHelper(
 }
 
 static HRESULT VarSetNumericHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in LONGLONG llValue
@@ -328,16 +372,26 @@ static HRESULT VarSetNumericHelper(
     HRESULT hr = S_OK;
     VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
-    hr = ForceGetVariant(pVariables, wzVariable, &pVariant);
-    ExitOnFailure(hr, "Failed to get variable '&ls' variant.", wzVariable);
+    pVariant = MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, TRUE);
+    ExitOnNull(pVariant, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
     hr = VrntSetNumeric(pVariant, llValue);
+    ExitOnFailure(hr, "Failed to set numeric variant.");
+
+    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant, TRUE, NULL);
 
 LExit:
+    if (pVariant)
+    {
+        VrntUninitialize(pVariant);
+        ReleaseMem(pVariant);
+    }
+
     return hr;
 }
 
 static HRESULT VarSetStringHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in_z_opt LPCWSTR wzValue
@@ -346,16 +400,26 @@ static HRESULT VarSetStringHelper(
     HRESULT hr = S_OK;
     VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
-    hr = ForceGetVariant(pVariables, wzVariable, &pVariant);
-    ExitOnFailure(hr, "Failed to get variable '&ls' variant.", wzVariable);
+    pVariant = MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, TRUE);
+    ExitOnNull(pVariant, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
     hr = VrntSetString(pVariant, wzValue, 0);
+    ExitOnFailure(hr, "Failed to set string variant.");
+
+    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant, TRUE, NULL);
 
 LExit:
+    if (pVariant)
+    {
+        VrntUninitialize(pVariant);
+        ReleaseMem(pVariant);
+    }
+
     return hr;
 }
 
 static HRESULT VarSetVersionHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64 qwValue
@@ -364,33 +428,158 @@ static HRESULT VarSetVersionHelper(
     HRESULT hr = S_OK;
     VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
-    hr = ForceGetVariant(pVariables, wzVariable, &pVariant);
-    ExitOnFailure(hr, "Failed to get variable '&ls' variant.", wzVariable);
+    pVariant = MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, TRUE);
+    ExitOnNull(pVariant, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
     hr = VrntSetVersion(pVariant, qwValue);
+    ExitOnFailure(hr, "Failed to set version variant.");
+
+    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant, TRUE, NULL);
 
 LExit:
+    if (pVariant)
+    {
+        VrntUninitialize(pVariant);
+        ReleaseMem(pVariant);
+    }
+
     return hr;
 }
 
 static HRESULT VarSetValueHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in VARIABLE_VALUE* pValue
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pVariables);
     UNREFERENCED_PARAMETER(wzVariable);
     UNREFERENCED_PARAMETER(pValue);
     return E_NOTIMPL;
 }
 
+static HRESULT VarSetVrntHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in LPCWSTR wzVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __in BOOL fLog,
+    __out_opt VARUTIL_VARIABLE** ppVariable
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD iVariable = 0;
+    LONGLONG llValue = 0;
+    LPWSTR sczValue = NULL;
+    DWORD64 qwValue = 0;
+    VARUTIL_VARIABLE* pVariable;
+    VRNTUTIL_VARIANT_TYPE variantType;
+
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
+    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
+
+    if (S_FALSE == hr)
+    {
+        hr = InsertVariable(pFunctions, pVariables, wzVariable, iVariable);
+        ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
+    }
+
+    pVariable = pVariables->rgVariables + iVariable;
+
+    if (fLog)
+    {
+        if (pVariable->fHidden)
+        {
+            pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting hidden variable '%ls'", wzVariable);
+        }
+        else
+        {
+            hr = VrntGetType(pVariant, &variantType);
+            ExitOnFailure(hr, "Failed to get variant type.");
+
+            switch (variantType)
+            {
+            case VRNTUTIL_VARIANT_TYPE_NONE:
+                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", wzVariable);
+
+                VrntUninitialize(pVariable->value);
+                break;
+
+            case VRNTUTIL_VARIANT_TYPE_NUMERIC:
+                hr = VrntGetNumeric(pVariant, &llValue);
+                ExitOnFailure(hr, "Failed to get variant numeric value.");
+
+                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting numeric variable '%ls' to value %lld", wzVariable, llValue);
+
+                hr = VrntSetNumeric(pVariable->value, llValue);
+                break;
+
+            case VRNTUTIL_VARIANT_TYPE_STRING:
+                hr = VrntGetString(pVariant, &sczValue);
+                ExitOnFailure(hr, "Failed to get variant string value.");
+
+                if (!sczValue)
+                {
+                    pFunctions->pfnLogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", wzVariable);
+                }
+                else
+                {
+                    pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting string variable '%ls' to value '%ls'", wzVariable, sczValue);
+                }
+
+                hr = VrntSetString(pVariable->value, sczValue, 0);
+                break;
+
+            case VRNTUTIL_VARIANT_TYPE_VERSION:
+                hr = VrntGetVersion(pVariant, &qwValue);
+                ExitOnFailure(hr, "Failed to get variant version value.");
+
+                pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting version variable '%ls' to value '%hu.%hu.%hu.%hu'", wzVariable, (WORD)(qwValue >> 48), (WORD)(qwValue >> 32), (WORD)(qwValue >> 16), (WORD)(qwValue));
+
+                hr = VrntSetVersion(pVariable->value, qwValue);
+                break;
+
+            default:
+                hr = E_INVALIDARG;
+                ExitOnFailure(hr, "Unknown variant type: %u", variantType);
+                break;
+            }
+        }
+    }
+    else
+    {
+        hr = VrntSetValue(pVariable->value, pVariant);
+    }
+    ExitOnFailure(hr, "Failed to set value of variable: %ls", wzVariable);
+
+    if (ppVariable)
+    {
+        *ppVariable = pVariable;
+    }
+
+LExit:
+    SecureZeroMemory(&llValue, sizeof(LONGLONG));
+    SecureZeroMemory(&qwValue, sizeof(DWORD64));
+    StrSecureZeroFreeString(sczValue);
+
+    if (FAILED(hr) && fLog)
+    {
+        pFunctions->pfnLogStringLine(REPORT_STANDARD, "Setting variable failed: ID '%ls', HRESULT 0x%x", wzVariable, hr);
+    }
+
+    return hr;
+}
+
 static HRESULT VarStartEnumHelper(
+    __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
     __out VARIABLE_ENUM_STRUCT** ppEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pVariables);
     UNREFERENCED_PARAMETER(ppEnum);
     UNREFERENCED_PARAMETER(ppValue);
@@ -398,23 +587,28 @@ static HRESULT VarStartEnumHelper(
 }
 
 static HRESULT VarNextVariableHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_STRUCT* pEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pEnum);
     UNREFERENCED_PARAMETER(ppValue);
     return E_NOTIMPL;
 }
 
 static void VarFinishEnumHelper(
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_STRUCT* pEnum
     )
 {
+    UNREFERENCED_PARAMETER(pFunctions);
     UNREFERENCED_PARAMETER(pEnum);
 }
 
 static HRESULT FindVariableIndexByName(
+    __in VarMockableFunctions* /*pFunctions*/,
     __in C_VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out DWORD* piVariable
@@ -457,31 +651,8 @@ LExit:
     return hr;
 }
 
-static HRESULT ForceGetVariant(
-    __in VARIABLES_STRUCT* pVariables,
-    __in_z LPCWSTR wzVariable,
-    __out VRNTUTIL_VARIANT_HANDLE* ppVariant
-    )
-{
-    HRESULT hr = S_OK;
-    DWORD iVariable = 0;
-
-    hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
-    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
-
-    if (S_FALSE == hr)
-    {
-        hr = InsertVariable(pVariables, wzVariable, iVariable);
-        ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
-    }
-
-    *ppVariant = pVariables->rgVariables[iVariable].value;
-
-LExit:
-    return hr;
-}
-
 static HRESULT InsertVariable(
+    __in VarMockableFunctions* /*pFunctions*/,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD iPosition

@@ -57,6 +57,49 @@ namespace DutilTests
         }
 
         [NamedFact]
+        void VrntGetTypeTest()
+        {
+            HRESULT hr = S_OK;
+            VRNTUTIL_VARIANT variant = { };
+            VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
+            VRNTUTIL_VARIANT_TYPE expectedType = VRNTUTIL_VARIANT_TYPE_NONE;
+
+            VrntMockableFunctions functions =
+            {
+                StrSecureZeroFreeString,
+                CrypEncryptMemory,
+                CrypDecryptMemory,
+            };
+
+            expectedType = VRNTUTIL_VARIANT_TYPE_NUMERIC;
+            variant.Type = expectedType;
+
+            hr = VrntGetTypeHelper(&functions, &variant, &type);
+            NativeAssert::Succeeded(hr, "VrntGetTypeHelper failed.");
+            NativeAssert::Equal<DWORD>(expectedType, type);
+
+            expectedType = VRNTUTIL_VARIANT_TYPE_STRING;
+            variant.Type = expectedType;
+
+            hr = VrntGetTypeHelper(&functions, &variant, &type);
+            NativeAssert::Succeeded(hr, "VrntGetTypeHelper failed.");
+            NativeAssert::Equal<DWORD>(expectedType, type);
+
+            expectedType = VRNTUTIL_VARIANT_TYPE_VERSION;
+            variant.Type = expectedType;
+
+            hr = VrntGetTypeHelper(&functions, &variant, &type);
+            NativeAssert::Succeeded(hr, "VrntGetTypeHelper failed.");
+            NativeAssert::Equal<DWORD>(expectedType, type);
+
+            expectedType = VRNTUTIL_VARIANT_TYPE_NONE;
+            variant.Type = expectedType;
+            hr = VrntGetTypeHelper(&functions, &variant, &type);
+            NativeAssert::Succeeded(hr, "VrntGetTypeHelper failed.");
+            NativeAssert::Equal<DWORD>(expectedType, type);
+        }
+
+        [NamedFact]
         void VrntGetNumericTest()
         {
             HRESULT hr = S_OK;

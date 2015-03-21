@@ -31,9 +31,28 @@ namespace DutilTests
         }
     }
 
-    public ref class VarUtil
+    public ref class VarUtil : WixTestBase
     {
     public:
+        void TestInitialize() override
+        {
+            WixTestBase::TestInitialize();
+
+            HRESULT hr = S_OK;
+
+            LogInitialize(::GetModuleHandleW(NULL));
+
+            hr = LogOpen(NULL, L"VarUtilIntegrationTest", NULL, L"txt", FALSE, FALSE, NULL);
+            NativeAssert::Succeeded(hr, "Failed to open log.");
+        }
+
+        void TestUninitialize() override
+        {
+            LogUninitialize(FALSE);
+
+            WixTestBase::TestUninitialize();
+        }
+
         [NamedFact]
         void VarUtilBasicTest()
         {

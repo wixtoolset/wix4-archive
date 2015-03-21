@@ -34,6 +34,15 @@ void DAPI VrntUninitialize(
     );
 
 /********************************************************************
+VrntGetType - returns the current type of the variant.
+
+********************************************************************/
+HRESULT DAPI VrntGetType(
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __out VRNTUTIL_VARIANT_TYPE* pType
+    );
+
+/********************************************************************
 VrntGetNumeric - returns the current value in numeric form.
                  If the current type is not numeric,
                  it will attempt to convert it.

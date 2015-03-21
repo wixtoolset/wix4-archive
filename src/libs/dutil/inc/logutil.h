@@ -190,8 +190,15 @@ HRESULT DAPI LogHeader();
 
 HRESULT DAPI LogFooter();
 
-HRESULT LogStringWorkRaw(
+HRESULT DAPI LogStringWorkRaw(
     __in_z LPCSTR szLogData
+    );
+
+
+typedef HRESULT(DAPIV *PFN_LOGSTRINGLINE)(
+    __in REPORT_LEVEL rl,
+    __in_z __format_string LPCSTR szFormat,
+    ...
     );
 
 #ifdef __cplusplus

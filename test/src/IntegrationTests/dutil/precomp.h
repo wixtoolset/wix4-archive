@@ -27,6 +27,7 @@
 #include <fileutil.h>
 #include <guidutil.h>
 #include <iniutil.h>
+#include <logutil.h>
 #include <memutil.h>
 #include <pathutil.h>
 #include <strutil.h>

@@ -24,6 +24,14 @@ DAPI_(void) VrntUninitialize(
     VrntUninitializeHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant);
 }
 
+DAPI_(HRESULT) VrntGetType(
+    __in VRNTUTIL_VARIANT_HANDLE pVariant,
+    __out VRNTUTIL_VARIANT_TYPE* pType
+    )
+{
+    return VrntGetTypeHelper(&vFunctions, (VRNTUTIL_VARIANT*)pVariant, pType);
+}
+
 DAPI_(HRESULT) VrntGetNumeric(
     __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __out LONGLONG* pllValue

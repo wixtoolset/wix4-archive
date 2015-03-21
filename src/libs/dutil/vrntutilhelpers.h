@@ -38,6 +38,11 @@ static void DAPI VrntUninitializeHelper(
     __in VrntMockableFunctions* pFunctions,
     __in VRNTUTIL_VARIANT* pVariant
     );
+static HRESULT DAPI VrntGetTypeHelper(
+    __in VrntMockableFunctions* pFunctions,
+    __in VRNTUTIL_VARIANT* pVariant,
+    __out VRNTUTIL_VARIANT_TYPE* pType
+    );
 static HRESULT DAPI VrntGetNumericHelper(
     __in VrntMockableFunctions* pFunctions,
     __in VRNTUTIL_VARIANT* pVariant,
@@ -120,6 +125,19 @@ static void DAPI VrntUninitializeHelper(
         pFunctions->pfnStrSecureZeroFreeString(pVariant->sczValue);
     }
     SecureZeroMemory(pVariant, sizeof(VRNTUTIL_VARIANT));
+}
+
+static HRESULT DAPI VrntGetTypeHelper(
+    __in VrntMockableFunctions* /*pFunctions*/,
+    __in VRNTUTIL_VARIANT* pVariant,
+    __out VRNTUTIL_VARIANT_TYPE* pType
+    )
+{
+    HRESULT hr = S_OK;
+
+    *pType = pVariant->Type;
+
+    return hr;
 }
 
 static HRESULT DAPI VrntGetNumericHelper(
