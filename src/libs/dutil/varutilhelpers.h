@@ -12,6 +12,8 @@
 typedef struct _VarMockableFunctions
 {
     PFN_LOGSTRINGLINE pfnLogStringLine;
+    PFN_ENTERCRITICALSECTION pfnEnterCriticalSection;
+    PFN_LEAVECRITICALSECTION pfnLeaveCriticalSection;
 } VarMockableFunctions;
 
 typedef struct _VARUTIL_VARIABLE
@@ -35,8 +37,6 @@ typedef struct _VARIABLES_STRUCT
     PFN_VARIABLENOTFOUND pfnVariableNotFound;
     LPVOID pvVariableNotFoundContext;
 } VARIABLES_STRUCT;
-
-typedef const VARIABLES_STRUCT C_VARIABLES_STRUCT;
 
 const int VARIABLE_ENUM_HANDLE_BYTES = sizeof(VARIABLE_ENUM_STRUCT);
 const int VARIABLES_HANDLE_BYTES = sizeof(VARIABLES_STRUCT);
@@ -143,7 +143,7 @@ static HRESULT VarSetVrntHelper(
     );
 static HRESULT VarStartEnumHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __out VARIABLE_ENUM_STRUCT** ppEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     );
@@ -191,7 +191,7 @@ static HRESULT ConvertVarVariableToVarValue(
     );
 static HRESULT FindVariableIndexByName(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out DWORD* piVariable
     );
@@ -408,6 +408,8 @@ static HRESULT VarGetFormattedHelper(
     VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
     LPWSTR scz = NULL;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
     if (E_NOTFOUND == hr)
     {
@@ -439,6 +441,8 @@ static HRESULT VarGetFormattedHelper(
     }
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     StrSecureZeroFreeString(scz);
 
     return hr;
@@ -454,6 +458,8 @@ static HRESULT VarGetNumericHelper(
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
     if (E_NOTFOUND == hr)
     {
@@ -464,6 +470,8 @@ static HRESULT VarGetNumericHelper(
     hr = VrntGetNumeric(pVariable->value, pllValue);
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
@@ -477,6 +485,8 @@ static HRESULT VarGetStringHelper(
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
     if (E_NOTFOUND == hr)
     {
@@ -487,6 +497,8 @@ static HRESULT VarGetStringHelper(
     hr = VrntGetString(pVariable->value, psczValue);
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
@@ -500,6 +512,8 @@ static HRESULT VarGetVersionHelper(
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
     if (E_NOTFOUND == hr)
     {
@@ -510,6 +524,8 @@ static HRESULT VarGetVersionHelper(
     hr = VrntGetVersion(pVariable->value, pqwValue);
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
@@ -523,6 +539,8 @@ static HRESULT VarGetValueHelper(
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
     if (E_NOTFOUND == hr)
     {
@@ -533,6 +551,8 @@ static HRESULT VarGetValueHelper(
     hr = ConvertVarVariableToVarValue(pFunctions, pVariable, ppValue);
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
@@ -633,6 +653,8 @@ static HRESULT VarSetValueHelper(
     VARUTIL_VARIABLE* pVariable = NULL;
     VRNTUTIL_VARIANT_HANDLE pVariant = NULL;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     pVariant = MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, FALSE);
     ExitOnNull(pVariant, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
@@ -678,6 +700,8 @@ static HRESULT VarSetValueHelper(
     hr = SetVariableValue(pFunctions, pVariable, pVariant, fLog);
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     if (pVariant)
     {
         VrntUninitialize(pVariant);
@@ -697,6 +721,8 @@ static HRESULT VarSetVrntHelper(
     HRESULT hr = S_OK;
     DWORD iVariable = 0;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
@@ -710,13 +736,14 @@ static HRESULT VarSetVrntHelper(
     hr = SetVariableValue(pFunctions, pVariables->rgVariables + iVariable, pVariant, TRUE);
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
 
     return hr;
 }
 
 static HRESULT VarStartEnumHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __out VARIABLE_ENUM_STRUCT** ppEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     )
@@ -901,8 +928,8 @@ LExit:
 }
 
 static HRESULT FindVariableIndexByName(
-    __in VarMockableFunctions* /*pFunctions*/,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out DWORD* piVariable
     )
@@ -910,6 +937,8 @@ static HRESULT FindVariableIndexByName(
     HRESULT hr = S_OK;
     DWORD iRangeFirst = 0;
     DWORD cRangeLength = pVariables->cVariables;
+
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
     while (cRangeLength)
     {
@@ -941,6 +970,8 @@ static HRESULT FindVariableIndexByName(
     hr = S_FALSE; // variable not found.
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
@@ -966,6 +997,8 @@ static HRESULT FormatString(
     DWORD cch = 0;
     BOOL fHidden = FALSE;
     MSIHANDLE hRecord = NULL;
+
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
     // Allocate buffer for format string.
     hr = StrAlloc(&sczFormat, lstrlenW(wzIn) + 1);
@@ -1120,6 +1153,8 @@ static HRESULT FormatString(
     }
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     if (rgVariables)
     {
         for (DWORD i = 0; i < cVariables; ++i)
@@ -1154,6 +1189,8 @@ static HRESULT GetVariable(
     VARUTIL_VARIABLE* pVariable = NULL;
     BOOL fLog = FALSE;
 
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
     hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find index of variable: '%ls'", wzVariable);
 
@@ -1180,11 +1217,13 @@ static HRESULT GetVariable(
     *ppVariable = pVariable;
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
 static HRESULT InsertVariable(
-    __in VarMockableFunctions* /*pFunctions*/,
+    __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD iPosition
@@ -1192,6 +1231,8 @@ static HRESULT InsertVariable(
 {
     HRESULT hr = S_OK;
     size_t cbAllocSize = 0;
+
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
     // Ensure there is room in the variable array.
     if (pVariables->cVariables == pVariables->dwMaxVariables)
@@ -1242,6 +1283,8 @@ static HRESULT InsertVariable(
     ExitOnNull(pVariables->rgVariables[iPosition].value, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 
@@ -1254,6 +1297,8 @@ static HRESULT IsVariableHidden(
 {
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
+
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
     hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
     if (E_NOTFOUND != hr)
@@ -1274,6 +1319,8 @@ static HRESULT IsVariableHidden(
     }
 
 LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
     return hr;
 }
 

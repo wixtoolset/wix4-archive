@@ -13,6 +13,8 @@
 static VarMockableFunctions vFunctions =
 {
     LogStringLine,
+    ::EnterCriticalSection,
+    ::LeaveCriticalSection,
 };
 
 // function definitions
@@ -159,12 +161,12 @@ DAPI_(HRESULT) VarSetValue(
 }
 
 DAPI_(HRESULT) VarStartEnum(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __out_bcount(VARIABLE_ENUM_HANDLE_BYTES) VARIABLE_ENUM_HANDLE* ppEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
-    return VarStartEnumHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), reinterpret_cast<VARIABLE_ENUM_STRUCT**>(ppEnum), ppValue);
+    return VarStartEnumHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), reinterpret_cast<VARIABLE_ENUM_STRUCT**>(ppEnum), ppValue);
 }
 
 DAPI_(HRESULT) VarNextVariable(

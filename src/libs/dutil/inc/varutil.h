@@ -21,7 +21,6 @@ extern "C" {
 
 typedef void* VARIABLE_ENUM_HANDLE;
 typedef void* VARIABLES_HANDLE;
-typedef const void* C_VARIABLES_HANDLE;
 
 extern const int VARIABLE_ENUM_HANDLE_BYTES;
 extern const int VARIABLES_HANDLE_BYTES;
@@ -67,6 +66,14 @@ typedef HRESULT(DAPI *PFN_VARIABLENOTFOUND)(
     __in LPVOID pvContext,
     __out BOOL* pfLog,
     __out VARIABLE_VALUE** ppValue
+    );
+
+typedef void(WINAPI *PFN_ENTERCRITICALSECTION)(
+    __inout LPCRITICAL_SECTION lpCriticalSection
+    );
+
+typedef void(WINAPI *PFN_LEAVECRITICALSECTION)(
+    __inout LPCRITICAL_SECTION lpCriticalSection
     );
 
 /********************************************************************
@@ -249,7 +256,7 @@ VarStartEnum - starts the enumeration of the variable group.
 NOTE: caller is responsible for calling VarFinishEnum even if function fails
 ********************************************************************/
 HRESULT DAPI VarStartEnum(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __out_bcount(VARIABLE_ENUM_HANDLE_BYTES) VARIABLE_ENUM_HANDLE* ppEnum,
     __out VARIABLE_ENUM_VALUE** ppValue
     );
