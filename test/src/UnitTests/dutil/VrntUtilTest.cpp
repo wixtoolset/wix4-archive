@@ -320,7 +320,7 @@ namespace DutilTests
                 NativeAssert::Succeeded(hr, "VrntSetString failed.");
                 NativeAssert::PointerEqual(vrntHelper->ExpectedValue, vrntHelper->ActualValue);
                 NativeAssert::PointerEqual(NULL, variant.sczValue);
-                NativeAssert::Equal<DWORD>(VRNTUTIL_VARIANT_TYPE_STRING, variant.Type);
+                NativeAssert::Equal<DWORD>(VRNTUTIL_VARIANT_TYPE_NONE, variant.Type);
             }
             finally
             {
@@ -406,7 +406,7 @@ namespace DutilTests
                 hr = VrntSetValueHelper(&functions, &target, &source);
                 NativeAssert::Succeeded(hr, "VrntSetValueHelper failed.");
                 NativeAssert::PointerEqual(NULL, target.sczValue);
-                NativeAssert::Equal<DWORD>(VRNTUTIL_VARIANT_TYPE_STRING, target.Type);
+                NativeAssert::Equal<DWORD>(VRNTUTIL_VARIANT_TYPE_NONE, target.Type);
 
                 VrntUninitializeHelper(&functions, &source);
                 source.Type = (VRNTUTIL_VARIANT_TYPE)MAXDWORD;
@@ -477,7 +477,7 @@ namespace DutilTests
                 hr = VrntCopyHelper(&functions, &source, &target);
                 NativeAssert::Succeeded(hr, "VrntCopyHelper failed.");
                 NativeAssert::PointerEqual(NULL, target.sczValue);
-                NativeAssert::Equal<DWORD>(VRNTUTIL_VARIANT_TYPE_STRING, target.Type);
+                NativeAssert::Equal<DWORD>(VRNTUTIL_VARIANT_TYPE_NONE, target.Type);
 
                 VrntUninitializeHelper(&functions, &source);
                 source.Type = (VRNTUTIL_VARIANT_TYPE)MAXDWORD;

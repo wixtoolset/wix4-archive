@@ -69,6 +69,13 @@ static HRESULT VarFormatStringHelper(
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     );
+static HRESULT VarFormatStringObfuscatedHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in C_VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzIn,
+    __out_z_opt LPWSTR* psczOut,
+    __out_opt DWORD* pcchOut
+    );
 static HRESULT VarGetFormattedHelper(
     __in VarMockableFunctions* pFunctions,
     __in C_VARIABLES_STRUCT* pVariables,
@@ -145,6 +152,34 @@ static void VarFinishEnumHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLE_ENUM_STRUCT* pEnum
     );
+static HRESULT VarStrAllocHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_part(cch, 0) LPWSTR* ppwz,
+    __in DWORD_PTR cch
+    );
+static HRESULT VarStrAllocStringHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_z(cchSource + 1) LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    );
+static HRESULT VarStrAllocConcatHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    );
+static HRESULT VarStrAllocFormattedHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in __format_string LPCWSTR wzFormat,
+    ...
+    );
+
 static HRESULT ConvertVarVariableToVarValue(
     __in VarMockableFunctions* pFunctions,
     __in VARUTIL_VARIABLE* pVariable,
@@ -156,11 +191,25 @@ static HRESULT FindVariableIndexByName(
     __in_z LPCWSTR wzVariable,
     __out DWORD* piVariable
     );
+static HRESULT FormatString(
+    __in VarMockableFunctions* pFunctions,
+    __in C_VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzIn,
+    __out_z_opt LPWSTR* psczOut,
+    __out_opt DWORD* pcchOut,
+    __in BOOL fObfuscateHiddenVariables
+    );
 static HRESULT InsertVariable(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD iPosition
+    );
+static HRESULT IsVariableHidden(
+    __in VarMockableFunctions* pFunctions,
+    __in C_VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out BOOL* pfHidden
     );
 static HRESULT SetVariableValue(
     __in VarMockableFunctions* pFunctions,
@@ -310,12 +359,18 @@ static HRESULT VarFormatStringHelper(
     __out_opt DWORD* pcchOut
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzIn);
-    UNREFERENCED_PARAMETER(psczOut);
-    UNREFERENCED_PARAMETER(pcchOut);
-    return E_NOTIMPL;
+    return FormatString(pFunctions, pVariables, wzIn, psczOut, pcchOut, FALSE);
+}
+
+static HRESULT VarFormatStringObfuscatedHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in C_VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzIn,
+    __out_z_opt LPWSTR* psczOut,
+    __out_opt DWORD* pcchOut
+    )
+{
+    return FormatString(pFunctions, pVariables, wzIn, psczOut, pcchOut, TRUE);
 }
 
 static HRESULT VarGetFormattedHelper(
@@ -325,11 +380,49 @@ static HRESULT VarGetFormattedHelper(
     __out_z LPWSTR* psczValue
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzVariable);
-    UNREFERENCED_PARAMETER(psczValue);
-    return E_NOTIMPL;
+    HRESULT hr = S_OK;
+    DWORD iPosition = 0;
+    VARUTIL_VARIABLE* pVariable = NULL;
+    VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
+    LPWSTR scz = NULL;
+
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iPosition);
+    ExitOnFailure(hr, "Failed to get index of variable: %ls", wzVariable);
+
+    if (S_FALSE == hr)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
+
+    pVariable = pVariables->rgVariables + iPosition;
+
+    hr = VrntGetType(pVariable->value, &type);
+    ExitOnFailure(hr, "Failed to get the variable type: %ls", wzVariable);
+
+    if (VRNTUTIL_VARIANT_TYPE_NONE == type)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
+
+    // Only strings need to get expanded.
+    if (VRNTUTIL_VARIANT_TYPE_STRING == type)
+    {
+        hr = VrntGetString(pVariable->value, &scz);
+        ExitOnFailure(hr, "Failed to get unformatted string.");
+
+        hr = VarFormatStringHelper(pFunctions, pVariables, scz, psczValue, NULL);
+        ExitOnFailure(hr, "Failed to format value '%ls' of variable: %ls", pVariable->fHidden ? L"*****" : scz, wzVariable);
+    }
+    else
+    {
+        hr = VrntGetString(pVariable->value, psczValue);
+        ExitOnFailure(hr, "Failed to get value as string for variable: %ls", wzVariable);
+    }
+
+LExit:
+    StrSecureZeroFreeString(scz);
+
+    return hr;
 }
 
 static HRESULT VarGetNumericHelper(
@@ -639,6 +732,97 @@ static void VarFinishEnumHelper(
     UNREFERENCED_PARAMETER(pEnum);
 }
 
+static HRESULT VarStrAllocHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_part(cch, 0) LPWSTR* ppwz,
+    __in DWORD_PTR cch
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (fZeroOnRealloc)
+    {
+        hr = StrAllocSecure(ppwz, cch);
+    }
+    else
+    {
+        hr = StrAlloc(ppwz, cch);
+    }
+
+    return hr;
+}
+
+static HRESULT VarStrAllocStringHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_z(cchSource + 1) LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (fZeroOnRealloc)
+    {
+        hr = StrAllocStringSecure(ppwz, wzSource, cchSource);
+    }
+    else
+    {
+        hr = StrAllocString(ppwz, wzSource, cchSource);
+    }
+
+    return hr;
+}
+
+static HRESULT VarStrAllocConcatHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (fZeroOnRealloc)
+    {
+        hr = StrAllocConcatSecure(ppwz, wzSource, cchSource);
+    }
+    else
+    {
+        hr = StrAllocConcat(ppwz, wzSource, cchSource);
+    }
+
+    return hr;
+}
+
+static HRESULT VarStrAllocFormattedHelper(
+    __in VarMockableFunctions* /*pFunctions*/,
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in __format_string LPCWSTR wzFormat,
+    ...
+    )
+{
+    HRESULT hr = S_OK;
+    va_list args;
+
+    va_start(args, wzFormat);
+    if (fZeroOnRealloc)
+    {
+        hr = StrAllocFormattedArgsSecure(ppwz, wzFormat, args);
+    }
+    else
+    {
+        hr = StrAllocFormattedArgs(ppwz, wzFormat, args);
+    }
+    va_end(args);
+
+    return hr;
+}
+
+
 static HRESULT ConvertVarVariableToVarValue(
     __in VarMockableFunctions* pFunctions,
     __in VARUTIL_VARIABLE* pVariable,
@@ -743,6 +927,203 @@ LExit:
     return hr;
 }
 
+static HRESULT FormatString(
+    __in VarMockableFunctions* pFunctions,
+    __in C_VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzIn,
+    __out_z_opt LPWSTR* psczOut,
+    __out_opt DWORD* pcchOut,
+    __in BOOL fObfuscateHiddenVariables
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD er = ERROR_SUCCESS;
+    LPWSTR sczUnformatted = NULL;
+    LPWSTR sczFormat = NULL;
+    LPCWSTR wzRead = NULL;
+    LPCWSTR wzOpen = NULL;
+    LPCWSTR wzClose = NULL;
+    LPWSTR scz = NULL;
+    LPWSTR* rgVariables = NULL;
+    DWORD cVariables = 0;
+    DWORD cch = 0;
+    BOOL fHidden = FALSE;
+    MSIHANDLE hRecord = NULL;
+
+    // Allocate buffer for format string.
+    hr = StrAlloc(&sczFormat, lstrlenW(wzIn) + 1);
+    ExitOnFailure(hr, "Failed to allocate buffer for format string.");
+
+    // Read out variables from the unformatted string and build a format string.
+    wzRead = wzIn;
+    for (;;)
+    {
+        // Scan for opening '['.
+        wzOpen = wcschr(wzRead, L'[');
+        if (!wzOpen)
+        {
+            // End reached, append the remainder of the string and end loop.
+            hr = VarStrAllocConcatHelper(pFunctions, !fObfuscateHiddenVariables, &sczFormat, wzRead, 0);
+            ExitOnFailure(hr, "Failed to append string.");
+            break;
+        }
+
+        // Scan for closing ']'.
+        wzClose = wcschr(wzOpen + 1, L']');
+        if (!wzClose)
+        {
+            // End reached, treat unterminated expander as literal.
+            hr = VarStrAllocConcatHelper(pFunctions, !fObfuscateHiddenVariables, &sczFormat, wzRead, 0);
+            ExitOnFailure(hr, "Failed to append string.");
+            break;
+        }
+        cch = (DWORD)(wzClose - wzOpen - 1);
+
+        if (0 == cch)
+        {
+            // Blank, copy all text including the terminator.
+            hr = VarStrAllocConcatHelper(pFunctions, !fObfuscateHiddenVariables, &sczFormat, wzRead, (DWORD_PTR)(wzClose - wzRead) + 1);
+            ExitOnFailure(hr, "Failed to append string.");
+        }
+        else
+        {
+            // Append text preceding expander.
+            if (wzOpen > wzRead)
+            {
+                hr = VarStrAllocConcatHelper(pFunctions, !fObfuscateHiddenVariables, &sczFormat, wzRead, (DWORD_PTR)(wzOpen - wzRead));
+                ExitOnFailure(hr, "Failed to append string.");
+            }
+
+            // Get variable name.
+            hr = VarStrAllocStringHelper(pFunctions, !fObfuscateHiddenVariables, &scz, wzOpen + 1, cch);
+            ExitOnFailure(hr, "Failed to get variable name.");
+
+            // Allocate space in variable array.
+            if (rgVariables)
+            {
+                LPVOID pv = MemReAlloc(rgVariables, sizeof(LPWSTR) * (cVariables + 1), TRUE);
+                ExitOnNull(pv, hr, E_OUTOFMEMORY, "Failed to reallocate variable array.");
+                rgVariables = (LPWSTR*)pv;
+            }
+            else
+            {
+                rgVariables = (LPWSTR*)MemAlloc(sizeof(LPWSTR) * (cVariables + 1), TRUE);
+                ExitOnNull(rgVariables, hr, E_OUTOFMEMORY, "Failed to allocate variable array.");
+            }
+
+            // Set variable value.
+            if (2 <= cch && L'\\' == wzOpen[1])
+            {
+                // Escape sequence, copy character.
+                hr = VarStrAllocStringHelper(pFunctions, !fObfuscateHiddenVariables, &rgVariables[cVariables], &wzOpen[2], 1);
+            }
+            else
+            {
+                if (fObfuscateHiddenVariables)
+                {
+                    hr = IsVariableHidden(pFunctions, pVariables, scz, &fHidden);
+                    ExitOnFailure(hr, "Failed to determine variable visibility: '%ls'.", scz);
+                }
+
+                if (fHidden)
+                {
+                    hr = StrAllocString(&rgVariables[cVariables], L"*****", 0);
+                }
+                else
+                {
+                    // Get formatted variable value.
+                    hr = VarGetFormattedHelper(pFunctions, pVariables, scz, &rgVariables[cVariables]);
+                    if (E_NOTFOUND == hr) // variable not found.
+                    {
+                        hr = StrAllocStringSecure(&rgVariables[cVariables], L"", 0);
+                    }
+                }
+            }
+            ExitOnFailure(hr, "Failed to set variable value.");
+            ++cVariables;
+
+            // Append placeholder to format string.
+            hr = VarStrAllocFormattedHelper(pFunctions, !fObfuscateHiddenVariables, &scz, L"[%d]", cVariables);
+            ExitOnFailure(hr, "Failed to format placeholder string.");
+
+            hr = VarStrAllocConcatHelper(pFunctions, !fObfuscateHiddenVariables, &sczFormat, scz, 0);
+            ExitOnFailure(hr, "Failed to append placeholder.");
+        }
+
+        // Update read pointer.
+        wzRead = wzClose + 1;
+    }
+
+    // Create record.
+    hRecord = ::MsiCreateRecord(cVariables);
+    ExitOnNull(hRecord, hr, E_OUTOFMEMORY, "Failed to allocate record.");
+
+    // Set format string.
+    er = ::MsiRecordSetStringW(hRecord, 0, sczFormat);
+    ExitOnWin32Error(er, hr, "Failed to set record format string.");
+
+    // Copy record fields.
+    for (DWORD i = 0; i < cVariables; ++i)
+    {
+        if (*rgVariables[i]) // not setting if blank.
+        {
+            er = ::MsiRecordSetStringW(hRecord, i + 1, rgVariables[i]);
+            ExitOnWin32Error(er, hr, "Failed to set record string.");
+        }
+    }
+
+    // Get formatted character count.
+    cch = 0;
+#pragma prefast(push)
+#pragma prefast(disable:6298)
+    er = ::MsiFormatRecordW(NULL, hRecord, L"", &cch);
+#pragma prefast(pop)
+    if (ERROR_MORE_DATA != er)
+    {
+        ExitOnWin32Error(er, hr, "Failed to get formatted length.");
+    }
+
+    // Return formatted string.
+    if (psczOut)
+    {
+        hr = VarStrAllocHelper(pFunctions, !fObfuscateHiddenVariables, &scz, ++cch);
+        ExitOnFailure(hr, "Failed to allocate string.");
+
+        er = ::MsiFormatRecordW(NULL, hRecord, scz, &cch);
+        ExitOnWin32Error(er, hr, "Failed to format record.");
+
+        hr = VarStrAllocStringHelper(pFunctions, !fObfuscateHiddenVariables, psczOut, scz, 0);
+        ExitOnFailure(hr, "Failed to copy string.");
+    }
+
+    // Return character count.
+    if (pcchOut)
+    {
+        *pcchOut = cch;
+    }
+
+LExit:
+    if (rgVariables)
+    {
+        for (DWORD i = 0; i < cVariables; ++i)
+        {
+            StrSecureZeroFreeString(rgVariables[i]);
+        }
+        MemFree(rgVariables);
+    }
+
+    if (hRecord)
+    {
+        ::MsiCloseHandle(hRecord);
+    }
+
+    StrSecureZeroFreeString(sczUnformatted);
+    StrSecureZeroFreeString(sczFormat);
+    StrSecureZeroFreeString(scz);
+
+    return hr;
+}
+
 static HRESULT InsertVariable(
     __in VarMockableFunctions* /*pFunctions*/,
     __in VARIABLES_STRUCT* pVariables,
@@ -800,6 +1181,34 @@ static HRESULT InsertVariable(
     // Allocate value.
     pVariables->rgVariables[iPosition].value = reinterpret_cast<VRNTUTIL_VARIANT_HANDLE>(MemAlloc(VRNTUTIL_VARIANT_HANDLE_BYTES, TRUE));
     ExitOnNull(pVariables->rgVariables[iPosition].value, hr, E_OUTOFMEMORY, "Failed to allocate memory for variant.");
+
+LExit:
+    return hr;
+}
+
+static HRESULT IsVariableHidden(
+    __in VarMockableFunctions* pFunctions,
+    __in C_VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out BOOL* pfHidden
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD iPosition = 0;
+
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iPosition);
+    ExitOnFailure(hr, "Failed to get the index of variable: %ls", wzVariable);
+
+    if (S_FALSE == hr)
+    {
+        // A missing variable does not need its data hidden.
+        *pfHidden = FALSE;
+
+        hr = S_OK;
+        ExitFunction();
+    }
+
+    *pfHidden = pVariables->rgVariables[iPosition].fHidden;
 
 LExit:
     return hr;

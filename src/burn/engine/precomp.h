@@ -68,6 +68,7 @@
 #include <dlutil.h>
 #include <atomutil.h>
 #include <apuputil.h>
+#include <varutil.h>
 
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"

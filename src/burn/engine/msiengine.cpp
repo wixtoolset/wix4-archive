@@ -1342,11 +1342,11 @@ extern "C" HRESULT MsiEngineConcatProperties(
         ExitOnFailure(hr, "Failed to escape string.");
 
         // build part
-        hr = VariableStrAllocFormatted(!fObfuscateHiddenVariables, &sczProperty, L" %s%=\"%s\"", pProperty->sczId, sczEscapedValue);
+        hr = VarStrAllocFormatted(!fObfuscateHiddenVariables, &sczProperty, L" %s%=\"%s\"", pProperty->sczId, sczEscapedValue);
         ExitOnFailure(hr, "Failed to format property string part.");
 
         // append to property string
-        hr = VariableStrAllocConcat(!fObfuscateHiddenVariables, psczProperties, sczProperty, 0);
+        hr = VarStrAllocConcat(!fObfuscateHiddenVariables, psczProperties, sczProperty, 0);
         ExitOnFailure(hr, "Failed to append property string part.");
     }
 
@@ -1642,7 +1642,7 @@ static HRESULT EscapePropertyArgumentString(
     }
 
     // allocate target buffer
-    hr = VariableStrAlloc(fZeroOnRealloc, psczEscapedValue, cch + cchEscape + 1); // character count, plus escape character count, plus null terminator
+    hr = VarStrAlloc(fZeroOnRealloc, psczEscapedValue, cch + cchEscape + 1); // character count, plus escape character count, plus null terminator
     ExitOnFailure(hr, "Failed to allocate string buffer.");
 
     // write to target buffer

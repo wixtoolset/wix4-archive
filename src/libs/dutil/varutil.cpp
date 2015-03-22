@@ -64,6 +64,16 @@ DAPI_(HRESULT) VarFormatString(
     return VarFormatStringHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
 }
 
+DAPI_(HRESULT) VarFormatStringObfuscated(
+    __in C_VARIABLES_HANDLE pVariables,
+    __in_z LPCWSTR wzIn,
+    __out_z_opt LPWSTR* psczOut,
+    __out_opt DWORD* pcchOut
+    )
+{
+    return VarFormatStringObfuscatedHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
+}
+
 DAPI_(HRESULT) VarGetFormatted(
     __in C_VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
@@ -168,4 +178,43 @@ DAPI_(void) VarFinishEnum(
     )
 {
     VarFinishEnumHelper(&vFunctions, reinterpret_cast<VARIABLE_ENUM_STRUCT*>(pEnum));
+}
+
+DAPI_(HRESULT) VarStrAlloc(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_part(cch, 0) LPWSTR* ppwz,
+    __in DWORD_PTR cch
+    )
+{
+    return VarStrAllocHelper(&vFunctions, fZeroOnRealloc, ppwz, cch);
+}
+
+DAPI_(HRESULT) VarStrAllocString(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_z(cchSource + 1) LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    )
+{
+    return VarStrAllocStringHelper(&vFunctions, fZeroOnRealloc, ppwz, wzSource, cchSource);
+}
+
+DAPI_(HRESULT) VarStrAllocConcat(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    )
+{
+    return VarStrAllocConcatHelper(&vFunctions, fZeroOnRealloc, ppwz, wzSource, cchSource);
+}
+
+DAPIV_(HRESULT) VarStrAllocFormatted(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in __format_string LPCWSTR wzFormat,
+    ...
+    )
+{
+    return VarStrAllocFormattedHelper(&vFunctions, fZeroOnRealloc, ppwz, wzFormat);
 }

@@ -113,6 +113,18 @@ HRESULT DAPI VarFormatString(
     );
 
 /********************************************************************
+VarFormatStringObfuscated - same as VarFormatString, but replaces
+                            hidden variables with *****.
+
+********************************************************************/
+HRESULT DAPI VarFormatStringObfuscated(
+    __in C_VARIABLES_HANDLE pVariables,
+    __in_z LPCWSTR wzIn,
+    __out_z_opt LPWSTR* psczOut,
+    __out_opt DWORD* pcchOut
+    );
+
+/********************************************************************
 VarGetFormatted - gets the formatted value of a single variable.
 
 ********************************************************************/
@@ -245,6 +257,53 @@ VarFinishEnum - cleans up resources used for the enumeration.
 ********************************************************************/
 void DAPI VarFinishEnum(
     __in_bcount(VARIABLE_ENUM_HANDLE_BYTES) VARIABLE_ENUM_HANDLE pEnum
+    );
+
+/********************************************************************
+VarStrAlloc - convenience function that calls StrAlloc or StrAllocSecure
+              based on fZeroOnRealloc.
+
+********************************************************************/
+HRESULT DAPI VarStrAlloc(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_part(cch, 0) LPWSTR* ppwz,
+    __in DWORD_PTR cch
+    );
+
+/********************************************************************
+VarStrAllocString - convenience function that calls StrAllocString or StrAllocStringSecure
+                    based on fZeroOnRealloc.
+
+********************************************************************/
+HRESULT DAPI VarStrAllocString(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_ecount_z(cchSource + 1) LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    );
+
+/********************************************************************
+VarStrAllocConcat - convenience function that calls StrAllocConcat or StrAllocConcatSecure
+                    based on fZeroOnRealloc.
+
+********************************************************************/
+HRESULT DAPI VarStrAllocConcat(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in_z LPCWSTR wzSource,
+    __in DWORD_PTR cchSource
+    );
+
+/********************************************************************
+VarStrAllocFormatted - convenience function that calls StrAllocFormatted or StrAllocFormattedSecure
+                       based on fZeroOnRealloc.
+
+********************************************************************/
+HRESULT DAPIV VarStrAllocFormatted(
+    __in BOOL fZeroOnRealloc,
+    __deref_out_z LPWSTR* ppwz,
+    __in __format_string LPCWSTR wzFormat,
+    ...
     );
 
 #if defined(__cplusplus)

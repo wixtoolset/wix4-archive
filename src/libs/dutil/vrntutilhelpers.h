@@ -288,12 +288,13 @@ static HRESULT DAPI VrntSetStringHelper(
     BOOL fEncrypt = pVariant->fValueIsEncrypted;
 
     VrntUninitializeHelper(pFunctions, pVariant);
-    pVariant->Type = VRNTUTIL_VARIANT_TYPE_STRING;
 
     if (wzValue)
     {
         hr = StrAllocString(&pVariant->sczValue, wzValue, cchValue);
         ExitOnFailure(hr, "Failed to copy string.");
+
+        pVariant->Type = VRNTUTIL_VARIANT_TYPE_STRING;
     }
 
     hr = VrntSetEncryptionHelper(pFunctions,pVariant, fEncrypt);
