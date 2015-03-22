@@ -23,7 +23,7 @@ namespace DutilTests
         LPWSTR scz;
     } VarUtilContext;
 
-    void FreeValueContext(LPVOID pvContext)
+    void DAPI FreeValueContext(LPVOID pvContext)
     {
         if (pvContext)
         {
@@ -157,7 +157,7 @@ namespace DutilTests
             }
         }
 
-        [NamedFact(Skip = "varutil Not Implemented Yet.")]
+        [NamedFact]
         void VarUtilEscapeTest()
         {
             // test string escaping

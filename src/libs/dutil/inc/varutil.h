@@ -26,7 +26,7 @@ typedef const void* C_VARIABLES_HANDLE;
 extern const int VARIABLE_ENUM_HANDLE_BYTES;
 extern const int VARIABLES_HANDLE_BYTES;
 
-typedef void(*PFN_FREEVARIABLECONTEXT)(
+typedef void(DAPI *PFN_FREEVARIABLECONTEXT)(
     __in LPVOID pvContext
     );
 

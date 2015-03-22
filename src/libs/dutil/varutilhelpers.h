@@ -241,19 +241,65 @@ static void VarFreeValueHelper(
         {
             ReleaseStr(pValue->sczValue);
         }
+        ReleaseMem(pValue);
     }
 }
 
 static HRESULT VarEscapeStringHelper(
-    __in VarMockableFunctions* pFunctions,
+    __in VarMockableFunctions* /*pFunctions*/,
     __in_z LPCWSTR wzIn,
     __out_z LPWSTR* psczOut
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(wzIn);
-    UNREFERENCED_PARAMETER(psczOut);
-    return E_NOTIMPL;
+    HRESULT hr = S_OK;
+    LPCWSTR wzRead = NULL;
+    LPWSTR pwzEscaped = NULL;
+    LPWSTR pwz = NULL;
+    SIZE_T i = 0;
+
+    // Allocate buffer for escaped string.
+    hr = StrAlloc(&pwzEscaped, lstrlenW(wzIn) + 1);
+    ExitOnFailure(hr, "Failed to allocate buffer for escaped string.");
+
+    // Read through string and move characters, inserting escapes as needed.
+    wzRead = wzIn;
+    for (;;)
+    {
+        // Find next character needing escaping.
+        i = wcscspn(wzRead, L"[]{}");
+
+        // Copy skipped characters.
+        if (0 < i)
+        {
+            hr = StrAllocConcat(&pwzEscaped, wzRead, i);
+            ExitOnFailure(hr, "Failed to append characters.");
+        }
+
+        if (L'\0' == wzRead[i])
+        {
+            break; // end reached.
+        }
+
+        // Escape character.
+        hr = StrAllocFormatted(&pwz, L"[\\%c]", wzRead[i]);
+        ExitOnFailure(hr, "Failed to format escape sequence.");
+
+        hr = StrAllocConcat(&pwzEscaped, pwz, 0);
+        ExitOnFailure(hr, "Failed to append escape sequence.");
+
+        // Update read pointer.
+        wzRead += i + 1;
+    }
+
+    // Return value.
+    hr = StrAllocString(psczOut, pwzEscaped, 0);
+    ExitOnFailure(hr, "Failed to copy string.");
+
+LExit:
+    ReleaseStr(pwzEscaped);
+    ReleaseStr(pwz);
+
+    return hr;
 }
 
 static HRESULT VarFormatStringHelper(
