@@ -57,11 +57,26 @@ typedef struct _VARIABLE_ENUM_VALUE
     VARIABLE_VALUE value;
 } VARIABLE_ENUM_VALUE;
 
+// Callback function that will be called when a variable isn't found,
+// mostly used for lazy initializing variables.
+// To ignore the variable, return S_FALSE.
+// To return a value, set ppValue and return S_OK.
+// To log setting the new variable, set pfLog to TRUE.
+typedef HRESULT(DAPI *PFN_VARIABLENOTFOUND)(
+    __in LPCWSTR wzVariable,
+    __in LPVOID pvContext,
+    __out BOOL* pfLog,
+    __out VARIABLE_VALUE** ppValue
+    );
+
 /********************************************************************
 VarCreate - creates a variables group.
+            pfnVariableNotFound can be used to lazy initialize variables.
 
 ********************************************************************/
 HRESULT DAPI VarCreate(
+    __in_opt PFN_VARIABLENOTFOUND pfnVariableNotFound,
+    __in_opt LPVOID pvVariableNotFoundContext,
     __out_bcount(VARIABLES_HANDLE_BYTES) VARIABLES_HANDLE* ppVariables
     );
 
@@ -106,7 +121,7 @@ VarFormatString - similar to MsiFormatRecord.
 
 ********************************************************************/
 HRESULT DAPI VarFormatString(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
@@ -118,7 +133,7 @@ VarFormatStringObfuscated - same as VarFormatString, but replaces
 
 ********************************************************************/
 HRESULT DAPI VarFormatStringObfuscated(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
@@ -129,7 +144,7 @@ VarGetFormatted - gets the formatted value of a single variable.
 
 ********************************************************************/
 HRESULT DAPI VarGetFormatted(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     );
@@ -141,7 +156,7 @@ VarGetNumeric - gets the numeric value of a variable.  If the type of
 
 ********************************************************************/
 HRESULT DAPI VarGetNumeric(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     );
@@ -153,7 +168,7 @@ VarGetString - gets the unformatted string value of a variable.  If
 
 ********************************************************************/
 HRESULT DAPI VarGetString(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     );
@@ -165,7 +180,7 @@ VarGetVersion - gets the version value of a variable.  If the type of
 
 ********************************************************************/
 HRESULT DAPI VarGetVersion(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
     );
@@ -175,7 +190,7 @@ VarGetValue - gets the value of a variable along with its metadata.
 
 ********************************************************************/
 HRESULT DAPI VarGetValue(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     );

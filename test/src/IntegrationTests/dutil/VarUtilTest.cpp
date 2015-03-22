@@ -31,6 +31,30 @@ namespace DutilTests
         }
     }
 
+    HRESULT DAPI VarUtilVariableNotFoundTestHelper(LPCWSTR wzVariable, LPVOID /*pvContext*/, BOOL* pfLog, VARIABLE_VALUE** ppValue)
+    {
+        HRESULT hr = S_OK;
+        VARIABLE_VALUE* pValue = NULL;
+
+        pValue = reinterpret_cast<VARIABLE_VALUE*>(MemAlloc(sizeof(VARIABLE_VALUE), TRUE));
+        ExitOnNull(pValue, hr, E_OUTOFMEMORY, "Failed to allocate memory for new variable value: %ls", wzVariable);
+
+        pValue->type = VARIABLE_VALUE_TYPE_STRING;
+        hr = StrAllocString(&pValue->sczValue, wzVariable, 0);
+        ExitOnFailure(hr, "Failed to alloc value string: %ls", wzVariable);
+
+        *ppValue = pValue;
+        pValue = NULL;
+
+        hr = S_OK;
+        *pfLog = TRUE;
+
+    LExit:
+        ReleaseVariableValue(pValue);
+
+        return hr;
+    }
+
     public ref class VarUtil : WixTestBase
     {
     public:
@@ -65,7 +89,7 @@ namespace DutilTests
 
             try
             {
-                hr = VarCreate(&pVariables);
+                hr = VarCreate(NULL, NULL, &pVariables);
                 NativeAssert::Succeeded(hr, "Failed to initialize variables.");
 
                 // set variables
@@ -115,7 +139,7 @@ namespace DutilTests
             DWORD cch = 0;
             try
             {
-                hr = VarCreate(&pVariables);
+                hr = VarCreate(NULL, NULL, &pVariables);
                 NativeAssert::Succeeded(hr, "Failed to initialize variables.");
 
                 // set variables
@@ -174,7 +198,7 @@ namespace DutilTests
 
             try
             {
-                hr = VarCreate(&pVariables);
+                hr = VarCreate(NULL, NULL, &pVariables);
                 NativeAssert::Succeeded(hr, "Failed to initialize variables.");
 
                 // set variables
@@ -351,7 +375,7 @@ namespace DutilTests
 
             try
             {
-                hr = VarCreate(&pVariables);
+                hr = VarCreate(NULL, NULL, &pVariables);
                 NativeAssert::Succeeded(hr, "Failed to initialize variables.");
 
                 // set variables
@@ -405,7 +429,7 @@ namespace DutilTests
 
             try
             {
-                hr = VarCreate(&pVariables);
+                hr = VarCreate(NULL, NULL, &pVariables);
                 NativeAssert::Succeeded(hr, "Failed to initialize variables.");
 
                 hr = VarStartEnum(pVariables, &pEnum, &pValue);
@@ -468,6 +492,29 @@ namespace DutilTests
             {
                 VarFinishEnum(pEnum);
                 ReleaseVariableEnumValue(pValue);
+                VarDestroy(pVariables, FreeValueContext);
+            }
+        }
+
+        [NamedFact]
+        void VarUtilVariableNotFoundTest()
+        {
+            HRESULT hr = S_OK;
+            VARIABLES_HANDLE pVariables = NULL;
+            LPWSTR sczValue = NULL;
+
+            try
+            {
+                hr = VarCreate(VarUtilVariableNotFoundTestHelper, NULL, &pVariables);
+                NativeAssert::Succeeded(hr, "Failed to initialize variables.");
+
+                hr = VarFormatString(pVariables, L"[Test1] [Hi] [Three]", &sczValue, NULL);
+                NativeAssert::Succeeded(hr, "VarFormatString failed.");
+                NativeAssert::StringEqual(L"Test1 Hi Three", sczValue);
+            }
+            finally
+            {
+                ReleaseStr(sczValue);
                 VarDestroy(pVariables, FreeValueContext);
             }
         }

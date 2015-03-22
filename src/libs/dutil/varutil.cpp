@@ -18,10 +18,12 @@ static VarMockableFunctions vFunctions =
 // function definitions
 
 DAPI_(HRESULT) VarCreate(
+    __in_opt PFN_VARIABLENOTFOUND pfnVariableNotFound,
+    __in_opt LPVOID pvVariableNotFoundContext,
     __out_bcount(VARIABLES_HANDLE_BYTES) VARIABLES_HANDLE* ppVariables
     )
 {
-    return VarCreateHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT**>(ppVariables));
+    return VarCreateHelper(&vFunctions, pfnVariableNotFound, pvVariableNotFoundContext, reinterpret_cast<VARIABLES_STRUCT**>(ppVariables));
 }
 
 DAPI_(void) VarDestroy(
@@ -55,68 +57,68 @@ DAPI_(HRESULT) VarEscapeString(
 }
 
 DAPI_(HRESULT) VarFormatString(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     )
 {
-    return VarFormatStringHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
+    return VarFormatStringHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
 }
 
 DAPI_(HRESULT) VarFormatStringObfuscated(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     )
 {
-    return VarFormatStringObfuscatedHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
+    return VarFormatStringObfuscatedHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzIn, psczOut, pcchOut);
 }
 
 DAPI_(HRESULT) VarGetFormatted(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
-    return VarGetFormattedHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, psczValue);
+    return VarGetFormattedHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, psczValue);
 }
 
 DAPI_(HRESULT) VarGetNumeric(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     )
 {
-    return VarGetNumericHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, pllValue);
+    return VarGetNumericHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pllValue);
 }
 
 DAPI_(HRESULT) VarGetString(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
-    return VarGetStringHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, psczValue);
+    return VarGetStringHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, psczValue);
 }
 
 DAPI_(HRESULT) VarGetVersion(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
     )
 {
-    return VarGetVersionHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, pqwValue);
+    return VarGetVersionHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pqwValue);
 }
 
 DAPI_(HRESULT) VarGetValue(
-    __in C_VARIABLES_HANDLE pVariables,
+    __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     )
 {
-    return VarGetValueHelper(&vFunctions, reinterpret_cast<C_VARIABLES_STRUCT*>(pVariables), wzVariable, ppValue);
+    return VarGetValueHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, ppValue);
 }
 
 DAPI_(HRESULT) VarSetNumeric(

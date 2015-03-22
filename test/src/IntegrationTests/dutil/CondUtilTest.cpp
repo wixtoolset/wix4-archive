@@ -26,7 +26,7 @@ namespace DutilTests
 
             try
             {
-                hr = VarCreate(&pVariables);
+                hr = VarCreate(NULL, NULL, &pVariables);
                 NativeAssert::Succeeded(hr, "Failed to initialize variables.");
 
                 // set variables

@@ -32,6 +32,8 @@ typedef struct _VARIABLES_STRUCT
     DWORD dwMaxVariables;
     DWORD cVariables;
     VARUTIL_VARIABLE* rgVariables;
+    PFN_VARIABLENOTFOUND pfnVariableNotFound;
+    LPVOID pvVariableNotFoundContext;
 } VARIABLES_STRUCT;
 
 typedef const VARIABLES_STRUCT C_VARIABLES_STRUCT;
@@ -42,6 +44,8 @@ const DWORD GROW_VARIABLE_ARRAY = 3;
 
 static HRESULT VarCreateHelper(
     __in VarMockableFunctions* pFunctions,
+    __in_opt PFN_VARIABLENOTFOUND pfnVariableNotFound,
+    __in_opt LPVOID pvVariableNotFoundContext,
     __out VARIABLES_STRUCT** ppVariables
     );
 static void VarDestroyHelper(
@@ -64,45 +68,45 @@ static HRESULT VarEscapeStringHelper(
     );
 static HRESULT VarFormatStringHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     );
 static HRESULT VarFormatStringObfuscatedHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
     );
 static HRESULT VarGetFormattedHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     );
 static HRESULT VarGetNumericHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     );
 static HRESULT VarGetStringHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     );
 static HRESULT VarGetVersionHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
     );
 static HRESULT VarGetValueHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     );
@@ -193,11 +197,17 @@ static HRESULT FindVariableIndexByName(
     );
 static HRESULT FormatString(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut,
     __in BOOL fObfuscateHiddenVariables
+    );
+static HRESULT GetVariable(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out VARUTIL_VARIABLE** ppVariable
     );
 static HRESULT InsertVariable(
     __in VarMockableFunctions* pFunctions,
@@ -207,7 +217,7 @@ static HRESULT InsertVariable(
     );
 static HRESULT IsVariableHidden(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out BOOL* pfHidden
     );
@@ -219,20 +229,33 @@ static HRESULT SetVariableValue(
     );
 
 static HRESULT VarCreateHelper(
-    __in VarMockableFunctions* /*pFunctions*/,
+    __in VarMockableFunctions* pFunctions,
+    __in_opt PFN_VARIABLENOTFOUND pfnVariableNotFound,
+    __in_opt LPVOID pvVariableNotFoundContext,
     __out VARIABLES_STRUCT** ppVariables
     )
 {
     HRESULT hr = S_OK;
+    VARIABLES_STRUCT* pVariables = NULL;
 
     ExitOnNull(ppVariables, hr, E_INVALIDARG, "Handle not specified while creating variables.");
 
-    *ppVariables = reinterpret_cast<VARIABLES_STRUCT*>(MemAlloc(VARIABLES_HANDLE_BYTES, TRUE));
-    ExitOnNull(*ppVariables, hr, E_OUTOFMEMORY, "Failed to allocate variables object.");
+    pVariables = reinterpret_cast<VARIABLES_STRUCT*>(MemAlloc(VARIABLES_HANDLE_BYTES, TRUE));
+    ExitOnNull(pVariables, hr, E_OUTOFMEMORY, "Failed to allocate variables object.");
 
-    ::InitializeCriticalSection(&(*ppVariables)->csAccess);
+    ::InitializeCriticalSection(&pVariables->csAccess);
+    pVariables->pfnVariableNotFound = pfnVariableNotFound;
+    pVariables->pvVariableNotFoundContext = pvVariableNotFoundContext;
+
+    *ppVariables = pVariables;
+    pVariables = NULL;
 
 LExit:
+    if (pVariables)
+    {
+        VarDestroyHelper(pFunctions, pVariables, NULL);
+    }
+
     return hr;
 }
 
@@ -353,7 +376,7 @@ LExit:
 
 static HRESULT VarFormatStringHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
@@ -364,7 +387,7 @@ static HRESULT VarFormatStringHelper(
 
 static HRESULT VarFormatStringObfuscatedHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut
@@ -375,26 +398,22 @@ static HRESULT VarFormatStringObfuscatedHelper(
 
 static HRESULT VarGetFormattedHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
     HRESULT hr = S_OK;
-    DWORD iPosition = 0;
     VARUTIL_VARIABLE* pVariable = NULL;
     VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
     LPWSTR scz = NULL;
 
-    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iPosition);
-    ExitOnFailure(hr, "Failed to get index of variable: %ls", wzVariable);
-
-    if (S_FALSE == hr)
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND == hr)
     {
-        ExitFunction1(hr = E_NOTFOUND);
+        ExitFunction();
     }
-
-    pVariable = pVariables->rgVariables + iPosition;
+    ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
 
     hr = VrntGetType(pVariable->value, &type);
     ExitOnFailure(hr, "Failed to get the variable type: %ls", wzVariable);
@@ -427,23 +446,22 @@ LExit:
 
 static HRESULT VarGetNumericHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out LONGLONG* pllValue
     )
 {
     HRESULT hr = S_OK;
-    DWORD iVariable = 0;
+    VARUTIL_VARIABLE* pVariable = NULL;
 
-    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
-    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
-
-    if (S_FALSE == hr)
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND == hr)
     {
-        ExitFunction1(hr = E_NOTFOUND);
+        ExitFunction();
     }
+    ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
 
-    hr = VrntGetNumeric(pVariables->rgVariables[iVariable].value, pllValue);
+    hr = VrntGetNumeric(pVariable->value, pllValue);
 
 LExit:
     return hr;
@@ -451,23 +469,22 @@ LExit:
 
 static HRESULT VarGetStringHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out_z LPWSTR* psczValue
     )
 {
     HRESULT hr = S_OK;
-    DWORD iVariable = 0;
+    VARUTIL_VARIABLE* pVariable = NULL;
 
-    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
-    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
-
-    if (S_FALSE == hr)
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND == hr)
     {
-        ExitFunction1(hr = E_NOTFOUND);
+        ExitFunction();
     }
+    ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
 
-    hr = VrntGetString(pVariables->rgVariables[iVariable].value, psczValue);
+    hr = VrntGetString(pVariable->value, psczValue);
 
 LExit:
     return hr;
@@ -475,23 +492,22 @@ LExit:
 
 static HRESULT VarGetVersionHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __in DWORD64* pqwValue
     )
 {
     HRESULT hr = S_OK;
-    DWORD iVariable = 0;
+    VARUTIL_VARIABLE* pVariable = NULL;
 
-    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
-    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
-
-    if (S_FALSE == hr)
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND == hr)
     {
-        ExitFunction1(hr = E_NOTFOUND);
+        ExitFunction();
     }
+    ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
 
-    hr = VrntGetVersion(pVariables->rgVariables[iVariable].value, pqwValue);
+    hr = VrntGetVersion(pVariable->value, pqwValue);
 
 LExit:
     return hr;
@@ -499,23 +515,22 @@ LExit:
 
 static HRESULT VarGetValueHelper(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     )
 {
     HRESULT hr = S_OK;
-    DWORD iVariable = 0;
+    VARUTIL_VARIABLE* pVariable = NULL;
 
-    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
-    ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
-
-    if (S_FALSE == hr)
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND == hr)
     {
-        ExitFunction1(hr = E_NOTFOUND);
+        ExitFunction();
     }
+    ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
 
-    hr = ConvertVarVariableToVarValue(pFunctions, pVariables->rgVariables + iVariable, ppValue);
+    hr = ConvertVarVariableToVarValue(pFunctions, pVariable, ppValue);
 
 LExit:
     return hr;
@@ -651,6 +666,7 @@ static HRESULT VarSetValueHelper(
 
     if (S_FALSE == hr)
     {
+        // Don't call pfnVariableNotFound here because we were already given a value.
         hr = InsertVariable(pFunctions, pVariables, wzVariable, iVariable);
         ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
     }
@@ -686,6 +702,7 @@ static HRESULT VarSetVrntHelper(
 
     if (S_FALSE == hr)
     {
+        // Don't call pfnVariableNotFound here because we were already given a value.
         hr = InsertVariable(pFunctions, pVariables, wzVariable, iVariable);
         ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
     }
@@ -929,7 +946,7 @@ LExit:
 
 static HRESULT FormatString(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzIn,
     __out_z_opt LPWSTR* psczOut,
     __out_opt DWORD* pcchOut,
@@ -1124,6 +1141,48 @@ LExit:
     return hr;
 }
 
+static HRESULT GetVariable(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out VARUTIL_VARIABLE** ppVariable
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD iVariable = 0;
+    VARIABLE_VALUE* pValue = NULL;
+    VARUTIL_VARIABLE* pVariable = NULL;
+    BOOL fLog = FALSE;
+
+    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iVariable);
+    ExitOnFailure(hr, "Failed to find index of variable: '%ls'", wzVariable);
+
+    if (S_FALSE == hr)
+    {
+        if (pVariables->pfnVariableNotFound)
+        {
+            hr = pVariables->pfnVariableNotFound(wzVariable, pVariables->pvVariableNotFoundContext, &fLog, &pValue);
+            ExitOnFailure(hr, "VariableNotFound callback failed.");
+        }
+
+        if (S_FALSE == hr)
+        {
+            ExitFunction1(hr = E_NOTFOUND);
+        }
+        ExitOnNull(pValue, hr, E_INVALIDARG, "VariableNotFound callback returned null on success.");
+
+        hr = VarSetValueHelper(pFunctions, pVariables, wzVariable, pValue, fLog);
+        ExitOnFailure(hr, "Failed to set variable value from VariableNotFound callback: '%ls'", wzVariable);
+    }
+
+    pVariable = &pVariables->rgVariables[iVariable];
+
+    *ppVariable = pVariable;
+
+LExit:
+    return hr;
+}
+
 static HRESULT InsertVariable(
     __in VarMockableFunctions* /*pFunctions*/,
     __in VARIABLES_STRUCT* pVariables,
@@ -1188,27 +1247,31 @@ LExit:
 
 static HRESULT IsVariableHidden(
     __in VarMockableFunctions* pFunctions,
-    __in C_VARIABLES_STRUCT* pVariables,
+    __in VARIABLES_STRUCT* pVariables,
     __in_z LPCWSTR wzVariable,
     __out BOOL* pfHidden
     )
 {
     HRESULT hr = S_OK;
-    DWORD iPosition = 0;
+    VARUTIL_VARIABLE* pVariable = NULL;
 
-    hr = FindVariableIndexByName(pFunctions, pVariables, wzVariable, &iPosition);
-    ExitOnFailure(hr, "Failed to get the index of variable: %ls", wzVariable);
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND != hr)
+    {
+        ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
+    }
 
-    if (S_FALSE == hr)
+    if (E_NOTFOUND == hr)
     {
         // A missing variable does not need its data hidden.
         *pfHidden = FALSE;
 
         hr = S_OK;
-        ExitFunction();
     }
-
-    *pfHidden = pVariables->rgVariables[iPosition].fHidden;
+    else
+    {
+        *pfHidden = pVariable->fHidden;
+    }
 
 LExit:
     return hr;
