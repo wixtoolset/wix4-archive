@@ -165,7 +165,7 @@ extern "C" HRESULT ConditionEvaluate(
     hr = Expect(&context, BURN_SYMBOL_TYPE_END);
     ExitOnFailure(hr, "Failed to expect end symbol.");
 
-    LogId(REPORT_VERBOSE, MSG_CONDITION_RESULT, wzCondition, LoggingTrueFalseToString(f));
+    LogId(REPORT_VERBOSE, MSG_CONDITION_RESULT, wzCondition, LogTrueFalseToString(f));
 
     *pf = f;
     hr = S_OK;

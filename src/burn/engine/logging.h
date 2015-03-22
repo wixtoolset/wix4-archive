@@ -87,10 +87,6 @@ LPCSTR LoggingBoolToString(
     __in BOOL f
     );
 
-LPCSTR LoggingTrueFalseToString(
-    __in BOOL f
-    );
-
 LPCSTR LoggingPackageStateToString(
     __in BOOTSTRAPPER_PACKAGE_STATE packageState
     );

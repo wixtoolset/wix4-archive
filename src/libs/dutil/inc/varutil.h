@@ -203,6 +203,16 @@ HRESULT DAPI VarGetValue(
     );
 
 /********************************************************************
+VarGetVariant - gets the value of a variable.
+
+********************************************************************/
+HRESULT DAPI VarGetVariant(
+    __in VARIABLES_HANDLE pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out VRNTUTIL_VARIANT_HANDLE pVariant
+    );
+
+/********************************************************************
 VarSetNumeric - sets the value of the variable to a number, the type
                 of the variable to numeric, and adds the variable to
                 the group if necessary.
@@ -247,6 +257,17 @@ HRESULT DAPI VarSetValue(
     __in_z LPCWSTR wzVariable,
     __in VARIABLE_VALUE* pValue,
     __in BOOL fLog
+    );
+
+/********************************************************************
+VarSetVariant - sets the value of the variable, and adds the variable
+                to the group if necessary.
+
+********************************************************************/
+HRESULT DAPI VarSetVariant(
+    __in VARIABLES_HANDLE pVariables,
+    __in_z LPCWSTR wzVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant
     );
 
 /********************************************************************

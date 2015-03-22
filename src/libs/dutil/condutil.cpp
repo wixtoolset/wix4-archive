@@ -8,20 +8,19 @@
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
+#include "condutilhelpers.h"
+
+static CondMockableFunctions vFunctions =
+{
+};
 
 // function definitions
 
-/********************************************************************
-CondEvaluate - evaluates the condition using the given variables.
-********************************************************************/
-extern "C" HRESULT DAPI CondEvaluate(
+DAPI_(HRESULT) CondEvaluate(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzCondition,
     __out BOOL* pf
     )
 {
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(wzCondition);
-    UNREFERENCED_PARAMETER(pf);
-    return E_NOTIMPL;
+    return CondEvaluateHelper(&vFunctions, pVariables, wzCondition, pf);
 }

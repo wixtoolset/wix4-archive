@@ -33,6 +33,7 @@
 #include <strutil.h>
 #include <monutil.h>
 #include <regutil.h>
+#include <vrntutil.h>
 #include <varutil.h>
 #include <condutil.h>
 

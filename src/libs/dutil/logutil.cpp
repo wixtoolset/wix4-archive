@@ -802,6 +802,18 @@ LExit:
     return hr;
 }
 
+DAPI_(LPCSTR) LogTrueFalseToString(
+    __in BOOL f
+    )
+{
+    if (f)
+    {
+        return "true";
+    }
+
+    return "false";
+}
+
 //
 // private worker functions
 //

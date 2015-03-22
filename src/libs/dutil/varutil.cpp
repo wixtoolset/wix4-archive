@@ -123,6 +123,15 @@ DAPI_(HRESULT) VarGetValue(
     return VarGetValueHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, ppValue);
 }
 
+DAPI_(HRESULT) VarGetVariant(
+    __in VARIABLES_HANDLE pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out VRNTUTIL_VARIANT_HANDLE pVariant
+    )
+{
+    return VarGetVariantHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pVariant);
+}
+
 DAPI_(HRESULT) VarSetNumeric(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzVariable,
@@ -158,6 +167,15 @@ DAPI_(HRESULT) VarSetValue(
     )
 {
     return VarSetValueHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pValue, fLog);
+}
+
+DAPI_(HRESULT) VarSetVariant(
+    __in VARIABLES_HANDLE pVariables,
+    __in_z LPCWSTR wzVariable,
+    __in VRNTUTIL_VARIANT_HANDLE pVariant
+    )
+{
+    return VarSetVariantHelper(&vFunctions, reinterpret_cast<VARIABLES_STRUCT*>(pVariables), wzVariable, pVariant);
 }
 
 DAPI_(HRESULT) VarStartEnum(

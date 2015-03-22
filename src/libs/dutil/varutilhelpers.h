@@ -9,6 +9,8 @@
 
 #pragma once
 
+// structs
+
 typedef struct _VarMockableFunctions
 {
     PFN_LOGSTRINGLINE pfnLogStringLine;
@@ -38,9 +40,15 @@ typedef struct _VARIABLES_STRUCT
     LPVOID pvVariableNotFoundContext;
 } VARIABLES_STRUCT;
 
+
+// constants
+
 const int VARIABLE_ENUM_HANDLE_BYTES = sizeof(VARIABLE_ENUM_STRUCT);
 const int VARIABLES_HANDLE_BYTES = sizeof(VARIABLES_STRUCT);
 const DWORD GROW_VARIABLE_ARRAY = 3;
+
+
+// function declarations
 
 static HRESULT VarCreateHelper(
     __in VarMockableFunctions* pFunctions,
@@ -110,6 +118,12 @@ static HRESULT VarGetValueHelper(
     __in_z LPCWSTR wzVariable,
     __out VARIABLE_VALUE** ppValue
     );
+static HRESULT VarGetVariantHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out VRNTUTIL_VARIANT_HANDLE pVariant
+    );
 static HRESULT VarSetNumericHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -135,7 +149,7 @@ static HRESULT VarSetValueHelper(
     __in VARIABLE_VALUE* pValue,
     __in BOOL fLog
     );
-static HRESULT VarSetVrntHelper(
+static HRESULT VarSetVariantHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in LPCWSTR wzVariable,
@@ -184,6 +198,9 @@ static HRESULT VarStrAllocFormattedHelper(
     ...
     );
 
+
+// internal function declarations
+
 static HRESULT ConvertVarVariableToVarValue(
     __in VarMockableFunctions* pFunctions,
     __in VARUTIL_VARIABLE* pVariable,
@@ -227,6 +244,9 @@ static HRESULT SetVariableValue(
     __in VRNTUTIL_VARIANT_HANDLE pVariant,
     __in BOOL fLog
     );
+
+
+// function definitions
 
 static HRESULT VarCreateHelper(
     __in VarMockableFunctions* pFunctions,
@@ -556,6 +576,33 @@ LExit:
     return hr;
 }
 
+static HRESULT VarGetVariantHelper(
+    __in VarMockableFunctions* pFunctions,
+    __in VARIABLES_STRUCT* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __out VRNTUTIL_VARIANT_HANDLE pVariant
+    )
+{
+    HRESULT hr = S_OK;
+    VARUTIL_VARIABLE* pVariable = NULL;
+
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
+    hr = GetVariable(pFunctions, pVariables, wzVariable, &pVariable);
+    if (E_NOTFOUND == hr)
+    {
+        ExitFunction();
+    }
+    ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
+
+    hr = VrntCopy(pVariable->value, pVariant);
+
+LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
+    return hr;
+}
+
 static HRESULT VarSetNumericHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -572,7 +619,7 @@ static HRESULT VarSetNumericHelper(
     hr = VrntSetNumeric(pVariant, llValue);
     ExitOnFailure(hr, "Failed to set numeric variant.");
 
-    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant);
+    hr = VarSetVariantHelper(pFunctions, pVariables, wzVariable, pVariant);
 
 LExit:
     if (pVariant)
@@ -600,7 +647,7 @@ static HRESULT VarSetStringHelper(
     hr = VrntSetString(pVariant, wzValue, 0);
     ExitOnFailure(hr, "Failed to set string variant.");
 
-    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant);
+    hr = VarSetVariantHelper(pFunctions, pVariables, wzVariable, pVariant);
 
 LExit:
     if (pVariant)
@@ -628,7 +675,7 @@ static HRESULT VarSetVersionHelper(
     hr = VrntSetVersion(pVariant, qwValue);
     ExitOnFailure(hr, "Failed to set version variant.");
 
-    hr = VarSetVrntHelper(pFunctions, pVariables, wzVariable, pVariant);
+    hr = VarSetVariantHelper(pFunctions, pVariables, wzVariable, pVariant);
 
 LExit:
     if (pVariant)
@@ -711,7 +758,7 @@ LExit:
     return hr;
 }
 
-static HRESULT VarSetVrntHelper(
+static HRESULT VarSetVariantHelper(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
     __in LPCWSTR wzVariable,
@@ -867,6 +914,13 @@ static HRESULT VarStrAllocFormattedHelper(
 }
 
 
+// internal function definitions
+
+/********************************************************************
+ConvertVarVariableToVarValue - copy a variable into a VARIABLE_VALUE,
+                               usually for external consumers.
+
+********************************************************************/
 static HRESULT ConvertVarVariableToVarValue(
     __in VarMockableFunctions* pFunctions,
     __in VARUTIL_VARIABLE* pVariable,
@@ -927,6 +981,12 @@ LExit:
     return hr;
 }
 
+/********************************************************************
+FindVariableIndexByName - finds the index for the given variable name.
+                          If the variable doesn't exist, returns S_FALSE
+                          with the index that it should be inserted at.
+
+********************************************************************/
 static HRESULT FindVariableIndexByName(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -975,6 +1035,10 @@ LExit:
     return hr;
 }
 
+/********************************************************************
+FormatString - formats wzIn using the variables in pVariables.
+
+********************************************************************/
 static HRESULT FormatString(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -1176,6 +1240,13 @@ LExit:
     return hr;
 }
 
+/********************************************************************
+GetVariable - gets the VARUTIL_VARIABLE for the given variable name.
+              If the variable doesn't exist, it will attempt to use
+              the VariableNotFound callback.  If it still doesn't
+              exist, returns E_NOTFOUND.
+
+********************************************************************/
 static HRESULT GetVariable(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -1222,6 +1293,10 @@ LExit:
     return hr;
 }
 
+/********************************************************************
+InsertVariable - inserts the given variable into the internal data structure.
+
+********************************************************************/
 static HRESULT InsertVariable(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -1288,6 +1363,10 @@ LExit:
     return hr;
 }
 
+/********************************************************************
+IsVariableHidden - returns whether the given variable is hidden.
+
+********************************************************************/
 static HRESULT IsVariableHidden(
     __in VarMockableFunctions* pFunctions,
     __in VARIABLES_STRUCT* pVariables,
@@ -1324,6 +1403,10 @@ LExit:
     return hr;
 }
 
+/********************************************************************
+SetVariableValue - sets the value of the given variable, logging appropriately.
+
+********************************************************************/
 static HRESULT SetVariableValue(
     __in VarMockableFunctions* pFunctions,
     __in VARUTIL_VARIABLE* pVariable,

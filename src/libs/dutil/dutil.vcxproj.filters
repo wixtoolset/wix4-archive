@@ -353,6 +353,9 @@
     <ClInclude Include="inc\polcutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="condutilhelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="cryputilhelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>

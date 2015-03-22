@@ -2994,8 +2994,8 @@ extern "C" void PlanDump(
     LogStringLine(REPORT_STANDARD, "--- Begin plan dump ---");
 
     LogStringLine(REPORT_STANDARD, "Plan action: %hs", LoggingBurnActionToString(pPlan->action));
-    LogStringLine(REPORT_STANDARD, "     per-machine: %hs", LoggingTrueFalseToString(pPlan->fPerMachine));
-    LogStringLine(REPORT_STANDARD, "     keep registration by default: %hs", LoggingTrueFalseToString(pPlan->fKeepRegistrationDefault));
+    LogStringLine(REPORT_STANDARD, "     per-machine: %hs", LogTrueFalseToString(pPlan->fPerMachine));
+    LogStringLine(REPORT_STANDARD, "     keep registration by default: %hs", LogTrueFalseToString(pPlan->fKeepRegistrationDefault));
     LogStringLine(REPORT_STANDARD, "     estimated size: %llu", pPlan->qwEstimatedSize);
 
     LogStringLine(REPORT_STANDARD, "Plan cache size: %llu", pPlan->qwCacheSizeTotal);

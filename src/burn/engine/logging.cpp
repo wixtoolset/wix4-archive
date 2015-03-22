@@ -308,18 +308,6 @@ extern "C" LPCSTR LoggingBoolToString(
     return "No";
 }
 
-extern "C" LPCSTR LoggingTrueFalseToString(
-    __in BOOL f
-    )
-{
-    if (f)
-    {
-        return "true";
-    }
-
-    return "false";
-}
-
 extern "C" LPCSTR LoggingPackageStateToString(
     __in BOOTSTRAPPER_PACKAGE_STATE packageState
     )

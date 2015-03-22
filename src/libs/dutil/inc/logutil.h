@@ -194,6 +194,10 @@ HRESULT DAPI LogStringWorkRaw(
     __in_z LPCSTR szLogData
     );
 
+LPCSTR DAPI LogTrueFalseToString(
+    __in BOOL f
+    );
+
 
 typedef HRESULT(DAPIV *PFN_LOGSTRINGLINE)(
     __in REPORT_LEVEL rl,

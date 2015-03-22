@@ -95,9 +95,9 @@
 #include "uncutil.h"
 #include "uriutil.h"
 #include "userutil.h"
-#include "varutil.h"
-#include "condutil.h" // NOTE: This must come after varutil.h since it uses it.
 #include "vrntutil.h"
+#include "varutil.h" // NOTE: This must come after vrntutil.h since it uses it.
+#include "condutil.h" // NOTE: This must come after varutil.h since it uses it.
 #include "wiutil.h"
 #include "wuautil.h"
 #include <comutil.h>  // This header is needed for msxml2.h to compile correctly

@@ -169,6 +169,7 @@
     <ClInclude Include="inc\wiutil.h" />
     <ClInclude Include="inc\wuautil.h" />
     <ClInclude Include="inc\xmlutil.h" />
+    <ClInclude Include="condutilhelpers.h" />
     <ClInclude Include="cryputilhelpers.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="varutilhelpers.h" />

@@ -15,6 +15,10 @@ extern "C" {
 
 // function declarations
 
+/********************************************************************
+CondEvaluate - evaluates the condition using the given variables.
+
+********************************************************************/
 HRESULT DAPI CondEvaluate(
     __in VARIABLES_HANDLE pVariables,
     __in_z LPCWSTR wzCondition,

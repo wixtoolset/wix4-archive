@@ -15,10 +15,33 @@ namespace DutilTests
     using namespace Xunit;
     using namespace WixTest;
 
-    public ref class CondUtil
+    public ref class CondUtil : WixTestBase
     {
     public:
-        [NamedFact(Skip = "condutil Not Implemented Yet.")]
+        void TestInitialize() override
+        {
+            WixTestBase::TestInitialize();
+
+            HRESULT hr = S_OK;
+
+            LogInitialize(::GetModuleHandleW(NULL));
+
+            hr = LogOpen(NULL, L"CondUtilIntegrationTest", NULL, L"txt", FALSE, FALSE, NULL);
+            NativeAssert::Succeeded(hr, "Failed to open log.");
+
+            hr = CrypInitialize();
+            NativeAssert::Succeeded(hr, "CrypInitialize failed.");
+        }
+
+        void TestUninitialize() override
+        {
+            CrypUninitialize();
+            LogUninitialize(FALSE);
+
+            WixTestBase::TestUninitialize();
+        }
+
+        [NamedFact]
         void CondEvaluateTest()
         {
             HRESULT hr = S_OK;
