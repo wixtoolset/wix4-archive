@@ -417,7 +417,7 @@ namespace DutilTests
             }
         }
 
-        [NamedFact(Skip = "varutil Not Implemented Yet.")]
+        [NamedFact]
         void VarUtilEnumTest()
         {
             HRESULT hr = S_OK;
@@ -447,17 +447,21 @@ namespace DutilTests
 
                 hr = VarStartEnum(pVariables, &pEnum, &pValue);
                 
-                for (DWORD i = dwIndex - 1; i; --i)
+                for (DWORD i = dwIndex; i; --i)
                 {
-                    NativeAssert::ValidReturnCode(hr, S_OK);
+                    NativeAssert::Equal(S_OK, hr);
+
+                    // Same problem as VarUtilValueTest.
+                    //VerifyEnumValue(pValue, values + (dwIndex - i));
 
                     VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->value.pvContext);
                     pContext->dw += 1;
 
+                    ReleaseVariableEnumValue(pValue);
                     hr = VarNextVariable(pEnum, &pValue);
                 }
 
-                NativeAssert::ValidReturnCode(hr, E_NOMOREITEMS);
+                NativeAssert::Equal(E_NOMOREITEMS, hr);
 
                 for (DWORD j = 0; j < dwIndex; j++)
                 {
@@ -470,17 +474,21 @@ namespace DutilTests
 
                 hr = VarStartEnum(pVariables, &pEnum, &pValue);
 
-                for (DWORD i = dwIndex - 1; i; --i)
+                for (DWORD i = dwIndex; i; --i)
                 {
-                    NativeAssert::ValidReturnCode(hr, S_OK);
+                    NativeAssert::Equal(S_OK, hr);
+
+                    // Same problem as VarUtilValueTest.
+                    //VerifyEnumValue(pValue, values + (dwIndex - i));
 
                     VarUtilContext* pContext = reinterpret_cast<VarUtilContext*>(pValue->value.pvContext);
                     pContext->dw += 1;
 
+                    ReleaseVariableEnumValue(pValue);
                     hr = VarNextVariable(pEnum, &pValue);
                 }
 
-                NativeAssert::ValidReturnCode(hr, E_NOMOREITEMS);
+                NativeAssert::Equal(E_NOMOREITEMS, hr);
 
                 for (DWORD j = 0; j < dwIndex; j++)
                 {
@@ -491,7 +499,6 @@ namespace DutilTests
             finally
             {
                 VarFinishEnum(pEnum);
-                ReleaseVariableEnumValue(pValue);
                 VarDestroy(pVariables, FreeValueContext);
             }
         }
@@ -625,6 +632,35 @@ namespace DutilTests
             {
                 ReleaseVariableValue(pActualValue);
             }
+        }
+
+        void VerifyEnumValue(VARIABLE_ENUM_VALUE* pActualValue, VARIABLE_VALUE* pExpectedValue)
+        {
+            VarUtilContext* pExpectedContext = reinterpret_cast<VarUtilContext*>(pExpectedValue->pvContext);
+            NativeAssert::NotPointerEqual(NULL, pExpectedContext);
+
+            LogStringLine(REPORT_STANDARD, "Verifying Variable: %ls", pExpectedContext->scz);
+
+            NativeAssert::StringEqual(pExpectedContext->scz, pActualValue->sczName);
+            NativeAssert::Equal<DWORD>(pExpectedValue->type, pActualValue->value.type);
+            NativeAssert::InRange<DWORD>(pExpectedValue->type, VARIABLE_VALUE_TYPE_NONE, VARIABLE_VALUE_TYPE_VERSION);
+
+            switch (pExpectedValue->type)
+            {
+            case VARIABLE_VALUE_TYPE_NONE:
+            case VARIABLE_VALUE_TYPE_VERSION:
+                NativeAssert::Equal(pExpectedValue->qwValue, pActualValue->value.qwValue);
+                break;
+            case VARIABLE_VALUE_TYPE_NUMERIC:
+                NativeAssert::Equal(pExpectedValue->llValue, pActualValue->value.llValue);
+                break;
+            case VARIABLE_VALUE_TYPE_STRING:
+                NativeAssert::StringEqual(pExpectedValue->sczValue, pActualValue->value.sczValue);
+                break;
+            }
+
+            NativeAssert::Equal(pExpectedValue->fHidden, pActualValue->value.fHidden);
+            NativeAssert::True(pExpectedValue->pvContext == pActualValue->value.pvContext);
         }
     };
 }

@@ -26,19 +26,25 @@ typedef struct _VARUTIL_VARIABLE
     LPVOID pvContext;
 } VARUTIL_VARIABLE;
 
-typedef struct _VARIABLE_ENUM_STRUCT
-{
-} VARIABLE_ENUM_STRUCT;
-
 typedef struct _VARIABLES_STRUCT
 {
     CRITICAL_SECTION csAccess;
+    LONG cVersion;
+
     DWORD dwMaxVariables;
     DWORD cVariables;
     VARUTIL_VARIABLE* rgVariables;
+
     PFN_VARIABLENOTFOUND pfnVariableNotFound;
     LPVOID pvVariableNotFoundContext;
 } VARIABLES_STRUCT;
+
+typedef struct _VARIABLE_ENUM_STRUCT
+{
+    LONG cVersion;
+    DWORD iPosition;
+    VARIABLES_STRUCT* pVariables;
+} VARIABLE_ENUM_STRUCT;
 
 
 // constants
@@ -204,7 +210,7 @@ static HRESULT VarStrAllocFormattedHelper(
 static HRESULT ConvertVarVariableToVarValue(
     __in VarMockableFunctions* pFunctions,
     __in VARUTIL_VARIABLE* pVariable,
-    __out VARIABLE_VALUE** ppValue
+    __in VARIABLE_VALUE* pValue
     );
 static HRESULT FindVariableIndexByName(
     __in VarMockableFunctions* pFunctions,
@@ -477,6 +483,7 @@ static HRESULT VarGetNumericHelper(
 {
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
+    VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
 
     pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
@@ -486,6 +493,14 @@ static HRESULT VarGetNumericHelper(
         ExitFunction();
     }
     ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
+
+    hr = VrntGetType(pVariable->value, &type);
+    ExitOnFailure(hr, "Failed to get the variable type: %ls", wzVariable);
+
+    if (VRNTUTIL_VARIANT_TYPE_NONE == type)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
 
     hr = VrntGetNumeric(pVariable->value, pllValue);
 
@@ -504,6 +519,7 @@ static HRESULT VarGetStringHelper(
 {
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
+    VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
 
     pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
@@ -513,6 +529,14 @@ static HRESULT VarGetStringHelper(
         ExitFunction();
     }
     ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
+
+    hr = VrntGetType(pVariable->value, &type);
+    ExitOnFailure(hr, "Failed to get the variable type: %ls", wzVariable);
+
+    if (VRNTUTIL_VARIANT_TYPE_NONE == type)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
 
     hr = VrntGetString(pVariable->value, psczValue);
 
@@ -531,6 +555,7 @@ static HRESULT VarGetVersionHelper(
 {
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
+    VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
 
     pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
@@ -540,6 +565,14 @@ static HRESULT VarGetVersionHelper(
         ExitFunction();
     }
     ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
+
+    hr = VrntGetType(pVariable->value, &type);
+    ExitOnFailure(hr, "Failed to get the variable type: %ls", wzVariable);
+
+    if (VRNTUTIL_VARIANT_TYPE_NONE == type)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
 
     hr = VrntGetVersion(pVariable->value, pqwValue);
 
@@ -558,6 +591,7 @@ static HRESULT VarGetValueHelper(
 {
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
+    VARIABLE_VALUE* pValue = NULL;
 
     pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
@@ -568,9 +602,21 @@ static HRESULT VarGetValueHelper(
     }
     ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
 
-    hr = ConvertVarVariableToVarValue(pFunctions, pVariable, ppValue);
+    pValue = reinterpret_cast<VARIABLE_VALUE*>(MemAlloc(sizeof(VARIABLE_VALUE), TRUE));
+    ExitOnNull(pValue, hr, E_OUTOFMEMORY, "Failed to allocate memory for VarValue.");
+
+    hr = ConvertVarVariableToVarValue(pFunctions, pVariable, pValue);
+    ExitOnFailure(hr, "Failed to copy variable.");
+
+    *ppValue = pValue;
+    pValue = NULL;
 
 LExit:
+    if (pValue)
+    {
+        VarFreeValueHelper(pFunctions, pValue);
+    }
+
     pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
 
     return hr;
@@ -585,6 +631,7 @@ static HRESULT VarGetVariantHelper(
 {
     HRESULT hr = S_OK;
     VARUTIL_VARIABLE* pVariable = NULL;
+    VRNTUTIL_VARIANT_TYPE type = VRNTUTIL_VARIANT_TYPE_NONE;
 
     pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
 
@@ -594,6 +641,14 @@ static HRESULT VarGetVariantHelper(
         ExitFunction();
     }
     ExitOnFailure(hr, "Failed to get variable: '%ls'", wzVariable);
+
+    hr = VrntGetType(pVariable->value, &type);
+    ExitOnFailure(hr, "Failed to get the variable type: %ls", wzVariable);
+
+    if (VRNTUTIL_VARIANT_TYPE_NONE == type)
+    {
+        ExitFunction1(hr = E_NOTFOUND);
+    }
 
     hr = VrntCopy(pVariable->value, pVariant);
 
@@ -795,11 +850,35 @@ static HRESULT VarStartEnumHelper(
     __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pVariables);
-    UNREFERENCED_PARAMETER(ppEnum);
-    UNREFERENCED_PARAMETER(ppValue);
-    return E_NOTIMPL;
+    HRESULT hr = S_OK;
+    VARIABLE_ENUM_STRUCT* pEnum = NULL;
+
+    pFunctions->pfnEnterCriticalSection(&pVariables->csAccess);
+
+    if (!pVariables->cVariables)
+    {
+        ExitFunction1(hr = E_NOMOREITEMS);
+    }
+
+    pEnum = reinterpret_cast<VARIABLE_ENUM_STRUCT*>(MemAlloc(VARIABLE_ENUM_HANDLE_BYTES, TRUE));
+    ExitOnNull(pEnum, hr, E_OUTOFMEMORY, "Failed to allocate memory for variable enum struct.");
+
+    pEnum->cVersion = pVariables->cVersion;
+    pEnum->iPosition = 0;
+    pEnum->pVariables = pVariables;
+
+    hr = VarNextVariableHelper(pFunctions, pEnum, ppValue);
+    ExitOnFailure(hr, "Failed to get first variable.");
+
+    *ppEnum = pEnum;
+    pEnum = NULL;
+
+LExit:
+    pFunctions->pfnLeaveCriticalSection(&pVariables->csAccess);
+
+    ReleaseMem(pEnum);
+
+    return hr;
 }
 
 static HRESULT VarNextVariableHelper(
@@ -808,19 +887,55 @@ static HRESULT VarNextVariableHelper(
     __out VARIABLE_ENUM_VALUE** ppValue
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pEnum);
-    UNREFERENCED_PARAMETER(ppValue);
-    return E_NOTIMPL;
+    HRESULT hr = S_OK;
+    VARIABLE_ENUM_VALUE* pValue = NULL;
+    VARUTIL_VARIABLE* pVariable = NULL;
+
+    pFunctions->pfnEnterCriticalSection(&pEnum->pVariables->csAccess);
+
+    if (pEnum->cVersion != pEnum->pVariables->cVersion)
+    {
+        ExitFunction1(hr = E_INVALIDSTATE);
+    }
+
+    if (pEnum->iPosition == pEnum->pVariables->cVariables)
+    {
+        ExitFunction1(hr = E_NOMOREITEMS);
+    }
+
+    pValue = reinterpret_cast<VARIABLE_ENUM_VALUE*>(MemAlloc(sizeof(VARIABLE_ENUM_VALUE), TRUE));
+    ExitOnNull(pValue, hr, E_OUTOFMEMORY, "Failed to allocate memory for variable enum value.");
+
+    pVariable = pEnum->pVariables->rgVariables + pEnum->iPosition;
+
+    hr = ConvertVarVariableToVarValue(pFunctions, pVariable, &pValue->value);
+    ExitOnFailure(hr, "Failed to copy variable value for enumeration.");
+
+    hr = StrAllocString(&pValue->sczName, pVariable->sczName, 0);
+    ExitOnFailure(hr, "Failed to copy variable name for enumeration.");
+
+    ++pEnum->iPosition;
+
+    *ppValue = pValue;
+    pValue = NULL;
+
+LExit:
+    pFunctions->pfnLeaveCriticalSection(&pEnum->pVariables->csAccess);
+
+    if (pValue)
+    {
+        VarFreeEnumValueHelper(pFunctions, pValue);
+    }
+
+    return hr;
 }
 
 static void VarFinishEnumHelper(
-    __in VarMockableFunctions* pFunctions,
+    __in VarMockableFunctions* /*pFunctions*/,
     __in VARIABLE_ENUM_STRUCT* pEnum
     )
 {
-    UNREFERENCED_PARAMETER(pFunctions);
-    UNREFERENCED_PARAMETER(pEnum);
+    ReleaseMem(pEnum);
 }
 
 static HRESULT VarStrAllocHelper(
@@ -922,17 +1037,13 @@ ConvertVarVariableToVarValue - copy a variable into a VARIABLE_VALUE,
 
 ********************************************************************/
 static HRESULT ConvertVarVariableToVarValue(
-    __in VarMockableFunctions* pFunctions,
+    __in VarMockableFunctions* /*pFunctions*/,
     __in VARUTIL_VARIABLE* pVariable,
-    __out VARIABLE_VALUE** ppValue
+    __in VARIABLE_VALUE* pValue
     )
 {
     HRESULT hr = S_OK;
-    VARIABLE_VALUE* pValue = NULL;
     VRNTUTIL_VARIANT_TYPE variantType = VRNTUTIL_VARIANT_TYPE_NONE;
-
-    pValue = reinterpret_cast<VARIABLE_VALUE*>(MemAlloc(sizeof(VARIABLE_VALUE), TRUE));
-    ExitOnNull(pValue, hr, E_OUTOFMEMORY, "Failed to allocate memory for VarValue.");
 
     pValue->fHidden = pVariable->fHidden;
     pValue->pvContext = pVariable->pvContext;
@@ -970,14 +1081,7 @@ static HRESULT ConvertVarVariableToVarValue(
         break;
     }
 
-    *ppValue = pValue;
-    pValue = NULL;
-
 LExit:
-    if (pValue)
-    {
-        VarFreeValueHelper(pFunctions, pValue);
-    }
     return hr;
 }
 
@@ -1348,6 +1452,7 @@ static HRESULT InsertVariable(
     }
 
     ++pVariables->cVariables;
+    ++pVariables->cVersion;
 
     // Allocate name.
     hr = StrAllocString(&(pVariables->rgVariables[iPosition].sczName), wzVariable, 0);
