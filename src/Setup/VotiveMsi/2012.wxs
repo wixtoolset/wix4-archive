@@ -20,6 +20,11 @@
         <PropertyRef Id="VS2012_ROOT_FOLDER" />
         <PropertyRef Id="VS2012_SCHEMAS_DIR" />
 
+        <CustomActionRef Id="VS2012Setup" />
+        <UI>
+            <ProgressText Action="VS2012Setup" Template="[1]">Updating Visual Studio 2012 registration</ProgressText>
+        </UI>
+
         <ComponentGroup Id="Votive2012Components">
             <ComponentGroupRef Id="Votive2010BinaryComponents"/>
             <ComponentGroupRef Id="Votive2012ExtensionComponents"/>
@@ -79,7 +84,9 @@
                 <File Id="WixProject$(var.VsVersion).zip" Source="templates\WixProject.zip" />
             </Component>
         </ComponentGroup>
+    </Fragment>
 
+    <Fragment>
         <ComponentGroup Id="Votive$(var.VsVersion)SchemaComponents" Directory="VS2012_SCHEMAS_DIR">
             <Component>
                 <File Id="LuxSchema$(var.VsVersion)" Source="lux\wixext\Xsd\lux.xsd" />
@@ -100,6 +107,9 @@
                 <File Id="ExtensionXsdDependency$(var.VsVersion)" Source="ext\DependencyExtension\wixext\Xsd\Dependency.xsd" />
             </Component>
             <Component>
+                <File Id="ExtensionXsdComplus$(var.VsVersion)" Source="ext\ComPlusExtension\wixext\xsd\complus.xsd" />
+            </Component>
+            <Component>
                 <File Id="ExtensionXsdDifxApp$(var.VsVersion)" Source="ext\DifxAppExtension\wixext\Xsd\difxapp.xsd" />
             </Component>
             <Component>
@@ -109,7 +119,13 @@
                 <File Id="ExtensionXsdGaming$(var.VsVersion)" Source="ext\GamingExtension\wixext\Xsd\gaming.xsd" />
             </Component>
             <Component>
+                <File Id="ExtensionXsdHttp$(var.VsVersion)" Source="ext\HttpExtension\wixext\Xsd\http.xsd" />
+            </Component>
+            <Component>
                 <File Id="ExtensionXsdIis$(var.VsVersion)" Source="ext\IIsExtension\wixext\xsd\iis.xsd" />
+            </Component>
+            <Component>
+                <File Id="ExtensionXsdMsmq$(var.VsVersion)" Source="ext\MsmqExtension\wixext\xsd\msmq.xsd" />
             </Component>
             <Component>
                 <File Id="ExtensionXsdNetFx$(var.VsVersion)" Source="ext\NetFxExtension\wixext\Xsd\netfx.xsd" />
@@ -130,6 +146,5 @@
                 <File Id="ExtensionXsdVS$(var.VsVersion)" Source="ext\VSExtension\wixext\xsd\vs.xsd" />
             </Component>
         </ComponentGroup>
-
     </Fragment>
 </Wix>

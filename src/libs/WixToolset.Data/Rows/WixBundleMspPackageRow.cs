@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="BundleMspPackageRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundleMspPackageRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -12,14 +12,14 @@ namespace WixToolset.Data.Rows
     /// <summary>
     /// Specialization of a row for the ChainMspPackage table.
     /// </summary>
-    public sealed class BundleMspPackageRow : Row
+    public sealed class WixBundleMspPackageRow : Row
     {
         /// <summary>
         /// Creates a ChainMspPackage row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="tableDef">TableDefinition this row belongs to and should get its column definitions from.</param>
-        public BundleMspPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
+        public WixBundleMspPackageRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
@@ -29,7 +29,7 @@ namespace WixToolset.Data.Rows
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
         /// <param name="table">Table this row belongs to and should get its column definitions from.</param>
-        public BundleMspPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
+        public WixBundleMspPackageRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
         }

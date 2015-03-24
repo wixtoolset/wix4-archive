@@ -12,6 +12,9 @@
     <ProjectReference Include="..\ext\ext.proj">
       <BuildInParallel>false</BuildInParallel>
     </ProjectReference>
+    <ProjectReference Include="..\DTF\dtf.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
 
     <ProjectReference Include="Bundle\Bundle.wixproj" />
     <ProjectReference Include="Nuget\WixToolset.Tools\WixToolset.Tools.swixproj" />

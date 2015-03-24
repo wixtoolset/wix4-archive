@@ -53,6 +53,7 @@
     <ClCompile Include="ReadWriteTest.cpp" />
     <ClCompile Include="EnumValuesTest.cpp" />
     <ClCompile Include="RemoteSyncResolveTest.cpp" />
+    <ClCompile Include="ValueMatchTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CfgTest.h" />

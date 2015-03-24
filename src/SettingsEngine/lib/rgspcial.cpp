@@ -339,7 +339,7 @@ static HRESULT RegSpecialProductWriteBinary(
 
         ReleaseNullSceRow(sceRow);
 
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczCfgValueName, &sceRow);
+        hr = ValueFindRow(pcdb, pcdb->dwAppID, sczCfgValueName, &sceRow);
         if (E_NOTFOUND == hr)
         {
             hr = S_OK;

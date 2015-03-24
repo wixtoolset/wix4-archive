@@ -1,3 +1,65 @@
+## WixBuild: Version 4.0.2719.0
+
+* BobArnson: WIXBUG:4520 - Added blurb about using a PayloadGroup to get offline capability for .NET redist.
+
+* BobArnson: WIXBUG:4589 - Catch exceptions from Version when passing in arbitrary strings. For bundles, try to recover a four-part version number.
+
+* BobArnson: WIXBUG:4545 - Resized button for de-DE.
+
+* BobArnson: Add WixStdBALanguageId language and documentation.
+
+* BobArnson: WIXBUG:4617 - Added 4.5.2 package group information to doc. Also mentioned that some properties are new to WiX v3.10.
+
+* BobArnson: WIXBUG:4611 - Eliminate mysteriously doubled .pkgdef content.
+
+* BobArnson: WIXBUG:4610 - Write RegisterPerfmonManifest CustomActionData correctly.
+
+* BobArnson: WIXBUG:4553 - Fix Lux generator to exclude any files with non-fragment sections. Fix Lux custom actions to have proper config.
+
+* PhillHogland: WIXBUG:4592 - Register named process, in another user's context with Restart Manager.  If Access Denied, continue install rather than fail.
+
+* thfabba: WIXBUG:4681 - Corrected return type on the lone WOW64 redirection function that returns a BOOLEAN instead of BOOL.
+
+* MikeGC: Fix an issue in ValueMatch() where we can in certain scenarios create unnecessary extra history entries. This is related to upcoming settings expiration feature.
+
+* BobArnson: WIXBUG:4662 - Add WIX_IS_NETFRAMEWORK_4XX_OR_LATER_INSTALLED SetProperty custom actions to WixNetfxExtension.
+
+* BobArnson: WixBroadcastSettingChange and WixBroadcastEnvironmentChange custom actions to WixUtilExtension.
+
+* SeanHall: WIXBUG:4686 - Fix compiling WixBundlePackageExitCodeRow and WixBundleSlipstreamMsp.
+
+* SeanHall: WIXBUG:4393 - Fix BOOTSTRAPPER_REQUEST_STATE_CACHE.
+
+* SeanHall: WIXBUG:4689 - Fix hidden numeric and version variables.
+
+* SeanHall: WIXBUG:4685 - Fix bug in mbahost where it didn't bind as the LegacyV2Runtime when necessary.
+
+* BobArnson: WIXBUG:4654 - Add VS14 properties and custom actions. And, as it's a long topic, added anchors and links.
+
+* SeanHall: WIXBUG:4669 - Fix bug in mbahost where it assumed that the CLRCreateInstance function was implemented when it exists.
+
+* SeanHall: WIXBUG:3747 - Remove define statements for Log and LogLine.
+
+* SeanHall: WIXBUG:4480 - Remove non-standard and unnecessary regex contructs from wix.xsd.
+
+* SeanHall: WIXBUG:4647 - Format ConfirmCancelMessage in WixStdBA.
+
+* SeanHall: WIXBUG:4646 - Allow sharing the whole drive with util:FileShare.
+
+## WixBuild: Version 4.0.2603.0
+
+* SeanHall: Make major breaking changes to thmutil schema while implementing the new Text element to allow setting the text based on context.
+
+* SeanHall: WIXFEAT:4149 - Add support for variables and radio buttons in thmutil, and update WixStdBA to use the new functionality.
+
+* SeanHall: Reimplement multiple prereq packages for v4.
+
+* SeanHall: WIXBUG:4609 - Fix incorrect use of BVariantCopy by creating the new method BVariantSetValue.
+
+* SeanHall: Merge in recent changes from wix3.
+
+* SeanHall: WIXBUG:4608 - Fix bug in mbapreq where it wouldn't reload the bootstrapper if there was a mix of installed and uninstalled prerequisites.
+
 * FireGiant: WIXBUG:4561 - update WixCop to migrate v3 source code to v4.0.
 
 * RobMen: WIXBUG:4565 - add WixToolset.Data.dll and WixToolset.Extensibility.dll to binaries.zip.

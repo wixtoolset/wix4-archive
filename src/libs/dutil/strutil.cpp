@@ -1306,6 +1306,11 @@ extern "C" HRESULT DAPI StrReplaceString(
     LPCWSTR wzSubLocation = NULL;
     LPWSTR pwzBuffer = NULL;
 
+    if (!*ppwzOriginal)
+    {
+        ExitFunction();
+    }
+
     wzSubLocation = wcsstr(*ppwzOriginal + *pdwStartIndex, wzOldSubString);
     if (!wzSubLocation)
     {

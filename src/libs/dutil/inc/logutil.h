@@ -194,10 +194,6 @@ HRESULT LogStringWorkRaw(
     __in_z LPCSTR szLogData
     );
 
-// begin the switch of LogXXX to LogStringXXX
-#define Log LogString
-#define LogLine LogStringLine
-
 #ifdef __cplusplus
 }
 #endif

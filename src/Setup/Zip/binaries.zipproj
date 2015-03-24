@@ -57,7 +57,6 @@
     <Stage Include="$(OutputPath)WixTasks.dll" />
     <Stage Include="$(OutputPath)WixToolset.Data.dll" />
     <Stage Include="$(OutputPath)WixToolset.Extensibility.dll" />
-    <!--<Stage Include="$(OutputPath)wui.dll" />-->
     <Stage Include="$(OutputPath)x86\burn.exe">
       <StageSubDirectory>x86</StageSubDirectory>
     </Stage>
@@ -83,10 +82,10 @@
     <Stage Include="$(OutputPath)WixDirectXExtension.dll" />
     <Stage Include="$(OutputPath)WixFirewallExtension.dll" />
     <Stage Include="$(OutputPath)WixGamingExtension.dll" />
+    <Stage Include="$(OutputPath)WixHttpExtension.dll" />
     <Stage Include="$(OutputPath)WixIIsExtension.dll" />
     <Stage Include="$(OutputPath)WixMsmqExtension.dll " />
     <Stage Include="$(OutputPath)WixNetFxExtension.dll" />
-    <!--<Stage Include="$(OutputPath)WixOfficeExtension.dll" />-->
     <Stage Include="$(OutputPath)WixPSExtension.dll" />
     <Stage Include="$(OutputPath)WixSqlExtension.dll" />
     <Stage Include="$(OutputPath)WixTagExtension.dll" />

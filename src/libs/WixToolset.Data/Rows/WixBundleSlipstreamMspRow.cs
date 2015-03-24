@@ -48,8 +48,8 @@ namespace WixToolset.Data.Rows
         /// </summary>
         public string MspPackageId
         {
-            get { return (string)this.Fields[0].Data; }
-            set { this.Fields[0].Data = value; }
+            get { return (string)this.Fields[1].Data; }
+            set { this.Fields[1].Data = value; }
         }
     }
 }

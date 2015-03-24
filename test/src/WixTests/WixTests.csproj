@@ -39,6 +39,7 @@
     <Compile Include="Burn\Burn.SearchTests.cs" />
     <Compile Include="Burn\Burn.SlipstreamTests.cs" />
     <Compile Include="Burn\Burn.UpdateBundleTests.cs" />
+    <Compile Include="Extensions\VSExtension\VSExtension.VSExtensionFixture.cs" />
     <Compile Include="Burn\UpdateBundle\ApplicationBootstrapper.cs" />
     <Compile Include="Burn\UpdateBundle\FeedModule.cs" />
     <Compile Include="Burn\UpdateBundle\RootPathProvider.cs" />

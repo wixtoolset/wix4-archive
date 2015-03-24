@@ -243,7 +243,7 @@ namespace WixToolset.Dtf.WindowsInstaller
         private static void FreeString(IntPtr buf, int field)
         {
             IntPtr stringPtr = Marshal.ReadIntPtr(buf, (field * requestFieldSize) + requestFieldDataOffset);
-            if (stringPtr != null)
+            if (stringPtr != IntPtr.Zero)
             {
                 Marshal.FreeHGlobal(stringPtr);
             }

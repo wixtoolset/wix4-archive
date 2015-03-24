@@ -366,7 +366,7 @@ HRESULT ValueWrite(
     CONFIG_VALUE cvExistingValue = { };
     SYSTEMTIME stNow = { };
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, dwAppID, wzName, &sceRow);
     if (E_NOTFOUND == hr)
     {
         hr = S_OK;
@@ -557,6 +557,7 @@ HRESULT ValueMatch(
     )
 {
     HRESULT hr = S_OK;
+    SCE_ROW_HANDLE sceRetrievedHistoryRow = NULL;
     SCE_ROW_HANDLE sceRow2 = NULL;
     int iTimeCompareResult = 0;
     CONFIG_VALUE cvValue1 = { };
@@ -565,7 +566,7 @@ HRESULT ValueMatch(
 
     *pfResult = FALSE;
 
-    hr = ValueFindRow(pcdb2, VALUE_INDEX_TABLE, pcdb2->dwAppID, sczName, &sceRow2);
+    hr = ValueFindRow(pcdb2, pcdb2->dwAppID, sczName, &sceRow2);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
@@ -599,34 +600,38 @@ HRESULT ValueMatch(
             hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (2 newer than 1)");
         }
-        // If timestamps are the same, only bother writing a new history entry if the sources differ
+        // If timestamps are the same and sources differ, we need to make sure both sources are persisted in both stores
+        // with this timestamp (history values can have identical values and timestamps, as long as they have different sources)
         else if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, cvValue1.sczBy, -1, cvValue2.sczBy, -2))
         {
-            // Write slightly newer timestamp which will supersede both old values with a common source
-            if (pcdb1->fRemote)
+            hr = ValueFindHistoryRow(pcdb1, pcdb1->dwAppID, sczName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
+            if (E_NOTFOUND == hr)
             {
-                UtilAddToSystemTime(5, &cvValue1.stWhen);
-
-                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue1, FALSE);
-                ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 remote)");
-
-                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE);
-                ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 newer than 2)");
+                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE);
+                ExitOnFailure(hr, "Failed to set value in value history table while matching value (2's source missing from 1)");
             }
             else
             {
-                UtilAddToSystemTime(5, &cvValue2.stWhen);
-
-                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE);
-                ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 remote)");
-
-                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue2, FALSE);
-                ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 newer than 2)");
+                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
             }
+            ReleaseNullSceRow(sceRetrievedHistoryRow);
+
+            hr = ValueFindHistoryRow(pcdb2, pcdb2->dwAppID, sczName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
+            if (E_NOTFOUND == hr)
+            {
+                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE);
+                ExitOnFailure(hr, "Failed to set value in value history table while matching value (1's source missing from 2)");
+            }
+            else
+            {
+                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
+            }
+            ReleaseNullSceRow(sceRetrievedHistoryRow);
         }
     }
 
 LExit:
+    ReleaseSceRow(sceRetrievedHistoryRow);
     ReleaseSceRow(sceRow2);
     if (E_NOTFOUND == hr)
     {
@@ -661,30 +666,69 @@ void ValueFree(
 
 HRESULT ValueFindRow(
     __in CFGDB_STRUCT *pcdb,
-    __in DWORD dwTableIndex,
-    __in DWORD dwDword,
-    __in_z LPCWSTR wzString,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
     __out SCE_ROW_HANDLE *pRowHandle
     )
 {
     HRESULT hr = S_OK;
     SCE_QUERY_HANDLE sqhHandle = NULL;
 
-    hr = SceBeginQuery(pcdb->psceDb, dwTableIndex, 0, &sqhHandle);
-    ExitOnFailure(hr, "Failed to begin query into table: %u", dwTableIndex);
+    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_TABLE, 0, &sqhHandle);
+    ExitOnFailure(hr, "Failed to begin query into VALUE_INDEX_TABLE table");
 
-    hr = SceSetQueryColumnDword(sqhHandle, dwDword);
-    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwDword);
+    hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
 
-    hr = SceSetQueryColumnString(sqhHandle, wzString);
-    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzString);
+    hr = SceSetQueryColumnString(sqhHandle, wzValueName);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzValueName);
 
     hr = SceRunQueryExact(&sqhHandle, pRowHandle);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
     }
-    ExitOnFailure(hr, "Failed to query for value appID: %u, named: %ls", dwDword, wzString);
+    ExitOnFailure(hr, "Failed to query for value appID: %u, named: %ls", dwAppID, wzValueName);
+
+LExit:
+    ReleaseSceQuery(sqhHandle);
+
+    return hr;
+}
+
+HRESULT ValueFindHistoryRow(
+    __in CFGDB_STRUCT *pcdb,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
+    __in const SYSTEMTIME *pWhen,
+    __in LPCWSTR wzBy,
+    __out SCE_ROW_HANDLE *pRowHandle
+    )
+{
+    HRESULT hr = S_OK;
+    SCE_QUERY_HANDLE sqhHandle = NULL;
+
+    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_HISTORY_TABLE, 1, &sqhHandle);
+    ExitOnFailure(hr, "Failed to begin query into VALUE_INDEX_HISTORY_TABLE table");
+
+    hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
+
+    hr = SceSetQueryColumnString(sqhHandle, wzValueName);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", wzValueName);
+
+    hr = SceSetQueryColumnSystemTime(sqhHandle, pWhen);
+    ExitOnFailure(hr, "Failed to set query column timestamp");
+
+    hr = SceSetQueryColumnString(sqhHandle, wzBy);
+    ExitOnFailure(hr, "Failed to set query column string");
+
+    hr = SceRunQueryExact(&sqhHandle, pRowHandle);
+    if (E_NOTFOUND == hr)
+    {
+        ExitFunction();
+    }
+    ExitOnFailure(hr, "Failed to query for value appID: %u, named: %ls, by: %ls", dwAppID, wzValueName, wzBy);
 
 LExit:
     ReleaseSceQuery(sqhHandle);

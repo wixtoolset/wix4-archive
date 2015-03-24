@@ -116,6 +116,58 @@ LExit:
 }
 
 
+extern "C" HRESULT DAPI MemAllocArray(
+    __inout LPVOID* ppvArray,
+    __in SIZE_T cbArrayType,
+    __in DWORD dwItemCount
+    )
+{
+    return MemReAllocArray(ppvArray, 0, cbArrayType, dwItemCount);
+}
+
+
+extern "C" HRESULT DAPI MemReAllocArray(
+    __inout LPVOID* ppvArray,
+    __in DWORD cArray,
+    __in SIZE_T cbArrayType,
+    __in DWORD dwNewItemCount
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD cNew = 0;
+    LPVOID pvNew = NULL;
+    SIZE_T cbNew = 0;
+
+    hr = ::DWordAdd(cArray, dwNewItemCount, &cNew);
+    ExitOnFailure(hr, "Integer overflow when calculating new element count.");
+
+    hr = ::SIZETMult(cNew, cbArrayType, &cbNew);
+    ExitOnFailure(hr, "Integer overflow when calculating new block size.");
+
+    if (*ppvArray)
+    {
+        SIZE_T cbCurrent = MemSize(*ppvArray);
+        if (cbCurrent < cbNew)
+        {
+            pvNew = MemReAlloc(*ppvArray, cbNew, TRUE);
+            ExitOnNull(pvNew, hr, E_OUTOFMEMORY, "Failed to allocate array larger.");
+
+            *ppvArray = pvNew;
+        }
+    }
+    else
+    {
+        pvNew = MemAlloc(cbNew, TRUE);
+        ExitOnNull(pvNew, hr, E_OUTOFMEMORY, "Failed to allocate new array.");
+
+        *ppvArray = pvNew;
+    }
+
+LExit:
+    return hr;
+}
+
+
 extern "C" HRESULT DAPI MemEnsureArraySize(
     __deref_out_bcount(cArray * cbArrayType) LPVOID* ppvArray,
     __in DWORD cArray,

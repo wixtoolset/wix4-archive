@@ -398,11 +398,13 @@ static HRESULT GetCLRHost(
     HRESULT hr = S_OK;
     UINT uiMode = 0;
     HMODULE hModule = NULL;
+    BOOL fFallbackToCorBindToCurrentRuntime = TRUE;
     CLRCreateInstanceFnPtr pfnCLRCreateInstance = NULL;
     ICLRMetaHostPolicy* pCLRMetaHostPolicy = NULL;
     IStream* pCfgStream = NULL;
     LPWSTR pwzVersion = NULL;
     DWORD cchVersion = 0;
+    DWORD dwConfigFlags = 0;
     ICLRRuntimeInfo* pCLRRuntimeInfo = NULL;
     PFN_CORBINDTOCURRENTRUNTIME pfnCorBindToCurrentRuntime = NULL;
 
@@ -420,7 +422,18 @@ static HRESULT GetCLRHost(
 
         pfnCLRCreateInstance = reinterpret_cast<CLRCreateInstanceFnPtr>(::GetProcAddress(hModule, "CLRCreateInstance"));
         
-        if (!pfnCLRCreateInstance)
+        if (pfnCLRCreateInstance)
+        {
+            hr = pfnCLRCreateInstance(CLSID_CLRMetaHostPolicy, IID_ICLRMetaHostPolicy, reinterpret_cast<LPVOID*>(&pCLRMetaHostPolicy));
+            if (E_NOTIMPL != hr)
+            {
+                ExitOnRootFailure(hr, "Failed to create instance of ICLRMetaHostPolicy.");
+
+                fFallbackToCorBindToCurrentRuntime = FALSE;
+            }
+        }
+
+        if (fFallbackToCorBindToCurrentRuntime)
         {
             pfnCorBindToCurrentRuntime = reinterpret_cast<PFN_CORBINDTOCURRENTRUNTIME>(::GetProcAddress(hModule, "CorBindToCurrentRuntime"));
             ExitOnNullWithLastError(pfnCorBindToCurrentRuntime, hr, "Failed to get procedure address for CorBindToCurrentRuntime.");
@@ -430,13 +443,11 @@ static HRESULT GetCLRHost(
         }
         else
         {
-            hr = pfnCLRCreateInstance(CLSID_CLRMetaHostPolicy, IID_ICLRMetaHostPolicy, reinterpret_cast<LPVOID*>(&pCLRMetaHostPolicy));
-            ExitOnRootFailure(hr, "Failed to create instance of ICLRMetaHostPolicy.");
 
             hr = SHCreateStreamOnFileEx(wzConfigPath, STGM_READ | STGM_SHARE_DENY_WRITE, 0, FALSE, NULL, &pCfgStream);
             ExitOnFailure(hr, "Failed to load bootstrapper config file from path: %ls", wzConfigPath);
 
-            hr = pCLRMetaHostPolicy->GetRequestedRuntime(METAHOST_POLICY_HIGHCOMPAT, NULL, pCfgStream, NULL, &cchVersion, NULL, NULL, NULL, IID_ICLRRuntimeInfo, reinterpret_cast<LPVOID*>(&pCLRRuntimeInfo));
+            hr = pCLRMetaHostPolicy->GetRequestedRuntime(METAHOST_POLICY_HIGHCOMPAT, NULL, pCfgStream, NULL, &cchVersion, NULL, NULL, &dwConfigFlags, IID_ICLRRuntimeInfo, reinterpret_cast<LPVOID*>(&pCLRRuntimeInfo));
             ExitOnRootFailure(hr, "Failed to get the CLR runtime info using the application configuration file path.");
 
             // .NET 4 RTM had a bug where it wouldn't set pcchVersion if pwzVersion was NULL.
@@ -459,6 +470,12 @@ static HRESULT GetCLRHost(
             {
                 hr = VerifyNET4RuntimeIsSupported();
                 ExitOnFailure(hr, "Found unsupported .NET 4 Runtime.");
+            }
+
+            if (METAHOST_CONFIG_FLAGS_LEGACY_V2_ACTIVATION_POLICY_TRUE == (METAHOST_CONFIG_FLAGS_LEGACY_V2_ACTIVATION_POLICY_MASK & dwConfigFlags))
+            {
+                hr = pCLRRuntimeInfo->BindAsLegacyV2Runtime();
+                ExitOnRootFailure(hr, "Failed to bind as legacy V2 runtime.");
             }
 
             hr = pCLRRuntimeInfo->GetInterface(CLSID_CorRuntimeHost, IID_ICorRuntimeHost, reinterpret_cast<LPVOID*>(&vpCLRHost));

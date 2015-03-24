@@ -188,6 +188,17 @@ extern "C" HRESULT LoggingSetPackageVariable(
     HRESULT hr = S_OK;
     LPWSTR sczLogPath = NULL;
 
+    // Make sure that no package log files are created when logging has been disabled via Log element.
+    if (BURN_LOGGING_STATE_DISABLED == pLog->state)
+    {
+        if (psczLogPath)
+        {
+            *psczLogPath = NULL;
+        }
+
+        ExitFunction();
+    }
+
     if ((!fRollback && pPackage->sczLogPathVariable && *pPackage->sczLogPathVariable) ||
         (fRollback && pPackage->sczRollbackLogPathVariable && *pPackage->sczRollbackLogPathVariable))
     {

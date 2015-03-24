@@ -24,12 +24,17 @@
 #include <dictutil.h>
 #include <dirutil.h>
 #include <fileutil.h>
+#include <guidutil.h>
 #include <iniutil.h>
 #include <memutil.h>
 #include <pathutil.h>
 #include <strutil.h>
 #include <monutil.h>
 #include <regutil.h>
+#include <varutil.h>
+#include <condutil.h>
+
+#include "VarHelpers.h"
 
 #pragma managed
 #include <vcclr.h>

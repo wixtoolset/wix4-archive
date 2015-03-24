@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//  Theme helper functions.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
@@ -40,6 +36,7 @@ enum INTERNAL_CONTROL_STYLE
     INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE = 0x0002,
     INTERNAL_CONTROL_STYLE_DISABLED = 0x0004,
     INTERNAL_CONTROL_STYLE_HIDDEN = 0x0008,
+    INTERNAL_CONTROL_STYLE_OWNER_DRAW = 0x0010,
 };
 
 struct MEMBUFFER_FOR_RICHEDIT
@@ -68,7 +65,7 @@ static HRESULT ParseImage(
     __in IXMLDOMNode* pElement,
     __out HBITMAP* phImage
     );
-static HRESULT ParseApplication(
+static HRESULT ParseWindow(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
     __in IXMLDOMElement* pElement,
@@ -81,13 +78,13 @@ static HRESULT ParseFonts(
 static HRESULT ParsePages(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     );
 static HRESULT ParseImageLists(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     );
 static HRESULT ParseControls(
@@ -115,7 +112,19 @@ static HRESULT ParseColumns(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
     );
+static HRESULT ParseRadioButtons(
+    __in_opt HMODULE hModule,
+    __in_opt LPCWSTR wzRelativePath,
+    __in IXMLDOMNode* pixn,
+    __in THEME* pTheme,
+    __in THEME_PAGE* pPage,
+    __out DWORD* pdwProcessedControls
+    );
 static HRESULT ParseTabs(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    );
+static HRESULT ParseText(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
     );
@@ -173,6 +182,9 @@ static void FreePage(
     );
 static void FreeControl(
     __in THEME_CONTROL* pControl
+    );
+static void FreeConditionalText(
+    __in THEME_CONDITIONAL_TEXT* pConditionalText
     );
 static void FreeImageList(
     __in THEME_IMAGELIST* pImageList
@@ -332,7 +344,7 @@ DAPI_(HRESULT) ThemeLoadFromResource(
     hr = ResReadData(hModule, szResource, &pvResource, &cbResource);
     ExitOnFailure(hr, "Failed to read theme from resource.");
 
-    // Ensure returned resource buffer is null-terminated
+    // Ensure returned resource buffer is null-terminated.
     reinterpret_cast<BYTE *>(pvResource)[cbResource - 1] = '\0';
 
     hr = StrAllocStringAnsi(&sczXml, reinterpret_cast<LPCSTR>(pvResource), cbResource, CP_UTF8);
@@ -392,6 +404,32 @@ DAPI_(void) ThemeFree(
     }
 }
 
+DAPI_(HRESULT) ThemeRegisterVariableCallbacks(
+    __in THEME* pTheme,
+    __in_opt PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition,
+    __in_opt PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString,
+    __in_opt PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable,
+    __in_opt PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable,
+    __in_opt PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable,
+    __in_opt PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable,
+    __in_opt LPVOID pvContext
+    )
+{
+    HRESULT hr = S_OK;
+    ExitOnNull(pTheme, hr, S_FALSE, "Theme must be loaded first.");
+
+    pTheme->pfnEvaluateCondition = pfnEvaluateCondition;
+    pTheme->pfnFormatString = pfnFormatString;
+    pTheme->pfnGetNumericVariable = pfnGetNumericVariable;
+    pTheme->pfnSetNumericVariable = pfnSetNumericVariable;
+    pTheme->pfnGetStringVariable = pfnGetStringVariable;
+    pTheme->pfnSetStringVariable = pfnSetStringVariable;
+    pTheme->pvVariableContext = pvContext;
+
+LExit:
+    return hr;
+}
+
 
 DAPI_(HRESULT) ThemeLoadControls(
     __in THEME* pTheme,
@@ -404,6 +442,8 @@ DAPI_(HRESULT) ThemeLoadControls(
 
     HRESULT hr = S_OK;
     RECT rcParent = { };
+    LPWSTR sczText = NULL;
+    BOOL fStartNewGroup = FALSE;
 
     pTheme->hwndParent = hwndParent;
 
@@ -417,13 +457,20 @@ DAPI_(HRESULT) ThemeLoadControls(
         DWORD dwWindowBits = WS_CHILD;
         DWORD dwWindowExBits = 0;
 
+        if (fStartNewGroup)
+        {
+            dwWindowBits |= WS_GROUP;
+            fStartNewGroup = FALSE;
+        }
+
         switch (pControl->type)
         {
-        case THEME_CONTROL_TYPE_BILLBOARD: // Billboards are basically just owner drawn static controls (where we draw different images).
+        case THEME_CONTROL_TYPE_BILLBOARD: // billboards are basically just owner drawn static controls (where we draw different images).
             if (pControl->cBillboards)
             {
                 wzWindowClass = WC_STATICW;
                 dwWindowBits |= SS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
             else
             {
@@ -433,14 +480,49 @@ DAPI_(HRESULT) ThemeLoadControls(
             break;
 
         case THEME_CONTROL_TYPE_CHECKBOX:
-            dwWindowBits |= BS_AUTOCHECKBOX | BS_MULTILINE; // Checkbox is basically a button with an extra bit tossed in.
+            dwWindowBits |= BS_AUTOCHECKBOX | BS_MULTILINE; // checkboxes are basically buttons with an extra bit tossed in.
             __fallthrough;
         case THEME_CONTROL_TYPE_BUTTON:
             wzWindowClass = WC_BUTTONW;
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
                 dwWindowBits |= BS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
+            break;
+
+        case THEME_CONTROL_TYPE_EDITBOX:
+            wzWindowClass = WC_EDITW;
+            dwWindowBits |= ES_LEFT | ES_AUTOHSCROLL;
+            dwWindowExBits = WS_EX_CLIENTEDGE;
+            break;
+
+        case THEME_CONTROL_TYPE_HYPERLINK: // hyperlinks are basically just owner drawn buttons.
+            wzWindowClass = THEME_WC_HYPERLINK;
+            dwWindowBits |= BS_OWNERDRAW | BTNS_NOPREFIX;
+            break;
+
+        case THEME_CONTROL_TYPE_HYPERTEXT:
+            wzWindowClass = WC_LINK;
+            dwWindowBits |= LWS_NOPREFIX;
+            break;
+
+        case THEME_CONTROL_TYPE_IMAGE: // images are basically just owner drawn static controls (so we can draw .jpgs and .pngs instead of just bitmaps).
+            if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
+            {
+                wzWindowClass = WC_STATICW;
+                dwWindowBits |= SS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
+            }
+            else
+            {
+                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                ExitOnRootFailure(hr, "Invalid image or image list coordinates.");
+            }
+            break;
+
+        case THEME_CONTROL_TYPE_LABEL:
+            wzWindowClass = WC_STATICW;
             break;
 
         case THEME_CONTROL_TYPE_LISTVIEW:
@@ -452,52 +534,26 @@ DAPI_(HRESULT) ThemeLoadControls(
             wzWindowClass = WC_LISTVIEWW;
             break;
 
-        case THEME_CONTROL_TYPE_TREEVIEW:
-            wzWindowClass = WC_TREEVIEWW;
-            break;
-
-        case THEME_CONTROL_TYPE_TAB:
-            wzWindowClass = WC_TABCONTROLW;
-            break;
-
-        case THEME_CONTROL_TYPE_EDITBOX:
-            wzWindowClass = WC_EDITW;
-            dwWindowBits |= ES_LEFT | ES_AUTOHSCROLL;
-            dwWindowExBits = WS_EX_CLIENTEDGE;
-            break;
-
-        case THEME_CONTROL_TYPE_HYPERLINK: // Hyperlinks are basically just owner drawn buttons.
-            wzWindowClass = THEME_WC_HYPERLINK;
-            dwWindowBits |= BS_OWNERDRAW | BTNS_NOPREFIX;
-            break;
-
-        case THEME_CONTROL_TYPE_HYPERTEXT:
-            wzWindowClass = WC_LINK;
-            dwWindowBits |= LWS_NOPREFIX;
-            break;
-
-        case THEME_CONTROL_TYPE_IMAGE: // Images are basically just owner drawn static controls (so we can draw .jpgs and .pngs instead of just bitmaps).
-            if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
-            {
-                wzWindowClass = WC_STATICW;
-                dwWindowBits |= SS_OWNERDRAW;
-            }
-            else
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-                ExitOnRootFailure(hr, "Invalid image or image list coordinates.");
-            }
-            break;
-
         case THEME_CONTROL_TYPE_PROGRESSBAR:
             if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
             {
-                wzWindowClass = WC_STATICW; // No such thing as an owner drawn progress bar so we'll make our own out of a static control.
+                wzWindowClass = WC_STATICW; // no such thing as an owner drawn progress bar so we'll make our own out of a static control.
                 dwWindowBits |= SS_OWNERDRAW;
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_OWNER_DRAW;
             }
             else
             {
                 wzWindowClass = PROGRESS_CLASSW;
+            }
+            break;
+
+        case THEME_CONTROL_TYPE_RADIOBUTTON:
+            dwWindowBits |= BS_AUTORADIOBUTTON | BS_MULTILINE;
+            wzWindowClass = WC_BUTTONW;
+
+            if (pControl->fLastRadioButton)
+            {
+                fStartNewGroup = TRUE;
             }
             break;
 
@@ -516,125 +572,177 @@ DAPI_(HRESULT) ThemeLoadControls(
             dwWindowBits |= SS_ETCHEDHORZ;
             break;
 
-        case THEME_CONTROL_TYPE_TEXT:
-            wzWindowClass = WC_STATICW;
+        case THEME_CONTROL_TYPE_TAB:
+            wzWindowClass = WC_TABCONTROLW;
+            break;
+
+        case THEME_CONTROL_TYPE_TREEVIEW:
+            wzWindowClass = WC_TREEVIEWW;
             break;
         }
-        ExitOnFailure(hr, "Failed to configure control %u.", i);
+        ExitOnNull(wzWindowClass, hr, E_INVALIDDATA, "Failed to configure control %u because of unknown type: %u", i, pControl->type);
 
-        // If the control has a window, set the other information.
-        if (wzWindowClass)
+        // Default control ids to the theme id and its index in the control array, unless there
+        // is a specific id to assign to a named control.
+        WORD wControlId = MAKEWORD(i, pTheme->wId);
+        for (DWORD iAssignControl = 0; pControl->sczName && iAssignControl < cAssignControlIds; ++iAssignControl)
         {
-            // Default control ids to the theme id and its index in the control array, unless there
-            // is a specific id to assign to a named control.
-            WORD wControlId = MAKEWORD(i, pTheme->wId);
-            for (DWORD iAssignControl = 0; pControl->sczName && iAssignControl < cAssignControlIds; ++iAssignControl)
+            if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pControl->sczName, -1, rgAssignControlIds[iAssignControl].wzName, -1))
             {
-                if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pControl->sczName, -1, rgAssignControlIds[iAssignControl].wzName, -1))
+                wControlId = rgAssignControlIds[iAssignControl].wId;
+                pControl->fDisableVariableFunctionality = TRUE;
+                break;
+            }
+        }
+
+        pControl->wId = wControlId;
+
+        int w, h, x, y;
+        GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
+
+        BOOL fVisible = pControl->dwStyle & WS_VISIBLE;
+        BOOL fDisabled = pControl->dwStyle & WS_DISABLED;
+
+        // If the control is supposed to be initially visible and it has a VisibleCondition, check if it's true.
+        if (fVisible && pControl->sczVisibleCondition && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
+        {
+            hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible, pTheme->pvVariableContext);
+            ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
+
+            if (!fVisible)
+            {
+                pControl->dwStyle &= ~WS_VISIBLE;
+            }
+        }
+
+        // Disable controls that aren't visible so their shortcut keys don't trigger.
+        if (!fVisible)
+        {
+            dwWindowBits |= WS_DISABLED;
+            fDisabled = TRUE;
+        }
+
+        // If the control is supposed to be initially enabled and it has an EnableCondition, check if it's true.
+        if (!fDisabled && pControl->sczEnableCondition && pTheme->pfnEvaluateCondition && !pControl->fDisableVariableFunctionality)
+        {
+            BOOL fEnable = TRUE;
+
+            hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnable, pTheme->pvVariableContext);
+            ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
+
+            fDisabled = !fEnable;
+            dwWindowBits |= fDisabled ? WS_DISABLED : 0;
+        }
+
+        // Honor the HideWhenDisabled option.
+        if ((pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDE_WHEN_DISABLED) && fVisible && fDisabled)
+        {
+            fVisible = FALSE;
+            pControl->dwStyle &= ~WS_VISIBLE;
+        }
+
+        pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, pTheme->hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, NULL);
+        ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
+
+        if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+        {
+            if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE)
+            {
+                hr = ::SHAutoComplete(pControl->hWnd, SHACF_FILESYS_ONLY);
+            }
+        }
+        else if (THEME_CONTROL_TYPE_LISTVIEW == pControl->type)
+        {
+            ::SendMessageW(pControl->hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, pControl->dwExtendedStyle);
+
+            hr = SizeListViewColumns(pControl);
+            ExitOnFailure(hr, "Failed to get size of list view columns.");
+
+            for (DWORD j = 0; j < pControl->cColumns; ++j)
+            {
+                LVCOLUMNW lvc = { };
+                lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+                lvc.cx = pControl->ptcColumns[j].nWidth;
+                lvc.iSubItem = j;
+                lvc.pszText = pControl->ptcColumns[j].pszName;
+                lvc.fmt = LVCFMT_LEFT;
+                lvc.cchTextMax = 4;
+
+                if (-1 == ::SendMessageW(pControl->hWnd, LVM_INSERTCOLUMNW, (WPARAM)(int)(j), (LPARAM)(const LV_COLUMNW *)(&lvc)))
                 {
-                    wControlId = rgAssignControlIds[iAssignControl].wId;
-                    break;
+                    ExitWithLastError(hr, "Failed to insert listview column %u into tab control.", j);
+                }
+
+                // Return value tells us the old image list, we don't care.
+                if (pControl->rghImageList[0])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_NORMAL), reinterpret_cast<LPARAM>(pControl->rghImageList[0]));
+                }
+                else if (pControl->rghImageList[1])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_SMALL), reinterpret_cast<LPARAM>(pControl->rghImageList[1]));
+                }
+                else if (pControl->rghImageList[2])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_STATE), reinterpret_cast<LPARAM>(pControl->rghImageList[2]));
+                }
+                else if (pControl->rghImageList[3])
+                {
+                    ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_GROUPHEADER), reinterpret_cast<LPARAM>(pControl->rghImageList[3]));
                 }
             }
-
-            pControl->wId = wControlId;
-
-            int w, h, x, y;
-            GetControlDimensions(&rcParent, pControl, &w, &h, &x, &y);
-
-            // Disable paged controls so their shortcut keys don't trigger when their page isn't being shown.
-            dwWindowBits |= 0 < pControl->wPageId ? WS_DISABLED : 0;
-            pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, pTheme->hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, NULL);
-            ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
-
-            if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+        }
+        else if (THEME_CONTROL_TYPE_RICHEDIT == pControl->type)
+        {
+            ::SendMessageW(pControl->hWnd, EM_AUTOURLDETECT, static_cast<WPARAM>(TRUE), 0);
+            ::SendMessageW(pControl->hWnd, EM_SETEVENTMASK, 0, ENM_KEYEVENTS | ENM_LINK);
+        }
+        else if (THEME_CONTROL_TYPE_TAB == pControl->type)
+        {
+            ULONG_PTR hbrBackground = 0;
+            if (THEME_INVALID_ID != pControl->dwFontId)
             {
-                if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE)
+                hbrBackground = reinterpret_cast<ULONG_PTR>(pTheme->rgFonts[pControl->dwFontId].hBackground);
+            }
+            else
+            {
+                hbrBackground = ::GetClassLongPtr(pTheme->hwndParent, GCLP_HBRBACKGROUND);
+            }
+            ::SetClassLongPtr(pControl->hWnd, GCLP_HBRBACKGROUND, hbrBackground);
+
+            for (DWORD j = 0; j < pControl->cTabs; ++j)
+            {
+                TCITEMW tci = { };
+                tci.mask = TCIF_TEXT | TCIF_IMAGE;
+                tci.iImage = -1;
+                tci.pszText = pControl->pttTabs[j].pszName;
+
+                if (-1 == ::SendMessageW(pControl->hWnd, TCM_INSERTITEMW, (WPARAM)(int)(j), (LPARAM)(const TC_ITEMW *)(&tci)))
                 {
-                    hr = ::SHAutoComplete(pControl->hWnd, SHACF_FILESYS_ONLY);
+                    ExitWithLastError(hr, "Failed to insert tab %u into tab control.", j);
                 }
             }
-            else if (THEME_CONTROL_TYPE_LISTVIEW == pControl->type)
+        }
+
+        if (pControlFont)
+        {
+            ::SendMessageW(pControl->hWnd, WM_SETFONT, (WPARAM)pControlFont->hFont, FALSE);
+        }
+
+        // Initialize the text on all "application" (non-page) controls, best effort only.
+        if (pTheme->pfnFormatString && !pControl->wPageId && pControl->sczText && *pControl->sczText)
+        {
+            HRESULT hrFormat = pTheme->pfnFormatString(pControl->sczText, &sczText, pTheme->pvVariableContext);
+            if (SUCCEEDED(hrFormat))
             {
-                ::SendMessageW(pControl->hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, pControl->dwExtendedStyle);
-
-                hr = SizeListViewColumns(pControl);
-                ExitOnFailure(hr, "Failed to get size of list view columns.");
-
-                for (DWORD j = 0; j < pControl->cColumns; ++j)
-                {
-                    LVCOLUMNW lvc = { };
-                    lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-                    lvc.cx = pControl->ptcColumns[j].nWidth;
-                    lvc.iSubItem = j;
-                    lvc.pszText = pControl->ptcColumns[j].pszName;
-                    lvc.fmt = LVCFMT_LEFT;
-                    lvc.cchTextMax = 4;
-
-                    if (-1 == ::SendMessageW(pControl->hWnd, LVM_INSERTCOLUMNW, (WPARAM)(int)(j), (LPARAM)(const LV_COLUMNW *)(&lvc)))
-                    {
-                        ExitWithLastError(hr, "Failed to insert listview column %u into tab control.", j);
-                    }
-
-                    // Return value tells us the old image list, we don't care.
-                    if (pControl->rghImageList[0])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_NORMAL), reinterpret_cast<LPARAM>(pControl->rghImageList[0]));
-                    }
-                    else if (pControl->rghImageList[1])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_SMALL), reinterpret_cast<LPARAM>(pControl->rghImageList[1]));
-                    }
-                    else if (pControl->rghImageList[2])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_STATE), reinterpret_cast<LPARAM>(pControl->rghImageList[2]));
-                    }
-                    else if (pControl->rghImageList[3])
-                    {
-                        ::SendMessageW(pControl->hWnd, LVM_SETIMAGELIST, static_cast<WPARAM>(LVSIL_GROUPHEADER), reinterpret_cast<LPARAM>(pControl->rghImageList[3]));
-                    }
-                }
-            }
-            else if (THEME_CONTROL_TYPE_RICHEDIT == pControl->type)
-            {
-                ::SendMessageW(pControl->hWnd, EM_AUTOURLDETECT, static_cast<WPARAM>(TRUE), 0);
-                ::SendMessageW(pControl->hWnd, EM_SETEVENTMASK, 0, ENM_KEYEVENTS | ENM_LINK);
-            }
-            else if (THEME_CONTROL_TYPE_TAB == pControl->type)
-            {
-                ULONG_PTR hbrBackground = 0;
-                if (THEME_INVALID_ID != pControl->dwFontId)
-                {
-                    hbrBackground = reinterpret_cast<ULONG_PTR>(pTheme->rgFonts[pControl->dwFontId].hBackground);
-                }
-                else
-                {
-                    hbrBackground = ::GetClassLongPtr(pTheme->hwndParent, GCLP_HBRBACKGROUND);
-                }
-                ::SetClassLongPtr(pControl->hWnd, GCLP_HBRBACKGROUND, hbrBackground);
-
-                for (DWORD j = 0; j < pControl->cTabs; ++j)
-                {
-                    TCITEMW tci = { };
-                    tci.mask = TCIF_TEXT | TCIF_IMAGE;
-                    tci.iImage = -1;
-                    tci.pszText = pControl->pttTabs[j].pszName;
-
-                    if (-1 == ::SendMessageW(pControl->hWnd, TCM_INSERTITEMW, (WPARAM)(int)(j), (LPARAM)(const TC_ITEMW *)(&tci)))
-                    {
-                        ExitWithLastError(hr, "Failed to insert tab %u into tab control.", j);
-                    }
-                }
-            }
-
-            if (pControlFont)
-            {
-                ::SendMessageW(pControl->hWnd, WM_SETFONT, (WPARAM)pControlFont->hFont, FALSE);
+                ThemeSetTextControl(pTheme, pControl->wId, sczText);
             }
         }
     }
 
 LExit:
+    ReleaseStr(sczText);
+
     return hr;
 }
 
@@ -661,9 +769,19 @@ DAPI_(HRESULT) ThemeLocalize(
 {
     HRESULT hr = S_OK;
     LOC_CONTROL* pLocControl = NULL;
+    LPWSTR sczCaption = NULL;
 
     hr = LocLocalizeString(pWixLoc, &pTheme->sczCaption);
     ExitOnFailure(hr, "Failed to localize theme caption.");
+
+    if (pTheme->pfnFormatString)
+    {
+        hr = pTheme->pfnFormatString(pTheme->sczCaption, &sczCaption, pTheme->pvVariableContext);
+        if (SUCCEEDED(hr))
+        {
+            hr = ThemeUpdateCaption(pTheme, sczCaption);
+        }
+    }
 
     for (DWORD i = 0; i < pTheme->cControls; ++i)
     {
@@ -671,6 +789,12 @@ DAPI_(HRESULT) ThemeLocalize(
 
         hr = LocLocalizeString(pWixLoc, &pControl->sczText);
         ExitOnFailure(hr, "Failed to localize control text.");
+
+        for (DWORD j = 0; j < pControl->cConditionalText; ++j)
+        {
+            hr = LocLocalizeString(pWixLoc, &pControl->rgConditionalText[j].sczText);
+            ExitOnFailure(hr, "Failed to localize conditional text.");
+        }
 
         for (DWORD j = 0; j < pControl->cColumns; ++j)
         {
@@ -684,7 +808,7 @@ DAPI_(HRESULT) ThemeLocalize(
             ExitOnFailure(hr, "Failed to localize tab text.");
         }
 
-        // localize controls size, location, and text
+        // Localize controls size, location, and text.
         hr = LocGetControl(pWixLoc, pControl->sczName, &pLocControl);
         if (E_NOTFOUND == hr)
         {
@@ -721,6 +845,8 @@ DAPI_(HRESULT) ThemeLocalize(
     }
 
 LExit:
+    ReleaseStr(sczCaption);
+
     return hr;
 }
 
@@ -889,7 +1015,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
         case WM_NCHITTEST:
             if (pTheme->dwStyle & WS_POPUP)
             {
-                return HTCAPTION; // Allow pop-up windows to be moved by grabbing any non-control.
+                return HTCAPTION; // allow pop-up windows to be moved by grabbing any non-control.
             }
             break;
 
@@ -1031,6 +1157,57 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
                     return 0;
                 }
             }
+            break;
+
+        case WM_COMMAND:
+            switch (HIWORD(wParam))
+            {
+            case BN_CLICKED:
+                if (pTheme->pfnSetNumericVariable || pTheme->pfnSetStringVariable)
+                {
+                    for (DWORD i = 0; i < pTheme->cControls; ++i)
+                    {
+                        const THEME_CONTROL* pControl = pTheme->rgControls + i;
+
+                        if (LOWORD(wParam) == pControl->wId)
+                        {
+                            if (!pControl->fDisableVariableFunctionality)
+                            {
+                                BOOL fRefresh = FALSE;
+
+                                switch (pControl->type)
+                                {
+                                case THEME_CONTROL_TYPE_CHECKBOX:
+                                    if (pTheme->pfnSetNumericVariable && pControl->sczName && *pControl->sczName)
+                                    {
+                                        BOOL fChecked = ThemeIsControlChecked(pTheme, pControl->wId);
+                                        pTheme->pfnSetNumericVariable(pControl->sczName, fChecked ? 1 : 0, pTheme->pvVariableContext);
+                                        fRefresh = TRUE;
+                                    }
+                                    break;
+                                case THEME_CONTROL_TYPE_RADIOBUTTON:
+                                    if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable && ThemeIsControlChecked(pTheme, pControl->wId))
+                                    {
+                                        pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue, pTheme->pvVariableContext);
+                                        fRefresh = TRUE;
+                                    }
+                                    break;
+                                }
+
+                                if (fRefresh)
+                                {
+                                    ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_SHOW, THEME_SHOW_PAGE_REASON_REFRESH);
+                                }
+
+                                return 0;
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+            break;
         }
     }
 
@@ -1078,58 +1255,328 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
 }
 
 
-DAPI_(void) ThemeShowPage(
+DAPI_(HRESULT) ThemeShowPage(
     __in THEME* pTheme,
     __in DWORD dwPage,
     __in int nCmdShow
     )
 {
-    DWORD iPage = dwPage - 1;
+    return ThemeShowPageEx(pTheme, dwPage, nCmdShow, THEME_SHOW_PAGE_REASON_DEFAULT);
+}
+
+
+DAPI_(HRESULT) ThemeShowPageEx(
+    __in THEME* pTheme,
+    __in DWORD dwPage,
+    __in int nCmdShow,
+    __in THEME_SHOW_PAGE_REASON reason
+    )
+{
+    HRESULT hr = S_OK;
     HWND hwndFocus = NULL;
+    LPWSTR sczText = NULL;
+    BOOL fHide = SW_HIDE == nCmdShow;
+    BOOL fSaveEditboxes = FALSE;
+    DWORD iPageControl = 0;
+    THEME_SAVEDVARIABLE* pSavedVariable = NULL;
 
-    if (iPage < pTheme->cPages)
+    THEME_PAGE* pPage = ThemeGetPage(pTheme, dwPage);
+
+    if (pPage)
     {
-        const THEME_PAGE* pPage = pTheme->rgPages + iPage;
-        for (DWORD i = 0; i < pPage->cControlIndices; ++i)
+        if (fHide)
         {
-            const THEME_CONTROL* pControl = pTheme->rgControls + pPage->rgdwControlIndices[i];
-            HWND hWnd = pControl->hWnd;
-
-            if (((pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDE_WHEN_DISABLED) && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED)) 
-                || pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDDEN)
+            switch (reason)
             {
-                ::ShowWindow(hWnd, SW_HIDE);
-            }
-            else
-            {
-                ::EnableWindow(hWnd, SW_HIDE != nCmdShow && !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED));
-
-                if (!hwndFocus && SW_HIDE != nCmdShow && pControl->dwStyle & WS_TABSTOP)
+            case THEME_SHOW_PAGE_REASON_DEFAULT:
+                // Set the variables in the loop below.
+                fSaveEditboxes = TRUE;
+                break;
+            case THEME_SHOW_PAGE_REASON_CANCEL:
+                if (pPage->cSavedVariables && pTheme->pfnSetStringVariable)
                 {
-                    hwndFocus = hWnd;
+                    // Best effort to cancel any changes to the variables.
+                    for (DWORD v = 0; v < pPage->cSavedVariables; ++v)
+                    {
+                        pSavedVariable = pPage->rgSavedVariables + v;
+                        if (pSavedVariable->wzName)
+                        {
+                            pTheme->pfnSetStringVariable(pSavedVariable->wzName, pSavedVariable->sczValue, pTheme->pvVariableContext);
+                        }
+                    }
                 }
-
-                ::ShowWindow(hWnd, nCmdShow);
+                break;
             }
+
+            if (THEME_SHOW_PAGE_REASON_REFRESH != reason)
+            {
+                pPage->cSavedVariables = 0;
+                if (pPage->rgSavedVariables)
+                {
+                    SecureZeroMemory(pPage->rgSavedVariables, MemSize(pPage->rgSavedVariables));
+                }
+            }
+
+            pTheme->dwCurrentPageId = 0;
+        }
+        else
+        {
+            if (THEME_SHOW_PAGE_REASON_REFRESH != reason)
+            {
+                hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgSavedVariables), pPage->cControlIndices, sizeof(THEME_SAVEDVARIABLE), pPage->cControlIndices);
+                ExitOnNull(pPage->rgSavedVariables, hr, E_OUTOFMEMORY, "Failed to allocate memory for saved variables.");
+
+                SecureZeroMemory(pPage->rgSavedVariables, MemSize(pPage->rgSavedVariables));
+                pPage->cSavedVariables = pPage->cControlIndices;
+
+                // Save the variables in the loop below.
+            }
+
+            pTheme->dwCurrentPageId = dwPage;
+        }
+    }
+
+    for (DWORD i = 0; i < pTheme->cControls; ++i)
+    {
+        const THEME_CONTROL* pControl = pTheme->rgControls + i;
+
+        // Only look at non-page controls and the specified page's controls.
+        if (pControl->wPageId && pControl->wPageId != dwPage)
+        {
+            continue;
+        }
+
+        HWND hWnd = pControl->hWnd;
+
+        if (fHide && pControl->wPageId)
+        {
+            // Save the editbox value if necessary (other control types save their values immediately).
+            if (pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
+                fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
+            {
+                hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
+                ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
+
+                hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText, pTheme->pvVariableContext);
+                ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
+            }
+
+            ::ShowWindow(hWnd, SW_HIDE);
 
             if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
             {
-                if (SW_HIDE == nCmdShow || (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED))
+                ThemeStopBillboard(pTheme, pControl->wId);
+            }
+
+            continue;
+        }
+
+        BOOL fEnabled = !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_DISABLED);
+        BOOL fVisible = !(pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDDEN);
+
+        if (!pControl->fDisableVariableFunctionality)
+        {
+            if (pTheme->pfnEvaluateCondition)
+            {
+                // If the control has a VisibleCondition, check if it's true.
+                if (pControl->sczVisibleCondition)
                 {
-                    ThemeStopBillboard(pTheme, pControl->wId);
+                    hr = pTheme->pfnEvaluateCondition(pControl->sczVisibleCondition, &fVisible, pTheme->pvVariableContext);
+                    ExitOnFailure(hr, "Failed to evaluate VisibleCondition: %ls", pControl->sczVisibleCondition);
+                }
+
+                // If the control has an EnableCondition, check if it's true.
+                if (pControl->sczEnableCondition)
+                {
+                    hr = pTheme->pfnEvaluateCondition(pControl->sczEnableCondition, &fEnabled, pTheme->pvVariableContext);
+                    ExitOnFailure(hr, "Failed to evaluate EnableCondition: %ls", pControl->sczEnableCondition);
+                }
+            }
+            
+            // Try to format each control's text based on context, except for editboxes since their text comes from the user.
+            if (pTheme->pfnFormatString && ((pControl->sczText && *pControl->sczText) || pControl->cConditionalText) && THEME_CONTROL_TYPE_EDITBOX != pControl->type)
+            {
+                LPWSTR wzText = pControl->sczText;
+
+                if (pTheme->pfnEvaluateCondition)
+                {
+                    // As documented in the xsd, if there are multiple conditions that are true at the same time then the behavior is undefined.
+                    // This is the current implementation and can change at any time.
+                    for (DWORD j = 0; j < pControl->cConditionalText; ++j)
+                    {
+                        THEME_CONDITIONAL_TEXT* pConditionalText = pControl->rgConditionalText + j;
+
+                        if (pConditionalText->sczCondition)
+                        {
+                            BOOL fCondition = FALSE;
+
+                            hr = pTheme->pfnEvaluateCondition(pConditionalText->sczCondition, &fCondition, pTheme->pvVariableContext);
+                            ExitOnFailure(hr, "Failed to evaluate condition: %ls", pConditionalText->sczCondition);
+
+                            if (fCondition)
+                            {
+                                wzText = pConditionalText->sczText;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (wzText && *wzText)
+                {
+                    hr = pTheme->pfnFormatString(wzText, &sczText, pTheme->pvVariableContext);
+                    ExitOnFailure(hr, "Failed to format string: %ls", wzText);
                 }
                 else
                 {
-                    ThemeStartBillboard(pTheme, pControl->wId, 0xFFFF);
+                    ReleaseNullStr(sczText);
                 }
+
+                ThemeSetTextControl(pTheme, pControl->wId, sczText);
+            }
+
+            // If this is a named control, do variable magic.
+            if (pControl->sczName && *pControl->sczName)
+            {
+                // If this is a checkbox control,
+                // try to set its default state to the state of a matching named variable.
+                if (pTheme->pfnGetNumericVariable && THEME_CONTROL_TYPE_CHECKBOX == pControl->type)
+                {
+                    LONGLONG llValue = 0;
+                    hr = pTheme->pfnGetNumericVariable(pControl->sczName, &llValue, pTheme->pvVariableContext);
+                    if (E_NOTFOUND == hr)
+                    {
+                        hr = S_OK;
+                    }
+                    ExitOnFailure(hr, "Failed to get numeric variable: %ls", pControl->sczName);
+
+                    if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId)
+                    {
+                        pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                        pSavedVariable->wzName = pControl->sczName;
+
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = StrAllocFormattedSecure(&pSavedVariable->sczValue, L"%u", llValue);
+                            ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczName);
+                        }
+
+                        ++iPageControl;
+                    }
+
+                    ThemeSendControlMessage(pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
+                }
+
+                // If this is an editbox control,
+                // try to set its default state to the state of a matching named variable.
+                if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+                {
+                    hr = pTheme->pfnGetStringVariable(pControl->sczName, &sczText, pTheme->pvVariableContext);
+                    if (E_NOTFOUND == hr)
+                    {
+                        ReleaseNullStr(sczText);
+                    }
+                    else
+                    {
+                        ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczName);
+                    }
+
+                    if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId)
+                    {
+                        pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                        pSavedVariable->wzName = pControl->sczName;
+
+                        if (SUCCEEDED(hr))
+                        {
+                            hr = StrAllocStringSecure(&pSavedVariable->sczValue, sczText, 0);
+                            ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczName);
+                        }
+
+                        ++iPageControl;
+                    }
+
+                    ThemeSetTextControl(pTheme, pControl->wId, sczText);
+                }
+            }
+
+            // If this is a radio button associated with a variable,
+            // try to set its default state to the state of the variable.
+            if (pTheme->pfnGetStringVariable && THEME_CONTROL_TYPE_RADIOBUTTON == pControl->type && pControl->sczVariable && *pControl->sczVariable)
+            {
+                hr = pTheme->pfnGetStringVariable(pControl->sczVariable, &sczText, pTheme->pvVariableContext);
+                if (E_NOTFOUND == hr)
+                {
+                    ReleaseNullStr(sczText);
+                }
+                else
+                {
+                    ExitOnFailure(hr, "Failed to get string variable: %ls", pControl->sczVariable);
+                }
+
+                if (THEME_SHOW_PAGE_REASON_REFRESH != reason && pPage && pControl->wPageId && pControl->fLastRadioButton)
+                {
+                    pSavedVariable = pPage->rgSavedVariables + iPageControl;
+                    pSavedVariable->wzName = pControl->sczVariable;
+
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = StrAllocStringSecure(&pSavedVariable->sczValue, sczText, 0);
+                        ExitOnFailure(hr, "Failed to save variable: %ls", pControl->sczVariable);
+                    }
+
+                    ++iPageControl;
+                }
+
+                Button_SetCheck(pControl->hWnd, (!sczText && !pControl->sczValue) || CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, sczText, -1, pControl->sczValue, -1));
             }
         }
 
-        if (hwndFocus)
+        if (!fVisible || (!fEnabled && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_HIDE_WHEN_DISABLED)))
         {
-            ::SetFocus(hwndFocus);
+            ::ShowWindow(hWnd, SW_HIDE);
+        }
+        else
+        {
+            ::EnableWindow(hWnd, !fHide && fEnabled);
+
+            if (!hwndFocus && pControl->wPageId && (pControl->dwStyle & WS_TABSTOP))
+            {
+                hwndFocus = hWnd;
+            }
+
+            ::ShowWindow(hWnd, nCmdShow);
+        }
+
+        if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type && pControl->wPageId)
+        {
+            if (fEnabled)
+            {
+                ThemeStartBillboard(pTheme, pControl->wId, 0xFFFF);
+            }
+            else
+            {
+                ThemeStopBillboard(pTheme, pControl->wId);
+            }
         }
     }
+
+    // Without this, Text controls (and maybe others) don't erase the previous text before writing the new text.
+    // This feels like a hack, is there a better way?
+    if (!fHide)
+    {
+        InvalidateRect(pTheme->hwndParent, NULL, TRUE);
+        UpdateWindow(pTheme->hwndParent);
+    }
+
+    if (hwndFocus)
+    {
+        ::SetFocus(hwndFocus);
+    }
+
+LExit:
+    ReleaseStr(sczText);
+
+    return hr;
 }
 
 
@@ -1202,7 +1649,7 @@ DAPI_(void) ThemeShowControl(
     HWND hWnd = ::GetDlgItem(pTheme->hwndParent, dwControl);
     ::ShowWindow(hWnd, nCmdShow);
 
-    // Save the controls visible state
+    // Save the controls visible state.
     THEME_CONTROL* pControl = const_cast<THEME_CONTROL*>(FindControlFromHWnd(pTheme, hWnd));
     if (pControl)
     {
@@ -1244,7 +1691,7 @@ DAPI_(BOOL) ThemePostControlMessage(
 
 
 DAPI_(LRESULT) ThemeSendControlMessage(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in UINT Msg,
     __in WPARAM wParam,
@@ -1488,7 +1935,7 @@ DAPI_(HRESULT) ThemeSetProgressControl(
                 DWORD dwColor = HIWORD(pControl->dwData);
                 pControl->dwData = MAKEDWORD(dwProgressPercentage, dwColor);
 
-                if (pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
+                if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_OWNER_DRAW)
                 {
                     if (!::InvalidateRect(hWnd, NULL, FALSE))
                     {
@@ -1527,7 +1974,7 @@ DAPI_(HRESULT) ThemeSetProgressControlColor(
         THEME_CONTROL* pControl = const_cast<THEME_CONTROL*>(FindControlFromHWnd(pTheme, hWnd));
 
         // Only set color on owner draw progress bars.
-        if (pControl && pControl->hImage || (pTheme->hImage && 0 <= pControl->nSourceX && 0 <= pControl->nSourceY))
+        if (pControl && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_OWNER_DRAW))
         {
             DWORD dwCurrentColor = HIWORD(pControl->dwData);
 
@@ -1552,7 +1999,7 @@ LExit:
 
 
 DAPI_(HRESULT) ThemeSetTextControl(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in_z LPCWSTR wzText
     )
@@ -1676,33 +2123,13 @@ static HRESULT ParseTheme(
     hr = ParseImage(hModule, wzRelativePath, pThemeElement, &pTheme->hImage);
     ExitOnFailure(hr, "Failed while parsing theme image.");
 
-    // Parse the optional window style.
-    hr = XmlGetAttributeNumberBase(pThemeElement, L"HexStyle", 16, &pTheme->dwStyle);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumberBase(pThemeElement, L"s", 16, &pTheme->dwStyle);
-    }
-    ExitOnFailure(hr, "Failed to get theme window style (t@s) attribute.");
-
-    // Parse the application element.
-    hr = ParseApplication(hModule, wzRelativePath, pThemeElement, pTheme);
-    ExitOnFailure(hr, "Failed to parse theme application element.");
-
     // Parse the fonts.
     hr = ParseFonts(pThemeElement, pTheme);
     ExitOnFailure(hr, "Failed to parse theme fonts.");
 
-    // Parse any imagelists.
-    hr = ParseImageLists(hModule, wzRelativePath, pThemeElement, pTheme);
-    ExitOnFailure(hr, "Failed to parse image lists.");
-
-    // Parse the pages.
-    hr = ParsePages(hModule, wzRelativePath, pThemeElement, pTheme);
-    ExitOnFailure(hr, "Failed to parse theme pages.");
-
-    // Parse the non-paged controls.
-    hr = ParseControls(hModule, wzRelativePath, pThemeElement, pTheme, NULL);
-    ExitOnFailure(hr, "Failed to parse theme controls.");
+    // Parse the window element.
+    hr = ParseWindow(hModule, wzRelativePath, pThemeElement, pTheme);
+    ExitOnFailure(hr, "Failed to parse theme window element.");
 
     *ppTheme = pTheme;
     pTheme = NULL;
@@ -1792,7 +2219,7 @@ LExit:
     return hr;
 }
 
-static HRESULT ParseApplication(
+static HRESULT ParseWindow(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
     __in IXMLDOMElement* pElement,
@@ -1804,93 +2231,73 @@ static HRESULT ParseApplication(
     BSTR bstr = NULL;
     LPWSTR sczIconFile = NULL;
 
-    hr = XmlSelectSingleNode(pElement, L"Window|Application|App|a", &pixn);
+    hr = XmlSelectSingleNode(pElement, L"Window", &pixn);
     if (S_FALSE == hr)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
-    ExitOnFailure(hr, "Failed to find application element.");
+    ExitOnFailure(hr, "Failed to find window element.");
 
     hr = XmlGetYesNoAttribute(pixn, L"AutoResize", &pTheme->fAutoResize);
     if (E_NOTFOUND == hr)
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to get AutoResize attribute.");
+    ExitOnFailure(hr, "Failed to get window AutoResize attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Width", reinterpret_cast<DWORD*>(&pTheme->nWidth));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"w", reinterpret_cast<DWORD*>(&pTheme->nWidth));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application width attribute.");
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Failed to find window Width attribute.");
     }
-    ExitOnFailure(hr, "Failed to get application width attribute.");
+    ExitOnFailure(hr, "Failed to get window Width attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Height", reinterpret_cast<DWORD*>(&pTheme->nHeight));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"h", reinterpret_cast<DWORD*>(&pTheme->nHeight));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application height attribute.");
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Failed to find window Height attribute.");
     }
-    ExitOnFailure(hr, "Failed to get application height attribute.");
+    ExitOnFailure(hr, "Failed to get window Height attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"MinimumWidth", reinterpret_cast<DWORD*>(&pTheme->nMinimumWidth));
     if (S_FALSE == hr)
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to get application minimum width attribute.");
+    ExitOnFailure(hr, "Failed to get window MinimumWidth attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"MinimumHeight", reinterpret_cast<DWORD*>(&pTheme->nMinimumHeight));
     if (S_FALSE == hr)
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to get application minimum height attribute.");
+    ExitOnFailure(hr, "Failed to get window MinimumHeight attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"FontId", &pTheme->dwFontId);
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"f", &pTheme->dwFontId);
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application font attribute.");
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        ExitOnRootFailure(hr, "Failed to find window FontId attribute.");
     }
-    ExitOnFailure(hr, "Failed to get application font attribute.");
+    ExitOnFailure(hr, "Failed to get window FontId attribute.");
 
-    // Get the optional application icon from a resource.
+    // Get the optional window icon from a resource.
     hr = XmlGetAttribute(pixn, L"IconResource", &bstr);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttribute(pixn, L"i", &bstr);
-    }
-    ExitOnFailure(hr, "Failed to get application icon resource attribute.");
+    ExitOnFailure(hr, "Failed to get window IconResource attribute.");
 
     if (S_OK == hr)
     {
         pTheme->hIcon = ::LoadIconW(hModule, bstr);
-        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load application icon.");
+        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load window icon from IconResource.");
 
         ReleaseNullBSTR(bstr);
     }
 
-    // Get the optional application icon from a file.
+    // Get the optional window icon from a file.
     hr = XmlGetAttribute(pixn, L"IconFile", &bstr);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttribute(pixn, L"if", &bstr);
-    }
-    ExitOnFailure(hr, "Failed to get application icon file attribute.");
+    ExitOnFailure(hr, "Failed to get window IconFile attribute.");
 
     if (S_OK == hr)
     {
@@ -1904,33 +2311,26 @@ static HRESULT ParseApplication(
             hr = PathRelativeToModule(&sczIconFile, bstr, hModule);
             ExitOnFailure(hr, "Failed to get icon filename.");
         }
-        ReleaseNullBSTR(bstr);
 
         pTheme->hIcon = ::LoadImageW(NULL, sczIconFile, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
-        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load application icon: %ls.", bstr);
+        ExitOnNullWithLastError(pTheme->hIcon, hr, "Failed to load window icon from IconFile: %ls.", bstr);
+
+        ReleaseNullBSTR(bstr);
     }
 
     hr = XmlGetAttributeNumber(pixn, L"SourceX", reinterpret_cast<DWORD*>(&pTheme->nSourceX));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sx", reinterpret_cast<DWORD*>(&pTheme->nSourceX));
-        if (S_FALSE == hr)
-        {
-            pTheme->nSourceX = -1;
-        }
+        pTheme->nSourceX = -1;
     }
-    ExitOnFailure(hr, "Failed to get application source X attribute.");
+    ExitOnFailure(hr, "Failed to get window SourceX attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"SourceY", reinterpret_cast<DWORD*>(&pTheme->nSourceY));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sy", reinterpret_cast<DWORD*>(&pTheme->nSourceY));
-        if (S_FALSE == hr)
-        {
-            pTheme->nSourceY = -1;
-        }
+        pTheme->nSourceY = -1;
     }
-    ExitOnFailure(hr, "Failed to get application source Y attribute.");
+    ExitOnFailure(hr, "Failed to get window SourceY attribute.");
 
     // Parse the optional window style.
     hr = XmlGetAttributeNumberBase(pixn, L"HexStyle", 16, &pTheme->dwStyle);
@@ -1943,28 +2343,36 @@ static HRESULT ParseApplication(
     }
 
     hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pTheme->uStringId));
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumber(pixn, L"sid", reinterpret_cast<DWORD*>(&pTheme->uStringId));
-    }
-    ExitOnFailure(hr, "Failed to get application caption id attribute.");
+    ExitOnFailure(hr, "Failed to get window StringId attribute.");
 
     if (S_FALSE == hr)
     {
         pTheme->uStringId = UINT_MAX;
 
-        hr = XmlGetText(pixn, &bstr);
-        ExitOnFailure(hr, "Failed to get application caption.");
+        hr = XmlGetAttribute(pixn, L"Caption", &bstr);
+        ExitOnFailure(hr, "Failed to get window Caption attribute.");
 
         if (S_FALSE == hr)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            ExitOnRootFailure(hr, "Failed to find application caption.");
+            ExitOnRootFailure(hr, "Window elements must contain the Caption or StringId attribute.");
         }
 
         hr = StrAllocString(&pTheme->sczCaption, bstr, 0);
-        ExitOnFailure(hr, "Failed to copy application caption.");
+        ExitOnFailure(hr, "Failed to copy window Caption attribute.");
     }
+
+    // Parse any image lists.
+    hr = ParseImageLists(hModule, wzRelativePath, pixn, pTheme);
+    ExitOnFailure(hr, "Failed to parse image lists.");
+
+    // Parse the pages.
+    hr = ParsePages(hModule, wzRelativePath, pixn, pTheme);
+    ExitOnFailure(hr, "Failed to parse theme pages.");
+
+    // Parse the non-paged controls.
+    hr = ParseControls(hModule, wzRelativePath, pixn, pTheme, NULL);
+    ExitOnFailure(hr, "Failed to parse theme controls.");
 
 LExit:
     ReleaseStr(sczIconFile);
@@ -1989,7 +2397,7 @@ static HRESULT ParseFonts(
     COLORREF crForeground = THEME_INVISIBLE_COLORREF;
     COLORREF crBackground = THEME_INVISIBLE_COLORREF;
 
-    hr = XmlSelectNodes(pElement, L"Font|f", &pixnl);
+    hr = XmlSelectNodes(pElement, L"Font", &pixnl);
     ExitOnFailure(hr, "Failed to find font elements.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pTheme->cFonts));
@@ -2010,11 +2418,7 @@ static HRESULT ParseFonts(
         hr = XmlGetAttributeNumber(pixn, L"Id", &dwId);
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumber(pixn, L"id", &dwId);
-            if (S_FALSE == hr)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            }
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
         ExitOnFailure(hr, "Failed to find font id.");
 
@@ -2037,58 +2441,38 @@ static HRESULT ParseFonts(
         hr = XmlGetAttributeNumber(pixn, L"Height", reinterpret_cast<DWORD*>(&lf.lfHeight));
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumber(pixn, L"h", reinterpret_cast<DWORD*>(&lf.lfHeight));
-            if (S_FALSE == hr)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            }
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
         ExitOnFailure(hr, "Failed to find font height attribute.");
 
         hr = XmlGetAttributeNumber(pixn, L"Weight", reinterpret_cast<DWORD*>(&lf.lfWeight));
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumber(pixn, L"w", reinterpret_cast<DWORD*>(&lf.lfWeight));
-            if (S_FALSE == hr)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-            }
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
         }
         ExitOnFailure(hr, "Failed to find font weight attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"Underline", reinterpret_cast<BOOL*>(&lf.lfUnderline));
         if (E_NOTFOUND == hr)
         {
-            hr = XmlGetYesNoAttribute(pixn, L"u", reinterpret_cast<BOOL*>(&lf.lfUnderline));
-            if (E_NOTFOUND == hr)
-            {
-                lf.lfUnderline = FALSE;
-                hr = S_OK;
-            }
+            lf.lfUnderline = FALSE;
+            hr = S_OK;
         }
         ExitOnFailure(hr, "Failed to find font underline attribute.");
 
         hr = XmlGetAttributeNumberBase(pixn, L"Foreground", 16, &crForeground);
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumberBase(pixn, L"f", 16, &crForeground);
-            if (S_FALSE == hr)
-            {
-                crForeground = THEME_INVISIBLE_COLORREF;
-                hr = S_OK;
-            }
+            crForeground = THEME_INVISIBLE_COLORREF;
+            hr = S_OK;
         }
         ExitOnFailure(hr, "Failed to find font foreground color.");
 
         hr = XmlGetAttributeNumberBase(pixn, L"Background", 16, &crBackground);
         if (S_FALSE == hr)
         {
-            hr = XmlGetAttributeNumberBase(pixn, L"b", 16, &crBackground);
-            if (S_FALSE == hr)
-            {
-                crBackground = THEME_INVISIBLE_COLORREF;
-                hr = S_OK;
-            }
+            crBackground = THEME_INVISIBLE_COLORREF;
+            hr = S_OK;
         }
         ExitOnFailure(hr, "Failed to find font background color.");
 
@@ -2100,7 +2484,7 @@ static HRESULT ParseFonts(
         }
 
         pFont->hFont = ::CreateFontIndirectW(&lf);
-        ExitOnNullWithLastError(pFont->hFont, hr, "Failed to create product title font.");
+        ExitOnNullWithLastError(pFont->hFont, hr, "Failed to create font %u.", dwId);
 
         pFont->crForeground = crForeground;
         if (THEME_INVISIBLE_COLORREF != pFont->crForeground)
@@ -2138,7 +2522,7 @@ LExit:
 static HRESULT ParsePages(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     )
 {
@@ -2203,7 +2587,7 @@ LExit:
 static HRESULT ParseImageLists(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
-    __in IXMLDOMElement* pElement,
+    __in IXMLDOMNode* pElement,
     __in THEME* pTheme
     )
 {
@@ -2237,13 +2621,17 @@ static HRESULT ParseImageLists(
     while (S_OK == (hr = XmlNextElement(pixnlImageLists, &pixnImageList, NULL)))
     {
         hr = XmlGetAttribute(pixnImageList, L"Name", &bstr);
-        ExitOnFailure(hr, "Failed to get ImageList/@Name attribute.");
+        if (S_FALSE == hr)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        }
+        ExitOnFailure(hr, "Failed to find ImageList/@Name attribute.");
 
         hr = StrAllocString(&pTheme->rgImageLists[dwImageListIndex].sczName, bstr, 0);
-        ExitOnFailure(hr, "Failed to make copy of ImageList name");
+        ExitOnFailure(hr, "Failed to make copy of ImageList name.");
 
-        hr = XmlSelectNodes(pixnImageList, L"Image|i", &pixnlImages);
-        ExitOnFailure(hr, "Failed to select child Image|i nodes");
+        hr = XmlSelectNodes(pixnImageList, L"Image", &pixnlImages);
+        ExitOnFailure(hr, "Failed to select child Image nodes.");
 
         hr = pixnlImages->get_length(reinterpret_cast<long*>(&dwImageCount));
         ExitOnFailure(hr, "Failed to count the number of images in list.");
@@ -2266,7 +2654,7 @@ static HRESULT ParseImageLists(
                     ::GetObjectW(hBitmap, sizeof(BITMAP), &bm);
 
                     pTheme->rgImageLists[dwImageListIndex].hImageList = ImageList_Create(bm.bmWidth, bm.bmHeight, ILC_COLOR24, dwImageCount, 0);
-                    ExitOnNullWithLastError(pTheme->rgImageLists[dwImageListIndex].hImageList, hr, "Failed to create image list");
+                    ExitOnNullWithLastError(pTheme->rgImageLists[dwImageListIndex].hImageList, hr, "Failed to create image list.");
                 }
 
                 iRetVal = ImageList_Add(pTheme->rgImageLists[dwImageListIndex].hImageList, hBitmap, NULL);
@@ -2305,13 +2693,16 @@ static HRESULT ParseControls(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixn = NULL;
     BSTR bstrType = NULL;
     DWORD cNewControls = 0;
+    DWORD cPreprocessedControls = 0;
     DWORD iControl = 0;
     DWORD iPageControl = 0;
+
+    hr = ParseRadioButtons(hModule, wzRelativePath, pElement, pTheme, pPage, &cPreprocessedControls);
+    ExitOnFailure(hr, "Failed to parse radio buttons.");
 
     hr = XmlSelectNodes(pElement, L"*", &pixnl);
     ExitOnFailure(hr, "Failed to find control elements.");
@@ -2319,12 +2710,15 @@ static HRESULT ParseControls(
     hr = pixnl->get_length(reinterpret_cast<long*>(&cNewControls));
     ExitOnFailure(hr, "Failed to count the number of theme controls.");
 
-    // If we are creating top level controls (no page provided), subtract the font and
-    // page elements and "application" element since they are all siblings and inflate
-    // the count.
+    // Subtract the preprocessed controls.
+    cNewControls -= cPreprocessedControls;
+
+    // If we are creating top level controls (no page provided),
+    // subtract the Page elements and ImageList elements
+    // since they are all siblings and inflate the count.
     if (!pPage)
     {
-        cNewControls = cNewControls - pTheme->cFonts - pTheme->cPages - pTheme->cImageLists - 1;
+        cNewControls = cNewControls - pTheme->cPages - pTheme->cImageLists;
     }
 
     if (!cNewControls)
@@ -2334,20 +2728,18 @@ static HRESULT ParseControls(
 
     if (pPage)
     {
-        hr = ::SizeTMult(sizeof(DWORD), cNewControls, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u control indices.", cNewControls);
+        hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cNewControls);
+        ExitOnFailure(hr, "Failed to reallocate page controls.");
 
-        pPage->rgdwControlIndices = static_cast<DWORD*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pPage->rgdwControlIndices, hr, E_OUTOFMEMORY, "Failed to allocate theme page controls.");
-
-        pPage->cControlIndices = cNewControls;
+        iPageControl = pPage->cControlIndices;
+        pPage->cControlIndices += cNewControls;
     }
+
+    hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cNewControls);
+    ExitOnFailure(hr, "Failed to reallocate theme controls.");
 
     iControl = pTheme->cControls;
     pTheme->cControls += cNewControls;
-
-    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cNewControls);
-    ExitOnFailure(hr, "Failed to allocate theme controls.");
 
     while (S_OK == (hr = XmlNextElement(pixnl, &pixn, &bstrType)))
     {
@@ -2363,23 +2755,19 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_BILLBOARD;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Button", -1) ||
-            CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"b", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Button", -1))
         {
             type = THEME_CONTROL_TYPE_BUTTON;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Checkbox", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"cb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Checkbox", -1))
         {
             type = THEME_CONTROL_TYPE_CHECKBOX;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Editbox", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"eb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Editbox", -1))
         {
             type = THEME_CONTROL_TYPE_EDITBOX;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Hyperlink", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"l", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Hyperlink", -1))
         {
             type = THEME_CONTROL_TYPE_HYPERLINK;
         }
@@ -2387,48 +2775,37 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_HYPERTEXT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Image", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"i", 1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ImageControl", -1))
         {
             type = THEME_CONTROL_TYPE_IMAGE;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Progressbar", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"pb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Label", -1))
         {
-            type = THEME_CONTROL_TYPE_PROGRESSBAR;
+            type = THEME_CONTROL_TYPE_LABEL;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Richedit", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"rt", 2))
-        {
-            type = THEME_CONTROL_TYPE_RICHEDIT;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Static", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"s", 1))
-        {
-            type = THEME_CONTROL_TYPE_STATIC;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Text", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"t", 1))
-        {
-            type = THEME_CONTROL_TYPE_TEXT;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ListView", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Listview", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"lv", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ListView", -1))
         {
             type = THEME_CONTROL_TYPE_LISTVIEW;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Treeview", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tv", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Progressbar", -1))
         {
-            type = THEME_CONTROL_TYPE_TREEVIEW;
+            type = THEME_CONTROL_TYPE_PROGRESSBAR;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tabs", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tab", -1) ||
-                 CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"tb", 2))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Richedit", -1))
+        {
+            type = THEME_CONTROL_TYPE_RICHEDIT;
+        }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Static", -1))
+        {
+            type = THEME_CONTROL_TYPE_STATIC;
+        }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Tabs", -1))
         {
             type = THEME_CONTROL_TYPE_TAB;
+        }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1))
+        {
+            type = THEME_CONTROL_TYPE_TREEVIEW;
         }
 
         if (THEME_CONTROL_TYPE_UNKNOWN != type)
@@ -2456,6 +2833,8 @@ static HRESULT ParseControls(
         hr = S_OK;
     }
 
+    AssertSz(iControl == pTheme->cControls, "The number of parsed controls didn't match the number of expected controls.");
+
 LExit:
     ReleaseBSTR(bstrType);
     ReleaseObject(pixn);
@@ -2475,18 +2854,11 @@ static HRESULT ParseControl(
     )
 {
     HRESULT hr = S_OK;
-    DWORD dwId = 0;
+    DWORD dwId = iControl;
     THEME_CONTROL* pControl = NULL;
     DWORD dwValue = 0;
     BOOL fValue = FALSE;
     BSTR bstrText = NULL;
-
-    hr = XmlGetAttributeNumber(pixn, L"id", &dwId);
-    if (S_FALSE == hr)
-    {
-        dwId = iControl;
-    }
-    ExitOnFailure(hr, "Failed to find control id.");
 
     if (pTheme->cControls <= dwId)
     {
@@ -2508,51 +2880,49 @@ static HRESULT ParseControl(
     {
         hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed when querying control Name.");
+    ExitOnFailure(hr, "Failed when querying control Name attribute.");
+
+    hr = XmlGetAttributeEx(pixn, L"EnableCondition", &pControl->sczEnableCondition);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed when querying control EnableCondition attribute.");
+
+    hr = XmlGetAttributeEx(pixn, L"VisibleCondition", &pControl->sczVisibleCondition);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed when querying control VisibleCondition attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"X", reinterpret_cast<DWORD*>(&pControl->nX));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"x", reinterpret_cast<DWORD*>(&pControl->nX));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
     ExitOnFailure(hr, "Failed to find control X attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Y", reinterpret_cast<DWORD*>(&pControl->nY));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"y", reinterpret_cast<DWORD*>(&pControl->nY));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
     ExitOnFailure(hr, "Failed to find control Y attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Height", reinterpret_cast<DWORD*>(&pControl->nHeight));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"h", reinterpret_cast<DWORD*>(&pControl->nHeight));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
-    ExitOnFailure(hr, "Failed to find control height attribute.");
+    ExitOnFailure(hr, "Failed to find control Height attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"Width", reinterpret_cast<DWORD*>(&pControl->nWidth));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"w", reinterpret_cast<DWORD*>(&pControl->nWidth));
-        if (S_FALSE == hr)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-        }
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
     }
-    ExitOnFailure(hr, "Failed to find control width attribute.");
+    ExitOnFailure(hr, "Failed to find control Width attribute.");
 
     // Parse the optional background resource image.
     hr = ParseImage(hModule, wzRelativePath, pixn, &pControl->hImage);
@@ -2561,81 +2931,42 @@ static HRESULT ParseControl(
     hr = XmlGetAttributeNumber(pixn, L"SourceX", reinterpret_cast<DWORD*>(&pControl->nSourceX));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sx", reinterpret_cast<DWORD*>(&pControl->nSourceX));
-        if (S_FALSE == hr)
-        {
-            pControl->nSourceX = -1;
-        }
+        pControl->nSourceX = -1;
     }
-    ExitOnFailure(hr, "Failed to find control source X attribute.");
+    ExitOnFailure(hr, "Failed when querying control SourceX attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"SourceY", reinterpret_cast<DWORD*>(&pControl->nSourceY));
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"sy", reinterpret_cast<DWORD*>(&pControl->nSourceY));
-        if (S_FALSE == hr)
-        {
-            pControl->nSourceY = -1;
-        }
+        pControl->nSourceY = -1;
     }
-    ExitOnFailure(hr, "Failed to find control source Y attribute.");
+    ExitOnFailure(hr, "Failed when querying control SourceY attribute.");
 
     hr = XmlGetAttributeNumber(pixn, L"FontId", &pControl->dwFontId);
     if (S_FALSE == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"f", &pControl->dwFontId);
-        if (S_FALSE == hr)
-        {
-            pControl->dwFontId = THEME_INVALID_ID;
-        }
+        pControl->dwFontId = THEME_INVALID_ID;
     }
-    ExitOnFailure(hr, "Failed to find font for control.");
-
-    hr = XmlGetAttributeNumber(pixn, L"HoverFontId", &pControl->dwFontHoverId);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumber(pixn, L"fh", &pControl->dwFontHoverId);
-        if (S_FALSE == hr)
-        {
-            pControl->dwFontHoverId = THEME_INVALID_ID;
-        }
-    }
-    ExitOnFailure(hr, "Failed to find hover font for control.");
-
-    hr = XmlGetAttributeNumber(pixn, L"SelectedFontId", &pControl->dwFontSelectedId);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumber(pixn, L"fs", &pControl->dwFontSelectedId);
-        if (S_FALSE == hr)
-        {
-            pControl->dwFontSelectedId = THEME_INVALID_ID;
-        }
-    }
-    ExitOnFailure(hr, "Failed to find selected font for control.");
+    ExitOnFailure(hr, "Failed when querying control FontId attribute.");
 
     // Parse the optional window style.
     hr = XmlGetAttributeNumberBase(pixn, L"HexStyle", 16, &pControl->dwStyle);
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumberBase(pixn, L"s", 16, &pControl->dwStyle);
-        ExitOnFailure(hr, "Failed to get control window style (@s) attribute.");
-    }
+    ExitOnFailure(hr, "Failed when querying control HexStyle attribute.");
 
     // Parse the tabstop bit "shortcut nomenclature", this could have been set with the style above.
     hr = XmlGetYesNoAttribute(pixn, L"TabStop", &fValue);
     if (E_NOTFOUND == hr)
     {
-        hr = XmlGetAttributeNumber(pixn, L"t", &dwValue);
-        if (S_OK == hr && dwValue)
-        {
-            fValue = TRUE;
-        }
+        hr = S_OK;
     }
-    ExitOnFailure(hr, "Failed to tell if the control is a tab stop.");
-
-    if (S_OK == hr && fValue)
+    else
     {
-        pControl->dwStyle |= WS_TABSTOP;
+        ExitOnFailure(hr, "Failed when querying control TabStop attribute.");
+
+        if (fValue)
+        {
+            pControl->dwStyle |= WS_TABSTOP;
+        }
     }
 
     hr = XmlGetYesNoAttribute(pixn, L"Visible", &fValue);
@@ -2643,16 +2974,24 @@ static HRESULT ParseControl(
     {
         hr = S_OK;
     }
-    else if (fValue)
+    else
     {
-        pControl->dwStyle |= WS_VISIBLE;
+        ExitOnFailure(hr, "Failed when querying control Visible attribute.");
+
+        if (fValue)
+        {
+            pControl->dwStyle |= WS_VISIBLE;
+        }
     }
-    ExitOnFailure(hr, "Failed to tell if the control is visible.");
 
     hr = XmlGetYesNoAttribute(pixn, L"HideWhenDisabled", &fValue);
-    if (E_NOTFOUND != hr)
+    if (E_NOTFOUND == hr)
     {
-        ExitOnFailure(hr, "Failed to parse if the control should be hidden when disabled.");
+        hr = S_OK;
+    }
+    else
+    {
+        ExitOnFailure(hr, "Failed when querying control HideWhenDisabled attribute.");
 
         if (fValue)
         {
@@ -2660,51 +2999,47 @@ static HRESULT ParseControl(
         }
     }
 
-    hr = XmlGetYesNoAttribute(pixn, L"FileSystemAutoComplete", &fValue);
-    if (E_NOTFOUND != hr)
-    {
-        ExitOnFailure(hr, "Failed to parse if the control autocomplete.");
+    hr = ParseText(pixn, pControl);
+    ExitOnFailure(hr, "Failed to parse text nodes of the control.");
 
-        if (fValue)
-        {
-            pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE;
-        }
-    }
-
-    hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pControl->uStringId));
-    if (S_FALSE == hr)
-    {
-        hr = XmlGetAttributeNumber(pixn, L"sid", reinterpret_cast<DWORD*>(&pControl->uStringId));
-    }
-    ExitOnFailure(hr, "Failed to get control text id attribute.");
-
-    if (S_FALSE == hr)
+    if (pControl->cConditionalText)
     {
         pControl->uStringId = UINT_MAX;
+    }
+    else
+    {
+        hr = XmlGetAttributeNumber(pixn, L"StringId", reinterpret_cast<DWORD*>(&pControl->uStringId));
+        ExitOnFailure(hr, "Failed when querying control StringId attribute.");
 
-        hr = XmlGetText(pixn, &bstrText);
-        ExitOnFailure(hr, "Failed to get control text.");
-
-        if (S_OK == hr)
+        if (S_FALSE == hr)
         {
-            hr = StrAllocString(&pControl->sczText, bstrText, 0);
-            ExitOnFailure(hr, "Failed to copy control text.");
+            pControl->uStringId = UINT_MAX;
 
-            ReleaseNullBSTR(bstrText);
-        }
-        else if (S_FALSE == hr)
-        {
-            hr = S_OK;
+            hr = XmlGetText(pixn, &bstrText);
+            ExitOnFailure(hr, "Failed to get control text.");
+
+            if (S_OK == hr)
+            {
+                hr = StrAllocString(&pControl->sczText, bstrText, 0);
+                ExitOnFailure(hr, "Failed to copy control text.");
+
+                ReleaseNullBSTR(bstrText);
+            }
+            else if (S_FALSE == hr)
+            {
+                hr = S_OK;
+            }
         }
     }
 
     if (THEME_CONTROL_TYPE_BILLBOARD == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"Loop", &pControl->fBillboardLoops);
-        if (E_NOTFOUND != hr)
+        if (E_NOTFOUND == hr)
         {
-            ExitOnFailure(hr, "Failed to get Billboard/@Loop attribute.");
+            hr = S_OK;
         }
+        ExitOnFailure(hr, "Failed when querying Billboard/@Loop attribute.");
 
         pControl->wBillboardInterval = 5000;
         hr = XmlGetAttributeNumber(pixn, L"Interval", &dwValue);
@@ -2712,12 +3047,45 @@ static HRESULT ParseControl(
         {
             pControl->wBillboardInterval = static_cast<WORD>(dwValue & 0xFFFF);
         }
-        ExitOnFailure(hr, "Failed to get Billboard/@Interval.");
+        ExitOnFailure(hr, "Failed when querying Billboard/@Interval attribute.");
 
         hr = ParseBillboards(hModule, wzRelativePath, pixn, pControl);
         ExitOnFailure(hr, "Failed to parse billboards.");
     }
-    else if (THEME_CONTROL_TYPE_TEXT == type)
+    else if (THEME_CONTROL_TYPE_EDITBOX == type)
+    {
+        hr = XmlGetYesNoAttribute(pixn, L"FileSystemAutoComplete", &fValue);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        else
+        {
+            ExitOnFailure(hr, "Failed when querying Editbox/@FileSystemAutoComplete attribute.");
+
+            if (fValue)
+            {
+                pControl->dwInternalStyle |= INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE;
+            }
+        }
+    }
+    else if (THEME_CONTROL_TYPE_HYPERLINK == type)
+    {
+        hr = XmlGetAttributeNumber(pixn, L"HoverFontId", &pControl->dwFontHoverId);
+        if (S_FALSE == hr)
+        {
+            pControl->dwFontHoverId = THEME_INVALID_ID;
+        }
+        ExitOnFailure(hr, "Failed when querying control HoverFontId attribute.");
+
+        hr = XmlGetAttributeNumber(pixn, L"SelectedFontId", &pControl->dwFontSelectedId);
+        if (S_FALSE == hr)
+        {
+            pControl->dwFontSelectedId = THEME_INVALID_ID;
+        }
+        ExitOnFailure(hr, "Failed when querying control SelectedFontId attribute.");
+    }
+    else if (THEME_CONTROL_TYPE_LABEL == type)
     {
         hr = XmlGetYesNoAttribute(pixn, L"Center", &fValue);
         if (E_NOTFOUND == hr)
@@ -2728,7 +3096,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= SS_CENTER;
         }
-        ExitOnFailure(hr, "Failed to tell if the text control should be centered.");
+        ExitOnFailure(hr, "Failed when querying Label/@Center attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"DisablePrefix", &fValue);
         if (E_NOTFOUND == hr)
@@ -2739,56 +3107,66 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= SS_NOPREFIX;
         }
-        ExitOnFailure(hr, "Failed to tell if the text control should disable prefix.");
+        ExitOnFailure(hr, "Failed when querying Label/@DisablePrefix attribute.");
     }
     else if (THEME_CONTROL_TYPE_LISTVIEW == type)
     {
         // Parse the optional extended window style.
         hr = XmlGetAttributeNumberBase(pixn, L"HexExtendedStyle", 16, &pControl->dwExtendedStyle);
-        if (S_FALSE == hr)
-        {
-            hr = XmlGetAttributeNumberBase(pixn, L"xs", 16, &pControl->dwExtendedStyle);
-        }
-        ExitOnFailure(hr, "Failed to get theme ListView extended style (ListView/@HexExtendedStyle) attribute.");
+        ExitOnFailure(hr, "Failed when querying ListView/@HexExtendedStyle attribute.");
 
         hr = XmlGetAttribute(pixn, L"ImageList", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageList) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageList attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[0]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imagelist for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageList for ListView.", bstrText);
         }
 
         hr = XmlGetAttribute(pixn, L"ImageListSmall", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageListSmall) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageListSmall attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[1]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imagelistsmall for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageListSmall for ListView.", bstrText);
         }
 
         hr = XmlGetAttribute(pixn, L"ImageListState", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageListState) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageListState attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[2]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imageliststate for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageListState for ListView.", bstrText);
         }
 
         hr = XmlGetAttribute(pixn, L"ImageListGroupHeader", &bstrText);
         if (S_FALSE != hr)
         {
-            ExitOnFailure(hr, "Failed to get theme ListView ImageList (ListView/@ImageListGroupHeader) attribute.");
+            ExitOnFailure(hr, "Failed when querying ListView/@ImageListGroupHeader attribute.");
 
             hr = FindImageList(pTheme, bstrText, &pControl->rghImageList[3]);
-            ExitOnFailure(hr, "Failed to find image list %ls while setting imagelistgroupheader for ListView");
+            ExitOnFailure(hr, "Failed to find image list %ls while setting ImageListGroupHeader for ListView.", bstrText);
         }
 
         hr = ParseColumns(pixn, pControl);
-        ExitOnFailure(hr, "Failed to parse columns");
+        ExitOnFailure(hr, "Failed to parse columns.");
+    }
+    else if (THEME_CONTROL_TYPE_RADIOBUTTON == type)
+    {
+        hr = XmlGetAttributeEx(pixn, L"Value", &pControl->sczValue);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed when querying RadioButton/@Value attribute.");
+    }
+    else if (THEME_CONTROL_TYPE_TAB == type)
+    {
+        hr = ParseTabs(pixn, pControl);
+        ExitOnFailure(hr, "Failed to parse tabs");
     }
     else if (THEME_CONTROL_TYPE_TREEVIEW == type)
     {
@@ -2803,7 +3181,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle &= ~TVS_DISABLEDRAGDROP;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control control enables drag and drop.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@EnableDragDrop attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"FullRowSelect", &fValue);
         if (E_NOTFOUND == hr)
@@ -2814,7 +3192,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_FULLROWSELECT;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control enables full row select.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@FullRowSelect attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"HasButtons", &fValue);
         if (E_NOTFOUND == hr)
@@ -2825,7 +3203,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_HASBUTTONS;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control show buttons.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@HasButtons attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"AlwaysShowSelect", &fValue);
         if (E_NOTFOUND == hr)
@@ -2836,7 +3214,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_SHOWSELALWAYS;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control always displays the selection.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@AlwaysShowSelect attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"LinesAtRoot", &fValue);
         if (E_NOTFOUND == hr)
@@ -2847,7 +3225,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_LINESATROOT;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control shows lines at the root.");
+        ExitOnFailure(hr, "Failed when querying TreeView/@LinesAtRoot attribute.");
 
         hr = XmlGetYesNoAttribute(pixn, L"HasLines", &fValue);
         if (E_NOTFOUND == hr)
@@ -2858,12 +3236,7 @@ static HRESULT ParseControl(
         {
             pControl->dwStyle |= TVS_HASLINES;
         }
-        ExitOnFailure(hr, "Failed to tell if the tree control shows lines.");
-    }
-    else if (THEME_CONTROL_TYPE_TAB == type)
-    {
-        hr = ParseTabs(pixn, pControl);
-        ExitOnFailure(hr, "Failed to parse tabs");
+        ExitOnFailure(hr, "Failed when querying TreeView/@HasLines attribute.");
     }
 
 LExit:
@@ -2881,7 +3254,6 @@ static HRESULT ParseBillboards(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     DWORD i = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixnChild = NULL;
@@ -2895,28 +3267,14 @@ static HRESULT ParseBillboards(
 
     if (0 < pControl->cBillboards)
     {
-        hr = ::SizeTMult(sizeof(THEME_BILLBOARD), pControl->cBillboards, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_BILLBOARD structs.", pControl->cBillboards);
-
-        pControl->ptbBillboards = static_cast<THEME_BILLBOARD*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pControl->ptbBillboards, hr, E_OUTOFMEMORY, "Failed to allocate billboard image structs.");
+        hr = MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->ptbBillboards), sizeof(THEME_BILLBOARD), pControl->cBillboards);
+        ExitOnFailure(hr, "Failed to allocate billboard image structs.");
 
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
         {
             hr = ParseImage(hModule, wzRelativePath, pixnChild, &pControl->ptbBillboards[i].hImage);
             ExitOnFailure(hr, "Failed to get billboard image.");
-
-            hr = XmlGetText(pixnChild, &bstrText);
-            ExitOnFailure(hr, "Failed to get inner text of the Billboard/@Image element.");
-
-            if (S_OK == hr && bstrText && *bstrText)
-            {
-                hr = StrAllocString(&(pControl->ptbBillboards[i].sczUrl), bstrText, 0);
-                ExitOnFailure(hr, "Failed to copy image URL.");
-
-                pControl->wBillboardUrls |= (1 << i);
-            }
 
             ++i;
             ReleaseNullBSTR(bstrText);
@@ -2938,40 +3296,32 @@ static HRESULT ParseColumns(
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     DWORD i = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixnChild = NULL;
     BSTR bstrText = NULL;
 
-    hr = XmlSelectNodes(pixn, L"Column|c", &pixnl);
-    ExitOnFailure(hr, "Failed to select child column nodes");
+    hr = XmlSelectNodes(pixn, L"Column", &pixnl);
+    ExitOnFailure(hr, "Failed to select child column nodes.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cColumns));
     ExitOnFailure(hr, "Failed to count the number of control columns.");
 
     if (0 < pControl->cColumns)
     {
-        hr = ::SizeTMult(sizeof(THEME_COLUMN), pControl->cColumns, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_COLUMN structs.", pControl->cColumns);
-
-        pControl->ptcColumns = static_cast<THEME_COLUMN*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pControl->ptcColumns, hr, E_OUTOFMEMORY, "Failed to allocate column structs.");
+        hr = MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->ptcColumns), sizeof(THEME_COLUMN), pControl->cColumns);
+        ExitOnFailure(hr, "Failed to allocate column structs.");
 
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
         {
             hr = XmlGetText(pixnChild, &bstrText);
-            ExitOnFailure(hr, "Failed to get inner text of column element");
+            ExitOnFailure(hr, "Failed to get inner text of column element.");
 
             hr = XmlGetAttributeNumber(pixnChild, L"Width", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
             if (S_FALSE == hr)
             {
-                hr = XmlGetAttributeNumber(pixnChild, L"w", reinterpret_cast<DWORD*>(&pControl->ptcColumns[i].nBaseWidth));
-                if (S_FALSE == hr)
-                {
-                    pControl->ptcColumns[i].nBaseWidth = 100;
-                }
+                pControl->ptcColumns[i].nBaseWidth = 100;
             }
             ExitOnFailure(hr, "Failed to get column width attribute.");
 
@@ -2980,10 +3330,10 @@ static HRESULT ParseColumns(
             {
                 hr = S_OK;
             }
-            ExitOnFailure(hr, "Failed to find expands attribute.");
+            ExitOnFailure(hr, "Failed to get expands attribute.");
 
             hr = StrAllocString(&(pControl->ptcColumns[i].pszName), bstrText, 0);
-            ExitOnFailure(hr, "Failed to copy column name");
+            ExitOnFailure(hr, "Failed to copy column name.");
 
             ++i;
             ReleaseNullBSTR(bstrText);
@@ -2999,40 +3349,211 @@ LExit:
 }
 
 
+static HRESULT ParseRadioButtons(
+    __in_opt HMODULE hModule,
+    __in_opt LPCWSTR wzRelativePath,
+    __in IXMLDOMNode* pixn,
+    __in THEME* pTheme,
+    __in THEME_PAGE* pPage,
+    __inout DWORD* pdwProcessedControls
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD cRadioButtons = 0;
+    DWORD iControl = 0;
+    DWORD iPageControl = 0;
+    IXMLDOMNodeList* pixnlRadioButtons = NULL;
+    IXMLDOMNodeList* pixnl = NULL;
+    IXMLDOMNode* pixnRadioButtons = NULL;
+    IXMLDOMNode* pixnChild = NULL;
+    LPWSTR sczName = NULL;
+    THEME_CONTROL* pControl = NULL;
+    BOOL fFirst = FALSE;
+
+    hr = XmlSelectNodes(pixn, L"RadioButtons", &pixnlRadioButtons);
+    ExitOnFailure(hr, "Failed to select RadioButtons nodes.");
+
+    while (S_OK == (hr = XmlNextElement(pixnlRadioButtons, &pixnRadioButtons, NULL)))
+    {
+        hr = XmlGetAttributeEx(pixnRadioButtons, L"Name", &sczName);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed when querying RadioButtons Name.");
+
+        hr = XmlSelectNodes(pixnRadioButtons, L"RadioButton", &pixnl);
+        ExitOnFailure(hr, "Failed to select RadioButton nodes.");
+
+        hr = pixnl->get_length(reinterpret_cast<long*>(&cRadioButtons));
+        ExitOnFailure(hr, "Failed to count the number of RadioButton nodes.");
+
+        if (cRadioButtons)
+        {
+            if (pPage)
+            {
+                hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pPage->rgdwControlIndices), pPage->cControlIndices, sizeof(DWORD), cRadioButtons);
+                ExitOnFailure(hr, "Failed to reallocate page controls.");
+
+                iPageControl = pPage->cControlIndices;
+                pPage->cControlIndices += cRadioButtons;
+            }
+
+            hr = MemReAllocArray(reinterpret_cast<LPVOID*>(&pTheme->rgControls), pTheme->cControls, sizeof(THEME_CONTROL), cRadioButtons);
+            ExitOnFailure(hr, "Failed to reallocate theme controls.");
+
+            iControl = pTheme->cControls;
+            pTheme->cControls += cRadioButtons;
+
+            fFirst = TRUE;
+
+            while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
+            {
+                hr = ParseControl(hModule, wzRelativePath, pixnChild, THEME_CONTROL_TYPE_RADIOBUTTON, pTheme, iControl);
+                ExitOnFailure(hr, "Failed to parse control.");
+
+                pControl = pTheme->rgControls + iControl;
+
+                if (fFirst)
+                {
+                    pControl->dwStyle |= WS_GROUP;
+                    fFirst = FALSE;
+                }
+
+                hr = StrAllocString(&pControl->sczVariable, sczName, 0);
+                ExitOnFailure(hr, "Failed to copy radio button variable.");
+
+                if (pPage)
+                {
+                    pControl->wPageId = pPage->wId;
+                    pPage->rgdwControlIndices[iPageControl] = iControl;
+                    ++iPageControl;
+                }
+
+                ++iControl;
+            }
+
+            if (!fFirst)
+            {
+                pControl->fLastRadioButton = TRUE;
+            }
+        }
+
+        ++*pdwProcessedControls;
+    }
+
+LExit:
+    ReleaseStr(sczName);
+    ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseObject(pixnlRadioButtons);
+    ReleaseObject(pixnRadioButtons);
+
+    return hr;
+}
+
+
 static HRESULT ParseTabs(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
     )
 {
     HRESULT hr = S_OK;
-    size_t cbAllocSize = 0;
     DWORD i = 0;
     IXMLDOMNodeList* pixnl = NULL;
     IXMLDOMNode* pixnChild = NULL;
     BSTR bstrText = NULL;
 
-    hr = XmlSelectNodes(pixn, L"Tab|t", &pixnl);
-    ExitOnFailure(hr, "Failed to select child tab nodes");
+    hr = XmlSelectNodes(pixn, L"Tab", &pixnl);
+    ExitOnFailure(hr, "Failed to select child tab nodes.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cTabs));
     ExitOnFailure(hr, "Failed to count the number of tabs.");
 
     if (0 < pControl->cTabs)
     {
-        hr = ::SizeTMult(sizeof(THEME_TAB), pControl->cTabs, &cbAllocSize);
-        ExitOnFailure(hr, "Overflow while calculating allocation size for %u THEME_TAB structs.", pControl->cTabs);
-
-        pControl->pttTabs = static_cast<THEME_TAB*>(MemAlloc(cbAllocSize, TRUE));
-        ExitOnNull(pControl->pttTabs, hr, E_OUTOFMEMORY, "Failed to allocate tab structs.");
+        hr = MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->pttTabs), sizeof(THEME_TAB), pControl->cTabs);
+        ExitOnFailure(hr, "Failed to allocate tab structs.");
 
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
         {
             hr = XmlGetText(pixnChild, &bstrText);
-            ExitOnFailure(hr, "Failed to get inner text of tab element");
+            ExitOnFailure(hr, "Failed to get inner text of tab element.");
 
             hr = StrAllocString(&(pControl->pttTabs[i].pszName), bstrText, 0);
-            ExitOnFailure(hr, "Failed to copy tab name");
+            ExitOnFailure(hr, "Failed to copy tab name.");
+
+            ++i;
+            ReleaseNullBSTR(bstrText);
+        }
+    }
+
+LExit:
+    ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseBSTR(bstrText);
+
+    return hr;
+}
+
+
+static HRESULT ParseText(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD i = 0;
+    IXMLDOMNodeList* pixnl = NULL;
+    IXMLDOMNode* pixnChild = NULL;
+    BSTR bstrText = NULL;
+
+    hr = XmlSelectNodes(pixn, L"Text", &pixnl);
+    ExitOnFailure(hr, "Failed to select child Text nodes.");
+
+    hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cConditionalText));
+    ExitOnFailure(hr, "Failed to count the number of Text nodes.");
+
+    if (0 < pControl->cConditionalText)
+    {
+        MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->rgConditionalText), sizeof(THEME_CONDITIONAL_TEXT), pControl->cConditionalText);
+        ExitOnNull(pControl->rgConditionalText, hr, E_OUTOFMEMORY, "Failed to allocate THEME_CONDITIONAL_TEXT structs.");
+
+        i = 0;
+        while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
+        {
+            THEME_CONDITIONAL_TEXT* pConditionalText = pControl->rgConditionalText + i;
+
+            hr = XmlGetAttributeEx(pixnChild, L"Condition", &pConditionalText->sczCondition);
+            if (E_NOTFOUND == hr)
+            {
+                hr = S_OK;
+            }
+            ExitOnFailure(hr, "Failed when querying Text/@Condition attribute.");
+
+            hr = XmlGetText(pixnChild, &bstrText);
+            ExitOnFailure(hr, "Failed to get inner text of Text element.");
+
+            if (S_OK == hr)
+            {
+                if (pConditionalText->sczCondition)
+                {
+                    hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to conditional text.");
+                }
+                else
+                {
+                    if (pControl->sczText)
+                    {
+                        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                        ExitOnFailure(hr, "The text for the '%ls' control is specified multiple times.", pControl->sczName);
+                    }
+
+                    hr = StrAllocString(&pControl->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to control.");
+                }
+            }
 
             ++i;
             ReleaseNullBSTR(bstrText);
@@ -3270,7 +3791,7 @@ static BOOL DrawHoverControl(
 
     // Only hyperlinks and owner-drawn buttons have hover states.
     if (pControl && (THEME_CONTROL_TYPE_HYPERLINK == pControl->type ||
-        (THEME_CONTROL_TYPE_BUTTON == pControl->type && (pControl->hImage || pControl->nSourceX))))
+        (THEME_CONTROL_TYPE_BUTTON == pControl->type && (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_OWNER_DRAW))))
     {
         if (fHover)
         {
@@ -3297,6 +3818,16 @@ static void FreePage(
     {
         ReleaseStr(pPage->sczName);
         ReleaseMem(pPage->rgdwControlIndices);
+
+        if (pPage->cSavedVariables)
+        {
+            for (DWORD i = 0; i < pPage->cSavedVariables; ++i)
+            {
+                ReleaseStr(pPage->rgSavedVariables[i].sczValue);
+            }
+        }
+
+        ReleaseMem(pPage->rgSavedVariables);
     }
 }
 
@@ -3326,6 +3857,10 @@ static void FreeControl(
 
         ReleaseStr(pControl->sczName);
         ReleaseStr(pControl->sczText);
+        ReleaseStr(pControl->sczEnableCondition);
+        ReleaseStr(pControl->sczVisibleCondition);
+        ReleaseStr(pControl->sczValue);
+        ReleaseStr(pControl->sczVariable);
 
         if (pControl->hImage)
         {
@@ -3342,6 +3877,11 @@ static void FreeControl(
             FreeColumn(&(pControl->ptcColumns[i]));
         }
 
+        for (DWORD i = 0; i < pControl->cConditionalText; ++i)
+        {
+            FreeConditionalText(&(pControl->rgConditionalText[i]));
+        }
+
         for (DWORD i = 0; i < pControl->cTabs; ++i)
         {
             FreeTab(&(pControl->pttTabs[i]));
@@ -3349,6 +3889,7 @@ static void FreeControl(
 
         ReleaseMem(pControl->ptbBillboards)
         ReleaseMem(pControl->ptcColumns);
+        ReleaseMem(pControl->rgConditionalText);
         ReleaseMem(pControl->pttTabs);
     }
 }
@@ -3358,7 +3899,6 @@ static void FreeBillboard(
     __in THEME_BILLBOARD* pBillboard
     )
 {
-    ReleaseStr(pBillboard->sczUrl);
     if (pBillboard->hImage)
     {
         ::DeleteBitmap(pBillboard->hImage);
@@ -3371,6 +3911,15 @@ static void FreeColumn(
     )
 {
     ReleaseStr(pColumn->pszName);
+}
+
+
+static void FreeConditionalText(
+    __in THEME_CONDITIONAL_TEXT* pConditionalText
+    )
+{
+    ReleaseStr(pConditionalText->sczCondition);
+    ReleaseStr(pConditionalText->sczText);
 }
 
 

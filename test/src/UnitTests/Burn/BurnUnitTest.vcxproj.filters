@@ -62,6 +62,9 @@
     <ClInclude Include="BurnUnitTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BurnTestFixture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BurnUnitTest.rc">

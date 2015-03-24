@@ -16,9 +16,6 @@
 const DWORD STALE_WRITETIME_RETRY = 100;
 
 
-static HRESULT GenerateGuidString(
-    __out_z LPWSTR *psczGuid
-    );
 // Deletes a stream and attempts to delete any empty parent directories
 // Modifies the string in the process for perf (instead of copying the string)
 static HRESULT DeleteStream(
@@ -220,8 +217,8 @@ HRESULT HandleEnsureSummaryDataTable(
 
     if (fEmpty)
     {
-        hr = GenerateGuidString(&pcdb->sczGuid);
-        ExitOnFailure(hr, "Failed to generate guid string");
+        hr = GuidCreate(&pcdb->sczGuid);
+        ExitOnRootFailure(hr, "Failed to generate guid string");
 
         hr = SceBeginTransaction(pcdb->psceDb);
         ExitOnFailure(hr, "Failed to begin transaction");
@@ -258,32 +255,6 @@ LExit:
         ReleaseNullStr(pcdb->sczGuid);
     }
 
-    return hr;
-}
-
-HRESULT GenerateGuidString(
-    __out_z LPWSTR *psczGuid
-    )
-{
-    HRESULT hr = S_OK;
-    RPC_STATUS rs = RPC_S_OK;
-    UUID guid = { };
-    const DWORD_PTR cchGuid = 39;
-
-    hr = StrAlloc(psczGuid, cchGuid);
-    ExitOnFailure(hr, "Failed to allocate space for guid");
-
-    rs = ::UuidCreate(&guid);
-    hr = HRESULT_FROM_RPC(rs);
-    ExitOnFailure(hr, "Failed to create new guid.");
-
-    if (!::StringFromGUID2(guid, *psczGuid, cchGuid))
-    {
-        hr = E_OUTOFMEMORY;
-        ExitOnRootFailure(hr, "Failed to convert endpoint guid into string.");
-    }
-
-LExit:
     return hr;
 }
 

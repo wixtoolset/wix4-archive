@@ -63,6 +63,7 @@
 #include "dirutil.h"
 #include "dlutil.h"
 #include "fileutil.h"
+#include "guidutil.h"
 #include "gdiputil.h"
 #include "dictutil.h"
 #include "inetutil.h"
@@ -84,8 +85,8 @@
 #include "rmutil.h"
 #include "rssutil.h"
 #include "apuputil.h" // NOTE: this must come after atomutil.h and rssutil.h since it uses them.
-//#include "sqlutil.h" - see sqlutil.cpp why this *must* be commented out
 #include "shelutil.h"
+//#include "sqlutil.h" - see sqlutil.cpp why this *must* be commented out
 #include "srputil.h"
 #include "strutil.h"
 #include "timeutil.h"
@@ -94,9 +95,11 @@
 #include "uncutil.h"
 #include "uriutil.h"
 #include "userutil.h"
-#include <comutil.h>  // This header is needed for msxml2.h to compile correctly
-#include <msxml2.h>   // This file is needed to include xmlutil.h
+#include "varutil.h"
+#include "condutil.h" // NOTE: This must come after varutil.h since it uses it.
 #include "wiutil.h"
 #include "wuautil.h"
+#include <comutil.h>  // This header is needed for msxml2.h to compile correctly
+#include <msxml2.h>   // This file is needed to include xmlutil.h
 #include "xmlutil.h"
 

@@ -42,6 +42,9 @@
     <ClCompile Include="certutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="condutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="conutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,6 +72,9 @@
     <ClCompile Include="gdiputil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="guidutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="iis7util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -88,6 +94,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="metautil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="monutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="osutil.cpp">
@@ -141,10 +150,16 @@
     <ClCompile Include="timeutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="uncutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="uriutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="userutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="varutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="wiutil.cpp">
@@ -200,6 +215,9 @@
     <ClInclude Include="inc\certutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\condutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\conutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -227,6 +245,9 @@
     <ClInclude Include="inc\gdiputil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\guidutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\inetutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -243,6 +264,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\metautil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\monutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\osutil.h">
@@ -290,10 +314,16 @@
     <ClInclude Include="inc\timeutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\uncutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\uriutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\userutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\varutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\wiutil.h">

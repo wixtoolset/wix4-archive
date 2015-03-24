@@ -680,6 +680,7 @@ static HRESULT GetArpProducts(
         }
 
     Skip:
+        ReleaseRegKey(hkSubkey);
         ++dwEnumIndex;
     }
 
@@ -895,7 +896,7 @@ static HRESULT ReadCachedValue(
     hr = StrAllocConcat(&sczValueName, wzPropertyName, 0);
     ExitOnFailure(hr, "Failed to concat value name to value prefix");
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczValueName, &sceValueRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, sczValueName, &sceValueRow);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();

@@ -24,6 +24,7 @@
 #include "wininet.h"
 
 #include <dutil.h>
+#include <cryputil.h>
 #include <dlutil.h>
 #include <buffutil.h>
 #include <dirutil.h>
@@ -82,6 +83,7 @@
 #include <vcclr.h>
 
 #include "BurnTestException.h"
+#include "BurnTestFixture.h"
 #include "BurnUnitTest.h"
 #include "VariableHelpers.h"
 #include "ManifestHelpers.h"
