@@ -272,11 +272,6 @@ namespace WixTest.BA
             {
                 this.retryExecuteFilesInUse = 0;
             }
-
-            //if (LaunchAction.UpdateReplace == this.action)
-            //{
-            //    System.Diagnostics.Debugger.Launch();
-            //}
         }
 
         protected override void OnExecuteFilesInUse(ExecuteFilesInUseEventArgs args)
@@ -306,11 +301,6 @@ namespace WixTest.BA
             {
                 Thread.Sleep(this.sleepDuringExecute);
             }
-        }
-
-        protected override void OnExecutePackageComplete(ExecutePackageCompleteEventArgs args)
-        {
-            //this.Log("OnExecutePackageComplete() - package: {0}, progress: {1}%, overall progress: {2}%", args.PackageId, args.ProgressPercentage, args.OverallPercentage);
         }
 
         protected override void OnExecutePatchTarget(ExecutePatchTargetEventArgs args)
@@ -343,13 +333,6 @@ namespace WixTest.BA
             this.result = args.Status;
             this.wait.Set();
         }
-
-        //protected override void OnUnregisterBegin(UnregisterBeginEventArgs args)
-        //{
-        //    this.Log("OnUnregisterBegin()");
-
-        //    Thread.Sleep(120 * 1000);
-        //}
 
         protected override void OnSystemShutdown(SystemShutdownEventArgs args)
         {

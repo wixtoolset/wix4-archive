@@ -336,7 +336,7 @@ static HRESULT DownloadUpdateFeed(
     __in_z LPCWSTR wzBundleId,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_UPDATE* pUpdate,
-    __deref_inout_z LPWSTR* ppwzTempFile
+    __deref_inout_z LPWSTR* psczTempFile
     )
 {
     HRESULT hr = S_OK;
@@ -349,7 +349,7 @@ static HRESULT DownloadUpdateFeed(
     DWORD64 qwDownloadSize = 0;
 
     // Always do our work in the working folder, even if cached.
-    hr = PathCreateTimeBasedTempFile(NULL, L"UpdateFeed", NULL, L"xml", ppwzTempFile, NULL);
+    hr = PathCreateTimeBasedTempFile(NULL, L"UpdateFeed", NULL, L"xml", psczTempFile, NULL);
     ExitOnFailure(hr, "Failed to create UpdateFeed based on current system time.");
 
     // Do we need a means of the BA to pass in a user name and password? If so, we should copy it to downloadSource here
@@ -366,18 +366,18 @@ static HRESULT DownloadUpdateFeed(
     authenticationCallback.pv =  static_cast<LPVOID>(&authenticationData);
     authenticationCallback.pfnAuthenticate = &AuthenticationRequired;
 
-    hr = DownloadUrl(&downloadSource, qwDownloadSize, *ppwzTempFile, &cacheCallback, &authenticationCallback);
+    hr = DownloadUrl(&downloadSource, qwDownloadSize, *psczTempFile, &cacheCallback, &authenticationCallback);
     ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, *ppwzTempFile);
 
 LExit:
     if (FAILED(hr))
     {
-        if (*ppwzTempFile)
+        if (*psczTempFile)
         {
-            FileEnsureDelete(*ppwzTempFile);
+            FileEnsureDelete(*psczTempFile);
         }
 
-        ReleaseNullStr(*ppwzTempFile);
+        ReleaseNullStr(*psczTempFile);
     }
 
     ReleaseStr(downloadSource.sczUrl);

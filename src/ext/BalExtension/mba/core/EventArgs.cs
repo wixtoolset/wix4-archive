@@ -419,7 +419,7 @@ namespace WixToolset.Bootstrapper
     public class DetectUpdateCompleteEventArgs : ResultStatusEventArgs
     {
         private string updateLocation;
-        
+
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateCompleteEventArgs"/> class.
         /// </summary>
@@ -429,7 +429,7 @@ namespace WixToolset.Bootstrapper
         public DetectUpdateCompleteEventArgs(int status, string updateLocation, int recommendation)
             : base(status, recommendation)
         {
-            this.updateLocation = updateLocation;            
+            this.updateLocation = updateLocation;
         }
 
         /// <summary>

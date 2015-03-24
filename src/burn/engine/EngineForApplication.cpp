@@ -399,7 +399,6 @@ public: // IBootstrapperEngine
         WCHAR wzGuid[39];
         RPC_STATUS rs = RPC_S_OK;
 
-
         ::EnterCriticalSection(&m_pEngineState->csActive);
 
         if ((!wzLocalSource || !*wzLocalSource) && (!wzDownloadSource || !*wzDownloadSource))
