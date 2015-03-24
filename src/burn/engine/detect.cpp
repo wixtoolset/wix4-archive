@@ -367,7 +367,7 @@ static HRESULT DownloadUpdateFeed(
     authenticationCallback.pfnAuthenticate = &AuthenticationRequired;
 
     hr = DownloadUrl(&downloadSource, qwDownloadSize, *psczTempFile, &cacheCallback, &authenticationCallback);
-    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, *ppwzTempFile);
+    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, *psczTempFile);
 
 LExit:
     if (FAILED(hr))
