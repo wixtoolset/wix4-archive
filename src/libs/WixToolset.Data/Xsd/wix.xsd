@@ -7571,18 +7571,23 @@
                     </xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="Win64" type="YesNoTypeUnion">
+      <xs:attribute name="Platform">
         <xs:annotation>
           <xs:documentation>
-                        Set this attribute to 'yes' to mark this as a 64-bit component. This attribute facilitates
-                        the installation of packages that include both 32-bit and 64-bit components.  If this is a 64-bit
-                        component replacing a 32-bit component, set this attribute to 'yes' and assign a new GUID in the Guid attribute.
-          The default value is based on the platform set by the -arch switch to candle.exe
-          or the InstallerPlatform property in a .wixproj MSBuild project: 
-          For x86 and ARM, the default value is 'no'. 
-          For x64 and IA64, the default value is 'yes'.
+                        Set this attribute to 'win32' to mark this as a 32-bit component. This attribute facilitates
+                        the installation of packages that include both 32-bit and 64-bit components. 64-bit
+                        components must not share the same GUID with a 32-bit component.
+          If attribute is default (or specified as 'default'), the platform set by the -arch switch to candle.exe
+          or the InstallerPlatform property in a .wixproj MSBuild project will be used to determine if the component
+          is 32-bit or 64-bit. The default value is 'default'.
           </xs:documentation>
         </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="win32" />
+            <xs:enumeration value="default" />
+          </xs:restriction>
+        </xs:simpleType>
       </xs:attribute>
       <xs:anyAttribute namespace="##other" processContents="lax">
         <xs:annotation>
@@ -9007,17 +9012,21 @@
                             </xs:documentation>
             </xs:annotation>
           </xs:attribute>
-          <xs:attribute name="Win64" type="YesNoTypeUnion">
+          <xs:attribute name="Platform">
             <xs:annotation>
               <xs:documentation>
-                                Specifies that a script custom action targets a 64-bit platform. Valid only when used with
-                                the Script, VBScriptCall, and JScriptCall attributes.
-          The default value is based on the platform set by the -arch switch to candle.exe
-          or the InstallerPlatform property in a .wixproj MSBuild project: 
-          For x86 and ARM, the default value is 'no'. 
-          For x64 and IA64, the default value is 'yes'.
+                            Set this attribute to 'win32' to mark this as a 32-bit custom action. Valid only when used with
+                                the Script, VBScriptCall, and JScriptCall attributes. The default value is 'default', which
+                                will be the platform set by the -arch switch in candle.exe or the InstallerPlatform property
+                                in a .wixproj MSBuild project. The default value is 'default'.
               </xs:documentation>
             </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="win32" />
+                <xs:enumeration value="default" />
+              </xs:restriction>
+            </xs:simpleType>
           </xs:attribute>
           <xs:attribute name="TerminalServerAware" type="YesNoTypeUnion">
             <xs:annotation>

@@ -2095,7 +2095,6 @@ namespace WixToolset
             int comPlusBits = CompilerConstants.IntegerNotSet;
             string condition = null;
             bool encounteredODBCDataSource = false;
-            bool explicitWin64 = false;
             int files = 0;
             string guid = "*";
             string autoId = Compiler.DefaultComponentIdPlaceholder; // placeholder id for defaulting Component/@Id to keypath id.
@@ -2105,6 +2104,7 @@ namespace WixToolset
             string keyPath = null;
             bool shouldAddCreateFolder = false;
             bool win64 = false;
+            Wix.Component.PlatformType platformType = Wix.Component.PlatformType.@default;
             bool multiInstance = false;
             List<string> symbols = new List<string>();
             string feature = null;
@@ -2184,6 +2184,13 @@ namespace WixToolset
                                 bits |= MsiInterop.MsidbComponentAttributesPermanent;
                             }
                             break;
+                        case "Platform":
+                            string platform = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (0 < platform.Length)
+                            {
+                                platformType = Wix.Component.ParsePlatformType(platform);
+                            }
+                            break;
                         case "Shared":
                             if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
@@ -2208,14 +2215,6 @@ namespace WixToolset
                                 bits |= MsiInterop.MsidbComponentAttributesUninstallOnSupersedence;
                             }
                             break;
-                        case "Win64":
-                            explicitWin64 = true;
-                            if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                            {
-                                bits |= MsiInterop.MsidbComponentAttributes64bit;
-                                win64 = true;
-                            }
-                            break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
                             break;
@@ -2227,7 +2226,7 @@ namespace WixToolset
                 }
             }
 
-            if (!explicitWin64 && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
+            if (platformType == Wix.Component.PlatformType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
             {
                 bits |= MsiInterop.MsidbComponentAttributes64bit;
                 win64 = true;
@@ -3139,7 +3138,7 @@ namespace WixToolset
             YesNoType suppressModularization = YesNoType.NotSet;
             string target = null;
             int targetBits = 0;
-            bool explicitWin64 = false;
+            Wix.CustomAction.PlatformType platformType = Wix.CustomAction.PlatformType.@default;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -3282,6 +3281,13 @@ namespace WixToolset
                                 extendedBits |= MsiInterop.MsidbCustomActionTypePatchUninstall;
                             }
                             break;
+                        case "Platform":
+                            string platform = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (0 < platform.Length)
+                            {
+                                platformType = Wix.CustomAction.ParsePlatformType(platform);
+                            }
+                            break;
                         case "Property":
                             if (null != source)
                             {
@@ -3376,13 +3382,6 @@ namespace WixToolset
                             target = this.core.GetAttributeValue(sourceLineNumbers, attrib, EmptyRule.CanBeEmpty); // one of the few cases where an empty string value is valid
                             targetBits = MsiInterop.MsidbCustomActionTypeVBScript;
                             break;
-                        case "Win64":
-                            explicitWin64 = true;
-                            if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
-                            {
-                                bits |= MsiInterop.MsidbCustomActionType64BitScript;
-                            }
-                            break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
                             break;
@@ -3400,7 +3399,8 @@ namespace WixToolset
                 id = Identifier.Invalid;
             }
 
-            if (!explicitWin64 && (MsiInterop.MsidbCustomActionTypeVBScript == targetBits || MsiInterop.MsidbCustomActionTypeJScript == targetBits) && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
+            // If we're a script CA and we're in a 64-bit package and our Platform was "default", then set the 64-bit flag
+            if ((MsiInterop.MsidbCustomActionTypeVBScript == targetBits || MsiInterop.MsidbCustomActionTypeJScript == targetBits) && platformType == Wix.CustomAction.PlatformType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
             {
                 bits |= MsiInterop.MsidbCustomActionType64BitScript;
             }
@@ -3449,11 +3449,6 @@ namespace WixToolset
             else if (!String.IsNullOrEmpty(innerText)) // inner text cannot be specified with non-script CAs
             {
                 this.core.OnMessage(WixErrors.CustomActionIllegalInnerText(sourceLineNumbers, node.Name.LocalName, innerText, "Script"));
-            }
-
-            if (MsiInterop.MsidbCustomActionType64BitScript == (bits & MsiInterop.MsidbCustomActionType64BitScript) && MsiInterop.MsidbCustomActionTypeVBScript != targetBits && MsiInterop.MsidbCustomActionTypeJScript != targetBits)
-            {
-                this.core.OnMessage(WixErrors.IllegalAttributeWithoutOtherAttributes(sourceLineNumbers, node.Name.LocalName, "Win64", "Script", "VBScriptCall", "JScriptCall"));
             }
 
             if ((MsiInterop.MsidbCustomActionTypeAsync | MsiInterop.MsidbCustomActionTypeContinue) == (bits & (MsiInterop.MsidbCustomActionTypeAsync | MsiInterop.MsidbCustomActionTypeContinue)) && MsiInterop.MsidbCustomActionTypeExe != targetBits)

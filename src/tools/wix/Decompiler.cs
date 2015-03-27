@@ -57,6 +57,7 @@ namespace WixToolset
         private TableDefinitionCollection tableDefinitions;
         private TempFileCollection tempFiles;
         private bool treatProductAsModule;
+        private WixToolset.Data.Serialize.Package.PlatformType platform;
 
         /// <summary>
         /// Creates a new decompiler object with a default set of table definitions.
@@ -3153,6 +3154,8 @@ namespace WixToolset
         {
             StringCollection sortedTableNames = this.GetSortedTableNames();
 
+            this.Decompile_SummaryInformationTable(output.Tables["_SummaryInformation"]);
+
             foreach (string tableName in sortedTableNames)
             {
                 Table table = output.Tables[tableName];
@@ -3176,7 +3179,7 @@ namespace WixToolset
                 switch (table.Name)
                 {
                     case "_SummaryInformation":
-                        this.Decompile_SummaryInformationTable(table);
+                        // handled first, outside the loop
                         break;
                     case "AdminExecuteSequence":
                     case "AdminUISequence":
@@ -3658,6 +3661,8 @@ namespace WixToolset
                                             package.Platform = WixToolset.Data.Serialize.Package.PlatformType.x64;
                                             break;
                                     }
+
+                                    this.platform = package.Platform;
                                 }
                                 break;
                             case 9:
@@ -4793,9 +4798,10 @@ namespace WixToolset
                     customAction.TerminalServerAware = Wix.YesNoType.yes;
                 }
 
-                if (MsiInterop.MsidbCustomActionType64BitScript == (type & MsiInterop.MsidbCustomActionType64BitScript))
+                // If it's a 64-bit package with a 32-bit custom action, then we need win32 specifically, otherwise use the default
+                if ((this.platform == WixToolset.Data.Serialize.Package.PlatformType.x64 || this.platform == WixToolset.Data.Serialize.Package.PlatformType.ia64) && MsiInterop.MsidbCustomActionType64BitScript != (type & MsiInterop.MsidbCustomActionType64BitScript))
                 {
-                    customAction.Win64 = Wix.YesNoType.yes;
+                    customAction.Platform = Wix.CustomAction.PlatformType.win32;
                 }
 
                 switch (type & MsiInterop.MsidbCustomActionTypeExecuteBits)
@@ -5033,9 +5039,9 @@ namespace WixToolset
                     component.NeverOverwrite = Wix.YesNoType.yes;
                 }
 
-                if (MsiInterop.MsidbComponentAttributes64bit == (attributes & MsiInterop.MsidbComponentAttributes64bit))
+                if ((this.platform == WixToolset.Data.Serialize.Package.PlatformType.x64 || this.platform == WixToolset.Data.Serialize.Package.PlatformType.ia64) && MsiInterop.MsidbComponentAttributes64bit != (attributes & MsiInterop.MsidbComponentAttributes64bit))
                 {
-                    component.Win64 = Wix.YesNoType.yes;
+                    component.Platform = Wix.Component.PlatformType.win32;
                 }
 
                 if (MsiInterop.MsidbComponentAttributesDisableRegistryReflection == (attributes & MsiInterop.MsidbComponentAttributesDisableRegistryReflection))
