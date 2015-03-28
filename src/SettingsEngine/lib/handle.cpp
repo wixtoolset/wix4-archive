@@ -78,6 +78,12 @@ HRESULT HandleLock(
             hr = HandleEnsureSummaryDataTable(pcdb);
             ExitOnFailure(hr, "Failed to ensure remote database summary data");
 
+            hr = GuidListEnsure(pcdb->pcdbLocal, pcdb->sczGuid, &pcdb->sczGuidRemoteInLocalKey);
+            ExitOnFailure(hr, "Failed to ensure remote database is in local database's guid table");
+
+            hr = GuidListEnsure(pcdb, pcdb->pcdbLocal->sczGuid, &pcdb->sczGuidLocalInRemoteKey);
+            ExitOnFailure(hr, "Failed to ensure local database is in remote database's guid table");
+
             hr = ProductSet(pcdb, wzCfgProductId, wzCfgVersion, wzCfgPublicKey, TRUE, NULL);
             ExitOnFailure(hr, "Failed to set product to cfg product id");
             pcdb->dwCfgAppID = pcdb->dwAppID;

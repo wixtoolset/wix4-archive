@@ -61,6 +61,14 @@ struct CFGDB_STRUCT
     // The GUID for this endpoint
     LPWSTR sczGuid;
 
+    // Only used for remote databases
+    // Respectively, the key (in string form) of the local database in the remote database's table, and vice-versa.
+    // This is used to track references to a last known history value from the other database, to guarantee the common sync point
+    // isn't wiped out when old settings are expired. If we didn't do this, expiring old settings would have a high likelihood
+    // of creating sync conflicts that the user must resolve.
+    LPWSTR sczGuidLocalInRemoteKey;
+    LPWSTR sczGuidRemoteInLocalKey;
+
     // This defines our database schema (to instruct SceUtil how to create it)
     SCE_DATABASE_SCHEMA dsSceDb;
 

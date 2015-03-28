@@ -138,6 +138,8 @@ extern "C" HRESULT CFGAPI CfgUninitialize(
         pcdb->dwAppID = DWORD_MAX;
         pcdb->fProductSet = FALSE;
         ReleaseNullStr(pcdb->sczGuid);
+        ReleaseNullStr(pcdb->sczGuidLocalInRemoteKey);
+        ReleaseNullStr(pcdb->sczGuidRemoteInLocalKey);
         ReleaseNullStr(pcdb->sczDbCopiedPath);
         ReleaseNullStr(pcdb->sczDbDir);
         ReleaseNullStr(pcdb->sczStreamsDir);
