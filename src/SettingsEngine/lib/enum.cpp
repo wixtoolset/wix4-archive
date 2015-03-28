@@ -49,7 +49,8 @@ HRESULT EnumResize(
         case ENUMERATION_VALUE_HISTORY:
             for (DWORD i = dwNewSize; i < pcesEnum->dwNumValues; ++i)
             {
-                ReleaseCfgValue(pcesEnum->values.rgcValues[i]);
+                ReleaseCfgValue(pcesEnum->valueHistory.rgcValues[i]);
+                ReleaseStr(pcesEnum->valueHistory.rgsczDbReferences[i]);
             }
             break;
 
@@ -86,6 +87,7 @@ HRESULT EnumResize(
 
         case ENUMERATION_VALUE_HISTORY:
             ReleaseNullMem(pcesEnum->valueHistory.rgcValues);
+            ReleaseNullMem(pcesEnum->valueHistory.rgsczDbReferences);
             break;
 
         case ENUMERATION_DATABASE_LIST:
@@ -138,6 +140,9 @@ HRESULT EnumResize(
         case ENUMERATION_VALUE_HISTORY:
             pcesEnum->valueHistory.rgcValues = static_cast<CONFIG_VALUE *>(MemAlloc(cbConfigValueSize, TRUE));
             ExitOnNull(pcesEnum->valueHistory.rgcValues, hr, E_OUTOFMEMORY, "Failed to allocate value array for value history type Cfg Enumeration Struct");
+
+            pcesEnum->valueHistory.rgsczDbReferences = static_cast<LPWSTR *>(MemAlloc(cbPointerSize, TRUE));
+            ExitOnNull(pcesEnum->valueHistory.rgsczDbReferences, hr, E_OUTOFMEMORY, "Failed to allocate database references array for value history type Cfg Enumeration Struct");
             break;
         case ENUMERATION_DATABASE_LIST:
             pcesEnum->databaseList.rgsczFriendlyName = static_cast<LPWSTR *>(MemAlloc(cbPointerSize, TRUE));
@@ -382,6 +387,7 @@ HRESULT EnumPastValues(
     SCE_QUERY_RESULTS_HANDLE sqrhResults = NULL;
     SCE_QUERY_HANDLE sqhHandle = NULL;
     SCE_ROW_HANDLE sceRow = NULL;
+    LPWSTR sczDbReferences = NULL;
 
     // Allocate the Enumeration struct and its members
     CFG_ENUMERATION *pcesEnum = static_cast<CFG_ENUMERATION *>(MemAlloc(sizeof(CFG_ENUMERATION), TRUE));
@@ -419,6 +425,13 @@ HRESULT EnumPastValues(
         hr = ValueRead(pcdb, sceRow, &cvValue);
         ExitOnFailure(hr, "Failed to read value from row while enumerating values");
 
+        hr = SceGetColumnString(sceRow, VALUE_HISTORY_DB_REFERENCES, &sczDbReferences);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed to get database references");
+
         if (pcesEnum->dwNumValues >= pcesEnum->dwMaxValues)
         {
             DWORD dwNewSize = pcesEnum->dwMaxValues * 2;
@@ -430,6 +443,9 @@ HRESULT EnumPastValues(
         // Effectively move the struct into the enum
         memcpy(&pcesEnum->valueHistory.rgcValues[pcesEnum->dwNumValues], &cvValue, sizeof(cvValue));
         ZeroMemory(&cvValue, sizeof(cvValue));
+
+        pcesEnum->valueHistory.rgsczDbReferences[pcesEnum->dwNumValues] = sczDbReferences;
+        sczDbReferences = NULL;
 
         ++pcesEnum->dwNumValues;
 
@@ -458,6 +474,7 @@ HRESULT EnumPastValues(
 
 LExit:
     ReleaseCfgValue(cvValue);
+    ReleaseStr(sczDbReferences);
     EnumFree(pcesEnum);
     ReleaseSceQuery(sqhHandle);
     ReleaseSceQueryResults(sqrhResults);

@@ -1381,6 +1381,10 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
             *pwzString = pcesEnum->valueHistory.rgcValues[dwIndex].sczBy;
             break;
 
+        case ENUM_DATA_DATABASE_REFERENCES:
+            *pwzString = pcesEnum->valueHistory.rgsczDbReferences[dwIndex];
+            break;
+
         default:
             hr = E_INVALIDARG;
             ExitOnFailure(hr, "Unsupported request for string. Enumeration type: %d, request type: %d", pcesEnum->enumType, cedData);

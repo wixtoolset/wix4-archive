@@ -50,6 +50,7 @@ struct CFG_ENUMERATION
         {
             LPWSTR sczName;
             CONFIG_VALUE *rgcValues;
+            LPWSTR *rgsczDbReferences;
         } valueHistory;
         struct
         {
