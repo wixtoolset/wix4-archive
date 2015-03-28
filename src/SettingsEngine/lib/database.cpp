@@ -70,15 +70,23 @@ LExit:
     return hr;
 }
 
-HRESULT DatabaseSetupUserSchema(
-    __in USERTABLES tableCount,
+HRESULT DatabaseSetupSchema(
+    __in DATABASE_TYPE dbType,
     __out SCE_DATABASE_SCHEMA *pdsSchema
     )
 {
     HRESULT hr = S_OK;
     DWORD i;
     size_t cbAllocSize = 0;
-    pdsSchema->cTables = tableCount;
+
+    if (DATABASE_TYPE_LOCAL == dbType)
+    {
+        pdsSchema->cTables = USER_TABLES_NUMBER;
+    }
+    else if (DATABASE_TYPE_REMOTE == dbType)
+    {
+        pdsSchema->cTables = REMOTE_TABLES_NUMBER;
+    }
 
     // Initialize table list struct
     hr = ::SizeTMult(pdsSchema->cTables, sizeof(SCE_TABLE_SCHEMA), &(cbAllocSize));
@@ -107,7 +115,11 @@ HRESULT DatabaseSetupUserSchema(
     pdsSchema->rgTables[BINARY_CONTENT_TABLE].cColumns = BINARY_CONTENT_COLUMNS;
     pdsSchema->rgTables[BINARY_CONTENT_TABLE].cIndexes = 2;
 
-    if (SHARED_TABLES_NUMBER < tableCount)
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].wzName = L"DatabaseGuidList";
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].cColumns = DATABASE_GUID_LIST_COLUMNS;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].cIndexes = 2;
+
+    if (DATABASE_TYPE_LOCAL == dbType)
     {
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].wzName = L"DatabaseList";
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].cColumns = DATABASE_INDEX_COLUMNS;
@@ -249,6 +261,9 @@ HRESULT DatabaseSetupUserSchema(
     pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_COMMON_WHEN].dbtColumnType = DBTYPE_DBTIMESTAMP;
     pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_COMMON_BY].wzName = L"By";
     pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_COMMON_BY].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_HISTORY_DB_REFERENCES].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_HISTORY_DB_REFERENCES].wzName = L"References";
+    pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_HISTORY_DB_REFERENCES].fNullable = TRUE;
 
     static DWORD rgdwUserValueHistoryIndex1[] = { VALUE_COMMON_ID };
     static DWORD rgdwUserValueHistoryIndex2[] = { VALUE_COMMON_APPID, VALUE_COMMON_NAME, VALUE_COMMON_WHEN, VALUE_COMMON_BY };
@@ -279,7 +294,19 @@ HRESULT DatabaseSetupUserSchema(
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[BINARY_CONTENT_TABLE].rgIndexes[0], rgdwUserBinaryContentIndex1, L"PrimaryKey");
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[BINARY_CONTENT_TABLE].rgIndexes[1], rgdwUserBinaryContentIndex2, L"Hash");
 
-    if (SHARED_TABLES_NUMBER < tableCount)
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].wzName = L"ID";
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].fPrimaryKey = TRUE;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].fAutoIncrement = TRUE;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_STRING].wzName = L"Guid";
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_STRING].dbtColumnType = DBTYPE_WSTR;
+
+    static DWORD rgdwDatabaseGuidIndex1[] = { DATABASE_GUID_LIST_ID };
+    static DWORD rgdwDatabaseGuidIndex2[] = { DATABASE_GUID_LIST_STRING };
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgIndexes[0], rgdwDatabaseGuidIndex1, L"PrimaryKey");
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgIndexes[1], rgdwDatabaseGuidIndex2, L"Guid");
+
+    if (DATABASE_TYPE_LOCAL == dbType)
     {
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].rgColumns[DATABASE_INDEX_ID].wzName = L"ID";
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].rgColumns[DATABASE_INDEX_ID].dbtColumnType = DBTYPE_I4;

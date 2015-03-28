@@ -77,7 +77,7 @@ extern "C" HRESULT CFGAPI CfgInitialize(
         s_fXmlInitialized = TRUE;
 
         // Setup expected schema in memory
-        hr = DatabaseSetupUserSchema(USER_TABLES_NUMBER, &pcdb->dsSceDb);
+        hr = DatabaseSetupSchema(DATABASE_TYPE_LOCAL, &pcdb->dsSceDb);
         ExitOnFailure(hr, "Failed to setup user database schema structure in memory");
 
         // Get the path to the exact file

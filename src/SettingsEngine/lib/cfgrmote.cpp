@@ -367,7 +367,7 @@ static HRESULT RemoteDatabaseInitialize(
     }
 
     // Setup expected schema in memory
-    hr = DatabaseSetupUserSchema(SHARED_TABLES_NUMBER, &pcdb->dsSceDb);
+    hr = DatabaseSetupSchema(DATABASE_TYPE_REMOTE, &pcdb->dsSceDb);
     ExitOnFailure(hr, "Failed to setup user database schema structure in memory");
 
     // Open the database (or create if it doesn't exist)
