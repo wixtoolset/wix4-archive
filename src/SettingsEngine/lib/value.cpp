@@ -22,7 +22,8 @@ static HRESULT ValueWriteHelp(
     __in_z LPCWSTR wzName,
     __in DWORD *pdwHistoryID,
     __inout DWORD *pdwContentID,
-    __in CONFIG_VALUE *pcvValue
+    __in CONFIG_VALUE *pcvValue,
+    __in CFGDB_STRUCT *pcdbReferencedBy
     );
 
 
@@ -348,12 +349,65 @@ HRESULT ValueSetBool(
     return S_OK;
 }
 
+HRESULT ValueTransferFromHistory(
+    __in CFGDB_STRUCT *pcdb,
+    __in const CFG_ENUMERATION *pceValueHistoryEnum,
+    __in DWORD dwStartingEnumIndex,
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR wzValueName = pceValueHistoryEnum->valueHistory.sczName;
+    SYSTEMTIME stValue = { };
+    BOOL fValueExists = FALSE;
+    SCE_ROW_HANDLE sceValueRow = NULL;
+
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzValueName, &sceValueRow);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    else
+    {
+        ExitOnFailure(hr, "Failed to find existing value row");
+        fValueExists = TRUE;
+
+        hr = SceGetColumnSystemTime(sceValueRow, VALUE_COMMON_WHEN, &stValue);
+        ExitOnFailure(hr, "Failed to get system time of value row");
+    }
+
+    for (DWORD i = dwStartingEnumIndex; i < pceValueHistoryEnum->dwNumValues; ++i)
+    {
+        if (fValueExists && 0 > UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
+        {
+            // If we're not on the last loop iteration, just don't transfer this enum
+            // TODO: we could write historical values by inserting them in the old history
+            if (i < pceValueHistoryEnum->dwNumValues - 1)
+            {
+                continue;
+            }
+
+            pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen = stValue;
+            UtilAddToSystemTime(5, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
+        }
+        
+        hr = EnumWriteValue(pcdb, wzValueName, pceValueHistoryEnum, i, pcdbReferencedBy);
+        ExitOnFailure(hr, "Failed to write value %ls index %u", wzValueName, i);
+    }
+
+LExit:
+    ReleaseSceRow(sceValueRow);
+
+    return hr;
+}
+
 HRESULT ValueWrite(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,
     __in_z LPCWSTR wzName,
     __in CONFIG_VALUE *pcvValue,
-    __in BOOL fIgnoreSameValue
+    __in BOOL fIgnoreSameValue,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     )
 {
     HRESULT hr = S_OK;
@@ -411,10 +465,10 @@ HRESULT ValueWrite(
     ExitOnFailure(hr, "Failed to begin transaction");
     fInSceTransaction = TRUE;
 
-    hr = ValueWriteHelp(pcdb, NULL, TRUE, dwAppID, wzName, &dwHistoryID, &dwContentID, pcvValue);
+    hr = ValueWriteHelp(pcdb, NULL, TRUE, dwAppID, wzName, &dwHistoryID, &dwContentID, pcvValue, pcdbReferencedBy);
     ExitOnFailure(hr, "Failed to set value in value history table (regular value set)");
 
-    hr = ValueWriteHelp(pcdb, sceRow, FALSE, dwAppID, wzName, &dwHistoryID, &dwContentID, pcvValue);
+    hr = ValueWriteHelp(pcdb, sceRow, FALSE, dwAppID, wzName, &dwHistoryID, &dwContentID, pcvValue, pcdbReferencedBy);
     ExitOnFailure(hr, "Failed to set value in value table");
 
     // Special handling when internal settings are updated, like legacy manifests
@@ -592,22 +646,22 @@ HRESULT ValueMatch(
         // if the ST1 timestamp is newer, write database 1's newest history entry to database 2
         if (0 < iTimeCompareResult)
         {
-            hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE);
+            hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, pcdb1);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 newer than 2)");
         }
         else if (0 > iTimeCompareResult)
         {
-            hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE);
+            hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, pcdb2);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (2 newer than 1)");
         }
         // If timestamps are the same and sources differ, we need to make sure both sources are persisted in both stores
         // with this timestamp (history values can have identical values and timestamps, as long as they have different sources)
-        else if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, cvValue1.sczBy, -1, cvValue2.sczBy, -2))
+        else if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, cvValue1.sczBy, -1, cvValue2.sczBy, -1))
         {
             hr = ValueFindHistoryRow(pcdb1, pcdb1->dwAppID, sczName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
             if (E_NOTFOUND == hr)
             {
-                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE);
+                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, NULL);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (2's source missing from 1)");
             }
             else
@@ -619,7 +673,7 @@ HRESULT ValueMatch(
             hr = ValueFindHistoryRow(pcdb2, pcdb2->dwAppID, sczName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
             if (E_NOTFOUND == hr)
             {
-                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE);
+                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, NULL);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (1's source missing from 2)");
             }
             else
@@ -748,7 +802,8 @@ HRESULT ValueWriteHelp(
     __in_z LPCWSTR wzName,
     __inout DWORD *pdwHistoryID,
     __inout DWORD *pdwContentID,
-    __in CONFIG_VALUE *pcvValue
+    __in CONFIG_VALUE *pcvValue,
+    __in CFGDB_STRUCT *pcdbReferencedBy
     )
 {
     HRESULT hr = S_OK;
@@ -875,7 +930,20 @@ HRESULT ValueWriteHelp(
     hr = SceSetColumnString(sceRowInput, VALUE_COMMON_BY, pcvValue->sczBy);
     ExitOnFailure(hr, "Failed to set 'by' field in value index history");
 
-    if (!fHistory)
+    if (fHistory && pcdbReferencedBy)
+    {
+        if (pcdb->fRemote)
+        {
+            hr = SceSetColumnString(sceRowInput, VALUE_HISTORY_DB_REFERENCES, pcdb->sczGuidLocalInRemoteKey);
+            ExitOnFailure(hr, "Failed to set local guid key in remote database");
+        }
+        else
+        {
+            hr = SceSetColumnString(sceRowInput, VALUE_HISTORY_DB_REFERENCES, pcdbReferencedBy->sczGuidRemoteInLocalKey);
+            ExitOnFailure(hr, "Failed to set remote guid key in local database");
+        }
+    }
+    else
     {
         hr = SceSetColumnDword(sceRowInput, VALUE_LAST_HISTORY_ID, *pdwHistoryID);
         ExitOnFailure(hr, "Failed to set last history ID to value: %u", *pdwHistoryID);

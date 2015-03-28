@@ -591,19 +591,20 @@ HRESULT EnumWriteValue(
     __in CFGDB_STRUCT *pcdb,
     __in_z LPCWSTR wzName,
     __in const CFG_ENUMERATION *pceEnum,
-    __in DWORD dwEnumIndex
+    __in DWORD dwEnumIndex,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     )
 {
     HRESULT hr = S_OK;
 
     if (ENUMERATION_VALUES == pceEnum->enumType)
     {
-        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->values.rgcValues[dwEnumIndex], FALSE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->values.rgcValues[dwEnumIndex], FALSE, pcdbReferencedBy);
         ExitOnFailure(hr, "Failed to set value from value enum");
     }
     else if (ENUMERATION_VALUE_HISTORY == pceEnum->enumType)
     {
-        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->valueHistory.rgcValues[dwEnumIndex], FALSE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->valueHistory.rgcValues[dwEnumIndex], FALSE, pcdbReferencedBy);
         ExitOnFailure(hr, "Failed to set value from value history enum");
     }
     else

@@ -21,6 +21,8 @@ extern "C" {
 #define ReleaseCfgValue(x) { ValueFree(&x); }
 #define ReleaseNullCfgValue(x) { ValueFree(&x); ZeroMemory(&x, sizeof(x)); }
 
+struct CFG_ENUMERATION;
+
 enum CFG_BLOB_TYPE
 {
     CFG_BLOB_INVALID = 0,
@@ -137,12 +139,19 @@ HRESULT ValueSetBool(
     __in_z_opt LPCWSTR wzBy,
     __deref_out CONFIG_VALUE *pcvValue
     );
+HRESULT ValueTransferFromHistory(
+    __in CFGDB_STRUCT *pcdb,
+    __in const CFG_ENUMERATION *pceValueHistoryEnum,
+    __in DWORD dwStartingEnumIndex,
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    );
 HRESULT ValueWrite(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,
     __in_z LPCWSTR wzName,
     __in CONFIG_VALUE *pcvValue,
-    __in BOOL fIgnoreSameValue
+    __in BOOL fIgnoreSameValue,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     );
 // Reads a value into memory from a database. Can read from either value index or value index history table.
 HRESULT ValueRead(

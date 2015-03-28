@@ -232,11 +232,8 @@ HRESULT ProductSyncValues(
         {
             if (fFirstIsLocal || fAllowLocalToReceiveData)
             {
-                for (DWORD i = 0; i < dwCfgCount1; ++i)
-                {
-                    hr = EnumWriteValue(pcdb2, sczName, valueHistory1, i);
-                    ExitOnFailure(hr, "Failed to write value %ls index %u", sczName, i);
-                }
+                hr = ValueTransferFromHistory(pcdb2, valueHistory1, 0, pcdb1);
+                ExitOnFailure(hr, "Failed to transfer history (due to value not present) from db 2 to db 1 for value %ls", sczName);
             }
 
             goto Skip;
@@ -257,11 +254,8 @@ HRESULT ProductSyncValues(
                 if (S_OK == hr)
                 {
                     // Database 2 is subsumed - pipe over all the newest history entries
-                    for (DWORD i = dwFoundIndex + 1; i < dwCfgCount1; ++i)
-                    {
-                        hr = EnumWriteValue(pcdb2, sczName, valueHistory1, i);
-                        ExitOnFailure(hr, "Failed to set value from history enum while piping over database 1 history values");
-                    }
+                    hr = ValueTransferFromHistory(pcdb2, valueHistory1, dwFoundIndex + 1, pcdb1);
+                    ExitOnFailure(hr, "Failed to transfer history (due to history subsumed) from db 1 to db 2 for value %ls", sczName);
 
                     goto Skip;
                 }
@@ -294,11 +288,8 @@ HRESULT ProductSyncValues(
                 if (S_OK == hr)
                 {
                     // Database 1 is subsumed - pipe over all the newest history entries
-                    for (DWORD i = dwFoundIndex + 1; i < dwCfgCount2; ++i)
-                    {
-                        hr = EnumWriteValue(pcdb1, sczName, valueHistory2, i);
-                        ExitOnFailure(hr, "Failed to set value from history enum while piping over database 2 history values");
-                    }
+                    hr = ValueTransferFromHistory(pcdb1, valueHistory2, dwFoundIndex + 1, pcdb2);
+                    ExitOnFailure(hr, "Failed to transfer history (due to history subsumed) from db 2 to db 1 for value %ls", sczName);
 
                     goto Skip;
                 }
@@ -601,7 +592,7 @@ HRESULT ProductForget(
         hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvValue);
         ExitOnFailure(hr, "Failed to set delete value in memory");
 
-        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczLegacyManifestValueName, &cvValue, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczLegacyManifestValueName, &cvValue, TRUE, NULL);
         ExitOnFailure(hr, "Failed to tombstone legacy manifest for product %ls", wzProductName);
     }
 
