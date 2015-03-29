@@ -26,6 +26,8 @@ namespace WixToolset
         private const string XDocumentNewLine = "\n"; // XDocument normlizes "\r\n" to just "\n".
         private static readonly XNamespace WixNamespace = "http://wixtoolset.org/schemas/v4/wxs";
 
+        private static readonly XName ComponentElementName = WixNamespace + "Component";
+        private static readonly XName CustomActionElementName = WixNamespace + "CustomAction";
         private static readonly XName FileElementName = WixNamespace + "File";
         private static readonly XName ExePackageElementName = WixNamespace + "ExePackage";
         private static readonly XName MsiPackageElementName = WixNamespace + "MsiPackage";
@@ -75,6 +77,8 @@ namespace WixToolset
         {
             this.ConvertElementMapping = new Dictionary<XName, Action<XElement>>()
             {
+                { ComponentElementName, this.ConvertComponentElement },
+                { CustomActionElementName, this.ConvertCustomActionElement },
                 { FileElementName, this.ConvertFileElement },
                 { ExePackageElementName, this.ConvertSuppressSignatureValidation },
                 { MsiPackageElementName, this.ConvertSuppressSignatureValidation },
@@ -243,6 +247,52 @@ namespace WixToolset
             if (this.ConvertElementMapping.TryGetValue(element.Name, out convert))
             {
                 convert(element);
+            }
+        }
+
+        private void ConvertComponentElement(XElement element)
+        {
+            var win64 = element.Attribute("Win64");
+
+            if (null != win64)
+            {
+                if (win64.Value == "yes")
+                {
+                    element.SetAttributeValue("Win64", null);
+                }
+                else if (win64.Value == "no")
+                {
+                    element.SetAttributeValue("Platform", "win32");
+
+                    element.SetAttributeValue("Win64", null);
+                }
+                else
+                {
+                    this.OnError(ConverterTestType.Win64AttributeCouldNotBeConverted, element, "The Win64 attribute on a Component can only be converted when it has the value 'yes' or 'no'. Values of '{0}' are unsupported", win64.Value);
+                }
+            }
+        }
+
+        private void ConvertCustomActionElement(XElement element)
+        {
+            var win64 = element.Attribute("Win64");
+
+            if (null != win64)
+            {
+                if (win64.Value == "yes")
+                {
+                    element.SetAttributeValue("Win64", null);
+                }
+                else if (win64.Value == "no")
+                {
+                    element.SetAttributeValue("Platform", "win32");
+
+                    element.SetAttributeValue("Win64", null);
+                }
+                else
+                {
+                    this.OnError(ConverterTestType.Win64AttributeCouldNotBeConverted, element, "The Win64 attribute on a CustomAction can only be converted when it has the value 'yes' or 'no'. Values of '{0}' are unsupported", win64.Value);
+                }
             }
         }
 
@@ -616,6 +666,11 @@ namespace WixToolset
             /// SuppressSignatureValidation attribute is deprecated and replaced with EnableSignatureValidation.
             /// </summary>
             SuppressSignatureValidationDeprecated,
+
+            /// <summary>
+            /// Win64 attribute on a Component or CustomAction element could not be converted to the new Platform attribute.
+            /// </summary>
+            Win64AttributeCouldNotBeConverted,
         }
     }
 }
