@@ -812,11 +812,11 @@ extern "C" HRESULT VariableSerialize(
 
     ::EnterCriticalSection(&pVariables->csAccess);
 
-    // write variable count
+    // Write variable count.
     hr = BuffWriteNumber(ppbBuffer, piBuffer, pVariables->cVariables);
     ExitOnFailure(hr, "Failed to write variable count.");
 
-    // write variables
+    // Write variables.
     for (DWORD i = 0; i < pVariables->cVariables; ++i)
     {
         BURN_VARIABLE* pVariable = &pVariables->rgVariables[i];
@@ -824,7 +824,7 @@ extern "C" HRESULT VariableSerialize(
         // If we are persisting, include only variables that should be persisted. When not persisting, skip all the built-ins.
         fIncluded = fPersisting ? pVariable->fPersisted : !pVariable->fBuiltIn;
 
-        // write included flag
+        // Write included flag.
         hr = BuffWriteNumber(ppbBuffer, piBuffer, (DWORD)fIncluded);
         ExitOnFailure(hr, "Failed to write included flag.");
 
@@ -833,38 +833,44 @@ extern "C" HRESULT VariableSerialize(
             continue;
         }
 
-        // write variable name
+        // Write variable name.
         hr = BuffWriteString(ppbBuffer, piBuffer, pVariable->sczName);
         ExitOnFailure(hr, "Failed to write variable name.");
 
-        // write variable value type
+        // Write variable value type.
         hr = BuffWriteNumber(ppbBuffer, piBuffer, (DWORD)pVariable->Value.Type);
         ExitOnFailure(hr, "Failed to write variable value type.");
 
-        // write variable value
+        // Write variable value.
         switch (pVariable->Value.Type)
         {
         case BURN_VARIANT_TYPE_NONE:
             break;
         case BURN_VARIANT_TYPE_NUMERIC:
             hr = BVariantGetNumeric(&pVariable->Value, &ll);
-            ExitOnFailure(hr, "Failed to get numeric");
+            ExitOnFailure(hr, "Failed to get numeric.");
+
             hr = BuffWriteNumber64(ppbBuffer, piBuffer, static_cast<DWORD64>(ll));
             ExitOnFailure(hr, "Failed to write variable value as number.");
+
             SecureZeroMemory(&ll, sizeof(ll));
             break;
         case BURN_VARIANT_TYPE_VERSION:
             hr = BVariantGetVersion(&pVariable->Value, &qw);
-            ExitOnFailure(hr, "Failed to get version");
+            ExitOnFailure(hr, "Failed to get version.");
+
             hr = BuffWriteNumber64(ppbBuffer, piBuffer, qw);
             ExitOnFailure(hr, "Failed to write variable value as number.");
+
             SecureZeroMemory(&qw, sizeof(qw));
             break;
         case BURN_VARIANT_TYPE_STRING:
             hr = BVariantGetString(&pVariable->Value, &scz);
-            ExitOnFailure(hr, "Failed to get string");
+            ExitOnFailure(hr, "Failed to get string.");
+
             hr = BuffWriteString(ppbBuffer, piBuffer, scz);
             ExitOnFailure(hr, "Failed to write variable value as string.");
+
             ReleaseNullStrSecure(scz);
             break;
         default:
@@ -899,31 +905,31 @@ extern "C" HRESULT VariableDeserialize(
 
     ::EnterCriticalSection(&pVariables->csAccess);
 
-    // read variable count
+    // Read variable count.
     hr = BuffReadNumber(pbBuffer, cbBuffer, piBuffer, &cVariables);
     ExitOnFailure(hr, "Failed to read variable count.");
 
-    // read variables
+    // Read variables.
     for (DWORD i = 0; i < cVariables; ++i)
     {
-        // read variable included flag
+        // Read variable included flag.
         hr = BuffReadNumber(pbBuffer, cbBuffer, piBuffer, (DWORD*)&fIncluded);
         ExitOnFailure(hr, "Failed to read variable included flag.");
 
         if (!fIncluded)
         {
-            continue; // if variable is not included, skip
+            continue; // if variable is not included, skip.
         }
 
-        // read variable name
+        // Read variable name.
         hr = BuffReadString(pbBuffer, cbBuffer, piBuffer, &sczName);
         ExitOnFailure(hr, "Failed to read variable name.");
 
-        // read variable value type
+        // Read variable value type.
         hr = BuffReadNumber(pbBuffer, cbBuffer, piBuffer, (DWORD*)&value.Type);
         ExitOnFailure(hr, "Failed to read variable value type.");
 
-        // read variable value
+        // Read variable value.
         switch (value.Type)
         {
         case BURN_VARIANT_TYPE_NONE:
@@ -931,22 +937,28 @@ extern "C" HRESULT VariableDeserialize(
         case BURN_VARIANT_TYPE_NUMERIC:
             hr = BuffReadNumber64(pbBuffer, cbBuffer, piBuffer, &qw);
             ExitOnFailure(hr, "Failed to read variable value as number.");
+
             hr = BVariantSetNumeric(&value, static_cast<LONGLONG>(qw));
             ExitOnFailure(hr, "Failed to set variable value.");
+
             SecureZeroMemory(&qw, sizeof(qw));
             break;
         case BURN_VARIANT_TYPE_VERSION:
             hr = BuffReadNumber64(pbBuffer, cbBuffer, piBuffer, &qw);
             ExitOnFailure(hr, "Failed to read variable value as number.");
+
             hr = BVariantSetVersion(&value, qw);
             ExitOnFailure(hr, "Failed to set variable value.");
+
             SecureZeroMemory(&qw, sizeof(qw));
             break;
         case BURN_VARIANT_TYPE_STRING:
             hr = BuffReadString(pbBuffer, cbBuffer, piBuffer, &scz);
             ExitOnFailure(hr, "Failed to read variable value as string.");
+
             hr = BVariantSetString(&value, scz, NULL);
             ExitOnFailure(hr, "Failed to set variable value.");
+
             ReleaseNullStrSecure(scz);
             break;
         default:
@@ -954,11 +966,11 @@ extern "C" HRESULT VariableDeserialize(
             ExitOnFailure(hr, "Unsupported variable type.");
         }
 
-        // set variable
+        // Set variable.
         hr = SetVariableValue(pVariables, sczName, &value, SET_VARIABLE_OVERRIDE_PERSISTED_BUILTINS, FALSE);
         ExitOnFailure(hr, "Failed to set variable.");
 
-        // clean up
+        // Clean up.
         BVariantUninitialize(&value);
     }
 
@@ -1461,13 +1473,13 @@ static HRESULT SetVariableValue(
     hr = FindVariableIndexByName(pVariables, wzVariable, &iVariable);
     ExitOnFailure(hr, "Failed to find variable value '%ls'.", wzVariable);
 
-    // insert element if not found
+    // Insert element if not found.
     if (S_FALSE == hr)
     {
         hr = InsertVariable(pVariables, wzVariable, iVariable);
         ExitOnFailure(hr, "Failed to insert variable '%ls'.", wzVariable);
     }
-    else if (pVariables->rgVariables[iVariable].fBuiltIn) // built-in variables must be overridden
+    else if (pVariables->rgVariables[iVariable].fBuiltIn) // built-in variables must be overridden.
     {
         if (SET_VARIABLE_OVERRIDE_BUILTIN == setBuiltin ||
             (SET_VARIABLE_OVERRIDE_PERSISTED_BUILTINS == setBuiltin && pVariables->rgVariables[iVariable].fPersisted))
@@ -1486,7 +1498,7 @@ static HRESULT SetVariableValue(
         AssertSz(SET_VARIABLE_OVERRIDE_BUILTIN != setBuiltin, "Intent to overwrite non-built-in variable.");
     }
 
-    // log value when not overwriting a built-in variable
+    // Log value when not overwriting a built-in variable.
     if (fLog && SET_VARIABLE_NOT_BUILTIN == setBuiltin)
     {
         if (pVariables->rgVariables[iVariable].fHidden)
@@ -1527,7 +1539,7 @@ static HRESULT SetVariableValue(
         }
     }
 
-    // update variable value
+    // Update variable value.
     hr = BVariantSetValue(&pVariables->rgVariables[iVariable].Value, pVariant);
     ExitOnFailure(hr, "Failed to set value of variable: %ls", wzVariable);
 
