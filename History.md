@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:3933 - Make WixBundleManufacturer variable writable.
+
 ## WixBuild: Version 4.0.2719.0
 
 * BobArnson: WIXBUG:4520 - Added blurb about using a PayloadGroup to get offline capability for .NET redist.
