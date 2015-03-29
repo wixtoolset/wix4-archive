@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4630 - Serialize all variables to the elevated Burn process.
+
 ## WixBuild: Version 4.0.2719.0
 
 * BobArnson: WIXBUG:4520 - Added blurb about using a PayloadGroup to get offline capability for .NET redist.
