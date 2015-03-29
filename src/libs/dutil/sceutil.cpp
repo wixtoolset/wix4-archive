@@ -1451,7 +1451,8 @@ static HRESULT CreateSqlCe(
     )
 {
     HRESULT hr = S_OK;
-    LPWSTR sczCurrentDirectory = NULL;
+    LPWSTR sczPath = NULL;
+    LPWSTR sczDirectory = NULL;
     LPWSTR sczDllFullPath = NULL;
 
     if (NULL == wzSqlCeDllPath)
@@ -1461,14 +1462,30 @@ static HRESULT CreateSqlCe(
     }
     else
     {
-        hr = DirGetCurrent(&sczCurrentDirectory);
-        ExitOnFailure(hr, "Failed to get current directory");
+        // First try loading DLL from the path of our EXE
+        hr = PathForCurrentProcess(&sczPath, NULL);
+        ExitOnFailure(hr, "Failed to get path for current process");
 
-        hr = PathConcat(sczCurrentDirectory, wzSqlCeDllPath, &sczDllFullPath);
+        hr = PathGetDirectory(sczPath, &sczDirectory);
+        ExitOnFailure(hr, "Failed to get directory of current process");
+
+        hr = PathConcat(sczDirectory, wzSqlCeDllPath, &sczDllFullPath);
         ExitOnFailure(hr, "Failed to concatenate current directory and DLL filename");
 
         *phSqlCeDll = ::LoadLibraryW(sczDllFullPath);
-        ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", sczDllFullPath);
+
+        // If that failed, fallback to loading from current path
+        if (NULL == *phSqlCeDll)
+        {
+            hr = DirGetCurrent(&sczDirectory);
+            ExitOnFailure(hr, "Failed to get current directory");
+
+            hr = PathConcat(sczDirectory, wzSqlCeDllPath, &sczDllFullPath);
+            ExitOnFailure(hr, "Failed to concatenate current directory and DLL filename");
+
+            *phSqlCeDll = ::LoadLibraryW(sczDllFullPath);
+            ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", sczDllFullPath);
+        }
 
         HRESULT (WINAPI *pfnGetFactory)(REFCLSID, REFIID, void**);
         pfnGetFactory = (HRESULT (WINAPI *)(REFCLSID, REFIID, void**))GetProcAddress(*phSqlCeDll, "DllGetClassObject");
@@ -1483,7 +1500,8 @@ static HRESULT CreateSqlCe(
     }
 
 LExit:
-    ReleaseStr(sczCurrentDirectory);
+    ReleaseStr(sczPath);
+    ReleaseStr(sczDirectory);
     ReleaseStr(sczDllFullPath);
 
     return hr;
