@@ -55,7 +55,7 @@ namespace CfgTests
             BYTE *pBuffer = NULL;
             ExpectFile(cdhLocal, L"File1", rgbFile, sizeof(rgbFile));
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, L"File1");
             ExitOnFailure(hr, "Failed to delete file File1");
 
@@ -64,19 +64,19 @@ namespace CfgTests
             hr = CfgSetString(cdhLocal, L"Test2", L"Value2");
             ExitOnFailure(hr, "Failed to set string");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgSetString(cdhLocal, L"Test2", L"Value2Changed");
             ExitOnFailure(hr, "Failed to set string");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgSetString(cdhLocal, L"Test2", L"Value2ChangedBack");
             ExitOnFailure(hr, "Failed to set string");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, L"Test2");
             ExitOnFailure(hr, "Failed to delete test2 value");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgSetString(cdhLocal, L"Test2", L"ResurrectedValue");
             ExitOnFailure(hr, "Failed to set string");
 
@@ -86,11 +86,11 @@ namespace CfgTests
             hr = CfgSetDword(cdhLocal, L"Num1", 10);
             ExitOnFailure(hr, "Failed to set dword");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgSetDword(cdhLocal, L"Num1", 100);
             ExitOnFailure(hr, "Failed to set dword");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgSetDword(cdhLocal, L"Num1", 30);
             ExitOnFailure(hr, "Failed to set dword");
 
@@ -141,7 +141,7 @@ namespace CfgTests
                 ExitOnFailure(hr, "BoolFalseVal should be FALSE, but wasn't");
             }
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, L"BoolFalseVal");
             ExitOnFailure(hr, "Failed to delete BoolFalseVal");
 
@@ -185,7 +185,7 @@ namespace CfgTests
             hr = CfgDeleteValue(cdhLocal, L"Qword");
             ExitOnFailure(hr, "Failed to delete value Qword");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgGetString(cdhLocal, L"Test2", &sczValue);
             ExitOnFailure(hr, "Failed to get string");
 

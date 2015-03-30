@@ -52,6 +52,7 @@ namespace CfgTests
         void ResetApplications();
 
         // Cfg Commands
+        void WaitForSqlCeTimestampChange();
         void WaitForAutoSync(CFGDB_HANDLE cdhDb);
         void WaitForSyncNoResolve(CFGDB_HANDLE cdhDb);
         void WaitForSyncResolveAll(CFGDB_HANDLE cdhDb, RESOLUTION_CHOICE rcChoice);

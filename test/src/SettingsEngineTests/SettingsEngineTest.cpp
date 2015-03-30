@@ -264,6 +264,12 @@ namespace CfgTests
         return;
     }
 
+    void CfgTest::WaitForSqlCeTimestampChange()
+    {
+        // Wait for time to pass long enough that SQL CE will get different timestamps
+        ::Sleep(1000);
+    }
+
     void CfgTest::WaitForAutoSync(CFGDB_HANDLE cdhDb)
     {
         // TODO: eliminate sleep and create a more stable form of waiting for all monutil requests to go from pending to fired

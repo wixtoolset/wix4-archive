@@ -44,9 +44,6 @@ static HRESULT UtilSyncAllProductsHelp(
     __out CONFLICT_PRODUCT **prgConflictProducts,
     __out DWORD *pcConflictProducts
     );
-static WORD RoundMilliseconds(
-    __in WORD wMilliseconds
-    );
 
 HRESULT UtilSyncDb(
     __in CFGDB_STRUCT *pcdbRemote,
@@ -188,26 +185,12 @@ int UtilCompareSystemTimes(
     }
     else
     {
-        WORD wRoundedMilliseconds1 = RoundMilliseconds(pst1->wMilliseconds);
-        WORD wRoundedMilliseconds2 = RoundMilliseconds(pst2->wMilliseconds);
-
-        if (wRoundedMilliseconds1 > wRoundedMilliseconds2)
-        {
-            return 1;
-        }
-        else if (wRoundedMilliseconds1 < wRoundedMilliseconds2)
-        {
-            return -1;
-        }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 }
 
 HRESULT UtilAddToSystemTime(
-    __in DWORD dwMilliseconds,
+    __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
     )
 {
@@ -222,7 +205,7 @@ HRESULT UtilAddToSystemTime(
     DWORD64 ul;
     C_ASSERT(sizeof(ul) == sizeof(ft));
     memcpy(&ul, &ft, sizeof(ul));
-    ul += dwMilliseconds * 10000;
+    ul += dwSeconds * 10000000;
     memcpy(&ft, &ul, sizeof(ft));
 
     if (!FileTimeToSystemTime(&ft, pst))
@@ -670,26 +653,4 @@ BOOL UtilIs64BitSystem()
     }
 
     return s_f64BitSystem;
-}
-
-static WORD RoundMilliseconds(
-    __in WORD wMilliseconds
-    )
-{
-    WORD wLastDigitShavedOff = ((wMilliseconds) / 10) * 10;
-
-    // SQL CE rounds off to the nearest 3.33 milliseconds, unfortunately
-    // So we must factor that into our comparison, in case one of these timestamps was round by SQL CE
-    if (wMilliseconds % 10 >= 7)
-    {
-        return wLastDigitShavedOff + 7;
-    }
-    else if (wMilliseconds % 10 >= 3)
-    {
-        return wLastDigitShavedOff + 3;
-    }
-    else
-    {
-        return wLastDigitShavedOff;
-    }
 }

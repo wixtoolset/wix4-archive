@@ -45,7 +45,7 @@ int UtilCompareSystemTimes(
     __in const SYSTEMTIME *pst2
     );
 HRESULT UtilAddToSystemTime(
-    __in DWORD dwMilliseconds,
+    __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
     );
 HRESULT UtilTestWriteAccess(

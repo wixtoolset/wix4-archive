@@ -185,7 +185,7 @@ namespace CfgTests
             hr = CfgSetString(cdhLocal, L"Main:\\IgnoreMe", L"FromCfg");
             ExitOnFailure(hr, "Failed to set ignoreme string in cfg db");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, L"Main:\\IgnoreMe");
             ExitOnFailure(hr, "Failed to delete value in cfg db");
 

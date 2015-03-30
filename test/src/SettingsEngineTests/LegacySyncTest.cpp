@@ -214,6 +214,7 @@ namespace CfgTests
             CheckCfgAndFileDeleted(cdhLocal, wzFileNameA, sczFileA);
             CheckCfgAndFileDeleted(cdhLocal, wzFileNameB, sczFileB);
 
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, wzString2CfgName);
             ExitOnFailure(hr, "Failed to delete string value by cfg api");
 
@@ -231,6 +232,7 @@ namespace CfgTests
             CheckCfgAndRegValueDeleted(cdhLocal, hk, wzDword2CfgName, wzDword2RegValueName);
             CheckCfgAndRegValueDeleted(cdhLocal, hk, wzQword1CfgName, wzQword1RegValueName);
 
+            WaitForSqlCeTimestampChange();
             hr = CfgSetString(cdhLocal, wzString2CfgName, L"ResurrectedbyCfg");
             ExitOnFailure(hr, "Failed to set string from cfg db");
 
@@ -250,6 +252,7 @@ namespace CfgTests
             CheckCfgAndRegValueDword(cdhLocal, hk, wzDword2CfgName, wzDword2RegValueName, 0);
             CheckCfgAndRegValueQword(cdhLocal, hk, wzQword1CfgName, wzQword1RegValueName, 80);
 
+            WaitForSqlCeTimestampChange();
             hr = RegWriteString(hk, wzString2RegValueName, NULL);
             ExitOnFailure(hr, "Failed to delete string value by registry");
 

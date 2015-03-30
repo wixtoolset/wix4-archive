@@ -333,7 +333,7 @@ namespace CfgTests
             SetARP(L"RandomKeyName", L"Cfg Test Displayname A", sczPathA, NULL);
             SetARP(L"OtherIncorrectKeyName", L"Cfg Test Displayname B", sczPathB, NULL);
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczFileB1, 0, rgbFileB1v2, sizeof(rgbFileB1v2), NULL);
             ExitOnFailure(hr, "Failed to write file B1v2");
 
