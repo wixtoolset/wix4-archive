@@ -268,7 +268,7 @@ HRESULT ProductSyncValues(
                     ExitOnFailure(hr, "Failed to check if db2's value history is subsumed by db1's value history");
                 }
 
-                hr = ValueCompare(valueHistory2->valueHistory.rgcValues + dwSubsumeIndex, valueHistory2->valueHistory.rgcValues + dwSubsumeIndex - 1, &fSame);
+                hr = ValueCompare(valueHistory2->valueHistory.rgcValues + dwSubsumeIndex, valueHistory2->valueHistory.rgcValues + dwSubsumeIndex - 1, FALSE, &fSame);
                 ExitOnFailure(hr, "Failed to check if value and previous value in database 2 are equivalent");
             }
             while (0 < dwSubsumeIndex && fSame);
@@ -302,7 +302,7 @@ HRESULT ProductSyncValues(
                     ExitOnFailure(hr, "Failed to check if db1's value history is subsumed by db2's value history");
                 }
 
-                hr = ValueCompare(valueHistory1->valueHistory.rgcValues + dwSubsumeIndex, valueHistory1->valueHistory.rgcValues + dwSubsumeIndex - 1, &fSame);
+                hr = ValueCompare(valueHistory1->valueHistory.rgcValues + dwSubsumeIndex, valueHistory1->valueHistory.rgcValues + dwSubsumeIndex - 1, FALSE, &fSame);
                 ExitOnFailure(hr, "Failed to check if value and previous value in database 1 are equivalent");
             }
             while (0 < dwSubsumeIndex && fSame);

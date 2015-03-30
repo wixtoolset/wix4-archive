@@ -30,10 +30,12 @@ static HRESULT ValueWriteHelp(
 HRESULT ValueCompare(
     __in const CONFIG_VALUE *pcvValue1,
     __in const CONFIG_VALUE *pcvValue2,
+    __in BOOL fCompareSource,
     __out BOOL *pfResult
     )
 {
     HRESULT hr = S_OK;
+    BOOL fResult = FALSE;
 
     if (pcvValue1->cvType != pcvValue2->cvType)
     {
@@ -44,28 +46,38 @@ HRESULT ValueCompare(
     switch (pcvValue1->cvType)
     {
     case VALUE_DELETED:
-        *pfResult = TRUE;
+        fResult = TRUE;
         break;
     case VALUE_BLOB:
-        *pfResult = (pcvValue1->blob.cbValue == pcvValue2->blob.cbValue && 0 == memcmp(pcvValue1->blob.rgbHash, pcvValue2->blob.rgbHash, sizeof(pcvValue2->blob.rgbHash))) ? TRUE : FALSE;
+        fResult = (pcvValue1->blob.cbValue == pcvValue2->blob.cbValue && 0 == memcmp(pcvValue1->blob.rgbHash, pcvValue2->blob.rgbHash, sizeof(pcvValue2->blob.rgbHash))) ? TRUE : FALSE;
         break;
     case VALUE_STRING:
-        *pfResult = (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pcvValue1->string.sczValue, -1, pcvValue2->string.sczValue, -1)) ? TRUE : FALSE;
+        fResult = (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pcvValue1->string.sczValue, -1, pcvValue2->string.sczValue, -1)) ? TRUE : FALSE;
         break;
     case VALUE_DWORD:
-        *pfResult = (pcvValue1->dword.dwValue == pcvValue2->dword.dwValue) ? TRUE : FALSE;
+        fResult = (pcvValue1->dword.dwValue == pcvValue2->dword.dwValue) ? TRUE : FALSE;
         break;
     case VALUE_QWORD:
-        *pfResult = (pcvValue1->qword.qwValue == pcvValue2->qword.qwValue) ? TRUE : FALSE;
+        fResult = (pcvValue1->qword.qwValue == pcvValue2->qword.qwValue) ? TRUE : FALSE;
         break;
     case VALUE_BOOL:
-        *pfResult = (pcvValue1->boolean.fValue == pcvValue2->boolean.fValue) ? TRUE : FALSE;
+        fResult = (pcvValue1->boolean.fValue == pcvValue2->boolean.fValue) ? TRUE : FALSE;
         break;
     default:
         hr = E_INVALIDARG;
         ExitOnFailure(hr, "Invalid value type compared (both left and right): %d", pcvValue1->cvType);
         break;
     }
+
+    if (fResult && fCompareSource)
+    {
+        if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, pcvValue1->sczBy, -1, pcvValue2->sczBy, -1) || 0 != UtilCompareSystemTimes(&pcvValue1->stWhen, &pcvValue2->stWhen))
+        {
+            fResult = FALSE;
+        }
+    }
+
+    *pfResult = fResult;
 
 LExit:
     return hr;
@@ -388,7 +400,7 @@ HRESULT ValueTransferFromHistory(
             }
 
             pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen = stValue;
-            UtilAddToSystemTime(5, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
+            UtilAddToSystemTime(1, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
         }
         
         hr = EnumWriteValue(pcdb, wzValueName, pceValueHistoryEnum, i, pcdbReferencedBy);
@@ -437,7 +449,7 @@ HRESULT ValueWrite(
         // If we do, ignore it to avoid polluting history.
         if (fIgnoreSameValue)
         {
-            hr = ValueCompare(pcvValue, &cvExistingValue, &fSameValue);
+            hr = ValueCompare(pcvValue, &cvExistingValue, FALSE, &fSameValue);
             ExitOnFailure(hr, "Failed to compare to existing value for value named: %ls", wzName);
 
             if (fSameValue)
@@ -633,7 +645,7 @@ HRESULT ValueMatch(
     hr = ValueRead(pcdb2, sceRow2, &cvValue2);
     ExitOnFailure(hr, "Failed to read value from db 2");
 
-    hr = ValueCompare(&cvValue1, &cvValue2, &fResult);
+    hr = ValueCompare(&cvValue1, &cvValue2, FALSE, &fResult);
     ExitOnFailure(hr, "Failed to compare values");
 
     // If the two have the same value, check if they have different timestamps / from strings - if they do, make them match

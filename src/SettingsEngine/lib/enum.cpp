@@ -565,19 +565,14 @@ HRESULT EnumFindValueInHistory(
 
     for (DWORD i = 0; i < dwCount; ++i)
     {
-        if (0 == UtilCompareSystemTimes(&pceSearchEnum->valueHistory.rgcValues[i].stWhen, &pValue->stWhen) &&
-            0 == lstrcmpW(pceSearchEnum->valueHistory.rgcValues[i].sczBy, pValue->sczBy))
-        {
-            fResult = FALSE;
-            // The two values have the same 'when' and 'by', so let's verify they have the same value
-            hr = ValueCompare(&pceSearchEnum->valueHistory.rgcValues[i], pValue, &fResult);
-            ExitOnFailure(hr, "Failed to compare two values from history enums");
+        fResult = FALSE;
+        hr = ValueCompare(&pceSearchEnum->valueHistory.rgcValues[i], pValue, TRUE, &fResult);
+        ExitOnFailure(hr, "Failed to compare two values from history enums");
 
-            if (fResult)
-            {
-                *pdwIndex = i;
-                ExitFunction1(hr = S_OK);
-            }
+        if (fResult)
+        {
+            *pdwIndex = i;
+            ExitFunction1(hr = S_OK);
         }
     }
 
