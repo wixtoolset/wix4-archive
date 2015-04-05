@@ -160,10 +160,32 @@ HRESULT ValueRead(
     __in SCE_ROW_HANDLE sceValueRow,
     __deref_out CONFIG_VALUE *pcvValue
     );
-HRESULT ValueReadHistory(
+BOOL ValueReferencedByStringContainsId(
+    __in_z_opt LPCWSTR wzReferencedBy,
+    __in_z LPCWSTR wzId
+    );
+// Goes through entire history for the value, and removes any references to wzId, excluding the exact history entry
+// that matches the value valueToKeepReference
+HRESULT ValueRemoveOutdatedReferencesFromDatabase(
+    __in CFGDB_STRUCT *pcdb,
+    __in const CONFIG_VALUE *pValueToKeepReference,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    );
+// Reads a value out of sceValueHistoryRow parameter, and passes it on to ValueRemoveOutdatedReferencesFromDatabase()
+// sceValueHistoryRow
+HRESULT ValueHistoryRowRemoveReferencesFromDatabase(
     __in CFGDB_STRUCT *pcdb,
     __in SCE_ROW_HANDLE sceValueHistoryRow,
-    __deref_out CONFIG_VALUE *pcvValue
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    );
+// Ensures that pcdbOther's guid id is present or not present in the VALUE_HISTORY_DB_REFERENCES column of the row
+HRESULT ValueHistoryRowEnsureReferenceState(
+    __in CFGDB_STRUCT *pcdb,
+    __in CFGDB_STRUCT *pcdbOther,
+    __in SCE_ROW_HANDLE sceValueHistoryRow,
+    __in BOOL fDesiredState
     );
 // Checks if the value in sceRow1 has an identical corresponding current value in pcdb2
 // If they do have identical values but have different timestamps, copies the newer timestamped

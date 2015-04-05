@@ -25,7 +25,11 @@ static HRESULT ValueWriteHelp(
     __in CONFIG_VALUE *pcvValue,
     __in CFGDB_STRUCT *pcdbReferencedBy
     );
-
+static HRESULT FindHistoryRowById(
+    __in CFGDB_STRUCT *pcdb,
+    __in DWORD dwHistoryId,
+    __out SCE_ROW_HANDLE *pRowHandle
+    );
 
 HRESULT ValueCompare(
     __in const CONFIG_VALUE *pcvValue1,
@@ -361,6 +365,124 @@ HRESULT ValueSetBool(
     return S_OK;
 }
 
+BOOL ValueReferencedByStringContainsId(
+    __in_z_opt LPCWSTR wzReferencedBy,
+    __in_z LPCWSTR wzId
+    )
+{
+    LPCWSTR wzIndexFound = NULL;
+    int cReferencedByChars = wzReferencedBy != NULL ? lstrlenW(wzReferencedBy) : 0;
+    int cIdChars = lstrlenW(wzId);
+
+    if (NULL == wzReferencedBy)
+    {
+        return FALSE;
+    }
+
+    if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, wzReferencedBy, -1, wzId, -1))
+    {
+        return TRUE;
+    }
+    // Before we go doing strings assuming length, just return false is referenced by string is not enough to hold id length + 2 (delimiter + a 1 character id)
+    else if (cReferencedByChars < cIdChars + 2)
+    {
+        return FALSE;
+    }
+    // If the string starts with the id and is followed by semicolon, it's a match
+    else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, wzReferencedBy, cIdChars, wzId, cIdChars) && wzReferencedBy[cIdChars] == L';')
+    {
+        return TRUE;
+    }
+    else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, wzReferencedBy + cReferencedByChars - cIdChars, cIdChars, wzId, cIdChars) && wzReferencedBy[cReferencedByChars - cIdChars - 1] == L';')
+    {
+        return TRUE;
+    }
+    else
+    {
+        wzIndexFound = wcsstr(wzReferencedBy, wzId);
+
+        while (wzIndexFound != NULL)
+        {
+            if (wzIndexFound != NULL)
+            {
+                if (wzIndexFound[-1] == L';' && wzIndexFound[cIdChars] == L';')
+                {
+                    return TRUE;
+                }
+                else
+                {
+                    wzReferencedBy = wzIndexFound + 1;
+                }
+            }
+
+            wzIndexFound = wcsstr(wzReferencedBy, wzId);
+        }
+    }
+
+    return FALSE;
+}
+
+HRESULT ValueRemoveOutdatedReferencesFromDatabase(
+    __in CFGDB_STRUCT *pcdb,
+    __in const CONFIG_VALUE *pValueToKeepReference,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    )
+{
+    HRESULT hr = S_OK;
+    BOOL fComparisonResult = FALSE;
+    LPWSTR sczReferencedBy = NULL;
+    CONFIG_VALUE value = { };
+    SCE_ROW_HANDLE valueHistoryRow = NULL;
+    SCE_QUERY_HANDLE query = NULL;
+    SCE_QUERY_RESULTS_HANDLE results = NULL;
+
+    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_HISTORY_TABLE, 1, &query);
+    ExitOnFailure(hr, "Failed to begin query into value index history table");
+
+    hr = SceSetQueryColumnDword(query, dwAppID);
+    ExitOnFailure(hr, "Failed to set query column id to app ID");
+
+    hr = SceSetQueryColumnString(query, wzValueName);
+    ExitOnFailure(hr, "Failed to set query column id to value name");
+
+    hr = SceRunQueryRange(&query, &results);
+    if (E_NOTFOUND == hr)
+    {
+        // Nothing to clean up
+        ExitFunction1(hr = S_OK);
+    }
+    ExitOnFailure(hr, "Failed to run query");
+
+    hr = SceGetNextResultRow(results, &valueHistoryRow);
+    while (E_NOTFOUND != hr)
+    {
+        hr = ValueRead(pcdb, valueHistoryRow, &value);
+        ExitOnFailure(hr, "Failed to read value from history row");
+
+        hr = ValueCompare(&value, pValueToKeepReference, TRUE, &fComparisonResult);
+        ExitOnFailure(hr, "Failed to compare values for value named: %ls", wzValueName);
+
+        hr = ValueHistoryRowEnsureReferenceState(pcdb, pcdbReferencedBy, valueHistoryRow, fComparisonResult);
+        ExitOnFailure(hr, "Failed to update reference state of value history row: %ls", wzValueName);
+
+        ReleaseNullSceRow(valueHistoryRow);
+        hr = SceGetNextResultRow(results, &valueHistoryRow);
+    }
+    hr = S_OK;
+
+LExit:
+    ReleaseStr(sczReferencedBy);
+    ReleaseCfgValue(value);
+    ReleaseSceRow(valueHistoryRow);
+    ReleaseSceQuery(query);
+    ReleaseSceQueryResults(results);
+
+    return hr;
+}
+
+
 HRESULT ValueTransferFromHistory(
     __in CFGDB_STRUCT *pcdb,
     __in const CFG_ENUMERATION *pceValueHistoryEnum,
@@ -369,10 +491,20 @@ HRESULT ValueTransferFromHistory(
     )
 {
     HRESULT hr = S_OK;
+    DWORD dwHistoryId = 0;
+    DWORD dwLastEnumIndex = pceValueHistoryEnum->dwNumValues - 1;
     LPWSTR wzValueName = pceValueHistoryEnum->valueHistory.sczName;
     SYSTEMTIME stValue = { };
     BOOL fValueExists = FALSE;
+    BOOL fLastValue = FALSE;
+    BOOL fInSceTransaction = FALSE;
+    BOOL fReferencedByInSceTransaction = FALSE;
     SCE_ROW_HANDLE sceValueRow = NULL;
+    SCE_ROW_HANDLE sceValueHistoryRow = NULL;
+
+    hr = SceBeginTransaction(pcdb->psceDb);
+    ExitOnFailure(hr, "Failed to begin transaction");
+    fInSceTransaction = TRUE;
 
     hr = ValueFindRow(pcdb, pcdb->dwAppID, wzValueName, &sceValueRow);
     if (E_NOTFOUND == hr)
@@ -386,15 +518,28 @@ HRESULT ValueTransferFromHistory(
 
         hr = SceGetColumnSystemTime(sceValueRow, VALUE_COMMON_WHEN, &stValue);
         ExitOnFailure(hr, "Failed to get system time of value row");
+
+        // Get the latest good history row
+        hr = SceGetColumnDword(sceValueRow, VALUE_LAST_HISTORY_ID, &dwHistoryId);
+        ExitOnFailure(hr, "Failed to get last history ID from value row");
+
+        hr = FindHistoryRowById(pcdb, dwHistoryId, &sceValueHistoryRow);
+        ExitOnFailure(hr, "Failed to get history row by ID");
+
+        hr = ValueHistoryRowEnsureReferenceState(pcdb, pcdbReferencedBy, sceValueHistoryRow, FALSE);
+        ExitOnFailure(hr, "Failed to clear reference state of database");
+        ReleaseNullSceRow(sceValueHistoryRow);
     }
 
     for (DWORD i = dwStartingEnumIndex; i < pceValueHistoryEnum->dwNumValues; ++i)
     {
+        fLastValue = (i == pceValueHistoryEnum->dwNumValues - 1);
+
         if (fValueExists && 0 > UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
         {
             // If we're not on the last loop iteration, just don't transfer this enum
             // TODO: we could write historical values by inserting them in the old history
-            if (i < pceValueHistoryEnum->dwNumValues - 1)
+            if (!fLastValue)
             {
                 continue;
             }
@@ -403,12 +548,41 @@ HRESULT ValueTransferFromHistory(
             UtilAddToSystemTime(1, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
         }
         
-        hr = EnumWriteValue(pcdb, wzValueName, pceValueHistoryEnum, i, pcdbReferencedBy);
+        // Make sure to set the referenced by column for the last value only
+        hr = EnumWriteValue(pcdb, wzValueName, pceValueHistoryEnum, i, fLastValue ? pcdbReferencedBy : NULL);
         ExitOnFailure(hr, "Failed to write value %ls index %u", wzValueName, i);
     }
 
+    hr = SceBeginTransaction(pcdbReferencedBy->psceDb);
+    ExitOnFailure(hr, "Failed to begin transaction in referenced by db");
+    fReferencedByInSceTransaction = TRUE;
+
+    hr = ValueFindHistoryRow(pcdbReferencedBy, pcdbReferencedBy->dwAppID, wzValueName, &pceValueHistoryEnum->valueHistory.rgcValues[dwLastEnumIndex].stWhen, pceValueHistoryEnum->valueHistory.rgcValues[dwLastEnumIndex].sczBy, &sceValueHistoryRow);
+    ExitOnFailure(hr, "Failed to find value history row in referenced db");
+
+    // Make sure the database the value came from knows about the latest value in the db we wrote to
+    hr = ValueHistoryRowEnsureReferenceState(pcdbReferencedBy, pcdb, sceValueHistoryRow, TRUE);
+    ExitOnFailure(hr, "Failed to set reference state of database");
+
+    hr = SceCommitTransaction(pcdbReferencedBy->psceDb);
+    ExitOnFailure(hr, "Failed to commit transaction");
+    fReferencedByInSceTransaction = FALSE;
+
+    hr = SceCommitTransaction(pcdb->psceDb);
+    ExitOnFailure(hr, "Failed to commit transaction");
+    fInSceTransaction = FALSE;
+
 LExit:
+    if (fInSceTransaction)
+    {
+        SceRollbackTransaction(pcdb->psceDb);
+    }
+    if (fReferencedByInSceTransaction)
+    {
+        SceRollbackTransaction(pcdbReferencedBy->psceDb);
+    }
     ReleaseSceRow(sceValueRow);
+    ReleaseSceRow(sceValueHistoryRow);
 
     return hr;
 }
@@ -614,6 +788,175 @@ LExit:
     return hr;
 }
 
+HRESULT ValueHistoryRowRemoveReferencesFromDatabase(
+    __in CFGDB_STRUCT *pcdb,
+    __in SCE_ROW_HANDLE sceValueHistoryRow,
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD dwAppID = 0;
+    LPWSTR sczName = NULL;
+    CONFIG_VALUE value = { };
+
+    hr = ValueRead(pcdb, sceValueHistoryRow, &value);
+    ExitOnFailure(hr, "Failed to read value");
+
+    hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_APPID, &dwAppID);
+    ExitOnFailure(hr, "Failed to get value appid");
+
+    hr = SceGetColumnString(sceValueHistoryRow, VALUE_COMMON_NAME, &sczName);
+    ExitOnFailure(hr, "Failed to get value name");
+
+    hr = ValueRemoveOutdatedReferencesFromDatabase(pcdb, &value, dwAppID, sczName, pcdbReferencedBy);
+    ExitOnFailure(hr, "Failed to remove outdated references from database");
+
+LExit:
+    ReleaseStr(sczName);
+    ReleaseCfgValue(value);
+
+    return hr;
+}
+
+HRESULT ValueHistoryRowEnsureReferenceState(
+    __in CFGDB_STRUCT *pcdb,
+    __in CFGDB_STRUCT *pcdbOther,
+    __in SCE_ROW_HANDLE sceValueHistoryRow,
+    __in BOOL fDesiredState
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR *rgsczDbReferenceArray = NULL;
+    UINT cDbReferenceArray = 0;
+    LPWSTR sczDbReferences = NULL;
+    LPCWSTR wzId = NULL;
+    BOOL fFoundInArray = FALSE;
+    BOOL fArrayModified = FALSE;
+
+    if (pcdb->fRemote)
+    {
+        wzId = pcdb->sczGuidLocalInRemoteKey;
+    }
+    else
+    {
+        wzId = pcdbOther->sczGuidRemoteInLocalKey;
+    }
+
+    DWORD dwId = 0;
+    hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_ID, &dwId);
+    ExitOnFailure(hr, "Failed to get ID");
+
+    hr = SceGetColumnString(sceValueHistoryRow, VALUE_HISTORY_DB_REFERENCES, &sczDbReferences);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+
+        if (fDesiredState)
+        {
+            hr = SceSetColumnString(sceValueHistoryRow, VALUE_HISTORY_DB_REFERENCES, wzId);
+            ExitOnFailure(hr, "Failed to set Db References column value");
+
+            hr = SceFinishUpdate(sceValueHistoryRow);
+            ExitOnFailure(hr, "Failed to finish simple update to history row");
+
+            hr = ValueHistoryRowRemoveReferencesFromDatabase(pcdb, sceValueHistoryRow, pcdbOther);
+            ExitOnFailure(hr, "Failed to remove references to outdated value history rows");
+        }
+        // else already not present in the column, so nothing to do
+
+        // Get out now, we're done
+        ExitFunction1(hr = S_OK);
+    }
+    ExitOnFailure(hr, "Failed to get Db References column value");
+
+    hr = StrSplitAllocArray(&rgsczDbReferenceArray, &cDbReferenceArray, sczDbReferences, L";");
+    ExitOnFailure(hr, "Failed to split db references column value into array based on delimited semicolons: ", sczDbReferences);
+
+    for (DWORD i = 0; i < cDbReferenceArray; ++i)
+    {
+        if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, rgsczDbReferenceArray[i], -1, wzId, -1))
+        {
+            fFoundInArray = TRUE;
+
+            // If it's in the references and we were asked to remove it, remove it now while we know the index
+            if (!fDesiredState)
+            {
+                fArrayModified = TRUE;
+
+                MemRemoveFromArray(rgsczDbReferenceArray, i, 1, cDbReferenceArray, sizeof(LPCWSTR), FALSE);
+                --cDbReferenceArray;
+            }
+
+            break;
+        }
+    }
+
+    // If it was NOT found in the array and we were asked to add it, do it now
+    if (!fFoundInArray && fDesiredState)
+    {
+        fArrayModified = TRUE;
+
+        hr = MemEnsureArraySize(reinterpret_cast<void **>(&rgsczDbReferenceArray), cDbReferenceArray + 1, sizeof(LPCWSTR), 0);
+        ExitOnFailure(hr, "Failed to grow array when adding reference");
+        ++cDbReferenceArray;
+
+        hr = StrAllocString(rgsczDbReferenceArray + cDbReferenceArray - 1, wzId, 0);
+        ExitOnFailure(hr, "Failed to copy id into array");
+    }
+
+    // Finally, if array was modified, write it back to the column
+    if (fArrayModified)
+    {
+        // Wipe out the string for concatenation of each array item
+        // This string is guaranteed to not be NULL because SceUtil returned success for getting the column
+        sczDbReferences[0] = L'\0';
+
+        for (DWORD i = 0; i < cDbReferenceArray; ++i)
+        {
+            hr = StrAllocConcat(&sczDbReferences, rgsczDbReferenceArray[i], 0);
+            ExitOnFailure(hr, "Failed to concatenate reference string: %ls", rgsczDbReferenceArray[i]);
+
+            if (i < cDbReferenceArray - 1)
+            {
+                hr = StrAllocConcat(&sczDbReferences, L";", 1);
+                ExitOnFailure(hr, "Failed to concatenate semicolon");
+            }
+        }
+
+        if (0 == cDbReferenceArray)
+        {
+            hr = SceSetColumnNull(sceValueHistoryRow, VALUE_HISTORY_DB_REFERENCES);
+            ExitOnFailure(hr, "Failed to set Db References column value to null after array modification");
+        }
+        else
+        {
+            hr = SceSetColumnString(sceValueHistoryRow, VALUE_HISTORY_DB_REFERENCES, sczDbReferences);
+            ExitOnFailure(hr, "Failed to set Db References column value after array modification");
+        }
+
+        hr = SceBeginTransaction(pcdb->psceDb);
+        ExitOnFailure(hr, "Failed to begin transaction");
+
+        hr = SceFinishUpdate(sceValueHistoryRow);
+        ExitOnFailure(hr, "Failed to finish array update to history row");
+
+        hr = SceCommitTransaction(pcdb->psceDb);
+        ExitOnFailure(hr, "Failed to commit transaction");
+
+        if (fDesiredState)
+        {
+            hr = ValueHistoryRowRemoveReferencesFromDatabase(pcdb, sceValueHistoryRow, pcdbOther);
+            ExitOnFailure(hr, "Failed to remove references to outdated value history rows");
+        }
+    }
+
+LExit:
+    ReleaseStr(sczDbReferences);
+    ReleaseStrArray(rgsczDbReferenceArray, cDbReferenceArray);
+
+    return hr;
+}
+
 HRESULT ValueMatch(
     __in_z LPCWSTR sczName,
     __in CFGDB_STRUCT *pcdb1,
@@ -625,10 +968,14 @@ HRESULT ValueMatch(
     HRESULT hr = S_OK;
     SCE_ROW_HANDLE sceRetrievedHistoryRow = NULL;
     SCE_ROW_HANDLE sceRow2 = NULL;
+    SCE_ROW_HANDLE sceHistoryRow1 = NULL;
+    SCE_ROW_HANDLE sceHistoryRow2 = NULL;
+    DWORD dwHistoryId = 0;
     int iTimeCompareResult = 0;
     CONFIG_VALUE cvValue1 = { };
     CONFIG_VALUE cvValue2 = { };
     BOOL fResult = FALSE;
+    BOOL fAlreadyWrittenReferenceState = FALSE;
 
     *pfResult = FALSE;
 
@@ -642,8 +989,20 @@ HRESULT ValueMatch(
     hr = ValueRead(pcdb1, sceRow1, &cvValue1);
     ExitOnFailure(hr, "Failed to read value from db 1");
 
+    hr = SceGetColumnDword(sceRow1, VALUE_LAST_HISTORY_ID, &dwHistoryId);
+    ExitOnFailure(hr, "Failed to get last history id from db 1");
+
+    hr = FindHistoryRowById(pcdb1, dwHistoryId, &sceHistoryRow1);
+    ExitOnFailure(hr, "Failed to find history row by id in db 1");
+
     hr = ValueRead(pcdb2, sceRow2, &cvValue2);
     ExitOnFailure(hr, "Failed to read value from db 2");
+
+    hr = SceGetColumnDword(sceRow2, VALUE_LAST_HISTORY_ID, &dwHistoryId);
+    ExitOnFailure(hr, "Failed to get last history id from db 2");
+
+    hr = FindHistoryRowById(pcdb2, dwHistoryId, &sceHistoryRow2);
+    ExitOnFailure(hr, "Failed to find history row by id in db 2");
 
     hr = ValueCompare(&cvValue1, &cvValue2, FALSE, &fResult);
     ExitOnFailure(hr, "Failed to compare values");
@@ -660,21 +1019,33 @@ HRESULT ValueMatch(
         {
             hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, pcdb1);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 newer than 2)");
+
+            hr = ValueHistoryRowEnsureReferenceState(pcdb1, pcdb2, sceHistoryRow1, TRUE);
+            ExitOnFailure(hr, "Failed to ensure reference state of value (1 newer than 2)");
         }
         else if (0 > iTimeCompareResult)
         {
             hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, pcdb2);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (2 newer than 1)");
+
+            hr = ValueHistoryRowEnsureReferenceState(pcdb2, pcdb1, sceHistoryRow2, TRUE);
+            ExitOnFailure(hr, "Failed to ensure reference state of value (2 newer than 1)");
         }
         // If timestamps are the same and sources differ, we need to make sure both sources are persisted in both stores
         // with this timestamp (history values can have identical values and timestamps, as long as they have different sources)
         else if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, cvValue1.sczBy, -1, cvValue2.sczBy, -1))
         {
+            fAlreadyWrittenReferenceState = FALSE;
+
             hr = ValueFindHistoryRow(pcdb1, pcdb1->dwAppID, sczName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
             if (E_NOTFOUND == hr)
             {
-                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, NULL);
+                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, pcdb2);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (2's source missing from 1)");
+
+                hr = ValueHistoryRowEnsureReferenceState(pcdb1, pcdb2, sceHistoryRow1, TRUE);
+                ExitOnFailure(hr, "Failed to ensure reference state of value (2's source missing from 1)");
+                fAlreadyWrittenReferenceState = TRUE;
             }
             else
             {
@@ -685,8 +1056,15 @@ HRESULT ValueMatch(
             hr = ValueFindHistoryRow(pcdb2, pcdb2->dwAppID, sczName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
             if (E_NOTFOUND == hr)
             {
-                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, NULL);
+                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, pcdb1);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (1's source missing from 2)");
+
+                // Only need one reference between databases
+                if (!fAlreadyWrittenReferenceState)
+                {
+                    hr = ValueHistoryRowEnsureReferenceState(pcdb2, pcdb1, sceHistoryRow2, TRUE);
+                    ExitOnFailure(hr, "Failed to ensure reference state of value (1's source missing from 2)");
+                }
             }
             else
             {
@@ -697,6 +1075,8 @@ HRESULT ValueMatch(
     }
 
 LExit:
+    ReleaseSceRow(sceHistoryRow1);
+    ReleaseSceRow(sceHistoryRow2);
     ReleaseSceRow(sceRetrievedHistoryRow);
     ReleaseSceRow(sceRow2);
     if (E_NOTFOUND == hr)
@@ -798,6 +1178,93 @@ HRESULT ValueFindHistoryRow(
 
 LExit:
     ReleaseSceQuery(sqhHandle);
+
+    return hr;
+}
+
+HRESULT ValueForget(
+    __in CFGDB_STRUCT *pcdb,
+    __in DWORD dwAppID,
+    __inout SCE_ROW_HANDLE *psceValueRow
+    )
+{
+    HRESULT hr = S_OK;
+    SCE_QUERY_RESULTS_HANDLE sqrhResults = NULL;
+    SCE_QUERY_HANDLE sqhHandle = NULL;
+    SCE_ROW_HANDLE sceValueHistoryRow = NULL;
+    LPWSTR sczValueName = NULL;
+    CONFIG_VALUETYPE cvType = VALUE_INVALID;
+    DWORD dwContentID = 0;
+    BOOL fInSceTransaction = FALSE;
+
+    hr = SceBeginTransaction(pcdb->psceDb);
+    ExitOnFailure(hr, "Failed to begin transaction");
+    fInSceTransaction = TRUE;
+
+    hr = SceGetColumnString(*psceValueRow, VALUE_COMMON_NAME, &sczValueName);
+    ExitOnFailure(hr, "Failed to get value name to forget value");
+
+    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_HISTORY_TABLE, 1, &sqhHandle);
+    ExitOnFailure(hr, "Failed to begin query into value table");
+
+    hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
+    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
+
+    hr = SceSetQueryColumnString(sqhHandle, sczValueName);
+    ExitOnFailure(hr, "Failed to set query column string to: %ls", sczValueName);
+
+    hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
+    if (E_NOTFOUND == hr)
+    {
+        ExitFunction1(hr = S_OK);
+    }
+    ExitOnFailure(hr, "Failed to run query");
+
+    hr = SceDeleteRow(psceValueRow);
+    ExitOnFailure(hr, "Failed to delete value row for value named: %ls", sczValueName);
+
+    hr = SceGetNextResultRow(sqrhResults, &sceValueHistoryRow);
+    while (E_NOTFOUND != hr)
+    {
+        ExitOnFailure(hr, "Failed to get next result row");
+
+        hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_TYPE, reinterpret_cast<DWORD*>(&cvType));
+        ExitOnFailure(hr, "Failed to get value type of value history for value named: %ls", sczValueName);
+
+        if (VALUE_BLOB == cvType)
+        {
+            hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_BLOBCONTENTID, &dwContentID);
+            ExitOnFailure(hr, "Failed to get content ID of value history for value named: %ls", sczValueName);
+        }
+
+        hr = SceDeleteRow(&sceValueHistoryRow);
+        ExitOnFailure(hr, "Failed to delete history row for value named: %ls", sczValueName);
+
+        if (VALUE_BLOB == cvType)
+        {
+            // Refcounts are only counted for history entries
+            hr = StreamDecreaseRefcount(pcdb, dwContentID, 1);
+            ExitOnFailure(hr, "Failed to decrease refcount of content with ID: %u", dwContentID);
+        }
+
+        ReleaseNullSceRow(sceValueHistoryRow);
+        hr = SceGetNextResultRow(sqrhResults, &sceValueHistoryRow);
+    }
+    hr = S_OK;
+
+    hr = SceCommitTransaction(pcdb->psceDb);
+    ExitOnFailure(hr, "Failed to commit transaction");
+    fInSceTransaction = FALSE;
+
+LExit:
+    ReleaseStr(sczValueName);
+    ReleaseSceQuery(sqhHandle);
+    ReleaseSceQueryResults(sqrhResults);
+    ReleaseSceRow(sceValueHistoryRow);
+    if (fInSceTransaction)
+    {
+        SceRollbackTransaction(pcdb->psceDb);
+    }
 
     return hr;
 }
@@ -942,23 +1409,35 @@ HRESULT ValueWriteHelp(
     hr = SceSetColumnString(sceRowInput, VALUE_COMMON_BY, pcvValue->sczBy);
     ExitOnFailure(hr, "Failed to set 'by' field in value index history");
 
-    if (fHistory && pcdbReferencedBy)
-    {
-        if (pcdb->fRemote)
-        {
-            hr = SceSetColumnString(sceRowInput, VALUE_HISTORY_DB_REFERENCES, pcdb->sczGuidLocalInRemoteKey);
-            ExitOnFailure(hr, "Failed to set local guid key in remote database");
-        }
-        else
-        {
-            hr = SceSetColumnString(sceRowInput, VALUE_HISTORY_DB_REFERENCES, pcdbReferencedBy->sczGuidRemoteInLocalKey);
-            ExitOnFailure(hr, "Failed to set remote guid key in local database");
-        }
-    }
-    else
+    if (!fHistory)
     {
         hr = SceSetColumnDword(sceRowInput, VALUE_LAST_HISTORY_ID, *pdwHistoryID);
         ExitOnFailure(hr, "Failed to set last history ID to value: %u", *pdwHistoryID);
+    }
+    else
+    {
+        if (pcdbReferencedBy)
+        {
+            if (pcdb->fRemote)
+            {
+                hr = SceSetColumnString(sceRowInput, VALUE_HISTORY_DB_REFERENCES, pcdb->sczGuidLocalInRemoteKey);
+                ExitOnFailure(hr, "Failed to set local guid key in remote database");
+            }
+            else
+            {
+                hr = SceSetColumnString(sceRowInput, VALUE_HISTORY_DB_REFERENCES, pcdbReferencedBy->sczGuidRemoteInLocalKey);
+                ExitOnFailure(hr, "Failed to set remote guid key in local database");
+            }
+
+            // Now clean up old references that are out of date in the database we wrote to
+            hr = ValueRemoveOutdatedReferencesFromDatabase(pcdb, pcvValue, dwAppID, wzName, pcdbReferencedBy);
+            ExitOnFailure(hr, "Failed to remove outdated references from database");
+        }
+        else
+        {
+            hr = SceSetColumnNull(sceRowInput, VALUE_HISTORY_DB_REFERENCES);
+            ExitOnFailure(hr, "Failed to set db references to null");
+        }
     }
 
     hr = SceFinishUpdate(sceRowInput);
@@ -976,89 +1455,26 @@ LExit:
     return hr;
 }
 
-HRESULT ValueForget(
+HRESULT FindHistoryRowById(
     __in CFGDB_STRUCT *pcdb,
-    __in DWORD dwAppID,
-    __inout SCE_ROW_HANDLE *psceValueRow
+    __in DWORD dwHistoryId,
+    __out SCE_ROW_HANDLE *pRowHandle
     )
 {
     HRESULT hr = S_OK;
-    SCE_QUERY_RESULTS_HANDLE sqrhResults = NULL;
-    SCE_QUERY_HANDLE sqhHandle = NULL;
-    SCE_ROW_HANDLE sceValueHistoryRow = NULL;
-    LPWSTR sczValueName = NULL;
-    CONFIG_VALUETYPE cvType = VALUE_INVALID;
-    DWORD dwContentID = 0;
-    BOOL fInSceTransaction = FALSE;
+    SCE_QUERY_HANDLE query = NULL;
 
-    hr = SceBeginTransaction(pcdb->psceDb);
-    ExitOnFailure(hr, "Failed to begin transaction");
-    fInSceTransaction = TRUE;
+    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_HISTORY_TABLE, 0, &query);
+    ExitOnFailure(hr, "Failed to begin query into value index history table by id");
 
-    hr = SceGetColumnString(*psceValueRow, VALUE_COMMON_NAME, &sczValueName);
-    ExitOnFailure(hr, "Failed to get value name to forget value");
+    hr = SceSetQueryColumnDword(query, dwHistoryId);
+    ExitOnFailure(hr, "Failed to set query column dword to last history id");
 
-    hr = SceBeginQuery(pcdb->psceDb, VALUE_INDEX_HISTORY_TABLE, 1, &sqhHandle);
-    ExitOnFailure(hr, "Failed to begin query into value table");
-
-    hr = SceSetQueryColumnDword(sqhHandle, dwAppID);
-    ExitOnFailure(hr, "Failed to set query column dword to: %u", dwAppID);
-
-    hr = SceSetQueryColumnString(sqhHandle, sczValueName);
-    ExitOnFailure(hr, "Failed to set query column string to: %ls", sczValueName);
-
-    hr = SceRunQueryRange(&sqhHandle, &sqrhResults);
-    if (E_NOTFOUND == hr)
-    {
-        ExitFunction1(hr = S_OK);
-    }
-    ExitOnFailure(hr, "Failed to run query");
-
-    hr = SceDeleteRow(psceValueRow);
-    ExitOnFailure(hr, "Failed to delete value row for value named: %ls", sczValueName);
-
-    hr = SceGetNextResultRow(sqrhResults, &sceValueHistoryRow);
-    while (E_NOTFOUND != hr)
-    {
-        ExitOnFailure(hr, "Failed to get next result row");
-
-        hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_TYPE, reinterpret_cast<DWORD*>(&cvType));
-        ExitOnFailure(hr, "Failed to get value type of value history for value named: %ls", sczValueName);
-
-        if (VALUE_BLOB == cvType)
-        {
-            hr = SceGetColumnDword(sceValueHistoryRow, VALUE_COMMON_BLOBCONTENTID, &dwContentID);
-            ExitOnFailure(hr, "Failed to get content ID of value history for value named: %ls", sczValueName);
-        }
-
-        hr = SceDeleteRow(&sceValueHistoryRow);
-        ExitOnFailure(hr, "Failed to delete history row for value named: %ls", sczValueName);
-
-        if (VALUE_BLOB == cvType)
-        {
-            // Refcounts are only counted for history entries
-            hr = StreamDecreaseRefcount(pcdb, dwContentID, 1);
-            ExitOnFailure(hr, "Failed to decrease refcount of content with ID: %u", dwContentID);
-        }
-
-        ReleaseNullSceRow(sceValueHistoryRow);
-        hr = SceGetNextResultRow(sqrhResults, &sceValueHistoryRow);
-    }
-    hr = S_OK;
-
-    hr = SceCommitTransaction(pcdb->psceDb);
-    ExitOnFailure(hr, "Failed to commit transaction");
-    fInSceTransaction = FALSE;
+    hr = SceRunQueryExact(&query, pRowHandle);
+    ExitOnFailure(hr, "Failed to get value history row");
 
 LExit:
-    ReleaseStr(sczValueName);
-    ReleaseSceQuery(sqhHandle);
-    ReleaseSceQueryResults(sqrhResults);
-    ReleaseSceRow(sceValueHistoryRow);
-    if (fInSceTransaction)
-    {
-        SceRollbackTransaction(pcdb->psceDb);
-    }
+    ReleaseSceQuery(query);
 
     return hr;
 }
