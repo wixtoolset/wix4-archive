@@ -186,6 +186,9 @@ HRESULT EnumResize(
         case ENUMERATION_VALUE_HISTORY:
             pcesEnum->valueHistory.rgcValues = static_cast<CONFIG_VALUE *>(MemReAlloc(pcesEnum->valueHistory.rgcValues, cbConfigValueSize, TRUE));
             ExitOnNull(pcesEnum->valueHistory.rgcValues, hr, E_OUTOFMEMORY, "Failed to reallocate type array for value history type Cfg Enumeration Struct");
+
+            pcesEnum->valueHistory.rgsczDbReferences = static_cast<LPWSTR *>(MemReAlloc(pcesEnum->valueHistory.rgsczDbReferences, cbPointerSize, TRUE));
+            ExitOnNull(pcesEnum->valueHistory.rgsczDbReferences, hr, E_OUTOFMEMORY, "Failed to reallocate database references array for value history type Cfg Enumeration Struct");
             break;
         case ENUMERATION_DATABASE_LIST:
             pcesEnum->databaseList.rgsczFriendlyName = static_cast<LPWSTR *>(MemReAlloc(pcesEnum->databaseList.rgsczFriendlyName, cbPointerSize, TRUE));
