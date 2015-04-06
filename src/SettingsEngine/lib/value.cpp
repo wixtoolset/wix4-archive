@@ -1072,6 +1072,19 @@ HRESULT ValueMatch(
             }
             ReleaseNullSceRow(sceRetrievedHistoryRow);
         }
+        // Timestamps are the same and sources are the same, so just ensure references are correct
+        else
+        {
+            // Don't bother to cleanup old references in this case, because there are only two cases we should hit this:
+            // A) References have never been set before (user just upgraded database to this version), so there are none to cleanup
+            // B) References are already set on these two values (there should be no references to cleanup)
+
+            hr = ValueHistoryRowEnsureReferenceState(pcdb1, pcdb2, sceHistoryRow1, TRUE);
+            ExitOnFailure(hr, "Failed to ensure reference state of value in 1 (identical source)");
+
+            hr = ValueHistoryRowEnsureReferenceState(pcdb2, pcdb1, sceHistoryRow2, TRUE);
+            ExitOnFailure(hr, "Failed to ensure reference state of value in 2 (identical source)");
+        }
     }
 
 LExit:
