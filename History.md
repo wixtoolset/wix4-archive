@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4700 - Added blurb about SequenceType.first.
+
 * SeanHall: Update builtin WixStdBA themes to use the new thmutil functionality.
 
 * SeanHall: WIXFEAT:4411 - Be consistent about when a WixStdBA button is called Close or Cancel.
