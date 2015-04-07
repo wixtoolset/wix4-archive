@@ -158,6 +158,10 @@ static HRESULT RunQuery(
     __in_bcount(SCE_QUERY_BYTES) SCE_QUERY_HANDLE psqhHandle,
     __out SCE_QUERY_RESULTS **ppsqrhHandle
     );
+static HRESULT FillOutColumnDescFromSchema(
+    __in const SCE_COLUMN_SCHEMA *pSchema,
+    __out DBCOLUMNDESC pColumnDesc
+    );
 static HRESULT EnsureSchema(
     __in SCE_DATABASE *pDatabase,
     __in SCE_DATABASE_SCHEMA *pDatabaseSchema
@@ -1447,7 +1451,8 @@ static HRESULT CreateSqlCe(
     )
 {
     HRESULT hr = S_OK;
-    LPWSTR sczCurrentDirectory = NULL;
+    LPWSTR sczPath = NULL;
+    LPWSTR sczDirectory = NULL;
     LPWSTR sczDllFullPath = NULL;
 
     if (NULL == wzSqlCeDllPath)
@@ -1457,14 +1462,30 @@ static HRESULT CreateSqlCe(
     }
     else
     {
-        hr = DirGetCurrent(&sczCurrentDirectory);
-        ExitOnFailure(hr, "Failed to get current directory");
+        // First try loading DLL from the path of our EXE
+        hr = PathForCurrentProcess(&sczPath, NULL);
+        ExitOnFailure(hr, "Failed to get path for current process");
 
-        hr = PathConcat(sczCurrentDirectory, wzSqlCeDllPath, &sczDllFullPath);
+        hr = PathGetDirectory(sczPath, &sczDirectory);
+        ExitOnFailure(hr, "Failed to get directory of current process");
+
+        hr = PathConcat(sczDirectory, wzSqlCeDllPath, &sczDllFullPath);
         ExitOnFailure(hr, "Failed to concatenate current directory and DLL filename");
 
         *phSqlCeDll = ::LoadLibraryW(sczDllFullPath);
-        ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", sczDllFullPath);
+
+        // If that failed, fallback to loading from current path
+        if (NULL == *phSqlCeDll)
+        {
+            hr = DirGetCurrent(&sczDirectory);
+            ExitOnFailure(hr, "Failed to get current directory");
+
+            hr = PathConcat(sczDirectory, wzSqlCeDllPath, &sczDllFullPath);
+            ExitOnFailure(hr, "Failed to concatenate current directory and DLL filename");
+
+            *phSqlCeDll = ::LoadLibraryW(sczDllFullPath);
+            ExitOnNullWithLastError(*phSqlCeDll, hr, "Failed to open Sql CE DLL: %ls", sczDllFullPath);
+        }
 
         HRESULT (WINAPI *pfnGetFactory)(REFCLSID, REFIID, void**);
         pfnGetFactory = (HRESULT (WINAPI *)(REFCLSID, REFIID, void**))GetProcAddress(*phSqlCeDll, "DllGetClassObject");
@@ -1479,7 +1500,8 @@ static HRESULT CreateSqlCe(
     }
 
 LExit:
-    ReleaseStr(sczCurrentDirectory);
+    ReleaseStr(sczPath);
+    ReleaseStr(sczDirectory);
     ReleaseStr(sczDllFullPath);
 
     return hr;
@@ -1587,6 +1609,81 @@ LExit:
     return hr;
 }
 
+static HRESULT FillOutColumnDescFromSchema(
+    __in const SCE_COLUMN_SCHEMA *pColumnSchema,
+    __out DBCOLUMNDESC *pColumnDesc
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD dwColumnProperties = 0;
+    DWORD dwColumnPropertyIndex = 0;
+    BOOL fFixedSize = FALSE;
+
+    pColumnDesc->dbcid.eKind = DBKIND_NAME;
+    pColumnDesc->dbcid.uName.pwszName = (WCHAR *)pColumnSchema->wzName;
+    pColumnDesc->wType = pColumnSchema->dbtColumnType;
+    pColumnDesc->ulColumnSize = pColumnSchema->dwLength;
+    if (0 == pColumnDesc->ulColumnSize && (DBTYPE_WSTR == pColumnDesc->wType || DBTYPE_BYTES == pColumnDesc->wType))
+    {
+        fFixedSize = FALSE;
+    }
+    else
+    {
+        fFixedSize = TRUE;
+    }
+
+    dwColumnProperties = 1;
+    if (pColumnSchema->fAutoIncrement)
+    {
+        ++dwColumnProperties;
+    }
+    if (!pColumnSchema->fNullable)
+    {
+        ++dwColumnProperties;
+    }
+
+    if (0 < dwColumnProperties)
+    {
+        pColumnDesc->cPropertySets = 1;
+        pColumnDesc->rgPropertySets = reinterpret_cast<DBPROPSET *>(MemAlloc(sizeof(DBPROPSET), TRUE));
+        ExitOnNull(pColumnDesc->rgPropertySets, hr, E_OUTOFMEMORY, "Failed to allocate propset object while setting up column parameters");
+
+        pColumnDesc->rgPropertySets[0].cProperties = dwColumnProperties;
+        pColumnDesc->rgPropertySets[0].guidPropertySet = DBPROPSET_COLUMN;
+        pColumnDesc->rgPropertySets[0].rgProperties = reinterpret_cast<DBPROP *>(MemAlloc(sizeof(DBPROP) * dwColumnProperties, TRUE));
+
+        dwColumnPropertyIndex = 0;
+        if (pColumnSchema->fAutoIncrement)
+        {
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwPropertyID = DBPROP_COL_AUTOINCREMENT;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwOptions = DBPROPOPTIONS_REQUIRED;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].colid = DB_NULLID;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.vt = VT_BOOL;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.boolVal = VARIANT_TRUE;
+            ++dwColumnPropertyIndex;
+        }
+        if (!pColumnSchema->fNullable)
+        {
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwPropertyID = DBPROP_COL_NULLABLE;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwOptions = DBPROPOPTIONS_REQUIRED;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].colid = DB_NULLID;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.vt = VT_BOOL;
+            pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.boolVal = VARIANT_FALSE;
+            ++dwColumnPropertyIndex;
+        }
+
+        pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwPropertyID = DBPROP_COL_FIXEDLENGTH;
+        pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwOptions = DBPROPOPTIONS_REQUIRED;
+        pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].colid = DB_NULLID;
+        pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.vt = VT_BOOL;
+        pColumnDesc->rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.boolVal = fFixedSize ? VARIANT_TRUE : VARIANT_FALSE;
+        ++dwColumnPropertyIndex;
+    }
+
+LExit:
+    return hr;
+}
+
 static HRESULT EnsureSchema(
     __in SCE_DATABASE *pDatabase,
     __in SCE_DATABASE_SCHEMA *pdsSchema
@@ -1595,7 +1692,6 @@ static HRESULT EnsureSchema(
     HRESULT hr = S_OK;
     size_t cbAllocSize = 0;
     BOOL fInTransaction = FALSE;
-    BOOL fFixedSize = FALSE;
     BOOL fSchemaNeedsSetup = TRUE;
     DBID tableID = { };
     DBID indexID = { };
@@ -1603,8 +1699,6 @@ static HRESULT EnsureSchema(
     DBPROPSET rgdbpRowSetPropSet[1];
     DBPROP rgdbpIndexProp[1];
     DBPROP rgdbpRowSetProp[1];
-    DWORD dwColumnProperties = 0;
-    DWORD dwColumnPropertyIndex = 0;
     DBCOLUMNDESC *rgColumnDescriptions = NULL;
     DBINDEXCOLUMNDESC *rgIndexColumnDescriptions = NULL;
     DWORD cIndexColumnDescriptions = 0;
@@ -1648,107 +1742,61 @@ static HRESULT EnsureSchema(
         tableID.eKind = DBKIND_NAME;
         tableID.uName.pwszName = const_cast<WCHAR *>(pdsSchema->rgTables[dwTable].wzName);
 
+        // Fill out each column description struct as appropriate, to be used for creating the table, or confirming the table's columns all exist
+        rgColumnDescriptions = static_cast<DBCOLUMNDESC *>(MemAlloc(sizeof(DBCOLUMNDESC) * pdsSchema->rgTables[dwTable].cColumns, TRUE));
+        ExitOnNull(rgColumnDescriptions, hr, E_OUTOFMEMORY, "Failed to allocate column description array while creating table");
+
+        for (DWORD i = 0; i < pdsSchema->rgTables[dwTable].cColumns; ++i)
+        {
+            hr = FillOutColumnDescFromSchema(pdsSchema->rgTables[dwTable].rgColumns + i, rgColumnDescriptions + i);
+            ExitOnFailure(hr, "Failed to fill out column description from schema");
+        }
+
         // First try to open the table - or if it doesn't exist, create it
         hr = pDatabaseInternal->pIOpenRowset->OpenRowset(NULL, &tableID, NULL, IID_IRowset, _countof(rgdbpRowSetPropSet), rgdbpRowSetPropSet, reinterpret_cast<IUnknown **>(&pdsSchema->rgTables[dwTable].pIRowset));
         if (DB_E_NOTABLE == hr)
         {
             // The table doesn't exist, so let's create it
-            rgColumnDescriptions = static_cast<DBCOLUMNDESC *>(MemAlloc(sizeof(DBCOLUMNDESC) * pdsSchema->rgTables[dwTable].cColumns, TRUE));
-            ExitOnNull(rgColumnDescriptions, hr, E_OUTOFMEMORY, "Failed to allocate column description array while creating table");
-
-            // Fill out each column description struct as appropriate
-            for (DWORD i = 0; i < pdsSchema->rgTables[dwTable].cColumns; ++i)
-            {
-                rgColumnDescriptions[i].dbcid.eKind = DBKIND_NAME;
-                rgColumnDescriptions[i].dbcid.uName.pwszName = (WCHAR *)pdsSchema->rgTables[dwTable].rgColumns[i].wzName;
-                rgColumnDescriptions[i].wType = pdsSchema->rgTables[dwTable].rgColumns[i].dbtColumnType;
-                rgColumnDescriptions[i].ulColumnSize = pdsSchema->rgTables[dwTable].rgColumns[i].dwLength;
-                if (0 == rgColumnDescriptions[i].ulColumnSize && (DBTYPE_WSTR == rgColumnDescriptions[i].wType || DBTYPE_BYTES == rgColumnDescriptions[i].wType))
-                {
-                    fFixedSize = FALSE;
-                }
-                else
-                {
-                    fFixedSize = TRUE;
-                }
-
-                dwColumnProperties = 1;
-                if (pdsSchema->rgTables[dwTable].rgColumns[i].fAutoIncrement)
-                {
-                    ++dwColumnProperties;
-                }
-                if (!pdsSchema->rgTables[dwTable].rgColumns[i].fNullable)
-                {
-                    ++dwColumnProperties;
-                }
-
-                if (0 < dwColumnProperties)
-                {
-                    rgColumnDescriptions[i].cPropertySets = 1;
-                    rgColumnDescriptions[i].rgPropertySets = reinterpret_cast<DBPROPSET *>(MemAlloc(sizeof(DBPROPSET), TRUE));
-                    ExitOnNull(rgColumnDescriptions[i].rgPropertySets, hr, E_OUTOFMEMORY, "Failed to allocate propset object while setting up column parameters");
-
-                    rgColumnDescriptions[i].rgPropertySets[0].cProperties = dwColumnProperties;
-                    rgColumnDescriptions[i].rgPropertySets[0].guidPropertySet = DBPROPSET_COLUMN;
-                    rgColumnDescriptions[i].rgPropertySets[0].rgProperties = reinterpret_cast<DBPROP *>(MemAlloc(sizeof(DBPROP) * dwColumnProperties, TRUE));
-
-                    dwColumnPropertyIndex = 0;
-                    if (pdsSchema->rgTables[dwTable].rgColumns[i].fAutoIncrement)
-                    {
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwPropertyID = DBPROP_COL_AUTOINCREMENT;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwOptions = DBPROPOPTIONS_REQUIRED;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].colid = DB_NULLID;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.vt = VT_BOOL;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.boolVal = VARIANT_TRUE;
-                        ++dwColumnPropertyIndex;
-                    }
-                    if (!pdsSchema->rgTables[dwTable].rgColumns[i].fNullable)
-                    {
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwPropertyID = DBPROP_COL_NULLABLE;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwOptions = DBPROPOPTIONS_REQUIRED;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].colid = DB_NULLID;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.vt = VT_BOOL;
-                        rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.boolVal = VARIANT_FALSE;
-                        ++dwColumnPropertyIndex;
-                    }
-
-                    rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwPropertyID = DBPROP_COL_FIXEDLENGTH;
-                    rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].dwOptions = DBPROPOPTIONS_REQUIRED;
-                    rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].colid = DB_NULLID;
-                    rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.vt = VT_BOOL;
-                    rgColumnDescriptions[i].rgPropertySets[0].rgProperties[dwColumnPropertyIndex].vValue.boolVal = fFixedSize ? VARIANT_TRUE : VARIANT_FALSE;
-                    ++dwColumnPropertyIndex;
-                }
-            }
-
             hr = pTableDefinition->CreateTable(NULL, &tableID, pdsSchema->rgTables[dwTable].cColumns, rgColumnDescriptions, IID_IUnknown, _countof(rgdbpRowSetPropSet), rgdbpRowSetPropSet, NULL, NULL);
             ExitOnFailure(hr, "Failed to create table: %ls", pdsSchema->rgTables[dwTable].wzName);
-
-#pragma prefast(push)
-#pragma prefast(disable:26010)
-            hr = EnsureLocalColumnConstraints(pTableDefinition, &tableID, pdsSchema->rgTables + dwTable);
-#pragma prefast(pop)
-            ExitOnFailure(hr, "Failed to ensure local column constraints for table: %ls", pdsSchema->rgTables[dwTable].wzName);
-
-            for (DWORD i = 0; i < pdsSchema->rgTables[dwTable].cColumns; ++i)
-            {
-                if (NULL != rgColumnDescriptions[i].rgPropertySets)
-                {
-                    ReleaseMem(rgColumnDescriptions[i].rgPropertySets[0].rgProperties);
-                    ReleaseMem(rgColumnDescriptions[i].rgPropertySets);
-                }
-            }
-
-            ReleaseNullMem(rgColumnDescriptions);
         }
         else
         {
+            ExitOnFailure(hr, "Failed to open table %ls while ensuring schema", tableID.uName.pwszName);
+
             // Close any rowset we opened
             ReleaseNullObject(pdsSchema->rgTables[dwTable].pIRowset);
 
-            ExitOnFailure(hr, "Failed to open table %ls while ensuring schema", tableID.uName.pwszName);
+            // If it does exist, make sure all columns are in the table
+            // Only nullable columns can be added to an existing table
+            for (DWORD i = 1; i < pdsSchema->rgTables[dwTable].cColumns; ++i)
+            {
+                if (pdsSchema->rgTables[dwTable].rgColumns[i].fNullable)
+                hr = pTableDefinition->AddColumn(&tableID, rgColumnDescriptions + i, NULL);
+                if (DB_E_DUPLICATECOLUMNID == hr)
+                {
+                    hr = S_OK;
+                }
+                ExitOnFailure(hr, "Failed to add column %ls", pdsSchema->rgTables[dwTable].rgColumns[i].wzName);
+            }
         }
 
+#pragma prefast(push)
+#pragma prefast(disable:26010)
+        hr = EnsureLocalColumnConstraints(pTableDefinition, &tableID, pdsSchema->rgTables + dwTable);
+#pragma prefast(pop)
+        ExitOnFailure(hr, "Failed to ensure local column constraints for table: %ls", pdsSchema->rgTables[dwTable].wzName);
+
+        for (DWORD i = 0; i < pdsSchema->rgTables[dwTable].cColumns; ++i)
+        {
+            if (NULL != rgColumnDescriptions[i].rgPropertySets)
+            {
+                ReleaseMem(rgColumnDescriptions[i].rgPropertySets[0].rgProperties);
+                ReleaseMem(rgColumnDescriptions[i].rgPropertySets);
+            }
+        }
+
+        ReleaseNullMem(rgColumnDescriptions);
         if (0 < pdsSchema->rgTables[dwTable].cIndexes)
         {
             // Now create indexes for the table

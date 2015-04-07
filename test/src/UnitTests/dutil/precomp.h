@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <strsafe.h>
 #include <ShlObj.h>
+#include <sqlce_oledb.h>
 
 // Include error.h before dutil.h
 #include "error.h"
@@ -31,6 +32,7 @@
 #include <strutil.h>
 #include <monutil.h>
 #include <regutil.h>
+#include <sceutil.h>
 #include <varutil.h>
 #include <condutil.h>
 
