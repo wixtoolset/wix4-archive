@@ -211,9 +211,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //
     // Remarks:
     //  wzUpdateLocation is null if no update was available.
-    STDMETHOD_(void, OnDetectUpdateComplete)(
+    STDMETHOD_(int, OnDetectUpdateComplete)(
         __in HRESULT hrStatus,
-        __in_z_opt LPCWSTR wzUpdateLocation
+        __in_z_opt LPCWSTR wzUpdateLocation,
+        __in int nRecommendation
         ) = 0;
 
     // OnDetectRelatedBundle - called when the engine detects a related bundle.

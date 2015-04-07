@@ -41,6 +41,12 @@
     <RestoreNugetPackage Include="xunit">
       <Version>1.9.2</Version>
     </RestoreNugetPackage>
+	<RestoreNugetPackage Include="Nancy">
+      <Version>0.23.2</Version>
+    </RestoreNugetPackage>
+	<RestoreNugetPackage Include="Nancy.Hosting.Self">
+      <Version>0.23.2</Version>
+    </RestoreNugetPackage>		
   </ItemGroup>
   <Target Name="PackageRestore"
           DependsOnTargets="FindMissingPackages">

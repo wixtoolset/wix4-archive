@@ -15,6 +15,7 @@
     <AssemblyName>WixTests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <DisableSigning>true</DisableSigning>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -39,6 +40,9 @@
     <Compile Include="Burn\Burn.SlipstreamTests.cs" />
     <Compile Include="Burn\Burn.UpdateBundleTests.cs" />
     <Compile Include="Extensions\VSExtension\VSExtension.VSExtensionFixture.cs" />
+    <Compile Include="Burn\UpdateBundle\ApplicationBootstrapper.cs" />
+    <Compile Include="Burn\UpdateBundle\FeedModule.cs" />
+    <Compile Include="Burn\UpdateBundle\RootPathProvider.cs" />
     <Compile Include="PackageBuilder.cs" />
     <Compile Include="PatchBuilder.cs" />
     <Compile Include="WixTests.cs" />
@@ -464,9 +468,25 @@
     </None>
     <None Include="..\..\data\Burn\UpdateBundleTests\A.wxs">
       <Link>Burn\UpdateBundleTests\A.wxs</Link>
+      <SubType>Designer</SubType>
     </None>
     <None Include="..\..\data\Burn\UpdateBundleTests\BundleA.wxs">
       <Link>Burn\UpdateBundleTests\BundleA.wxs</Link>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="..\..\data\Burn\UpdateBundleTests\B.wxs">
+      <Link>Burn\UpdateBundleTests\B.wxs</Link>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="..\..\data\Burn\UpdateBundleTests\BundleB.wxs">
+      <Link>Burn\UpdateBundleTests\BundleB.wxs</Link>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="..\..\data\Burn\UpdateBundleTests\FeedBv1.0.xml">
+      <Link>Burn\UpdateBundleTests\FeedBv1.0.xml</Link>
+    </None>
+    <None Include="..\..\data\Burn\UpdateBundleTests\FeedBv2.0.xml">
+      <Link>Burn\UpdateBundleTests\FeedBv2.0.xml</Link>
     </None>
     <None Include="packages.config" />
     <None Include="Tools\Light\Input.InputTests.mtx" />
@@ -502,6 +522,12 @@
     <Reference Include="$(OutputPath)WixToolset.Dtf.Compression.dll" />
     <Reference Include="$(OutputPath)WixToolset.Dtf.Compression.Cab.dll" />
     <Reference Include="$(OutputPath)BootstrapperCore.dll" />
+    <Reference Include="Nancy">
+      <HintPath>..\..\..\packages\Nancy.0.23.2\lib\net40\Nancy.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Self">
+      <HintPath>..\..\..\packages\Nancy.Hosting.Self.0.23.2\lib\net40\Nancy.Hosting.Self.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />

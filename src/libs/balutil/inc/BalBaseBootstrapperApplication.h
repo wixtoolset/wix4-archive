@@ -132,11 +132,13 @@ public: // IBootstrapperApplication
         return CheckCanceled() ? IDCANCEL : nRecommendation;
     }
 
-    virtual STDMETHODIMP_(void) OnDetectUpdateComplete(
+    virtual STDMETHODIMP_(int) OnDetectUpdateComplete(
         __in HRESULT /*hrStatus*/,
-        __in_z_opt LPCWSTR /*wzUpdateLocation*/
+        __in_z_opt LPCWSTR /*wzUpdateLocation*/,
+        __in int nRecommendation
         )
     {
+        return CheckCanceled() ? IDCANCEL : nRecommendation;
     }
 
     virtual STDMETHODIMP_(int) OnDetectCompatiblePackage(
