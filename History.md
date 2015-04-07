@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT:3933 - Make WixBundleManufacturer variable writable.
+
 * BobArnson: WIXBUG:4700 - Added blurb about SequenceType.first.
 
 * SeanHall: Update builtin WixStdBA themes to use the new thmutil functionality.
