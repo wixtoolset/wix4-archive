@@ -102,6 +102,10 @@ static HRESULT ParseControl(
     __in THEME* pTheme,
     __in DWORD iControl
     );
+static HRESULT ParseActions(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    );
 static HRESULT ParseBillboards(
     __in_opt HMODULE hModule,
     __in_opt LPCWSTR wzRelativePath,
@@ -189,6 +193,9 @@ static void FreeConditionalText(
 static void FreeImageList(
     __in THEME_IMAGELIST* pImageList
     );
+static void FreeAction(
+    __in THEME_ACTION* pAction
+    );
 static void FreeBillboard(
     __in THEME_BILLBOARD* pBillboard
     );
@@ -202,6 +209,16 @@ static void CALLBACK OnBillboardTimer(
     __in const THEME* pTheme,
     __in HWND hwnd,
     __in UINT_PTR idEvent
+    );
+static void OnBrowseDirectory(
+    __in THEME* pTheme,
+    __in HWND hWnd,
+    __in const THEME_ACTION* pAction
+    );
+static BOOL OnButtonClicked(
+    __in THEME* pTheme,
+    __in HWND hWnd,
+    __in const THEME_CONTROL* pControl
     );
 static HRESULT OnRichEditEnLink(
     __in LPARAM lParam,
@@ -1163,46 +1180,12 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
             switch (HIWORD(wParam))
             {
             case BN_CLICKED:
-                if (pTheme->pfnSetNumericVariable || pTheme->pfnSetStringVariable)
+                if (lParam)
                 {
-                    for (DWORD i = 0; i < pTheme->cControls; ++i)
+                    const THEME_CONTROL* pControl = FindControlFromHWnd(pTheme, (HWND)lParam);
+                    if (pControl && OnButtonClicked(pTheme, hWnd, pControl))
                     {
-                        const THEME_CONTROL* pControl = pTheme->rgControls + i;
-
-                        if (LOWORD(wParam) == pControl->wId)
-                        {
-                            if (!pControl->fDisableVariableFunctionality)
-                            {
-                                BOOL fRefresh = FALSE;
-
-                                switch (pControl->type)
-                                {
-                                case THEME_CONTROL_TYPE_CHECKBOX:
-                                    if (pTheme->pfnSetNumericVariable && pControl->sczName && *pControl->sczName)
-                                    {
-                                        BOOL fChecked = ThemeIsControlChecked(pTheme, pControl->wId);
-                                        pTheme->pfnSetNumericVariable(pControl->sczName, fChecked ? 1 : 0, pTheme->pvVariableContext);
-                                        fRefresh = TRUE;
-                                    }
-                                    break;
-                                case THEME_CONTROL_TYPE_RADIOBUTTON:
-                                    if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable && ThemeIsControlChecked(pTheme, pControl->wId))
-                                    {
-                                        pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue, pTheme->pvVariableContext);
-                                        fRefresh = TRUE;
-                                    }
-                                    break;
-                                }
-
-                                if (fRefresh)
-                                {
-                                    ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_SHOW, THEME_SHOW_PAGE_REASON_REFRESH);
-                                }
-
-                                return 0;
-                            }
-                            break;
-                        }
+                        return 0;
                     }
                 }
                 break;
@@ -1321,7 +1304,11 @@ DAPI_(HRESULT) ThemeShowPageEx(
         }
         else
         {
-            if (THEME_SHOW_PAGE_REASON_REFRESH != reason)
+            if (THEME_SHOW_PAGE_REASON_REFRESH == reason)
+            {
+                fSaveEditboxes = TRUE;
+            }
+            else
             {
                 hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPage->rgSavedVariables), pPage->cControlIndices, sizeof(THEME_SAVEDVARIABLE), pPage->cControlIndices);
                 ExitOnNull(pPage->rgSavedVariables, hr, E_OUTOFMEMORY, "Failed to allocate memory for saved variables.");
@@ -1346,21 +1333,21 @@ DAPI_(HRESULT) ThemeShowPageEx(
             continue;
         }
 
+        // Save the editbox value if necessary (other control types save their values immediately).
+        if (pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
+            fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
+        {
+            hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
+            ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
+
+            hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText, pTheme->pvVariableContext);
+            ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
+        }
+
         HWND hWnd = pControl->hWnd;
 
         if (fHide && pControl->wPageId)
         {
-            // Save the editbox value if necessary (other control types save their values immediately).
-            if (pTheme->pfnSetStringVariable && !pControl->fDisableVariableFunctionality &&
-                fSaveEditboxes && THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName)
-            {
-                hr = ThemeGetTextControl(pTheme, pControl->wId, &sczText);
-                ExitOnFailure(hr, "Failed to get the text for control: %ls", pControl->sczName);
-
-                hr = pTheme->pfnSetStringVariable(pControl->sczName, sczText, pTheme->pvVariableContext);
-                ExitOnFailure(hr, "Failed to set the variable '%ls' to '%ls'", pControl->sczName, sczText);
-            }
-
             ::ShowWindow(hWnd, SW_HIDE);
 
             if (THEME_CONTROL_TYPE_BILLBOARD == pControl->type)
@@ -2045,7 +2032,7 @@ DAPI_(HRESULT) ThemeGetTextControl(
     for (;;)
     {
         cchTextRead = ::GetWindowTextW(hWnd, *psczText, cchText);
-        if (cchTextRead < cchText)
+        if (cchTextRead + 1 < cchText)
         {
             break;
         }
@@ -2999,6 +2986,9 @@ static HRESULT ParseControl(
         }
     }
 
+    hr = ParseActions(pixn, pControl);
+    ExitOnFailure(hr, "Failed to parse action nodes of the control.");
+
     hr = ParseText(pixn, pControl);
     ExitOnFailure(hr, "Failed to parse text nodes of the control.");
 
@@ -3241,6 +3231,101 @@ static HRESULT ParseControl(
 
 LExit:
     ReleaseBSTR(bstrText);
+
+    return hr;
+}
+
+
+static HRESULT ParseActions(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD i = 0;
+    IXMLDOMNodeList* pixnl = NULL;
+    IXMLDOMNode* pixnChild = NULL;
+    BSTR bstrType = NULL;
+
+    hr = XmlSelectNodes(pixn, L"BrowseDirectoryAction|ChangePageAction|CloseWindowAction", &pixnl);
+    ExitOnFailure(hr, "Failed to select child action nodes.");
+
+    hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cActions));
+    ExitOnFailure(hr, "Failed to count the number of action nodes.");
+
+    if (0 < pControl->cActions)
+    {
+        MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->rgActions), sizeof(THEME_ACTION), pControl->cActions);
+        ExitOnNull(pControl->rgActions, hr, E_OUTOFMEMORY, "Failed to allocate THEME_ACTION structs.");
+
+        i = 0;
+        while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, &bstrType)))
+        {
+            if (!bstrType)
+            {
+                hr = E_UNEXPECTED;
+                ExitOnFailure(hr, "Null element encountered!");
+            }
+
+            THEME_ACTION* pAction = pControl->rgActions + i;
+
+            if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"BrowseDirectoryAction", -1))
+            {
+                pAction->type = THEME_ACTION_TYPE_BROWSE_DIRECTORY;
+
+                hr = XmlGetAttributeEx(pixnChild, L"VariableName", &pAction->BrowseDirectory.sczVariableName);
+                ExitOnFailure(hr, "Failed when querying BrowseDirectoryAction/@VariableName attribute.");
+            }
+            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"ChangePageAction", -1))
+            {
+                pAction->type = THEME_ACTION_TYPE_CHANGE_PAGE;
+
+                hr = XmlGetAttributeEx(pixnChild, L"Page", &pAction->ChangePage.sczPageName);
+                ExitOnFailure(hr, "Failed when querying ChangePageAction/@Page attribute.");
+
+                hr = XmlGetYesNoAttribute(pixnChild, L"Cancel", &pAction->ChangePage.fCancel);
+                if (E_NOTFOUND != hr)
+                {
+                    ExitOnFailure(hr, "Failed when querying ChangePageAction/@Cancel attribute.");
+                }
+            }
+            else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"CloseWindowAction", -1))
+            {
+                pAction->type = THEME_ACTION_TYPE_CLOSE_WINDOW;
+            }
+            else
+            {
+                hr = E_UNEXPECTED;
+                ExitOnFailure(hr, "Unexpected element encountered: %ls", bstrType);
+            }
+
+            hr = XmlGetAttributeEx(pixnChild, L"Condition", &pAction->sczCondition);
+            if (E_NOTFOUND != hr)
+            {
+                ExitOnFailure(hr, "Failed when querying %ls/@Condition attribute.", bstrType);
+            }
+
+            if (!pAction->sczCondition)
+            {
+                if (pControl->pDefaultAction)
+                {
+                    hr = E_INVALIDDATA;
+                    ExitOnFailure(hr, "Control '%ls' has multiple actions without a condition.", pControl->sczName);
+                }
+
+                pControl->pDefaultAction = pAction;
+            }
+
+            ++i;
+            ReleaseNullBSTR(bstrType);
+            ReleaseObject(pixnChild);
+        }
+    }
+
+LExit:
+    ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseBSTR(bstrType);
 
     return hr;
 }
@@ -3867,6 +3952,11 @@ static void FreeControl(
             ::DeleteBitmap(pControl->hImage);
         }
 
+        for (DWORD i = 0; i < pControl->cActions; ++i)
+        {
+            FreeAction(&(pControl->rgActions[i]));
+        }
+
         for (DWORD i = 0; i < pControl->cBillboards; ++i)
         {
             FreeBillboard(&(pControl->ptbBillboards[i]));
@@ -3887,11 +3977,30 @@ static void FreeControl(
             FreeTab(&(pControl->pttTabs[i]));
         }
 
+        ReleaseMem(pControl->rgActions)
         ReleaseMem(pControl->ptbBillboards)
         ReleaseMem(pControl->ptcColumns);
         ReleaseMem(pControl->rgConditionalText);
         ReleaseMem(pControl->pttTabs);
     }
+}
+
+
+static void FreeAction(
+    __in THEME_ACTION* pAction
+    )
+{
+    switch (pAction->type)
+    {
+    case THEME_ACTION_TYPE_BROWSE_DIRECTORY:
+        ReleaseStr(pAction->BrowseDirectory.sczVariableName);
+        break;
+    case THEME_ACTION_TYPE_CHANGE_PAGE:
+        ReleaseStr(pAction->ChangePage.sczPageName);
+        break;
+    }
+
+    ReleaseStr(pAction->sczCondition);
 }
 
 
@@ -4034,6 +4143,168 @@ static void CALLBACK OnBillboardTimer(
             }
         }
     }
+}
+
+static void OnBrowseDirectory(
+    __in THEME* pTheme,
+    __in HWND hWnd,
+    __in const THEME_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    WCHAR wzPath[MAX_PATH] = { };
+    BROWSEINFOW browseInfo = { };
+    PIDLIST_ABSOLUTE pidl = NULL;
+
+    browseInfo.hwndOwner = hWnd;
+    browseInfo.pszDisplayName = wzPath;
+    browseInfo.lpszTitle = pTheme->sczCaption;
+    browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
+    pidl = ::SHBrowseForFolderW(&browseInfo);
+    if (pidl && ::SHGetPathFromIDListW(pidl, wzPath))
+    {
+        // Since editbox changes aren't immediately saved off, we have to treat them differently.
+        THEME_CONTROL* pTargetControl = NULL;
+
+        for (DWORD i = 0; i < pTheme->cControls; ++i)
+        {
+            THEME_CONTROL* pControl = pTheme->rgControls + i;
+
+            if ((!pControl->wPageId || pControl->wPageId == pTheme->dwCurrentPageId) &&
+                CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pControl->sczName, -1, pAction->BrowseDirectory.sczVariableName, -1))
+            {
+                pTargetControl = pControl;
+                break;
+            }
+        }
+
+        if (pTargetControl && THEME_CONTROL_TYPE_EDITBOX == pTargetControl->type && !pTargetControl->fDisableVariableFunctionality)
+        {
+            hr = ThemeSetTextControl(pTheme, pTargetControl->wId, wzPath);
+            ExitOnFailure(hr, "Failed to set text on editbox: %ls", pTargetControl->sczName);
+        }
+        else if (pTheme->pfnSetStringVariable)
+        {
+            hr = pTheme->pfnSetStringVariable(pAction->BrowseDirectory.sczVariableName, wzPath, pTheme->pvVariableContext);
+            ExitOnFailure(hr, "Failed to set variable: %ls", pAction->BrowseDirectory.sczVariableName);
+        }
+        else if (pTargetControl)
+        {
+            hr = ThemeSetTextControl(pTheme, pTargetControl->wId, wzPath);
+            ExitOnFailure(hr, "Failed to set text on control: %ls", pTargetControl->sczName);
+        }
+
+        ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_SHOW, THEME_SHOW_PAGE_REASON_REFRESH);
+    }
+
+LExit:
+    if (pidl)
+    {
+        ::CoTaskMemFree(pidl);
+    }
+}
+
+static BOOL OnButtonClicked(
+    __in THEME* pTheme,
+    __in HWND hWnd,
+    __in const THEME_CONTROL* pControl
+    )
+{
+    HRESULT hr = S_OK;
+    BOOL fHandled = FALSE;
+
+    if (THEME_CONTROL_TYPE_BUTTON == pControl->type)
+    {
+        if (pControl->cActions)
+        {
+            fHandled = TRUE;
+            THEME_ACTION* pChosenAction = pControl->pDefaultAction;
+
+            if (pTheme->pfnEvaluateCondition)
+            {
+                // As documented in the xsd, if there are multiple conditions that are true at the same time then the behavior is undefined.
+                // This is the current implementation and can change at any time.
+                for (DWORD j = 0; j < pControl->cActions; ++j)
+                {
+                    THEME_ACTION* pAction = pControl->rgActions + j;
+
+                    if (pAction->sczCondition)
+                    {
+                        BOOL fCondition = FALSE;
+
+                        hr = pTheme->pfnEvaluateCondition(pAction->sczCondition, &fCondition, pTheme->pvVariableContext);
+                        ExitOnFailure(hr, "Failed to evaluate condition: %ls", pAction->sczCondition);
+
+                        if (fCondition)
+                        {
+                            pChosenAction = pAction;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (pChosenAction)
+            {
+                switch (pChosenAction->type)
+                {
+                case THEME_ACTION_TYPE_BROWSE_DIRECTORY:
+                    OnBrowseDirectory(pTheme, hWnd, pChosenAction);
+                    break;
+
+                case THEME_ACTION_TYPE_CLOSE_WINDOW:
+                    ::SendMessageW(hWnd, WM_CLOSE, 0, 0);
+                    break;
+
+                case THEME_ACTION_TYPE_CHANGE_PAGE:
+                    DWORD dwPageId = 0;
+                    LPCWSTR pPageNames = pChosenAction->ChangePage.sczPageName;
+                    ThemeGetPageIds(pTheme, &pPageNames, &dwPageId, 1);
+
+                    if (!dwPageId)
+                    {
+                        ExitOnFailure(E_INVALIDDATA, "Unknown page: %ls", pChosenAction->ChangePage.sczPageName);
+                    }
+
+                    ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_HIDE, pChosenAction->ChangePage.fCancel ? THEME_SHOW_PAGE_REASON_CANCEL : THEME_SHOW_PAGE_REASON_DEFAULT);
+                    ThemeShowPage(pTheme, dwPageId, SW_SHOW);
+                    break;
+                }
+            }
+        }
+    }
+    else if (!pControl->fDisableVariableFunctionality && (pTheme->pfnSetNumericVariable || pTheme->pfnSetStringVariable))
+    {
+        BOOL fRefresh = FALSE;
+
+        switch (pControl->type)
+        {
+        case THEME_CONTROL_TYPE_CHECKBOX:
+            if (pTheme->pfnSetNumericVariable && pControl->sczName && *pControl->sczName)
+            {
+                BOOL fChecked = ThemeIsControlChecked(pTheme, pControl->wId);
+                pTheme->pfnSetNumericVariable(pControl->sczName, fChecked ? 1 : 0, pTheme->pvVariableContext);
+                fRefresh = TRUE;
+            }
+            break;
+        case THEME_CONTROL_TYPE_RADIOBUTTON:
+            if (pTheme->pfnSetStringVariable && pControl->sczVariable && *pControl->sczVariable && ThemeIsControlChecked(pTheme, pControl->wId))
+            {
+                pTheme->pfnSetStringVariable(pControl->sczVariable, pControl->sczValue, pTheme->pvVariableContext);
+                fRefresh = TRUE;
+            }
+            break;
+        }
+
+        if (fRefresh)
+        {
+            ThemeShowPageEx(pTheme, pTheme->dwCurrentPageId, SW_SHOW, THEME_SHOW_PAGE_REASON_REFRESH);
+            fHandled = TRUE;
+        }
+    }
+
+LExit:
+    return fHandled;
 }
 
 static HRESULT OnRichEditEnLink(

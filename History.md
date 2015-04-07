@@ -1,3 +1,9 @@
+* SeanHall: Update builtin WixStdBA themes to use the new thmutil functionality.
+
+* SeanHall: WIXFEAT:4411 - Be consistent about when a WixStdBA button is called Close or Cancel.
+
+* SeanHall: WIXFEAT:4658 - Add builtin button functionality in thmutil.
+
 ## WixBuild: Version 4.0.2719.0
 
 * BobArnson: WIXBUG:4520 - Added blurb about using a PayloadGroup to get offline capability for .NET redist.

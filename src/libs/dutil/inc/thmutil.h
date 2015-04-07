@@ -45,6 +45,13 @@ typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_STRING)(
     __in_opt LPVOID pvContext
     );
 
+typedef enum THEME_ACTION_TYPE
+{
+    THEME_ACTION_TYPE_BROWSE_DIRECTORY,
+    THEME_ACTION_TYPE_CHANGE_PAGE,
+    THEME_ACTION_TYPE_CLOSE_WINDOW,
+} THEME_ACTION_TYPE;
+
 typedef enum THEME_CONTROL_DATA
 {
     THEME_CONTROL_DATA_HOVER = 1,
@@ -100,6 +107,24 @@ struct THEME_TAB
     UINT uStringId;
 };
 
+struct THEME_ACTION
+{
+    LPWSTR sczCondition;
+    THEME_ACTION_TYPE type;
+    union
+    {
+        struct
+        {
+            LPWSTR sczVariableName;
+        } BrowseDirectory;
+        struct
+        {
+            LPWSTR sczPageName;
+            BOOL fCancel;
+        } ChangePage;
+    };
+};
+
 struct THEME_CONDITIONAL_TEXT
 {
     LPWSTR sczCondition;
@@ -123,7 +148,7 @@ struct THEME_CONTROL
     WORD wId;
     WORD wPageId;
 
-    LPWSTR sczName; // optional name for control, only used to apply control id.
+    LPWSTR sczName; // optional name for control, used to apply control id and link the control to a variable.
     LPWSTR sczText;
     int nX;
     int nY;
@@ -153,6 +178,11 @@ struct THEME_CONTROL
     DWORD cBillboards;
     WORD wBillboardInterval;
     BOOL fBillboardLoops;
+
+    // Used by button controls
+    THEME_ACTION* rgActions;
+    DWORD cActions;
+    THEME_ACTION* pDefaultAction;
 
     // Used by hyperlink controls
     DWORD dwFontHoverId;
