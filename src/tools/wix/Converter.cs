@@ -262,7 +262,7 @@ namespace WixToolset
                 }
                 else if (win64.Value == "no")
                 {
-                    element.SetAttributeValue("Platform", "win32");
+                    element.SetAttributeValue("Architecture", "always32Bit");
 
                     element.SetAttributeValue("Win64", null);
                 }
@@ -285,7 +285,7 @@ namespace WixToolset
                 }
                 else if (win64.Value == "no")
                 {
-                    element.SetAttributeValue("Platform", "win32");
+                    element.SetAttributeValue("Architecture", "always32Bit");
 
                     element.SetAttributeValue("Win64", null);
                 }

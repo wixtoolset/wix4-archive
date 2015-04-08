@@ -2104,7 +2104,7 @@ namespace WixToolset
             string keyPath = null;
             bool shouldAddCreateFolder = false;
             bool win64 = false;
-            Wix.Component.PlatformType platformType = Wix.Component.PlatformType.@default;
+            Wix.Component.ArchitectureType architectureType = Wix.Component.ArchitectureType.@default;
             bool multiInstance = false;
             List<string> symbols = new List<string>();
             string feature = null;
@@ -2117,6 +2117,13 @@ namespace WixToolset
                     {
                         case "Id":
                             id = this.core.GetAttributeIdentifier(sourceLineNumbers, attrib);
+                            break;
+                        case "Architecture":
+                            string architecture = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (0 < architecture.Length)
+                            {
+                                architectureType = Wix.Component.ParseArchitectureType(architecture);
+                            }
                             break;
                         case "ComPlusFlags":
                             comPlusBits = this.core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 0, short.MaxValue);
@@ -2184,13 +2191,6 @@ namespace WixToolset
                                 bits |= MsiInterop.MsidbComponentAttributesPermanent;
                             }
                             break;
-                        case "Platform":
-                            string platform = this.core.GetAttributeValue(sourceLineNumbers, attrib);
-                            if (0 < platform.Length)
-                            {
-                                platformType = Wix.Component.ParsePlatformType(platform);
-                            }
-                            break;
                         case "Shared":
                             if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
@@ -2226,7 +2226,7 @@ namespace WixToolset
                 }
             }
 
-            if (platformType == Wix.Component.PlatformType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
+            if (architectureType == Wix.Component.ArchitectureType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
             {
                 bits |= MsiInterop.MsidbComponentAttributes64bit;
                 win64 = true;
@@ -3138,7 +3138,7 @@ namespace WixToolset
             YesNoType suppressModularization = YesNoType.NotSet;
             string target = null;
             int targetBits = 0;
-            Wix.CustomAction.PlatformType platformType = Wix.CustomAction.PlatformType.@default;
+            Wix.CustomAction.ArchitectureType architectureType = Wix.CustomAction.ArchitectureType.@default;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -3148,6 +3148,13 @@ namespace WixToolset
                     {
                         case "Id":
                             id = this.core.GetAttributeIdentifier(sourceLineNumbers, attrib);
+                            break;
+                        case "Architecture":
+                            string architecture = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            if (0 < architecture.Length)
+                            {
+                                architectureType = Wix.CustomAction.ParseArchitectureType(architecture);
+                            }
                             break;
                         case "BinaryKey":
                             if (null != source)
@@ -3281,13 +3288,6 @@ namespace WixToolset
                                 extendedBits |= MsiInterop.MsidbCustomActionTypePatchUninstall;
                             }
                             break;
-                        case "Platform":
-                            string platform = this.core.GetAttributeValue(sourceLineNumbers, attrib);
-                            if (0 < platform.Length)
-                            {
-                                platformType = Wix.CustomAction.ParsePlatformType(platform);
-                            }
-                            break;
                         case "Property":
                             if (null != source)
                             {
@@ -3400,7 +3400,7 @@ namespace WixToolset
             }
 
             // If we're a script CA and we're in a 64-bit package and our Platform was "default", then set the 64-bit flag
-            if ((MsiInterop.MsidbCustomActionTypeVBScript == targetBits || MsiInterop.MsidbCustomActionTypeJScript == targetBits) && platformType == Wix.CustomAction.PlatformType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
+            if ((MsiInterop.MsidbCustomActionTypeVBScript == targetBits || MsiInterop.MsidbCustomActionTypeJScript == targetBits) && architectureType == Wix.CustomAction.ArchitectureType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
             {
                 bits |= MsiInterop.MsidbCustomActionType64BitScript;
             }

@@ -7389,6 +7389,24 @@
                     </xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="Architecture">
+        <xs:annotation>
+          <xs:documentation>
+                        Set this attribute to 'always32Bit' to mark this as a 32-bit component. This attribute facilitates
+                        the installation of packages that include both 32-bit and 64-bit components. 64-bit
+                        components must not share the same GUID with a 32-bit component.
+          If attribute is default (or specified as 'default'), the architecture set by the -arch switch to candle.exe
+          or the InstallerPlatform property in a .wixproj MSBuild project will be used to determine if the component
+          is 32-bit or 64-bit. The default value is 'default'.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="always32Bit" />
+            <xs:enumeration value="default" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
       <xs:attribute name="ComPlusFlags" type="xs:integer">
         <xs:annotation>
           <xs:documentation>
@@ -7570,24 +7588,6 @@
                         Windows Installer 4.5 and later.
                     </xs:documentation>
         </xs:annotation>
-      </xs:attribute>
-      <xs:attribute name="Platform">
-        <xs:annotation>
-          <xs:documentation>
-                        Set this attribute to 'win32' to mark this as a 32-bit component. This attribute facilitates
-                        the installation of packages that include both 32-bit and 64-bit components. 64-bit
-                        components must not share the same GUID with a 32-bit component.
-          If attribute is default (or specified as 'default'), the platform set by the -arch switch to candle.exe
-          or the InstallerPlatform property in a .wixproj MSBuild project will be used to determine if the component
-          is 32-bit or 64-bit. The default value is 'default'.
-          </xs:documentation>
-        </xs:annotation>
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="win32" />
-            <xs:enumeration value="default" />
-          </xs:restriction>
-        </xs:simpleType>
       </xs:attribute>
       <xs:anyAttribute namespace="##other" processContents="lax">
         <xs:annotation>
@@ -8760,6 +8760,22 @@
                         </xs:documentation>
             </xs:annotation>
           </xs:attribute>
+          <xs:attribute name="Architecture">
+            <xs:annotation>
+              <xs:documentation>
+                            Set this attribute to 'always32Bit' to mark this as a 32-bit custom action. Valid only when used with
+                                the Script, VBScriptCall, and JScriptCall attributes. The default value is 'default', which
+                                will be the Architecture set by the -arch switch in candle.exe or the InstallerPlatform property
+                                in a .wixproj MSBuild project. The default value is 'default'.
+              </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="always32Bit" />
+                <xs:enumeration value="default" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
           <!-- CustomAction Source specification, sets source Attribute bits -->
           <xs:attribute name="BinaryKey" type="xs:string">
             <xs:annotation>
@@ -9011,22 +9027,6 @@
                                 behavior.
                             </xs:documentation>
             </xs:annotation>
-          </xs:attribute>
-          <xs:attribute name="Platform">
-            <xs:annotation>
-              <xs:documentation>
-                            Set this attribute to 'win32' to mark this as a 32-bit custom action. Valid only when used with
-                                the Script, VBScriptCall, and JScriptCall attributes. The default value is 'default', which
-                                will be the platform set by the -arch switch in candle.exe or the InstallerPlatform property
-                                in a .wixproj MSBuild project. The default value is 'default'.
-              </xs:documentation>
-            </xs:annotation>
-            <xs:simpleType>
-              <xs:restriction base="xs:string">
-                <xs:enumeration value="win32" />
-                <xs:enumeration value="default" />
-              </xs:restriction>
-            </xs:simpleType>
           </xs:attribute>
           <xs:attribute name="TerminalServerAware" type="YesNoTypeUnion">
             <xs:annotation>

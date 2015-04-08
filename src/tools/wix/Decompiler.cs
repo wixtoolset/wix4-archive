@@ -4801,7 +4801,7 @@ namespace WixToolset
                 // If it's a 64-bit package with a 32-bit custom action, then we need win32 specifically, otherwise use the default
                 if ((this.platform == WixToolset.Data.Serialize.Package.PlatformType.x64 || this.platform == WixToolset.Data.Serialize.Package.PlatformType.ia64) && MsiInterop.MsidbCustomActionType64BitScript != (type & MsiInterop.MsidbCustomActionType64BitScript))
                 {
-                    customAction.Platform = Wix.CustomAction.PlatformType.win32;
+                    customAction.Architecture = Wix.CustomAction.ArchitectureType.always32Bit;
                 }
 
                 switch (type & MsiInterop.MsidbCustomActionTypeExecuteBits)
@@ -5041,7 +5041,7 @@ namespace WixToolset
 
                 if ((this.platform == WixToolset.Data.Serialize.Package.PlatformType.x64 || this.platform == WixToolset.Data.Serialize.Package.PlatformType.ia64) && MsiInterop.MsidbComponentAttributes64bit != (attributes & MsiInterop.MsidbComponentAttributes64bit))
                 {
-                    component.Platform = Wix.Component.PlatformType.win32;
+                    component.Architecture = Wix.Component.ArchitectureType.always32Bit;
                 }
 
                 if (MsiInterop.MsidbComponentAttributesDisableRegistryReflection == (attributes & MsiInterop.MsidbComponentAttributesDisableRegistryReflection))
