@@ -668,7 +668,7 @@ namespace WixToolset
             SuppressSignatureValidationDeprecated,
 
             /// <summary>
-            /// Win64 attribute on a Component or CustomAction element could not be converted to the new Platform attribute.
+            /// Win64 attribute on a Component or CustomAction element could not be converted to the new Architecture attribute.
             /// </summary>
             Win64AttributeCouldNotBeConverted,
         }

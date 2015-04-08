@@ -3399,7 +3399,7 @@ namespace WixToolset
                 id = Identifier.Invalid;
             }
 
-            // If we're a script CA and we're in a 64-bit package and our Platform was "default", then set the 64-bit flag
+            // If we're a script CA and we're in a 64-bit package and our Architecture was "default", then set the 64-bit flag
             if ((MsiInterop.MsidbCustomActionTypeVBScript == targetBits || MsiInterop.MsidbCustomActionTypeJScript == targetBits) && architectureType == Wix.CustomAction.ArchitectureType.@default && (Platform.IA64 == this.CurrentPlatform || Platform.X64 == this.CurrentPlatform))
             {
                 bits |= MsiInterop.MsidbCustomActionType64BitScript;
