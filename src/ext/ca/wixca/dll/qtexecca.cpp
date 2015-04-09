@@ -92,7 +92,7 @@ DWORD GetTimeout(LPCWSTR wzPropertyName)
     if (WcaIsUnicodePropertySet(wzPropertyName))
     {
         hr = WcaGetProperty(wzPropertyName, &pwzData);
-        ExitOnFailure1(hr, "failed to get %ls", wzPropertyName);
+        ExitOnFailure(hr, "failed to get %ls", wzPropertyName);
 
         if ((dwTimeout = (DWORD)_wtoi(pwzData)) == 0)
         {
