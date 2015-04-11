@@ -869,6 +869,13 @@ HRESULT ValueHistoryRowEnsureReferenceState(
     }
     ExitOnFailure(hr, "Failed to get Db References column value");
 
+    // Perf shortcut - if already in the right state based on string comparison (most common case),
+    // don't bother with all of these allocs and frees
+    if (ValueReferencedByStringContainsId(sczDbReferences, wzId) == fDesiredState)
+    {
+        return S_OK;
+    }
+
     hr = StrSplitAllocArray(&rgsczDbReferenceArray, &cDbReferenceArray, sczDbReferences, L";");
     ExitOnFailure(hr, "Failed to split db references column value into array based on delimited semicolons: ", sczDbReferences);
 
