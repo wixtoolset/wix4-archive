@@ -6,13 +6,20 @@
         </Detect>
 
         <Data>
-            <!-- We could pick up "HKCU\Software\Arcen Games, LLC\AI War" - except that it seems to be all
-                 resolution and other per-machine settings -->
-            <Directory Namespace="SaveGames" Location="InstallDir:\save games\"/>
+            <Directory Namespace="GlobalSaveGames" Location="InstallDir:\save games\"/>
 
             <!-- TODO: pickup anything from InstallDir:\settings.txt? CfgFile may not support it today,
                  and it's almost entirely machine-specific settings -->
+
+            <Directory Namespace="ProfileData" Location="MyDocumentsFolder:\Paradox Interactive\Hearts of Iron III\"/>
+
+            <!-- TODO: pickup some other things within ProfileData? -->
         </Data>
+
+        <Filter>
+            <Ignore Prefix="ProfileData:\"/>
+            <Normal Prefix="ProfileData:\save games\"/>
+        </Filter>
 
         <DisplayName LCID="1033">Hearts of Iron III</DisplayName>
     </Product>
