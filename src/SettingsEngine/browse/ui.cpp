@@ -606,10 +606,18 @@ HRESULT UISetListViewToValueHistoryEnum(
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, wzText);
         ExitOnFailure(hr, "Failed to insert value name into listview control");
 
+        hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_DATABASE_REFERENCES, &wzText);
+        ExitOnFailure(hr, "Failed to read database references from value history enumeration");
+
+        // Raw string is not very useful, just list whether it is referenced by someone or not
+        fValue = (wzText && *wzText != L'\0');
+        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, fValue ? L"Yes" : L"No");
+        ExitOnFailure(hr, "Failed to insert value name into listview control");
+
         hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_BY, &wzText);
         ExitOnFailure(hr, "Failed to read by string from value history enumeration");
 
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
+        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 3, wzText);
         ExitOnFailure(hr, "Failed to set value as listview subitem");
 
         hr = CfgEnumReadSystemTime(cehValueHistory, i, ENUM_DATA_WHEN, &st);
@@ -623,7 +631,7 @@ HRESULT UISetListViewToValueHistoryEnum(
         hr = TimeSystemToDateTimeString(&sczText, &stLocal, LOCALE_USER_DEFAULT);
         ExitOnFailure(hr, "Failed to convert value history time to text");
 
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 3, sczText);
+        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 4, sczText);
         ExitOnFailure(hr, "Failed to set value as listview subitem");
     }
 
