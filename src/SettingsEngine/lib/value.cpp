@@ -432,6 +432,7 @@ HRESULT ValueRemoveOutdatedReferencesFromDatabase(
 {
     HRESULT hr = S_OK;
     BOOL fComparisonResult = FALSE;
+    BOOL fMatchingValueFound = FALSE;
     LPWSTR sczReferencedBy = NULL;
     CONFIG_VALUE value = { };
     SCE_ROW_HANDLE valueHistoryRow = NULL;
@@ -463,6 +464,19 @@ HRESULT ValueRemoveOutdatedReferencesFromDatabase(
 
         hr = ValueCompare(&value, pValueToKeepReference, TRUE, &fComparisonResult);
         ExitOnFailure(hr, "Failed to compare values for value named: %ls", wzValueName);
+        if (fComparisonResult)
+        {
+            if (!fMatchingValueFound)
+            {
+                fMatchingValueFound = TRUE;
+            }
+            else
+            {
+                // That's odd - two values are completely identical. No need to fail, but do report the situation and only mark one of them as referenced
+                TraceError(HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED), "A matching value was already found while removing outdated references.");
+                fComparisonResult = FALSE;
+            }
+        }
 
         hr = ValueHistoryRowEnsureReferenceState(pcdb, pcdbReferencedBy, valueHistoryRow, fComparisonResult);
         ExitOnFailure(hr, "Failed to update reference state of value history row: %ls", wzValueName);
@@ -471,6 +485,12 @@ HRESULT ValueRemoveOutdatedReferencesFromDatabase(
         hr = SceGetNextResultRow(results, &valueHistoryRow);
     }
     hr = S_OK;
+
+    if (!fMatchingValueFound)
+    {
+        hr = E_NOTFOUND;
+        ExitOnFailure(hr, "A matching value was not found while removing outdated references.");
+    }
 
 LExit:
     ReleaseStr(sczReferencedBy);
@@ -1306,6 +1326,7 @@ HRESULT ValueWriteHelp(
     )
 {
     HRESULT hr = S_OK;
+    BOOL fCleanReferences = FALSE;
     DWORD dwTableIndex = fHistory ? VALUE_INDEX_HISTORY_TABLE : VALUE_INDEX_TABLE;
     SCE_ROW_HANDLE sceRow = NULL;
 
@@ -1355,7 +1376,7 @@ HRESULT ValueWriteHelp(
                 hr = E_INVALIDARG;
                 ExitOnFailure(hr, "Invalid blob type encountered while writing value: %d", pcvValue->blob.cbType);
                 break;
-            }   
+            }
         }
 
         hr = SceSetColumnDword(sceRowInput, VALUE_COMMON_BLOBSIZE, pcvValue->blob.cbValue);
@@ -1449,9 +1470,7 @@ HRESULT ValueWriteHelp(
                 ExitOnFailure(hr, "Failed to set remote guid key in local database");
             }
 
-            // Now clean up old references that are out of date in the database we wrote to
-            hr = ValueRemoveOutdatedReferencesFromDatabase(pcdb, pcvValue, dwAppID, wzName, pcdbReferencedBy);
-            ExitOnFailure(hr, "Failed to remove outdated references from database");
+            fCleanReferences = TRUE;
         }
         else
         {
@@ -1462,6 +1481,13 @@ HRESULT ValueWriteHelp(
 
     hr = SceFinishUpdate(sceRowInput);
     ExitOnFailure(hr, "Failed to finish update");
+
+    if (fCleanReferences)
+    {
+        // Now clean up old references that are out of date in the database we wrote to
+        hr = ValueRemoveOutdatedReferencesFromDatabase(pcdb, pcvValue, dwAppID, wzName, pcdbReferencedBy);
+        ExitOnFailure(hr, "Failed to remove outdated references from database");
+    }
 
     if (fHistory)
     {
