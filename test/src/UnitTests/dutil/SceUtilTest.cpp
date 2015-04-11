@@ -9,6 +9,9 @@
 
 #include "precomp.h"
 
+#include <sqlce_oledb.h>
+#include <sceutil.h>
+
 using namespace System;
 using namespace Xunit;
 using namespace WixTest;
