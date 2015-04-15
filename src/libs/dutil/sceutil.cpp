@@ -1699,6 +1699,7 @@ static HRESULT EnsureSchema(
     DBCOLUMNDESC *rgColumnDescriptions = NULL;
     DBINDEXCOLUMNDESC *rgIndexColumnDescriptions = NULL;
     DWORD cIndexColumnDescriptions = 0;
+    DWORD dwTableColumnIndex = 0;
     SCE_DATABASE_INTERNAL *pDatabaseInternal = reinterpret_cast<SCE_DATABASE_INTERNAL *>(pDatabase->sdbHandle);
     ITableDefinition *pTableDefinition = NULL;
     IIndexDefinition *pIndexDefinition = NULL;
@@ -1821,10 +1822,12 @@ static HRESULT EnsureSchema(
 
                 for (DWORD dwColumnIndex = 0; dwColumnIndex < cIndexColumnDescriptions; ++dwColumnIndex)
                 {
+                    dwTableColumnIndex = pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].rgColumns[dwColumnIndex];
+
                     rgIndexColumnDescriptions[dwColumnIndex].pColumnID = reinterpret_cast<DBID *>(MemAlloc(sizeof(DBID), TRUE));
                     rgIndexColumnDescriptions[dwColumnIndex].pColumnID->eKind = DBKIND_NAME;
-                    rgIndexColumnDescriptions[dwColumnIndex].pColumnID->uName.pwszName = const_cast<LPOLESTR>(pdsSchema->rgTables[dwTable].rgColumns[pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].rgColumns[dwColumnIndex]].wzName);
-                    rgIndexColumnDescriptions[dwColumnIndex].eIndexColOrder = DBINDEX_COL_ORDER_ASC;
+                    rgIndexColumnDescriptions[dwColumnIndex].pColumnID->uName.pwszName = const_cast<LPOLESTR>(pdsSchema->rgTables[dwTable].rgColumns[dwTableColumnIndex].wzName);
+                    rgIndexColumnDescriptions[dwColumnIndex].eIndexColOrder = pdsSchema->rgTables[dwTable].rgColumns[dwTableColumnIndex].fDescending ? DBINDEX_COL_ORDER_DESC  : DBINDEX_COL_ORDER_ASC;
                 }
 
                 hr = pIndexDefinition->CreateIndex(&tableID, &indexID, static_cast<DBORDINAL>(pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].cColumns), rgIndexColumnDescriptions, 1, rgdbpIndexPropSet, NULL);
