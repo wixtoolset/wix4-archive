@@ -94,6 +94,8 @@ HRESULT ValueCopy(
 {
     HRESULT hr = S_OK;
 
+    ReleaseNullCfgValue(*pcvOutput);
+
     switch (pcvInput->cvType)
     {
         case VALUE_DELETED:
@@ -103,7 +105,7 @@ HRESULT ValueCopy(
             if (CFG_BLOB_DB_STREAM != pcvInput->blob.cbType)
             {
                 hr = E_INVALIDARG;
-                ExitOnFailure(hr, "EnumCopy currently only supports db stream blob types");
+                ExitOnFailure(hr, "ValueCopy currently only supports db stream blob types");
             }
             pcvOutput->blob.cbType = CFG_BLOB_DB_STREAM;
             pcvOutput->blob.cbValue = pcvInput->blob.cbValue;
@@ -150,6 +152,8 @@ HRESULT ValueSetDelete(
 {
     SYSTEMTIME st;
 
+    ReleaseNullCfgValue(*pcvValue);
+
     pcvValue->cvType = VALUE_DELETED;
     if (pst)
     {
@@ -177,6 +181,8 @@ HRESULT ValueSetBlob(
 {
     HRESULT hr = S_OK;
     SYSTEMTIME st;
+
+    ReleaseNullCfgValue(*pcvValue);
 
     hr = CrypHashBuffer(pbValue, cbValue, PROV_RSA_FULL, CALG_SHA1, pcvValue->blob.rgbHash, sizeof(pcvValue->blob.rgbHash));
     ExitOnFailure(hr, "Failed to calculate hash while setting file of size %u", cbValue);
@@ -226,6 +232,8 @@ HRESULT ValueSetBlobDbStream(
     HRESULT hr = S_OK;
     SYSTEMTIME st;
 
+    ReleaseNullCfgValue(*pcvValue);
+
     pcvValue->blob.dbstream.dwContentID = dwContentID;
     pcvValue->blob.dbstream.pcdb = pcdb;
     pcvValue->cvType = VALUE_BLOB;
@@ -255,6 +263,8 @@ HRESULT ValueSetString(
 {
     HRESULT hr = S_OK;
     SYSTEMTIME st;
+
+    ReleaseNullCfgValue(*pcvValue);
 
     if (fCopy)
     {
@@ -296,6 +306,8 @@ HRESULT ValueSetDword(
 {
     SYSTEMTIME st;
 
+    ReleaseNullCfgValue(*pcvValue);
+
     pcvValue->cvType = VALUE_DWORD;
     pcvValue->dword.dwValue = dwValue;
     if (pst)
@@ -322,6 +334,8 @@ HRESULT ValueSetQword(
 {
     SYSTEMTIME st;
 
+    ReleaseNullCfgValue(*pcvValue);
+
     pcvValue->cvType = VALUE_QWORD;
     pcvValue->qword.qwValue = qwValue;
     if (pst)
@@ -347,6 +361,8 @@ HRESULT ValueSetBool(
     )
 {
     SYSTEMTIME st;
+
+    ReleaseNullCfgValue(*pcvValue);
 
     pcvValue->cvType = VALUE_BOOL;
     pcvValue->boolean.fValue = fValue;
@@ -481,6 +497,7 @@ HRESULT ValueRemoveOutdatedReferencesFromDatabase(
         hr = ValueHistoryRowEnsureReferenceState(pcdb, pcdbReferencedBy, valueHistoryRow, fComparisonResult);
         ExitOnFailure(hr, "Failed to update reference state of value history row: %ls", wzValueName);
 
+        ReleaseNullCfgValue(value);
         ReleaseNullSceRow(valueHistoryRow);
         hr = SceGetNextResultRow(results, &valueHistoryRow);
     }
