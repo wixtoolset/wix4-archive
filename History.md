@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4721 - Tweak RepairCommand doc.
+
 * BMurri: WIXBUG:3750 - Add LaunchWorkingFolder to wixstdba to facilitate processes that require a different working folder.
 
 * HeathS: Add VSIX property for VS2015 and fix searches for previous versions.
