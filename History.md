@@ -1,3 +1,5 @@
+* BobArnson: WIXBUG:4725 - Scrub the WixStdBA license doc and add a blurb about a missing WixStdbaLicenseUrl variable.
+
 * BobArnson: WIXBUG:4721 - Tweak RepairCommand doc.
 
 * BMurri: WIXBUG:3750 - Add LaunchWorkingFolder to wixstdba to facilitate processes that require a different working folder.
