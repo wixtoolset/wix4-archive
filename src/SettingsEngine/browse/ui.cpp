@@ -511,6 +511,7 @@ HRESULT UISetListViewToValueHistoryEnum(
     DWORD dwValue = 0;
     DWORD64 qwValue = 0;
     BOOL fValue = FALSE;
+    DWORD dwEnumReadIndex;
     DWORD dwInsertIndex;
     LPCWSTR wzText = NULL;
     LPWSTR sczText = NULL;
@@ -543,9 +544,10 @@ HRESULT UISetListViewToValueHistoryEnum(
     UIListViewTrimSize(hwnd, dwCount);
     for (DWORD i = 0; i < dwCount; ++i)
     {
+        dwEnumReadIndex = dwCount - i - 1;
         dwInsertIndex = i;
 
-        hr = CfgEnumReadDataType(cehValueHistory, i, ENUM_DATA_VALUETYPE, &cvType);
+        hr = CfgEnumReadDataType(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUETYPE, &cvType);
         ExitOnFailure(hr, "Failed to read type of value from value history enumeration");
 
         switch (cvType)
@@ -554,7 +556,7 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = L"";
             break;
         case VALUE_BLOB:
-            hr = CfgEnumReadDword(cehValueHistory, i, ENUM_DATA_BLOBSIZE, &dwValue);
+            hr = CfgEnumReadDword(cehValueHistory, dwEnumReadIndex, ENUM_DATA_BLOBSIZE, &dwValue);
             ExitOnFailure(hr, "Failed to read blob size from enumeration");
 
             hr = StrAllocFormatted(&sczText, L"(Size %u)", dwValue);
@@ -563,11 +565,11 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = sczText;
             break;
         case VALUE_STRING:
-            hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_VALUESTRING, &wzText);
+            hr = CfgEnumReadString(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUESTRING, &wzText);
             ExitOnFailure(hr, "Failed to read string value from value history enumeration");
             break;
         case VALUE_DWORD:
-            hr = CfgEnumReadDword(cehValueHistory, i, ENUM_DATA_VALUEDWORD, &dwValue);
+            hr = CfgEnumReadDword(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUEDWORD, &dwValue);
             ExitOnFailure(hr, "Failed to read dword value from value history enumeration");
 
             hr = StrAllocFormatted(&sczText, L"%u", dwValue);
@@ -576,7 +578,7 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = sczText;
             break;
         case VALUE_QWORD:
-            hr = CfgEnumReadQword(cehValueHistory, i, ENUM_DATA_VALUEQWORD, &qwValue);
+            hr = CfgEnumReadQword(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUEQWORD, &qwValue);
             ExitOnFailure(hr, "Failed to read qword value from value history enumeration");
 
             hr = StrAllocFormatted(&sczText, L"%I64u", qwValue);
@@ -585,7 +587,7 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = sczText;
             break;
         case VALUE_BOOL:
-            hr = CfgEnumReadBool(cehValueHistory, i, ENUM_DATA_VALUEBOOL, &fValue);
+            hr = CfgEnumReadBool(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUEBOOL, &fValue);
             ExitOnFailure(hr, "Failed to read bool value from value history enumeration");
 
             wzText = fValue ? L"True" : L"False";
@@ -606,7 +608,7 @@ HRESULT UISetListViewToValueHistoryEnum(
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, wzText);
         ExitOnFailure(hr, "Failed to insert value name into listview control");
 
-        hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_DATABASE_REFERENCES, &wzText);
+        hr = CfgEnumReadString(cehValueHistory, dwEnumReadIndex, ENUM_DATA_DATABASE_REFERENCES, &wzText);
         ExitOnFailure(hr, "Failed to read database references from value history enumeration");
 
         // Raw string is not very useful, just list whether it is referenced by someone or not
@@ -614,13 +616,13 @@ HRESULT UISetListViewToValueHistoryEnum(
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, fValue ? L"Yes" : L"No");
         ExitOnFailure(hr, "Failed to insert value name into listview control");
 
-        hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_BY, &wzText);
+        hr = CfgEnumReadString(cehValueHistory, dwEnumReadIndex, ENUM_DATA_BY, &wzText);
         ExitOnFailure(hr, "Failed to read by string from value history enumeration");
 
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 3, wzText);
         ExitOnFailure(hr, "Failed to set value as listview subitem");
 
-        hr = CfgEnumReadSystemTime(cehValueHistory, i, ENUM_DATA_WHEN, &st);
+        hr = CfgEnumReadSystemTime(cehValueHistory, dwEnumReadIndex, ENUM_DATA_WHEN, &st);
         ExitOnFailure(hr, "Failed to read when string from value history enumeration");
 
         if (!SystemTimeToTzSpecificLocalTime(&tzi, &st, &stLocal))
