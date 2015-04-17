@@ -189,6 +189,41 @@ int UtilCompareSystemTimes(
     }
 }
 
+HRESULT UtilSubtractSystemTimes(
+    __in const SYSTEMTIME *pst1,
+    __in const SYSTEMTIME *pst2,
+    __out LONGLONG *pSeconds
+    )
+{
+    HRESULT hr = S_OK;
+    FILETIME ft1 = { };
+    FILETIME ft2 = { };
+    ULARGE_INTEGER uli1 = { };
+    ULARGE_INTEGER uli2 = { };
+
+    if (pst1->wYear > 0 && !::SystemTimeToFileTime(pst1, &ft1))
+    {
+        ExitOnLastError(hr, "Failed to convert system time 1 to file time");
+    }
+    if (pst2->wYear > 0 && !::SystemTimeToFileTime(pst2, &ft2))
+    {
+        ExitOnLastError(hr, "Failed to convert system time 2 to file time");
+    }
+
+    uli1.LowPart = ft1.dwLowDateTime;
+    uli1.HighPart = ft1.dwHighDateTime;
+    uli2.LowPart = ft2.dwLowDateTime;
+    uli2.HighPart = ft2.dwHighDateTime;
+
+    uli1.QuadPart -= uli2.QuadPart;
+
+    // FILETIME is in 100-nanosecond intervals, and there are 10 Million of those per second
+    *pSeconds = uli1.QuadPart / 10000000;
+
+LExit:
+    return hr;
+}
+
 HRESULT UtilAddToSystemTime(
     __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst

@@ -44,6 +44,12 @@ int UtilCompareSystemTimes(
     __in const SYSTEMTIME *pst1,
     __in const SYSTEMTIME *pst2
     );
+// Outputs *pst1 - *pst2 in seconds
+HRESULT UtilSubtractSystemTimes(
+    __in const SYSTEMTIME *pst1,
+    __in const SYSTEMTIME *pst2,
+    __out LONGLONG *pSeconds
+    );
 HRESULT UtilAddToSystemTime(
     __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
