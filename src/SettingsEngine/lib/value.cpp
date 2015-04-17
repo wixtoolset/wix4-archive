@@ -40,14 +40,15 @@ static BOOL ReferencedByStringContainsId(
     __in_z_opt LPCWSTR wzReferencedBy,
     __in_z LPCWSTR wzId
     );
-// Goes through entire history for the value, and removes any references to wzId, excluding the exact history entry
-// that matches the value valueToKeepReference
+// Goes through entire history for the value. If pcdbReferencedBy is specified, removes any references to wzId,
+// excluding the exact history entry that matches the value valueToKeepReference.
+// Whether pcdbReferencedBy is specified or not, clean up old history entries
 static HRESULT RemoveOutdatedReferencesFromDatabase(
     __in CFGDB_STRUCT *pcdb,
     __in const CONFIG_VALUE *pValueToKeepReference,
     __in DWORD dwAppID,
     __in_z LPCWSTR wzValueName,
-    __in CFGDB_STRUCT *pcdbReferencedBy
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     );
 // Reads a value out of sceValueHistoryRow parameter, and passes it on to RemoveOutdatedReferencesFromDatabase()
 // sceValueHistoryRow
@@ -737,7 +738,7 @@ LExit:
 }
 
 HRESULT ValueMatch(
-    __in_z LPCWSTR sczName,
+    __in_z LPCWSTR wzName,
     __in CFGDB_STRUCT *pcdb1,
     __in CFGDB_STRUCT *pcdb2,
     __in SCE_ROW_HANDLE sceRow1,
@@ -758,12 +759,12 @@ HRESULT ValueMatch(
 
     *pfResult = FALSE;
 
-    hr = ValueFindRow(pcdb2, pcdb2->dwAppID, sczName, &sceRow2);
+    hr = ValueFindRow(pcdb2, pcdb2->dwAppID, wzName, &sceRow2);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
     }
-    ExitOnFailure(hr, "Failed to find value while checking for identical values for AppID: %u, name: %ls", pcdb2->dwAppID, sczName);
+    ExitOnFailure(hr, "Failed to find value while checking for identical values for AppID: %u, name: %ls", pcdb2->dwAppID, wzName);
 
     hr = ValueRead(pcdb1, sceRow1, &cvValue1);
     ExitOnFailure(hr, "Failed to read value from db 1");
@@ -796,7 +797,7 @@ HRESULT ValueMatch(
         // if the ST1 timestamp is newer, write database 1's newest history entry to database 2
         if (0 < iTimeCompareResult)
         {
-            hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, pcdb1);
+            hr = ValueWrite(pcdb2, pcdb2->dwAppID, wzName, &cvValue1, FALSE, pcdb1);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (1 newer than 2)");
 
             hr = HistoryRowEnsureReferenceState(pcdb1, pcdb2, sceHistoryRow1, TRUE);
@@ -804,7 +805,7 @@ HRESULT ValueMatch(
         }
         else if (0 > iTimeCompareResult)
         {
-            hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, pcdb2);
+            hr = ValueWrite(pcdb1, pcdb1->dwAppID, wzName, &cvValue2, FALSE, pcdb2);
             ExitOnFailure(hr, "Failed to set value in value history table while matching value (2 newer than 1)");
 
             hr = HistoryRowEnsureReferenceState(pcdb2, pcdb1, sceHistoryRow2, TRUE);
@@ -816,10 +817,10 @@ HRESULT ValueMatch(
         {
             fAlreadyWrittenReferenceState = FALSE;
 
-            hr = FindHistoryRow(pcdb1, pcdb1->dwAppID, sczName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
+            hr = FindHistoryRow(pcdb1, pcdb1->dwAppID, wzName, &cvValue2.stWhen, cvValue2.sczBy, &sceRetrievedHistoryRow);
             if (E_NOTFOUND == hr)
             {
-                hr = ValueWrite(pcdb1, pcdb1->dwAppID, sczName, &cvValue2, FALSE, pcdb2);
+                hr = ValueWrite(pcdb1, pcdb1->dwAppID, wzName, &cvValue2, FALSE, pcdb2);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (2's source missing from 1)");
 
                 hr = HistoryRowEnsureReferenceState(pcdb1, pcdb2, sceHistoryRow1, TRUE);
@@ -828,14 +829,14 @@ HRESULT ValueMatch(
             }
             else
             {
-                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
+                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", wzName);
             }
             ReleaseNullSceRow(sceRetrievedHistoryRow);
 
-            hr = FindHistoryRow(pcdb2, pcdb2->dwAppID, sczName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
+            hr = FindHistoryRow(pcdb2, pcdb2->dwAppID, wzName, &cvValue1.stWhen, cvValue1.sczBy, &sceRetrievedHistoryRow);
             if (E_NOTFOUND == hr)
             {
-                hr = ValueWrite(pcdb2, pcdb2->dwAppID, sczName, &cvValue1, FALSE, pcdb1);
+                hr = ValueWrite(pcdb2, pcdb2->dwAppID, wzName, &cvValue1, FALSE, pcdb1);
                 ExitOnFailure(hr, "Failed to set value in value history table while matching value (1's source missing from 2)");
 
                 // Only need one reference between databases
@@ -847,7 +848,7 @@ HRESULT ValueMatch(
             }
             else
             {
-                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", sczName);
+                ExitOnFailure(hr, "Failed to query for specific value find history record when matching value %ls for db1", wzName);
             }
             ReleaseNullSceRow(sceRetrievedHistoryRow);
         }
@@ -863,6 +864,13 @@ HRESULT ValueMatch(
 
             hr = HistoryRowEnsureReferenceState(pcdb2, pcdb1, sceHistoryRow2, TRUE);
             ExitOnFailure(hr, "Failed to ensure reference state of value in 2 (identical source)");
+
+            // Do look and see if any old history entries can be removed in both databases.
+            hr = RemoveOutdatedReferencesFromDatabase(pcdb1, &cvValue1, pcdb1->dwAppID, wzName, NULL);
+            ExitOnFailure(hr, "Failed to remove outdated history entries from database 1");
+
+            hr = RemoveOutdatedReferencesFromDatabase(pcdb2, &cvValue2, pcdb2->dwAppID, wzName, NULL);
+            ExitOnFailure(hr, "Failed to remove outdated history entries from database 2");
         }
     }
 
