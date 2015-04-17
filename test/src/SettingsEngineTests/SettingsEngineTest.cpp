@@ -17,11 +17,18 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xunit;
 
+static SYSTEMTIME stCurrent = { };
+
 const WCHAR ARP_REG_KEY[] = L"Software\\CfgTest\\Arp";
 const WCHAR APPLICATIONS_REG_KEY[] = L"Software\\CfgTest\\Applications";
 
 namespace CfgTests
 {
+    void SystemTimeGetter(SYSTEMTIME *pst)
+    {
+        *pst = stCurrent;
+    }
+
     void BackgroundStatusCallback(HRESULT hr, BACKGROUND_STATUS_TYPE type, LPCWSTR /*wzString1*/, LPCWSTR /*wzString2*/, LPCWSTR /*wzString3*/, LPVOID pvContext)
     {
         TestContext *pContext = (TestContext *)pvContext;
@@ -89,6 +96,10 @@ namespace CfgTests
     {
         HRESULT hr = S_OK;
         HKEY hk = NULL;
+
+        ::GetSystemTime(&stCurrent);
+
+        TestHookOverrideGetSystemTime(SystemTimeGetter);
 
         hr = RegInitialize();
         ExitOnFailure(hr, "Failed to initialize regutil");
@@ -187,6 +198,30 @@ namespace CfgTests
         ReleaseStr(sczPathLegacy);
         ReleaseStr(sczPathAdmin);
     }
+    
+    void CfgTest::AddToSystemTime(DWORD dwSeconds)
+    {
+        HRESULT hr = S_OK;
+        FILETIME ft = { };
+
+        if (!::SystemTimeToFileTime(&stCurrent, &ft))
+        {
+            ExitWithLastError(hr, "Failed to convert system time to file time");
+        }
+
+        DWORD64 ul;
+        C_ASSERT(sizeof(ul) == sizeof(ft));
+        memcpy(&ul, &ft, sizeof(ul));
+        ul += dwSeconds * 10000000;
+        memcpy(&ft, &ul, sizeof(ft));
+
+        if (!FileTimeToSystemTime(&ft, &stCurrent))
+        {
+            ExitWithLastError(hr, "Failed to convert file time to system time");
+        }
+    LExit:
+        return;
+    }
 
     void CfgTest::SetARP(LPCWSTR wzKeyName, LPCWSTR wzDisplayName, LPCWSTR wzInstallLocation, LPCWSTR wzUninstallString)
     {
@@ -266,15 +301,17 @@ namespace CfgTests
 
     void CfgTest::WaitForSqlCeTimestampChange()
     {
-        // Wait for time to pass long enough that SQL CE will get different timestamps
-        ::Sleep(1000);
+        // Increment timestamp so that SQL CE will get different timestamps
+        AddToSystemTime(1);
     }
 
     void CfgTest::WaitForAutoSync(CFGDB_HANDLE cdhDb)
     {
         // TODO: eliminate sleep and create a more stable form of waiting for all monutil requests to go from pending to fired
         // This will allow tests to run much faster
+        AddToSystemTime(1);
         ::Sleep(2000);
+        AddToSystemTime(1);
         WaitForDbToBeIdle(cdhDb);
     }
 

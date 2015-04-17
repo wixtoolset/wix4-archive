@@ -189,7 +189,7 @@ namespace CfgTests
             CheckCfgAndRegValueQword(cdhLocal, hk, wzQword1CfgName, wzQword1RegValueName, 0);
             CheckCfgAndFile(cdhLocal, wzFileNameA, sczFileA, rgbFile2, sizeof(rgbFile2));
             CheckCfgAndFileDeleted(cdhLocal, wzFileNameB, sczFileB);
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
 
             hr = CfgSetString(cdhLocal, wzString2CfgName, L"NewValueFromCfg");
             ExitOnFailure(hr, "Failed to set string from cfg db");

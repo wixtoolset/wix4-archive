@@ -207,7 +207,7 @@ HRESULT ValueSetDelete(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -242,7 +242,7 @@ HRESULT ValueSetBlob(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -290,7 +290,7 @@ HRESULT ValueSetBlobDbStream(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -333,7 +333,7 @@ HRESULT ValueSetString(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -362,7 +362,7 @@ HRESULT ValueSetDword(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -390,7 +390,7 @@ HRESULT ValueSetQword(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -418,7 +418,7 @@ HRESULT ValueSetBool(
     }
     else
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         pcvValue->stWhen = st;
     }
     pcvValue->sczBy = const_cast<LPWSTR>(wzBy);
@@ -557,7 +557,7 @@ HRESULT ValueWrite(
     }
     ExitOnFailure(hr, "Failed to find value for AppID: %u, Value named: %ls", dwAppID, wzName);
 
-    ::GetSystemTime(&stNow);
+    UtilGetSystemTime(&stNow);
     if (NULL != sceRow)
     {
         hr = ValueRead(pcdb, sceRow, &cvExistingValue);
@@ -1208,7 +1208,7 @@ static HRESULT ExpireOldRows(
     SYSTEMTIME stFirst = { };
 
     // Snap time
-    ::GetSystemTime(&stNow);
+    UtilGetSystemTime(&stNow);
 
     hr = SceBeginTransaction(pcdb->psceDb);
     ExitOnFailure(hr, "Failed to begin transaction");
@@ -1502,8 +1502,8 @@ HRESULT RemoveOutdatedReferencesFromDatabase(
 
         if (pcdbReferencedBy)
         {
-        hr = HistoryRowEnsureReferenceState(pcdb, pcdbReferencedBy, valueHistoryRow, fComparisonResult);
-        ExitOnFailure(hr, "Failed to update reference state of value history row: %ls", wzValueName);
+            hr = HistoryRowEnsureReferenceState(pcdb, pcdbReferencedBy, valueHistoryRow, fComparisonResult);
+            ExitOnFailure(hr, "Failed to update reference state of value history row: %ls", wzValueName);
         }
 
         ReleaseNullCfgValue(value);

@@ -13,6 +13,8 @@
 
 #include "precomp.h"
 
+PFN_GETSYSTEMTIME SystemTimeGetter = GetSystemTime;
+
 const LEGACY_DIRECTORY_MAP LEGACY_DIRECTORIES[] = {
     { CSIDL_MYDOCUMENTS, L"MyDocumentsFolder:\\", NULL },
     { CSIDL_APPDATA, L"AppDataFolder:\\", NULL },
@@ -653,6 +655,13 @@ LExit:
     ReleaseMem(pConflictProductTemp);
 
     return hr;
+}
+
+void UtilGetSystemTime(
+    __inout SYSTEMTIME *pst
+    )
+{
+    SystemTimeGetter(pst);
 }
 
 BOOL UtilIs64BitSystem()

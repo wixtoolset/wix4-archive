@@ -46,6 +46,9 @@ namespace CfgTests
         void TestUninitialize();
         void RedirectDatabases();
 
+        // Current time manipulation
+        void AddToSystemTime(DWORD dwSeconds);
+
         // Non-Cfg Commands
         void SetARP(LPCWSTR wzKeyName, LPCWSTR wzDisplayName, LPCWSTR wzInstallLocation, LPCWSTR wzUninstallString);
         void SetApplication(LPCWSTR wzFileName, LPCWSTR wzFilePath);

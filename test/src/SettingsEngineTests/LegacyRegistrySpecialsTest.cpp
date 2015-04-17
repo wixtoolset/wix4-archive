@@ -155,6 +155,7 @@ namespace CfgTests
             // OK now register the product, sync again, and confirm the data is pushed back out to disk due to fresh re-registration
             SetARP(L"SomeKeyName", L"Cfg Test Specials", NULL, NULL);
             WaitForAutoSync(cdhLocal);
+            ExpectNoValue(cdhLocal, L"Main:\\IgnoreMe");
             ExpectDword(cdhLocal, L"Main:\\BoolValue", 0);
             ExpectBool(cdhLocal, L"Main:Flag00", TRUE);
             ExpectBool(cdhLocal, L"Main:Flag01", FALSE);
@@ -180,10 +181,11 @@ namespace CfgTests
             ExitOnFailure(hr, "Failed to ensure registry key exists");
 
             hr = RegWriteString(hk, L"IgnoreMe", L"Blah");
-            ExitOnFailure(hr, "Failed to write ignoreme value");
+            ExitOnFailure(hr, "Failed to write ignoreme value 2nd time");
 
+            WaitForSqlCeTimestampChange();
             hr = CfgSetString(cdhLocal, L"Main:\\IgnoreMe", L"FromCfg");
-            ExitOnFailure(hr, "Failed to set ignoreme string in cfg db");
+            ExitOnFailure(hr, "Failed to set ignoreme string in cfg db 2nd time");
 
             WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, L"Main:\\IgnoreMe");

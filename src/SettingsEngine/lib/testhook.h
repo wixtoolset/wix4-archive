@@ -18,6 +18,10 @@
 extern "C" {
 #endif
 
+typedef void (WINAPI *PFN_GETSYSTEMTIME)(
+    __out SYSTEMTIME *pst
+    );
+
 HRESULT __stdcall TestHookOverrideUserDatabasePath(
     __in_z LPCWSTR wzNewUserDatabasePath
     );
@@ -29,6 +33,9 @@ HRESULT __stdcall TestHookOverrideArpPath(
     );
 HRESULT __stdcall TestHookOverrideApplicationsPath(
     __in_z LPCWSTR wzNewApplicationsPath
+    );
+HRESULT __stdcall TestHookOverrideGetSystemTime(
+    __in PFN_GETSYSTEMTIME systemTimeGetter
     );
 
 #ifdef __cplusplus

@@ -176,21 +176,27 @@ namespace CfgTests
             hr = FileWrite(sczFileA1, 0, rgbFileA1, sizeof(rgbFileA1), NULL);
             ExitOnFailure(hr, "Failed to write file A1");
 
+            WaitForSqlCeTimestampChange();
             hr = FileFromString(sczFileAIni, 0, wzAIni, FILE_ENCODING_UTF16_WITH_BOM);
             ExitOnFailure(hr, "Failed to write file data.ini to A directory");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczFileB1, 0, rgbFileB1, sizeof(rgbFileB1), NULL);
             ExitOnFailure(hr, "Failed to write file B1");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczFileB2, 0, rgbFileB2, sizeof(rgbFileB2), NULL);
             ExitOnFailure(hr, "Failed to write file B2");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczIndividualFile, 0, rgbFileA1, sizeof(rgbFileA1), NULL);
             ExitOnFailure(hr, "Failed to write file Individual File");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczIndividualFileFake, 0, rgbFileB1, sizeof(rgbFileB1), NULL);
             ExitOnFailure(hr, "Failed to write file Individual File Fake");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczIndividualFileIgnored, 0, rgbFileB1, sizeof(rgbFileB1), NULL);
             ExitOnFailure(hr, "Failed to write file Individual File Ignored");
 

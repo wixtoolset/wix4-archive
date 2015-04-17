@@ -111,7 +111,7 @@ HRESULT DirDefaultReadFile(
 
     if (fRefreshTimestamp)
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         fRet = ::SystemTimeToFileTime(&st, &ft);
         if (!fRet)
         {
