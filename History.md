@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT: 4703 - Move the PrereqPackage information out of the NetFx extension and into the Bal extension so that the NetFx extension doesn't require the Bal extension.
+
 * SeanHall: WIXBUG:4731 - Obscure hidden variable values in the logged command line.
 
 * SeanHall: WIXBUG:4630 - Serialize all variables to the elevated Burn process.

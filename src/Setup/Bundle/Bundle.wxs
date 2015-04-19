@@ -47,7 +47,7 @@
         <util:RegistrySearchRef Id="NETFRAMEWORK35_SP_LEVEL" />
 
         <Chain>
-            <PackageGroupRef Id='NetFx40Web' />
+            <PackageGroupRef Id='NetFx40WebAsPrereq' />
 
             <MsiPackage Id='Wix' Vital='yes' Name='data\core.msi' SourceFile='data\core.msi'
                         DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'

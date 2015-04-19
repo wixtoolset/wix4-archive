@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  <copyright file="NetFx451AsPrereq.wxs" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+    <?define NetFx451WebId = NetFx451Web ?>
+    <Fragment>
+        <PackageGroup Id="$(var.NetFx451WebId)AsPrereq">
+            <PackageGroupRef Id="$(var.NetFx451WebId)" />
+        </PackageGroup>
+        
+        <CustomTable Id='WixMbaPrereqInformation'>
+            <Row>
+                <Data Column='PackageId'>$(var.NetFx451WebId)</Data>
+                <!-- Need 4.5.1 license -->
+                <!-- <Data Column='LicenseUrl'>$(var.NetFx451EulaLink)</Data> -->
+            </Row>
+        </CustomTable>
+    </Fragment>
+    
+    <?define NetFx451RedistId = NetFx451Redist ?>
+    <Fragment>
+        <PackageGroup Id="$(var.NetFx451RedistId)AsPrereq">
+            <PackageGroupRef Id="$(var.NetFx451RedistId)" />
+        </PackageGroup>
+        
+        <CustomTable Id='WixMbaPrereqInformation'>
+            <Row>
+                <Data Column='PackageId'>$(var.NetFx451RedistId)</Data>
+                <!-- Need 4.5.1 license -->
+                <!-- <Data Column='LicenseUrl'>$(var.NetFx451EulaLink)</Data> -->
+            </Row>
+        </CustomTable>
+    </Fragment>
+</Wix>

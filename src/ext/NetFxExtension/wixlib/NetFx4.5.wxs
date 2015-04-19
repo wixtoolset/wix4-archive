@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
         .NET Framework installation state properties
@@ -20,7 +20,6 @@
   <?define NetFx45MinRelease = 378389?>
   <?define NetFx45WebLink = http://go.microsoft.com/fwlink/?LinkId=225704 ?>
   <?define NetFx45RedistLink = http://go.microsoft.com/fwlink/?LinkId=225702 ?>
-  <?define NetFx45EulaLink =  http://go.microsoft.com/fwlink/?LinkID=260867 ?>
 
   <Fragment>
     <PropertyRef Id="WIXNETFX4RELEASEINSTALLED" />
@@ -57,9 +56,7 @@
           DownloadUrl="$(var.NetFx45WebLink)"
           LogPathVariable="NetFx45FullWebLog"
           Compressed="no"
-          Name="redist\dotNetFx45_Full_setup.exe"
-          bal:PrereqPackage="yes"
-          bal:PrereqLicenseUrl="$(var.NetFx45EulaLink)">
+          Name="redist\dotNetFx45_Full_setup.exe">
         <RemotePayload
             Size="1005568"
             Version="4.5.50709.17929"
@@ -89,9 +86,7 @@
           DownloadUrl="$(var.NetFx45RedistLink)"
           LogPathVariable="NetFx45FullLog"
           Compressed="no"
-          Name="redist\dotNetFx45_Full_x86_x64.exe"
-          bal:PrereqPackage="yes"
-          bal:PrereqLicenseUrl="$(var.NetFx45EulaLink)">
+          Name="redist\dotNetFx45_Full_x86_x64.exe">
         <RemotePayload
             Size="50352408" 
             Version="4.5.50709.17929"
