@@ -1167,6 +1167,9 @@ extern "C" HRESULT MsiEngineExecutePackage(
         ExitOnFailure(hr, "Failed to build MSI path.");
     }
 
+    // Best effort to set the execute package action variable.
+    VariableSetNumeric(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_ACTION, pExecuteAction->msiPackage.action, TRUE);
+    
     // Wire up the external UI handler and logging.
     hr = WiuInitializeExternalUI(pfnMessageHandler, pExecuteAction->msiPackage.uiLevel, hwndParent, pvContext, fRollback, &context);
     ExitOnFailure(hr, "Failed to initialize external UI handler.");
@@ -1300,8 +1303,9 @@ LExit:
             break;
     }
 
-    // Best effort to clear the execute package cache folder variable.
+    // Best effort to clear the execute package cache folder and action variables.
     VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, NULL, TRUE);
+    VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_ACTION, NULL, TRUE);
 
     return hr;
 }

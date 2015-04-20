@@ -30,6 +30,7 @@
     <Compile Include="Bind\Databases\ExtractMergeModuleFilesCommand.cs" />
     <Compile Include="Bind\Databases\GetFileFacadesCommand.cs" />
     <Compile Include="CommandLine.cs" />
+    <Compile Include="CommandLineInfo.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerCore.cs" />
@@ -210,6 +211,5 @@
       <Name>winterop</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

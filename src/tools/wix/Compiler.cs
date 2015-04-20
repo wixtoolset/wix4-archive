@@ -19753,6 +19753,13 @@ namespace WixToolset
                                 this.ParseExitCodeElement(child, id.Id);
                             }
                             break;
+                        case "CommandLine":
+                            allowed = (packageType == ChainPackageType.Exe);
+                            if (allowed)
+                            {
+                                this.ParseCommandLineElement(child, id.Id);
+                            }
+                            break;
                         case "RemotePayload":
                             // Handled previously
                             break;
@@ -19862,7 +19869,79 @@ namespace WixToolset
                 this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, after);
             }
 
-            return id.Id;
+        /// <summary>
+        /// Parse CommandLine element.
+        /// </summary>
+        /// <param name="node">Element to parse</param>
+        private void ParseCommandLineElement(XmlNode node, string packageId)
+        {
+            SourceLineNumberCollection sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string installArgument = null;
+            string uninstallArgument = null;
+            string repairArgument = null;
+            string condition = null;
+
+            foreach (XmlAttribute attrib in node.Attributes)
+            {
+                if (0 == attrib.NamespaceURI.Length || attrib.NamespaceURI == this.schema.TargetNamespace)
+                {
+                    switch (attrib.LocalName)
+                    {
+                        case "InstallArgument":
+                            installArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "UninstallArgument":
+                            uninstallArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "RepairArgument":
+                            repairArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Condition":
+                            condition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            // hygiene: throw an exception if there are any unknown attributes
+                            this.core.UnexpectedAttribute(sourceLineNumbers, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.core.UnsupportedExtensionAttribute(sourceLineNumbers, attrib);
+                }
+            }
+
+            // TODO: Consider whether we want to support conditionless
+            if (String.IsNullOrEmpty(condition))
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Condition"));
+            }
+
+            // hygiene: throw an exception if there are any subelements
+            foreach (XmlNode child in node.ChildNodes)
+            {
+                if (XmlNodeType.Element == child.NodeType)
+                {
+                    if (child.NamespaceURI == this.schema.TargetNamespace)
+                    {
+                        this.core.UnexpectedElement(node, child);
+                    }
+                    else
+                    {
+                        this.core.UnsupportedExtensionElement(node, child);
+                    }
+                }
+            }
+
+            if (!this.core.EncounteredError)
+            {
+                Row row = this.core.CreateRow(sourceLineNumbers, "WixCommandLine");
+                row[0] = packageId;
+                row[1] = installArgument;
+                row[2] = uninstallArgument;
+                row[3] = repairArgument;
+                row[4] = condition;
+            }
         }
 
         /// <summary>
