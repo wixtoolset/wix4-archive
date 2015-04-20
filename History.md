@@ -1,3 +1,5 @@
+* SeanHall: WIXBUG:4392 - Set WixBundleInstalled during Detect.
+
 * SeanHall: WIXFEAT:4619 - Include WixUI dialogs and wxl files in core MSI.
 
 * SeanHall: WIXFEAT:4618 - Include WixStdBA and mbapreq themes and wxl files in core MSI.

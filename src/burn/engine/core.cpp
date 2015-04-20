@@ -170,7 +170,8 @@ extern "C" HRESULT CoreQueryRegistration(
     SIZE_T iBuffer = 0;
 
     // Detect if bundle is already installed.
-    RegistrationDetectInstalled(&pEngineState->registration, &pEngineState->registration.fInstalled);
+    hr = RegistrationDetectInstalled(&pEngineState->registration, &pEngineState->registration.fInstalled);
+    ExitOnFailure(hr, "Failed to detect bundle install state.");
 
     // detect resume type
     hr = RegistrationDetectResumeType(&pEngineState->registration, &pEngineState->command.resumeType);
@@ -215,6 +216,21 @@ extern "C" HRESULT CoreDetect(
 
     hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
     ExitOnFailure(hr, "Engine cannot start detect because it is busy with another action.");
+
+    // Detect if bundle is already installed.
+    hr = RegistrationDetectInstalled(&pEngineState->registration, &pEngineState->registration.fInstalled);
+    ExitOnFailure(hr, "Failed to detect bundle install state.");
+
+    if (pEngineState->registration.fInstalled)
+    {
+        hr = VariableSetNumeric(&pEngineState->variables, BURN_BUNDLE_INSTALLED, 1, TRUE);
+        ExitOnFailure(hr, "Failed to set the bundle installed built-in variable.");
+    }
+    else
+    {
+        hr = VariableSetString(&pEngineState->variables, BURN_BUNDLE_INSTALLED, NULL, TRUE);
+        ExitOnFailure(hr, "Failed to unset the bundle installed built-in variable.");
+    }
 
     int nResult = pEngineState->userExperience.pUserExperience->OnDetectBegin(pEngineState->registration.fInstalled, pEngineState->packages.cPackages);
     hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
