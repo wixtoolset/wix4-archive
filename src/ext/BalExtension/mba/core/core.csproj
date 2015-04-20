@@ -26,9 +26,6 @@
     <Compile Include="BootstrapperApplicationFactory.cs" />
     <Compile Include="BootstrapperSectionGroup.cs" />
     <Compile Include="BundleInfo.cs" />
-    <Compile Include="PackageInfo.cs" />
-    <Compile Include="SupportedFrameworkElementCollection.cs" />
-    <Compile Include="SupportedFrameworkElement.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="EventArgs.cs" />
     <Compile Include="Exceptions.cs" />
@@ -37,7 +34,12 @@
     <Compile Include="IBootstrapperApplication.cs" />
     <Compile Include="IBootstrapperApplicationFactory.cs" />
     <Compile Include="IBootstrapperEngine.cs" />
+    <Compile Include="IManagedBootstrapperEngine.cs" />
+    <Compile Include="IVariables.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="PackageInfo.cs" />
+    <Compile Include="SupportedFrameworkElementCollection.cs" />
+    <Compile Include="SupportedFrameworkElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

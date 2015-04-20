@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-// Container class for the IBurnCore interface passed to the IBurnUserExperience.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 namespace WixToolset.Bootstrapper
@@ -22,7 +18,7 @@ namespace WixToolset.Bootstrapper
     /// <summary>
     /// Container class for the <see cref="IBootstrapperEngine"/> interface.
     /// </summary>
-    public sealed class Engine
+    sealed class Engine : IManagedBootstrapperEngine
     {
         // Burn errs on empty strings, so declare initial buffer size.
         private const int InitialBufferSize = 80;
@@ -171,7 +167,7 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Gets or sets numeric variables for the engine.
         /// </summary>
-        public Variables<long> NumericVariables
+        public IVariables<long> NumericVariables
         {
             get { return this.numericVariables; }
         }
@@ -193,7 +189,7 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Gets or sets string variables for the engine using SecureStrings.
         /// </summary>
-        public Variables<SecureString> SecureStringVariables
+        public IVariables<SecureString> SecureStringVariables
         {
             get { return this.secureStringVariables; }
         }
@@ -201,7 +197,7 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Gets or sets string variables for the engine.
         /// </summary>
-        public Variables<string> StringVariables
+        public IVariables<string> StringVariables
         {
             get { return this.stringVariables; }
         }
@@ -216,7 +212,7 @@ namespace WixToolset.Bootstrapper
         /// To keep track of versions without build or revision fields, use StringVariables instead.
         /// </summary>
         /// <exception cref="OverflowException">The given <see cref="Version"/> was invalid.</exception>
-        public Variables<Version> VersionVariables
+        public IVariables<Version> VersionVariables
         {
             get { return this.versionVariables; }
         }
@@ -463,7 +459,7 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// An accessor for numeric, string, and version variables for the engine.
         /// </summary>
-        public sealed class Variables<T>
+        public sealed class Variables<T> : IVariables<T>
         {
             // .NET 2.0 does not support Func<T, TResult> or Action<T1, T2>.
             internal delegate T Getter<T>(string name);

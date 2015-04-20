@@ -24,7 +24,7 @@ namespace WixToolset.Bootstrapper
     [ClassInterface(ClassInterfaceType.None)]
     public abstract class BootstrapperApplication : MarshalByRefObject, IBootstrapperApplication
     {
-        private Engine engine;
+        private IManagedBootstrapperEngine engine;
         private BootstrapperApplicationData baManifest;
         private Command command;
         private bool applying;
@@ -36,6 +36,19 @@ namespace WixToolset.Bootstrapper
         {
             this.engine = null;
             this.applying = false;
+        }
+
+        /// <summary>
+        /// Constructor for unit testing.
+        /// </summary>
+        /// <param name="baManifest"></param>
+        /// <param name="command"></param>
+        /// <param name="engine"></param>
+        public BootstrapperApplication(BootstrapperApplicationData baManifest, Command command, IManagedBootstrapperEngine engine)
+        {
+            this.BAManifest = baManifest;
+            this.Command = command;
+            this.Engine = engine;
         }
 
         /// <summary>
@@ -350,7 +363,7 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Gets the <see cref="Engine"/> for interaction with the Engine.
         /// </summary>
-        public Engine Engine
+        public IManagedBootstrapperEngine Engine
         {
             get { return this.engine; }
             internal set { this.engine = value; }

@@ -55,7 +55,7 @@ namespace WixToolset.UX
         /// <summary>
         /// Gets the bootstrapper engine.
         /// </summary>
-        public Engine Engine { get { return this.Bootstrapper.Engine; } }
+        public IManagedBootstrapperEngine Engine { get { return this.Bootstrapper.Engine; } }
 
         /// <summary>
         /// Gets the key/value pairs used in telemetry.
