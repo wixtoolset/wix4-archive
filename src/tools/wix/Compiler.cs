@@ -19911,7 +19911,6 @@ namespace WixToolset
                 }
             }
 
-            // TODO: Consider whether we want to support conditionless
             if (String.IsNullOrEmpty(condition))
             {
                 this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name, "Condition"));

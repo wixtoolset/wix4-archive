@@ -171,6 +171,9 @@ namespace WixToolset.Data
                 case "WixChainItem":
                     row = new WixChainItemRow(sourceLineNumbers, this);
                     break;
+                case "WixCommandLine":
+                    row = new WixCommandLineRow(sourceLineNumbers, this);
+                    break;
                 case "WixComplexReference":
                     row = new WixComplexReferenceRow(sourceLineNumbers, this);
                     break;

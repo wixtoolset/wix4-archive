@@ -30,7 +30,6 @@
     <Compile Include="Bind\Databases\ExtractMergeModuleFilesCommand.cs" />
     <Compile Include="Bind\Databases\GetFileFacadesCommand.cs" />
     <Compile Include="CommandLine.cs" />
-    <Compile Include="CommandLineInfo.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="CompilerCore.cs" />
@@ -141,6 +140,7 @@
     <Compile Include="Validator.cs" />
     <Compile Include="VerifyInterop.cs" />
     <Compile Include="AppCommon.cs" />
+    <Compile Include="WixCommandLineRow.cs" />
     <Compile Include="WixGenericMessageEventArgs.cs" />
     <Compile Include="Link\WixGroupingOrdering.cs" />
     <Compile Include="WixStrings.Designer.cs">
