@@ -272,7 +272,24 @@ HRESULT ParseDetectArp(
     ExitOnFailure(hr, "Failed to get DisplayIconDir attribute from Detect/Arp element");
 
     hr = XmlGetAttributeEx(pixnElement, L"DisplayName", &pDetect->arp.sczDisplayName);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
     ExitOnFailure(hr, "Failed to get DisplayName attribute from Detect/Arp element");
+
+    hr = XmlGetAttributeEx(pixnElement, L"RegKeyName", &pDetect->arp.sczRegKeyName);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed to get RegKeyName attribute from Detect/Arp element");
+
+    if (NULL != pDetect->arp.sczDisplayName && NULL != pDetect->arp.sczRegKeyName)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+        ExitOnFailure(hr, "Can't specify both a DisplayName and a RegKeyName to a Detect/Arp element!");
+    }
 
     hr = XmlSelectNodes(pixnElement, L"*", &pixnlChildElements);
     ExitOnFailure(hr, "Failed to select detection elements");

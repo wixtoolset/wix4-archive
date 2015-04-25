@@ -213,13 +213,19 @@ HRESULT DetectGetArpProducts(
         }
     }
 
-    hr = DictCreateWithEmbeddedKey(&pArpProducts->shProductsFound, pArpProducts->cProducts, reinterpret_cast<void **>(&pArpProducts->rgProducts), offsetof(ARP_PRODUCT, sczDisplayName), DICT_FLAG_CASEINSENSITIVE);
-    ExitOnFailure(hr, "Failed to create dictionary with embedded key to track products seen in ARP");
+    hr = DictCreateWithEmbeddedKey(&pArpProducts->shProductsFoundByDisplayName, pArpProducts->cProducts, reinterpret_cast<void **>(&pArpProducts->rgProducts), offsetof(ARP_PRODUCT, sczDisplayName), DICT_FLAG_CASEINSENSITIVE);
+    ExitOnFailure(hr, "Failed to create dictionary with embedded key to track products seen in ARP by display name");
+
+    hr = DictCreateWithEmbeddedKey(&pArpProducts->shProductsFoundByRegKeyName, pArpProducts->cProducts, reinterpret_cast<void **>(&pArpProducts->rgProducts), offsetof(ARP_PRODUCT, sczRegKeyName), DICT_FLAG_CASEINSENSITIVE);
+    ExitOnFailure(hr, "Failed to create dictionary with embedded key to track products seen in ARP by reg key name");
 
     for (DWORD i = 0; i < pArpProducts->cProducts; ++i)
     {
-        hr = DictAddValue(pArpProducts->shProductsFound, pArpProducts->rgProducts + i);
-        ExitOnFailure(hr, "Failed to add to dictionary product named: %ls", pArpProducts->rgProducts[i].sczDisplayName);
+        hr = DictAddValue(pArpProducts->shProductsFoundByDisplayName, pArpProducts->rgProducts + i);
+        ExitOnFailure(hr, "Failed to add to dictionary product with display name: %ls", pArpProducts->rgProducts[i].sczDisplayName);
+
+        hr = DictAddValue(pArpProducts->shProductsFoundByRegKeyName, pArpProducts->rgProducts + i);
+        ExitOnFailure(hr, "Failed to add to dictionary product with regkey name: %ls", pArpProducts->rgProducts[i].sczRegKeyName);
     }
 
     hr = S_OK;
@@ -313,7 +319,15 @@ HRESULT DetectProduct(
             switch (pDetect->rgDetects[i].ldtType)
             {
             case LEGACY_DETECT_TYPE_ARP:
-                hr = DictGetValue(pArpProducts->shProductsFound, pDetect->rgDetects[i].arp.sczDisplayName, reinterpret_cast<void **>(&pFoundArpProduct));
+                if (pDetect->rgDetects[i].arp.sczDisplayName != NULL)
+                {
+                    hr = DictGetValue(pArpProducts->shProductsFoundByDisplayName, pDetect->rgDetects[i].arp.sczDisplayName, reinterpret_cast<void **>(&pFoundArpProduct));
+                }
+                else
+                {
+                    hr = DictGetValue(pArpProducts->shProductsFoundByRegKeyName, pDetect->rgDetects[i].arp.sczRegKeyName, reinterpret_cast<void **>(&pFoundArpProduct));
+                }
+
                 if (E_NOTFOUND == hr)
                 {
                     hr = S_OK;
@@ -471,7 +485,7 @@ HRESULT DetectExpandDirectoryPath(
 
         case LEGACY_DETECT_TYPE_EXE:
             if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pDetect->rgDetects[i].exe.sczFileDirProperty, -1, sczPropertyName, -1)
-                && 0 < lstrlenW(pDetect->rgDetects[i].arp.wzInstallLocationValue))
+                && 0 < lstrlenW(pDetect->rgDetects[i].exe.wzFileDirValue))
             {
                 hr = StrAllocString(&sczPropertyValue, pDetect->rgDetects[i].exe.wzFileDirValue, 0);
                 ExitOnFailure(hr, "Failed to copy value of file dir", pDetect->rgDetects[i].exe.wzFileDirValue);
@@ -539,6 +553,7 @@ void DetectFreeArpProducts(
     for (DWORD i = 0; i < pArpProducts->cProducts; ++i)
     {
         ReleaseStr(pArpProducts->rgProducts[i].sczDisplayName);
+        ReleaseStr(pArpProducts->rgProducts[i].sczRegKeyName);
         ReleaseStr(pArpProducts->rgProducts[i].sczInstallLocation);
         ReleaseStr(pArpProducts->rgProducts[i].sczUninstallStringDir);
         ReleaseStr(pArpProducts->rgProducts[i].sczDisplayIconDir);
@@ -546,7 +561,8 @@ void DetectFreeArpProducts(
 
     ReleaseNullMem(pArpProducts->rgProducts);
     pArpProducts->cProducts = 0;
-    ReleaseNullDict(pArpProducts->shProductsFound);
+    ReleaseNullDict(pArpProducts->shProductsFoundByDisplayName);
+    ReleaseNullDict(pArpProducts->shProductsFoundByRegKeyName);
 }
 
 void DetectFreeExeProducts(
@@ -647,7 +663,10 @@ static HRESULT GetArpProducts(
             hr = MemEnsureArraySize(reinterpret_cast<void **>(&pArpProducts->rgProducts), pArpProducts->cProducts + 1, sizeof(ARP_PRODUCT), 50);
             ExitOnFailure(hr, "Failed to resize products array while enumerating products in arp");
             ++pArpProducts->cProducts;
-            
+
+            pArpProducts->rgProducts[dwProductIndex].sczRegKeyName = sczSubkeyName;
+            sczSubkeyName = NULL;
+
             hr = CorrectArpName(sczDisplayName, &pArpProducts->rgProducts[dwProductIndex].sczDisplayName);
             ExitOnFailure(hr, "Failed to correct displayname seen in arp: %ls", sczDisplayName);
 
@@ -939,6 +958,7 @@ void FreeSingleDetect(
     {
     case LEGACY_DETECT_TYPE_ARP:
         ReleaseStr(pDetect->arp.sczDisplayName);
+        ReleaseStr(pDetect->arp.sczRegKeyName);
         ReleaseStr(pDetect->arp.sczInstallLocationProperty);
         ReleaseStr(pDetect->arp.sczUninstallStringDirProperty);
         ReleaseStr(pDetect->arp.sczDisplayIconDirProperty);
