@@ -49,7 +49,8 @@ HRESULT EnumResize(
         case ENUMERATION_VALUE_HISTORY:
             for (DWORD i = dwNewSize; i < pcesEnum->dwNumValues; ++i)
             {
-                ReleaseCfgValue(pcesEnum->values.rgcValues[i]);
+                ReleaseCfgValue(pcesEnum->valueHistory.rgcValues[i]);
+                ReleaseStr(pcesEnum->valueHistory.rgsczDbReferences[i]);
             }
             break;
 
@@ -86,6 +87,7 @@ HRESULT EnumResize(
 
         case ENUMERATION_VALUE_HISTORY:
             ReleaseNullMem(pcesEnum->valueHistory.rgcValues);
+            ReleaseNullMem(pcesEnum->valueHistory.rgsczDbReferences);
             break;
 
         case ENUMERATION_DATABASE_LIST:
@@ -138,6 +140,9 @@ HRESULT EnumResize(
         case ENUMERATION_VALUE_HISTORY:
             pcesEnum->valueHistory.rgcValues = static_cast<CONFIG_VALUE *>(MemAlloc(cbConfigValueSize, TRUE));
             ExitOnNull(pcesEnum->valueHistory.rgcValues, hr, E_OUTOFMEMORY, "Failed to allocate value array for value history type Cfg Enumeration Struct");
+
+            pcesEnum->valueHistory.rgsczDbReferences = static_cast<LPWSTR *>(MemAlloc(cbPointerSize, TRUE));
+            ExitOnNull(pcesEnum->valueHistory.rgsczDbReferences, hr, E_OUTOFMEMORY, "Failed to allocate database references array for value history type Cfg Enumeration Struct");
             break;
         case ENUMERATION_DATABASE_LIST:
             pcesEnum->databaseList.rgsczFriendlyName = static_cast<LPWSTR *>(MemAlloc(cbPointerSize, TRUE));
@@ -181,6 +186,9 @@ HRESULT EnumResize(
         case ENUMERATION_VALUE_HISTORY:
             pcesEnum->valueHistory.rgcValues = static_cast<CONFIG_VALUE *>(MemReAlloc(pcesEnum->valueHistory.rgcValues, cbConfigValueSize, TRUE));
             ExitOnNull(pcesEnum->valueHistory.rgcValues, hr, E_OUTOFMEMORY, "Failed to reallocate type array for value history type Cfg Enumeration Struct");
+
+            pcesEnum->valueHistory.rgsczDbReferences = static_cast<LPWSTR *>(MemReAlloc(pcesEnum->valueHistory.rgsczDbReferences, cbPointerSize, TRUE));
+            ExitOnNull(pcesEnum->valueHistory.rgsczDbReferences, hr, E_OUTOFMEMORY, "Failed to reallocate database references array for value history type Cfg Enumeration Struct");
             break;
         case ENUMERATION_DATABASE_LIST:
             pcesEnum->databaseList.rgsczFriendlyName = static_cast<LPWSTR *>(MemReAlloc(pcesEnum->databaseList.rgsczFriendlyName, cbPointerSize, TRUE));
@@ -382,6 +390,7 @@ HRESULT EnumPastValues(
     SCE_QUERY_RESULTS_HANDLE sqrhResults = NULL;
     SCE_QUERY_HANDLE sqhHandle = NULL;
     SCE_ROW_HANDLE sceRow = NULL;
+    LPWSTR sczDbReferences = NULL;
 
     // Allocate the Enumeration struct and its members
     CFG_ENUMERATION *pcesEnum = static_cast<CFG_ENUMERATION *>(MemAlloc(sizeof(CFG_ENUMERATION), TRUE));
@@ -419,6 +428,13 @@ HRESULT EnumPastValues(
         hr = ValueRead(pcdb, sceRow, &cvValue);
         ExitOnFailure(hr, "Failed to read value from row while enumerating values");
 
+        hr = SceGetColumnString(sceRow, VALUE_HISTORY_DB_REFERENCES, &sczDbReferences);
+        if (E_NOTFOUND == hr)
+        {
+            hr = S_OK;
+        }
+        ExitOnFailure(hr, "Failed to get database references");
+
         if (pcesEnum->dwNumValues >= pcesEnum->dwMaxValues)
         {
             DWORD dwNewSize = pcesEnum->dwMaxValues * 2;
@@ -430,6 +446,9 @@ HRESULT EnumPastValues(
         // Effectively move the struct into the enum
         memcpy(&pcesEnum->valueHistory.rgcValues[pcesEnum->dwNumValues], &cvValue, sizeof(cvValue));
         ZeroMemory(&cvValue, sizeof(cvValue));
+
+        pcesEnum->valueHistory.rgsczDbReferences[pcesEnum->dwNumValues] = sczDbReferences;
+        sczDbReferences = NULL;
 
         ++pcesEnum->dwNumValues;
 
@@ -458,6 +477,7 @@ HRESULT EnumPastValues(
 
 LExit:
     ReleaseCfgValue(cvValue);
+    ReleaseStr(sczDbReferences);
     EnumFree(pcesEnum);
     ReleaseSceQuery(sqhHandle);
     ReleaseSceQueryResults(sqrhResults);
@@ -548,19 +568,14 @@ HRESULT EnumFindValueInHistory(
 
     for (DWORD i = 0; i < dwCount; ++i)
     {
-        if (0 == UtilCompareSystemTimes(&pceSearchEnum->valueHistory.rgcValues[i].stWhen, &pValue->stWhen) &&
-            0 == lstrcmpW(pceSearchEnum->valueHistory.rgcValues[i].sczBy, pValue->sczBy))
-        {
-            fResult = FALSE;
-            // The two values have the same 'when' and 'by', so let's verify they have the same value
-            hr = ValueCompare(&pceSearchEnum->valueHistory.rgcValues[i], pValue, &fResult);
-            ExitOnFailure(hr, "Failed to compare two values from history enums");
+        fResult = FALSE;
+        hr = ValueCompare(&pceSearchEnum->valueHistory.rgcValues[i], pValue, TRUE, &fResult);
+        ExitOnFailure(hr, "Failed to compare two values from history enums");
 
-            if (fResult)
-            {
-                *pdwIndex = i;
-                ExitFunction1(hr = S_OK);
-            }
+        if (fResult)
+        {
+            *pdwIndex = i;
+            ExitFunction1(hr = S_OK);
         }
     }
 
@@ -574,19 +589,20 @@ HRESULT EnumWriteValue(
     __in CFGDB_STRUCT *pcdb,
     __in_z LPCWSTR wzName,
     __in const CFG_ENUMERATION *pceEnum,
-    __in DWORD dwEnumIndex
+    __in DWORD dwEnumIndex,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     )
 {
     HRESULT hr = S_OK;
 
     if (ENUMERATION_VALUES == pceEnum->enumType)
     {
-        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->values.rgcValues[dwEnumIndex], FALSE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->values.rgcValues[dwEnumIndex], FALSE, pcdbReferencedBy);
         ExitOnFailure(hr, "Failed to set value from value enum");
     }
     else if (ENUMERATION_VALUE_HISTORY == pceEnum->enumType)
     {
-        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->valueHistory.rgcValues[dwEnumIndex], FALSE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &pceEnum->valueHistory.rgcValues[dwEnumIndex], FALSE, pcdbReferencedBy);
         ExitOnFailure(hr, "Failed to set value from value history enum");
     }
     else

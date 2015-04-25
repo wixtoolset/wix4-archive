@@ -13,6 +13,8 @@
 
 #include "precomp.h"
 
+PFN_GETSYSTEMTIME SystemTimeGetter = GetSystemTime;
+
 const LEGACY_DIRECTORY_MAP LEGACY_DIRECTORIES[] = {
     { CSIDL_MYDOCUMENTS, L"MyDocumentsFolder:\\", NULL },
     { CSIDL_APPDATA, L"AppDataFolder:\\", NULL },
@@ -43,9 +45,6 @@ static HRESULT UtilSyncAllProductsHelp(
     __in_opt STRINGDICT_HANDLE shDictProductsSeen,
     __out CONFLICT_PRODUCT **prgConflictProducts,
     __out DWORD *pcConflictProducts
-    );
-static WORD RoundMilliseconds(
-    __in WORD wMilliseconds
     );
 
 HRESULT UtilSyncDb(
@@ -188,26 +187,47 @@ int UtilCompareSystemTimes(
     }
     else
     {
-        WORD wRoundedMilliseconds1 = RoundMilliseconds(pst1->wMilliseconds);
-        WORD wRoundedMilliseconds2 = RoundMilliseconds(pst2->wMilliseconds);
-
-        if (wRoundedMilliseconds1 > wRoundedMilliseconds2)
-        {
-            return 1;
-        }
-        else if (wRoundedMilliseconds1 < wRoundedMilliseconds2)
-        {
-            return -1;
-        }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 }
 
+HRESULT UtilSubtractSystemTimes(
+    __in const SYSTEMTIME *pst1,
+    __in const SYSTEMTIME *pst2,
+    __out LONGLONG *pSeconds
+    )
+{
+    HRESULT hr = S_OK;
+    FILETIME ft1 = { };
+    FILETIME ft2 = { };
+    ULARGE_INTEGER uli1 = { };
+    ULARGE_INTEGER uli2 = { };
+
+    if (pst1->wYear > 0 && !::SystemTimeToFileTime(pst1, &ft1))
+    {
+        ExitOnLastError(hr, "Failed to convert system time 1 to file time");
+    }
+    if (pst2->wYear > 0 && !::SystemTimeToFileTime(pst2, &ft2))
+    {
+        ExitOnLastError(hr, "Failed to convert system time 2 to file time");
+    }
+
+    uli1.LowPart = ft1.dwLowDateTime;
+    uli1.HighPart = ft1.dwHighDateTime;
+    uli2.LowPart = ft2.dwLowDateTime;
+    uli2.HighPart = ft2.dwHighDateTime;
+
+    uli1.QuadPart -= uli2.QuadPart;
+
+    // FILETIME is in 100-nanosecond intervals, and there are 10 Million of those per second
+    *pSeconds = uli1.QuadPart / 10000000;
+
+LExit:
+    return hr;
+}
+
 HRESULT UtilAddToSystemTime(
-    __in DWORD dwMilliseconds,
+    __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
     )
 {
@@ -222,7 +242,7 @@ HRESULT UtilAddToSystemTime(
     DWORD64 ul;
     C_ASSERT(sizeof(ul) == sizeof(ft));
     memcpy(&ul, &ft, sizeof(ul));
-    ul += dwMilliseconds * 10000;
+    ul += dwSeconds * 10000000;
     memcpy(&ft, &ul, sizeof(ft));
 
     if (!FileTimeToSystemTime(&ft, pst))
@@ -637,6 +657,13 @@ LExit:
     return hr;
 }
 
+void UtilGetSystemTime(
+    __inout SYSTEMTIME *pst
+    )
+{
+    SystemTimeGetter(pst);
+}
+
 BOOL UtilIs64BitSystem()
 {
     HRESULT hr = S_OK;
@@ -670,26 +697,4 @@ BOOL UtilIs64BitSystem()
     }
 
     return s_f64BitSystem;
-}
-
-static WORD RoundMilliseconds(
-    __in WORD wMilliseconds
-    )
-{
-    WORD wLastDigitShavedOff = ((wMilliseconds) / 10) * 10;
-
-    // SQL CE rounds off to the nearest 3.33 milliseconds, unfortunately
-    // So we must factor that into our comparison, in case one of these timestamps was round by SQL CE
-    if (wMilliseconds % 10 >= 7)
-    {
-        return wLastDigitShavedOff + 7;
-    }
-    else if (wMilliseconds % 10 >= 3)
-    {
-        return wLastDigitShavedOff + 3;
-    }
-    else
-    {
-        return wLastDigitShavedOff;
-    }
 }

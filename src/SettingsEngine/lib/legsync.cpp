@@ -165,7 +165,7 @@ HRESULT LegacySyncSetProduct(
         hr = ValueSetBlob(reinterpret_cast<BYTE *>(cvManifestContents.string.sczValue), lstrlenW(cvManifestContents.string.sczValue) * sizeof(WCHAR), FALSE, NULL, pcdb->sczGuid, &cvManifestConvertedToBlob);
         ExitOnFailure(hr, "Failed to set converted manifest value in memory");
 
-        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvManifestConvertedToBlob, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvManifestConvertedToBlob, TRUE, NULL);
         ExitOnFailure(hr, "Failed to set converted manifest blob: %ls", sczManifestValueName);
 
         ReleaseNullSceRow(sceManifestValueRow);
@@ -530,7 +530,7 @@ HRESULT LegacySyncPullDeletedValues(
                 hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvNewValue);
                 ExitOnFailure(hr, "Failed to set deleted value in memory");
 
-                hr = ValueWrite(pcdb, pcdb->dwAppID, sczName, &cvNewValue, TRUE);
+                hr = ValueWrite(pcdb, pcdb->dwAppID, sczName, &cvNewValue, TRUE, NULL);
                 ExitOnFailure(hr, "Failed to write deleted value to db: %ls", sczName);
             }
         }

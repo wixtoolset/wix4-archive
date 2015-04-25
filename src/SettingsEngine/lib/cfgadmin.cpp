@@ -101,6 +101,8 @@ extern "C" HRESULT CfgAdminUninitialize(
         pcdb->dwAppID = DWORD_MAX;
         pcdb->fProductSet = FALSE;
         ReleaseStr(pcdb->sczGuid);
+        ReleaseStr(pcdb->sczGuidLocalInRemoteKey);
+        ReleaseStr(pcdb->sczGuidRemoteInLocalKey);
 
         if (!pcdb->fMissing)
         {

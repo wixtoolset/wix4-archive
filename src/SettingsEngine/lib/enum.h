@@ -50,6 +50,7 @@ struct CFG_ENUMERATION
         {
             LPWSTR sczName;
             CONFIG_VALUE *rgcValues;
+            LPWSTR *rgsczDbReferences;
         } valueHistory;
         struct
         {
@@ -102,7 +103,8 @@ HRESULT EnumWriteValue(
     __in CFGDB_STRUCT *pcdb,
     __in_z LPCWSTR wzName,
     __in const CFG_ENUMERATION *pceEnum,
-    __in DWORD dwEnumIndex
+    __in DWORD dwEnumIndex,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     );
 
 #ifdef __cplusplus

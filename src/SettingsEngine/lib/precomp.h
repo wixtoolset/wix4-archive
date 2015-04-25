@@ -77,3 +77,4 @@
 #include "rgdfault.h"
 #include "rgspcial.h"
 #include "backgrnd.h"
+#include "guidlist.h"

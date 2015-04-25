@@ -46,12 +46,16 @@ namespace CfgTests
         void TestUninitialize();
         void RedirectDatabases();
 
+        // Current time manipulation
+        void AddToSystemTime(DWORD dwSeconds);
+
         // Non-Cfg Commands
         void SetARP(LPCWSTR wzKeyName, LPCWSTR wzDisplayName, LPCWSTR wzInstallLocation, LPCWSTR wzUninstallString);
         void SetApplication(LPCWSTR wzFileName, LPCWSTR wzFilePath);
         void ResetApplications();
 
         // Cfg Commands
+        void WaitForSqlCeTimestampChange();
         void WaitForAutoSync(CFGDB_HANDLE cdhDb);
         void WaitForSyncNoResolve(CFGDB_HANDLE cdhDb);
         void WaitForSyncResolveAll(CFGDB_HANDLE cdhDb, RESOLUTION_CHOICE rcChoice);

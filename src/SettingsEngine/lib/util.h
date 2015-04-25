@@ -18,6 +18,8 @@
 extern "C" {
 #endif
 
+extern PFN_GETSYSTEMTIME SystemTimeGetter;
+
 struct LEGACY_DIRECTORY_MAP
 {
     int nFolder; // CSIDL, i.e. CSIDL_MYDOCUMENTS
@@ -44,8 +46,14 @@ int UtilCompareSystemTimes(
     __in const SYSTEMTIME *pst1,
     __in const SYSTEMTIME *pst2
     );
+// Outputs *pst1 - *pst2 in seconds
+HRESULT UtilSubtractSystemTimes(
+    __in const SYSTEMTIME *pst1,
+    __in const SYSTEMTIME *pst2,
+    __out LONGLONG *pSeconds
+    );
 HRESULT UtilAddToSystemTime(
-    __in DWORD dwMilliseconds,
+    __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
     );
 HRESULT UtilTestWriteAccess(
@@ -55,6 +63,9 @@ HRESULT UtilTestWriteAccess(
 HRESULT UtilConvertToVirtualStorePath(
     __in_z LPCWSTR wzOriginalPath,
     __out LPWSTR *psczOutput
+    );
+void UtilGetSystemTime(
+    __inout SYSTEMTIME *pst
     );
 BOOL UtilIs64BitSystem();
 

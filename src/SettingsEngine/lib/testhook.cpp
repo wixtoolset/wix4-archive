@@ -76,3 +76,12 @@ extern "C" HRESULT TestHookOverrideApplicationsPath(
 
     return S_OK;
 }
+
+extern "C" HRESULT TestHookOverrideGetSystemTime(
+    __in PFN_GETSYSTEMTIME systemTimeGetter
+    )
+{
+    SystemTimeGetter = systemTimeGetter;
+
+    return S_OK;
+}

@@ -961,8 +961,9 @@ extern "C" HRESULT DAPI SceSetColumnSystemTime(
     dbTimeStamp.hour = pst->wHour;
     dbTimeStamp.minute = pst->wMinute;
     dbTimeStamp.second = pst->wSecond;
-    // fraction represents nanoseconds (millionths of a second) - so multiply milliseconds by 1 million to get there
-    dbTimeStamp.fraction = pst->wMilliseconds * 1000000;
+    // Don't use .fraction because milliseconds are not reliable in SQL CE. They are rounded to the nearest 1/300th of a second,
+    // and it is not supported (or at least I can't figure out how) to query for an exact timestamp if milliseconds
+    // are involved (even when rounded the way SQL CE returns them).
 
     hr = SetColumnValue(pRow->pTableSchema, dwColumnIndex, reinterpret_cast<const BYTE *>(&dbTimeStamp), sizeof(dbTimeStamp), &pRow->rgBinding[pRow->dwBindingIndex++], &pRow->cbOffset, &pRow->pbData);
     ExitOnFailure(hr, "Failed to set column value as DBTIMESTAMP");
@@ -1106,8 +1107,6 @@ extern "C" HRESULT DAPI SceGetColumnSystemTime(
     pst->wHour = dbTimeStamp.hour;
     pst->wMinute = dbTimeStamp.minute;
     pst->wSecond = dbTimeStamp.second;
-    // fraction represents nanoseconds (millionths of a second) - so divide fraction by 1 million to get to milliseconds
-    pst->wMilliseconds = static_cast<WORD>(dbTimeStamp.fraction / 1000000);
 
 LExit:
     return hr;
@@ -1284,8 +1283,6 @@ HRESULT DAPI SceSetQueryColumnSystemTime(
     dbTimeStamp.hour = pst->wHour;
     dbTimeStamp.minute = pst->wMinute;
     dbTimeStamp.second = pst->wSecond;
-    // fraction represents nanoseconds (millionths of a second) - so multiply milliseconds by 1 million to get there
-    dbTimeStamp.fraction = pst->wMilliseconds * 1000000;
 
     hr = SetColumnValue(pQuery->pTableSchema, pQuery->pIndexSchema->rgColumns[pQuery->dwBindingIndex], reinterpret_cast<const BYTE *>(&dbTimeStamp), sizeof(dbTimeStamp), &pQuery->rgBinding[pQuery->dwBindingIndex], &pQuery->cbOffset, &pQuery->pbData);
     ExitOnFailure(hr, "Failed to set query column value as DBTIMESTAMP");
@@ -1702,6 +1699,7 @@ static HRESULT EnsureSchema(
     DBCOLUMNDESC *rgColumnDescriptions = NULL;
     DBINDEXCOLUMNDESC *rgIndexColumnDescriptions = NULL;
     DWORD cIndexColumnDescriptions = 0;
+    DWORD dwTableColumnIndex = 0;
     SCE_DATABASE_INTERNAL *pDatabaseInternal = reinterpret_cast<SCE_DATABASE_INTERNAL *>(pDatabase->sdbHandle);
     ITableDefinition *pTableDefinition = NULL;
     IIndexDefinition *pIndexDefinition = NULL;
@@ -1824,10 +1822,12 @@ static HRESULT EnsureSchema(
 
                 for (DWORD dwColumnIndex = 0; dwColumnIndex < cIndexColumnDescriptions; ++dwColumnIndex)
                 {
+                    dwTableColumnIndex = pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].rgColumns[dwColumnIndex];
+
                     rgIndexColumnDescriptions[dwColumnIndex].pColumnID = reinterpret_cast<DBID *>(MemAlloc(sizeof(DBID), TRUE));
                     rgIndexColumnDescriptions[dwColumnIndex].pColumnID->eKind = DBKIND_NAME;
-                    rgIndexColumnDescriptions[dwColumnIndex].pColumnID->uName.pwszName = const_cast<LPOLESTR>(pdsSchema->rgTables[dwTable].rgColumns[pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].rgColumns[dwColumnIndex]].wzName);
-                    rgIndexColumnDescriptions[dwColumnIndex].eIndexColOrder = DBINDEX_COL_ORDER_ASC;
+                    rgIndexColumnDescriptions[dwColumnIndex].pColumnID->uName.pwszName = const_cast<LPOLESTR>(pdsSchema->rgTables[dwTable].rgColumns[dwTableColumnIndex].wzName);
+                    rgIndexColumnDescriptions[dwColumnIndex].eIndexColOrder = pdsSchema->rgTables[dwTable].rgColumns[dwTableColumnIndex].fDescending ? DBINDEX_COL_ORDER_DESC  : DBINDEX_COL_ORDER_ASC;
                 }
 
                 hr = pIndexDefinition->CreateIndex(&tableID, &indexID, static_cast<DBORDINAL>(pdsSchema->rgTables[dwTable].rgIndexes[dwIndex].cColumns), rgIndexColumnDescriptions, 1, rgdbpIndexPropSet, NULL);
