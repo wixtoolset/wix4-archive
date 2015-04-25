@@ -1,3 +1,5 @@
+* SeanHall: WIXFEAT: 4703 - Move the PrereqPackage information out of the NetFx extension and into the Bal extension so that the NetFx extension doesn't require the Bal extension.
+
 * SeanHall: WIXBUG:4392 - Set WixBundleInstalled during Detect.
 
 * MikeGC: Allow settings engine to detect installation state of products based on ARP reg key name, and add more UDMs

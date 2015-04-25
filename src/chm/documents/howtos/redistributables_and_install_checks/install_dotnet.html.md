@@ -6,17 +6,23 @@ layout: documentation
 # How To: Install the .NET Framework Using Burn
 Applications written using the .NET Framework often need to bundle the .NET framework and install it with their application.  Wix 3.6 and later makes this easy with Burn.
 
+## PackageGroups
+
+The WixNetFxExtension includes package groups that make it easier to include .NET in your bundles.
+The WixBalExtension includes package groups that make it easier to label the NetFx package groups as a bal:PrereqPackage for the ManagedBootstrapperApplicationHost.
+The available packages groups are documented in [Built-in PackageGroups](~/bundle/bundle_built_in_packagegroups.html).
+
 ## Step 1: Create a bundle for your application
 Follow the instructions in [Building Installation Package Bundles](~/bundle/index.html).
 
 ## Step 2: Add a reference to one of the .NET PackageGroups
 <ol>
 <li>Add a reference to WixNetFxExtension to your bundle project.</li>
-<li>Add a PackageGroupRef element to your bundle&apos;s chain that references the .NET package required by your application.  For a full list, see [WixNetfxExtension](~/customactions/wixnetfxextension.html). Ensure that the PayloadGroupRef is placed before any other packages that require .NET.</li>
+<li>Add a PackageGroupRef element to your bundle&apos;s chain that references the .NET package required by your application using one of the IDs above. Ensure that the PackageGroupRef is placed before any other packages that require .NET.</li>
 <pre>
 <font size="2" color="#0000FF">&lt;</font><font size="2" color="#A31515">Chain</font><font size="2" color="#0000FF">&gt;
-    &lt;</font><font size="2" color="#A31515">PackageGroupRef</font><font size="2" color="#0000FF"> </font><font size="2" color="#FF0000">Id</font><font size="2" color="#0000FF">=</font><font size="2">"</font><font size="2" color="#0000FF">NetFx45Web</font><font size="2">"</font><font size="2" color="#0000FF">/&gt;
-    &lt;</font><font size="2" color="#A31515">MsiPackage</font><font size="2" color="#0000FF"> </font><font size="2" color="#FF0000">Id</font><font size="2" color="#0000FF">=</font><font size="2">"</font><font size="2" color="#0000FF">MyApplication</font><font size="2">"</font><font size="2" color="#FF0000"> SourceFile</font><font size="2" color="#0000FF">=</font><font size="2">"</font><font size="2" color="#0000FF">$(var.MyApplicationSetup.TargetPath)</font><font size="2">"</font><font size="2" color="#0000FF">/&gt;
+    &lt;</font><font size="2" color="#A31515">PackageGroupRef</font><font size="2" color="#0000FF"> </font><font size="2" color="#FF0000">Id</font><font size="2" color="#0000FF">=</font><font size="2">"</font><font size="2" color="#0000FF">NetFx45Web</font><font size="2">"</font><font size="2" color="#0000FF"> /&gt;
+    &lt;</font><font size="2" color="#A31515">MsiPackage</font><font size="2" color="#0000FF"> </font><font size="2" color="#FF0000">Id</font><font size="2" color="#0000FF">=</font><font size="2">"</font><font size="2" color="#0000FF">MyApplication</font><font size="2">"</font><font size="2" color="#FF0000"> SourceFile</font><font size="2" color="#0000FF">=</font><font size="2">"</font><font size="2" color="#0000FF">$(var.MyApplicationSetup.TargetPath)</font><font size="2">"</font><font size="2" color="#0000FF"> /&gt;
 &lt;/</font><font size="2" color="#A31515">Chain</font><font size="2" color="#0000FF">&gt;</font>
 </pre>
 </ol>
@@ -75,5 +81,14 @@ Managed bootstrapper applications must take care when including .NET to ensure t
     <font color="blue">&lt;</font>/<font color="maroon">host</font><font color="blue">&gt;</font>
   <font color="blue">&lt;</font>/<font color="maroon">wix.bootstrapper</font><font color="blue">&gt;</font>
 <font color="blue">&lt;</font>/<font color="maroon">configuration</font><font color="blue">&gt;</font>
+</pre>
+<li>Label one of the .NET packages in the Chain as a PrereqPackage so that the MBA prerequisite BA can install .NET in order to load your BA.  If using a built-in .NET package from the NetFx extension, simply add AsPrereq to the end of the PackageGroupRef Id.  Otherwise, add bal:PrereqPackage="yes" to the .NET package.</li>
+<pre>
+  <font color="green">&lt;!-- change this --&gt;</font>
+  <font color="green">&lt;!-- &lt;PackageGroupRef Id="NetFx45Web" /&gt; --&gt;</font>
+  <font color="green">&lt;!-- to this --&gt;</font>
+  <font color="blue">&lt;</font><font color="maroon">PackageGroupRef</font> <font color="red">Id</font>="<font color="blue">NetFx45WebAsPrereq</font>" <font color="blue">/&gt;</font><br>
+  <font color="green">&lt;!-- or add bal:PrereqPackage to your custom ExePackage --&gt;</font>
+  <font color="blue">&lt;</font><font color="maroon">ExePackage</font> <font color="red">Id</font>="<font color="blue">NetFx45Custom</font>" <font color="red">bal:PrereqPackage</font>="<font color="blue">yes</font>" <font color="blue">/&gt;</font>
 </pre>
 </ol>

@@ -33,15 +33,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ca\netfxca.vcxproj" />
-    <ProjectReference Include="..\..\BalExtension\wixext\WixBalExtension.csproj" />
     <ProjectReference Include="..\..\UtilExtension\wixext\WixUtilExtension.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <WixExtension Include="WixBalExtension">
-      <Private>False</Private>
-      <HintPath>$(OutputPath_x86)WixBalExtension.dll</HintPath>
-    </WixExtension>
     <WixExtension Include="WixUtilExtension">
       <Private>False</Private>
       <HintPath>$(OutputPath_x86)WixUtilExtension.dll</HintPath>
