@@ -1,3 +1,5 @@
+* MikeGC: Allow settings engine to detect installation state of products based on ARP reg key name, and add more UDMs
+
 * MikeGC: WIXFEAT:4350 - Settings engine no longer keeps archives of all settings changes forever, it now has a reasonable expiration policy.
 
 * SeanHall: WIXFEAT:4619 - Include WixUI dialogs and wxl files in core MSI.

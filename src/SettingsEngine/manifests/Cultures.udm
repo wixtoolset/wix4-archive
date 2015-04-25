@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Cultures">
+        <Detect>
+            <Arp DisplayIconDir="IconDir" DisplayName="Cultures"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="IconDir:\Save\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Cultures</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Patrician_4_Rise_of_a_Dynasty">
+        <Detect>
+            <Arp DisplayName="Patrician IV: Rise of a Dynasty"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\Kalypso Media\Patrician 4 Addon\savegames\" />
+        </Data>
+
+        <DisplayName LCID="1033">Patrician IV: Rise of a Dynasty</DisplayName>
+    </Product>
+</LegacySettings>

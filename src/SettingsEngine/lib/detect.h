@@ -41,6 +41,7 @@ struct LEGACY_DETECT
         struct
         {
             LPWSTR sczDisplayName;
+            LPWSTR sczRegKeyName;
 
             LPWSTR sczInstallLocationProperty;
             LPWSTR wzInstallLocationValue; // This is the value of the directory portion of InstallLocation
@@ -68,6 +69,7 @@ struct LEGACY_DETECT
 struct ARP_PRODUCT
 {
     LPWSTR sczDisplayName;
+    LPWSTR sczRegKeyName;
     LPWSTR sczInstallLocation;
     LPWSTR sczUninstallStringDir;
     LPWSTR sczDisplayIconDir;
@@ -76,7 +78,8 @@ struct ARP_PRODUCT
 struct ARP_PRODUCTS
 {
     BOOL fEnumerationRun;
-    STRINGDICT_HANDLE shProductsFound; // Dictionary associating display names with key names
+    STRINGDICT_HANDLE shProductsFoundByDisplayName; // Dictionary associating display names with key names
+    STRINGDICT_HANDLE shProductsFoundByRegKeyName; // Dictionary associating reg key names with key names
 
     ARP_PRODUCT *rgProducts;
     DWORD cProducts;
