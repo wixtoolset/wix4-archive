@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Elder_Scrolls_2_Daggerfall">
+        <Detect>
+            <Arp RegKeyName="DaggerfallSetup_is1" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <DisplayName LCID="1033">The Elder Scrolls II: Daggerfall</DisplayName>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\SAVE0"/>
+            <Normal Prefix="Data:\SAVE1"/>
+            <Normal Prefix="Data:\SAVE2"/>
+            <Normal Prefix="Data:\SAVE3"/>
+            <Normal Prefix="Data:\SAVE4"/>
+            <Normal Prefix="Data:\SAVE5"/>
+        </Filter>
+
+    </Product>
+</LegacySettings>
