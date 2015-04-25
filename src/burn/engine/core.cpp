@@ -217,7 +217,10 @@ extern "C" HRESULT CoreDetect(
     hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
     ExitOnFailure(hr, "Engine cannot start detect because it is busy with another action.");
 
-    // Detect if bundle is already installed.
+    // Detect if bundle installed state has changed since start up. This
+    // only happens if Apply() changed the state of bundle (installed or
+    // uninstalled). In that case, Detect() can be used here to reset
+    // the installed state.
     hr = RegistrationDetectInstalled(&pEngineState->registration, &pEngineState->registration.fInstalled);
     ExitOnFailure(hr, "Failed to detect bundle install state.");
 
