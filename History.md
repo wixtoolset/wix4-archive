@@ -1,3 +1,5 @@
+* MikeGC: Allow settings engine to detect installation state of products based on ARP reg key name, and add more UDMs
+
 * SeanHall: WIXFEAT:4619 - Include WixUI dialogs and wxl files in core MSI.
 
 * SeanHall: WIXFEAT:4618 - Include WixStdBA and mbapreq themes and wxl files in core MSI.
