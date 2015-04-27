@@ -1,3 +1,5 @@
+* BobArnson: WIXFEAT:4720 - Added bind-time variables for .NET Framework package groups detect condition, install condition, and package directories.
+
 * BobArnson: WIXBUG:4750 - Add a note about binary (in)compatibility.
 
 * RobMen: WIXBUG:4732 - fix documentation links to MsiServiceConfig and MsiServiceConfigFailureActions.

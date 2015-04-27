@@ -43,6 +43,7 @@
     <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
 
     <WixVariable Id="NetFx45WebDetectCondition" Value="NETFRAMEWORK45 &gt;= $(var.NetFx45MinRelease)" Overridable="yes" />
+    <WixVariable Id="NetFx45WebInstallCondition" Value="" Overridable="yes" />
     <WixVariable Id="NetFx45WebPackageDirectory" Value="redist\" Overridable="yes" />
 
     <PackageGroup Id="NetFx45Web">
@@ -52,6 +53,7 @@
           UninstallCommand="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx45FullWebLog].html&quot;"
           PerMachine="yes"
           DetectCondition="!(wix.NetFx45WebDetectCondition)"
+          InstallCondition="!(wix.NetFx45WebInstallCondition)"
           Id="NetFx45Web"
           Vital="yes"
           Permanent="yes"
@@ -76,6 +78,7 @@
     <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
 
     <WixVariable Id="NetFx45RedistDetectCondition" Value="NETFRAMEWORK45 &gt;= $(var.NetFx45MinRelease)" Overridable="yes" />
+    <WixVariable Id="NetFx45RedistInstallCondition" Value="" Overridable="yes" />
     <WixVariable Id="NetFx45RedistPackageDirectory" Value="redist\" Overridable="yes" />
 
     <PackageGroup Id="NetFx45Redist">
@@ -85,6 +88,7 @@
           UninstallCommand="/uninstall /q /norestart /ChainingPackage &quot;[WixBundleName]&quot; /log &quot;[NetFx45FullLog].html&quot;"
           PerMachine="yes"
           DetectCondition="!(wix.NetFx45RedistDetectCondition)"
+          InstallCondition="!(wix.NetFx45RedistInstallCondition)"
           Id="NetFx45Redist"
           Vital="yes"
           Permanent="yes"
