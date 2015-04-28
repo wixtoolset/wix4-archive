@@ -1,3 +1,5 @@
+* RobMen: WIXBUG:4732 - fix documentation links to MsiServiceConfig and MsiServiceConfigFailureActions.
+
 * BobArnson: WIXBUG:4725 - Scrub the WixStdBA license doc and add a blurb about a missing WixStdbaLicenseUrl variable.
 
 * BobArnson: WIXBUG:4721 - Tweak RepairCommand doc.
