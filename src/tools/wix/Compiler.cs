@@ -7044,6 +7044,8 @@ namespace WixToolset
                 this.core.OnMessage(WixErrors.ParentElementAttributeRequired(sourceLineNumbers, "Product", "Version", node.Name.LocalName));
             }
 
+            string productLanguage = contextValues["ProductLanguage"];
+
             foreach (XAttribute attrib in node.Attributes())
             {
                 if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
@@ -7069,6 +7071,12 @@ namespace WixToolset
                             if (YesNoType.No == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
                                 options &= ~MsiInterop.MsidbUpgradeAttributesMigrateFeatures;
+                            }
+                            break;
+                        case "IgnoreLanguage":
+                            if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                productLanguage = null;
                             }
                             break;
                         case "IgnoreRemoveFailure":
@@ -7130,14 +7138,14 @@ namespace WixToolset
                 {
                     row[1] = "0"; // let any version satisfy
                     // row[2] = maximum version; omit so we don't have to fake a version like "255.255.65535";
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = options | MsiInterop.MsidbUpgradeAttributesVersionMinInclusive;
                 }
                 else
                 {
                     // row[1] = minimum version; skip it so we detect all prior versions.
                     row[2] = productVersion;
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = allowSameVersionUpgrades ? (options | MsiInterop.MsidbUpgradeAttributesVersionMaxInclusive) : options;
                 }
 
@@ -7162,7 +7170,7 @@ namespace WixToolset
                     row[0] = upgradeCode;
                     row[1] = productVersion;
                     // row[2] = maximum version; skip it so we detect all future versions.
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = MsiInterop.MsidbUpgradeAttributesOnlyDetect;
                     // row[5] = removeFeatures;
                     row[6] = Compiler.DowngradeDetectedProperty;
@@ -11895,6 +11903,7 @@ namespace WixToolset
                 }
 
                 Dictionary<string, string> contextValues = new Dictionary<string, string>();
+                contextValues["ProductLanguage"] = this.activeLanguage;
                 contextValues["ProductVersion"] = version;
                 contextValues["UpgradeCode"] = upgradeCode;
 

@@ -12436,6 +12436,16 @@
                     </xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="IgnoreLanguage" type="YesNoTypeUnion">
+        <xs:annotation>
+          <xs:documentation>
+                        When set to yes, the Upgrade table rows will match any product with the same UpgradeCode.
+
+                        When set to no (the default), the Upgrade table rows will match only products with the
+                        same UpgradeCode and ProductLanguage.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="IgnoreRemoveFailure" type="YesNoTypeUnion">
         <xs:annotation>
           <xs:documentation>

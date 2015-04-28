@@ -1,3 +1,5 @@
+* HeathS: WIXFEAT:4663 - Default to language-specific major upgrades with option to ignore language.
+
 * SeanHall: WIXFEAT: 4703 - Move the PrereqPackage information out of the NetFx extension and into the Bal extension so that the NetFx extension doesn't require the Bal extension.
 
 * SeanHall: WIXBUG:4392 - Set WixBundleInstalled during Detect.
