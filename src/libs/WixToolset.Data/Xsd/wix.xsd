@@ -2340,7 +2340,7 @@
       </xs:attribute>
       <xs:attribute name="CleanWorkingFolder" type="YesNoTypeUnion">
         <xs:annotation>
-          <xs:documentation>Use this to set whether Patchwiz should clean the temp folder when finished. See <html:a href="http://msdn.microsoft.com/library/aa370890.aspx" target="_blank">DontRemoveTempFolderWhenFinished</html:a> for more information.	</xs:documentation>
+          <xs:documentation>Use this to set whether Patchwiz should clean the temp folder when finished. See <html:a href="http://msdn.microsoft.com/library/aa370890.aspx" target="_blank">DontRemoveTempFolderWhenFinished</html:a> for more information.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="Codepage" type="xs:string">
@@ -7395,9 +7395,8 @@
                         Set this attribute to 'always32Bit' to mark this as a 32-bit component. This attribute facilitates
                         the installation of packages that include both 32-bit and 64-bit components. 64-bit
                         components must not share the same GUID with a 32-bit component.
-          If attribute is default (or specified as 'default'), the architecture set by the -arch switch to candle.exe
-          or the InstallerPlatform property in a .wixproj MSBuild project will be used to determine if the component
-          is 32-bit or 64-bit. The default value is 'default'.
+                        The default will be the Architecture set by the -arch switch in candle.exe or the
+                        InstallerPlatform property in a .wixproj MSBuild project.
           </xs:documentation>
         </xs:annotation>
         <xs:simpleType>
@@ -8764,9 +8763,8 @@
             <xs:annotation>
               <xs:documentation>
                             Set this attribute to 'always32Bit' to mark this as a 32-bit custom action. Valid only when used with
-                                the Script, VBScriptCall, and JScriptCall attributes. The default value is 'default', which
-                                will be the Architecture set by the -arch switch in candle.exe or the InstallerPlatform property
-                                in a .wixproj MSBuild project. The default value is 'default'.
+                            the Script, VBScriptCall, and JScriptCall attributes. The default will be the Architecture set
+                            by the -arch switch in candle.exe or the InstallerPlatform property in a .wixproj MSBuild project.
               </xs:documentation>
             </xs:annotation>
             <xs:simpleType>

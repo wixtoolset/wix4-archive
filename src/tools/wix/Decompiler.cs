@@ -4798,7 +4798,7 @@ namespace WixToolset
                     customAction.TerminalServerAware = Wix.YesNoType.yes;
                 }
 
-                // If it's a 64-bit package with a 32-bit custom action, then we need win32 specifically, otherwise use the default
+                // If it's a 64-bit package with a 32-bit custom action, then we need win32 specifically, otherwise use the default.
                 if ((this.platform == WixToolset.Data.Serialize.Package.PlatformType.x64 || this.platform == WixToolset.Data.Serialize.Package.PlatformType.ia64) && MsiInterop.MsidbCustomActionType64BitScript != (type & MsiInterop.MsidbCustomActionType64BitScript))
                 {
                     customAction.Architecture = Wix.CustomAction.ArchitectureType.always32Bit;
