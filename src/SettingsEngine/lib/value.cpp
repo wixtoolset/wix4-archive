@@ -1288,37 +1288,42 @@ static HRESULT ExpireOldRows(
         // If it's older than 30 days, keep values that are at least 30 days apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 30)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 24 * 30);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 24 * 30);
         }
         // If it's older than 2 weeks, keep values that are at least 3 day apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 14)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 24 * 3);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 24 * 3);
         }
         // If it's older than a week, keep values that are at least 1 day apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 7)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 24);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 24);
         }
         // If it's older than 3 days, keep values that are at least 12 hours apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 3)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 12);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 12);
         }
         // If it's older than a day, keep values that are at least 3 hours apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 3);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 3);
         }
-        // If it's older than an hour, keep values at least 1 hour apart, and discard ones closer together
+        // If it's older than an hour, keep values at least 15 minutes apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 15);
         }
-        // It must be newer than an hour, so only keep values at least 3 minutes apart
+        // It must be newer than an hour, so keep all values. This is unfortunately critical in the dropbox-like scenario,
+        // where we can commit a database, and later discover that perhaps it didn't really commit after all (due to two machines
+        // updating the database file at around the same time, which is common when a value is being modified on machine A regularly,
+        // and machine B is trying to update the database to indicate a recent value is referenced).
+        // A better solution should be explored because this just dramatically lowers the chance of conflicts, but does
+        // not completely eliminate it. It is important for now to make sure that the expiration feature doesn't usually have conflicts.
         else
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 3);
+            fKeepThisValue = TRUE;
         }
 
         if (fKeepThisValue)
