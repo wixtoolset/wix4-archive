@@ -212,7 +212,7 @@ namespace CfgTests
         DWORD64 ul;
         C_ASSERT(sizeof(ul) == sizeof(ft));
         memcpy(&ul, &ft, sizeof(ul));
-        ul += dwSeconds * 10000000;
+        ul += (DWORD64)(dwSeconds) * 10000000;
         memcpy(&ft, &ul, sizeof(ft));
 
         if (!FileTimeToSystemTime(&ft, &stCurrent))
