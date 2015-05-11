@@ -305,12 +305,23 @@ DWORD BrowseWindow::GetSelectedValueIndex()
 
 DWORD BrowseWindow::GetSelectedValueHistoryIndex()
 {
-    DWORD dwRetVal = DWORD_MAX;
+    HWND hwnd = ::GetDlgItem(m_hWnd, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_LIST_VIEW);
+
+    DWORD dwSelectionIndex = DWORD_MAX;
+    DWORD dwListViewRowCount = ::SendMessageW(hwnd, LVM_GETITEMCOUNT, 0, 0);
 
     // Ignore errors
-    UIGetSingleSelectedItemFromListView(::GetDlgItem(m_hWnd, BROWSE_CONTROL_SINGLE_VALUE_HISTORY_LIST_VIEW), NULL, &dwRetVal);
+    UIGetSingleSelectedItemFromListView(hwnd, NULL, &dwSelectionIndex);
 
-    return dwRetVal;
+    if (DWORD_MAX == dwSelectionIndex || dwListViewRowCount <= dwSelectionIndex)
+    {
+        // Something weird, indicate error
+        return DWORD_MAX;
+    }
+    else
+    {
+        return dwListViewRowCount - dwSelectionIndex - 1;
+    }
 }
 
 DWORD BrowseWindow::GetSelectedConflictProductIndex()
