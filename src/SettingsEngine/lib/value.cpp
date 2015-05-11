@@ -483,7 +483,7 @@ HRESULT ValueTransferFromHistory(
         if (fValueExists && 0 > UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
         {
             // If we're not on the last loop iteration, just don't transfer this enum
-            // TODO: we could write historical values by inserting them in the old history
+            // TODO: we could write historical values by inserting them in the old history, someday if we have a separate timestamp for arrival-at-this-db time vs original-modified-time
             if (!fLastValue)
             {
                 continue;
@@ -491,6 +491,10 @@ HRESULT ValueTransferFromHistory(
 
             pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen = stValue;
             UtilAddToSystemTime(1, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
+
+            // Since we changed the timestamp, make sure the updated timestamp appears in both databases
+            hr = EnumWriteValue(pcdbReferencedBy, wzValueName, pceValueHistoryEnum, i, pcdb);
+            ExitOnFailure(hr, "Failed to write value in referenced by %ls index %u", wzValueName, i);
         }
         
         // Make sure to set the referenced by column for the last value only
