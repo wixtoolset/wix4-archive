@@ -493,7 +493,7 @@ HRESULT ValueTransferFromHistory(
             UtilAddToSystemTime(1, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
 
             // Since we changed the timestamp, make sure the updated timestamp appears in both databases
-            hr = EnumWriteValue(pcdbReferencedBy, wzValueName, pceValueHistoryEnum, i, pcdb);
+            hr = ValueWrite(pcdbReferencedBy, pcdbReferencedBy->dwAppID, wzValueName, pceValueHistoryEnum->valueHistory.rgcValues + i, FALSE, pcdb);
             ExitOnFailure(hr, "Failed to write value in referenced by %ls index %u", wzValueName, i);
         }
         
