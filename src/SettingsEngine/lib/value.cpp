@@ -447,6 +447,12 @@ HRESULT ValueTransferFromHistory(
     SCE_ROW_HANDLE sceValueRow = NULL;
     SCE_ROW_HANDLE sceValueHistoryRow = NULL;
 
+    if (dwStartingEnumIndex >= pceValueHistoryEnum->dwNumValues)
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Incorrect starting enum index passed to ValueTransferFromHistory()");
+    }
+
     hr = SceBeginTransaction(pcdb->psceDb);
     ExitOnFailure(hr, "Failed to begin transaction");
     fInSceTransaction = TRUE;
