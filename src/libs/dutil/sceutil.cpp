@@ -61,6 +61,8 @@ struct SCE_DATABASE_INTERNAL
 
     BOOL fChanges; // This database has changed
     BOOL fPendingChanges; // Some changes are pending, upon transaction commit
+    BOOL fRollbackTransaction; // If this flag is true, the current transaction was requested to be rolled back
+    BOOL fTransactionBadState; // If this flag is true, we were unable to get out of a transaction, so starting a new transaction should fail
 
     // If the database was opened as read-only, we copied it here - so delete it on close
     LPWSTR sczTempDbFile;
@@ -584,6 +586,12 @@ extern "C" HRESULT DAPI SceBeginTransaction(
     HRESULT hr = S_OK;
     SCE_DATABASE_INTERNAL *pDatabaseInternal = reinterpret_cast<SCE_DATABASE_INTERNAL *>(pDatabase->sdbHandle);
 
+    if (pDatabaseInternal->fTransactionBadState)
+    {
+        // We're in a hosed transaction state - we can't start a new one
+        ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_RECOVERY_FAILURE));
+    }
+
     ::InterlockedIncrement(&pDatabaseInternal->dwTransactionRefcount);
 
     if (1 == pDatabaseInternal->dwTransactionRefcount)
@@ -613,17 +621,28 @@ extern "C" HRESULT DAPI SceCommitTransaction(
 
     if (0 == pDatabaseInternal->dwTransactionRefcount)
     {
-        hr = pDatabaseInternal->pITransactionLocal->Commit(FALSE, XACTTC_SYNC, 0);
-        ExitOnFailure(hr, "Failed to commit transaction");
+        if (pDatabaseInternal->fRollbackTransaction)
+        {
+            hr = pDatabaseInternal->pITransactionLocal->Abort(NULL, FALSE, FALSE);
+            ExitOnFailure(hr, "Failed to abort transaction");
+        }
+        else
+        {
+            hr = pDatabaseInternal->pITransactionLocal->Commit(FALSE, XACTTC_SYNC, 0);
+            ExitOnFailure(hr, "Failed to commit transaction");
+        }
 
         if (pDatabaseInternal->fPendingChanges)
         {
             pDatabaseInternal->fPendingChanges = FALSE;
             pDatabaseInternal->fChanges = TRUE;
         }
+
+        pDatabaseInternal->fRollbackTransaction = FALSE;
     }
 
 LExit:
+    // If we tried to commit and failed, the caller should subsequently call rollback
     if (FAILED(hr))
     {
         ::InterlockedIncrement(&pDatabaseInternal->dwTransactionRefcount);
@@ -647,13 +666,18 @@ extern "C" HRESULT DAPI SceRollbackTransaction(
         hr = pDatabaseInternal->pITransactionLocal->Abort(NULL, FALSE, FALSE);
         ExitOnFailure(hr, "Failed to abort transaction");
         pDatabaseInternal->fPendingChanges = FALSE;
+
+        pDatabaseInternal->fRollbackTransaction = FALSE;
+    }
+    else
+    {
+        pDatabaseInternal->fRollbackTransaction = TRUE;
     }
 
 LExit:
-    if (FAILED(hr))
-    {
-        ::InterlockedIncrement(&pDatabaseInternal->dwTransactionRefcount);
-    }
+    // We're just in a bad state now. Don't increment the transaction refcount (what is the user going to do - call us again?)
+    // but mark the database as bad so the user gets an error if they try to start a new transaction.
+    pDatabaseInternal->fTransactionBadState = TRUE;
 
     return hr;
 }
