@@ -554,6 +554,7 @@ HRESULT ValueWrite(
     HRESULT hr = S_OK;
     DWORD dwHistoryID = 0;
     DWORD dwContentID = 0;
+    int iCompareResult = 0;
     BOOL fSameValue = FALSE;
     SCE_ROW_HANDLE sceRow = NULL;
     BOOL fInSceTransaction = FALSE;
@@ -595,11 +596,17 @@ HRESULT ValueWrite(
         }
 
         // If new value is not newer than latest value's timestamp, error out, as this can cause last value index history table row to not match the value in value table,
-        // and we expect these to be in order.
-        if (0 >= UtilCompareSystemTimes(&pcvValue->stWhen, &cvExistingValue.stWhen))
+        // and we expect these to be in order. Allow same time values from different sources, as their order doesn't matter.
+        iCompareResult = UtilCompareSystemTimes(&pcvValue->stWhen, &cvExistingValue.stWhen);
+        if (0 > iCompareResult)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_TIME);
-            ExitOnFailure(hr, "Tried to set older time value named %ls, appid %u!", wzName, dwAppID);
+            ExitOnFailure(hr, "Tried to set older time or same time with same value named %ls, appid %u!", wzName, dwAppID);
+        }
+        else if (0 == iCompareResult && CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pcvValue->sczBy, -1, cvExistingValue.sczBy, -1))
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_TIME);
+            ExitOnFailure(hr, "Tried to set same time with same source named %ls, appid %u!", wzName, dwAppID);
         }
     }
 
