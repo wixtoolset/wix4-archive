@@ -470,17 +470,9 @@ static HRESULT SyncSingleProduct(
     ExitOnFailure(hr, "Failed to create dictionary of values seen");
 
     hr = ProductSyncValues(pcdb1, pcdb2, fRegistered, shDictItemsSeen, ppcpProductTemp);
-    if (E_NOTFOUND == hr)
-    {
-        hr = S_OK;
-    }
     ExitOnFailure(hr, "Failed to sync product values for application (1)");
 
     hr = ProductSyncValues(pcdb2, pcdb1, fRegistered, shDictItemsSeen, ppcpProductTemp);
-    if (E_NOTFOUND == hr)
-    {
-        hr = S_OK;
-    }
     ExitOnFailure(hr, "Failed to sync product values for application (2)");
 
 LExit:
