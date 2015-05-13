@@ -486,7 +486,7 @@ HRESULT ValueTransferFromHistory(
     {
         fLastValue = (i == pceValueHistoryEnum->dwNumValues - 1);
 
-        if (fValueExists && 0 > UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
+        if (fValueExists && 0 >= UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
         {
             // If we're not on the last loop iteration, just don't transfer this enum
             // TODO: we could write historical values by inserting them in the old history, someday if we have a separate timestamp for arrival-at-this-db time vs original-modified-time
@@ -587,11 +587,19 @@ HRESULT ValueWrite(
             }
         }
 
-        // If current value in database is newer than current time, error out, as this can cause weird sync behavior
+        // If current value in database is newer than or exactly the same as current time, error out, as this can cause weird sync behavior
         if (0 >= UtilCompareSystemTimes(&stNow, &cvExistingValue.stWhen))
         {
             hr = HRESULT_FROM_WIN32(ERROR_TIME_SKEW);
             ExitOnFailure(hr, "Found already-existing future value named %ls, appID %u! Please ensure all syncing desktop machines are set to use internet time.", wzName, dwAppID);
+        }
+
+        // If new value is not newer than latest value's timestamp, error out, as this can cause last value index history table row to not match the value in value table,
+        // and we expect these to be in order.
+        if (0 >= UtilCompareSystemTimes(&pcvValue->stWhen, &cvExistingValue.stWhen))
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_TIME);
+            ExitOnFailure(hr, "Tried to set older time value named %ls, appid %u!", wzName, dwAppID);
         }
     }
 
