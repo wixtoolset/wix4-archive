@@ -1,3 +1,5 @@
+* HeathS: WIXBUG:3060 - Do not redownload package payloads when /layout is restarted.
+
 * SeanHall: WIXFEAT: 4703 - Move the PrereqPackage information out of the NetFx extension and into the Bal extension so that the NetFx extension doesn't require the Bal extension.
 
 * SeanHall: WIXBUG:4392 - Set WixBundleInstalled during Detect.
