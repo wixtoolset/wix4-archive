@@ -1,3 +1,5 @@
+* HeathS: Add VSIX property for VS2015 and fix searches for previous versions.
+
 * HeathS: WIXBUG:3060 - Do not redownload package payloads when /layout is restarted.
 
 * SeanHall: WIXBUG:4761 - Use the package's exit code to tell if the prereq was installed.
