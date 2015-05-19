@@ -447,6 +447,12 @@ HRESULT ValueTransferFromHistory(
     SCE_ROW_HANDLE sceValueRow = NULL;
     SCE_ROW_HANDLE sceValueHistoryRow = NULL;
 
+    if (dwStartingEnumIndex >= pceValueHistoryEnum->dwNumValues)
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Incorrect starting enum index passed to ValueTransferFromHistory()");
+    }
+
     hr = SceBeginTransaction(pcdb->psceDb);
     ExitOnFailure(hr, "Failed to begin transaction");
     fInSceTransaction = TRUE;
@@ -480,10 +486,10 @@ HRESULT ValueTransferFromHistory(
     {
         fLastValue = (i == pceValueHistoryEnum->dwNumValues - 1);
 
-        if (fValueExists && 0 > UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
+        if (fValueExists && 0 >= UtilCompareSystemTimes(&pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen, &stValue))
         {
             // If we're not on the last loop iteration, just don't transfer this enum
-            // TODO: we could write historical values by inserting them in the old history
+            // TODO: we could write historical values by inserting them in the old history, someday if we have a separate timestamp for arrival-at-this-db time vs original-modified-time
             if (!fLastValue)
             {
                 continue;
@@ -491,6 +497,10 @@ HRESULT ValueTransferFromHistory(
 
             pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen = stValue;
             UtilAddToSystemTime(1, &pceValueHistoryEnum->valueHistory.rgcValues[i].stWhen);
+
+            // Since we changed the timestamp, make sure the updated timestamp appears in both databases
+            hr = ValueWrite(pcdbReferencedBy, pcdbReferencedBy->dwAppID, wzValueName, pceValueHistoryEnum->valueHistory.rgcValues + i, FALSE, pcdb);
+            ExitOnFailure(hr, "Failed to write value in referenced by %ls index %u", wzValueName, i);
         }
         
         // Make sure to set the referenced by column for the last value only
@@ -544,6 +554,7 @@ HRESULT ValueWrite(
     HRESULT hr = S_OK;
     DWORD dwHistoryID = 0;
     DWORD dwContentID = 0;
+    int iCompareResult = 0;
     BOOL fSameValue = FALSE;
     SCE_ROW_HANDLE sceRow = NULL;
     BOOL fInSceTransaction = FALSE;
@@ -577,11 +588,25 @@ HRESULT ValueWrite(
             }
         }
 
-        // If current value in database is newer than current time, error out, as this can cause weird sync behavior
+        // If current value in database is newer than or exactly the same as current time, error out, as this can cause weird sync behavior
         if (0 >= UtilCompareSystemTimes(&stNow, &cvExistingValue.stWhen))
         {
             hr = HRESULT_FROM_WIN32(ERROR_TIME_SKEW);
             ExitOnFailure(hr, "Found already-existing future value named %ls, appID %u! Please ensure all syncing desktop machines are set to use internet time.", wzName, dwAppID);
+        }
+
+        // If new value is not newer than latest value's timestamp, error out, as this can cause last value index history table row to not match the value in value table,
+        // and we expect these to be in order. Allow same time values from different sources, as their order doesn't matter.
+        iCompareResult = UtilCompareSystemTimes(&pcvValue->stWhen, &cvExistingValue.stWhen);
+        if (0 > iCompareResult)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_TIME);
+            ExitOnFailure(hr, "Tried to set older time or same time with same value named %ls, appid %u!", wzName, dwAppID);
+        }
+        else if (0 == iCompareResult && CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, pcvValue->sczBy, -1, cvExistingValue.sczBy, -1))
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_TIME);
+            ExitOnFailure(hr, "Tried to set same time with same source named %ls, appid %u!", wzName, dwAppID);
         }
     }
 
@@ -1288,37 +1313,42 @@ static HRESULT ExpireOldRows(
         // If it's older than 30 days, keep values that are at least 30 days apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 30)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 24 * 30);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 24 * 30);
         }
         // If it's older than 2 weeks, keep values that are at least 3 day apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 14)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 24 * 3);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 24 * 3);
         }
         // If it's older than a week, keep values that are at least 1 day apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 7)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 24);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 24);
         }
         // If it's older than 3 days, keep values that are at least 12 hours apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24 * 3)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 12);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 12);
         }
         // If it's older than a day, keep values that are at least 3 hours apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60 * 24)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60 * 3);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 60 * 3);
         }
-        // If it's older than an hour, keep values at least 1 hour apart, and discard ones closer together
+        // If it's older than an hour, keep values at least 15 minutes apart, and discard ones closer together
         else if (llTimeDiffFromNow > 60 * 60)
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 60);
+            fKeepThisValue = (llTimeDiffFromLastKept >= 60 * 15);
         }
-        // It must be newer than an hour, so only keep values at least 3 minutes apart
+        // It must be newer than an hour, so keep all values. This is unfortunately critical in the dropbox-like scenario,
+        // where we can commit a database, and later discover that perhaps it didn't really commit after all (due to two machines
+        // updating the database file at around the same time, which is common when a value is being modified on machine A regularly,
+        // and machine B is trying to update the database to indicate a recent value is referenced).
+        // A better solution should be explored because this just dramatically lowers the chance of conflicts, but does
+        // not completely eliminate it. It is important for now to make sure that the expiration feature doesn't usually have conflicts.
         else
         {
-            fKeepThisValue = (llTimeDiffFromLastKept > 60 * 3);
+            fKeepThisValue = TRUE;
         }
 
         if (fKeepThisValue)
