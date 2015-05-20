@@ -737,7 +737,8 @@ namespace WixToolset
                     if (1 < fileRows.Count)
                     {
                         // sort the rows by DiskId
-                        fileRows.Sort();
+                        // Fix for bug #4563: FileRow does no longer implement IComparable and is therefore not sortable.
+                        //fileRows.Sort();
 
                         this.OnMessage(WixWarnings.GeneratedShortFileNameConflict(((FileRow)fileRows[0]).SourceLineNumbers, shortFileName));
 
