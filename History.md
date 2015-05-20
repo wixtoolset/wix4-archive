@@ -1,3 +1,5 @@
+* BobArnson:  Add support in locutil to add strings at runtime.
+
 * BobArnson: WIXBUG:4734 - Rewrote type-51 CAs using SetProperty.
 
 * BobArnson: WIXFEAT:4720 - Added bind-time variables for .NET Framework package groups detect condition, install condition, and package directories.
