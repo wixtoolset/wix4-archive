@@ -43,7 +43,8 @@ typedef struct _BURN_VARIABLE
 {
     LPWSTR sczName;
     BURN_VARIANT Value;
-    BOOL fHidden;
+    BOOL fHidden;    
+    BOOL fLiteral; // if fLiteral, then when formatting this variable its value should be used as is (don't continue recursively formatting).
     BOOL fPersisted;
 
     // used for late initialization of built-in variables
@@ -107,6 +108,11 @@ HRESULT VariableSetNumeric(
     __in LONGLONG llValue,
     __in BOOL fOverwriteBuiltIn
     );
+HRESULT VariableSetLiteralString(
+    __in BURN_VARIABLES* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
+    );
 HRESULT VariableSetString(
     __in BURN_VARIABLES* pVariables,
     __in_z LPCWSTR wzVariable,
@@ -119,11 +125,10 @@ HRESULT VariableSetVersion(
     __in DWORD64 qwValue,
     __in BOOL fOverwriteBuiltIn
     );
-HRESULT VariableSetVariant(
+HRESULT VariableSetLiteralVariant(
     __in BURN_VARIABLES* pVariables,
     __in_z LPCWSTR wzVariable,
-    __in BURN_VARIANT* pVariant,
-    __in BOOL fOverwriteBuiltIn
+    __in BURN_VARIANT* pVariant
     );
 HRESULT VariableFormatString(
     __in BURN_VARIABLES* pVariables,

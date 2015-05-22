@@ -93,6 +93,7 @@ static HRESULT SetVariableValue(
     __in BURN_VARIABLES* pVariables,
     __in_z LPCWSTR wzVariable,
     __in BURN_VARIANT* pVariant,
+    __in BOOL fLiteral,
     __in SET_VARIABLE setBuiltin,
     __in BOOL fLog
     );
@@ -636,12 +637,12 @@ extern "C" HRESULT VariableGetFormatted(
     }
     ExitOnFailure(hr, "Failed to get variable: %ls", wzVariable);
 
-    // Non-builtin strings may need to get expanded... non-strings and builtin
-    // variables are never expanded.
-    if (BURN_VARIANT_TYPE_STRING == pVariable->Value.Type && !pVariable->fBuiltIn)
+    // Strings need to get expanded unless they're built-in or literal because they're guaranteed not to have embedded variables.
+    if (BURN_VARIANT_TYPE_STRING == pVariable->Value.Type && !pVariable->fBuiltIn && !pVariable->fLiteral)
     {
         hr = BVariantGetString(&pVariable->Value, &scz);
-        ExitOnFailure(hr, "Failed to get unformatted string");
+        ExitOnFailure(hr, "Failed to get unformatted string.");
+
         hr = VariableFormatString(pVariables, scz, psczValue, NULL);
         ExitOnFailure(hr, "Failed to format value '%ls' of variable: %ls", pVariable->fHidden ? L"*****" : pVariable->Value.sczValue, wzVariable);
     }
@@ -671,7 +672,22 @@ extern "C" HRESULT VariableSetNumeric(
     variant.llValue = llValue;
     variant.Type = BURN_VARIANT_TYPE_NUMERIC;
 
-    return SetVariableValue(pVariables, wzVariable, &variant, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
+    return SetVariableValue(pVariables, wzVariable, &variant, FALSE, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
+}
+
+extern "C" HRESULT VariableSetLiteralString(
+    __in BURN_VARIABLES* pVariables,
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
+    )
+{
+    BURN_VARIANT variant = { };
+
+    // We're not going to encrypt this value, so can access the value directly.
+    variant.sczValue = (LPWSTR)wzValue;
+    variant.Type = BURN_VARIANT_TYPE_STRING;
+
+    return SetVariableValue(pVariables, wzVariable, &variant, TRUE, SET_VARIABLE_NOT_BUILTIN, TRUE);
 }
 
 extern "C" HRESULT VariableSetString(
@@ -687,7 +703,7 @@ extern "C" HRESULT VariableSetString(
     variant.sczValue = (LPWSTR)wzValue;
     variant.Type = BURN_VARIANT_TYPE_STRING;
 
-    return SetVariableValue(pVariables, wzVariable, &variant, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
+    return SetVariableValue(pVariables, wzVariable, &variant, FALSE, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
 }
 
 extern "C" HRESULT VariableSetVersion(
@@ -703,17 +719,16 @@ extern "C" HRESULT VariableSetVersion(
     variant.qwValue = qwValue;
     variant.Type = BURN_VARIANT_TYPE_VERSION;
 
-    return SetVariableValue(pVariables, wzVariable, &variant, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
+    return SetVariableValue(pVariables, wzVariable, &variant, FALSE, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
 }
 
-extern "C" HRESULT VariableSetVariant(
+extern "C" HRESULT VariableSetLiteralVariant(
     __in BURN_VARIABLES* pVariables,
     __in_z LPCWSTR wzVariable,
-    __in BURN_VARIANT* pVariant,
-    __in BOOL fOverwriteBuiltIn
+    __in BURN_VARIANT* pVariant
     )
 {
-    return SetVariableValue(pVariables, wzVariable, pVariant, fOverwriteBuiltIn ? SET_VARIABLE_OVERRIDE_BUILTIN : SET_VARIABLE_NOT_BUILTIN, TRUE);
+    return SetVariableValue(pVariables, wzVariable, pVariant, TRUE, SET_VARIABLE_NOT_BUILTIN, TRUE);
 }
 
 // The contents of psczOut may be sensitive, should keep encrypted and SecureZeroFree
@@ -872,6 +887,10 @@ extern "C" HRESULT VariableSerialize(
             hr = E_INVALIDARG;
             ExitOnFailure(hr, "Unsupported variable type.");
         }
+
+        // Write literal flag.
+        hr = BuffWriteNumber(ppbBuffer, piBuffer, (DWORD)pVariable->fLiteral);
+        ExitOnFailure(hr, "Failed to write literal flag.");
     }
 
 LExit:
@@ -895,6 +914,7 @@ extern "C" HRESULT VariableDeserialize(
     DWORD cVariables = 0;
     LPWSTR sczName = NULL;
     BOOL fIncluded = FALSE;
+    BOOL fLiteral = FALSE;
     BURN_VARIANT value = { };
     LPWSTR scz = NULL;
     DWORD64 qw = 0;
@@ -962,8 +982,12 @@ extern "C" HRESULT VariableDeserialize(
             ExitOnFailure(hr, "Unsupported variable type.");
         }
 
+        // Read variable literal flag.
+        hr = BuffReadNumber(pbBuffer, cbBuffer, piBuffer, (DWORD*)&fLiteral);
+        ExitOnFailure(hr, "Failed to read variable literal flag.");
+
         // Set variable.
-        hr = SetVariableValue(pVariables, sczName, &value, fWasPersisted ? SET_VARIABLE_OVERRIDE_PERSISTED_BUILTINS : SET_VARIABLE_ANY, FALSE);
+        hr = SetVariableValue(pVariables, sczName, &value, fLiteral, fWasPersisted ? SET_VARIABLE_OVERRIDE_PERSISTED_BUILTINS : SET_VARIABLE_ANY, FALSE);
         ExitOnFailure(hr, "Failed to set variable.");
 
         // Clean up.
@@ -1486,6 +1510,7 @@ static HRESULT SetVariableValue(
     __in BURN_VARIABLES* pVariables,
     __in_z LPCWSTR wzVariable,
     __in BURN_VARIANT* pVariant,
+    __in BOOL fLiteral,
     __in SET_VARIABLE setBuiltin,
     __in BOOL fLog
     )
@@ -1537,6 +1562,10 @@ static HRESULT SetVariableValue(
             switch (pVariant->Type)
             {
             case BURN_VARIANT_TYPE_NONE:
+                if (BURN_VARIANT_TYPE_NONE != pVariables->rgVariables[iVariable].Value.Type)
+                {
+                    LogStringLine(REPORT_STANDARD, "Unsetting variable '%ls'", wzVariable, pVariant->sczValue);
+                }
                 break;
 
             case BURN_VARIANT_TYPE_NUMERIC:
@@ -1568,6 +1597,9 @@ static HRESULT SetVariableValue(
     // Update variable value.
     hr = BVariantSetValue(&pVariables->rgVariables[iVariable].Value, pVariant);
     ExitOnFailure(hr, "Failed to set value of variable: %ls", wzVariable);
+
+    // Update variable literal flag.
+    pVariables->rgVariables[iVariable].fLiteral = fLiteral;
 
 LExit:
     ::LeaveCriticalSection(&pVariables->csAccess);
