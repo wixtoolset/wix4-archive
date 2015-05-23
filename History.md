@@ -1,3 +1,5 @@
+* BobArnson: WIXFEAT:4772 - Replace hyperlink ShelExec with ShelExecUnelevated.
+
 * BobArnson:  Add support in locutil to add strings at runtime.
 
 * BobArnson: WIXBUG:4734 - Rewrote type-51 CAs using SetProperty.
