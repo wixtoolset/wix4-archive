@@ -1,3 +1,5 @@
+* BMurri: WIXBUG:3750 - Add LaunchWorkingFolder to wixstdba to facilitate processes that require a different working folder.
+
 * HeathS: Add VSIX property for VS2015 and fix searches for previous versions.
 
 * HeathS: WIXBUG:3060 - Do not redownload package payloads when /layout is restarted.
