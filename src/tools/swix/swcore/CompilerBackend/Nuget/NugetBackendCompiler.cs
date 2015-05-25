@@ -53,7 +53,10 @@ namespace WixToolset.Simplified.CompilerBackend.Nuget
                 return;
             }
 
-            FileTransfer packageTransfer = FileTransfer.Create(null, Path.GetTempFileName(), outputPath, "NugetPackage", true);
+            int lastIndex = outputPath.LastIndexOf('.');
+            string outputPathWithVersion = string.Format("{0}.{1}{2}", -1 == lastIndex ? outputPath : outputPath.Substring(0, lastIndex), manifest.Version, -1 == lastIndex ? ".nupkg" : outputPath.Substring(lastIndex));
+
+            FileTransfer packageTransfer = FileTransfer.Create(null, Path.GetTempFileName(), outputPathWithVersion, "NugetPackage", true);
             using (Package package = Package.Open(packageTransfer.Source, FileMode.Create))
             {
                 // Add all the manifest files.

@@ -63,7 +63,7 @@
       </ReleaseFile>
       
       <!-- Upload the Nuget package to the website, at least until it gets published to nuget.org -->
-      <ReleaseFile Include="$(OutputPath)WixToolset.Tools.nupkg">
+      <ReleaseFile Include="$(OutputPath)WixToolset.Tools.$(FullBuildVersionString).nupkg">
         <Title>WiX v$(MajorMinorVersionDottedString) WixToolset.Tools Nuget package.</Title>
         <Protected>true</Protected>
       </ReleaseFile>
