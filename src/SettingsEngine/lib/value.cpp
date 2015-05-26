@@ -1294,14 +1294,10 @@ static HRESULT ExpireOldRows(
         hr = UtilSubtractSystemTimes(&stLastKept, &stCurrent, &llTimeDiffFromLastKept);
         ExitOnFailure(hr, "Failed to subtract system times");
 
-        // If it's more than a year old, nobody cares whether it's referenced or not, just kill it with fire
-        if (llTimeDiffFromNow > 60 * 60 * 24 * 365)
-        {
-            fKeepThisValue = FALSE;
-        }
+        // TODO: kill off ancient values without creating conflicts
         // If it's newer than that and has any references at all, keep it to avoid sync conflicts.
         // There is a chance we have references to a remote database we will never see again, but even those will go away eventually in the above if block.
-        else if (fHasReferences)
+        if (fHasReferences)
         {
             fKeepThisValue = TRUE;
         }

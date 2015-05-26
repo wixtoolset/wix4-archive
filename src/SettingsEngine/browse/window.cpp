@@ -113,7 +113,10 @@ HRESULT BrowseWindow::ReadSettings()
     hr = CfgGetBool(cdbLocal, BROWSER_SETTING_SHOW_UNINSTALLED_PRODUCTS, &fTemp);
     if (E_NOTFOUND == hr)
     {
-        m_fShowUninstalledProducts = false;
+        hr = CfgSetBool(cdbLocal, BROWSER_SETTING_SHOW_UNINSTALLED_PRODUCTS, FALSE);
+        ExitOnFailure(hr, "Failed to set uninstalled products flag to default value");
+
+        m_fShowUninstalledProducts = FALSE;
         hr = S_OK;
     }
     else
@@ -130,7 +133,10 @@ HRESULT BrowseWindow::ReadSettings()
     hr = CfgGetBool(cdbLocal, BROWSER_SETTING_SHOW_DELETED_VALUES, &fTemp);
     if (E_NOTFOUND == hr)
     {
-        m_fShowDeletedValues = false;
+        hr = CfgSetBool(cdbLocal, BROWSER_SETTING_SHOW_DELETED_VALUES, FALSE);
+        ExitOnFailure(hr, "Failed to set show deleted values flag to default value");
+
+        m_fShowDeletedValues = FALSE;
         hr = S_OK;
     }
     else
