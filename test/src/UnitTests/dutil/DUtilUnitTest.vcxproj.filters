@@ -48,6 +48,9 @@
     <ClCompile Include="StrUtilTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UriUtilTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="VarHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

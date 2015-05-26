@@ -1150,12 +1150,14 @@ private: // privates
         LPWSTR sczFormatted = NULL;
         LPCWSTR wzLocFileName = m_fPrereq ? L"mbapreq.wxl" : L"thm.wxl";
 
+        // Find and load .wxl file.
         hr = LocProbeForFile(wzModulePath, wzLocFileName, wzLanguage, &sczLocPath);
         BalExitOnFailure(hr, "Failed to probe for loc file: %ls in path: %ls", wzLocFileName, wzModulePath);
 
         hr = LocLoadFromFile(sczLocPath, &m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load loc file from path: %ls", sczLocPath);
 
+        // Set WixStdBALanguageId to .wxl language id.
         if (WIX_LOCALIZATION_LANGUAGE_NOT_SET != m_pWixLoc->dwLangId)
         {
             ::SetThreadLocale(m_pWixLoc->dwLangId);
@@ -1164,6 +1166,7 @@ private: // privates
             BalExitOnFailure(hr, "Failed to set WixStdBALanguageId variable.");
         }
 
+        // Load ConfirmCancelMessage.
         hr = StrAllocString(&m_sczConfirmCloseMessage, L"#(loc.ConfirmCancelMessage)", 0);
         ExitOnFailure(hr, "Failed to initialize confirm message loc identifier.");
 
@@ -2320,7 +2323,7 @@ private: // privates
             }
         }
 
-        hr = ShelExec(sczLicensePath ? sczLicensePath : sczLicenseUrl, NULL, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
+        hr = ShelExecUnelevated(sczLicensePath ? sczLicensePath : sczLicenseUrl, NULL, L"open", NULL, SW_SHOWDEFAULT);
         BalExitOnFailure(hr, "Failed to launch URL to EULA.");
 
     LExit:
@@ -2439,7 +2442,7 @@ private: // privates
         hr = BalGetStringVariable(m_Bundle.sczLogVariable, &sczLogFile);
         BalExitOnFailure(hr, "Failed to get log file variable '%ls'.", m_Bundle.sczLogVariable);
 
-        hr = ShelExec(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
+        hr = ShelExecUnelevated(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT);
         BalExitOnFailure(hr, "Failed to open log file target: %ls", sczLogFile);
 
     LExit:
