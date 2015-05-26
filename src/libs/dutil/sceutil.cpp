@@ -677,7 +677,11 @@ extern "C" HRESULT DAPI SceRollbackTransaction(
 LExit:
     // We're just in a bad state now. Don't increment the transaction refcount (what is the user going to do - call us again?)
     // but mark the database as bad so the user gets an error if they try to start a new transaction.
-    pDatabaseInternal->fTransactionBadState = TRUE;
+    if (FAILED(hr))
+    {
+        TraceError(hr, "Failed to rollback transaction");
+        pDatabaseInternal->fTransactionBadState = TRUE;
+    }
 
     return hr;
 }
