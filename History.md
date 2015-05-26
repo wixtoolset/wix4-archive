@@ -1,3 +1,29 @@
+## WixBuild: Version 4.0.2926.0
+
+* BobArnson: WIXFEAT:4772 - Replace hyperlink ShelExec with ShelExecUnelevated.
+
+* BobArnson: Add support in locutil to add strings at runtime.
+
+* BobArnson: WIXBUG:4734 - Rewrote type-51 CAs using SetProperty.
+
+* BobArnson: WIXFEAT:4720 - Added bind-time variables for .NET Framework package groups detect condition, install condition, and package directories.
+
+* BobArnson: WIXBUG:4750 - Add a note about binary (in)compatibility.
+
+* RobMen: WIXBUG:4732 - fix documentation links to MsiServiceConfig and MsiServiceConfigFailureActions.
+
+* BobArnson: WIXBUG:4725 - Scrub the WixStdBA license doc and add a blurb about a missing WixStdbaLicenseUrl variable.
+
+* BobArnson: WIXBUG:4721 - Tweak RepairCommand doc.
+
+* SeanHall: WIXFEAT:4763 - Add literal flag to Burn variables to indicate that their values shouldn't be formatted.
+
+* BobArnson: Add libs_minimal.proj with just the libraries needed for tools/ tree build. This prevents the build from backing up behind a full libs/ tree build, which gets more painful the more versions of Visual Studio that are installed.
+
+* BobArnson: Project reference tweaks: 
+  - Removed unnecessary reference to setupicons from x64msi.
+  - Move BuildInParallel=false from global to just project that needs it
+
 * BMurri: WIXBUG:3750 - Add LaunchWorkingFolder to wixstdba to facilitate processes that require a different working folder.
 
 * HeathS: Add VSIX property for VS2015 and fix searches for previous versions.
