@@ -76,6 +76,7 @@
             <?ifdef VS2015Available ?>
             <MsiPackage Vital='yes' Name='data\nsdk2015.msi' SourceFile='data\nsdk2015.msi'
                         InstallCondition='VS2015InstallFolder'
+                        DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'
                         >
                 <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
             </MsiPackage>
