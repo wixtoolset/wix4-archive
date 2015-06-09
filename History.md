@@ -1,3 +1,5 @@
+* BMurri: WIXBUG:4499 - Bind MBApreq language to correct langid
+
 ## WixBuild: Version 4.0.2926.0
 
 * BobArnson: WIXFEAT:4772 - Replace hyperlink ShelExec with ShelExecUnelevated.
