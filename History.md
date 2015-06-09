@@ -1,4 +1,4 @@
-* BMurri: WIXBUG:4532 - Made it an error for InstallPrivileges and InstallScope to both be specified.
+* BMurri: WIXBUG:4532 - Make it an error for InstallPrivileges and InstallScope to both be specified.
 
 ## WixBuild: Version 4.0.2926.0
 
