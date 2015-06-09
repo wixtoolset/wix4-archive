@@ -10781,6 +10781,8 @@ namespace WixToolset
             YesNoDefaultType security = YesNoDefaultType.Default;
             int sourceBits = (this.compilingModule ? 2 : 0);
             Row row;
+            bool installPrivilegeSeen = false;
+            bool installScopeSeen = false;
 
             switch (this.CurrentPlatform)
             {
@@ -10840,6 +10842,7 @@ namespace WixToolset
                             string installPrivileges = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < installPrivileges.Length)
                             {
+                                installPrivilegeSeen = true;
                                 Wix.Package.InstallPrivilegesType installPrivilegesType = Wix.Package.ParseInstallPrivilegesType(installPrivileges);
                                 switch (installPrivilegesType)
                                 {
@@ -10859,6 +10862,7 @@ namespace WixToolset
                             string installScope = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < installScope.Length)
                             {
+                                installScopeSeen = true;
                                 Wix.Package.InstallScopeType installScopeType = Wix.Package.ParseInstallScopeType(installScope);
                                 switch (installScopeType)
                                 {
@@ -10957,6 +10961,11 @@ namespace WixToolset
                 {
                     this.core.ParseExtensionAttribute(node, attrib);
                 }
+            }
+
+            if (installPrivilegeSeen && installScopeSeen)
+            {
+                this.core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, "InstallPrivileges", "InstallScope"));
             }
 
             if ((0 != String.Compare(platform, "Intel", StringComparison.OrdinalIgnoreCase)) && 200 > msiVersion)
