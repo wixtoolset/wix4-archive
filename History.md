@@ -1,5 +1,3 @@
-* BMurri: WIXBUG:4499 - Bind MBApreq language to correct langid
-
 * BMurri: WIXBUG:4532 - Make it an error for InstallPrivileges and InstallScope to both be specified.
 
 ## WixBuild: Version 4.0.2926.0
