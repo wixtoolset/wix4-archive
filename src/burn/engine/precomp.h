@@ -36,6 +36,7 @@
 #include <mscat.h>
 #include <lmcons.h>
 #include <wininet.h>
+#include <stddef.h>
 
 #include <dutil.h>
 #include <aclutil.h>
