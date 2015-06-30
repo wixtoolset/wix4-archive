@@ -1,3 +1,5 @@
+* HeathS: WIXFEAT:4663 - Default to language-specific major upgrades with option to ignore language.
+
 * BMurri: WIXBUG:4532 - Make it an error for InstallPrivileges and InstallScope to both be specified.
 
 ## WixBuild: Version 4.0.2926.0
