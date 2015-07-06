@@ -99,6 +99,12 @@ namespace WixToolset
             this.SuppressIces = new List<string>();
         }
 
+        /// <summary>
+        /// Gets and sets the option to allow patching despite having one or more empty transforms.
+        /// </summary>
+        /// <value>The option to allow patching despite having one or more empty transforms.</value>
+        public bool AllowEmptyTransforms { get; set; }
+
         public string ContentsFile { private get; set; }
 
         public string OutputsFile { private get; set; }
@@ -426,6 +432,7 @@ namespace WixToolset
             }
 
             BindDatabaseCommand command = new BindDatabaseCommand();
+            command.AllowEmptyTransforms = this.AllowEmptyTransforms;
             command.CabbingThreadCount = this.CabbingThreadCount;
             command.Codepage = this.Localizer == null ? -1 : this.Localizer.Codepage;
             command.DefaultCompressionLevel = this.DefaultCompressionLevel;

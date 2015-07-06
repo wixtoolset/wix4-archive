@@ -151,6 +151,7 @@ namespace WixToolset.Tools
 
             // Initialize the binder from the command line.
             WixToolset.Binder binder = new WixToolset.Binder();
+            binder.AllowEmptyTransforms = this.commandLine.AllowEmptyTransforms;
             binder.CabCachePath = this.commandLine.CabCachePath;
             //binder.DeltaBinaryPatch = this.commandLine.Delta;
             //binder.ContentsFile = this.commandLine.ContentsFile;

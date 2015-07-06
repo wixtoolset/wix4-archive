@@ -3775,7 +3775,12 @@
                 <Parameter Type="System.String" Name="dominantValue" />
             </Instance>
         </Message>
-        <Message Id="BackslashTerminateInlineDirectorySyntax" Number="1147">
+        <Message Id="NoDifferencesInTransform" Number="1147">
+            <Instance>
+                The transform did not contain any valid product changes and will not be included in the patch.
+            </Instance>
+        </Message>
+        <Message Id="BackslashTerminateInlineDirectorySyntax" Number="1148">
             <Instance>
                 Backslash terminate the {0}/@{1} attribute's inline directory value '{2}'. A backslash ensures a directory name will not be mistaken for a directory reference.
                 <Parameter Type="System.String" Name="elementName" />

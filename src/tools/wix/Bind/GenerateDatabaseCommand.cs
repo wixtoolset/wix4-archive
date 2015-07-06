@@ -22,6 +22,22 @@ namespace WixToolset.Bind
 
     internal class GenerateDatabaseCommand : ICommand
     {
+        // String to be used for setting Row values to NULL that are non-nullable
+        private static readonly string NullString = ((char)21).ToString();
+
+        private List<string> nonEmptyProductCodes;
+        private List<string> nonEmptyTransformNames;
+        private List<string> emptyTransformNames;
+
+        internal GenerateDatabaseCommand()
+        {
+            this.nonEmptyProductCodes = new List<string>();
+            this.nonEmptyTransformNames = new List<string>();
+            this.emptyTransformNames = new List<string>();
+        }
+
+        public bool AllowEmptyTransforms { private get; set; }
+
         public int Codepage { private get; set; }
 
         public IEnumerable<IBinderExtension> Extensions { private get; set; }
@@ -103,6 +119,71 @@ namespace WixToolset.Bind
                     if (0 != this.Output.Codepage)
                     {
                         this.SetDatabaseCodepage(db, this.Output.Codepage);
+                    }
+
+                    // insert substorages (like transforms inside a patch)
+                    if (0 < this.Output.SubStorages.Count)
+                    {
+                        using (View storagesView = new View(db, "SELECT `Name`, `Data` FROM `_Storages`"))
+                        {
+                            foreach (SubStorage subStorage in this.Output.SubStorages)
+                            {
+                                string transformFile = Path.Combine(this.TempFilesLocation, String.Concat(subStorage.Name, ".mst"));
+
+                                // Bind the transform.
+                                this.BindTransform(subStorage.Data, transformFile);
+
+                                if (Messaging.Instance.EncounteredError)
+                                {
+                                    continue;
+                                }
+
+                                // add the storage
+                                using (Record record = new Record(2))
+                                {
+                                    record.SetString(1, subStorage.Name);
+                                    record.SetStream(2, transformFile);
+                                    storagesView.Modify(ModifyView.Assign, record);
+                                }
+                            }
+                        }
+
+                        // some empty transforms may have been excluded
+                        // we need to remove these from the final patch summary information
+                        if (OutputType.Patch == this.Output.Type && this.AllowEmptyTransforms)
+                        {
+                            Table patchSummaryInfo = this.Output.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
+                            for (int i = patchSummaryInfo.Rows.Count - 1; i >= 0; i--)
+                            {
+                                Row row = patchSummaryInfo.Rows[i];
+                                if ((int)SummaryInformation.Patch.ProductCodes == (int)row[0])
+                                {
+                                    if (nonEmptyProductCodes.Count > 0)
+                                    {
+                                        string[] productCodes = new string[nonEmptyProductCodes.Count];
+                                        nonEmptyProductCodes.CopyTo(productCodes, 0);
+                                        row[1] = String.Join(";", productCodes);
+                                    }
+                                    else
+                                    {
+                                        row[1] = GenerateDatabaseCommand.NullString;
+                                    }
+                                }
+                                else if ((int)SummaryInformation.Patch.TransformNames == (int)row[0])
+                                {
+                                    if (nonEmptyTransformNames.Count > 0)
+                                    {
+                                        string[] transformNames = new string[nonEmptyTransformNames.Count];
+                                        nonEmptyTransformNames.CopyTo(transformNames, 0);
+                                        row[1] = String.Join(";", transformNames);
+                                    }
+                                    else
+                                    {
+                                        row[1] = GenerateDatabaseCommand.NullString;
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     foreach (Table table in this.Output.Tables)
@@ -257,34 +338,6 @@ namespace WixToolset.Bind
                         }
                     }
 
-                    // Insert substorages (usually transforms inside a patch or instance transforms in a package).
-                    if (0 < this.Output.SubStorages.Count)
-                    {
-                        using (View storagesView = new View(db, "SELECT `Name`, `Data` FROM `_Storages`"))
-                        {
-                            foreach (SubStorage subStorage in this.Output.SubStorages)
-                            {
-                                string transformFile = Path.Combine(this.TempFilesLocation, String.Concat(subStorage.Name, ".mst"));
-
-                                // Bind the transform.
-                                this.BindTransform(subStorage.Data, transformFile);
-
-                                if (Messaging.Instance.EncounteredError)
-                                {
-                                    continue;
-                                }
-
-                                // add the storage
-                                using (Record record = new Record(2))
-                                {
-                                    record.SetString(1, subStorage.Name);
-                                    record.SetStream(2, transformFile);
-                                    storagesView.Modify(ModifyView.Assign, record);
-                                }
-                            }
-                        }
-                    }
-
                     // We're good, commit the changes to the new database.
                     db.Commit();
                 }
@@ -304,6 +357,12 @@ namespace WixToolset.Bind
             command.TempFilesLocation = this.TempFilesLocation;
             command.Transform = transform;
             command.OutputPath = outputPath;
+
+            command.AllowEmptyTransforms = this.AllowEmptyTransforms;
+            command.NonEmptyProductCodes = this.nonEmptyProductCodes;
+            command.NonEmptyTransformNames = this.nonEmptyTransformNames;
+            command.EmptyTransformNames = this.emptyTransformNames;
+
             command.Execute();
         }
 
