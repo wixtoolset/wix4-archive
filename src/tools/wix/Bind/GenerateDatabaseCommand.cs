@@ -36,8 +36,6 @@ namespace WixToolset.Bind
             this.emptyTransformNames = new List<string>();
         }
 
-        public bool AllowEmptyTransforms { private get; set; }
-
         public int Codepage { private get; set; }
 
         public IEnumerable<IBinderExtension> Extensions { private get; set; }
@@ -150,7 +148,7 @@ namespace WixToolset.Bind
 
                         // some empty transforms may have been excluded
                         // we need to remove these from the final patch summary information
-                        if (OutputType.Patch == this.Output.Type && this.AllowEmptyTransforms)
+                        if (OutputType.Patch == this.Output.Type)
                         {
                             Table patchSummaryInfo = this.Output.EnsureTable(this.TableDefinitions["_SummaryInformation"]);
                             for (int i = patchSummaryInfo.Rows.Count - 1; i >= 0; i--)
@@ -358,7 +356,6 @@ namespace WixToolset.Bind
             command.Transform = transform;
             command.OutputPath = outputPath;
 
-            command.AllowEmptyTransforms = this.AllowEmptyTransforms;
             command.NonEmptyProductCodes = this.nonEmptyProductCodes;
             command.NonEmptyTransformNames = this.nonEmptyTransformNames;
             command.EmptyTransformNames = this.emptyTransformNames;

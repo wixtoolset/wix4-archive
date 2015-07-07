@@ -309,7 +309,8 @@ namespace WixToolset.Tools
 
                     if (null == transform.Tables || 0 >= transform.Tables.Count)
                     {
-                        throw new WixException(WixErrors.NoDifferencesInTransform(transform.SourceLineNumbers));
+                        // This is a warning in pyro but since the purpose of torch is to produce a transform...
+                        throw new WixException(WixWarnings.NoDifferencesInTransform(transform.SourceLineNumbers));
                     }
                 }
 

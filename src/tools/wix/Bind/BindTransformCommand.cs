@@ -19,8 +19,6 @@ namespace WixToolset.Bind
 
     internal class BindTransformCommand : ICommand
     {
-        public bool AllowEmptyTransforms { private get; set; }
-
         public List<string> NonEmptyProductCodes { private get; set; }
 
         public List<string> NonEmptyTransformNames { private get; set; }
@@ -432,22 +430,15 @@ namespace WixToolset.Bind
                     {
                         // Skip adding the patch transform if the product transform was empty.
                         // Patch transforms are usually not empty due to changes such as Media Table Row insertions.
-                        if ((this.AllowEmptyTransforms && this.EmptyTransformNames.Contains(transformFileName.Replace("#", ""))) || !updatedDatabase.GenerateTransform(targetDatabase, this.OutputPath))
+                        if (this.EmptyTransformNames.Contains(transformFileName.Replace("#", "")) || !updatedDatabase.GenerateTransform(targetDatabase, this.OutputPath))
                         {
-                            if (this.AllowEmptyTransforms)
+                            // Only output the message once for the product transform.
+                            if (!transformFileName.StartsWith("#"))
                             {
-                                // Only output the message once for the product transform.
-                                if (!transformFileName.StartsWith("#"))
-                                {
-                                    Messaging.Instance.OnMessage(WixWarnings.NoDifferencesInTransform(this.Transform.SourceLineNumbers));
-                                }
+                                Messaging.Instance.OnMessage(WixWarnings.NoDifferencesInTransform(this.Transform.SourceLineNumbers));
+                            }
 
-                                this.EmptyTransformNames.Add(transformFileName);
-                            }
-                            else
-                            {
-                                Messaging.Instance.OnMessage(WixErrors.NoDifferencesInTransform(this.Transform.SourceLineNumbers));
-                            }
+                            this.EmptyTransformNames.Add(transformFileName);
                         }
                         else
                         {

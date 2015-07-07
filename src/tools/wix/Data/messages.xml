@@ -1920,11 +1920,6 @@
                 <Parameter Type="System.String" Name="value" />
             </Instance>
         </Message>
-        <Message Id="NoDifferencesInTransform" Number="227">
-            <Instance>
-                The transform being built did not contain any differences so it could not be created.
-            </Instance>
-        </Message>
         <Message Id="OutputCodepageMismatch" Number="228">
             <Instance>
                 The code pages of the outputs do not match.  One output's code page is '{0}' while the other is '{1}'.
@@ -3788,7 +3783,7 @@
                 <Parameter Type="System.String" Name="value" />
             </Instance>
         </Message>
-        <Message Id="VersionTruncated" Number="1148">
+        <Message Id="VersionTruncated" Number="1149">
             <Instance>
                 Product version {0} in package '{1}' is not valid per the MSI SDK and cannot be represented in a bundle. It has been truncated to {2}.
                 <Parameter Type="System.String" Name="originalVersion" />

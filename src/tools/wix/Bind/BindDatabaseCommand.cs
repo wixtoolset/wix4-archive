@@ -30,8 +30,6 @@ namespace WixToolset.Bind
         // As outlined in RFC 4122, this is our namespace for generating name-based (version 3) UUIDs.
         private static readonly Guid WixComponentGuidNamespace = new Guid("{3064E5C6-FB63-4FE9-AC49-E446A792EFA5}");
 
-        public bool AllowEmptyTransforms { private get; set; }
-
         public int Codepage { private get; set; }
 
         public int CabbingThreadCount { private get; set; }
@@ -1304,7 +1302,6 @@ namespace WixToolset.Bind
         private void GenerateDatabase(Output output, string databaseFile, bool keepAddedColumns, bool useSubdirectory)
         {
             GenerateDatabaseCommand command = new GenerateDatabaseCommand();
-            command.AllowEmptyTransforms = this.AllowEmptyTransforms;
             command.Extensions = this.Extensions;
             command.FileManagers = this.FileManagers;
             command.Output = output;
