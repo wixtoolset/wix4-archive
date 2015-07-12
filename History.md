@@ -1,3 +1,5 @@
+* jmcooper8654: WIXFEAT:4437 - Modify Wix.CA.targets to add PDB files to CA Package when /p:Configuration=Debug.
+
 * HeathS: WIXFEAT:4663 - Default to language-specific major upgrades with option to ignore language.
 
 * BMurri: WIXBUG:4532 - Make it an error for InstallPrivileges and InstallScope to both be specified.

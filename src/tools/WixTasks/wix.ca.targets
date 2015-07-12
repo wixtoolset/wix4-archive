@@ -54,14 +54,18 @@
     <!-- Find all referenced items marked CopyLocal, but exclude non-binary files. -->
     <ItemGroup>
       <CustomActionReferenceContents Include="@(ReferenceCopyLocalPaths)"
-                                     Condition=" '%(Extension)'=='.dll' or '%(Extension)'=='.exe' " />
+                                     Condition=" '%(Extension)' == '.dll' or '%(Extension)' == '.exe' " />
+      <CustomActionReferenceContents Include="@(ReferenceComWrappersToCopyLocal)"
+                                     Condition=" '%(Extension)' == '.dll' or '%(Extension)' == '.exe' " />
+    
+      <!-- include PDBs for Debug only -->
+      <CustomActionReferenceContents Include="@(IntermediateAssembly->'%(RootDir)%(Directory)%(Filename).pdb')"
+                                     Condition=" Exists('%(RootDir)%(Directory)%(Filename).pdb') and '$(Configuration)' == 'Debug' " />
+      <CustomActionReferenceContents Include="@(ReferenceCopyLocalPaths)"
+                                     Condition=" '%(Extension)' == '.pdb' and '$(Configuration)' == 'Debug' " />
+      <CustomActionReferenceContents Include="@(ReferenceComWrappersToCopyLocal)"
+                                     Condition=" '%(Extension)' == '.pdb' and '$(Configuration)' == 'Debug' " />
     </ItemGroup>
-
-    <CreateItem
-     Include="@(ReferenceComWrappersToCopyLocal)"
-     Condition=" '%(ReferenceComWrappersToCopyLocal.extension)' == '.dll' or '%(ReferenceComWrappersToCopyLocal.extension)' == '.exe' ">
-      <Output TaskParameter="Include" ItemName="CustomActionReferenceContents"/>
-    </CreateItem>
 
     <!--
       Items to include in the CA package:
