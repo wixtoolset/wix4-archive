@@ -46,7 +46,7 @@ HRESULT ProductValidateVersion(
     DWORD dwResult = 0;
     WCHAR wcExtra;
 
-    dwResult = swscanf_s(wzVersion, L"%u.%u.%u.%u%lc", &dw1, &dw2, &dw3, &dw4, &wcExtra);
+    dwResult = swscanf_s(wzVersion, L"%u.%u.%u.%u%lc", &dw1, &dw2, &dw3, &dw4, &wcExtra, 1);
 
     // Must have 4 components to the version
     if (4 != dwResult)
