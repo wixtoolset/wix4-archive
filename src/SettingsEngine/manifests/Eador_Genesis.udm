@@ -2,7 +2,12 @@
 <LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
     <Product Id="Eador_Genesis">
         <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207659147_is1" InstallLocation="InstallDir"/>
+
             <Arp DisplayName="Eador -  Genesis" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Eador - Genesis" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Eador: Genesis" InstallLocation="InstallDir"/>
         </Detect>
 
         <Data>

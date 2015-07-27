@@ -3,6 +3,7 @@
     <Product Id="Baldurs_Gate">
         <Detect>
             <Arp DisplayName="Baldur&apos;s Gate -  The Original Saga" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Baldur&apos;s Gate - The Original Saga" InstallLocation="InstallDir"/>
         </Detect>
 
         <Data>

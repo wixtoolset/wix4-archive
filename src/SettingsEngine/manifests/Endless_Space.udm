@@ -12,6 +12,7 @@
         <Filter>
             <Ignore Prefix="Data:\"/>
             <Normal Prefix="Data:\Save\"/>
+            <Normal Prefix="Data:\Disharmony\"/>
         </Filter>
 
         <DisplayName LCID="1033">Endless Space</DisplayName>
