@@ -154,6 +154,10 @@ HRESULT UtilGrowDatabaseList(
 BOOL UtilReadyToSync(
     __in BROWSE_DATABASE *pbdDatabase
     );
+void UtilWipeEnum(
+    __in BROWSE_DATABASE *pDatabase,
+    __inout BROWSE_ENUM *pEnum
+    );
 
 #ifdef __cplusplus
 }

@@ -258,8 +258,7 @@ HRESULT BrowseWindow::EnumerateValues(
     // If we're changing to a different product, clear out the current enumeration so we don't show inaccurate data
     if (fDifferentProduct)
     {
-        CfgReleaseEnumeration(m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum.cehItems);
-        m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum.cehItems = NULL;
+        UtilWipeEnum(m_pbdlDatabaseList->rgDatabases + dwIndex, &m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum);
     }
 
     hr = RefreshValueList(dwIndex);
@@ -289,8 +288,7 @@ HRESULT BrowseWindow::EnumerateValueHistory(
     // If we're changing to a different value, clear out the current enumeration so we don't show inaccurate data
     if (fDifferentValue)
     {
-        CfgReleaseEnumeration(m_pbdlDatabaseList->rgDatabases[dwIndex].valueHistoryEnum.cehItems);
-        m_pbdlDatabaseList->rgDatabases[dwIndex].valueHistoryEnum.cehItems = NULL;
+        UtilWipeEnum(m_pbdlDatabaseList->rgDatabases + dwIndex, &m_pbdlDatabaseList->rgDatabases[dwIndex].valueHistoryEnum);
     }
 
     hr = RefreshValueHistoryList(dwIndex);
@@ -1851,8 +1849,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 }
 
                 // We're switching products in the UI - any old value list is inaccurate, and should be released immediately
-                CfgReleaseEnumeration(UXDATABASE(dwIndex).valueEnum.cehItems);
-                UXDATABASE(dwIndex).valueEnum.cehItems = NULL;
+                UtilWipeEnum(pUX->m_pbdlDatabaseList->rgDatabases + dwIndex, &pUX->m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum);
 
                 hr = pUX->RefreshValueList(dwIndex);
                 ExitOnFailure(hr, "Failed to refresh value list for main single product screen");

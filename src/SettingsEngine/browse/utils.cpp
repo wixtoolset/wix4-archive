@@ -70,3 +70,17 @@ BOOL UtilReadyToSync(
 
     return TRUE;
 }
+
+void UtilWipeEnum(
+    __in BROWSE_DATABASE *pDatabase,
+    __inout BROWSE_ENUM *pEnum
+    )
+{
+    ::EnterCriticalSection(&pDatabase->cs);
+
+    CfgReleaseEnumeration(pEnum->cehItems);
+    pEnum->cehItems = NULL;
+    pEnum->cItems = 0;
+
+    ::LeaveCriticalSection(&pDatabase->cs);
+}
