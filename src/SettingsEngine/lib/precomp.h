@@ -55,6 +55,7 @@
 #include "testhook.h"
 #include "handle.h"
 #include "dblist.h"
+#include "dispname.h"
 #include "manifest.h"
 #include "parse.h"
 #include "mapdata.h"

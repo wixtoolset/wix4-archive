@@ -38,17 +38,18 @@ enum USERTABLES
 {
     SUMMARY_DATA_TABLE = 0, // Only has 1 row - stores information global to this user's database
     PRODUCT_INDEX_TABLE = 1, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one user's DB, but isn't necessarily the same in another user's DB.
-    VALUE_INDEX_TABLE = 2, // Stores user data
-    VALUE_INDEX_HISTORY_TABLE = 3, // Stores user data history
-    BINARY_CONTENT_TABLE = 4, // Stores user blobs
-    DATABASE_GUID_LIST_TABLE = 5, // Associates each database GUID with a unique ID
+    PRODUCT_DISPLAY_NAME_TABLE = 2, // Associates a particular AppID and LCID combination with a displayable string.
+    VALUE_INDEX_TABLE = 3, // Stores user data
+    VALUE_INDEX_HISTORY_TABLE = 4, // Stores user data history
+    BINARY_CONTENT_TABLE = 5, // Stores user blobs
+    DATABASE_GUID_LIST_TABLE = 6, // Associates each database GUID with a unique ID
 
     // User-specific tables
-    DATABASE_INDEX_TABLE = 6, // Remembers databases you may want to connect to
-    USER_TABLES_NUMBER = 7, // not an actual table, just represents the number of tables
+    DATABASE_INDEX_TABLE = 7, // Remembers databases you may want to connect to
+    USER_TABLES_NUMBER = 8, // not an actual table, just represents the number of tables
 
     // Remote-specific tables
-    REMOTE_TABLES_NUMBER = 6 // not an actual table, just represents the number of tables
+    REMOTE_TABLES_NUMBER = 7 // not an actual table, just represents the number of tables
 };
 
 // User column enums
@@ -61,6 +62,15 @@ enum PRODUCT_INDEX_COLUMN
     PRODUCT_REGISTERED = 4,
     PRODUCT_IS_LEGACY = 5,
     PRODUCT_INDEX_COLUMNS = 6
+};
+
+enum PRODUCT_DISPLAY_NAME_COLUMN
+{
+    PRODUCT_DISPLAY_NAME_ID = 0,
+    PRODUCT_DISPLAY_NAME_APPID = 1,
+    PRODUCT_DISPLAY_NAME_LCID = 2,
+    PRODUCT_DISPLAY_NAME_NAME = 3,
+    PRODUCT_DISPLAY_NAME_COLUMNS = 4
 };
 
 // Columns used by both value index and value index history tables
@@ -140,7 +150,8 @@ enum DATABASE_GUID_LIST_COLUMN
 enum ADMINTABLES
 {
     ADMIN_PRODUCT_INDEX_TABLE = 0, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one DB, but isn't necessarily the same in another DB.
-    ADMIN_TABLES_NUMBER = 1 // not an actual table, just represents the number of tables
+    ADMIN_PRODUCT_DISPLAY_NAME_TABLE = 1, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one DB, but isn't necessarily the same in another DB.
+    ADMIN_TABLES_NUMBER = 2 // not an actual table, just represents the number of tables
 };
 
 HRESULT DatabaseGetUserDir(

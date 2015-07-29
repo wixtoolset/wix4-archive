@@ -1177,7 +1177,7 @@ HRESULT ParseDisplayName(
     ExitOnFailure(hr, "Failed to get text from DisplayName element");
 
     ++pProduct->cDisplayNames;
-    hr = MemEnsureArraySize(reinterpret_cast<void **>(&pProduct->rgDisplayNames), pProduct->cDisplayNames, sizeof(LEGACY_DISPLAYNAME), 5);
+    hr = MemEnsureArraySize(reinterpret_cast<void **>(&pProduct->rgDisplayNames), pProduct->cDisplayNames, sizeof(DISPLAY_NAME), 5);
     ExitOnFailure(hr, "Failed to resize displayname array");
 
     pProduct->rgDisplayNames[pProduct->cDisplayNames-1].dwLCID = dwLCID;
