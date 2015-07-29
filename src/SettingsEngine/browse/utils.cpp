@@ -28,10 +28,10 @@ void UtilFreeDatabase(
     ReleaseStr(pDatabase->sczStatusMessage);
     ReleaseStr(pDatabase->sczCurrentProductDisplayName);
     ReleaseStr(pDatabase->sczValueName);
-    CfgReleaseEnumeration(pDatabase->cehDatabaseList);
-    CfgReleaseEnumeration(pDatabase->cehProductList);
-    CfgReleaseEnumeration(pDatabase->cehValueList);
-    CfgReleaseEnumeration(pDatabase->cehValueHistory);
+    CfgReleaseEnumeration(pDatabase->dbEnum.cehItems);
+    CfgReleaseEnumeration(pDatabase->productEnum.cehItems);
+    CfgReleaseEnumeration(pDatabase->valueEnum.cehItems);
+    CfgReleaseEnumeration(pDatabase->valueHistoryEnum.cehItems);
     CfgReleaseConflictProductArray(pDatabase->pcplConflictProductList, pDatabase->dwConflictProductCount);
 }
 

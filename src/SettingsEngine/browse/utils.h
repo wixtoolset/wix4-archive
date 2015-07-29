@@ -40,6 +40,15 @@ struct PRODUCT
     LPWSTR sczPublicKey;
 };
 
+struct BROWSE_ENUM
+{
+    BOOL fRefreshing;
+    HRESULT hrResult;
+    CFG_ENUMERATION_HANDLE cehItems;
+    DWORD cItems;
+    LPCWSTR wzDisplayStatusText;
+};
+
 struct BROWSE_DATABASE
 {
     // Don't need to enter this every time you're messing with the struct. If you're just modifying a field that's only meant
@@ -88,45 +97,30 @@ struct BROWSE_DATABASE
     BOOL fForgetting;
     HRESULT hrForgetResult;
 
-    // Product enumeration
-    BOOL fProductListLoading;
-    HRESULT hrProductListResult;
-    CFG_ENUMERATION_HANDLE cehProductList;
-    BOOL *rgfProductInstalled;
-    LPCWSTR wzProductListText;
-    PRODUCT prodCurrent;
-
-    // Database enumeration
-    BOOL fDatabaseListLoading;
-    HRESULT hrDatabaseListResult;
-    CFG_ENUMERATION_HANDLE cehDatabaseList;
-    DWORD dwDatabaseListCount;
-    LPCWSTR wzDatabaseListText;
-
     // Product setting functionality
     BOOL fProductSet;
     BOOL fSettingProduct;
     HRESULT hrSetProductResult;
 
+    // Product enumeration
+    BROWSE_ENUM productEnum;
+    BOOL *rgfProductInstalled;
+    PRODUCT prodCurrent;
+
+    // Database enumeration
+    BROWSE_ENUM dbEnum;
+
     // Value enumeration
-    BOOL fValueListLoading;
-    HRESULT hrValueListResult;
-    CFG_ENUMERATION_HANDLE cehValueList;
+    BROWSE_ENUM valueEnum;
     BOOL fNewValue;
-    DWORD dwValueCount;
-    LPCWSTR wzValueListText;
 
     // Set Value Screen
     CONFIG_VALUETYPE cdSetValueType;
 
     // Value history information
+    BROWSE_ENUM valueHistoryEnum;
     HISTORY_MODE vhmValueHistoryMode;
     LPWSTR sczValueName;
-    BOOL fValueHistoryLoading;
-    HRESULT hrValueHistoryResult;
-    CFG_ENUMERATION_HANDLE cehValueHistory;
-    DWORD dwValueHistoryCount;
-    LPCWSTR wzValueHistoryListText;
 
     // Conflicts
     CONFLICT_PRODUCT *pcplConflictProductList;

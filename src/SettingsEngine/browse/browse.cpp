@@ -369,8 +369,8 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehProductList);
-        bdlDatabaseList.rgDatabases[dwIndex].cehProductList = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].productEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].productEnum.cehItems = cehHandle;
         cehHandle = NULL;
 
         ::LeaveCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
@@ -378,7 +378,7 @@ BOOL ProcessMessage(
 
         if (SUCCEEDED(hr))
         {
-            hrSend = CheckProductInstalledState(cdbLocal, bdlDatabaseList.rgDatabases[dwIndex].cehProductList, dwEnumCount, &bdlDatabaseList.rgDatabases[dwIndex].rgfProductInstalled);
+            hrSend = CheckProductInstalledState(cdbLocal, bdlDatabaseList.rgDatabases[dwIndex].productEnum.cehItems, dwEnumCount, &bdlDatabaseList.rgDatabases[dwIndex].rgfProductInstalled);
             ExitOnFailure(hrSend, "Failed to check product installed state");
         }
         else
@@ -397,10 +397,10 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehDatabaseList);
-        bdlDatabaseList.rgDatabases[dwIndex].cehDatabaseList = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].dbEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].dbEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwDatabaseListCount = dwEnumCount;
+        bdlDatabaseList.rgDatabases[dwIndex].dbEnum.cItems = dwEnumCount;
 
         if (!::PostMessageW(hwnd, WM_BROWSE_ENUMERATE_DATABASES_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
         {
@@ -468,10 +468,10 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehValueList);
-        bdlDatabaseList.rgDatabases[dwIndex].cehValueList = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].valueEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].valueEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwValueCount = dwEnumCount;
+        bdlDatabaseList.rgDatabases[dwIndex].valueEnum.cItems = dwEnumCount;
 
         if (!::PostMessageW(hwnd, WM_BROWSE_ENUMERATE_VALUES_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
         {
@@ -487,10 +487,10 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehValueHistory);
-        bdlDatabaseList.rgDatabases[dwIndex].cehValueHistory = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwValueHistoryCount = dwEnumCount;
+        bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cItems = dwEnumCount;
 
         if (!::PostMessageW(hwnd, WM_BROWSE_ENUMERATE_VALUE_HISTORY_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
         {
@@ -577,7 +577,7 @@ BOOL ProcessMessage(
 
         pdsDwordString = reinterpret_cast<DWORD_STRING *>(msg->lParam);
 
-        hrSend = CfgEnumReadBinary(bdlDatabaseList.rgDatabases[dwIndex].cdb, bdlDatabaseList.rgDatabases[dwIndex].cehValueHistory, pdsDwordString->dwDword1, ENUM_DATA_BLOBCONTENT, &pbData, &cbData);
+        hrSend = CfgEnumReadBinary(bdlDatabaseList.rgDatabases[dwIndex].cdb, bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cehItems, pdsDwordString->dwDword1, ENUM_DATA_BLOBCONTENT, &pbData, &cbData);
         if (FAILED(hr))
         {
             if (!::PostMessageW(hwnd, WM_BROWSE_EXPORT_FILE_FROM_HISTORY_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
