@@ -57,7 +57,6 @@ HRESULT BrowseWindow::SetSelectedProduct(
 {
     HRESULT hr = S_OK;
     LPCWSTR wzTemp = NULL;
-    CURRENTDATABASE.dwSetProductIndex = dwIndex;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
 
     hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PRODUCTNAME, &wzTemp);

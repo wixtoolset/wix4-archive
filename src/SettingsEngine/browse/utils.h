@@ -17,9 +17,6 @@
 extern "C" {
 #endif
 
-#define ReleaseDB(db) if (db) { UtilFreeDatabase(db); }
-#define ReleaseNullDB(db) if (db) { UtilFreeDatabase(db); db = NULL; }
-
 enum DATABASE_TYPE
 {
     DATABASE_UNKNOWN = 0,
@@ -96,8 +93,6 @@ struct BROWSE_DATABASE
     HRESULT hrProductListResult;
     CFG_ENUMERATION_HANDLE cehProductList;
     BOOL *rgfProductInstalled;
-    DWORD dwProductListCount;
-    DWORD dwSelectedProductIndex;
     LPCWSTR wzProductListText;
     PRODUCT prodCurrent;
 
@@ -112,7 +107,6 @@ struct BROWSE_DATABASE
     BOOL fProductSet;
     BOOL fSettingProduct;
     HRESULT hrSetProductResult;
-    DWORD dwSetProductIndex;
 
     // Value enumeration
     BOOL fValueListLoading;

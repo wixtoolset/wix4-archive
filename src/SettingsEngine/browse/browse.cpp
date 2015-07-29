@@ -206,7 +206,7 @@ LExit:
             // Don't free local database here - we only have one open, it must be freed after all remotes, and is specifically freed below this loop
         }
 
-        ReleaseDB(bdlDatabaseList.rgDatabases + i);
+        UtilFreeDatabase(bdlDatabaseList.rgDatabases + i);
     }
     ReleaseMem(bdlDatabaseList.rgDatabases);
 
@@ -372,14 +372,13 @@ BOOL ProcessMessage(
         CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehProductList);
         bdlDatabaseList.rgDatabases[dwIndex].cehProductList = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwProductListCount = dwEnumCount;
 
         ::LeaveCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = FALSE;
 
         if (SUCCEEDED(hr))
         {
-            hrSend = CheckProductInstalledState(cdbLocal, bdlDatabaseList.rgDatabases[dwIndex].cehProductList, bdlDatabaseList.rgDatabases[dwIndex].dwProductListCount, &bdlDatabaseList.rgDatabases[dwIndex].rgfProductInstalled);
+            hrSend = CheckProductInstalledState(cdbLocal, bdlDatabaseList.rgDatabases[dwIndex].cehProductList, dwEnumCount, &bdlDatabaseList.rgDatabases[dwIndex].rgfProductInstalled);
             ExitOnFailure(hrSend, "Failed to check product installed state");
         }
         else
