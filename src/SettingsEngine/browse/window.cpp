@@ -1050,11 +1050,6 @@ HRESULT BrowseWindow::CreateMainWindow()
     HRESULT hr = S_OK;
     WNDCLASSW wc = { };
     DWORD dwWindowStyle = 0;
-    LPWSTR sczThemePath = NULL;
-
-    // load theme relative to BROWSE.dll.
-    hr = PathRelativeToModule(&sczThemePath, L"thm.xml", m_hModule);
-    ExitOnFailure(hr, "Failed to combine module path with thm.xml.");
 
     hr = ThemeLoadFromResource(m_hModule, MAKEINTRESOURCEA(BROWSE_RES_THEME_FILE), &m_pTheme);
     ExitOnFailure(hr, "Failed to load theme from embedded resource.");
@@ -1113,7 +1108,6 @@ HRESULT BrowseWindow::CreateMainWindow()
     ExitOnFailure(hr, "Failed to display value list");
 
 LExit:
-    ReleaseStr(sczThemePath);
     ReleaseStr(m_sczLanguage);
 
     if (FAILED(hr))
@@ -2794,7 +2788,6 @@ HRESULT BrowseWindow::SetMainState(
     )
 {
     HRESULT hr = S_OK;
-    LPWSTR sczText = NULL;
     DWORD dwNewPageId = 0;
     DWORD dwOldPageId = 0;
 
@@ -2844,8 +2837,6 @@ HRESULT BrowseWindow::SetMainState(
     ::SetFocus(m_hWnd);
 
 LExit:
-    ReleaseStr(sczText);
-
     return hr;
 }
 
