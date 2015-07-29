@@ -980,6 +980,9 @@ DWORD WINAPI BrowseWindow::UiThreadProc(
     BOOL fRet = FALSE;
     MSG msg = { };
 
+    // Nobody cares about failure - this is just best effort to boost UI responsiveness.
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+
     // initialize COM
     hr = ::CoInitialize(NULL);
     ExitOnFailure(hr, "Failed to initialize COM.");

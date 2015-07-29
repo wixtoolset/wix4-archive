@@ -133,6 +133,9 @@ int WINAPI wWinMain(
     hr = browser->Initialize(&dwUIThreadId);
     ExitOnFailure(hr, "Failed to initialize main window");
 
+    // Nobody cares about failure - this is just best effort to boost UI responsiveness.
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_MODE_BACKGROUND_BEGIN);
+
     while (0 != (fRet = ::GetMessageW(&msg, NULL, 0, 0)))
     {
         if (-1 == fRet)
@@ -178,6 +181,9 @@ LExit:
         browser->Uninitialize();
         delete browser;
     }
+
+    // UI is dead, this is no longer the background thread. Set thread priority back to normal for potentially quicker shutdown.
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_MODE_BACKGROUND_END);
 
     if (fThemeInitialized)
     {
