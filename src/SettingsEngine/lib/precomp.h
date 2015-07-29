@@ -14,9 +14,6 @@
 #pragma once
 
 #define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
 
 #include <windows.h>
 #include <stdlib.h>
