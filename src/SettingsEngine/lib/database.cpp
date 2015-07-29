@@ -392,7 +392,7 @@ HRESULT DatabaseSetupAdminSchema(
 
     // Set actual table info - this is the 1st interesting bit
     pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].wzName = L"AdminProduct";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].cColumns = ADMIN_PRODUCT_INDEX_COLUMNS;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].cColumns = PRODUCT_INDEX_COLUMNS;
     pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].cIndexes = 2;
 
     // Allocate 
@@ -414,22 +414,25 @@ HRESULT DatabaseSetupAdminSchema(
         }
     }
 
-    // Set actual column info - this is the other interesting bit
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].wzName = L"ID";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].dbtColumnType = DBTYPE_I4;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].fAutoIncrement = TRUE;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].fPrimaryKey = TRUE;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_NAME].wzName = L"Name";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_NAME].dbtColumnType = DBTYPE_WSTR;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_VERSION].wzName = L"Version";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_VERSION].dbtColumnType = DBTYPE_WSTR;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_VERSION].dwLength = 24;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_PUBLICKEY].wzName = L"PublicKey";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_PUBLICKEY].dbtColumnType = DBTYPE_WSTR;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_PUBLICKEY].dwLength = 20;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].wzName = L"ID";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].fAutoIncrement = TRUE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].fPrimaryKey = TRUE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_NAME].wzName = L"Name";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_NAME].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_VERSION].wzName = L"Version";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_VERSION].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_VERSION].dwLength = 24;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_PUBLICKEY].wzName = L"PublicKey";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_PUBLICKEY].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_PUBLICKEY].dwLength = 20;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_REGISTERED].wzName = L"Installed";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_REGISTERED].dbtColumnType = DBTYPE_BOOL;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].wzName = L"IsLegacy";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].dbtColumnType = DBTYPE_BOOL;
 
-    static DWORD rgdwAdminProductIndex1[] = { ADMIN_PRODUCT_ID };
-    static DWORD rgdwAdminProductIndex2[] = { ADMIN_PRODUCT_NAME, ADMIN_PRODUCT_VERSION, ADMIN_PRODUCT_PUBLICKEY };
+    static DWORD rgdwAdminProductIndex1[] = { PRODUCT_ID };
+    static DWORD rgdwAdminProductIndex2[] = { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_PUBLICKEY };
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgIndexes[0], rgdwAdminProductIndex1, L"PrimaryKey");
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgIndexes[1], rgdwAdminProductIndex2, L"Name_Version_PublicKey");
 

@@ -64,15 +64,6 @@ enum PRODUCT_INDEX_COLUMN
     PRODUCT_INDEX_COLUMNS = 7
 };
 
-enum ADMIN_PRODUCT_INDEX_COLUMN
-{
-    ADMIN_PRODUCT_ID = 0,
-    ADMIN_PRODUCT_NAME = 1,
-    ADMIN_PRODUCT_VERSION = 2,
-    ADMIN_PRODUCT_PUBLICKEY = 3,
-    ADMIN_PRODUCT_INDEX_COLUMNS = 4
-};
-
 // Columns used by both value index and value index history tables
 enum VALUE_COMMON_COLUMN
 {

@@ -184,6 +184,12 @@ extern "C" HRESULT CfgAdminRegisterProduct(
         hr = SceSetColumnString(sceRow, PRODUCT_PUBLICKEY, sczLowPublicKey);
         ExitOnFailure(hr, "Failed to set publickey column");
 
+        hr = SceSetColumnBool(sceRow, PRODUCT_REGISTERED, TRUE);
+        ExitOnFailure(hr, "Failed to set registered column");
+
+        hr = SceSetColumnBool(sceRow, PRODUCT_IS_LEGACY, FALSE);
+        ExitOnFailure(hr, "Failed to set IsLegacy column");
+
         hr = SceFinishUpdate(sceRow);
         ExitOnFailure(hr, "Failed to finish update");
 
