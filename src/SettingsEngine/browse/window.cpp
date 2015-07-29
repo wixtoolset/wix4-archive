@@ -1409,7 +1409,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         dwIndex = static_cast<DWORD>(lParam);
 
         UXDATABASE(dwIndex).hrDatabaseListResult = static_cast<HRESULT>(wParam);
-        UXDATABASE(dwIndex).fDatabaseListLoading = TRUE;
+        UXDATABASE(dwIndex).fDatabaseListLoading = FALSE;
 
         if (0 < UXDATABASE(dwIndex).dwDatabaseListCount)
         {
