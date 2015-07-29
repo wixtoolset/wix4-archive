@@ -247,13 +247,21 @@ LExit:
 }
 
 HRESULT BrowseWindow::EnumerateValues(
-    DWORD dwIndex
+    DWORD dwIndex,
+    BOOL fDifferentProduct
     )
 {
     HRESULT hr = S_OK;
 
     m_pbdlDatabaseList->rgDatabases[dwIndex].fValueListLoading = TRUE;
     m_pbdlDatabaseList->rgDatabases[dwIndex].hrValueListResult = S_OK;
+
+    // If we're changing to a different product, clear out the current enumeration so we don't show inaccurate data
+    if (fDifferentProduct)
+    {
+        CfgReleaseEnumeration(m_pbdlDatabaseList->rgDatabases[dwIndex].cehValueList);
+        m_pbdlDatabaseList->rgDatabases[dwIndex].cehValueList = NULL;
+    }
 
     hr = RefreshValueList(dwIndex);
     ExitOnFailure(hr, "Failed to update value list");
@@ -268,7 +276,8 @@ LExit:
 }
 
 HRESULT BrowseWindow::EnumerateValueHistory(
-    DWORD dwIndex
+    DWORD dwIndex,
+    BOOL fDifferentValue
     )
 {
     HRESULT hr = S_OK;
@@ -277,6 +286,13 @@ HRESULT BrowseWindow::EnumerateValueHistory(
     m_pbdlDatabaseList->rgDatabases[dwIndex].vhmValueHistoryMode = HISTORY_NORMAL;
     m_pbdlDatabaseList->rgDatabases[dwIndex].fValueHistoryLoading = TRUE;
     m_pbdlDatabaseList->rgDatabases[dwIndex].hrValueHistoryResult = S_OK;
+
+    // If we're changing to a different value, clear out the current enumeration so we don't show inaccurate data
+    if (fDifferentValue)
+    {
+        CfgReleaseEnumeration(m_pbdlDatabaseList->rgDatabases[dwIndex].cehValueHistory);
+        m_pbdlDatabaseList->rgDatabases[dwIndex].cehValueHistory = NULL;
+    }
 
     hr = RefreshValueHistoryList(dwIndex);
     ExitOnFailure(hr, "Failed to update value history list");
@@ -386,7 +402,7 @@ HRESULT BrowseWindow::RefreshProductList(DWORD dwDatabaseIndex)
     {
         DATABASE(dwDatabaseIndex).wzProductListText = L"Uninitializing Cfg API...";
     }
-    else if (DATABASE(dwDatabaseIndex).fProductListLoading)
+    else if (NULL == DATABASE(dwDatabaseIndex).cehProductList && DATABASE(dwDatabaseIndex).fProductListLoading)
     {
         DATABASE(dwDatabaseIndex).wzProductListText = L"Enumerating products...";
     }
@@ -593,7 +609,7 @@ HRESULT BrowseWindow::RefreshValueList(DWORD dwDatabaseIndex)
     {
         DATABASE(dwDatabaseIndex).wzValueListText = L"Error enumerating values!";
     }
-    else if (DATABASE(dwDatabaseIndex).fValueListLoading)
+    else if (NULL == DATABASE(dwDatabaseIndex).cehValueList && DATABASE(dwDatabaseIndex).fValueListLoading)
     {
         DATABASE(dwDatabaseIndex).wzValueListText = L"Enumerating values...";
     }
@@ -656,7 +672,7 @@ HRESULT BrowseWindow::RefreshValueHistoryList(DWORD dwDatabaseIndex)
         ExitFunction();
     }
 
-    if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && DATABASE(dwDatabaseIndex).fValueHistoryLoading)
+    if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && NULL == DATABASE(dwDatabaseIndex).cehValueHistory && DATABASE(dwDatabaseIndex).fValueHistoryLoading)
     {
         DATABASE(dwDatabaseIndex).wzValueHistoryListText = L"Enumerating...";
     }
@@ -1485,7 +1501,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         {
             CURRENTUXDATABASE.fProductSet = TRUE;
 
-            hr = pUX->EnumerateValues(dwIndex);
+            hr = pUX->EnumerateValues(dwIndex, TRUE);
             ExitOnFailure(hr, "Failed to enumerate values");
         }
         else
@@ -1514,7 +1530,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         }
         else
         {
-            hr = pUX->EnumerateValues(dwIndex);
+            hr = pUX->EnumerateValues(dwIndex, FALSE);
             ExitOnFailure(hr, "Failed to enumerate values after setting value");
 
             hr = pUX->SetPreviousScreen();
@@ -1577,7 +1593,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             hr = pUX->EnumerateProducts(pUX->m_dwLocalDatabaseIndex);
             ExitOnFailure(hr, "Failed to enumerate products in local database");
 
-            hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex);
+            hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex, FALSE);
             ExitOnFailure(hr, "Failed to enumerate values in local database");
         }
 
@@ -1648,20 +1664,20 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         hr = pUX->EnumerateProducts(pUX->m_dwLocalDatabaseIndex);
         ExitOnFailure(hr, "Failed to enumerate products in local database");
 
-        hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex);
+        hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate values in local database");
 
-        hr = pUX->EnumerateValueHistory(pUX->m_dwLocalDatabaseIndex);
+        hr = pUX->EnumerateValueHistory(pUX->m_dwLocalDatabaseIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate value history in local database");
 
         // And for the database we synced with
         hr = pUX->EnumerateProducts(dwIndex);
         ExitOnFailure(hr, "Failed to enumerate products in remote database index:%u", dwIndex);
 
-        hr = pUX->EnumerateValues(dwIndex);
+        hr = pUX->EnumerateValues(dwIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate values in remote database index:%u", dwIndex);
 
-        hr = pUX->EnumerateValueHistory(dwIndex);
+        hr = pUX->EnumerateValueHistory(dwIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate value history in remote database index:%u", dwIndex);
 
         ExitFunction();
@@ -1834,6 +1850,13 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 {
                     ExitFunction();
                 }
+
+                // We're switching products in the UI - any old value list is inaccurate, and should be released immediately
+                CfgReleaseEnumeration(UXDATABASE(dwIndex).cehValueList);
+                UXDATABASE(dwIndex).cehValueList = NULL;
+
+                hr = pUX->RefreshValueList(dwIndex);
+                ExitOnFailure(hr, "Failed to refresh value list for main single product screen");
 
                 CURRENTUXDATABASE.fSettingProduct = TRUE;
 
@@ -2010,7 +2033,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 hr = UIDeleteValuesFromListView(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_VALUE_LIST_VIEW), CURRENTUXDATABASE.cdb, CURRENTUXDATABASE.cehValueList);
                 ExitOnFailure(hr, "Failed to delete values from list view");
 
-                hr = pUX->EnumerateValues(pUX->m_dwDatabaseIndex);
+                hr = pUX->EnumerateValues(pUX->m_dwDatabaseIndex, FALSE);
                 ExitOnFailure(hr, "Failed to start value enumeration");
             }
             break;
@@ -2106,7 +2129,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                         ExitOnFailure(hr, "Failed while switching other databases state to single value history screen");
                     }
 
-                    hr = pUX->EnumerateValueHistory(pUX->m_dwDatabaseIndex);
+                    hr = pUX->EnumerateValueHistory(pUX->m_dwDatabaseIndex, TRUE);
                     ExitOnFailure(hr, "Failed to enumerate value history");
                 }
             }
