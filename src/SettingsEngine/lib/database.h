@@ -60,8 +60,7 @@ enum PRODUCT_INDEX_COLUMN
     PRODUCT_PUBLICKEY = 3,
     PRODUCT_REGISTERED = 4,
     PRODUCT_IS_LEGACY = 5,
-    PRODUCT_LEGACY_SEQUENCE = 6,
-    PRODUCT_INDEX_COLUMNS = 7
+    PRODUCT_INDEX_COLUMNS = 6
 };
 
 // Columns used by both value index and value index history tables

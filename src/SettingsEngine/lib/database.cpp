@@ -165,9 +165,6 @@ HRESULT DatabaseSetupSchema(
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_REGISTERED].dbtColumnType = DBTYPE_BOOL;
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].wzName = L"IsLegacy";
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].dbtColumnType = DBTYPE_BOOL;
-    pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_LEGACY_SEQUENCE].wzName = L"Sequence";
-    pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_LEGACY_SEQUENCE].dbtColumnType = DBTYPE_I4;
-    pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_LEGACY_SEQUENCE].fNullable = TRUE;
 
     static DWORD rgdwUserProductIndex1[] = { PRODUCT_ID };
     static DWORD rgdwUserProductIndex2[] = { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_PUBLICKEY };
