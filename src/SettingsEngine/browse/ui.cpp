@@ -387,7 +387,7 @@ HRESULT UISetListViewToValueEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    if (!GetTimeZoneInformation(&tzi))
+    if (!::GetTimeZoneInformation(&tzi))
     {
         ExitWithLastError(hr, "Failed to get time zone information");
     }
@@ -536,7 +536,7 @@ HRESULT UISetListViewToValueHistoryEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    if (!GetTimeZoneInformation(&tzi))
+    if (!::GetTimeZoneInformation(&tzi))
     {
         ExitWithLastError(hr, "Failed to get time zone information");
     }
