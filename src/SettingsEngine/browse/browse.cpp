@@ -102,8 +102,7 @@ int WINAPI wWinMain(
 
     if (commandLineRequest.fHelpRequested)
     {
-        //printf("CfgBrowser.exe [/?] | [/manifest manifest.udm] [/manifest anothermanifest.udm] ...");
-        // TODO: get printf working so we can output usage information
+        ::MessageBoxW(NULL, L"CfgBrowser.exe [/?] | [/manifest manifest.udm] [/manifest anothermanifest.udm] ...", L"WiX Settings Browser Commandline Help", MB_OK);
         return 0;
     }
 
