@@ -21,12 +21,6 @@ extern "C" {
 #define ReleaseDisplayName(x) { ReleaseStr(x.sczName); }
 #define ReleaseDisplayNameArray(rg, c) { if (rg) { for (DWORD i = 0; i < c; ++i) { ReleaseDisplayName(rg[i]); } } ReleaseMem(rg); }
 
-struct DISPLAY_NAME
-{
-    LPWSTR sczName;
-    DWORD dwLCID;
-};
-
 HRESULT DisplayNameLookup(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,

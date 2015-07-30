@@ -23,6 +23,7 @@ HRESULT EnumResize(
     size_t cbPointerSize = 0;
     size_t cbConfigValueSize = 0;
     size_t cbBoolSize = 0;
+    size_t cbDwordSize = 0;
 
     // If we're shrinking, release strings before we actually resize the arrays, losing the pointers
     if (dwNewSize < pcesEnum->dwNumValues)
@@ -43,6 +44,7 @@ HRESULT EnumResize(
                 ReleaseStr(pcesEnum->products.rgsczName[i]);
                 ReleaseStr(pcesEnum->products.rgsczVersion[i]);
                 ReleaseStr(pcesEnum->products.rgsczPublicKey[i]);
+                ReleaseDisplayNameArray(pcesEnum->products.rgrgDisplayNames[i], pcesEnum->products.rgcDisplayNames[i]);
             }
             break;
 
@@ -82,6 +84,8 @@ HRESULT EnumResize(
             ReleaseNullMem(pcesEnum->products.rgsczName);
             ReleaseNullMem(pcesEnum->products.rgsczVersion);
             ReleaseNullMem(pcesEnum->products.rgsczPublicKey);
+            ReleaseNullMem(pcesEnum->products.rgrgDisplayNames);
+            ReleaseNullMem(pcesEnum->products.rgcDisplayNames);
             ReleaseNullMem(pcesEnum->products.rgfRegistered);
             break;
 
@@ -112,6 +116,9 @@ HRESULT EnumResize(
     hr = ::SizeTMult(dwNewSize, sizeof(BOOL), &(cbBoolSize));
     ExitOnFailure(hr, "Maximum allocation of datatype array exceeded (BOOL).");
 
+    hr = ::SizeTMult(dwNewSize, sizeof(DWORD), &(cbDwordSize));
+    ExitOnFailure(hr, "Maximum allocation of datatype array exceeded (DWORD).");
+
     // If it's a new struct, call memalloc
     if (0 == pcesEnum->dwMaxValues)
     {
@@ -133,6 +140,12 @@ HRESULT EnumResize(
 
             pcesEnum->products.rgsczPublicKey = static_cast<LPWSTR *>(MemAlloc(cbPointerSize, TRUE));
             ExitOnNull(pcesEnum->products.rgsczPublicKey, hr, E_OUTOFMEMORY, "Failed to allocate public key array for product type Cfg Enumeration Struct");
+
+            pcesEnum->products.rgrgDisplayNames = static_cast<DISPLAY_NAME **>(MemAlloc(cbPointerSize, TRUE));
+            ExitOnNull(pcesEnum->products.rgrgDisplayNames, hr, E_OUTOFMEMORY, "Failed to allocate display name array of arrays for product type Cfg Enumeration Struct");
+
+            pcesEnum->products.rgcDisplayNames = static_cast<DWORD *>(MemAlloc(cbDwordSize, TRUE));
+            ExitOnNull(pcesEnum->products.rgrgDisplayNames, hr, E_OUTOFMEMORY, "Failed to allocate display name array of counts for product type Cfg Enumeration Struct");
 
             pcesEnum->products.rgfRegistered = static_cast<BOOL *>(MemAlloc(cbBoolSize, TRUE));
             ExitOnNull(pcesEnum->products.rgfRegistered, hr, E_OUTOFMEMORY, "Failed to allocate registered flag array for product type Cfg Enumeration Struct");
@@ -179,6 +192,12 @@ HRESULT EnumResize(
 
             pcesEnum->products.rgsczPublicKey = static_cast<LPWSTR *>(MemReAlloc(pcesEnum->products.rgsczPublicKey, cbPointerSize, TRUE));
             ExitOnNull(pcesEnum->products.rgsczPublicKey, hr, E_OUTOFMEMORY, "Failed to reallocate public key array for product type Cfg Enumeration Struct");
+
+            pcesEnum->products.rgrgDisplayNames = static_cast<DISPLAY_NAME **>(MemReAlloc(pcesEnum->products.rgrgDisplayNames, cbPointerSize, TRUE));
+            ExitOnNull(pcesEnum->products.rgrgDisplayNames, hr, E_OUTOFMEMORY, "Failed to reallocate display name array of arrays for product type Cfg Enumeration Struct");
+
+            pcesEnum->products.rgcDisplayNames = static_cast<DWORD *>(MemReAlloc(pcesEnum->products.rgcDisplayNames, cbDwordSize, TRUE));
+            ExitOnNull(pcesEnum->products.rgrgDisplayNames, hr, E_OUTOFMEMORY, "Failed to reallocate display name array of counts for product type Cfg Enumeration Struct");
 
             pcesEnum->products.rgfRegistered = static_cast<BOOL *>(MemReAlloc(pcesEnum->products.rgfRegistered, cbBoolSize, TRUE));
             ExitOnNull(pcesEnum->products.rgfRegistered, hr, E_OUTOFMEMORY, "Failed to allocate registered flag array for product type Cfg Enumeration Struct");

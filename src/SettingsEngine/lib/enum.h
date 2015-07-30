@@ -44,6 +44,8 @@ struct CFG_ENUMERATION
             LPWSTR *rgsczName;
             LPWSTR *rgsczVersion;
             LPWSTR *rgsczPublicKey;
+            DISPLAY_NAME **rgrgDisplayNames;
+            DWORD *rgcDisplayNames;
             BOOL *rgfRegistered;
         } products;
         struct

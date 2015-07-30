@@ -98,6 +98,12 @@ struct CONFLICT_PRODUCT
     DWORD cValues;
 };
 
+struct DISPLAY_NAME
+{
+    LPWSTR sczName;
+    DWORD dwLCID;
+};
+
 enum BACKGROUND_STATUS_TYPE
 {
     BACKGROUND_STATUS_INVALID = 0,
@@ -327,6 +333,12 @@ HRESULT CFGAPI CfgEnumReadBinary(
     __in CFG_ENUM_DATA cedData,
     __deref_out_bcount(*piBuffer) BYTE** ppbBuffer,
     __inout SIZE_T* piBuffer
+    );
+HRESULT CFGAPI CfgEnumReadDisplayNameArray(
+    __in_bcount(CFG_ENUMERATION_HANDLE_BYTES) C_CFG_ENUMERATION_HANDLE cehHandle,
+    __in DWORD dwIndex,
+    __out DISPLAY_NAME **prgDisplayNames,
+    __out DWORD *pcDisplayNames
     );
 
 void CFGAPI CfgReleaseEnumeration(

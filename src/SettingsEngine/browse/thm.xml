@@ -21,9 +21,7 @@
       <Label Name="ProductListDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
       <Label X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.ProductListHeader)</Label>
       <ListView Name="ProductListView" TabStop="yes" X="10" Y="55" Width="-210" Height="-35" FontId="0" ImageListSmall="InstallState" HexStyle="0000000D" HexExtendedStyle="00000021">
-        <Column Width="354" Expands="yes">#(loc.ProductName)</Column>
-        <Column Width="80">#(loc.ProductVersion)</Column>
-        <Column Width="115">#(loc.ProductPublicKey)</Column>
+        <Column Width="549" Expands="yes">#(loc.ProductName)</Column>
       </ListView>
       <Checkbox Name="ShowUninstalledProductsCheckBox" FontId="0" TabStop="yes" X="10" Y="-10" Width="200" Height="20">#(loc.ShowUninstalledProducts)</Checkbox>
       <Button Name="ProductListBackButton" X="-10" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>

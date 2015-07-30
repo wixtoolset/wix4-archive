@@ -56,8 +56,13 @@ HRESULT BrowseWindow::SetSelectedProduct(
     )
 {
     HRESULT hr = S_OK;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     LPCWSTR wzTemp = NULL;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
+
+    hr = CfgEnumReadDisplayNameArray(CURRENTDATABASE.productEnum.cehItems, dwIndex, &rgDisplayNames, &cDisplayNames);
+    ExitOnFailure(hr, "Failed to read display names from enumeration");
 
     hr = CfgEnumReadString(CURRENTDATABASE.productEnum.cehItems, dwIndex, ENUM_DATA_PRODUCTNAME, &wzTemp);
     ExitOnFailure(hr, "Failed to read product name from enumeration");
@@ -77,8 +82,17 @@ HRESULT BrowseWindow::SetSelectedProduct(
     hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczPublicKey, wzTemp, 0);
     ExitOnFailure(hr, "Failed to copy name");
 
-    hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
-    ExitOnFailure(hr, "Failed to allocate product display name with public key");
+    if (0 < cDisplayNames && rgDisplayNames[0].sczName && *rgDisplayNames[0].sczName)
+    {
+        // TODO: pick the one with the closest LCID to the local system?
+        hr = StrAllocString(&CURRENTDATABASE.sczCurrentProductDisplayName, rgDisplayNames[0].sczName, 0);
+        ExitOnFailure(hr, "Failed to copy display name");
+    }
+    else
+    {
+        hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
+        ExitOnFailure(hr, "Failed to allocate product display name with public key");
+    }
 
 LExit:
     ::LeaveCriticalSection(&CURRENTDATABASE.cs);

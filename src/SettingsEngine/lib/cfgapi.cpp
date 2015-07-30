@@ -1087,6 +1087,7 @@ extern "C" HRESULT CfgEnumerateProducts(
     CFGDB_STRUCT *pcdb = static_cast<CFGDB_STRUCT *>(cdHandle);
     SCE_ROW_HANDLE sceRow = NULL;
     BOOL fLocked = FALSE;
+    DWORD dwAppID = DWORD_MAX;
 
     ExitOnNull(pcdb, hr, E_INVALIDARG, "Database handle must not be NULL");
     ExitOnNull(ppvHandle, hr, E_INVALIDARG, "Must pass in pointer to output handle to CfgEnumerateProducts()");
@@ -1127,6 +1128,12 @@ extern "C" HRESULT CfgEnumerateProducts(
         ExitOnFailure(hr, "Failed to retrieve public key while enumerating products");
 
         hr = SceGetColumnBool(sceRow, PRODUCT_REGISTERED, &(pcesEnum->products.rgfRegistered[pcesEnum->dwNumValues]));
+        ExitOnFailure(hr, "Failed to retrieve registered flag while enumerating products");
+
+        hr = SceGetColumnDword(sceRow, PRODUCT_ID, &dwAppID);
+        ExitOnFailure(hr, "Failed to retrieve dwAppID while enumerating products");
+
+        hr = DisplayNameEnumerate(pcdb, dwAppID, &(pcesEnum->products.rgrgDisplayNames[pcesEnum->dwNumValues]), &(pcesEnum->products.rgcDisplayNames[pcesEnum->dwNumValues]));
         ExitOnFailure(hr, "Failed to retrieve registered flag while enumerating products");
 
         ++pcesEnum->dwNumValues;
@@ -1855,6 +1862,40 @@ LExit:
         HandleUnlock(pcdb);
     }
 
+    return hr;
+}
+
+extern "C" HRESULT CFGAPI CfgEnumReadDisplayNameArray(
+    __in_bcount(CFG_ENUMERATION_HANDLE_BYTES) C_CFG_ENUMERATION_HANDLE cehHandle,
+    __in DWORD dwIndex,
+    __out DISPLAY_NAME **prgDisplayNames,
+    __out DWORD *pcDisplayNames
+    )
+{
+    HRESULT hr = S_OK;
+    const CFG_ENUMERATION *pcesEnum = static_cast<const CFG_ENUMERATION *>(cehHandle);
+
+    ExitOnNull(pcesEnum, hr, E_INVALIDARG, "CfgEnumReadDisplayNameArray() requires an enumeration handle");
+    ExitOnNull(prgDisplayNames, hr, E_INVALIDARG, "CfgEnumReadDisplayNameArray()'s must not be sent NULL for its DISPLAY_NAME ** output parameter");
+    ExitOnNull(pcDisplayNames, hr, E_INVALIDARG, "CfgEnumReadDisplayNameArray() must not be sent NULL for DWORD * output parameter");
+
+    // Index out of bounds
+    if (dwIndex >= pcesEnum->dwNumValues)
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Index %u out of bounds (max value: %u)", dwIndex, pcesEnum->dwNumValues);
+    }
+
+    if (ENUMERATION_PRODUCTS != pcesEnum->enumType)
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "Only product enumeration type supports enumerating display names");
+    }
+
+    *prgDisplayNames = pcesEnum->products.rgrgDisplayNames[dwIndex];
+    *pcDisplayNames = pcesEnum->products.rgcDisplayNames[dwIndex];
+
+LExit:
     return hr;
 }
 

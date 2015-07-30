@@ -221,6 +221,8 @@ HRESULT UISetListViewToProductEnum(
     DWORD dwCount = 0;
     DWORD dwListViewRowCount;
     DWORD dwInsertImage = 0;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     LPCWSTR wzText = NULL;
 
     dwListViewRowCount = ListView_GetItemCount(hwnd);
@@ -242,8 +244,19 @@ HRESULT UISetListViewToProductEnum(
     dwInsertIndex = 0;
     for (DWORD i = 0; i < dwCount; ++i)
     {
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
-        ExitOnFailure(hr, "Failed to read product name from enum");
+        hr = CfgEnumReadDisplayNameArray(cehProducts, i, &rgDisplayNames, &cDisplayNames);
+        ExitOnFailure(hr, "Failed to read display names from enumeration");
+
+        if (0 < cDisplayNames && rgDisplayNames[0].sczName && *rgDisplayNames[0].sczName)
+        {
+            // TODO: pick the one with the closest LCID to the local system?
+            wzText = rgDisplayNames[0].sczName;
+        }
+        else
+        {
+            hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
+            ExitOnFailure(hr, "Failed to read product name from enum");
+        }
 
 #pragma prefast(push)
 #pragma prefast(disable:26007)
@@ -274,18 +287,6 @@ HRESULT UISetListViewToProductEnum(
             hr = UIListViewSetItem(hwnd, dwInsertIndex, wzText, i, dwInsertImage);
             ExitOnFailure(hr, "Failed to set product in listview control");
         }
-
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_VERSION, &wzText);
-        ExitOnFailure(hr, "Failed to read product version from enum");
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, wzText);
-        ExitOnFailure(hr, "Failed to set version as listview subitem");
-
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PUBLICKEY, &wzText);
-        ExitOnFailure(hr, "Failed to read product public key from enum");
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
-        ExitOnFailure(hr, "Failed to set public key as listview subitem");
 
         ++dwInsertIndex;
     }
