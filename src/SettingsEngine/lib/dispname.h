@@ -19,8 +19,13 @@ extern "C" {
 #endif
 
 #define ReleaseDisplayName(x) { ReleaseStr(x.sczName); }
-#define ReleaseDisplayNameArray(rg, c) { if (rg) { for (DWORD i = 0; i < c; ++i) { ReleaseDisplayName(rg[i]); } } ReleaseMem(rg); }
+#define ReleaseDisplayNameArray(rg, c) { if (rg) { DisplayNameArrayFree(rg, c); } }
 
+
+void DisplayNameArrayFree(
+    __in DISPLAY_NAME *rgDisplayNames,
+    __in DWORD cDisplayNames
+    );
 HRESULT DisplayNameLookup(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,

@@ -21,9 +21,6 @@ extern "C" {
 #include "inc\cfgapi.h"
 #include "detect.h"
 
-#define ReleaseDisplayName(x) { ReleaseStr(x.sczName); }
-#define ReleaseDisplayNameArray(rg, c) { if (rg) { for (DWORD i = 0; i < c; ++i) { ReleaseDisplayName(rg[i]); } } ReleaseMem(rg); }
-
 struct LEGACY_SYNC_PRODUCT_SESSION;
 
 const DWORD CfgLegacyDbRegistryRootClassesRoot = 0;

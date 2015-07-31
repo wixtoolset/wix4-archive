@@ -78,11 +78,20 @@ enum RESOLUTION_CHOICE
     RESOLUTION_REMOTE
 };
 
+struct DISPLAY_NAME
+{
+    LPWSTR sczName;
+    DWORD dwLCID;
+};
+
 struct CONFLICT_PRODUCT
 {
     LPWSTR sczProductName;
     LPWSTR sczVersion;
     LPWSTR sczPublicKey;
+
+    DISPLAY_NAME *rgDisplayNames;
+    DWORD cDisplayNames;
 
     // An enumeration just like what is returned from CfgEnumPastValues, but only contains conflicting values in local store
     CFG_ENUMERATION_HANDLE *rgcesValueEnumLocal;
@@ -96,12 +105,6 @@ struct CONFLICT_PRODUCT
 
     // This is the number of conflicting values for the product. This is also the array size for both rgcesValueEnumLocal, rgcesValueEnumRemote, and rgrcValueChoices
     DWORD cValues;
-};
-
-struct DISPLAY_NAME
-{
-    LPWSTR sczName;
-    DWORD dwLCID;
 };
 
 enum BACKGROUND_STATUS_TYPE

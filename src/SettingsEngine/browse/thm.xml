@@ -128,9 +128,8 @@
       <Label Name="SingleDbConflictsDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
       <Label X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.ConflictsHeader)</Label>
       <ListView Name="SingleDbConflictsView" TabStop="yes" X="10" Y="65" Width="-210" Height="-40" FontId="0" HexStyle="00000019" HexExtendedStyle="00000021">
-        <Column Width="380" Expands="yes">#(loc.ProductName)</Column>
+        <Column Width="455" Expands="yes">#(loc.ProductName)</Column>
         <Column Width="110">#(loc.ResolutionColumn)</Column>
-        <Column Width="75">#(loc.ProductVersion)</Column>
       </ListView>
       <Button Name="SingleDbConflictsBackButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
       <Button Name="SingleDbConflictsSyncButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.SyncResolveButton)</Button>

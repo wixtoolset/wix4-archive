@@ -13,6 +13,19 @@
 
 #include "precomp.h"
 
+void DisplayNameArrayFree(
+    __in DISPLAY_NAME *rgDisplayNames,
+    __in DWORD cDisplayNames
+    )
+{
+    for (DWORD i = 0; i < cDisplayNames; ++i)
+    {
+        ReleaseDisplayName(rgDisplayNames[i]);
+    }
+
+    ReleaseMem(rgDisplayNames);
+}
+
 HRESULT DisplayNameLookup(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,

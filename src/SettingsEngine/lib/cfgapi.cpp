@@ -1969,6 +1969,8 @@ extern "C" void CfgReleaseConflictProductArray(
         ReleaseStr(rgcpProduct[i].sczVersion);
         ReleaseStr(rgcpProduct[i].sczPublicKey);
 
+        ReleaseDisplayNameArray(rgcpProduct[i].rgDisplayNames, rgcpProduct[i].cDisplayNames);
+
         for (DWORD j = 0; j < rgcpProduct[i].cValues; ++j)
         {
             CfgReleaseEnumeration(rgcpProduct[i].rgcesValueEnumLocal[j]);

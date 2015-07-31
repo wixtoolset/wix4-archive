@@ -58,6 +58,7 @@ HRESULT BrowseWindow::SetSelectedProduct(
     HRESULT hr = S_OK;
     DISPLAY_NAME *rgDisplayNames = NULL;
     DWORD cDisplayNames = 0;
+    DWORD dwDisplayNameToDisplay = DWORD_MAX;
     LPCWSTR wzTemp = NULL;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
 
@@ -82,16 +83,19 @@ HRESULT BrowseWindow::SetSelectedProduct(
     hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczPublicKey, wzTemp, 0);
     ExitOnFailure(hr, "Failed to copy name");
 
-    if (0 < cDisplayNames && rgDisplayNames[0].sczName && *rgDisplayNames[0].sczName)
+    hr = UISelectBestLCIDToDisplay(rgDisplayNames, cDisplayNames, &dwDisplayNameToDisplay);
+    if (FAILED(hr))
     {
-        // TODO: pick the one with the closest LCID to the local system?
-        hr = StrAllocString(&CURRENTDATABASE.sczCurrentProductDisplayName, rgDisplayNames[0].sczName, 0);
-        ExitOnFailure(hr, "Failed to copy display name");
+        hr = S_OK;
+
+        // Fallback to regular product id/version/publickey
+        hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
+        ExitOnFailure(hr, "Failed to allocate product display name with public key");
     }
     else
     {
-        hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
-        ExitOnFailure(hr, "Failed to allocate product display name with public key");
+        hr = StrAllocString(&CURRENTDATABASE.sczCurrentProductDisplayName, rgDisplayNames[0].sczName, 0);
+        ExitOnFailure(hr, "Failed to copy display name");
     }
 
 LExit:
