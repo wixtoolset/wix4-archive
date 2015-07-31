@@ -1026,6 +1026,7 @@ DWORD WINAPI BrowseWindow::UiThreadProc(
     ExitOnFailure(hr, "Failed to copy name of local database to database list entry");
 
     pThis->m_pbdlDatabaseList->rgDatabases[dwDatabaseIndex].dtType = DATABASE_LOCAL;
+    pThis->m_pbdlDatabaseList->rgDatabases[dwDatabaseIndex].fInitializing = TRUE;
 
     // create main window
     hr = pThis->CreateMainWindow();
@@ -1376,6 +1377,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     case WM_BROWSE_INITIALIZE_FINISHED:
         dwIndex = static_cast<DWORD>(lParam);
 
+        UXDATABASE(dwIndex).fInitializing = FALSE;
         UXDATABASE(dwIndex).hrInitializeResult = static_cast<HRESULT>(wParam);
 
         hr = pUX->SetDatabaseIndex(0);
