@@ -9,103 +9,75 @@ The [WixNetfxExtension](~/xsd/netfx/index.html) includes a set of custom actions
 
 ## PackageGroups
 
-The WixNetfxExtension includes package groups that make it easier to include .NET in your bundles.
-
-<table cellspacing="0" cellpadding="4" class="style1" border="1">
-  <tr>
-    <td valign="top">
-      <p><b>PackageGroup ID</b></p>
-    </td>
-
-    <td valign="top">
-      <p><b>Description</b></p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx40Web</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.0 Full web setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx40Redist</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.0 Full standalone setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx40ClientWeb</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.0 Client Profile web setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx40ClientRedist</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.0 Client Profile standalone setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx45Web</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.5 web setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx45Redist</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.5 standalone setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx451Web</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.5.1 web setup.</p>
-    </td>
-  </tr>
-
-  <tr>
-    <td valign="top">
-      <p>NetFx451Redist</p>
-    </td>
-
-    <td>
-      <p>.Net Framework 4.5.1 standalone setup.</p>
-    </td>
-  </tr>
-</table>
+The available packages groups are documented in [Built-in PackageGroups](~/bundle/bundle_built_in_packagegroups.html).
 
 ## Properties
 
 The WixNetfxExtension also includes a set of properties that can be used to detect the presence of various versions of the .NET Framework, the .NET Framework SDK and the Windows SDK. For information on how to use these properties to verify the user&apos;s .NET Framework version at install time see [How To: Check for .NET Framework Versions](~/howtos/redistributables_and_install_checks/check_for_dotnet.html).
+
+The following properties (available starting in WiX v3.10) let you detect a particular minimum version of .NET Framework 4.X releases that are in-place updates (rather than that are installed side-by-side with other releases):
+
+<table cellspacing="0" cellpadding="4" class="style1" border="1">
+  <tr>
+    <td valign="top">
+      <p><b>Property name</b></p>
+    </td>
+
+    <td valign="top">
+      <p><b>Meaning</b></p>
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top">
+      <p>WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED</p>
+    </td>
+
+    <td>
+      <p>Set to 1 if .NET Framework 4.0 or later is installed.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top">
+      <p>WIX_IS_NETFRAMEWORK_45_OR_LATER_INSTALLED</p>
+    </td>
+
+    <td>
+      <p>Set to 1 if .NET Framework 4.5 or later is installed.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top">
+      <p>WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED</p>
+    </td>
+
+    <td>
+      <p>Set to 1 if .NET Framework 4.5.1 or later is installed.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top">
+      <p>WIX_IS_NETFRAMEWORK_452_OR_LATER_INSTALLED</p>
+    </td>
+
+    <td>
+      <p>Set to 1 if .NET Framework 4.5.2 or later is installed.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top">
+      <p>WIX_IS_NETFRAMEWORK_46_OR_LATER_INSTALLED</p>
+    </td>
+
+    <td>
+      <p>Set to 1 if .NET Framework 4.6 or later is installed.</p>
+    </td>
+  </tr>
+</table>
 
 The following property is applicable to all versions of the .NET Framework:
 

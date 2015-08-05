@@ -21,6 +21,8 @@ extern "C" {
 #define ReleaseCfgValue(x) { ValueFree(&x); }
 #define ReleaseNullCfgValue(x) { ValueFree(&x); ZeroMemory(&x, sizeof(x)); }
 
+struct CFG_ENUMERATION;
+
 enum CFG_BLOB_TYPE
 {
     CFG_BLOB_INVALID = 0,
@@ -82,10 +84,11 @@ struct CONFIG_VALUE
     };
 };
 
-// Compares two values for equality. Ignores source of the value ('when' and 'by')
+// Compares two values for equality. Optionally ignores source of the value ('when' and 'by') depending on parameter fCompareSource
 HRESULT ValueCompare(
     __in const CONFIG_VALUE *pcvValue1,
     __in const CONFIG_VALUE *pcvValue2,
+    __in BOOL fCompareSource,
     __out BOOL *pfResult
     );
 HRESULT ValueCopy(
@@ -137,22 +140,24 @@ HRESULT ValueSetBool(
     __in_z_opt LPCWSTR wzBy,
     __deref_out CONFIG_VALUE *pcvValue
     );
+HRESULT ValueTransferFromHistory(
+    __in CFGDB_STRUCT *pcdb,
+    __in const CFG_ENUMERATION *pceValueHistoryEnum,
+    __in DWORD dwStartingEnumIndex,
+    __in CFGDB_STRUCT *pcdbReferencedBy
+    );
 HRESULT ValueWrite(
     __in CFGDB_STRUCT *pcdb,
     __in DWORD dwAppID,
     __in_z LPCWSTR wzName,
     __in CONFIG_VALUE *pcvValue,
-    __in BOOL fIgnoreSameValue
+    __in BOOL fIgnoreSameValue,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     );
 // Reads a value into memory from a database. Can read from either value index or value index history table.
 HRESULT ValueRead(
     __in CFGDB_STRUCT *pcdb,
     __in SCE_ROW_HANDLE sceValueRow,
-    __deref_out CONFIG_VALUE *pcvValue
-    );
-HRESULT ValueReadHistory(
-    __in CFGDB_STRUCT *pcdb,
-    __in SCE_ROW_HANDLE sceValueHistoryRow,
     __deref_out CONFIG_VALUE *pcvValue
     );
 // Checks if the value in sceRow1 has an identical corresponding current value in pcdb2
@@ -170,9 +175,8 @@ void ValueFree(
     );
 HRESULT ValueFindRow(
     __in CFGDB_STRUCT *pcdb,
-    __in DWORD dwTableIndex,
-    __in DWORD dwDword,
-    __in_z LPCWSTR wzString,
+    __in DWORD dwAppID,
+    __in_z LPCWSTR wzValueName,
     __out SCE_ROW_HANDLE *pRowHandle
     );
 HRESULT ValueForget(

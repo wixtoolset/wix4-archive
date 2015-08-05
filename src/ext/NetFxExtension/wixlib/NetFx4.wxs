@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
         .NET Framework installation state properties
@@ -21,7 +21,14 @@
   <?define NetFx40RedistLink =  http://go.microsoft.com/fwlink/?LinkId=247729 ?>
   <?define NetFx40ClientWebLink = http://go.microsoft.com/fwlink/?linkid=182804 ?>
   <?define NetFx40ClientRedistLink =  http://go.microsoft.com/fwlink/?LinkId=247730 ?>
-  <?define NetFx40EulaLink =  http://go.microsoft.com/fwlink/?LinkID=188993 ?>
+
+  <Fragment>
+    <PropertyRef Id="NETFRAMEWORK40FULL" />
+    <Property Id="WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED" Secure="yes" />
+    <SetProperty Id="WIX_IS_NETFRAMEWORK_40_OR_LATER_INSTALLED" Value="1" After="AppSearch">
+      NETFRAMEWORK40FULL
+    </SetProperty>
+  </Fragment>
 
   <Fragment>
     <util:RegistrySearch
@@ -49,9 +56,7 @@
           Protocol="netfx4"
           DownloadUrl="$(var.NetFx40WebLink)"
           Compressed="no"
-          Name="redist\dotNetFx40_Full_setup.exe"
-          bal:PrereqPackage="yes"
-          bal:PrereqLicenseUrl="$(var.NetFx40EulaLink)">
+          Name="redist\dotNetFx40_Full_setup.exe">
         <RemotePayload
             Size="889416"
             Version="4.0.30319.1"
@@ -80,9 +85,7 @@
           Protocol="netfx4"
           DownloadUrl="$(var.NetFx40RedistLink)"
           Compressed="no"
-          Name="redist\dotNetFx40_Full_x86_x64.exe"
-          bal:PrereqPackage="yes"
-          bal:PrereqLicenseUrl="$(var.NetFx40EulaLink)">
+          Name="redist\dotNetFx40_Full_x86_x64.exe">
         <RemotePayload
             Size="50449456"
             Version="4.0.30319.1"
@@ -122,9 +125,7 @@
           Protocol="netfx4"
           DownloadUrl="$(var.NetFx40ClientWebLink)"
           Compressed="no"
-          Name="redist\dotNetFx40_Client_setup.exe"
-          bal:PrereqPackage="yes"
-          bal:PrereqLicenseUrl="$(var.NetFx40EulaLink)">
+          Name="redist\dotNetFx40_Client_setup.exe">
         <RemotePayload
             Size="887896"
             Version="4.0.30319.1"
@@ -153,9 +154,7 @@
           Protocol="netfx4"
           DownloadUrl="$(var.NetFx40ClientRedistLink)"
           Compressed="no"
-          Name="redist\dotNetFx40_Client_x86_x64.exe"
-          bal:PrereqPackage="yes"
-          bal:PrereqLicenseUrl="$(var.NetFx40EulaLink)">
+          Name="redist\dotNetFx40_Client_x86_x64.exe">
         <RemotePayload
             Size="43000680"
             Version="4.0.30319.1"

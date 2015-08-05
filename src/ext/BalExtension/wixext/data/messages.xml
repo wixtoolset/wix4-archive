@@ -22,6 +22,7 @@
         <Message Id="MissingPrereq" Number="6802" SourceLineNumbers="no">
             <Instance>
                 There must be at least one PrereqPackage when using the ManagedBootstrapperApplicationHost.
+                This is typically done by using the WixNetFxExtension and referencing one of the NetFxAsPrereq package groups.
             </Instance>
         </Message>
         <Message Id="MultiplePrereqLicenses" Number="6803">

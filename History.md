@@ -1,5 +1,103 @@
 * ErnestT: WIXBUG:4432 - Add burn support for only caching packages
 
+* HeathS: WIXFEAT:4663 - Default to language-specific major upgrades with option to ignore language.
+
+* BMurri: WIXBUG:4532 - Make it an error for InstallPrivileges and InstallScope to both be specified.
+
+## WixBuild: Version 4.0.2926.0
+
+* BobArnson: WIXFEAT:4772 - Replace hyperlink ShelExec with ShelExecUnelevated.
+
+* BobArnson: Add support in locutil to add strings at runtime.
+
+* BobArnson: WIXBUG:4734 - Rewrote type-51 CAs using SetProperty.
+
+* BobArnson: WIXFEAT:4720 - Added bind-time variables for .NET Framework package groups detect condition, install condition, and package directories.
+
+* BobArnson: WIXBUG:4750 - Add a note about binary (in)compatibility.
+
+* RobMen: WIXBUG:4732 - fix documentation links to MsiServiceConfig and MsiServiceConfigFailureActions.
+
+* BobArnson: WIXBUG:4725 - Scrub the WixStdBA license doc and add a blurb about a missing WixStdbaLicenseUrl variable.
+
+* BobArnson: WIXBUG:4721 - Tweak RepairCommand doc.
+
+* SeanHall: WIXFEAT:4763 - Add literal flag to Burn variables to indicate that their values shouldn't be formatted.
+
+* BobArnson: Add libs_minimal.proj with just the libraries needed for tools/ tree build. This prevents the build from backing up behind a full libs/ tree build, which gets more painful the more versions of Visual Studio that are installed.
+
+* BobArnson: Project reference tweaks:
+  - Removed unnecessary reference to setupicons from x64msi.
+  - Move BuildInParallel=false from global to just project that needs it
+
+* BMurri: WIXBUG:3750 - Add LaunchWorkingFolder to wixstdba to facilitate processes that require a different working folder.
+
+* HeathS: Add VSIX property for VS2015 and fix searches for previous versions.
+
+* HeathS: WIXBUG:3060 - Do not redownload package payloads when /layout is restarted.
+
+* SeanHall: WIXBUG:4761 - Use the package's exit code to tell if the prereq was installed.
+
+* SeanHall: WIXFEAT: 4703 - Move the PrereqPackage information out of the NetFx extension and into the Bal extension so that the NetFx extension doesn't require the Bal extension.
+
+* SeanHall: WIXBUG:4392 - Set WixBundleInstalled during Detect.
+
+* MikeGC: Allow settings engine to detect installation state of products based on ARP reg key name, and add more UDMs
+
+* MikeGC: WIXFEAT:4350 - Settings engine no longer keeps archives of all settings changes forever, it now has a reasonable expiration policy.
+
+* SeanHall: WIXFEAT:4619 - Include WixUI dialogs and wxl files in core MSI.
+
+* SeanHall: WIXFEAT:4618 - Include WixStdBA and mbapreq themes and wxl files in core MSI.
+
+* SeanHall: WIXBUG:4731 - Obscure hidden variable values in the logged command line.
+
+* SeanHall: WIXBUG:4630 - Serialize all variables to the elevated Burn process.
+
+* SeanHall: WIXFEAT:3933 - Make WixBundleManufacturer variable writable.
+
+* BobArnson: WIXBUG:4700 - Added blurb about SequenceType.first.
+
+* SeanHall: Update builtin WixStdBA themes to use the new thmutil functionality.
+
+* SeanHall: WIXFEAT:4411 - Be consistent about when a WixStdBA button is called Close or Cancel.
+
+* SeanHall: WIXFEAT:4658 - Add builtin button functionality in thmutil.
+
+## WixBuild: Version 4.0.2719.0
+
+* BobArnson: WIXBUG:4520 - Added blurb about using a PayloadGroup to get offline capability for .NET redist.
+
+* BobArnson: WIXBUG:4589 - Catch exceptions from Version when passing in arbitrary strings. For bundles, try to recover a four-part version number.
+
+* BobArnson: WIXBUG:4545 - Resized button for de-DE.
+
+* BobArnson: Add WixStdBALanguageId language and documentation.
+
+* BobArnson: WIXBUG:4617 - Added 4.5.2 package group information to doc. Also mentioned that some properties are new to WiX v3.10.
+
+* BobArnson: WIXBUG:4611 - Eliminate mysteriously doubled .pkgdef content.
+
+* BobArnson: WIXBUG:4610 - Write RegisterPerfmonManifest CustomActionData correctly.
+
+* BobArnson: WIXBUG:4553 - Fix Lux generator to exclude any files with non-fragment sections. Fix Lux custom actions to have proper config.
+
+* PhillHogland: WIXBUG:4592 - Register named process, in another user's context with Restart Manager.  If Access Denied, continue install rather than fail.
+
+* thfabba: WIXBUG:4681 - Corrected return type on the lone WOW64 redirection function that returns a BOOLEAN instead of BOOL.
+
+* MikeGC: Fix an issue in ValueMatch() where we can in certain scenarios create unnecessary extra history entries. This is related to upcoming settings expiration feature.
+
+* BobArnson: WIXBUG:4662 - Add WIX_IS_NETFRAMEWORK_4XX_OR_LATER_INSTALLED SetProperty custom actions to WixNetfxExtension.
+
+* BobArnson: WixBroadcastSettingChange and WixBroadcastEnvironmentChange custom actions to WixUtilExtension.
+
+* SeanHall: WIXBUG:4686 - Fix compiling WixBundlePackageExitCodeRow and WixBundleSlipstreamMsp.
+
+* SeanHall: WIXBUG:4393 - Fix BOOTSTRAPPER_REQUEST_STATE_CACHE.
+
+* SeanHall: WIXBUG:4689 - Fix hidden numeric and version variables.
+
 * SeanHall: WIXBUG:4685 - Fix bug in mbahost where it didn't bind as the LegacyV2Runtime when necessary.
 
 * BobArnson: WIXBUG:4654 - Add VS14 properties and custom actions. And, as it's a long topic, added anchors and links.

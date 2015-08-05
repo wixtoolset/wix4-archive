@@ -44,6 +44,7 @@ struct SCE_COLUMN_SCHEMA
     BOOL fPrimaryKey; // If this column is the primary key
     BOOL fNullable;
     BOOL fAutoIncrement;
+    BOOL fDescending; // If this column should be descending when used in an index (default is ascending)
 
     LPWSTR wzRelationName;
     DWORD dwForeignKeyTable;

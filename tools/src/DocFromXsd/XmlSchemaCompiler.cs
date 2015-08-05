@@ -1111,6 +1111,14 @@ namespace WixBuild.Tools.DocFromXsd
                     }
                 }
 
+                string description = GetDescription(choice);
+                if (!String.IsNullOrEmpty(description))
+                {
+                    writer.WriteStartElement("p");
+                    writer.WriteRaw(description);
+                    writer.WriteEndElement();
+                }
+
                 writer.WriteString(String.Format("Choice of elements (min: {0}, max: {1})", (choice.MinOccurs == Decimal.MaxValue ? "unbounded" : choice.MinOccurs.ToString(CultureInfo.InvariantCulture)), (choice.MaxOccurs == Decimal.MaxValue ? "unbounded" : choice.MaxOccurs.ToString(CultureInfo.InvariantCulture))));
 
                 writer.WriteStartElement("ul");

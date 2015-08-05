@@ -384,7 +384,7 @@ namespace Bootstrapper
                 hr = VariableInitialize(&variables2);
                 TestThrowOnFailure(hr, L"Failed to initialize variables.");
 
-                hr = VariableDeserialize(&variables2, pbBuffer, cbBuffer, &iBuffer);
+                hr = VariableDeserialize(&variables2, FALSE, pbBuffer, cbBuffer, &iBuffer);
                 TestThrowOnFailure(hr, L"Failed to deserialize variables.");
 
                 Assert::Equal(gcnew String(L"VAL1"), VariableGetStringHelper(&variables2, L"PROP1"));

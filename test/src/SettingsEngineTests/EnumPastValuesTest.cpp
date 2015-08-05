@@ -21,229 +21,6 @@ namespace CfgTests
     public ref class EnumPastValues : public CfgTest
     {
     public:
-        void VerifyHistoryString(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, LPCWSTR wzValue)
-        {
-            HRESULT hr = S_OK;
-            CONFIG_VALUETYPE cvType = VALUE_INVALID;
-            LPCWSTR wzValueFromEnum = NULL;
-            LPCWSTR wzByFromEnum = NULL;
-            SYSTEMTIME st;
-
-            hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
-
-            if (VALUE_STRING != cvType)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected to find string value, found type: %d", cvType);
-            }
-
-            hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_VALUESTRING, &wzValueFromEnum);
-            ExitOnFailure(hr, "Failed to enumerate string value: %u", dwIndex);
-            if (0 != lstrcmpW(wzValue, wzValueFromEnum))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected value '%ls', found value '%ls'", wzValue, wzValueFromEnum);
-            }
-
-            hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
-            if (0 == st.wYear || 0 == st.wMonth)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'when' time encountered!");
-            }
-
-            hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzByFromEnum);
-            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
-            if (0 == lstrlenW(wzByFromEnum))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'by' string encountered!");
-            }
-
-        LExit:
-            return;
-        }
-
-        void VerifyHistoryDword(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, DWORD dwInValue)
-        {
-            HRESULT hr = S_OK;
-            CONFIG_VALUETYPE cvType = VALUE_INVALID;
-            DWORD dwValue;
-            LPCWSTR wzBy = NULL;
-            SYSTEMTIME st;
-
-            hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
-
-            if (VALUE_DWORD != cvType)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected to find dword value, found type: %d", cvType);
-            }
-
-            hr = CfgEnumReadDword(cehHandle, dwIndex, ENUM_DATA_VALUEDWORD, &dwValue);
-            ExitOnFailure(hr, "Failed to enumerate dword value: %u", dwIndex);
-            if (dwValue != dwInValue)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected value %u, found value %u", dwInValue, dwValue);
-            }
-
-            hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
-            if (0 == st.wYear || 0 == st.wMonth)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'when' time encountered!");
-            }
-
-            hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
-            if (0 == lstrlenW(wzBy))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'by' string encountered!");
-            }
-
-        LExit:
-            return;
-        }
-
-        void VerifyHistoryBool(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, BOOL fInValue)
-        {
-            HRESULT hr = S_OK;
-            CONFIG_VALUETYPE cvType = VALUE_INVALID;
-            BOOL fValue;
-            LPCWSTR wzBy = NULL;
-            SYSTEMTIME st;
-
-            hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
-
-            if (VALUE_BOOL != cvType)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected to find bool value, found type: %d", cvType);
-            }
-
-            hr = CfgEnumReadBool(cehHandle, dwIndex, ENUM_DATA_VALUEBOOL, &fValue);
-            ExitOnFailure(hr, "Failed to enumerate bool value: %u", dwIndex);
-            if (fValue != fInValue)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected value %ls, found value %ls", fInValue ? L"TRUE" : L"FALSE", fValue ? L"TRUE" : L"FALSE");
-            }
-
-            hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
-            if (0 == st.wYear || 0 == st.wMonth)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'when' time encountered!");
-            }
-
-            hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
-            if (0 == lstrlenW(wzBy))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'by' string encountered!");
-            }
-
-        LExit:
-            return;
-        }
-
-        void VerifyHistoryBlob(CFGDB_HANDLE cdhLocal, CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex, const BYTE *pbExpected, SIZE_T cbExpected)
-        {
-            HRESULT hr = S_OK;
-            CONFIG_VALUETYPE cvType = VALUE_INVALID;
-            BYTE *pbValue = NULL;
-            SIZE_T cbValue = 0;
-            LPCWSTR wzBy = NULL;
-            SYSTEMTIME st;
-
-            hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure(hr, "Failed to get value type: %u", dwIndex);
-
-            if (VALUE_BLOB != cvType)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected to find blob value, found type: %d", cvType);
-            }
-
-            hr = CfgEnumReadBinary(cdhLocal, cehHandle, dwIndex, ENUM_DATA_BLOBCONTENT, &pbValue, &cbValue);
-            ExitOnFailure(hr, "Failed to enumerate blob value: %u", dwIndex);
-            if (cbValue != cbExpected)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Expected blob of size %u, found blob of size %u", cbExpected, cbValue);
-            }
-            if (0 != memcmp(pbValue, pbExpected, cbExpected))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Blob history data didn't match expected blob");
-            }
-
-            hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
-            if (0 == st.wYear || 0 == st.wMonth)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'when' time encountered!");
-            }
-
-            hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
-            if (0 == lstrlenW(wzBy))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'by' string encountered!");
-            }
-
-        LExit:
-            ReleaseMem(pbValue);
-
-            return;
-        }
-
-        void VerifyHistoryDeleted(CFG_ENUMERATION_HANDLE cehHandle, DWORD dwIndex)
-        {
-            HRESULT hr = S_OK;
-            CONFIG_VALUETYPE cvType = VALUE_INVALID;
-            LPCWSTR wzBy = NULL;
-            SYSTEMTIME st;
-
-            hr = CfgEnumReadDataType(cehHandle, dwIndex, ENUM_DATA_VALUETYPE, &cvType);
-            ExitOnFailure(hr, "Failed to read deleted value: %u", dwIndex);
-            if (VALUE_DELETED != cvType)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Value should have been deleted, but it exists still!");
-            }
-
-            hr = CfgEnumReadSystemTime(cehHandle, dwIndex, ENUM_DATA_WHEN, &st);
-            ExitOnFailure(hr, "Failed to read when value: %u", dwIndex);
-            if (0 == st.wYear || 0 == st.wMonth)
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'when' time encountered!");
-            }
-
-            hr = CfgEnumReadString(cehHandle, dwIndex, ENUM_DATA_BY, &wzBy);
-            ExitOnFailure(hr, "Failed to read by value: %u", dwIndex);
-            if (0 == lstrlenW(wzBy))
-            {
-                hr = E_FAIL;
-                ExitOnFailure(hr, "Empty 'by' string encountered!");
-            }
-
-        LExit:
-            return;
-        }
-
         [Fact]
         void EnumPastValuesTest()
         {
@@ -269,46 +46,50 @@ namespace CfgTests
             hr = CfgSetString(cdhLocal, L"Test1", L"Value1");
             ExitOnFailure(hr, "Failed to set Test1 string (to 'Value1')");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
             hr = CfgSetString(cdhLocal, L"Test1", L"Value2");
             ExitOnFailure(hr, "Failed to set Test1 string (to 'Value2')");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
             hr = CfgSetDword(cdhLocal, L"Test1", 500);
             ExitOnFailure(hr, "Failed to set Test1 string (to 500)");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
             hr = CfgSetString(cdhLocal, L"Test1", L"Value3");
             ExitOnFailure(hr, "Failed to set Test1 string (to 'Value3')");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
             hr = CfgDeleteValue(cdhLocal, L"Test1");
             ExitOnFailure(hr, "Failed to delete value Test1");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
             hr = CfgSetBool(cdhLocal, L"Test1", FALSE);
             ExitOnFailure(hr, "Failed to set Test1 string (to FALSE)");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
             hr = CfgSetBlob(cdhLocal, L"Test1", rgbData, sizeof(rgbData));
             ExitOnFailure(hr, "Failed to set Test1 string (to blob)");
 
-            ::Sleep(5);
+            AddToSystemTime(900);
+            hr = CfgSetString(cdhLocal, L"Test1", L"ValueThatWillBeExpiredDueToShortLife");
+            ExitOnFailure(hr, "Failed to set Test1 string (to 'ValueThatWillBeExpiredDueToShortLife')");
+
+            AddToSystemTime(1);
             hr = CfgSetBool(cdhLocal, L"Test1", TRUE);
             ExitOnFailure(hr, "Failed to set Test1 string (to TRUE)");
 
-            ::Sleep(5);
+            // After values are older than an hour, they must be kept 
+            AddToSystemTime(3601);
             hr = CfgSetString(cdhLocal, L"Test1", L"LatestValue");
-            ExitOnFailure(hr, "Failed to set Test1 string (to 'Value3')");
+            ExitOnFailure(hr, "Failed to set Test1 string (to 'LatestValue')");
 
-            ::Sleep(5);
             hr = CfgEnumPastValues(cdhLocal, L"Test1", &cehHandle, &dwCount);
             ExitOnFailure(hr, "Failed to enumerate past values of Test1");
 
-            if (dwCount < 9)
+            if (dwCount != 9)
             {
                 hr = E_FAIL;
-                ExitOnFailure(hr, "There should be at least 9 values in Test1's history - there were only %u found", dwCount);
+                ExitOnFailure(hr, "There should be 9 values in Test1's history - there were %u found", dwCount);
             }
 
             VerifyHistoryString(cehHandle, dwCount - 1, L"LatestValue");

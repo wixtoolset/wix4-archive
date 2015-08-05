@@ -349,7 +349,9 @@ void WIXAPI WcaCaScriptCleanup(
 
 HRESULT WIXAPI QuietExec(
     __inout_z LPWSTR wzCommand,
-    __in DWORD dwTimeout
+    __in DWORD dwTimeout,
+    __in BOOL fLogCommand,
+    __in BOOL fLogOutput
     );
 
 WCA_TODO WIXAPI WcaGetComponentToDo(

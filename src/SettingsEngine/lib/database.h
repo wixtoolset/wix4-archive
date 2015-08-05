@@ -28,6 +28,12 @@ extern LPCWSTR wzArpPath;
 extern LPCWSTR wzApplicationsPath;
 extern LPCWSTR wzSqlCeDllPath;
 
+enum DATABASE_TYPE
+{
+    DATABASE_TYPE_LOCAL,
+    DATABASE_TYPE_REMOTE
+};
+
 enum USERTABLES
 {
     SUMMARY_DATA_TABLE = 0, // Only has 1 row - stores information global to this user's database
@@ -35,15 +41,15 @@ enum USERTABLES
     VALUE_INDEX_TABLE = 2, // Stores user data
     VALUE_INDEX_HISTORY_TABLE = 3, // Stores user data history
     BINARY_CONTENT_TABLE = 4, // Stores user blobs
+    DATABASE_GUID_LIST_TABLE = 5, // Associates each database GUID with a unique ID
 
-    SHARED_TABLES_NUMBER = 5, // not an actual table, just represents the number of tables
+    // User-specific tables
+    DATABASE_INDEX_TABLE = 6, // Remembers databases you may want to connect to
+    USER_TABLES_NUMBER = 7, // not an actual table, just represents the number of tables
 
-    DATABASE_INDEX_TABLE = 5, // Remembers databases you may want to connect to
-
-    USER_TABLES_NUMBER = 6 // not an actual table, just represents the number of tables
+    // Remote-specific tables
+    REMOTE_TABLES_NUMBER = 6 // not an actual table, just represents the number of tables
 };
-
-// User column enums
 
 // User column enums
 enum PRODUCT_INDEX_COLUMN
@@ -97,7 +103,9 @@ enum VALUE_INDEX_COLUMN
 // Must start after VALUE_COMMON_COLUMN, these are the value history index specific columns
 enum VALUE_INDEX_HISTORY_COLUMN
 {
-    VALUE_INDEX_HISTORY_COLUMNS = 13
+    VALUE_HISTORY_DB_REFERENCES = 13,
+
+    VALUE_INDEX_HISTORY_COLUMNS = 14
 };
 
 enum COMPRESSION_FORMAT
@@ -132,6 +140,13 @@ enum DATABASE_INDEX_COLUMN
     DATABASE_INDEX_COLUMNS = 4
 };
 
+enum DATABASE_GUID_LIST_COLUMN
+{
+    DATABASE_GUID_LIST_ID = 0,
+    DATABASE_GUID_LIST_STRING = 1,
+    DATABASE_GUID_LIST_COLUMNS = 2,
+};
+
 enum ADMINTABLES
 {
     ADMIN_PRODUCT_INDEX_TABLE = 0, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one DB, but isn't necessarily the same in another DB.
@@ -144,8 +159,8 @@ HRESULT DatabaseGetUserDir(
 HRESULT DatabaseGetUserPath(
     __out LPWSTR *psczDbFilePath
     );
-HRESULT DatabaseSetupUserSchema(
-    __in USERTABLES tableCount,
+HRESULT DatabaseSetupSchema(
+    __in DATABASE_TYPE dbType,
     __out SCE_DATABASE_SCHEMA *pdsSceSchema
     );
 HRESULT DatabaseGetAdminDir(

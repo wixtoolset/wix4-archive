@@ -30,7 +30,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
   <PropertyGroup>
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc</ProjectAdditionalIncludeDirectories>
-    <ProjectAdditionalLinkLibraries>rpcrt4.lib;dutil.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
+    <ProjectAdditionalLinkLibraries>rpcrt4.lib;dutil.lib;Mpr.lib;Ws2_32.lib;urlmon.lib;wininet.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
@@ -43,7 +43,9 @@
     <ClCompile Include="MemUtilTest.cpp" />
     <ClCompile Include="MonUtilTest.cpp" />
     <ClCompile Include="PathUtilTest.cpp" />
+    <ClCompile Include="SceUtilTest.cpp" Condition=" Exists('$(SqlCESdkIncludePath)') " />
     <ClCompile Include="StrUtilTest.cpp" />
+    <ClCompile Include="UriUtilTest.cpp" />
     <ClCompile Include="VarHelpers.cpp" />
     <ClCompile Include="VarUtilTest.cpp" />
   </ItemGroup>

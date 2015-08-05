@@ -807,7 +807,7 @@
         </Message>
         <Message Id="IllegalAttributeWhenNested" Number="62">
             <Instance>
-                The {0}/@{1} attribute cannot be specified when the {0} element is nested underneath a {2} element.
+                The {0}/@{1} attribute cannot be specified when the {0} element is nested underneath a {2} element. If this {0} is a member of a ComponentGroup where ComponentGroup/@{1} is set, then the {0}/@{1} attribute should be removed.
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="parentElement" />
@@ -3781,6 +3781,14 @@
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="value" />
+            </Instance>
+        </Message>
+        <Message Id="VersionTruncated" Number="1148">
+            <Instance>
+                Product version {0} in package '{1}' is not valid per the MSI SDK and cannot be represented in a bundle. It has been truncated to {2}.
+                <Parameter Type="System.String" Name="originalVersion" />
+                <Parameter Type="System.String" Name="package" />
+                <Parameter Type="System.String" Name="truncatedVersion" />
             </Instance>
         </Message>
     </Class>

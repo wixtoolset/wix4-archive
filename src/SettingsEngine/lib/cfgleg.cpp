@@ -88,7 +88,7 @@ HRESULT CfgLegacyImportProductFromXMLFile(
     hr = ValueSetBlob(reinterpret_cast<BYTE *>(sczContent), lstrlenW(sczContent) * sizeof(WCHAR), FALSE, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to write manifest contents to database");
 
     hr = ProductSet(pcdb, product.sczProductId, wzLegacyVersion, wzLegacyPublicKey, FALSE, NULL);

@@ -8,7 +8,7 @@
   </copyright>
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-          xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
+          xmlns:xse="http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
     targetNamespace="http://wixtoolset.org/schemas/v4/thmutil"
               xmlns="http://wixtoolset.org/schemas/v4/thmutil">
@@ -256,6 +256,15 @@
                 </xs:documentation>
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        If multiple Action elements are given, the conditions should be mutually exclusive (when multiple conditions are true, the behavior is undefined and could be changed at any time).
+                        If none of the conditions of the Action elements are true, then it uses the Action element without the Condition attribute.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:element ref="BrowseDirectoryAction" />
+                <xs:element ref="ChangePageAction" />
+                <xs:element ref="CloseWindowAction" />
                 <xs:element ref="Text" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
@@ -286,6 +295,78 @@
                 <xs:annotation>
                     <xs:documentation>
                         Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="BrowseDirectoryAction">
+        <xs:annotation>
+            <xs:documentation>
+                When the button is pressed, a directory browser dialog is shown.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="Condition" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The condition that determines if the parent control will execute this action.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="VariableName" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of the variable to update when the user selects a directory from the dialog.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ChangePageAction">
+        <xs:annotation>
+            <xs:documentation>
+                When the button is pressed, the specified page is shown.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="Cancel" type="YesNoType">
+                <xs:annotation>
+                    <xs:documentation>
+                        When set to 'yes', none of the variable changes made on the current page are saved.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Condition" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The condition that determines if the parent control will execute this action.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="Page" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        The Name of the Page to show.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="CloseWindowAction">
+        <xs:annotation>
+            <xs:documentation>
+                When the button is pressed, the WM_CLOSE message is sent to the window.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="Condition" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The condition that determines if the parent control will execute this action.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>

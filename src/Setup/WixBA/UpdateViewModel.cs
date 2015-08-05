@@ -176,12 +176,12 @@ namespace WixToolset.UX
 
         private void DetectUpdateComplete(object sender, Bootstrapper.DetectUpdateCompleteEventArgs e)
         {
-            // Failed to process an update, re-queue a detect to allow the existing bundle to still install.
+            // Failed to process an update, allow the existing bundle to still install.
             if ((UpdateState.Failed != this.State) && !Hresult.Succeeded(e.Status))
             {
                 this.State = UpdateState.Failed;
-                WixBA.Model.Engine.Log(LogLevel.Verbose, String.Format("Failed to locate an update, status of 0x{0:X8}. Re-detecting with updates disabled.", e.Status));
-                WixBA.Model.Engine.Detect();
+                WixBA.Model.Engine.Log(LogLevel.Verbose, String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
+                e.Result = Result.Ok;
             }
             // If we are uninstalling, we don't want to check or show an update
             // If we are checking, then the feed didn't find any valid enclosures

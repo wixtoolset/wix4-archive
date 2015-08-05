@@ -3,6 +3,7 @@
     <Product Id="Patrician_4">
         <Detect>
             <Arp DisplayName="Patrician IV"/>
+            <Arp DisplayName="Patrician IV: Steam Special Edition"/>
         </Detect>
 
         <Data>

@@ -198,6 +198,8 @@ namespace WixToolset.Bind
                             command.AuthoredPayloads = payloads;
                             command.Facade = facade;
                             command.Execute();
+
+                           // ? variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.ExePackage.Manufacturer);
                         }
                         break;
 
@@ -212,6 +214,17 @@ namespace WixToolset.Bind
                             command.PayloadTable = this.Output.Tables["WixBundlePayload"];
                             command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleRelatedPackage"]);
                             command.Execute();
+
+                            if (null != variableCache)
+                            {
+                                variableCache.Add(String.Concat("packageLanguage.", facade.Package.WixChainItemId), facade.MsiPackage.ProductLanguage.ToString());
+
+                                if (null != facade.MsiPackage.Manufacturer)
+                                {
+                                    variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.MsiPackage.Manufacturer);
+                                }
+                            }
+                            
                         }
                         break;
 

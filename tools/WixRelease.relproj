@@ -51,6 +51,8 @@
       <ReleaseFile Include="$(OutputPath)data\*.cab" Condition=" '$(WixBundleCompressed)'!='yes' ">
         <RelativeFolder>data\</RelativeFolder>
       </ReleaseFile>
+      <ReleaseFile Include="$(OutputPath)\*.nupkg">
+      </ReleaseFile>
 
       <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString)-binaries.zip">
         <Title>WiX v$(MajorMinorVersionDottedString) binaries for situations where install cannot be used.</Title>

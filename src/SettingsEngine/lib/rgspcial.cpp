@@ -233,7 +233,7 @@ static HRESULT RegSpecialValueReadFlags(
                 hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvNewValue);
                 ExitOnFailure(hr, "Failed to initialize deleted value in memory");
 
-                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
+                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE, NULL);
                 ExitOnFailure(hr, "Failed to delete boolean value");
             }
             else
@@ -243,7 +243,7 @@ static HRESULT RegSpecialValueReadFlags(
                 hr = ValueSetBool(fNewValue, NULL, pcdb->sczGuid, &cvNewValue);
                 ExitOnFailure(hr, "Failed to initialize deleted value in memory");
 
-                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
+                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE, NULL);
                 ExitOnFailure(hr, "Failed to set boolean value");
             }
         }
@@ -290,7 +290,7 @@ static HRESULT RegSpecialValueReadNonTypecasted(
         hr = ValueSetDword(dwValue, NULL, pcdb->sczGuid, &cvNewValue);
         ExitOnFailure(hr, "Failed to set dword value %ls in memory", sczCfgValueName);
 
-        hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE, NULL);
         ExitOnFailure(hr, "Failed to set dword value: %ls", sczCfgValueName);
         break;
     case REG_NONE:
@@ -339,7 +339,7 @@ static HRESULT RegSpecialProductWriteBinary(
 
         ReleaseNullSceRow(sceRow);
 
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczCfgValueName, &sceRow);
+        hr = ValueFindRow(pcdb, pcdb->dwAppID, sczCfgValueName, &sceRow);
         if (E_NOTFOUND == hr)
         {
             hr = S_OK;

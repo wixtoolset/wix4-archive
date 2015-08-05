@@ -15,6 +15,12 @@
             <!-- Minecraft throws a ton of things including all the game assets that were downloaded, so just pickup Options.txt and saves\ directory -->
             <Ignore Prefix="Data:\"/>
             <Normal Prefix="Data:\saves\"/>
+
+            <!-- Ignore session lock -->
+            <Ignore Prefix="Data:\" Postfix="\session.lock"/>
+
+            <!-- Minecraft locks these files for extended periods of time -->
+            <Normal Prefix="Data:\saves\" Postfix=".mca" ShareWrite="yes"/>
         </Filter>
     </Product>
 </LegacySettings>

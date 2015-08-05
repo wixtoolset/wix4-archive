@@ -168,6 +168,7 @@
 
   <PropertyGroup>
     <VS2015Path Condition=" '$(VS2015Path)'=='' ">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\14.0', 'InstallDir', null, RegistryView.Registry64, RegistryView.Registry32))</VS2015Path>
+    <VS2015Path Condition=" '$(VS2015Path)'=='' ">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WDExpress\14.0', 'InstallDir', null, RegistryView.Registry64, RegistryView.Registry32))</VS2015Path>
     <VS2015SdkPath Condition=" '$(VS2015SdkPath)'=='' ">$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\VSIP\14.0', 'InstallDir', null, RegistryView.Registry64, RegistryView.Registry32))</VS2015SdkPath>
     <VS2015SdkTargetsPath Condition=" '$(VS2015SdkTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v14.0\VSSDK\Microsoft.VsSDK.targets</VS2015SdkTargetsPath>
     <VS2015SdkTargetsPath Condition=" '$(VS2015SdkTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v14.0\VSSDK\Microsoft.VsSDK.targets</VS2015SdkTargetsPath>
@@ -246,13 +247,18 @@
     On the build machine the OFFICIAL_WIX_BUILD env var will point to the private key, otherwise
     use the public key in the enlistment.  We must find a key file.
   -->
-  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'=='' ">
+  <PropertyGroup Condition=" '$(DisableSigning)' == 'true' ">
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)publickey_wix.snk</AssemblyOriginatorKeyFile>
+	<DelaySign>false</DelaySign>
+	<SignAssembly>false</SignAssembly>
+  </PropertyGroup>	  
+  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'=='' and ('$(DisableSigning)' != 'true') ">
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)publickey_wix.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'!='' ">
+  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'!='' and ('$(DisableSigning)' != 'true') ">
     <AssemblyOriginatorKeyFile>$(OFFICIAL_WIX_BUILD)</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
     <SignAssembly>true</SignAssembly>

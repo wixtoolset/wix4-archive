@@ -7044,6 +7044,8 @@ namespace WixToolset
                 this.core.OnMessage(WixErrors.ParentElementAttributeRequired(sourceLineNumbers, "Product", "Version", node.Name.LocalName));
             }
 
+            string productLanguage = contextValues["ProductLanguage"];
+
             foreach (XAttribute attrib in node.Attributes())
             {
                 if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
@@ -7069,6 +7071,12 @@ namespace WixToolset
                             if (YesNoType.No == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
                                 options &= ~MsiInterop.MsidbUpgradeAttributesMigrateFeatures;
+                            }
+                            break;
+                        case "IgnoreLanguage":
+                            if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                productLanguage = null;
                             }
                             break;
                         case "IgnoreRemoveFailure":
@@ -7130,14 +7138,14 @@ namespace WixToolset
                 {
                     row[1] = "0"; // let any version satisfy
                     // row[2] = maximum version; omit so we don't have to fake a version like "255.255.65535";
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = options | MsiInterop.MsidbUpgradeAttributesVersionMinInclusive;
                 }
                 else
                 {
                     // row[1] = minimum version; skip it so we detect all prior versions.
                     row[2] = productVersion;
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = allowSameVersionUpgrades ? (options | MsiInterop.MsidbUpgradeAttributesVersionMaxInclusive) : options;
                 }
 
@@ -7162,7 +7170,7 @@ namespace WixToolset
                     row[0] = upgradeCode;
                     row[1] = productVersion;
                     // row[2] = maximum version; skip it so we detect all future versions.
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = MsiInterop.MsidbUpgradeAttributesOnlyDetect;
                     // row[5] = removeFeatures;
                     row[6] = Compiler.DowngradeDetectedProperty;
@@ -10781,6 +10789,8 @@ namespace WixToolset
             YesNoDefaultType security = YesNoDefaultType.Default;
             int sourceBits = (this.compilingModule ? 2 : 0);
             Row row;
+            bool installPrivilegeSeen = false;
+            bool installScopeSeen = false;
 
             switch (this.CurrentPlatform)
             {
@@ -10840,6 +10850,7 @@ namespace WixToolset
                             string installPrivileges = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < installPrivileges.Length)
                             {
+                                installPrivilegeSeen = true;
                                 Wix.Package.InstallPrivilegesType installPrivilegesType = Wix.Package.ParseInstallPrivilegesType(installPrivileges);
                                 switch (installPrivilegesType)
                                 {
@@ -10859,6 +10870,7 @@ namespace WixToolset
                             string installScope = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < installScope.Length)
                             {
+                                installScopeSeen = true;
                                 Wix.Package.InstallScopeType installScopeType = Wix.Package.ParseInstallScopeType(installScope);
                                 switch (installScopeType)
                                 {
@@ -10957,6 +10969,11 @@ namespace WixToolset
                 {
                     this.core.ParseExtensionAttribute(node, attrib);
                 }
+            }
+
+            if (installPrivilegeSeen && installScopeSeen)
+            {
+                this.core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, "InstallPrivileges", "InstallScope"));
             }
 
             if ((0 != String.Compare(platform, "Intel", StringComparison.OrdinalIgnoreCase)) && 200 > msiVersion)
@@ -11895,6 +11912,7 @@ namespace WixToolset
                 }
 
                 Dictionary<string, string> contextValues = new Dictionary<string, string>();
+                contextValues["ProductLanguage"] = this.activeLanguage;
                 contextValues["ProductVersion"] = version;
                 contextValues["UpgradeCode"] = upgradeCode;
 
@@ -19830,7 +19848,7 @@ namespace WixToolset
                         mspAttributes |= (YesNoType.Yes == displayInternalUI) ? WixBundleMspPackageAttributes.DisplayInternalUI : 0;
                         mspAttributes |= (YesNoType.Yes == slipstream) ? WixBundleMspPackageAttributes.Slipstream : 0;
 
-                        BundleMspPackageRow mspRow = (BundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
+                        WixBundleMspPackageRow mspRow = (WixBundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
                         mspRow.Attributes = mspAttributes;
                         break;
 
@@ -20173,9 +20191,9 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
-                row[0] = packageId;
-                row[1] = id;
+                WixBundleSlipstreamMspRow row = (WixBundleSlipstreamMspRow)this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
+                row.ChainPackageId = packageId;
+                row.MspPackageId = id;
             }
         }
 

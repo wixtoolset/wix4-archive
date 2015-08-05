@@ -14,7 +14,7 @@
 #include "precomp.h"
 
 HRESULT ConflictResolve(
-    __in CFGDB_STRUCT *pcdb,
+    __in CFGDB_STRUCT *pcdbRemote,
     __in CONFLICT_PRODUCT *cpProduct,
     __in DWORD dwValueIndex
     )
@@ -23,83 +23,26 @@ HRESULT ConflictResolve(
     LPCWSTR wzValueName = NULL;
     RESOLUTION_CHOICE rcChoice = cpProduct->rgrcValueChoices[dwValueIndex];
     CFG_ENUMERATION *pEnum;
-    SCE_ROW_HANDLE sceRow = NULL;
-    SYSTEMTIME stValue;
-    DWORD i;
 
     hr = CfgEnumReadString(cpProduct->rgcesValueEnumLocal[dwValueIndex], 0, ENUM_DATA_VALUENAME, &wzValueName);
     ExitOnFailure(hr, "Failed to read value name from enum");
 
     if (RESOLUTION_LOCAL == rcChoice)
     {
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzValueName, &sceRow);
-        ExitOnFailure(hr, "Failed to find existing value row in remote while resolving conflicts");
+        pEnum = static_cast<CFG_ENUMERATION *>(cpProduct->rgcesValueEnumLocal[dwValueIndex]);
 
-        hr = SceGetColumnSystemTime(sceRow, VALUE_COMMON_WHEN, &stValue);
-        ExitOnFailure(hr, "Failed to get system time of value row in remote db");
-
-        // Local Cfg database wins, transfer all history
-        for (i = 0; i < cpProduct->rgdwValueCountLocal[dwValueIndex]; ++i)
-        {
-            pEnum = static_cast<CFG_ENUMERATION *>(cpProduct->rgcesValueEnumLocal[dwValueIndex]);
-
-            // The value we're about to write is older than what the database has now, so don't write values to catch up. If it's the last value, do write it
-            // with a fresh timestamp.
-            if (0 > UtilCompareSystemTimes(&pEnum->valueHistory.rgcValues[i].stWhen, &stValue))
-            {
-                // If we're not on the last loop iteration, just don't transfer this enum
-                // TODO: we could write historical values by inserting them in the old history
-                if (i < cpProduct->rgdwValueCountLocal[dwValueIndex] - 1)
-                {
-                    continue;
-                }
-
-                pEnum->valueHistory.rgcValues[i].stWhen = stValue;
-                UtilAddToSystemTime(5, &pEnum->valueHistory.rgcValues[i].stWhen);
-            }
-
-            // TODO: In some cases this is writing to the main value when it's about to be overwritten again. Optimize?
-            hr = EnumWriteValue(pcdb, wzValueName, pEnum, i);
-            ExitOnFailure(hr, "Failed to set value from enumeration history while accepting local value");
-        }
+        hr = ValueTransferFromHistory(pcdbRemote, pEnum, 0, pcdbRemote->pcdbLocal);
+        ExitOnFailure(hr, "Failed to resolve value history (chose local) for value %ls", wzValueName);
     }
     else if (RESOLUTION_REMOTE == rcChoice)
     {
-        hr = ValueFindRow(pcdb->pcdbLocal, VALUE_INDEX_TABLE, pcdb->pcdbLocal->dwAppID, wzValueName, &sceRow);
-        ExitOnFailure(hr, "Failed to find existing value row in remote while resolving conflicts");
+        pEnum = static_cast<CFG_ENUMERATION *>(cpProduct->rgcesValueEnumRemote[dwValueIndex]);
 
-        hr = SceGetColumnSystemTime(sceRow, VALUE_COMMON_WHEN, &stValue);
-        ExitOnFailure(hr, "Failed to get system time of value row in remote db");
-
-        // Remote database wins
-        for (i = 0; i < cpProduct->rgdwValueCountRemote[dwValueIndex]; ++i)
-        {
-            pEnum = static_cast<CFG_ENUMERATION *>(cpProduct->rgcesValueEnumRemote[dwValueIndex]);
-
-            // The value we're about to write is older than what the database has now, so don't write values to catch up. If it's the last value, do write it
-            // with a fresh timestamp.
-            if (0 > UtilCompareSystemTimes(&pEnum->valueHistory.rgcValues[i].stWhen, &stValue))
-            {
-                // If we're not on the last loop iteration, just don't transfer this enum
-                // TODO: we could write historical values by inserting them in the old history
-                if (i < cpProduct->rgdwValueCountRemote[dwValueIndex] - 1)
-                {
-                    continue;
-                }
-
-                pEnum->valueHistory.rgcValues[i].stWhen = stValue;
-                UtilAddToSystemTime(5, &pEnum->valueHistory.rgcValues[i].stWhen);
-            }
-
-            // TODO: In some cases this is writing to the main value when it's about to be overwritten again. Optimize?
-            hr = EnumWriteValue(pcdb->pcdbLocal, wzValueName, pEnum, i);
-            ExitOnFailure(hr, "Failed to set value from enumeration history while accepting remote value");
-        }
+        hr = ValueTransferFromHistory(pcdbRemote->pcdbLocal, pEnum, 0, pcdbRemote);
+        ExitOnFailure(hr, "Failed to resolve value history (chose remote) for value %ls", wzValueName);
     }
     
 LExit:
-    ReleaseSceRow(sceRow);
-
     return hr;
 }
 

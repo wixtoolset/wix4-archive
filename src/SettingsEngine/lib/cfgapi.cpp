@@ -77,7 +77,7 @@ extern "C" HRESULT CFGAPI CfgInitialize(
         s_fXmlInitialized = TRUE;
 
         // Setup expected schema in memory
-        hr = DatabaseSetupUserSchema(USER_TABLES_NUMBER, &pcdb->dsSceDb);
+        hr = DatabaseSetupSchema(DATABASE_TYPE_LOCAL, &pcdb->dsSceDb);
         ExitOnFailure(hr, "Failed to setup user database schema structure in memory");
 
         // Get the path to the exact file
@@ -138,6 +138,8 @@ extern "C" HRESULT CFGAPI CfgUninitialize(
         pcdb->dwAppID = DWORD_MAX;
         pcdb->fProductSet = FALSE;
         ReleaseNullStr(pcdb->sczGuid);
+        ReleaseNullStr(pcdb->sczGuidLocalInRemoteKey);
+        ReleaseNullStr(pcdb->sczGuidRemoteInLocalKey);
         ReleaseNullStr(pcdb->sczDbCopiedPath);
         ReleaseNullStr(pcdb->sczDbDir);
         ReleaseNullStr(pcdb->sczStreamsDir);
@@ -318,7 +320,7 @@ extern "C" HRESULT CfgSetDword(
     hr = ValueSetDword(dwValue, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set dword value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set DWORD value: %u", dwValue);
 
     if (!pcdb->fRemote)
@@ -378,7 +380,7 @@ extern "C" HRESULT CfgGetDword(
         ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME));
     }
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -447,7 +449,7 @@ extern "C" HRESULT CfgSetQword(
     hr = ValueSetQword(qwValue, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set qword value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set QWORD value: %I64u", qwValue);
 
     if (!pcdb->fRemote)
@@ -507,7 +509,7 @@ extern "C" HRESULT CfgGetQword(
         ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME));
     }
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -579,7 +581,7 @@ extern "C" HRESULT CfgSetString(
     hr = ValueSetString(wzValue, FALSE, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set string value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set string value '%ls' to '%ls'", wzName, wzValue);
 
     if (!pcdb->fRemote)
@@ -639,7 +641,7 @@ extern "C" HRESULT CfgGetString(
     ExitOnFailure(hr, "Failed to lock handle when getting string");
     fLocked = TRUE;
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -712,7 +714,7 @@ extern "C" HRESULT CFGAPI CfgSetBool(
     hr = ValueSetBool(fValue, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set bool value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set BOOL value named: %ls", wzName);
 
     if (!pcdb->fRemote)
@@ -772,7 +774,7 @@ extern "C" HRESULT CFGAPI CfgGetBool(
     ExitOnFailure(hr, "Failed to lock handle when getting bool");
     fLocked = TRUE;
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     ExitOnFailure(hr, "Failed to find config value for AppID: %u, Config Value named: %ls", pcdb->dwAppID, wzName);
 
     hr = ValueRead(pcdb, sceRow, &cvValue);
@@ -843,7 +845,7 @@ extern "C" HRESULT CfgDeleteValue(
     hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set delete value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to delete value: %ls", wzName);
 
     if (!pcdb->fRemote)
@@ -936,7 +938,7 @@ extern "C" HRESULT CFGAPI CfgSetBlob(
     hr = ValueSetBlob(pbBuffer, cbBuffer, FALSE, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set blob value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set blob: %ls", wzName);
 
     if (!pcdb->fRemote)
@@ -999,7 +1001,7 @@ extern "C" HRESULT CFGAPI CfgGetBlob(
     ExitOnFailure(hr, "Failed to lock handle when getting blob");
     fLocked = TRUE;
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, wzName, &sceRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, wzName, &sceRow);
     if (E_NOTFOUND == hr)
     {
         ExitFunction();
@@ -1377,6 +1379,10 @@ extern "C" HRESULT CFGAPI CfgEnumReadString(
 
         case ENUM_DATA_BY:
             *pwzString = pcesEnum->valueHistory.rgcValues[dwIndex].sczBy;
+            break;
+
+        case ENUM_DATA_DATABASE_REFERENCES:
+            *pwzString = pcesEnum->valueHistory.rgsczDbReferences[dwIndex];
             break;
 
         default:

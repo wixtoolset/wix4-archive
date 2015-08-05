@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Creeper_World_3">
+        <Detect>
+            <Arp DisplayName="Creeper World 3: Arc Eternal"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="AppData" Location="AppDataFolder:\creeperworld3\" />
+            <Directory Namespace="Documents" Location="MyDocumentsFolder:\creeperworld3\" />
+        </Data>
+
+        <Filter>
+            <Ignore Name="AppData:\InputManager.xml"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Creeper World 3: Arc Eternal</DisplayName>
+    </Product>
+</LegacySettings>

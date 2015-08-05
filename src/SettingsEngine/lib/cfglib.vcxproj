@@ -66,6 +66,7 @@
     <ClCompile Include="drspcial.cpp" />
     <ClCompile Include="enum.cpp" />
     <ClCompile Include="filter.cpp" />
+    <ClCompile Include="guidlist.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="legsync.cpp" />

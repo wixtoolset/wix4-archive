@@ -75,7 +75,7 @@ HRESULT DirDefaultReadFile(
     hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
     ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczValueName, &sceValueRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, sczValueName, &sceValueRow);
     if (S_OK == hr)
     {
         hr = ValueRead(pcdb, sceValueRow, &cvExistingValue);
@@ -111,7 +111,7 @@ HRESULT DirDefaultReadFile(
 
     if (fRefreshTimestamp)
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         fRet = ::SystemTimeToFileTime(&st, &ft);
         if (!fRet)
         {
@@ -127,7 +127,7 @@ HRESULT DirDefaultReadFile(
 
     // Important: we must write the value even if the actual data didn't change, to update the timestamp in the database
     // This keeps perf high for future syncs, so we can rely on timestamp check
-    hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvNewValue, FALSE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvNewValue, FALSE, NULL);
     ExitOnFailure(hr, "Failed to set blob in cfg database, blob is named: %ls", sczValueName);
 
 LExit:

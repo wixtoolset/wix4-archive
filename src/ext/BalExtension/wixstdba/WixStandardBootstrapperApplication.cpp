@@ -13,17 +13,24 @@
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
 static const LPCWSTR WIXSTDBA_WINDOW_CLASS = L"WixStdBA";
+
 static const LPCWSTR WIXSTDBA_VARIABLE_INSTALL_FOLDER = L"InstallFolder";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH = L"LaunchTarget";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID = L"LaunchTargetElevatedId";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS = L"LaunchArguments";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_HIDDEN = L"LaunchHidden";
+static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER = L"LaunchWorkingFolder";
+
 static const DWORD WIXSTDBA_ACQUIRE_PERCENTAGE = 30;
+
 static const LPCWSTR WIXSTDBA_VARIABLE_BUNDLE_FILE_VERSION = L"WixBundleFileVersion";
+static const LPCWSTR WIXSTDBA_VARIABLE_LANGUAGE_ID = L"WixStdBALanguageId";
+static const LPCWSTR WIXSTDBA_VARIABLE_RESTART_REQUIRED = L"WixStdBARestartRequired";
+static const LPCWSTR WIXSTDBA_VARIABLE_SHOW_VERSION = L"WixStdBAShowVersion";
+static const LPCWSTR WIXSTDBA_VARIABLE_SUPPRESS_OPTIONS_UI = L"WixStdBASuppressOptionsUI";
 
 enum WIXSTDBA_STATE
 {
-    WIXSTDBA_STATE_OPTIONS,
     WIXSTDBA_STATE_INITIALIZING,
     WIXSTDBA_STATE_INITIALIZED,
     WIXSTDBA_STATE_HELP,
@@ -56,7 +63,6 @@ enum WIXSTDBA_PAGE
     WIXSTDBA_PAGE_LOADING,
     WIXSTDBA_PAGE_HELP,
     WIXSTDBA_PAGE_INSTALL,
-    WIXSTDBA_PAGE_OPTIONS,
     WIXSTDBA_PAGE_MODIFY,
     WIXSTDBA_PAGE_PROGRESS,
     WIXSTDBA_PAGE_PROGRESS_PASSIVE,
@@ -70,7 +76,6 @@ static LPCWSTR vrgwzPageNames[] = {
     L"Loading",
     L"Help",
     L"Install",
-    L"Options",
     L"Modify",
     L"Progress",
     L"ProgressPassive",
@@ -80,32 +85,15 @@ static LPCWSTR vrgwzPageNames[] = {
 
 enum WIXSTDBA_CONTROL
 {
-    // Non-paged controls
-    WIXSTDBA_CONTROL_CLOSE_BUTTON = THEME_FIRST_ASSIGN_CONTROL_ID,
-    WIXSTDBA_CONTROL_MINIMIZE_BUTTON,
-
-    // Help page
-    WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON,
-
     // Welcome page
-    WIXSTDBA_CONTROL_INSTALL_BUTTON,
-    WIXSTDBA_CONTROL_OPTIONS_BUTTON,
+    WIXSTDBA_CONTROL_INSTALL_BUTTON = THEME_FIRST_ASSIGN_CONTROL_ID,
     WIXSTDBA_CONTROL_EULA_RICHEDIT,
     WIXSTDBA_CONTROL_EULA_LINK,
     WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX,
-    WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON,
-    WIXSTDBA_CONTROL_VERSION_LABEL,
-
-    // Options page
-    WIXSTDBA_CONTROL_FOLDER_EDITBOX,
-    WIXSTDBA_CONTROL_BROWSE_BUTTON,
-    WIXSTDBA_CONTROL_OK_BUTTON,
-    WIXSTDBA_CONTROL_CANCEL_BUTTON,
 
     // Modify page
     WIXSTDBA_CONTROL_REPAIR_BUTTON,
     WIXSTDBA_CONTROL_UNINSTALL_BUTTON,
-    WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON,
 
     // Progress page
     WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT,
@@ -126,40 +114,22 @@ enum WIXSTDBA_CONTROL
 
     // Success page
     WIXSTDBA_CONTROL_LAUNCH_BUTTON,
-    WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT,
     WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON,
-    WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON,
 
     // Failure page
     WIXSTDBA_CONTROL_FAILURE_LOGFILE_LINK,
     WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT,
-    WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT,
     WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON,
-    WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON,
 };
 
 static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
-    { WIXSTDBA_CONTROL_CLOSE_BUTTON, L"CloseButton" },
-    { WIXSTDBA_CONTROL_MINIMIZE_BUTTON, L"MinimizeButton" },
-
-    { WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON, L"HelpCancelButton" },
-
     { WIXSTDBA_CONTROL_INSTALL_BUTTON, L"InstallButton" },
-    { WIXSTDBA_CONTROL_OPTIONS_BUTTON, L"OptionsButton" },
     { WIXSTDBA_CONTROL_EULA_RICHEDIT, L"EulaRichedit" },
     { WIXSTDBA_CONTROL_EULA_LINK, L"EulaHyperlink" },
     { WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX, L"EulaAcceptCheckbox" },
-    { WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON, L"WelcomeCancelButton" },
-    { WIXSTDBA_CONTROL_VERSION_LABEL, L"InstallVersion" },
-
-    { WIXSTDBA_CONTROL_FOLDER_EDITBOX, L"FolderEditbox" },
-    { WIXSTDBA_CONTROL_BROWSE_BUTTON, L"BrowseButton" },
-    { WIXSTDBA_CONTROL_OK_BUTTON, L"OptionsOkButton" },
-    { WIXSTDBA_CONTROL_CANCEL_BUTTON, L"OptionsCancelButton" },
 
     { WIXSTDBA_CONTROL_REPAIR_BUTTON, L"RepairButton" },
     { WIXSTDBA_CONTROL_UNINSTALL_BUTTON, L"UninstallButton" },
-    { WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON, L"ModifyCancelButton" },
 
     { WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT, L"CacheProgressPackageText" },
     { WIXSTDBA_CONTROL_CACHE_PROGRESS_BAR, L"CacheProgressbar" },
@@ -175,15 +145,11 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
     { WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON, L"ProgressCancelButton" },
 
     { WIXSTDBA_CONTROL_LAUNCH_BUTTON, L"LaunchButton" },
-    { WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT, L"SuccessRestartText" },
     { WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON, L"SuccessRestartButton" },
-    { WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON, L"SuccessCancelButton" },
 
     { WIXSTDBA_CONTROL_FAILURE_LOGFILE_LINK, L"FailureLogFileLink" },
     { WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT, L"FailureMessageText" },
-    { WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT, L"FailureRestartText" },
     { WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, L"FailureRestartButton" },
-    { WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON, L"FailureCloseButton" },
 };
 
 typedef struct _WIXSTDBA_PREREQ_PACKAGE
@@ -528,21 +494,11 @@ public: // IBootstrapperApplication
         __in DWORD dwOverallPercentage
         )
     {
-        WCHAR wzProgress[5] = { };
-
 #ifdef DEBUG
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: OnCacheAcquireProgress() - container/package: %ls, payload: %ls, progress: %I64u, total: %I64u, overall progress: %u%%", wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
 #endif
 
-        ::StringCchPrintfW(wzProgress, countof(wzProgress), L"%u%%", dwOverallPercentage);
-        ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_TEXT, wzProgress);
-
-        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_BAR, dwOverallPercentage);
-
-        m_dwCalculatedCacheProgress = dwOverallPercentage * WIXSTDBA_ACQUIRE_PERCENTAGE / 100;
-        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_CALCULATED_PROGRESS_BAR, m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
-
-        SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
+        UpdateCacheProgress(dwOverallPercentage);
 
         return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
     }
@@ -573,9 +529,10 @@ public: // IBootstrapperApplication
 
 
     virtual STDMETHODIMP_(void) OnCacheComplete(
-        __in HRESULT /*hrStatus*/
+        __in HRESULT hrStatus
         )
     {
+        UpdateCacheProgress(SUCCEEDED(hrStatus) ? 100 : 0);
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT, L"");
         SetState(WIXSTDBA_STATE_CACHED, S_OK); // we always return success here and let OnApplyComplete() deal with the error.
     }
@@ -792,7 +749,7 @@ public: // IBootstrapperApplication
         HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
         if (SUCCEEDED(hr))
         {
-            pPrereqPackage->fSuccessfullyInstalled = TRUE;
+            pPrereqPackage->fSuccessfullyInstalled = SUCCEEDED(hrExitCode);
 
             // If the prerequisite required a restart (any restart) then do an immediate
             // restart to ensure that the bundle will get launched again post reboot.
@@ -882,6 +839,8 @@ public: // IBootstrapperApplication
 
         // If a restart was encountered and we are not suppressing restarts, then restart is required.
         m_fRestartRequired = (BOOTSTRAPPER_APPLY_RESTART_NONE != restart && BOOTSTRAPPER_RESTART_NEVER < m_command.restart);
+        BalSetStringVariable(WIXSTDBA_VARIABLE_RESTART_REQUIRED, m_fRestartRequired ? L"1" : NULL);
+
         // If a restart is required and we're not displaying a UI or we are not supposed to prompt for restart then allow the restart.
         m_fAllowRestart = m_fRestartRequired && (BOOTSTRAPPER_DISPLAY_FULL > m_command.display || BOOTSTRAPPER_RESTART_PROMPT < m_command.restart);
 
@@ -1081,7 +1040,7 @@ private: // privates
         }
         else
         {
-            hr = ParseBootrapperApplicationDataFromXml(pixdManifest);
+            hr = ParseBootstrapperApplicationDataFromXml(pixdManifest);
             BalExitOnFailure(hr, "Failed to read bootstrapper application data.");
         }
 
@@ -1182,17 +1141,23 @@ private: // privates
         LPWSTR sczFormatted = NULL;
         LPCWSTR wzLocFileName = m_fPrereq ? L"mbapreq.wxl" : L"thm.wxl";
 
+        // Find and load .wxl file.
         hr = LocProbeForFile(wzModulePath, wzLocFileName, wzLanguage, &sczLocPath);
         BalExitOnFailure(hr, "Failed to probe for loc file: %ls in path: %ls", wzLocFileName, wzModulePath);
 
         hr = LocLoadFromFile(sczLocPath, &m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load loc file from path: %ls", sczLocPath);
 
+        // Set WixStdBALanguageId to .wxl language id.
         if (WIX_LOCALIZATION_LANGUAGE_NOT_SET != m_pWixLoc->dwLangId)
         {
             ::SetThreadLocale(m_pWixLoc->dwLangId);
+
+            hr = m_pEngine->SetVariableNumeric(WIXSTDBA_VARIABLE_LANGUAGE_ID, m_pWixLoc->dwLangId);
+            BalExitOnFailure(hr, "Failed to set WixStdBALanguageId variable.");
         }
 
+        // Load ConfirmCancelMessage.
         hr = StrAllocString(&m_sczConfirmCloseMessage, L"#(loc.ConfirmCancelMessage)", 0);
         ExitOnFailure(hr, "Failed to initialize confirm message loc identifier.");
 
@@ -1392,7 +1357,7 @@ private: // privates
     }
 
 
-    HRESULT ParseBootrapperApplicationDataFromXml(
+    HRESULT ParseBootstrapperApplicationDataFromXml(
         __in IXMLDOMDocument* pixdManifest
         )
     {
@@ -1435,9 +1400,10 @@ private: // privates
         {
             hr = S_OK;
         }
-        else if (SUCCEEDED(hr))
+        else if (SUCCEEDED(hr) && dwBool)
         {
-            m_fSuppressOptionsUI = 0 < dwBool;
+            hr = BalSetNumericVariable(WIXSTDBA_VARIABLE_SUPPRESS_OPTIONS_UI, 1);
+            BalExitOnFailure(hr, "Failed to set '%ls' variable.", WIXSTDBA_VARIABLE_SUPPRESS_OPTIONS_UI);
         }
         BalExitOnFailure(hr, "Failed to get SuppressOptionsUI value.");
 
@@ -1470,9 +1436,10 @@ private: // privates
         {
             hr = S_OK;
         }
-        else if (SUCCEEDED(hr))
+        else if (SUCCEEDED(hr) && dwBool)
         {
-            m_fShowVersion = 0 < dwBool;
+            hr = BalSetNumericVariable(WIXSTDBA_VARIABLE_SHOW_VERSION, 1);
+            BalExitOnFailure(hr, "Failed to set '%ls' variable.", WIXSTDBA_VARIABLE_SHOW_VERSION);
         }
         BalExitOnFailure(hr, "Failed to get ShowVersion value.");
 
@@ -1745,22 +1712,6 @@ private: // privates
                     pBA->OnClickAcceptCheckbox();
                     return 0;
 
-                case WIXSTDBA_CONTROL_OPTIONS_BUTTON:
-                    pBA->OnClickOptionsButton();
-                    return 0;
-
-                case WIXSTDBA_CONTROL_BROWSE_BUTTON:
-                    pBA->OnClickOptionsBrowseButton();
-                    return 0;
-
-                case WIXSTDBA_CONTROL_OK_BUTTON:
-                    pBA->OnClickOptionsOkButton();
-                    return 0;
-
-                case WIXSTDBA_CONTROL_CANCEL_BUTTON:
-                    pBA->OnClickOptionsCancelButton();
-                    return 0;
-
                 case WIXSTDBA_CONTROL_INSTALL_BUTTON:
                     pBA->OnClickInstallButton();
                     return 0;
@@ -1782,13 +1733,7 @@ private: // privates
                     pBA->OnClickRestartButton();
                     return 0;
 
-                case WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON: __fallthrough;
-                case WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON: __fallthrough;
-                case WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON: __fallthrough;
-                case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON: __fallthrough;
-                case WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON: __fallthrough;
-                case WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON: __fallthrough;
-                case WIXSTDBA_CONTROL_CLOSE_BUTTON:
+                case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON:
                     pBA->OnClickCloseButton();
                     return 0;
                 }
@@ -2115,31 +2060,10 @@ private: // privates
 
                     BOOL fAcceptedLicense = !ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX) || !ThemeControlEnabled(m_pTheme, WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX) || ThemeIsControlChecked(m_pTheme, WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_INSTALL_BUTTON, fAcceptedLicense);
-
-                    // If there is an "Options" page, the "Options" button exists, and it hasn't been suppressed, then enable the button.
-                    BOOL fOptionsEnabled = m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] && ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_OPTIONS_BUTTON) && !m_fSuppressOptionsUI;
-                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_OPTIONS_BUTTON, fOptionsEnabled);
-
-                    // Show/Hide the version label if it exists.
-                    if (m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] && ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_VERSION_LABEL) && !m_fShowVersion)
-                    {
-                        ThemeShowControl(m_pTheme, WIXSTDBA_CONTROL_VERSION_LABEL, SW_HIDE);
-                    }
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_MODIFY] == dwNewPageId)
                 {
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_REPAIR_BUTTON, !m_fSuppressRepair);
-                }
-                else if (m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] == dwNewPageId)
-                {
-                    HRESULT hr = BalGetStringVariable(WIXSTDBA_VARIABLE_INSTALL_FOLDER, &sczUnformattedText);
-                    if (SUCCEEDED(hr))
-                    {
-                        // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-                        // so don't go down the rabbit hole of making sure that this is securely freed.
-                        BalFormatString(sczUnformattedText, &sczText);
-                        ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX, sczText);
-                    }
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_SUCCESS] == dwNewPageId) // on the "Success" page, check if the restart or launch button should be enabled.
                 {
@@ -2158,7 +2082,6 @@ private: // privates
                     }
 
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_LAUNCH_BUTTON, fLaunchTargetExists && BOOTSTRAPPER_ACTION_UNINSTALL < m_plannedAction);
-                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT, fShowRestartButton);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON, fShowRestartButton);
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_FAILURE] == dwNewPageId) // on the "Failure" page, show error message and check if the restart button should be enabled.
@@ -2233,11 +2156,10 @@ private: // privates
 
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_LOGFILE_LINK, fShowLogLink);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT, fShowErrorMessage);
-                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT, fShowRestartButton);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, fShowRestartButton);
                 }
 
-                HRESULT hr = ThemeShowPageEx(m_pTheme, dwOldPageId, SW_HIDE, m_fStateChangeIsCancel ? THEME_SHOW_PAGE_REASON_CANCEL : THEME_SHOW_PAGE_REASON_DEFAULT);
+                HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
                 if (FAILED(hr))
                 {
                     BalLogError(hr, "Failed to hide page: %u", dwOldPageId);
@@ -2319,77 +2241,6 @@ private: // privates
 
 
     //
-    // OnClickOptionsButton - show the options page.
-    //
-    void OnClickOptionsButton()
-    {
-        m_stateBeforeOptions = m_state;
-        SetState(WIXSTDBA_STATE_OPTIONS, S_OK);
-    }
-
-
-    //
-    // OnClickOptionsBrowseButton - browse for install folder on the options page.
-    //
-    void OnClickOptionsBrowseButton()
-    {
-        WCHAR wzPath[MAX_PATH] = { };
-        BROWSEINFOW browseInfo = { };
-        PIDLIST_ABSOLUTE pidl = NULL;
-
-        browseInfo.hwndOwner = m_hWnd;
-        browseInfo.pszDisplayName = wzPath;
-        browseInfo.lpszTitle = m_pTheme->sczCaption;
-        browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
-        pidl = ::SHBrowseForFolderW(&browseInfo);
-        if (pidl && ::SHGetPathFromIDListW(pidl, wzPath))
-        {
-            ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX, wzPath);
-        }
-
-        if (pidl)
-        {
-            ::CoTaskMemFree(pidl);
-        }
-
-        return;
-    }
-
-    //
-    // OnClickOptionsOkButton - accept the changes made by the options page.
-    //
-    void OnClickOptionsOkButton()
-    {
-        HRESULT hr = S_OK;
-        LPWSTR sczPath = NULL;
-
-        if (ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX))
-        {
-            hr = ThemeGetTextControl(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX, &sczPath);
-            ExitOnFailure(hr, "Failed to get text from folder edit box.");
-
-            // TODO: verify the path is valid.
-
-            hr = m_pEngine->SetVariableString(WIXSTDBA_VARIABLE_INSTALL_FOLDER, sczPath);
-            ExitOnFailure(hr, "Failed to set the install folder.");
-        }
-
-    LExit:
-        SetState(m_stateBeforeOptions, S_OK);
-        return;
-    }
-
-
-    //
-    // OnClickOptionsCancelButton - discard the changes made by the options page.
-    //
-    void OnClickOptionsCancelButton()
-    {
-        SetStateWithCancel(m_stateBeforeOptions, S_OK, TRUE);
-    }
-
-
-    //
     // OnClickInstallButton - start the install by planning the packages.
     //
     void OnClickInstallButton()
@@ -2463,7 +2314,7 @@ private: // privates
             }
         }
 
-        hr = ShelExec(sczLicensePath ? sczLicensePath : sczLicenseUrl, NULL, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
+        hr = ShelExecUnelevated(sczLicensePath ? sczLicensePath : sczLicenseUrl, NULL, L"open", NULL, SW_SHOWDEFAULT);
         BalExitOnFailure(hr, "Failed to launch URL to EULA.");
 
     LExit:
@@ -2487,6 +2338,7 @@ private: // privates
         LPWSTR sczLaunchTargetElevatedId = NULL;
         LPWSTR sczUnformattedArguments = NULL;
         LPWSTR sczArguments = NULL;
+        LPWSTR sczLaunchFolder = NULL;
         int nCmdShow = SW_SHOWNORMAL;
 
         hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH, &sczUnformattedLaunchTarget);
@@ -2512,6 +2364,12 @@ private: // privates
             nCmdShow = SW_HIDE;
         }
 
+        if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER))
+        {
+            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER, &sczLaunchFolder);
+            BalExitOnFailure(hr, "Failed to get launch working directory variable '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER);
+        }
+
         if (sczLaunchTargetElevatedId && !m_fTriedToLaunchElevated)
         {
             m_fTriedToLaunchElevated = TRUE;
@@ -2532,13 +2390,14 @@ private: // privates
                 BalExitOnFailure(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
             }
 
-            hr = ShelExec(sczLaunchTarget, sczArguments, L"open", NULL, nCmdShow, m_hWnd, NULL);
+            hr = ShelExec(sczLaunchTarget, sczArguments, L"open", sczLaunchFolder, nCmdShow, m_hWnd, NULL);
             BalExitOnFailure(hr, "Failed to launch target: %ls", sczLaunchTarget);
 
             ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
         }
 
     LExit:
+        ReleaseStr(sczLaunchFolder);
         StrSecureZeroFreeString(sczArguments);
         ReleaseStr(sczUnformattedArguments);
         ReleaseStr(sczLaunchTargetElevatedId);
@@ -2574,7 +2433,7 @@ private: // privates
         hr = BalGetStringVariable(m_Bundle.sczLogVariable, &sczLogFile);
         BalExitOnFailure(hr, "Failed to get log file variable '%ls'.", m_Bundle.sczLogVariable);
 
-        hr = ShelExec(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
+        hr = ShelExecUnelevated(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT);
         BalExitOnFailure(hr, "Failed to open log file target: %ls", sczLogFile);
 
     LExit:
@@ -2592,19 +2451,6 @@ private: // privates
         __in HRESULT hrStatus
         )
     {
-        SetStateWithCancel(state, hrStatus, FALSE);
-    }
-
-
-    //
-    // SetStateWithCancel
-    //
-    void SetStateWithCancel(
-        __in WIXSTDBA_STATE state,
-        __in HRESULT hrStatus,
-        __in BOOL fIsCancel
-        )
-    {
         if (FAILED(hrStatus))
         {
             m_hrFinal = hrStatus;
@@ -2615,9 +2461,8 @@ private: // privates
             state = WIXSTDBA_STATE_FAILED;
         }
 
-        if (WIXSTDBA_STATE_OPTIONS == state || m_state < state)
+        if (m_state < state)
         {
-            m_fStateChangeIsCancel = fIsCancel;
             ::PostMessageW(m_hWnd, WM_WIXSTDBA_CHANGE_STATE, 0, state);
         }
     }
@@ -2695,10 +2540,6 @@ private: // privates
                 }
                 break;
 
-            case WIXSTDBA_STATE_OPTIONS:
-                *pdwPageId = m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS];
-                break;
-
             case WIXSTDBA_STATE_PLANNING: __fallthrough;
             case WIXSTDBA_STATE_PLANNED: __fallthrough;
             case WIXSTDBA_STATE_APPLYING: __fallthrough;
@@ -2744,6 +2585,23 @@ private: // privates
 
     LExit:
         return hr;
+    }
+
+    void UpdateCacheProgress(
+        __in DWORD dwOverallPercentage
+        )
+    {
+        WCHAR wzProgress[5] = { };
+
+        ::StringCchPrintfW(wzProgress, countof(wzProgress), L"%u%%", dwOverallPercentage);
+        ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_TEXT, wzProgress);
+
+        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_BAR, dwOverallPercentage);
+
+        m_dwCalculatedCacheProgress = dwOverallPercentage * WIXSTDBA_ACQUIRE_PERCENTAGE / 100;
+        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_CALCULATED_PROGRESS_BAR, m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
+
+        SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
     }
 
 
@@ -2913,10 +2771,8 @@ public:
 
         m_sczLicenseFile = NULL;
         m_sczLicenseUrl = NULL;
-        m_fSuppressOptionsUI = FALSE;
         m_fSuppressDowngradeFailure = FALSE;
         m_fSuppressRepair = FALSE;
-        m_fShowVersion = FALSE;
 
         m_sdOverridableVariables = NULL;
         m_shPrereqSupportPackages = NULL;
@@ -2993,8 +2849,6 @@ private:
     HWND m_hWnd;
 
     WIXSTDBA_STATE m_state;
-    WIXSTDBA_STATE m_stateBeforeOptions;
-    BOOL m_fStateChangeIsCancel;
     HRESULT m_hrFinal;
 
     BOOL m_fStartedExecution;
@@ -3008,10 +2862,8 @@ private:
 
     LPWSTR m_sczLicenseFile;
     LPWSTR m_sczLicenseUrl;
-    BOOL m_fSuppressOptionsUI;
     BOOL m_fSuppressDowngradeFailure;
     BOOL m_fSuppressRepair;
-    BOOL m_fShowVersion;
 
     STRINGDICT_HANDLE m_sdOverridableVariables;
 

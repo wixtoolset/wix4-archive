@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   <copyright file="LuxLib.wixproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
@@ -15,15 +15,12 @@
     <BindFiles>true</BindFiles>
     <Cultures>en-us</Cultures>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="LuxLib.wxs" />
     <EmbeddedResource Include="en-us.wxl" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\ca\LuxCustomActions.csproj" />
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>
