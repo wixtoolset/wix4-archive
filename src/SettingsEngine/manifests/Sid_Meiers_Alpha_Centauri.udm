@@ -2,7 +2,14 @@
 <LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
     <Product Id="Sid_Meiers_Alpha_Centauri">
         <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207658936_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Sid Meier&apos;s Alpha Centauri Planetary Pack" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Sid Meiers Alpha Centauri Planetary Pack" InstallLocation="InstallDir"/>
+
             <Arp DisplayName="Sid Meier&apos;s Alpha Centauri" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Sid Meiers Alpha Centauri" InstallLocation="InstallDir"/>
         </Detect>
 
         <Data>

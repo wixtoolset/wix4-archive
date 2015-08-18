@@ -2,7 +2,13 @@
 <LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
     <Product Id="Imperialism_2">
         <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207659139_is1" InstallLocation="InstallDir"/>
+
             <Arp DisplayName="Imperialism II - Age of Exploration" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Imperialism 2 - Age of Exploration" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Imperialism II" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Imperialism 2" InstallLocation="InstallDir"/>
         </Detect>
 
         <Data>
