@@ -3,6 +3,9 @@
     <Product Id="Heroes_of_Might_and_Magic_5">
         <Detect>
             <Arp DisplayName="Heroes of Might and Magic V"/>
+
+            <!-- GOG Galaxy version which includes base game and this expansion -->
+            <Arp RegKeyName="1207661143_is1"/>
         </Detect>
 
         <Data>
