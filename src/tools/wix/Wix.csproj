@@ -140,7 +140,6 @@
     <Compile Include="Validator.cs" />
     <Compile Include="VerifyInterop.cs" />
     <Compile Include="AppCommon.cs" />
-    <Compile Include="WixCommandLineRow.cs" />
     <Compile Include="WixGenericMessageEventArgs.cs" />
     <Compile Include="Link\WixGroupingOrdering.cs" />
     <Compile Include="WixStrings.Designer.cs">

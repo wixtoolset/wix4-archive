@@ -228,7 +228,7 @@ extern "C" HRESULT ExeEnginePlanCalculatePackage(
 
     default:
         hr = E_INVALIDARG;
-        ExitOnRootFailure1(hr, "Invalid package current state: %d.", pPackage->currentState);
+        ExitOnRootFailure(hr, "Invalid package current state: %d.", pPackage->currentState);
     }
 
     // Calculate the rollback action if there is an execute action.
@@ -547,7 +547,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
         si.cb = sizeof(si); // TODO: hookup the stdin/stdout/stderr pipes for logging purposes?
         if (!::CreateProcessW(sczExecutablePath, sczCommand, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
         {
-            ExitWithLastError1(hr, "Failed to CreateProcess on path: %ls", sczExecutablePath);
+            ExitWithLastError(hr, "Failed to CreateProcess on path: %ls", sczExecutablePath);
         }
 
         if (pExecuteAction->exePackage.fFireAndForget)
@@ -574,7 +574,7 @@ extern "C" HRESULT ExeEngineExecutePackage(
     }
 
     hr = HandleExitCode(pExecuteAction->exePackage.pPackage, dwExitCode, pRestart);
-    ExitOnRootFailure1(hr, "Process returned error: 0x%x", dwExitCode);
+    ExitOnRootFailure(hr, "Process returned error: 0x%x", dwExitCode);
 
 LExit:
     if (fChangedCurrentDirectory)

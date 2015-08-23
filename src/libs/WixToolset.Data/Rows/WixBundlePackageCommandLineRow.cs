@@ -1,5 +1,5 @@
 ﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="WixCommandLineRow.cs" company="Outercurve Foundation">
+// <copyright file="WixBundlePackageCommandLineRow.cs" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -7,31 +7,31 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml
+namespace WixToolset.Data.Rows
 {
     using System;
 
     /// <summary>
-    /// Specialization of a row for the WixCommandLineRow table.
+    /// Specialization of a row for the WixBundlePackageCommandLine table.
     /// </summary>
-    public class WixCommandLineRow : Row
+    public class WixBundlePackageCommandLineRow : Row
     {
         /// <summary>
-        /// Creates a WixCommandLineRow row that does not belong to a table.
+        /// Creates a WixBundlePackageCommandLineRow row that does not belong to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
-        /// <param name="tableDef">TableDefinition this WixCommandLineRow row belongs to and should get its column definitions from.</param>
-        public WixCommandLineRow(SourceLineNumberCollection sourceLineNumbers, TableDefinition tableDef) :
+        /// <param name="tableDef">TableDefinition this WixBundlePackageCommandLineRow row belongs to and should get its column definitions from.</param>
+        public WixBundlePackageCommandLineRow(SourceLineNumber sourceLineNumbers, TableDefinition tableDef) :
             base(sourceLineNumbers, tableDef)
         {
         }
 
         /// <summary>
-        /// Creates an WixCommandLineRow row that belongs to a table.
+        /// Creates an WixBundlePackageCommandLineRow row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
-        /// <param name="table">Table this WixCommandLineRow row belongs to and should get its column definitions from.</param>
-        public WixCommandLineRow(SourceLineNumberCollection sourceLineNumbers, Table table)
+        /// <param name="table">Table this WixBundlePackageCommandLineRow row belongs to and should get its column definitions from.</param>
+        public WixBundlePackageCommandLineRow(SourceLineNumber sourceLineNumbers, Table table)
             : base(sourceLineNumbers, table)
         {
         }
@@ -40,7 +40,7 @@ namespace Microsoft.Tools.WindowsInstallerXml
         /// Gets or sets the package identifier.
         /// </summary>
         /// <value>The package identifier.</value>
-        public string PackageId
+        public string ChainPackageId
         {
             get { return (string)this.Fields[0].Data; }
             set { this.Fields[0].Data = value; }

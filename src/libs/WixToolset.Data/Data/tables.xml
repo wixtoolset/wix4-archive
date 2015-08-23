@@ -1798,9 +1798,9 @@
         <columnDefinition name="WixBundlePackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the referenced Msp." />
     </tableDefinition>
-    <tableDefinition name="WixCommandLine" unreal="yes">
-        <columnDefinition name="ChainPackage_" type="string" length="0" category="identifier" 
-                keyTable="ChainPackage" keyColumn="1" description="Reference to a ChainPackage entry in the ChainPackage table."/>
+    <tableDefinition name="WixBundlePackageCommandLine" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table." />
         <columnDefinition name="InstallArgument" type="string" length="0" nullable="yes" />
         <columnDefinition name="UninstallArgument" type="string" length="0" nullable="yes" />
         <columnDefinition name="RepairArgument" type="string" length="0" nullable="yes" />
