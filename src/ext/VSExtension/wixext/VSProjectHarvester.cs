@@ -1097,7 +1097,7 @@ namespace WixToolset.Extensions
             return new MSBuild40Project(null, projectType, buildItemType, loadVersion, types, harvesterCore, configuration, platform);
         }
 
-        private static MSBuildProject ConstructMsbuildWrapperProject(string projectFile, HarvesterCore harvesterCore, string configuration, string platform, string shortVersion)
+        private static MSBuildProject ConstructMsbuildWrapperProject(string projectFile, IHarvesterCore harvesterCore, string configuration, string platform, string shortVersion)
         {
             // Until MSBuild 12.0, we were able to compile the HarvestLogger class which derives from ILogger and use that for all versions of MSBuild.
             // Starting in MSBuild 12.0, the ILogger that we compile against doesn't match the ILogger during runtime.  This DLL targets .NET 3.5,
@@ -1124,7 +1124,7 @@ namespace WixToolset.Extensions
                 throw new WixException(VSErrors.CannotLoadMSBuildWrapperAssembly(e.Message));
             }
 
-            const string MSBuildWrapperTypeName = "Microsoft.Tools.WindowsInstallerXml.Extensions.WixVSExtension.MSBuild{0}Project";
+            const string MSBuildWrapperTypeName = "WixToolset.Extensions.WixVSExtension.MSBuild{0}Project";
             Type projectWrapperType = null;
 
             // Get the type of the class that inherits from MSBuildProject.

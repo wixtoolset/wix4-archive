@@ -7,13 +7,14 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Tools.WindowsInstallerXml.Extensions.WixVSExtension
+namespace WixToolset.Extensions.WixVSExtension
 {
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
-    using Microsoft.Tools.WindowsInstallerXml.Extensions;
+    using WixToolset.Data;
+    using WixToolset.Extensions;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions.WixVSExtension
         private ProjectInstance currentProjectInstance;
         private ProjectCollection projectCollection;
 
-        public MSBuild14Project(HarvesterCore harvesterCore, string configuration, string platform)
+        public MSBuild14Project(IHarvesterCore harvesterCore, string configuration, string platform)
             : base(null, null, null, null)
         {
             this.buildParameters = new BuildParameters();
@@ -162,7 +163,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions.WixVSExtension
         // and a default empty Shutdown() implementation.
         private class HarvestLogger : Logger
         {
-            public HarvesterCore HarvesterCore { get; set; }
+            public IHarvesterCore HarvesterCore { get; set; }
 
             /// <summary>
             /// Initialize is guaranteed to be called by MSBuild at the start of the build
@@ -175,7 +176,7 @@ namespace Microsoft.Tools.WindowsInstallerXml.Extensions.WixVSExtension
 
             void eventSource_ErrorRaised(object sender, BuildErrorEventArgs e)
             {
-                if (this.HarvesterCore != null)
+                if (null != this.HarvesterCore)
                 {
                     // BuildErrorEventArgs adds LineNumber, ColumnNumber, File, amongst other parameters.
                     string line = String.Format(CultureInfo.InvariantCulture, "{0}({1},{2}): {3}", e.File, e.LineNumber, e.ColumnNumber, e.Message);
