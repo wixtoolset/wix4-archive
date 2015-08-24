@@ -302,6 +302,8 @@ namespace WixToolset.Tools
             // print friendly message saying what file is being decompiled
             Console.WriteLine("{0} / {1}", Path.GetFileName(this.inputFile), Path.GetFileName(this.inputPdbFile));
 
+            Pdb inputPdb = Pdb.Load(this.inputPdbFile, true);
+
             // extract files from the .msi (unless suppressed) and get the path map of File ids to target paths
             string outputDirectory = this.exportBasePath ?? Environment.GetEnvironmentVariable("WIX_TEMP");
             IDictionary<string, string> paths = null;
@@ -317,8 +319,6 @@ namespace WixToolset.Tools
 
                 paths = package.Files.SourcePaths;
             }
-
-            Pdb inputPdb = Pdb.Load(this.inputPdbFile, true);
 
             Table wixFileTable = inputPdb.Output.Tables["WixFile"];
             if (null != wixFileTable)
