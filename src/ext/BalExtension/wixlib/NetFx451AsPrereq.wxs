@@ -8,6 +8,7 @@
   </copyright>
 -->
 <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+    <?define NetFx451EulaLink = http://wixtoolset.org/licenses/netfx451 ?>
     <?define NetFx451WebId = NetFx451Web ?>
     <Fragment>
         <PackageGroup Id="$(var.NetFx451WebId)AsPrereq">
@@ -17,8 +18,7 @@
         <CustomTable Id='WixMbaPrereqInformation'>
             <Row>
                 <Data Column='PackageId'>$(var.NetFx451WebId)</Data>
-                <!-- Need 4.5.1 license -->
-                <!-- <Data Column='LicenseUrl'>$(var.NetFx451EulaLink)</Data> -->
+                <Data Column='LicenseUrl'>$(var.NetFx451EulaLink)</Data>
             </Row>
         </CustomTable>
     </Fragment>
@@ -32,8 +32,7 @@
         <CustomTable Id='WixMbaPrereqInformation'>
             <Row>
                 <Data Column='PackageId'>$(var.NetFx451RedistId)</Data>
-                <!-- Need 4.5.1 license -->
-                <!-- <Data Column='LicenseUrl'>$(var.NetFx451EulaLink)</Data> -->
+                <Data Column='LicenseUrl'>$(var.NetFx451EulaLink)</Data>
             </Row>
         </CustomTable>
     </Fragment>

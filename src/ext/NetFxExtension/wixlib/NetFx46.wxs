@@ -7,7 +7,7 @@
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!--
         .NET Framework installation state properties
@@ -20,7 +20,6 @@
   <?define NetFx46MinRelease = 393295 ?>
   <?define NetFx46WebLink = http://go.microsoft.com/fwlink/?LinkId=560371 ?>
   <?define NetFx46RedistLink = http://go.microsoft.com/fwlink/?LinkId=560369 ?>
-  <?define NetFx46EulaLink = http://go.microsoft.com/fwlink/?LinkID=558772 ?>
 
   <Fragment>
     <PropertyRef Id="WIXNETFX4RELEASEINSTALLED" />
@@ -33,8 +32,6 @@
   <Fragment>
     <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
 
-    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx46Web" />
-    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx46EulaLink)" />
     <WixVariable Id="NetFx46WebDetectCondition" Value="NETFRAMEWORK45 &gt;= $(var.NetFx46MinRelease)" Overridable="yes" />
     <WixVariable Id="NetFx46WebInstallCondition" Value="" Overridable="yes" />
     <WixVariable Id="NetFx46WebPackageDirectory" Value="redist\" Overridable="yes" />
@@ -70,8 +67,6 @@
   <Fragment>
     <util:RegistrySearchRef Id="NETFRAMEWORK45"/>
 
-    <WixVariable Id="WixMbaPrereqPackageId" Value="NetFx46Redist" />
-    <WixVariable Id="WixMbaPrereqLicenseUrl" Value="$(var.NetFx46EulaLink)" />
     <WixVariable Id="NetFx46RedistDetectCondition" Value="NETFRAMEWORK45 &gt;= $(var.NetFx46MinRelease)" Overridable="yes" />
     <WixVariable Id="NetFx46RedistInstallCondition" Value="" Overridable="yes" />
     <WixVariable Id="NetFx46RedistPackageDirectory" Value="redist\" Overridable="yes" />
