@@ -1,5 +1,3 @@
-* ErnestT: WIXBUG:4432 - Add burn support for only caching packages
-
 * HeathS: WIXFEAT:4663 - Default to language-specific major upgrades with option to ignore language.
 
 * BMurri: WIXBUG:4532 - Make it an error for InstallPrivileges and InstallScope to both be specified.

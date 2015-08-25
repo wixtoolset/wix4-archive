@@ -627,7 +627,6 @@ extern "C" HRESULT PlanRegistration(
     pPlan->fRegister = TRUE; // register the bundle since we're modifying machine state.
 
     // Keep the registration if the bundle was already installed or we are planning after a restart.
-    // Also keep the registration if we are caching because the ARP (via uninstall) allows uncaching.
     pPlan->fKeepRegistrationDefault = (pRegistration->fInstalled || BOOTSTRAPPER_RESUME_TYPE_REBOOT == resumeType);
 
     pPlan->fDisallowRemoval = FALSE; // by default the bundle can be planned to be removed
@@ -1073,8 +1072,6 @@ extern "C" HRESULT PlanCachePackage(
         hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
         ExitOnFailure(hr, "Failed to plan cache package.");
 
-        // Update plan state to account for the package being cached
-        pPlan->qwEstimatedSize += pPackage->qwSize;
         if (pPackage->fPerMachine)
         {
             pPlan->fPerMachine = TRUE;
