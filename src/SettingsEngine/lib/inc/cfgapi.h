@@ -78,11 +78,20 @@ enum RESOLUTION_CHOICE
     RESOLUTION_REMOTE
 };
 
+struct DISPLAY_NAME
+{
+    LPWSTR sczName;
+    DWORD dwLCID;
+};
+
 struct CONFLICT_PRODUCT
 {
     LPWSTR sczProductName;
     LPWSTR sczVersion;
     LPWSTR sczPublicKey;
+
+    DISPLAY_NAME *rgDisplayNames;
+    DWORD cDisplayNames;
 
     // An enumeration just like what is returned from CfgEnumPastValues, but only contains conflicting values in local store
     CFG_ENUMERATION_HANDLE *rgcesValueEnumLocal;
@@ -327,6 +336,12 @@ HRESULT CFGAPI CfgEnumReadBinary(
     __in CFG_ENUM_DATA cedData,
     __deref_out_bcount(*piBuffer) BYTE** ppbBuffer,
     __inout SIZE_T* piBuffer
+    );
+HRESULT CFGAPI CfgEnumReadDisplayNameArray(
+    __in_bcount(CFG_ENUMERATION_HANDLE_BYTES) C_CFG_ENUMERATION_HANDLE cehHandle,
+    __in DWORD dwIndex,
+    __out DISPLAY_NAME **prgDisplayNames,
+    __out DWORD *pcDisplayNames
     );
 
 void CFGAPI CfgReleaseEnumeration(

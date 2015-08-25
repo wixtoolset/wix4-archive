@@ -14,9 +14,6 @@
 #pragma once
 
 #define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
 
 #include <windows.h>
 #include <stdlib.h>
@@ -58,6 +55,7 @@
 #include "testhook.h"
 #include "handle.h"
 #include "dblist.h"
+#include "dispname.h"
 #include "manifest.h"
 #include "parse.h"
 #include "mapdata.h"

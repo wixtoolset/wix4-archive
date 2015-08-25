@@ -285,8 +285,8 @@ public:
 
     HRESULT EnumerateProducts(DWORD dwIndex);
     HRESULT EnumerateDatabases(DWORD dwIndex);
-    HRESULT EnumerateValues(DWORD dwIndex);
-    HRESULT EnumerateValueHistory(DWORD dwIndex);
+    HRESULT EnumerateValues(DWORD dwIndex, BOOL fDifferentProduct);
+    HRESULT EnumerateValueHistory(DWORD dwIndex, BOOL fDifferentValue);
 
     DWORD GetSelectedValueIndex();
     DWORD GetSelectedValueHistoryIndex();

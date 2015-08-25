@@ -1036,6 +1036,8 @@ static HRESULT UpdateProductRegistrationState(
     __in_z_opt LPCWSTR wzPublicKey
     )
 {
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     BOOL fRegistered = FALSE;
 
     UNREFERENCED_PARAMETER(wzPublicKey);
@@ -1061,10 +1063,37 @@ static HRESULT UpdateProductRegistrationState(
         }
     }
 
+    hr = DisplayNameEnumerate(pcdb, pcdb->dwAppID, &rgDisplayNames, &cDisplayNames);
+    ExitOnFailure(hr, "Failed to enumerate display names");
+
+    // For performance, if they both have just one displayname and the LCIDs match, don't bother deleting and rewriting them all
+    if (1 == pSyncProductSession->product.cDisplayNames && 1 == cDisplayNames && rgDisplayNames[0].dwLCID == pSyncProductSession->product.rgDisplayNames[0].dwLCID)
+    {
+        if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, rgDisplayNames[0].sczName, -1, pSyncProductSession->product.rgDisplayNames[0].sczName, -1))
+        {
+            hr = DisplayNamePersist(pcdb, pcdb->dwAppID, pSyncProductSession->product.rgDisplayNames[0].dwLCID, pSyncProductSession->product.rgDisplayNames[0].sczName);
+            ExitOnFailure(hr, "Failed to persist display name %ls", pSyncProductSession->product.rgDisplayNames[0].sczName);
+        }
+    }
+    else
+    {
+        // Otherwise delete them all, then write them all individually
+        hr = DisplayNameRemoveAllForAppID(pcdb, pcdb->dwAppID);
+        ExitOnFailure(hr, "Failed to remove all display names from AppID");
+
+        for (DWORD i = 0; i < pSyncProductSession->product.cDisplayNames; ++i)
+        {
+            hr = DisplayNamePersist(pcdb, pcdb->dwAppID, pSyncProductSession->product.rgDisplayNames[i].dwLCID, pSyncProductSession->product.rgDisplayNames[i].sczName);
+            ExitOnFailure(hr, "Failed to persist display name %ls at index %u", pSyncProductSession->product.rgDisplayNames[i].sczName, i);
+        }
+    }
+
     hr = ProductRegister(pcdb, wzName, wzVersion, wzLegacyPublicKey, fRegistered);
     ExitOnFailure(hr, "Failed to update product registration state for product: '%ls', '%ls', '%ls'", wzName, wzVersion, wzLegacyPublicKey);
 
 LExit:
+    ReleaseDisplayNameArray(rgDisplayNames, cDisplayNames);
+
     return hr;
 }
 

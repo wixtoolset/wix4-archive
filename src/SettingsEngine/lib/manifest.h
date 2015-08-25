@@ -113,12 +113,6 @@ struct LEGACY_FILE
     DWORD cFileSpecials;
 };
 
-struct LEGACY_DISPLAYNAME
-{
-    LPWSTR sczName;
-    DWORD dwLCID;
-};
-
 struct LEGACY_VALUE_FILTER
 {
     LPWSTR sczExactName;
@@ -150,7 +144,7 @@ struct LEGACY_PRODUCT
     LEGACY_VALUE_FILTER *rgFilters;
     DWORD cFilters;
 
-    LEGACY_DISPLAYNAME *rgDisplayNames;
+    DISPLAY_NAME *rgDisplayNames;
     DWORD cDisplayNames;
 };
 

@@ -17,9 +17,6 @@
 extern "C" {
 #endif
 
-#define ReleaseDB(db) if (db) { UtilFreeDatabase(db); }
-#define ReleaseNullDB(db) if (db) { UtilFreeDatabase(db); db = NULL; }
-
 enum DATABASE_TYPE
 {
     DATABASE_UNKNOWN = 0,
@@ -41,6 +38,15 @@ struct PRODUCT
     LPWSTR sczName;
     LPWSTR sczVersion;
     LPWSTR sczPublicKey;
+};
+
+struct BROWSE_ENUM
+{
+    BOOL fRefreshing;
+    HRESULT hrResult;
+    CFG_ENUMERATION_HANDLE cehItems;
+    DWORD cItems;
+    LPCWSTR wzDisplayStatusText;
 };
 
 struct BROWSE_DATABASE
@@ -91,48 +97,30 @@ struct BROWSE_DATABASE
     BOOL fForgetting;
     HRESULT hrForgetResult;
 
-    // Product enumeration
-    BOOL fProductListLoading;
-    HRESULT hrProductListResult;
-    CFG_ENUMERATION_HANDLE cehProductList;
-    BOOL *rgfProductInstalled;
-    DWORD dwProductListCount;
-    DWORD dwSelectedProductIndex;
-    LPCWSTR wzProductListText;
-    PRODUCT prodCurrent;
-
-    // Database enumeration
-    BOOL fDatabaseListLoading;
-    HRESULT hrDatabaseListResult;
-    CFG_ENUMERATION_HANDLE cehDatabaseList;
-    DWORD dwDatabaseListCount;
-    LPCWSTR wzDatabaseListText;
-
     // Product setting functionality
     BOOL fProductSet;
     BOOL fSettingProduct;
     HRESULT hrSetProductResult;
-    DWORD dwSetProductIndex;
+
+    // Product enumeration
+    BROWSE_ENUM productEnum;
+    BOOL *rgfProductInstalled;
+    PRODUCT prodCurrent;
+
+    // Database enumeration
+    BROWSE_ENUM dbEnum;
 
     // Value enumeration
-    BOOL fValueListLoading;
-    HRESULT hrValueListResult;
-    CFG_ENUMERATION_HANDLE cehValueList;
+    BROWSE_ENUM valueEnum;
     BOOL fNewValue;
-    DWORD dwValueCount;
-    LPCWSTR wzValueListText;
 
     // Set Value Screen
     CONFIG_VALUETYPE cdSetValueType;
 
     // Value history information
+    BROWSE_ENUM valueHistoryEnum;
     HISTORY_MODE vhmValueHistoryMode;
     LPWSTR sczValueName;
-    BOOL fValueHistoryLoading;
-    HRESULT hrValueHistoryResult;
-    CFG_ENUMERATION_HANDLE cehValueHistory;
-    DWORD dwValueHistoryCount;
-    LPCWSTR wzValueHistoryListText;
 
     // Conflicts
     CONFLICT_PRODUCT *pcplConflictProductList;
@@ -165,6 +153,10 @@ HRESULT UtilGrowDatabaseList(
     );
 BOOL UtilReadyToSync(
     __in BROWSE_DATABASE *pbdDatabase
+    );
+void UtilWipeEnum(
+    __in BROWSE_DATABASE *pDatabase,
+    __inout BROWSE_ENUM *pEnum
     );
 
 #ifdef __cplusplus

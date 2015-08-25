@@ -56,30 +56,47 @@ HRESULT BrowseWindow::SetSelectedProduct(
     )
 {
     HRESULT hr = S_OK;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
+    DWORD dwDisplayNameToDisplay = DWORD_MAX;
     LPCWSTR wzTemp = NULL;
-    CURRENTDATABASE.dwSetProductIndex = dwIndex;
     ::EnterCriticalSection(&CURRENTDATABASE.cs);
 
-    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PRODUCTNAME, &wzTemp);
+    hr = CfgEnumReadDisplayNameArray(CURRENTDATABASE.productEnum.cehItems, dwIndex, &rgDisplayNames, &cDisplayNames);
+    ExitOnFailure(hr, "Failed to read display names from enumeration");
+
+    hr = CfgEnumReadString(CURRENTDATABASE.productEnum.cehItems, dwIndex, ENUM_DATA_PRODUCTNAME, &wzTemp);
     ExitOnFailure(hr, "Failed to read product name from enumeration");
 
     hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczName, wzTemp, 0);
     ExitOnFailure(hr, "Failed to copy name");
 
-    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_VERSION, &wzTemp);
+    hr = CfgEnumReadString(CURRENTDATABASE.productEnum.cehItems, dwIndex, ENUM_DATA_VERSION, &wzTemp);
     ExitOnFailure(hr, "Failed to read product version from enumeration");
 
     hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczVersion, wzTemp, 0);
     ExitOnFailure(hr, "Failed to copy name");
 
-    hr = CfgEnumReadString(CURRENTDATABASE.cehProductList, dwIndex, ENUM_DATA_PUBLICKEY, &wzTemp);
+    hr = CfgEnumReadString(CURRENTDATABASE.productEnum.cehItems, dwIndex, ENUM_DATA_PUBLICKEY, &wzTemp);
     ExitOnFailure(hr, "Failed to read product public key from enumeration");
 
     hr = StrAllocString(&CURRENTDATABASE.prodCurrent.sczPublicKey, wzTemp, 0);
     ExitOnFailure(hr, "Failed to copy name");
 
-    hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
-    ExitOnFailure(hr, "Failed to allocate product display name with public key");
+    hr = UISelectBestLCIDToDisplay(rgDisplayNames, cDisplayNames, &dwDisplayNameToDisplay);
+    if (FAILED(hr))
+    {
+        hr = S_OK;
+
+        // Fallback to regular product id/version/publickey
+        hr = StrAllocFormatted(&CURRENTDATABASE.sczCurrentProductDisplayName, L"%ls, %ls, %ls", CURRENTDATABASE.prodCurrent.sczName, CURRENTDATABASE.prodCurrent.sczVersion, CURRENTDATABASE.prodCurrent.sczPublicKey);
+        ExitOnFailure(hr, "Failed to allocate product display name with public key");
+    }
+    else
+    {
+        hr = StrAllocString(&CURRENTDATABASE.sczCurrentProductDisplayName, rgDisplayNames[0].sczName, 0);
+        ExitOnFailure(hr, "Failed to copy display name");
+    }
 
 LExit:
     ::LeaveCriticalSection(&CURRENTDATABASE.cs);
@@ -209,8 +226,8 @@ HRESULT BrowseWindow::EnumerateProducts(
 {
     HRESULT hr = S_OK;
 
-    m_pbdlDatabaseList->rgDatabases[dwIndex].fProductListLoading = TRUE;
-    m_pbdlDatabaseList->rgDatabases[dwIndex].hrProductListResult = S_OK;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].productEnum.fRefreshing = TRUE;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].productEnum.hrResult = S_OK;
     m_pbdlDatabaseList->rgDatabases[dwIndex].fProductSet = FALSE;
 
     hr = RefreshProductList(dwIndex);
@@ -231,8 +248,8 @@ HRESULT BrowseWindow::EnumerateDatabases(
 {
     HRESULT hr = S_OK;
 
-    m_pbdlDatabaseList->rgDatabases[dwIndex].fDatabaseListLoading = TRUE;
-    m_pbdlDatabaseList->rgDatabases[dwIndex].hrDatabaseListResult = S_OK;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].dbEnum.fRefreshing = TRUE;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].dbEnum.hrResult = S_OK;
 
     hr = RefreshOtherDatabaseList();
     ExitOnFailure(hr, "Failed to refresh database list");
@@ -247,13 +264,20 @@ LExit:
 }
 
 HRESULT BrowseWindow::EnumerateValues(
-    DWORD dwIndex
+    DWORD dwIndex,
+    BOOL fDifferentProduct
     )
 {
     HRESULT hr = S_OK;
 
-    m_pbdlDatabaseList->rgDatabases[dwIndex].fValueListLoading = TRUE;
-    m_pbdlDatabaseList->rgDatabases[dwIndex].hrValueListResult = S_OK;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum.fRefreshing = TRUE;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum.hrResult = S_OK;
+
+    // If we're changing to a different product, clear out the current enumeration so we don't show inaccurate data
+    if (fDifferentProduct)
+    {
+        UtilWipeEnum(m_pbdlDatabaseList->rgDatabases + dwIndex, &m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum);
+    }
 
     hr = RefreshValueList(dwIndex);
     ExitOnFailure(hr, "Failed to update value list");
@@ -268,15 +292,22 @@ LExit:
 }
 
 HRESULT BrowseWindow::EnumerateValueHistory(
-    DWORD dwIndex
+    DWORD dwIndex,
+    BOOL fDifferentValue
     )
 {
     HRESULT hr = S_OK;
     LPWSTR sczValueName = NULL;
 
     m_pbdlDatabaseList->rgDatabases[dwIndex].vhmValueHistoryMode = HISTORY_NORMAL;
-    m_pbdlDatabaseList->rgDatabases[dwIndex].fValueHistoryLoading = TRUE;
-    m_pbdlDatabaseList->rgDatabases[dwIndex].hrValueHistoryResult = S_OK;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].valueHistoryEnum.fRefreshing = TRUE;
+    m_pbdlDatabaseList->rgDatabases[dwIndex].valueHistoryEnum.hrResult = S_OK;
+
+    // If we're changing to a different value, clear out the current enumeration so we don't show inaccurate data
+    if (fDifferentValue)
+    {
+        UtilWipeEnum(m_pbdlDatabaseList->rgDatabases + dwIndex, &m_pbdlDatabaseList->rgDatabases[dwIndex].valueHistoryEnum);
+    }
 
     hr = RefreshValueHistoryList(dwIndex);
     ExitOnFailure(hr, "Failed to update value history list");
@@ -368,45 +399,45 @@ HRESULT BrowseWindow::RefreshProductList(DWORD dwDatabaseIndex)
 
     if (FAILED(DATABASE(dwDatabaseIndex).hrInitializeResult))
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Error initializing Cfg API!";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Error initializing Cfg API!";
     }
-    else if (FAILED(DATABASE(dwDatabaseIndex).hrProductListResult))
+    else if (FAILED(DATABASE(dwDatabaseIndex).productEnum.hrResult))
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Error enumerating products!";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Error enumerating products!";
     }
     else if (FAILED(DATABASE(dwDatabaseIndex).hrReadLegacySettingsResult))
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Error reading legacy settings!";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Error reading legacy settings!";
     }
     else if (DATABASE(dwDatabaseIndex).fInitializing)
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Initializing Cfg API...";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Initializing Cfg API...";
     }
     else if (DATABASE(dwDatabaseIndex).fUninitializing)
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Uninitializing Cfg API...";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Uninitializing Cfg API...";
     }
-    else if (DATABASE(dwDatabaseIndex).fProductListLoading)
+    else if (NULL == DATABASE(dwDatabaseIndex).productEnum.cehItems && DATABASE(dwDatabaseIndex).productEnum.fRefreshing)
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Enumerating products...";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Enumerating products...";
     }
     else if (DATABASE(dwDatabaseIndex).fReadingLegacySettings)
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = L"Reading Legacy Settings...";
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = L"Reading Legacy Settings...";
     }
     else
     {
-        DATABASE(dwDatabaseIndex).wzProductListText = NULL;
+        DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText = NULL;
     }
 
-    if (NULL != DATABASE(dwDatabaseIndex).wzProductListText)
+    if (NULL != DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText)
     {
-        hr = UISetListViewText(hwnd, DATABASE(dwDatabaseIndex).wzProductListText);
+        hr = UISetListViewText(hwnd, DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText);
         ExitOnFailure(hr, "Failed to set loading string in product list listview");
     }
     else
     {
-        hr = UISetListViewToProductEnum(hwnd, DATABASE(dwDatabaseIndex).cehProductList, DATABASE(dwDatabaseIndex).rgfProductInstalled, m_fShowUninstalledProducts);
+        hr = UISetListViewToProductEnum(hwnd, DATABASE(dwDatabaseIndex).productEnum.cehItems, DATABASE(dwDatabaseIndex).rgfProductInstalled, m_fShowUninstalledProducts);
         ExitOnFailure(hr, "Failed to set listview to product enum for product list screen");
     }
 
@@ -472,10 +503,10 @@ HRESULT BrowseWindow::OpenSetValueScreen()
     dwValueIndex = GetSelectedValueIndex();
     if (!CURRENTDATABASE.fNewValue)
     {
-        hr = CfgEnumReadString(CURRENTDATABASE.cehValueList, dwValueIndex, ENUM_DATA_VALUENAME, &wzText);
+        hr = CfgEnumReadString(CURRENTDATABASE.valueEnum.cehItems, dwValueIndex, ENUM_DATA_VALUENAME, &wzText);
         ExitOnFailure(hr, "Failed to read value name from enumeration");
 
-        hr = CfgEnumReadDataType(CURRENTDATABASE.cehValueList, dwValueIndex, ENUM_DATA_VALUETYPE, &CURRENTDATABASE.cdSetValueType);
+        hr = CfgEnumReadDataType(CURRENTDATABASE.valueEnum.cehItems, dwValueIndex, ENUM_DATA_VALUETYPE, &CURRENTDATABASE.cdSetValueType);
         ExitOnFailure(hr, "Failed to read value type from enumeration");
 
         ThemeControlEnable(m_pTheme, BROWSE_CONTROL_SET_VALUE_NAME_EDITBOX, FALSE);
@@ -493,12 +524,12 @@ HRESULT BrowseWindow::OpenSetValueScreen()
             // Nothing to do
             break;
         case VALUE_STRING:
-            hr = CfgEnumReadString(CURRENTDATABASE.cehValueList, dwValueIndex, ENUM_DATA_VALUESTRING, &wzText);
+            hr = CfgEnumReadString(CURRENTDATABASE.valueEnum.cehItems, dwValueIndex, ENUM_DATA_VALUESTRING, &wzText);
             ExitOnFailure(hr, "Failed to read string value from enum");
             break;
 
         case VALUE_DWORD:
-            hr = CfgEnumReadDword(CURRENTDATABASE.cehValueList, dwValueIndex, ENUM_DATA_VALUEDWORD, &dwValue);
+            hr = CfgEnumReadDword(CURRENTDATABASE.valueEnum.cehItems, dwValueIndex, ENUM_DATA_VALUEDWORD, &dwValue);
             ExitOnFailure(hr, "Failed to read dword value from enum");
 
             hr = StrAllocFormatted(&sczText, L"%u", dwValue);
@@ -508,7 +539,7 @@ HRESULT BrowseWindow::OpenSetValueScreen()
             break;
 
         case VALUE_QWORD:
-            hr = CfgEnumReadQword(CURRENTDATABASE.cehValueList, dwValueIndex, ENUM_DATA_VALUEQWORD, &qwValue);
+            hr = CfgEnumReadQword(CURRENTDATABASE.valueEnum.cehItems, dwValueIndex, ENUM_DATA_VALUEQWORD, &qwValue);
             ExitOnFailure(hr, "Failed to read qword value from enum");
 
             hr = StrAllocFormatted(&sczText, L"%I64u", qwValue);
@@ -518,7 +549,7 @@ HRESULT BrowseWindow::OpenSetValueScreen()
             break;
 
         case VALUE_BOOL:
-            hr = CfgEnumReadBool(CURRENTDATABASE.cehValueList, dwValueIndex, ENUM_DATA_VALUEBOOL, &fValue);
+            hr = CfgEnumReadBool(CURRENTDATABASE.valueEnum.cehItems, dwValueIndex, ENUM_DATA_VALUEBOOL, &fValue);
             ExitOnFailure(hr, "Failed to read bool value from enum");
 
             // Per docs, this message always returns zero
@@ -577,39 +608,39 @@ HRESULT BrowseWindow::RefreshValueList(DWORD dwDatabaseIndex)
     fCsEntered = TRUE;
 
     // If the product list failed to enumerate, we can't enumerate values and that error message supersedes ours
-    if (NULL != DATABASE(dwDatabaseIndex).wzProductListText)
+    if (NULL != DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText)
     {
-        DATABASE(dwDatabaseIndex).wzValueListText = DATABASE(dwDatabaseIndex).wzProductListText;
+        DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText = DATABASE(dwDatabaseIndex).productEnum.wzDisplayStatusText;
     }
     else if (DATABASE(dwDatabaseIndex).fSettingProduct)
     {
-        DATABASE(dwDatabaseIndex).wzValueListText = L"Setting product...";
+        DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText = L"Setting product...";
     }
     else if (FAILED(DATABASE(dwDatabaseIndex).hrSetProductResult))
     {
-        DATABASE(dwDatabaseIndex).wzValueListText = L"Error setting product!";
+        DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText = L"Error setting product!";
     }
-    else if (FAILED(DATABASE(dwDatabaseIndex).hrValueListResult))
+    else if (FAILED(DATABASE(dwDatabaseIndex).valueEnum.hrResult))
     {
-        DATABASE(dwDatabaseIndex).wzValueListText = L"Error enumerating values!";
+        DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText = L"Error enumerating values!";
     }
-    else if (DATABASE(dwDatabaseIndex).fValueListLoading)
+    else if (NULL == DATABASE(dwDatabaseIndex).valueEnum.cehItems && DATABASE(dwDatabaseIndex).valueEnum.fRefreshing)
     {
-        DATABASE(dwDatabaseIndex).wzValueListText = L"Enumerating values...";
+        DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText = L"Enumerating values...";
     }
     else
     {
-        DATABASE(dwDatabaseIndex).wzValueListText = NULL;
+        DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText = NULL;
     }
 
-    if (NULL != DATABASE(dwDatabaseIndex).wzValueListText)
+    if (NULL != DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText)
     {
-        hr = UISetListViewText(hwnd, DATABASE(dwDatabaseIndex).wzValueListText);
+        hr = UISetListViewText(hwnd, DATABASE(dwDatabaseIndex).valueEnum.wzDisplayStatusText);
         ExitOnFailure(hr, "Failed to set error string in value list listview");
     }
     else
     {
-        hr = UISetListViewToValueEnum(hwnd, DATABASE(dwDatabaseIndex).cehValueList, m_fShowDeletedValues);
+        hr = UISetListViewToValueEnum(hwnd, DATABASE(dwDatabaseIndex).valueEnum.cehItems, m_fShowDeletedValues);
         ExitOnFailure(hr, "Failed to set listview to value enum for product settings screen");
     }
 
@@ -642,7 +673,7 @@ HRESULT BrowseWindow::RefreshValueHistoryList(DWORD dwDatabaseIndex)
     switch (DATABASE(dwDatabaseIndex).vhmValueHistoryMode)
     {
     case HISTORY_NORMAL:
-        pcehEnumSwitcher = DATABASE(dwDatabaseIndex).cehValueHistory;
+        pcehEnumSwitcher = DATABASE(dwDatabaseIndex).valueHistoryEnum.cehItems;
         break;
     case HISTORY_LOCAL_CONFLICTS:
         pcehEnumSwitcher = DATABASE(dwDatabaseIndex).pcplConflictProductList[GetSelectedConflictProductIndex()].rgcesValueEnumLocal[GetSelectedConflictValueIndex()];
@@ -656,26 +687,26 @@ HRESULT BrowseWindow::RefreshValueHistoryList(DWORD dwDatabaseIndex)
         ExitFunction();
     }
 
-    if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && DATABASE(dwDatabaseIndex).fValueHistoryLoading)
+    if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && NULL == DATABASE(dwDatabaseIndex).valueHistoryEnum.cehItems && DATABASE(dwDatabaseIndex).valueHistoryEnum.fRefreshing)
     {
-        DATABASE(dwDatabaseIndex).wzValueHistoryListText = L"Enumerating...";
+        DATABASE(dwDatabaseIndex).valueHistoryEnum.wzDisplayStatusText = L"Enumerating...";
     }
-    else if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && FAILED(DATABASE(dwDatabaseIndex).hrValueHistoryResult))
+    else if (HISTORY_NORMAL == DATABASE(dwDatabaseIndex).vhmValueHistoryMode && FAILED(DATABASE(dwDatabaseIndex).valueHistoryEnum.hrResult))
     {
-        DATABASE(dwDatabaseIndex).wzValueHistoryListText = L"Error!";
+        DATABASE(dwDatabaseIndex).valueHistoryEnum.wzDisplayStatusText = L"Error!";
     }
     else if (NULL == pcehEnumSwitcher)
     {
-        DATABASE(dwDatabaseIndex).wzValueHistoryListText = L"None.";
+        DATABASE(dwDatabaseIndex).valueHistoryEnum.wzDisplayStatusText = L"None.";
     }
     else
     {
-        DATABASE(dwDatabaseIndex).wzValueHistoryListText = NULL;
+        DATABASE(dwDatabaseIndex).valueHistoryEnum.wzDisplayStatusText = NULL;
     }
 
-    if (NULL != DATABASE(dwDatabaseIndex).wzValueHistoryListText)
+    if (NULL != DATABASE(dwDatabaseIndex).valueHistoryEnum.wzDisplayStatusText)
     {
-        hr = UISetListViewText(hwnd, DATABASE(dwDatabaseIndex).wzValueHistoryListText);
+        hr = UISetListViewText(hwnd, DATABASE(dwDatabaseIndex).valueHistoryEnum.wzDisplayStatusText);
         ExitOnFailure(hr, "Failed to set error string in value history list listview");
     }
     else
@@ -980,6 +1011,9 @@ DWORD WINAPI BrowseWindow::UiThreadProc(
     BOOL fRet = FALSE;
     MSG msg = { };
 
+    // Nobody cares about failure - this is just best effort to boost UI responsiveness.
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+
     // initialize COM
     hr = ::CoInitialize(NULL);
     ExitOnFailure(hr, "Failed to initialize COM.");
@@ -992,6 +1026,7 @@ DWORD WINAPI BrowseWindow::UiThreadProc(
     ExitOnFailure(hr, "Failed to copy name of local database to database list entry");
 
     pThis->m_pbdlDatabaseList->rgDatabases[dwDatabaseIndex].dtType = DATABASE_LOCAL;
+    pThis->m_pbdlDatabaseList->rgDatabases[dwDatabaseIndex].fInitializing = TRUE;
 
     // create main window
     hr = pThis->CreateMainWindow();
@@ -1050,11 +1085,6 @@ HRESULT BrowseWindow::CreateMainWindow()
     HRESULT hr = S_OK;
     WNDCLASSW wc = { };
     DWORD dwWindowStyle = 0;
-    LPWSTR sczThemePath = NULL;
-
-    // load theme relative to BROWSE.dll.
-    hr = PathRelativeToModule(&sczThemePath, L"thm.xml", m_hModule);
-    ExitOnFailure(hr, "Failed to combine module path with thm.xml.");
 
     hr = ThemeLoadFromResource(m_hModule, MAKEINTRESOURCEA(BROWSE_RES_THEME_FILE), &m_pTheme);
     ExitOnFailure(hr, "Failed to load theme from embedded resource.");
@@ -1113,7 +1143,6 @@ HRESULT BrowseWindow::CreateMainWindow()
     ExitOnFailure(hr, "Failed to display value list");
 
 LExit:
-    ReleaseStr(sczThemePath);
     ReleaseStr(m_sczLanguage);
 
     if (FAILED(hr))
@@ -1348,6 +1377,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     case WM_BROWSE_INITIALIZE_FINISHED:
         dwIndex = static_cast<DWORD>(lParam);
 
+        UXDATABASE(dwIndex).fInitializing = FALSE;
         UXDATABASE(dwIndex).hrInitializeResult = static_cast<HRESULT>(wParam);
 
         hr = pUX->SetDatabaseIndex(0);
@@ -1393,8 +1423,8 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     case WM_BROWSE_ENUMERATE_PRODUCTS_FINISHED:
         dwIndex = static_cast<DWORD>(lParam);
 
-        UXDATABASE(dwIndex).hrProductListResult = static_cast<HRESULT>(wParam);
-        UXDATABASE(dwIndex).fProductListLoading = FALSE;
+        UXDATABASE(dwIndex).productEnum.hrResult = static_cast<HRESULT>(wParam);
+        UXDATABASE(dwIndex).productEnum.fRefreshing = FALSE;
 
         hr = pUX->RefreshProductList(dwIndex);
         ExitOnFailure(hr, "Failed to refresh product list");
@@ -1411,15 +1441,15 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     case WM_BROWSE_ENUMERATE_DATABASES_FINISHED:
         dwIndex = static_cast<DWORD>(lParam);
 
-        UXDATABASE(dwIndex).hrDatabaseListResult = static_cast<HRESULT>(wParam);
-        UXDATABASE(dwIndex).fDatabaseListLoading = TRUE;
+        UXDATABASE(dwIndex).dbEnum.hrResult = static_cast<HRESULT>(wParam);
+        UXDATABASE(dwIndex).dbEnum.fRefreshing = FALSE;
 
-        if (0 < UXDATABASE(dwIndex).dwDatabaseListCount)
+        if (0 < UXDATABASE(dwIndex).dbEnum.cItems)
         {
-            hr = MemEnsureArraySize(reinterpret_cast<void **>(&rgdwDwords), UXDATABASE(dwIndex).dwDatabaseListCount, sizeof(DWORD), 0);
+            hr = MemEnsureArraySize(reinterpret_cast<void **>(&rgdwDwords), UXDATABASE(dwIndex).dbEnum.cItems, sizeof(DWORD), 0);
             ExitOnFailure(hr, "Failed to reserve space for index array while enumerating databases");
 
-            for (DWORD i = 0; i < UXDATABASE(dwIndex).dwDatabaseListCount; ++i)
+            for (DWORD i = 0; i < UXDATABASE(dwIndex).dbEnum.cItems; ++i)
             {
                 hr = UtilGrowDatabaseList(pUX->m_pbdlDatabaseList, rgdwDwords + i);
                 ExitOnFailure(hr, "Failed to grow database list");
@@ -1428,21 +1458,21 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             ::EnterCriticalSection(&UXDATABASE(dwIndex).cs);
             fCsEntered = TRUE;
 
-            for (DWORD i = 0; i < UXDATABASE(dwIndex).dwDatabaseListCount; ++i)
+            for (DWORD i = 0; i < UXDATABASE(dwIndex).dbEnum.cItems; ++i)
             {
-                hr = CfgEnumReadString(UXDATABASE(dwIndex).cehDatabaseList, i, ENUM_DATA_FRIENDLY_NAME, &wzText);
+                hr = CfgEnumReadString(UXDATABASE(dwIndex).dbEnum.cehItems, i, ENUM_DATA_FRIENDLY_NAME, &wzText);
                 ExitOnFailure(hr, "Failed to read friendly name from database enumeration at index: %u", i);
 
                 hr = StrAllocString(&UXDATABASE(rgdwDwords[i]).sczName, wzText, 0);
                 ExitOnFailure(hr, "Failed to copy friendly name to database array");
 
-                hr = CfgEnumReadString(UXDATABASE(dwIndex).cehDatabaseList, i, ENUM_DATA_PATH, &wzText);
+                hr = CfgEnumReadString(UXDATABASE(dwIndex).dbEnum.cehItems, i, ENUM_DATA_PATH, &wzText);
                 ExitOnFailure(hr, "Failed to read path from database enumeration at index: %u", i);
 
                 hr = StrAllocString(&UXDATABASE(rgdwDwords[i]).sczPath, wzText, 0);
                 ExitOnFailure(hr, "Failed to copy path to database array");
 
-                hr = CfgEnumReadBool(UXDATABASE(dwIndex).cehDatabaseList, i, ENUM_DATA_SYNC_BY_DEFAULT, &UXDATABASE(rgdwDwords[i]).fSyncByDefault);
+                hr = CfgEnumReadBool(UXDATABASE(dwIndex).dbEnum.cehItems, i, ENUM_DATA_SYNC_BY_DEFAULT, &UXDATABASE(rgdwDwords[i]).fSyncByDefault);
                 ExitOnFailure(hr, "Failed to read sync by default flag from database enumeration at index: %u", i);
 
                 UXDATABASE(rgdwDwords[i]).fChecked = UXDATABASE(rgdwDwords[i]).fSyncByDefault;
@@ -1488,7 +1518,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         {
             CURRENTUXDATABASE.fProductSet = TRUE;
 
-            hr = pUX->EnumerateValues(dwIndex);
+            hr = pUX->EnumerateValues(dwIndex, TRUE);
             ExitOnFailure(hr, "Failed to enumerate values");
         }
         else
@@ -1517,7 +1547,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         }
         else
         {
-            hr = pUX->EnumerateValues(dwIndex);
+            hr = pUX->EnumerateValues(dwIndex, FALSE);
             ExitOnFailure(hr, "Failed to enumerate values after setting value");
 
             hr = pUX->SetPreviousScreen();
@@ -1529,8 +1559,8 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     case WM_BROWSE_ENUMERATE_VALUES_FINISHED:
         dwIndex = static_cast<DWORD>(lParam);
 
-        UXDATABASE(dwIndex).hrValueListResult = static_cast<HRESULT>(wParam);
-        UXDATABASE(dwIndex).fValueListLoading = FALSE;
+        UXDATABASE(dwIndex).valueEnum.hrResult = static_cast<HRESULT>(wParam);
+        UXDATABASE(dwIndex).valueEnum.fRefreshing = FALSE;
 
         hr = pUX->RefreshValueList(dwIndex);
         ExitOnFailure(hr, "Failed to refresh value list");
@@ -1539,8 +1569,8 @@ LRESULT CALLBACK BrowseWindow::WndProc(
     case WM_BROWSE_ENUMERATE_VALUE_HISTORY_FINISHED:
         dwIndex = static_cast<DWORD>(lParam);
 
-        UXDATABASE(dwIndex).hrValueHistoryResult = static_cast<HRESULT>(wParam);
-        UXDATABASE(dwIndex).fValueHistoryLoading = FALSE;
+        UXDATABASE(dwIndex).valueHistoryEnum.hrResult = static_cast<HRESULT>(wParam);
+        UXDATABASE(dwIndex).valueHistoryEnum.fRefreshing = FALSE;
         UXDATABASE(dwIndex).vhmValueHistoryMode = HISTORY_NORMAL;
 
         hr = pUX->RefreshValueHistoryList(dwIndex);
@@ -1580,7 +1610,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             hr = pUX->EnumerateProducts(pUX->m_dwLocalDatabaseIndex);
             ExitOnFailure(hr, "Failed to enumerate products in local database");
 
-            hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex);
+            hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex, FALSE);
             ExitOnFailure(hr, "Failed to enumerate values in local database");
         }
 
@@ -1651,20 +1681,20 @@ LRESULT CALLBACK BrowseWindow::WndProc(
         hr = pUX->EnumerateProducts(pUX->m_dwLocalDatabaseIndex);
         ExitOnFailure(hr, "Failed to enumerate products in local database");
 
-        hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex);
+        hr = pUX->EnumerateValues(pUX->m_dwLocalDatabaseIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate values in local database");
 
-        hr = pUX->EnumerateValueHistory(pUX->m_dwLocalDatabaseIndex);
+        hr = pUX->EnumerateValueHistory(pUX->m_dwLocalDatabaseIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate value history in local database");
 
         // And for the database we synced with
         hr = pUX->EnumerateProducts(dwIndex);
         ExitOnFailure(hr, "Failed to enumerate products in remote database index:%u", dwIndex);
 
-        hr = pUX->EnumerateValues(dwIndex);
+        hr = pUX->EnumerateValues(dwIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate values in remote database index:%u", dwIndex);
 
-        hr = pUX->EnumerateValueHistory(dwIndex);
+        hr = pUX->EnumerateValueHistory(dwIndex, FALSE);
         ExitOnFailure(hr, "Failed to enumerate value history in remote database index:%u", dwIndex);
 
         ExitFunction();
@@ -1838,6 +1868,12 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     ExitFunction();
                 }
 
+                // We're switching products in the UI - any old value list is inaccurate, and should be released immediately
+                UtilWipeEnum(pUX->m_pbdlDatabaseList->rgDatabases + dwIndex, &pUX->m_pbdlDatabaseList->rgDatabases[dwIndex].valueEnum);
+
+                hr = pUX->RefreshValueList(dwIndex);
+                ExitOnFailure(hr, "Failed to refresh value list for main single product screen");
+
                 CURRENTUXDATABASE.fSettingProduct = TRUE;
 
                 if (BROWSE_TAB_MAIN == pUX->m_tab)
@@ -1890,7 +1926,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                     {
                         ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
                         // Ignore failure (this is expected in certain race conditions), it just means button will be disabled
-                        CfgEnumReadDataType(CURRENTUXDATABASE.cehValueHistory, pUX->GetSelectedValueHistoryIndex(), ENUM_DATA_VALUETYPE, &cvType);
+                        CfgEnumReadDataType(CURRENTUXDATABASE.valueHistoryEnum.cehItems, pUX->GetSelectedValueHistoryIndex(), ENUM_DATA_VALUETYPE, &cvType);
                         ::LeaveCriticalSection(&CURRENTUXDATABASE.cs);
                     }
 
@@ -2010,10 +2046,10 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             {
                 ::EnterCriticalSection(&UXDATABASE(dwIndex).cs);
                 fCsEntered = TRUE;
-                hr = UIDeleteValuesFromListView(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_VALUE_LIST_VIEW), CURRENTUXDATABASE.cdb, CURRENTUXDATABASE.cehValueList);
+                hr = UIDeleteValuesFromListView(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_VALUE_LIST_VIEW), CURRENTUXDATABASE.cdb, CURRENTUXDATABASE.valueEnum.cehItems);
                 ExitOnFailure(hr, "Failed to delete values from list view");
 
-                hr = pUX->EnumerateValues(pUX->m_dwDatabaseIndex);
+                hr = pUX->EnumerateValues(pUX->m_dwDatabaseIndex, FALSE);
                 ExitOnFailure(hr, "Failed to start value enumeration");
             }
             break;
@@ -2058,7 +2094,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             {
                 ::EnterCriticalSection(&UXDATABASE(dwIndex).cs);
                 fCsEntered = TRUE;
-                hr = UIForgetProductsFromListView(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_PRODUCT_LIST_VIEW), CURRENTUXDATABASE.cdb, CURRENTUXDATABASE.cehProductList);
+                hr = UIForgetProductsFromListView(::GetDlgItem(pUX->m_hWnd, BROWSE_CONTROL_PRODUCT_LIST_VIEW), CURRENTUXDATABASE.cdb, CURRENTUXDATABASE.productEnum.cehItems);
                 ExitOnFailure(hr, "Failed to forget products from list view");
 
                 hr = pUX->EnumerateProducts(pUX->m_dwDatabaseIndex);
@@ -2083,7 +2119,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
                 fCsEntered = TRUE;
                 // Ignore failure (this is expected in certain race conditions), just pretend the button was never hit
-                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, dwIndex, ENUM_DATA_VALUENAME, &wzText);
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.valueEnum.cehItems, dwIndex, ENUM_DATA_VALUENAME, &wzText);
                 if (SUCCEEDED(hrTemp))
                 {
                     hr = StrAllocString(&CURRENTUXDATABASE.sczValueName, wzText, 0);
@@ -2109,7 +2145,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                         ExitOnFailure(hr, "Failed while switching other databases state to single value history screen");
                     }
 
-                    hr = pUX->EnumerateValueHistory(pUX->m_dwDatabaseIndex);
+                    hr = pUX->EnumerateValueHistory(pUX->m_dwDatabaseIndex, TRUE);
                     ExitOnFailure(hr, "Failed to enumerate value history");
                 }
             }
@@ -2184,7 +2220,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
                 {
                     ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
                     fCsEntered = TRUE;
-                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                    hrTemp = CfgEnumReadString(CURRENTUXDATABASE.valueEnum.cehItems, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                     if (SUCCEEDED(hrTemp))
                     {
                         hr = StrAllocString(&sczTemp1, wzText, 0);
@@ -2463,7 +2499,7 @@ LRESULT CALLBACK BrowseWindow::WndProc(
             {
                 ::EnterCriticalSection(&CURRENTUXDATABASE.cs);
                 fCsEntered = TRUE;
-                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.cehValueList, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
+                hrTemp = CfgEnumReadString(CURRENTUXDATABASE.valueEnum.cehItems, pUX->GetSelectedValueIndex(), ENUM_DATA_VALUENAME, &wzText);
                 if (SUCCEEDED(hrTemp))
                 {
                     hr = SendStringPair(pUX->m_dwWorkThreadId, WM_BROWSE_EXPORT_FILE, pUX->m_dwDatabaseIndex, wzText, sczTemp1);
@@ -2794,7 +2830,6 @@ HRESULT BrowseWindow::SetMainState(
     )
 {
     HRESULT hr = S_OK;
-    LPWSTR sczText = NULL;
     DWORD dwNewPageId = 0;
     DWORD dwOldPageId = 0;
 
@@ -2844,8 +2879,6 @@ HRESULT BrowseWindow::SetMainState(
     ::SetFocus(m_hWnd);
 
 LExit:
-    ReleaseStr(sczText);
-
     return hr;
 }
 

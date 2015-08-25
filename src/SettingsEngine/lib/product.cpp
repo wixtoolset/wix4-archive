@@ -417,9 +417,6 @@ HRESULT ProductEnsureCreated(
         hr = SceSetColumnBool(sceRow, PRODUCT_IS_LEGACY, fLegacyProduct);
         ExitOnFailure(hr, "Failed to set IsLegacy column");
 
-        hr = SceSetColumnNull(sceRow, PRODUCT_LEGACY_SEQUENCE);
-        ExitOnFailure(hr, "Failed to set ProductLegacySequence column");
-
         hr = SceFinishUpdate(sceRow);
         ExitOnFailure(hr, "Failed to finish insert");
 

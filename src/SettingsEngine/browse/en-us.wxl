@@ -17,7 +17,6 @@
   <String Id="ProductListHeader" Overridable="yes">Product List:</String>
   <String Id="ProductName" Overridable="yes">Product Name</String>
   <String Id="ProductVersion" Overridable="yes">Version</String>
-  <String Id="ProductPublicKey" Overridable="yes">Public Key</String>
   <String Id="ShowUninstalledProducts" Overridable="yes">Show Uninstalled Products</String>
   <String Id="ResolutionColumn" Overridable="yes">Resolution</String>
   <String Id="ProductForgetButton" Overridable="yes">Forget Product</String>

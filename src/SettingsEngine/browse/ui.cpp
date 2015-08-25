@@ -221,6 +221,9 @@ HRESULT UISetListViewToProductEnum(
     DWORD dwCount = 0;
     DWORD dwListViewRowCount;
     DWORD dwInsertImage = 0;
+    DWORD dwDisplayNameToDisplay = DWORD_MAX;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     LPCWSTR wzText = NULL;
 
     dwListViewRowCount = ListView_GetItemCount(hwnd);
@@ -242,8 +245,22 @@ HRESULT UISetListViewToProductEnum(
     dwInsertIndex = 0;
     for (DWORD i = 0; i < dwCount; ++i)
     {
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
-        ExitOnFailure(hr, "Failed to read product name from enum");
+        hr = CfgEnumReadDisplayNameArray(cehProducts, i, &rgDisplayNames, &cDisplayNames);
+        ExitOnFailure(hr, "Failed to read display names from enumeration");
+
+        hr = UISelectBestLCIDToDisplay(rgDisplayNames, cDisplayNames, &dwDisplayNameToDisplay);
+        if (FAILED(hr))
+        {
+            hr = S_OK;
+
+            // Fallback to regular product id
+            hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
+            ExitOnFailure(hr, "Failed to read product name from enum");
+        }
+        else
+        {
+            wzText = rgDisplayNames[dwDisplayNameToDisplay].sczName;
+        }
 
 #pragma prefast(push)
 #pragma prefast(disable:26007)
@@ -274,18 +291,6 @@ HRESULT UISetListViewToProductEnum(
             hr = UIListViewSetItem(hwnd, dwInsertIndex, wzText, i, dwInsertImage);
             ExitOnFailure(hr, "Failed to set product in listview control");
         }
-
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_VERSION, &wzText);
-        ExitOnFailure(hr, "Failed to read product version from enum");
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, wzText);
-        ExitOnFailure(hr, "Failed to set version as listview subitem");
-
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PUBLICKEY, &wzText);
-        ExitOnFailure(hr, "Failed to read product public key from enum");
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
-        ExitOnFailure(hr, "Failed to set public key as listview subitem");
 
         ++dwInsertIndex;
     }
@@ -387,7 +392,7 @@ HRESULT UISetListViewToValueEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    if (!GetTimeZoneInformation(&tzi))
+    if (!::GetTimeZoneInformation(&tzi))
     {
         ExitWithLastError(hr, "Failed to get time zone information");
     }
@@ -536,7 +541,7 @@ HRESULT UISetListViewToValueHistoryEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    if (!GetTimeZoneInformation(&tzi))
+    if (!::GetTimeZoneInformation(&tzi))
     {
         ExitWithLastError(hr, "Failed to get time zone information");
     }
@@ -848,6 +853,8 @@ HRESULT UISetListViewToProductConflictArray(
 {
     HRESULT hr = S_OK;
     DWORD dwInsertIndex;
+    DWORD dwDisplayNameToDisplay = DWORD_MAX;
+    LPCWSTR wzText = NULL;
     RESOLUTION_CHOICE rcChoice;
     BOOL fConsistentChoice;
 
@@ -901,7 +908,20 @@ HRESULT UISetListViewToProductConflictArray(
             }
         }
 
-        hr = UIListViewInsertItem(hwnd, &dwInsertIndex, pcpProductConflict[i].sczProductName, i, 0);
+        hr = UISelectBestLCIDToDisplay(pcpProductConflict[i].rgDisplayNames, pcpProductConflict[i].cDisplayNames, &dwDisplayNameToDisplay);
+        if (FAILED(hr))
+        {
+            hr = S_OK;
+
+            // Fallback to regular product id
+            wzText = pcpProductConflict[i].sczProductName;
+        }
+        else
+        {
+            wzText = pcpProductConflict[i].rgDisplayNames[dwDisplayNameToDisplay].sczName;
+        }
+
+        hr = UIListViewInsertItem(hwnd, &dwInsertIndex, wzText, i, 0);
         ExitOnFailure(hr, "Failed to insert value name into listview control");
 
         if (!fConsistentChoice)
@@ -914,9 +934,6 @@ HRESULT UISetListViewToProductConflictArray(
             hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, UIGetResolutionText(rcChoice, wzDatabaseName));
             ExitOnFailure(hr, "Failed to set text in column 1 of listview control");
         }
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, pcpProductConflict[i].sczVersion);
-        ExitOnFailure(hr, "Failed to insert value into listview control");
     }
 
 LExit:
@@ -1072,6 +1089,31 @@ HRESULT UIMessageBoxDisplayError(
     ReleaseStr(sczDisplayMessage);
 
     return hr;
+}
+
+HRESULT UISelectBestLCIDToDisplay(
+    __in DISPLAY_NAME *rgDisplayNames,
+    __in DWORD cDisplayNames,
+    __out DWORD *pdwIndex
+    )
+{
+    // Try to select English for now. TODO: figure out what language the user would like to display, and prefer that, with appropriate fallbacks if unavailable.
+    for (DWORD i = 0; i < cDisplayNames; ++i)
+    {
+        if (1033 == rgDisplayNames[i].dwLCID)
+        {
+            *pdwIndex = i;
+            return S_OK;
+        }
+    }
+
+    if (0 < cDisplayNames)
+    {
+        *pdwIndex = 0;
+        return S_OK;
+    }
+
+    return E_NOTFOUND;
 }
 
 static HRESULT ListViewSort(
