@@ -627,7 +627,6 @@ extern "C" HRESULT PlanRegistration(
     pPlan->fRegister = TRUE; // register the bundle since we're modifying machine state.
 
     // Keep the registration if the bundle was already installed or we are planning after a restart.
-    // Also keep the registration if we are caching because the ARP (via uninstall) allows uncaching.
     pPlan->fKeepRegistrationDefault = (pRegistration->fInstalled || BOOTSTRAPPER_RESUME_TYPE_REBOOT == resumeType);
 
     pPlan->fDisallowRemoval = FALSE; // by default the bundle can be planned to be removed

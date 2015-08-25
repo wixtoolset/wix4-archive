@@ -1,5 +1,3 @@
-* ErnestT: WIXBUG:4432 - Add burn support for only caching packages
-
 ## WixBuild: Version 4.0.3226.0
 
 * HeathS: WIXBUG:4775 - Always set WixBundleOriginalSourceFolder if not already set
@@ -61,7 +59,7 @@
 
 * BobArnson: Add libs_minimal.proj with just the libraries needed for tools/ tree build. This prevents the build from backing up behind a full libs/ tree build, which gets more painful the more versions of Visual Studio that are installed.
 
-* BobArnson: Project reference tweaks: 
+* BobArnson: Project reference tweaks:
   - Removed unnecessary reference to setupicons from x64msi.
   - Move BuildInParallel=false from global to just project that needs it
 
