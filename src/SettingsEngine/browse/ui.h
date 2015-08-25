@@ -121,6 +121,11 @@ HRESULT UIMessageBoxDisplayError(
     __in LPCWSTR wzErrorMessage,
     __in HRESULT hr
     );
+HRESULT UISelectBestLCIDToDisplay(
+    __in DISPLAY_NAME *rgDisplayNames,
+    __in DWORD cDisplayNames,
+    __out DWORD *pdwIndex
+    );
 
 #ifdef __cplusplus
 }

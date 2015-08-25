@@ -62,6 +62,7 @@
     <ClCompile Include="database.cpp" />
     <ClCompile Include="dblist.cpp" />
     <ClCompile Include="detect.cpp" />
+    <ClCompile Include="dispname.cpp" />
     <ClCompile Include="drdfault.cpp" />
     <ClCompile Include="drspcial.cpp" />
     <ClCompile Include="enum.cpp" />
@@ -89,6 +90,7 @@
     <ClInclude Include="database.h" />
     <ClInclude Include="dblist.h" />
     <ClInclude Include="detect.h" />
+    <ClInclude Include="dispname.h" />
     <ClInclude Include="drdfault.h" />
     <ClInclude Include="drspcial.h" />
     <ClInclude Include="enum.h" />

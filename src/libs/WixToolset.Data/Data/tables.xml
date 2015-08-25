@@ -1798,6 +1798,14 @@
         <columnDefinition name="WixBundlePackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the referenced Msp." />
     </tableDefinition>
+    <tableDefinition name="WixBundlePackageCommandLine" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table." />
+        <columnDefinition name="InstallArgument" type="string" length="0" nullable="yes" />
+        <columnDefinition name="UninstallArgument" type="string" length="0" nullable="yes" />
+        <columnDefinition name="RepairArgument" type="string" length="0" nullable="yes" />
+        <columnDefinition name="Condition" type="string" length="0" nullable="yes" />
+    </tableDefinition>
     <tableDefinition name="WixRelatedBundle" unreal="yes">
         <columnDefinition name="Id" type="string" length="38" category="guid" primaryKey="yes" />
         <columnDefinition name="Action" type="number" length="4" />

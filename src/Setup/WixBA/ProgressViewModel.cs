@@ -50,7 +50,7 @@ namespace WixToolset.UX
 
         public bool ProgressEnabled
         {
-            get { return this.root.State == InstallationState.Applying; }
+            get { return this.root.InstallState == InstallationState.Applying; }
         }
 
         public int Progress
@@ -106,7 +106,7 @@ namespace WixToolset.UX
 
         void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if ("State" == e.PropertyName)
+            if ("InstallState" == e.PropertyName)
             {
                 base.OnPropertyChanged("ProgressEnabled");
             }

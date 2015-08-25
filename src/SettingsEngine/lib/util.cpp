@@ -104,7 +104,10 @@ HRESULT UtilSyncAllProducts(
 
         hr = StrAllocString(&pConflictProductTemp->sczPublicKey, wzCfgPublicKey, 0);
         ExitOnFailure(hr, "Failed to copy product public key");
-        
+
+        hr = DisplayNameEnumerate(pcdbRemote->pcdbLocal, pcdbRemote->pcdbLocal->dwAppID, &pConflictProductTemp->rgDisplayNames, &pConflictProductTemp->cDisplayNames);
+        ExitOnFailure(hr, "Failed to enumerate display names for product conflict array");
+
         ++(*pcConflictProducts);
         hr = MemEnsureArraySize(reinterpret_cast<void **>(prgConflictProducts), *pcConflictProducts, sizeof(CONFLICT_PRODUCT), 0);
         ExitOnFailure(hr, "Failed to grow product conflict list array");
@@ -119,7 +122,7 @@ HRESULT UtilSyncAllProducts(
     hr = LegacySyncInitializeSession(TRUE, TRUE, &syncSession);
     ExitOnFailure(hr, "Failed to initialize legacy sync session");
 
-    hr = UtilSyncAllProductsHelp(pcdbRemote, &syncSession, pcdbRemote->pcdbLocal,  shDictProductsSeen, prgConflictProducts, pcConflictProducts);
+    hr = UtilSyncAllProductsHelp(pcdbRemote, &syncSession, pcdbRemote->pcdbLocal, shDictProductsSeen, prgConflictProducts, pcConflictProducts);
     ExitOnFailure(hr, "Failed to synchronize values in product list found in remote database");
 
     hr = UtilSyncAllProductsHelp(pcdbRemote->pcdbLocal, &syncSession, pcdbRemote, shDictProductsSeen, prgConflictProducts, pcConflictProducts);
@@ -491,6 +494,8 @@ static HRESULT UtilSyncAllProductsHelp(
     )
 {
     HRESULT hr = S_OK;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     CONFLICT_PRODUCT *pConflictProductTemp = NULL;
     LPWSTR sczName = NULL;
     LPWSTR sczVersion = NULL;
@@ -604,12 +609,19 @@ static HRESULT UtilSyncAllProductsHelp(
 
         if (NULL != pConflictProductTemp)
         {
+            hr = DisplayNameEnumerate(fFirstIsLocal ? pcdb1 : pcdb2, fFirstIsLocal ? pcdb1->dwAppID : pcdb2->dwAppID, &rgDisplayNames, &cDisplayNames);
+            ExitOnFailure(hr, "Failed to enumerate display names for product conflict array");
+
             pConflictProductTemp->sczProductName = sczName;
             sczName = NULL;
             pConflictProductTemp->sczVersion = sczVersion;
             sczVersion = NULL;
             pConflictProductTemp->sczPublicKey = sczPublicKey;
             sczPublicKey = NULL;
+            pConflictProductTemp->rgDisplayNames = rgDisplayNames;
+            rgDisplayNames = NULL;
+            pConflictProductTemp->cDisplayNames = cDisplayNames;
+            cDisplayNames = 0;
 
             hr = MemEnsureArraySize(reinterpret_cast<void **>(prgConflictProducts), *pcConflictProducts + 1, sizeof(CONFLICT_PRODUCT), 0);
             ExitOnFailure(hr, "Failed to grow product conflict list array");
@@ -645,6 +657,7 @@ LExit:
     ReleaseStr(sczVersion);
     ReleaseStr(sczPublicKey);
     ReleaseMem(pConflictProductTemp);
+    ReleaseDisplayNameArray(rgDisplayNames, cDisplayNames);
 
     return hr;
 }

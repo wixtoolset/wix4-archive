@@ -102,8 +102,7 @@ int WINAPI wWinMain(
 
     if (commandLineRequest.fHelpRequested)
     {
-        //printf("CfgBrowser.exe [/?] | [/manifest manifest.udm] [/manifest anothermanifest.udm] ...");
-        // TODO: get printf working so we can output usage information
+        ::MessageBoxW(NULL, L"CfgBrowser.exe [/?] | [/manifest manifest.udm] [/manifest anothermanifest.udm] ...", L"WiX Settings Browser Commandline Help", MB_OK);
         return 0;
     }
 
@@ -132,6 +131,9 @@ int WINAPI wWinMain(
 
     hr = browser->Initialize(&dwUIThreadId);
     ExitOnFailure(hr, "Failed to initialize main window");
+
+    // Nobody cares about failure - this is just best effort to boost UI responsiveness.
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_MODE_BACKGROUND_BEGIN);
 
     while (0 != (fRet = ::GetMessageW(&msg, NULL, 0, 0)))
     {
@@ -179,6 +181,9 @@ LExit:
         delete browser;
     }
 
+    // UI is dead, this is no longer the background thread. Set thread priority back to normal for potentially quicker shutdown.
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_MODE_BACKGROUND_END);
+
     if (fThemeInitialized)
     {
         ThemeUninitialize();
@@ -201,7 +206,7 @@ LExit:
             // Don't free local database here - we only have one open, it must be freed after all remotes, and is specifically freed below this loop
         }
 
-        ReleaseDB(bdlDatabaseList.rgDatabases + i);
+        UtilFreeDatabase(bdlDatabaseList.rgDatabases + i);
     }
     ReleaseMem(bdlDatabaseList.rgDatabases);
 
@@ -364,17 +369,16 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehProductList);
-        bdlDatabaseList.rgDatabases[dwIndex].cehProductList = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].productEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].productEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwProductListCount = dwEnumCount;
 
         ::LeaveCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = FALSE;
 
         if (SUCCEEDED(hr))
         {
-            hrSend = CheckProductInstalledState(cdbLocal, bdlDatabaseList.rgDatabases[dwIndex].cehProductList, bdlDatabaseList.rgDatabases[dwIndex].dwProductListCount, &bdlDatabaseList.rgDatabases[dwIndex].rgfProductInstalled);
+            hrSend = CheckProductInstalledState(cdbLocal, bdlDatabaseList.rgDatabases[dwIndex].productEnum.cehItems, dwEnumCount, &bdlDatabaseList.rgDatabases[dwIndex].rgfProductInstalled);
             ExitOnFailure(hrSend, "Failed to check product installed state");
         }
         else
@@ -393,10 +397,10 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehDatabaseList);
-        bdlDatabaseList.rgDatabases[dwIndex].cehDatabaseList = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].dbEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].dbEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwDatabaseListCount = dwEnumCount;
+        bdlDatabaseList.rgDatabases[dwIndex].dbEnum.cItems = dwEnumCount;
 
         if (!::PostMessageW(hwnd, WM_BROWSE_ENUMERATE_DATABASES_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
         {
@@ -464,10 +468,10 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehValueList);
-        bdlDatabaseList.rgDatabases[dwIndex].cehValueList = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].valueEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].valueEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwValueCount = dwEnumCount;
+        bdlDatabaseList.rgDatabases[dwIndex].valueEnum.cItems = dwEnumCount;
 
         if (!::PostMessageW(hwnd, WM_BROWSE_ENUMERATE_VALUES_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
         {
@@ -483,10 +487,10 @@ BOOL ProcessMessage(
         ::EnterCriticalSection(&bdlDatabaseList.rgDatabases[dwIndex].cs);
         fCsEntered = TRUE;
 
-        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].cehValueHistory);
-        bdlDatabaseList.rgDatabases[dwIndex].cehValueHistory = cehHandle;
+        CfgReleaseEnumeration(bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cehItems);
+        bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cehItems = cehHandle;
         cehHandle = NULL;
-        bdlDatabaseList.rgDatabases[dwIndex].dwValueHistoryCount = dwEnumCount;
+        bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cItems = dwEnumCount;
 
         if (!::PostMessageW(hwnd, WM_BROWSE_ENUMERATE_VALUE_HISTORY_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))
         {
@@ -573,7 +577,7 @@ BOOL ProcessMessage(
 
         pdsDwordString = reinterpret_cast<DWORD_STRING *>(msg->lParam);
 
-        hrSend = CfgEnumReadBinary(bdlDatabaseList.rgDatabases[dwIndex].cdb, bdlDatabaseList.rgDatabases[dwIndex].cehValueHistory, pdsDwordString->dwDword1, ENUM_DATA_BLOBCONTENT, &pbData, &cbData);
+        hrSend = CfgEnumReadBinary(bdlDatabaseList.rgDatabases[dwIndex].cdb, bdlDatabaseList.rgDatabases[dwIndex].valueHistoryEnum.cehItems, pdsDwordString->dwDword1, ENUM_DATA_BLOBCONTENT, &pbData, &cbData);
         if (FAILED(hr))
         {
             if (!::PostMessageW(hwnd, WM_BROWSE_EXPORT_FILE_FROM_HISTORY_FINISHED, static_cast<WPARAM>(hrSend), static_cast<LPARAM>(dwIndex)))

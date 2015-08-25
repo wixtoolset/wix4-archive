@@ -8,7 +8,7 @@
   </copyright>
 -->
 <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
-    <?define NetFx45EulaLink =  http://go.microsoft.com/fwlink/?LinkID=260867 ?>
+    <?define NetFx45EulaLink = http://go.microsoft.com/fwlink/?LinkID=260867 ?>
     <?define NetFx45WebId = NetFx45Web ?>
     <Fragment>
         <PackageGroup Id="$(var.NetFx45WebId)AsPrereq">

@@ -259,6 +259,42 @@ namespace WixToolset.Tools
         }
 
         /// <summary>
+        /// Checks to make sure that the debug symbols match up with the MSI.
+        /// This is to help in ensuring that error 1642 does not inexplicably appear.
+        /// </summary>
+        /// <remarks>
+        /// This is meant to assist with Bug # 4792
+        /// http://wixtoolset.org/issues/4792/
+        /// </remarks>
+        /// <param name="package">
+        /// The MSI currently being melted.
+        /// </param>
+        /// <param name="inputPdb">
+        /// The debug symbols package being compared against the <paramref name="package"/>.
+        /// </param>
+        /// <returns></returns>
+        private static bool ValidateMsiMatchesPdb(InstallPackage package, Pdb inputPdb)
+        {
+            string msiPackageCode = (string)package.Property["PackageCode"];
+
+            foreach (Row pdbPropertyRow in inputPdb.Output.Tables["Property"].Rows)
+            {
+                if ("PackageCode" == (string)pdbPropertyRow.Fields[0].Data)
+                {
+                    string pdbPackageCode = (string)pdbPropertyRow.Fields[1].Data;
+                    if (msiPackageCode != pdbPackageCode)
+                    {
+                        Console.WriteLine(MeltStrings.WAR_MismatchedPackageCode, msiPackageCode, pdbPackageCode);
+                        return false;
+                    }
+                    break;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Extracts files from an MSI database and rewrites the paths embedded in the source .wixpdb to the output .wixpdb.
         /// </summary>
         private void MeltProduct()
@@ -266,11 +302,16 @@ namespace WixToolset.Tools
             // print friendly message saying what file is being decompiled
             Console.WriteLine("{0} / {1}", Path.GetFileName(this.inputFile), Path.GetFileName(this.inputPdbFile));
 
+            Pdb inputPdb = Pdb.Load(this.inputPdbFile, true);
+
             // extract files from the .msi (unless suppressed) and get the path map of File ids to target paths
             string outputDirectory = this.exportBasePath ?? Environment.GetEnvironmentVariable("WIX_TEMP");
             IDictionary<string, string> paths = null;
             using (InstallPackage package = new InstallPackage(this.inputFile, DatabaseOpenMode.ReadOnly, null, outputDirectory))
             {
+                // ignore failures as this is a new validation in v3.x
+                ValidateMsiMatchesPdb(package, inputPdb);
+
                 if (!this.suppressExtraction)
                 {
                     package.ExtractFiles();
@@ -278,8 +319,6 @@ namespace WixToolset.Tools
 
                 paths = package.Files.SourcePaths;
             }
-
-            Pdb inputPdb = Pdb.Load(this.inputPdbFile, true);
 
             Table wixFileTable = inputPdb.Output.Tables["WixFile"];
             if (null != wixFileTable)

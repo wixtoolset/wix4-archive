@@ -19753,6 +19753,13 @@ namespace WixToolset
                                 this.ParseExitCodeElement(child, id.Id);
                             }
                             break;
+                        case "CommandLine":
+                            allowed = (packageType == WixBundlePackageType.Exe);
+                            if (allowed)
+                            {
+                                this.ParseCommandLineElement(child, id.Id);
+                            }
+                            break;
                         case "RemotePayload":
                             // Handled previously
                             break;
@@ -19863,6 +19870,65 @@ namespace WixToolset
             }
 
             return id.Id;
+        }
+
+        /// <summary>
+        /// Parse CommandLine element.
+        /// </summary>
+        /// <param name="node">Element to parse</param>
+        private void ParseCommandLineElement(XElement node, string packageId)
+        {
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string installArgument = null;
+            string uninstallArgument = null;
+            string repairArgument = null;
+            string condition = null;
+
+            foreach (XAttribute attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
+                {
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "InstallArgument":
+                            installArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "UninstallArgument":
+                            uninstallArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "RepairArgument":
+                            repairArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Condition":
+                            condition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            this.core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.core.ParseExtensionAttribute(node, attrib);
+                }
+            }
+
+            if (String.IsNullOrEmpty(condition))
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Condition"));
+            }
+
+            this.core.ParseForExtensionElements(node);
+
+            if (!this.core.EncounteredError)
+            {
+                WixBundlePackageCommandLineRow row = (WixBundlePackageCommandLineRow)this.core.CreateRow(sourceLineNumbers, "WixBundlePackageCommandLine");
+                row.ChainPackageId = packageId;
+                row.InstallArgument = installArgument;
+                row.UninstallArgument = uninstallArgument;
+                row.RepairArgument = repairArgument;
+                row.Condition = condition;
+            }
         }
 
         /// <summary>
