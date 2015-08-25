@@ -56,6 +56,7 @@
     <Compile Include="Rows\PatchAttributeType.cs" />
     <Compile Include="Rows\WixBundleExePackageAttributes.cs" />
     <Compile Include="Rows\ExitCodeBehaviorType.cs" />
+    <Compile Include="Rows\WixBundlePackageCommandLineRow.cs" />
     <Compile Include="Rows\WixBundlePackageExitCodeRow.cs" />
     <Compile Include="Rows\WixBundleSlipstreamMspRow.cs" />
     <Compile Include="Rows\WixChainAttributes.cs" />

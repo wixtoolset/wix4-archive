@@ -307,6 +307,7 @@ namespace WixToolset.Bind.Bundles
                 ILookup<string, WixBundleRelatedPackageRow> relatedPackagesByPackage = this.Output.Tables["WixBundleRelatedPackage"].RowsAs<WixBundleRelatedPackageRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundleSlipstreamMspRow> slipstreamMspsByPackage = this.Output.Tables["WixBundleSlipstreamMsp"].RowsAs<WixBundleSlipstreamMspRow>().ToLookup(r => r.ChainPackageId);
                 ILookup<string, WixBundlePackageExitCodeRow> exitCodesByPackage = this.Output.Tables["WixBundlePackageExitCode"].RowsAs<WixBundlePackageExitCodeRow>().ToLookup(r => r.ChainPackageId);
+                ILookup<string, WixBundlePackageCommandLineRow> commandLinesByPackage = this.Output.Tables["WixBundlePackageCommandLine"].RowsAs<WixBundlePackageCommandLineRow>().ToLookup(r => r.ChainPackageId);
 
                 // Build up the list of target codes from all the MSPs in the chain.
                 List<WixBundlePatchTargetCodeRow> targetCodes = new List<WixBundlePatchTargetCodeRow>();
@@ -457,6 +458,18 @@ namespace WixToolset.Bind.Bundles
                         }
 
                         writer.WriteAttributeString("Type", ((int)exitCode.Behavior).ToString(CultureInfo.InvariantCulture));
+                        writer.WriteEndElement();
+                    }
+
+                    IEnumerable<WixBundlePackageCommandLineRow> packageCommandLines = commandLinesByPackage[package.Package.WixChainItemId];
+
+                    foreach (WixBundlePackageCommandLineRow commandLine in packageCommandLines)
+                    {
+                        writer.WriteStartElement("CommandLine");
+                        writer.WriteAttributeString("InstallArgument", commandLine.InstallArgument);
+                        writer.WriteAttributeString("UninstallArgument", commandLine.UninstallArgument);
+                        writer.WriteAttributeString("RepairArgument", commandLine.RepairArgument);
+                        writer.WriteAttributeString("Condition", commandLine.Condition);
                         writer.WriteEndElement();
                     }
 

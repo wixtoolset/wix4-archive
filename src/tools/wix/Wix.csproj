@@ -210,6 +210,5 @@
       <Name>winterop</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>
