@@ -1,1 +1,0 @@
-* MikeGC: Refactor settings browser and make it more responsive, and less likely to show a "loading" screen (instead showing the most recent data until the new data is available)
