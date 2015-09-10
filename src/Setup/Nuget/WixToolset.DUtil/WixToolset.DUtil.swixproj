@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  <copyright file="WixToolset.DUtil.swixproj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>4.0</ProductVersion>
+    <ProjectGuid>{3026E85C-B63F-4CFF-A74A-BF80E1DA32E5}</ProjectGuid>
+    <OutputName>WixToolset.DUtil</OutputName>
+    <OutputType>Nuget</OutputType>
+    <PackagePreprocessorDefinitions>
+      $(PackagePreprocessorDefinitions);
+      includeDir=$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\src\libs\dutil\inc;
+    </PackagePreprocessorDefinitions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Package Include="WixToolset.DUtil.swr" />
+    <Package Include="WixToolset.DUtil.v100.swr" Condition=" $(VS2010Available) " />
+    <Package Include="WixToolset.DUtil.v110.swr" Condition=" $(VS2012Available) " />
+    <Package Include="WixToolset.DUtil.v120.swr" Condition=" $(VS2013Available) " />
+    <Package Include="WixToolset.DUtil.v140.swr" Condition=" $(VS2015Available) " />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>
