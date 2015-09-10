@@ -1,0 +1,16 @@
+use nuget
+
+package name=WixToolset.DUtil
+        manufacturer="Outercurve Foundation"
+        version=$(version)
+        description="Common utility functions used by the WiX toolset."
+        about=http://wixtoolset.org/
+        license=http://wixtoolset.org/about/license/
+
+nuget.metadata developmentDependency=true
+
+file build\native\WixToolset.DUtil.targets source=$(projectDir)\WixToolset.DUtil.targets
+
+folder lib
+  folder native id=native
+    file include\dutil.h source=$(includeDir)\dutil.h
