@@ -44,7 +44,7 @@ extern "C" UINT __cdecl WcaErrorMessage(
     __in int iError,
     __in HRESULT hrError,
     __in UINT uiType,
-    __in DWORD cArgs,
+    __in INT cArgs,
     ...
     )
 {
@@ -79,7 +79,7 @@ extern "C" UINT __cdecl WcaErrorMessage(
         }
     }
 
-    for (DWORD i = 0; i < cArgs; i++)
+    for (INT i = 0; i < cArgs; i++)
     {
         er = ::MsiRecordSetStringW(hRec, i + 3, va_arg(args, WCHAR*));
         ExitOnFailure(HRESULT_FROM_WIN32(er), "failed to set string string into error message");
