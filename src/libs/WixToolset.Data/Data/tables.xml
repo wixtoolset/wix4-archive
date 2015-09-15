@@ -1791,6 +1791,7 @@
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Value" type="string" length="0" />
+        <columnDefinition name="Condition" type="string" length="0" nullable="yes" />
     </tableDefinition>
     <tableDefinition name="WixBundleSlipstreamMsp" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"

@@ -897,3 +897,11 @@ SymbolicName=MSG_LAUNCH_APPROVED_EXE_COMPLETE
 Language=English
 LaunchApprovedExe complete, result: 0x%1!x!, processId: %2!lu!
 .
+
+MessageId=700
+Severity=Success
+SymbolicName=MSG_MSI_PROPERTY_CONDITION_FAILED
+Language=English
+Skipping MSI property '%1!ls!' because condition '%2!ls!' evaluates to %3!hs!.
+.
+

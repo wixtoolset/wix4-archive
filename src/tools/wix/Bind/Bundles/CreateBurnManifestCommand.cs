@@ -430,6 +430,10 @@ namespace WixToolset.Bind.Bundles
                         writer.WriteStartElement("MsiProperty");
                         writer.WriteAttributeString("Id", msiProperty.Name);
                         writer.WriteAttributeString("Value", msiProperty.Value);
+                        if (!String.IsNullOrEmpty(msiProperty.Condition))
+                        {
+                            writer.WriteAttributeString("Condition", msiProperty.Condition);
+                        }
                         writer.WriteEndElement();
                     }
 

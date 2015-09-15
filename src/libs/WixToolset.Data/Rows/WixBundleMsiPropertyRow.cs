@@ -51,5 +51,15 @@ namespace WixToolset.Data.Rows
             get { return (string)this.Fields[2].Data; }
             set { this.Fields[2].Data = value; }
         }
+
+        /// <summary>
+        /// Gets and sets the condition for the row.
+        /// </summary>
+        /// <value>MsiProperty condition for the row.</value>
+        public string Condition
+        {
+            get { return (string)this.Fields[3].Data; }
+            set { this.Fields[3].Data = value; }
+        }
     }
 }

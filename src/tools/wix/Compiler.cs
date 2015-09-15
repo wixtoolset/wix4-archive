@@ -20172,6 +20172,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string value = null;
+            string condition = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -20184,6 +20185,9 @@ namespace WixToolset
                             break;
                         case "Value":
                             value = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Condition":
+                            condition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -20214,6 +20218,11 @@ namespace WixToolset
                 row[0] = packageId;
                 row[1] = name;
                 row[2] = value;
+
+                if (!String.IsNullOrEmpty(condition))
+                {
+                    row[3] = condition;
+                }
             }
         }
 
