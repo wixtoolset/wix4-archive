@@ -114,6 +114,7 @@ typedef struct _BURN_MSIPROPERTY
     LPWSTR sczId;
     LPWSTR sczValue; // used during forward execution
     LPWSTR sczRollbackValue;  // used during rollback
+    LPWSTR sczCondition;
 } BURN_MSIPROPERTY;
 
 typedef struct _BURN_MSIFEATURE
