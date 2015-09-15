@@ -45,10 +45,8 @@
     <ClCompile Include="detect.cpp" />
     <ClCompile Include="embedded.cpp" />
     <ClCompile Include="EngineForApplication.cpp" />
-    <ClCompile Include="cabextract.cpp" />
     <ClCompile Include="cache.cpp" />
     <ClCompile Include="condition.cpp" />
-    <ClCompile Include="container.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="dependency.cpp" />
     <ClCompile Include="elevation.cpp" />
@@ -88,10 +86,8 @@
     <ClInclude Include="embedded.h" />
     <ClInclude Include="EngineForApplication.h" />
     <ClInclude Include="dependency.h" />
-    <ClInclude Include="cabextract.h" />
     <ClInclude Include="cache.h" />
     <ClInclude Include="condition.h" />
-    <ClInclude Include="container.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="elevation.h" />
     <ClInclude Include="inc\engine.h" />

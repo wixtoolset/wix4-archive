@@ -26,6 +26,7 @@
 #include <dutil.h>
 #include <cryputil.h>
 #include <dlutil.h>
+#include <boxutil.h>
 #include <buffutil.h>
 #include <dirutil.h>
 #include <fileutil.h>
@@ -53,7 +54,6 @@
 #include "search.h"
 #include "section.h"
 #include "approvedexe.h"
-#include "container.h"
 #include "catalog.h"
 #include "payload.h"
 #include "cabextract.h"

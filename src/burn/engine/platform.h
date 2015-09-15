@@ -30,6 +30,10 @@ typedef BOOL (WINAPI *PFN_INITIATESYSTEMSHUTDOWNEXW)(
     __in DWORD dwReason
     );
 
+typedef WIX_BOX BURN_CONTAINER;
+typedef WIX_BOXES BURN_CONTAINERS;
+typedef WIX_BOX_CONTEXT BURN_CONTAINER_CONTEXT;
+
 
 // variable declarations
 

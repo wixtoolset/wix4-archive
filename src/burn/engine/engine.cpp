@@ -302,7 +302,7 @@ static void UninitializeEngineState(
     PackagesUninitialize(&pEngineState->packages);
     CatalogUninitialize(&pEngineState->catalogs);
     SectionUninitialize(&pEngineState->section);
-    ContainersUninitialize(&pEngineState->containers);
+    BoxesUninitialize(&pEngineState->containers);
 
     ReleaseStr(pEngineState->command.wzLayoutDirectory);
     ReleaseStr(pEngineState->command.wzCommandLine);

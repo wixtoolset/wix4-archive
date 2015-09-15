@@ -60,9 +60,11 @@
     <ClCompile Include="aclutil.cpp" />
     <ClCompile Include="apuputil.cpp" />
     <ClCompile Include="atomutil.cpp" />
+    <ClCompile Include="boxutil.cpp" />
     <ClCompile Include="butil.cpp" />
     <ClCompile Include="buffutil.cpp" />
     <ClCompile Include="cabcutil.cpp" />
+    <ClCompile Include="cabextract.cpp" />
     <ClCompile Include="cabutil.cpp" />
     <ClCompile Include="certutil.cpp" />
     <ClCompile Include="condutil.cpp" />
@@ -119,9 +121,11 @@
     <ClInclude Include="inc\aclutil.h" />
     <ClInclude Include="inc\apuputil.h" />
     <ClInclude Include="inc\atomutil.h" />
+    <ClInclude Include="inc\boxutil.h" />
     <ClInclude Include="inc\buffutil.h" />
     <ClInclude Include="inc\butil.h" />
     <ClInclude Include="inc\cabcutil.h" />
+    <ClInclude Include="inc\cabextract.h" />
     <ClInclude Include="inc\cabutil.h" />
     <ClInclude Include="inc\certutil.h" />
     <ClInclude Include="inc\condutil.h" />

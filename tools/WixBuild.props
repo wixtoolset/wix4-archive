@@ -239,7 +239,7 @@
   </PropertyGroup>
 
   <!-- Global setting to control when the bundle is compressed. -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(WixBundleCompressed)' == '' ">
     <WixBundleCompressed>no</WixBundleCompressed>
   </PropertyGroup>
 

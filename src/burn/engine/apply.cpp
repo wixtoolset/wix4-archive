@@ -894,10 +894,10 @@ static HRESULT ExtractContainer(
         }
     }
 
-    hr = ContainerOpen(&context, pContainer, hContainerHandle, wzContainerPath);
+    hr = BoxOpen(&context, pContainer, hContainerHandle, wzContainerPath);
     ExitOnFailure(hr, "Failed to open container: %ls.", pContainer->sczId);
 
-    while (S_OK == (hr = ContainerNextStream(&context, &sczExtractPayloadId)))
+    while (S_OK == (hr = BoxNextStream(&context, &sczExtractPayloadId)))
     {
         BOOL fExtracted = FALSE;
 
@@ -907,7 +907,7 @@ static HRESULT ExtractContainer(
             if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, sczExtractPayloadId, -1, pExtract->pPayload->sczSourcePath, -1))
             {
                 // TODO: Send progress when extracting stream to file.
-                hr = ContainerStreamToFile(&context, pExtract->sczUnverifiedPath);
+                hr = BoxStreamToFile(&context, pExtract->sczUnverifiedPath);
                 ExitOnFailure(hr, "Failed to extract payload: %ls from container: %ls", sczExtractPayloadId, pContainer->sczId);
 
                 fExtracted = TRUE;
@@ -917,7 +917,7 @@ static HRESULT ExtractContainer(
 
         if (!fExtracted)
         {
-            hr = ContainerSkipStream(&context);
+            hr = BoxSkipStream(&context);
             ExitOnFailure(hr, "Failed to skip the extraction of payload: %ls from container: %ls", sczExtractPayloadId, pContainer->sczId);
         }
     }
@@ -931,7 +931,7 @@ static HRESULT ExtractContainer(
 LExit:
     ReleaseStr(sczExtractPayloadId);
     ReleaseStr(sczCurrentProcessPath);
-    ContainerClose(&context);
+    BoxClose(&context);
 
     return hr;
 }

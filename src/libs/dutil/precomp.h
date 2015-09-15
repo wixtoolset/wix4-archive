@@ -62,6 +62,8 @@
 #include "eseutil.h"
 #include "dirutil.h"
 #include "dlutil.h"
+#include "boxutil.h"
+#include "cabextract.h"
 #include "fileutil.h"
 #include "guidutil.h"
 #include "gdiputil.h"

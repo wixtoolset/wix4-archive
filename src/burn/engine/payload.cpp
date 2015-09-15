@@ -105,7 +105,7 @@ extern "C" HRESULT PayloadsParseFromXml(
                 ExitOnFailure(hr, "Failed to get @Container.");
 
                 // find container
-                hr = ContainerFindById(pContainers, scz, &pPayload->pContainer);
+                hr = BoxFindById(pContainers, scz, &pPayload->pContainer);
                 ExitOnFailure(hr, "Failed to to find container: %ls", scz);
             }
         }
@@ -236,7 +236,7 @@ extern "C" HRESULT PayloadExtractFromContainer(
     for (;;)
     {
         // get next stream
-        hr = ContainerNextStream(pContainerContext, &sczStreamName);
+        hr = BoxNextStream(pContainerContext, &sczStreamName);
         if (E_NOMOREITEMS == hr)
         {
             hr = S_OK;
@@ -259,7 +259,7 @@ extern "C" HRESULT PayloadExtractFromContainer(
         hr = DirEnsureExists(sczDirectory, NULL);
         ExitOnFailure(hr, "Failed to ensure directory exists");
 
-        hr = ContainerStreamToFile(pContainerContext, pPayload->sczLocalFilePath);
+        hr = BoxStreamToFile(pContainerContext, pPayload->sczLocalFilePath);
         ExitOnFailure(hr, "Failed to extract file.");
 
         // flag that the payload has been acquired

@@ -2035,11 +2035,6 @@
                 <Parameter Type="System.String" Name="transformPath" />
             </Instance>
         </Message>
-        <Message Id="MissingValidatorExtension" Number="244" SourceLineNumbers="no">
-            <Instance>
-                The validator requires at least one extension. Add "ValidatorExtension, Wix" for the default implementation.
-            </Instance>
-        </Message>
         <Message Id="InvalidValidatorMessageType" Number="245" SourceLineNumbers="no">
             <Instance>
                 Unknown validation message type '{0}'.

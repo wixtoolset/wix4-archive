@@ -15,16 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cabextract.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="condition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="container.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="core.cpp">
@@ -129,21 +123,18 @@
     <ClCompile Include="approvedexe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(WixRoot)src\common\precomp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cabextract.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="condition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="container.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core.h">

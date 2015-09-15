@@ -67,6 +67,10 @@ static void LogPackages(
     __in const BURN_RELATED_BUNDLES* pRelatedBundles,
     __in const BOOTSTRAPPER_ACTION action
     );
+static HRESULT OpenUXContainer(
+    __in BURN_SECTION* pSection,
+    __in WIX_BOX_CONTEXT* pContext
+    );
 
 
 // function definitions
@@ -89,14 +93,14 @@ extern "C" HRESULT CoreInitialize(
     ExitOnFailure(hr, "Failed to initialize variables.");
 
     // Open attached UX container.
-    hr = ContainerOpenUX(&pEngineState->section, &containerContext);
+    hr = OpenUXContainer(&pEngineState->section, &containerContext);
     ExitOnFailure(hr, "Failed to open attached UX container.");
 
     // Load manifest.
-    hr = ContainerNextStream(&containerContext, &sczStreamName);
+    hr = BoxNextStream(&containerContext, &sczStreamName);
     ExitOnFailure(hr, "Failed to open manifest stream.");
 
-    hr = ContainerStreamToBuffer(&containerContext, &pbBuffer, &cbBuffer);
+    hr = BoxStreamToBuffer(&containerContext, &pbBuffer, &cbBuffer);
     ExitOnFailure(hr, "Failed to get manifest stream from container.");
 
     hr = ManifestLoadXmlFromBuffer(pbBuffer, cbBuffer, pEngineState);
@@ -137,7 +141,7 @@ extern "C" HRESULT CoreInitialize(
 
 LExit:
     ReleaseStr(sczOriginalSource);
-    ContainerClose(&containerContext);
+    BoxClose(&containerContext);
     ReleaseStr(sczStreamName);
     ReleaseStr(sczSanitizedCommandLine);
     ReleaseMem(pbBuffer);
@@ -1581,3 +1585,35 @@ static void LogPackages(
         }
     }
 }
+
+static HRESULT OpenUXContainer(
+    __in BURN_SECTION* pSection,
+    __in WIX_BOX_CONTEXT* pContext
+    )
+{
+    HRESULT hr = S_OK;
+    WIX_BOX container = {};
+    LPWSTR sczExecutablePath = NULL;
+
+    // open attached container
+    container.fPrimary = TRUE;
+    container.fAttached = TRUE;
+    container.dwAttachedIndex = 0;
+
+    hr = SectionGetAttachedContainerInfo(pSection, container.dwAttachedIndex, &container.qwAttachedOffset, &container.qwFileSize, &container.fActuallyAttached);
+    ExitOnFailure(hr, "Failed to get container information for UX container.");
+
+    AssertSz(container.fActuallyAttached, "The BA container must always be found attached.");
+
+    hr = PathForCurrentProcess(&sczExecutablePath, NULL);
+    ExitOnFailure(hr, "Failed to get path for executing module.");
+
+    hr = BoxOpen(pContext, &container, pSection->hEngineFile, sczExecutablePath);
+    ExitOnFailure(hr, "Failed to open attached container.");
+
+LExit:
+    ReleaseStr(sczExecutablePath);
+
+    return hr;
+}
+

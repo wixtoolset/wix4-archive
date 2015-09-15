@@ -13,6 +13,7 @@
 
 #include "precomp.h"
 
+#include "cabextract.h"
 #include <fdi.h>
 
 #define ARRAY_GROWTH_SIZE 2
@@ -21,7 +22,7 @@ const LPSTR INVALID_CAB_NAME = "<the>.cab";
 
 // structs
 
-typedef struct _BURN_CAB_CONTEXT
+typedef struct _BOX_CAB_CONTEXT
 {
     HANDLE hFile;
     DWORD64 qwOffset;
@@ -31,7 +32,7 @@ typedef struct _BURN_CAB_CONTEXT
     HANDLE hBeginOperationEvent;
     HANDLE hOperationCompleteEvent;
 
-    BURN_CAB_OPERATION operation;
+    WIX_BOX_OPERATION operation;
     HRESULT hrError;
 
     LPWSTR* psczStreamName;
@@ -40,16 +41,16 @@ typedef struct _BURN_CAB_CONTEXT
     BYTE* pbTargetBuffer;
     DWORD cbTargetBuffer;
     DWORD iTargetBuffer;
-} BURN_CAB_CONTEXT;
+} BOX_CAB_CONTEXT;
 
 
 // internal function declarations
 
 static HRESULT BeginAndWaitForOperation(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     );
 static HRESULT WaitForOperation(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     );
 static DWORD WINAPI ExtractThreadProc(
     __in LPVOID lpThreadParameter
@@ -59,11 +60,11 @@ static INT_PTR DIAMONDAPI CabNotifyCallback(
     __inout FDINOTIFICATION *pFDINotify
     );
 static INT_PTR CopyFileCallback(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __inout FDINOTIFICATION *pFDINotify
     );
 static INT_PTR CloseFileInfoCallback(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __inout FDINOTIFICATION *pFDINotify
     );
 static LPVOID DIAMONDAPI CabAlloc(
@@ -96,35 +97,35 @@ static int FAR DIAMONDAPI CabClose(
     __in INT_PTR hf
     );
 static HRESULT AddVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile,
     __in LONGLONG llInitialFilePointer
     );
 static HRESULT ReadIfVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile,
     __in DWORD cbRead
     );
 static BOOL SetIfVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile,
     __in LONGLONG llDistance,
     __out LONGLONG* pllNewPostion,
     __in DWORD dwSeekType
     );
 static HRESULT CloseIfVirturalFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile
     );
-static BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* GetVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+static WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* GetVirtualFilePointer(
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile
     );
 
 
 // internal variables
 
-__declspec(thread) static BURN_CONTAINER_CONTEXT* vpContext;
+__declspec(thread) static WIX_BOX_CONTEXT* vpContext;
 
 
 // function definitions
@@ -134,7 +135,7 @@ extern "C" void CabExtractInitialize()
 }
 
 extern "C" HRESULT CabExtractOpen(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __in LPCWSTR wzFilePath
     )
 {
@@ -166,14 +167,14 @@ LExit:
 }
 
 extern "C" HRESULT CabExtractNextStream(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __inout_z LPWSTR* psczStreamName
     )
 {
     HRESULT hr = S_OK;
 
     // set operation to move to next stream
-    pContext->Cabinet.operation = BURN_CAB_OPERATION_NEXT_STREAM;
+    pContext->Cabinet.operation = WIX_BOX_OPERATION_NEXT_STREAM;
     pContext->Cabinet.psczStreamName = psczStreamName;
 
     // begin operation and wait
@@ -188,14 +189,14 @@ LExit:
 }
 
 extern "C" HRESULT CabExtractStreamToFile(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __in_z LPCWSTR wzFileName
     )
 {
     HRESULT hr = S_OK;
 
     // set operation to move to next stream
-    pContext->Cabinet.operation = BURN_CAB_OPERATION_STREAM_TO_FILE;
+    pContext->Cabinet.operation = WIX_BOX_OPERATION_STREAM_TO_FILE;
     pContext->Cabinet.wzTargetFile = wzFileName;
 
     // begin operation and wait
@@ -210,7 +211,7 @@ LExit:
 }
 
 extern "C" HRESULT CabExtractStreamToBuffer(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __out BYTE** ppbBuffer,
     __out SIZE_T* pcbBuffer
     )
@@ -218,7 +219,7 @@ extern "C" HRESULT CabExtractStreamToBuffer(
     HRESULT hr = S_OK;
 
     // set operation to move to next stream
-    pContext->Cabinet.operation = BURN_CAB_OPERATION_STREAM_TO_BUFFER;
+    pContext->Cabinet.operation = WIX_BOX_OPERATION_STREAM_TO_BUFFER;
 
     // begin operation and wait
     hr = BeginAndWaitForOperation(pContext);
@@ -238,13 +239,13 @@ LExit:
 }
 
 extern "C" HRESULT CabExtractSkipStream(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     )
 {
     HRESULT hr = S_OK;
 
     // set operation to move to next stream
-    pContext->Cabinet.operation = BURN_CAB_OPERATION_SKIP_STREAM;
+    pContext->Cabinet.operation = WIX_BOX_OPERATION_SKIP_STREAM;
 
     // begin operation and wait
     hr = BeginAndWaitForOperation(pContext);
@@ -255,7 +256,7 @@ LExit:
 }
 
 extern "C" HRESULT CabExtractClose(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     )
 {
     HRESULT hr = S_OK;
@@ -264,7 +265,7 @@ extern "C" HRESULT CabExtractClose(
     if (pContext->Cabinet.hThread)
     {
         // set operation to move to close
-        pContext->Cabinet.operation = BURN_CAB_OPERATION_CLOSE;
+        pContext->Cabinet.operation = WIX_BOX_OPERATION_CLOSE;
 
         // set begin operation event
         if (!::SetEvent(pContext->Cabinet.hBeginOperationEvent))
@@ -293,7 +294,7 @@ LExit:
 // internal helper functions
 
 static HRESULT BeginAndWaitForOperation(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     )
 {
     HRESULT hr = S_OK;
@@ -312,7 +313,7 @@ LExit:
 }
 
 static HRESULT WaitForOperation(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     )
 {
     HRESULT hr = S_OK;
@@ -343,7 +344,7 @@ static HRESULT WaitForOperation(
     }
 
     // clear operation
-    pContext->Cabinet.operation = BURN_CAB_OPERATION_NONE;
+    pContext->Cabinet.operation = WIX_BOX_OPERATION_NONE;
 
 LExit:
     return hr;
@@ -354,7 +355,7 @@ static DWORD WINAPI ExtractThreadProc(
     )
 {
     HRESULT hr = S_OK;
-    BURN_CONTAINER_CONTEXT* pContext = (BURN_CONTAINER_CONTEXT*)lpThreadParameter;
+    WIX_BOX_CONTEXT* pContext = (WIX_BOX_CONTEXT*)lpThreadParameter;
     BOOL fComInitialized = FALSE;
     HFDI hfdi = NULL;
     ERF erf = { };
@@ -454,11 +455,11 @@ static DWORD WINAPI ExtractThreadProc(
     // read operation
     switch (pContext->Cabinet.operation)
     {
-    case BURN_CAB_OPERATION_NEXT_STREAM:
+    case WIX_BOX_OPERATION_NEXT_STREAM:
         ExitFunction1(hr = E_NOMOREITEMS);
         break;
 
-    case BURN_CAB_OPERATION_CLOSE:
+    case WIX_BOX_OPERATION_CLOSE:
         ExitFunction1(hr = S_OK);
 
     default:
@@ -484,7 +485,7 @@ static INT_PTR DIAMONDAPI CabNotifyCallback(
     __inout FDINOTIFICATION *pFDINotify
     )
 {
-    BURN_CONTAINER_CONTEXT* pContext = vpContext;
+    WIX_BOX_CONTEXT* pContext = vpContext;
     INT_PTR ipResult = 0; // result to return on success
 
     switch (iNotification)
@@ -512,7 +513,7 @@ static INT_PTR DIAMONDAPI CabNotifyCallback(
 }
 
 static INT_PTR CopyFileCallback(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __inout FDINOTIFICATION* pFDINotify
     )
 {
@@ -541,10 +542,10 @@ static INT_PTR CopyFileCallback(
     // read operation
     switch (pContext->Cabinet.operation)
     {
-    case BURN_CAB_OPERATION_NEXT_STREAM:
+    case WIX_BOX_OPERATION_NEXT_STREAM:
         break;
 
-    case BURN_CAB_OPERATION_CLOSE:
+    case WIX_BOX_OPERATION_CLOSE:
         ExitFunction1(hr = E_ABORT);
 
     default:
@@ -576,7 +577,7 @@ static INT_PTR CopyFileCallback(
     // read operation
     switch (pContext->Cabinet.operation)
     {
-    case BURN_CAB_OPERATION_STREAM_TO_FILE:
+    case WIX_BOX_OPERATION_STREAM_TO_FILE:
         // create file
         pContext->Cabinet.hTargetFile = ::CreateFileW(pContext->Cabinet.wzTargetFile, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (INVALID_HANDLE_VALUE == pContext->Cabinet.hTargetFile)
@@ -604,7 +605,7 @@ static INT_PTR CopyFileCallback(
 
         break;
 
-    case BURN_CAB_OPERATION_STREAM_TO_BUFFER:
+    case WIX_BOX_OPERATION_STREAM_TO_BUFFER:
         // allocate buffer for stream
         pContext->Cabinet.pbTargetBuffer = (BYTE*)MemAlloc(pFDINotify->cb, TRUE);
         ExitOnNull(pContext->Cabinet.pbTargetBuffer, hr, E_OUTOFMEMORY, "Failed to allocate buffer for stream.");
@@ -615,11 +616,11 @@ static INT_PTR CopyFileCallback(
 
         break;
 
-    case BURN_CAB_OPERATION_SKIP_STREAM:
+    case WIX_BOX_OPERATION_SKIP_STREAM:
         ipResult = 0;
         break;
 
-    case BURN_CAB_OPERATION_CLOSE:
+    case WIX_BOX_OPERATION_CLOSE:
         ExitFunction1(hr = E_ABORT);
 
     default:
@@ -635,7 +636,7 @@ LExit:
 }
 
 static INT_PTR CloseFileInfoCallback(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __inout FDINOTIFICATION *pFDINotify
     )
 {
@@ -647,7 +648,7 @@ static INT_PTR CloseFileInfoCallback(
     // read operation
     switch (pContext->Cabinet.operation)
     {
-    case BURN_CAB_OPERATION_STREAM_TO_FILE:
+    case WIX_BOX_OPERATION_STREAM_TO_FILE:
         // Make a best effort to set the time on the new file before
         // we close it.
         if (::DosDateTimeToFileTime(pFDINotify->date, pFDINotify->time, &ftLocal))
@@ -662,10 +663,10 @@ static INT_PTR CloseFileInfoCallback(
         ReleaseFile(pContext->Cabinet.hTargetFile);
         break;
 
-    case BURN_CAB_OPERATION_STREAM_TO_BUFFER:
+    case WIX_BOX_OPERATION_STREAM_TO_BUFFER:
         break;
 
-    case BURN_CAB_OPERATION_CLOSE:
+    case WIX_BOX_OPERATION_CLOSE:
         ExitFunction1(hr = E_ABORT);
 
     default:
@@ -714,7 +715,7 @@ static INT_PTR FAR DIAMONDAPI CabOpen(
     )
 {
     HRESULT hr = S_OK;
-    BURN_CONTAINER_CONTEXT* pContext = vpContext;
+    WIX_BOX_CONTEXT* pContext = vpContext;
     HANDLE hFile = INVALID_HANDLE_VALUE;
 
     // If this is the invalid cab name, use our file handle.
@@ -748,7 +749,7 @@ static UINT FAR DIAMONDAPI CabRead(
     )
 {
     HRESULT hr = S_OK;
-    BURN_CONTAINER_CONTEXT* pContext = vpContext;
+    WIX_BOX_CONTEXT* pContext = vpContext;
     HANDLE hFile = (HANDLE)hf;
     DWORD cbRead = 0;
 
@@ -771,12 +772,12 @@ static UINT FAR DIAMONDAPI CabWrite(
     )
 {
     HRESULT hr = S_OK;
-    BURN_CONTAINER_CONTEXT* pContext = vpContext;
+    WIX_BOX_CONTEXT* pContext = vpContext;
     DWORD cbWrite = 0;
 
     switch (pContext->Cabinet.operation)
     {
-    case BURN_CAB_OPERATION_STREAM_TO_FILE:
+    case WIX_BOX_OPERATION_STREAM_TO_FILE:
         // write file
         if (!::WriteFile(pContext->Cabinet.hTargetFile, pv, cb, &cbWrite, NULL))
         {
@@ -784,7 +785,7 @@ static UINT FAR DIAMONDAPI CabWrite(
         }
         break;
 
-    case BURN_CAB_OPERATION_STREAM_TO_BUFFER:
+    case WIX_BOX_OPERATION_STREAM_TO_BUFFER:
         // copy to target buffer
         memcpy_s(pContext->Cabinet.pbTargetBuffer + pContext->Cabinet.iTargetBuffer, pContext->Cabinet.cbTargetBuffer - pContext->Cabinet.iTargetBuffer, pv, cb);
         pContext->Cabinet.iTargetBuffer += cb;
@@ -809,7 +810,7 @@ static long FAR DIAMONDAPI CabSeek(
     )
 {
     HRESULT hr = S_OK;
-    BURN_CONTAINER_CONTEXT* pContext = vpContext;
+    WIX_BOX_CONTEXT* pContext = vpContext;
     HANDLE hFile = (HANDLE)hf;
     LARGE_INTEGER liDistance = { };
     LARGE_INTEGER liNewPointer = { };
@@ -860,7 +861,7 @@ static int FAR DIAMONDAPI CabClose(
     __in INT_PTR hf
     )
 {
-    BURN_CONTAINER_CONTEXT* pContext = vpContext;
+    WIX_BOX_CONTEXT* pContext = vpContext;
     HANDLE hFile = (HANDLE)hf;
 
     CloseIfVirturalFilePointer(&pContext->Cabinet, hFile);
@@ -870,14 +871,14 @@ static int FAR DIAMONDAPI CabClose(
 }
 
 static HRESULT AddVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile,
     __in LONGLONG llInitialFilePointer
     )
 {
     HRESULT hr = S_OK;
 
-    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pCabinetContext->rgVirtualFilePointers), pCabinetContext->cVirtualFilePointers, sizeof(BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER), ARRAY_GROWTH_SIZE);
+    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pCabinetContext->rgVirtualFilePointers), pCabinetContext->cVirtualFilePointers, sizeof(WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER), ARRAY_GROWTH_SIZE);
     ExitOnFailure(hr, "Failed to allocate memory for the virtual file pointer array.");
 
     pCabinetContext->rgVirtualFilePointers[pCabinetContext->cVirtualFilePointers].hFile = hFile;
@@ -889,14 +890,14 @@ LExit:
 }
 
 static HRESULT ReadIfVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile,
     __in DWORD cbRead
     )
 {
     HRESULT hr = E_NOTFOUND;
 
-    BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = GetVirtualFilePointer(pCabinetContext, hFile);
+    WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = GetVirtualFilePointer(pCabinetContext, hFile);
     if (pVfp)
     {
         // Set the file handle to the virtual file pointer.
@@ -914,7 +915,7 @@ LExit:
 }
 
 static BOOL SetIfVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile,
     __in LONGLONG llDistance,
     __out LONGLONG* pllNewPostion,
@@ -923,7 +924,7 @@ static BOOL SetIfVirtualFilePointer(
 {
     BOOL fFound = FALSE;
 
-    BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = GetVirtualFilePointer(pCabinetContext, hFile);
+    WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = GetVirtualFilePointer(pCabinetContext, hFile);
     if (pVfp)
     {
         switch (dwSeekType)
@@ -950,13 +951,13 @@ static BOOL SetIfVirtualFilePointer(
 }
 
 static HRESULT CloseIfVirturalFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile
     )
 {
     HRESULT hr = E_NOTFOUND;
 
-    BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = GetVirtualFilePointer(pCabinetContext, hFile);
+    WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = GetVirtualFilePointer(pCabinetContext, hFile);
     if (pVfp)
     {
         pVfp->hFile = INVALID_HANDLE_VALUE;
@@ -967,14 +968,14 @@ static HRESULT CloseIfVirturalFilePointer(
     return hr;
 }
 
-static BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* GetVirtualFilePointer(
-    __in BURN_CONTAINER_CONTEXT_CABINET* pCabinetContext,
+static WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* GetVirtualFilePointer(
+    __in WIX_BOX_CONTEXT_CABINET* pCabinetContext,
     __in HANDLE hFile
     )
 {
     for (DWORD i = 0; i < pCabinetContext->cVirtualFilePointers; ++i)
     {
-        BURN_CONTAINER_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = pCabinetContext->rgVirtualFilePointers + i;
+        WIX_BOX_CONTEXT_CABINET_VIRTUAL_FILE_POINTER* pVfp = pCabinetContext->rgVirtualFilePointers + i;
         if (pVfp->hFile == hFile)
         {
             return pVfp;

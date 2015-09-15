@@ -1869,7 +1869,7 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
 
     if (scz && *scz)
     {
-        hr = ContainerFindById(pContainers, scz, &pContainer);
+        hr = BoxFindById(pContainers, scz, &pContainer);
         ExitOnFailure(hr, "Failed to find container: %ls", scz);
     }
 

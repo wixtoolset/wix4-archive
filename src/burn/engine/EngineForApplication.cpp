@@ -496,7 +496,7 @@ public: // IBootstrapperEngine
         }
         else if (wzPackageOrContainerId && *wzPackageOrContainerId)
         {
-            hr = ContainerFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
+            hr = BoxFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
             ExitOnFailure(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
 
             hr = StrAllocString(&pContainer->sczSourcePath, wzPath, 0);
@@ -544,7 +544,7 @@ public: // IBootstrapperEngine
         }
         else if (wzPackageOrContainerId && *wzPackageOrContainerId)
         {
-            hr = ContainerFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
+            hr = BoxFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
             ExitOnFailure(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
 
             pDownloadSource = &pContainer->downloadSource;

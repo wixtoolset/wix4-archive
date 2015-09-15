@@ -40,9 +40,9 @@ namespace WixToolset.Extensibility
         }
 
         /// <summary>
-        /// Inspect the output.
+        /// Inspect the output after linking.
         /// </summary>
-        /// <param name="output">The output. May be called after linking or binding.</param>
+        /// <param name="output">The output.</param>
         /// <remarks>
         /// To inspect a patch's filtered transforms, enumerate <see cref="Output.SubStorages"/>.
         /// Transforms where the <see cref="SubStorage.Name"/> begins with "#" are

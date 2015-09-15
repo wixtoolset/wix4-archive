@@ -23,27 +23,27 @@ extern "C" {
 
 void CabExtractInitialize();
 HRESULT CabExtractOpen(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __in LPCWSTR wzFilePath
     );
 HRESULT CabExtractNextStream(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __inout_z LPWSTR* psczStreamName
     );
 HRESULT CabExtractStreamToFile(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __in_z LPCWSTR wzFileName
     );
 HRESULT CabExtractStreamToBuffer(
-    __in BURN_CONTAINER_CONTEXT* pContext,
+    __in WIX_BOX_CONTEXT* pContext,
     __out BYTE** ppbBuffer,
     __out SIZE_T* pcbBuffer
     );
 HRESULT CabExtractSkipStream(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     );
 HRESULT CabExtractClose(
-    __in BURN_CONTAINER_CONTEXT* pContext
+    __in WIX_BOX_CONTEXT* pContext
     );
 
 

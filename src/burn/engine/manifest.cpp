@@ -14,6 +14,15 @@
 #include "precomp.h"
 
 
+// internal function declarations
+
+static HRESULT ParseContainersFromXml(
+    __in BURN_SECTION* pSection,
+    __in BURN_CONTAINERS* pContainers,
+    __in IXMLDOMNode* pixnBundle
+    );
+
+
 // function definitions
 
 extern "C" HRESULT ManifestLoadXmlFromBuffer(
@@ -111,8 +120,8 @@ extern "C" HRESULT ManifestLoadXmlFromBuffer(
     hr = UpdateParseFromXml(&pEngineState->update, pixeBundle);
     ExitOnFailure(hr, "Failed to parse update.");
 
-    // parse containers
-    hr = ContainersParseFromXml(&pEngineState->section, &pEngineState->containers, pixeBundle);
+    // parse boxes
+    hr = ParseContainersFromXml(&pEngineState->section, &pEngineState->containers, pixeBundle);
     ExitOnFailure(hr, "Failed to parse containers.");
 
     // parse payloads
@@ -132,5 +141,121 @@ LExit:
     ReleaseObject(pixnLog);
     ReleaseObject(pixeBundle);
     ReleaseObject(pixdDocument);
+    return hr;
+}
+
+static HRESULT ParseContainersFromXml(
+    __in BURN_SECTION* pSection,
+    __in BURN_CONTAINERS* pContainers,
+    __in IXMLDOMNode* pixnBundle
+    )
+{
+    HRESULT hr = S_OK;
+    IXMLDOMNodeList* pixnNodes = NULL;
+    IXMLDOMNode* pixnNode = NULL;
+    DWORD cNodes = 0;
+    LPWSTR scz = NULL;
+
+    // select container nodes
+    hr = XmlSelectNodes(pixnBundle, L"Container", &pixnNodes);
+    ExitOnFailure(hr, "Failed to select container nodes.");
+
+    // get container node count
+    hr = pixnNodes->get_length((long*) &cNodes);
+    ExitOnFailure(hr, "Failed to get container node count.");
+
+    if (!cNodes)
+    {
+        ExitFunction();
+    }
+
+    // allocate memory for searches
+    pContainers->rgBoxes = (WIX_BOX*) MemAlloc(sizeof(WIX_BOX) * cNodes, TRUE);
+    ExitOnNull(pContainers->rgBoxes, hr, E_OUTOFMEMORY, "Failed to allocate memory for container structs.");
+
+    pContainers->cBoxes = cNodes;
+
+    // parse search elements
+    for (DWORD i = 0; i < cNodes; ++i)
+    {
+        WIX_BOX* pBox = &pContainers->rgBoxes[i];
+
+        hr = XmlNextElement(pixnNodes, &pixnNode, NULL);
+        ExitOnFailure(hr, "Failed to get next node.");
+
+        // @Id
+        hr = XmlGetAttributeEx(pixnNode, L"Id", &pBox->sczId);
+        ExitOnFailure(hr, "Failed to get @Id.");
+
+        // @Primary
+        hr = XmlGetYesNoAttribute(pixnNode, L"Primary", &pBox->fPrimary);
+        if (E_NOTFOUND != hr)
+        {
+            ExitOnFailure(hr, "Failed to get @Primary.");
+        }
+
+        // @Attached
+        hr = XmlGetYesNoAttribute(pixnNode, L"Attached", &pBox->fAttached);
+        if (E_NOTFOUND != hr || pBox->fPrimary) // if it is a primary container, it has to be attached
+        {
+            ExitOnFailure(hr, "Failed to get @Attached.");
+        }
+
+        // @AttachedIndex
+        hr = XmlGetAttributeNumber(pixnNode, L"AttachedIndex", &pBox->dwAttachedIndex);
+        if (E_NOTFOUND != hr || pBox->fAttached) // if it is an attached container it must have an index
+        {
+            ExitOnFailure(hr, "Failed to get @AttachedIndex.");
+        }
+
+        // @FilePath
+        hr = XmlGetAttributeEx(pixnNode, L"FilePath", &pBox->sczFilePath);
+        if (E_NOTFOUND != hr)
+        {
+            ExitOnFailure(hr, "Failed to get @FilePath.");
+        }
+
+        // The source path starts as the file path.
+        hr = StrAllocString(&pBox->sczSourcePath, pBox->sczFilePath, 0);
+        ExitOnFailure(hr, "Failed to copy @FilePath");
+
+        // @DownloadUrl
+        hr = XmlGetAttributeEx(pixnNode, L"DownloadUrl", &pBox->downloadSource.sczUrl);
+        if (E_NOTFOUND != hr || (!pBox->fPrimary && !pBox->sczSourcePath)) // if the package is not a primary package, it must have a source path or a download url
+        {
+            ExitOnFailure(hr, "Failed to get @DownloadUrl. Either @SourcePath or @DownloadUrl needs to be provided.");
+        }
+
+        // @Hash
+        hr = XmlGetAttributeEx(pixnNode, L"Hash", &pBox->sczHash);
+        if (SUCCEEDED(hr))
+        {
+            hr = StrAllocHexDecode(pBox->sczHash, &pBox->pbHash, &pBox->cbHash);
+            ExitOnFailure(hr, "Failed to hex decode the Container/@Hash.");
+        }
+        else if (E_NOTFOUND != hr)
+        {
+            ExitOnFailure(hr, "Failed to get @Hash.");
+        }
+
+        // If the container is attached, make sure the information in the section matches what the
+        // manifest contained and get the offset to the container.
+        if (pBox->fAttached)
+        {
+            hr = SectionGetAttachedContainerInfo(pSection, pBox->dwAttachedIndex, &pBox->qwAttachedOffset, &pBox->qwFileSize, &pBox->fActuallyAttached);
+            ExitOnFailure(hr, "Failed to get attached container information.");
+        }
+
+        // prepare next iteration
+        ReleaseNullObject(pixnNode);
+    }
+
+    hr = S_OK;
+
+LExit:
+    ReleaseObject(pixnNodes);
+    ReleaseObject(pixnNode);
+    ReleaseStr(scz);
+
     return hr;
 }
