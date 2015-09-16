@@ -20214,14 +20214,14 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
-                row[0] = packageId;
-                row[1] = name;
-                row[2] = value;
+                WixBundleMsiPropertyRow row = (WixBundleMsiPropertyRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
+                row.ChainPackageId = packageId;
+                row.Name = name;
+                row.Value = value;
 
                 if (!String.IsNullOrEmpty(condition))
                 {
-                    row[3] = condition;
+                    row.Condition = condition;
                 }
             }
         }
