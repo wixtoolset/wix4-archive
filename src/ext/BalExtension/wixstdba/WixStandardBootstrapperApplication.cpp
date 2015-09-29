@@ -308,7 +308,7 @@ public: // IBootstrapperApplication
         if (SUCCEEDED(hrStatus))
         {
             hrStatus = EvaluateConditions();
-            
+
             if (m_fPrereq)
             {
                 m_fPrereqAlreadyInstalled = TRUE;
@@ -573,11 +573,11 @@ public: // IBootstrapperApplication
 
         if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_command.display)
         {
-             HRESULT hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
-             if (FAILED(hr))
-             {
-                 nResult = IDERROR;
-             }
+            HRESULT hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
+            if (FAILED(hr))
+            {
+                nResult = IDERROR;
+            }
         }
         else if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display)
         {
@@ -1419,7 +1419,7 @@ private: // privates
         BalExitOnFailure(hr, "Failed to read wixstdba options from BootstrapperApplication.xml manifest.");
 
         hr = XmlGetAttributeNumber(pNode, L"SuppressOptionsUI", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
@@ -1432,7 +1432,7 @@ private: // privates
 
         dwBool = 0;
         hr = XmlGetAttributeNumber(pNode, L"SuppressDowngradeFailure", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
@@ -1444,7 +1444,7 @@ private: // privates
 
         dwBool = 0;
         hr = XmlGetAttributeNumber(pNode, L"SuppressRepair", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
@@ -1455,7 +1455,7 @@ private: // privates
         BalExitOnFailure(hr, "Failed to get SuppressRepair value.");
 
         hr = XmlGetAttributeNumber(pNode, L"ShowVersion", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
@@ -1467,7 +1467,7 @@ private: // privates
         BalExitOnFailure(hr, "Failed to get ShowVersion value.");
 
         hr = XmlGetAttributeNumber(pNode, L"SupportCacheOnly", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
