@@ -787,6 +787,7 @@ DAPI_(HRESULT) ThemeLocalize(
     HRESULT hr = S_OK;
     LOC_CONTROL* pLocControl = NULL;
     LPWSTR sczCaption = NULL;
+    LPWSTR sczLocStringId = NULL;
 
     hr = LocLocalizeString(pWixLoc, &pTheme->sczCaption);
     ExitOnFailure(hr, "Failed to localize theme caption.");
@@ -804,8 +805,27 @@ DAPI_(HRESULT) ThemeLocalize(
     {
         THEME_CONTROL* pControl = pTheme->rgControls + i;
 
-        hr = LocLocalizeString(pWixLoc, &pControl->sczText);
-        ExitOnFailure(hr, "Failed to localize control text.");
+        if (pControl->sczText && *pControl->sczText)
+        {
+            hr = LocLocalizeString(pWixLoc, &pControl->sczText);
+            ExitOnFailure(hr, "Failed to localize control text.");
+        }
+        else if (pControl->sczName)
+        {
+            LOC_STRING* plocString = NULL;
+
+            hr = StrAllocFormatted(&sczLocStringId, L"#(loc.%ls)", pControl->sczName);
+            ExitOnFailure(hr, "Failed to format loc string id: %ls", pControl->sczName);
+
+            hr = LocGetString(pWixLoc, sczLocStringId, &plocString);
+            if (E_NOTFOUND != hr)
+            {
+                ExitOnFailure(hr, "Failed to get loc string: %ls", pControl->sczName);
+
+                hr = StrAllocString(&pControl->sczText, plocString->wzText, 0);
+                ExitOnFailure(hr, "Failed to copy loc string to control: %ls", plocString->wzText);
+            }
+        }
 
         for (DWORD j = 0; j < pControl->cConditionalText; ++j)
         {
@@ -862,6 +882,7 @@ DAPI_(HRESULT) ThemeLocalize(
     }
 
 LExit:
+    ReleaseStr(sczLocStringId);
     ReleaseStr(sczCaption);
 
     return hr;
