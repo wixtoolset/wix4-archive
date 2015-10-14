@@ -17,6 +17,7 @@ struct LOAD_THREAD_CONTEXT
 {
     HWND hWnd;
     LPWSTR sczThemePath;
+    LPWSTR sczWxlPath;
 
     HANDLE hInit;
 };
@@ -28,6 +29,7 @@ static DWORD WINAPI LoadThreadProc(
 
 extern "C" HRESULT LoadStart(
     __in_z LPCWSTR wzThemePath,
+    __in_z_opt LPCWSTR wzWxlPath,
     __in HWND hWnd,
     __out HANDLE* phThread
     )
@@ -35,6 +37,7 @@ extern "C" HRESULT LoadStart(
     HRESULT hr = S_OK;
     HANDLE rgHandles[2] = { };
     LPWSTR sczThemePath = NULL;
+    LPWSTR sczWxlPath = NULL;
     LOAD_THREAD_CONTEXT context = { };
 
     rgHandles[0] = ::CreateEventW(NULL, TRUE, FALSE, NULL);
@@ -43,8 +46,15 @@ extern "C" HRESULT LoadStart(
     hr = StrAllocString(&sczThemePath, wzThemePath, 0);
     ExitOnFailure(hr, "Failed to copy path to initial theme file.");
 
+    if (wzWxlPath)
+    {
+        hr = StrAllocString(&sczWxlPath, wzWxlPath, 0);
+        ExitOnFailure(hr, "Failed to copy .wxl path to initial file.");
+    }
+
     context.hWnd = hWnd;
     context.sczThemePath = sczThemePath;
+    context.sczWxlPath = sczWxlPath;
     context.hInit = rgHandles[0];
 
     rgHandles[1] = ::CreateThread(NULL, 0, LoadThreadProc, &context, 0, NULL);
@@ -69,9 +79,11 @@ static DWORD WINAPI LoadThreadProc(
     )
 {
     HRESULT hr = S_OK;
+    WIX_LOCALIZATION* pWixLoc = NULL;
 
     LOAD_THREAD_CONTEXT* pContext = static_cast<LOAD_THREAD_CONTEXT*>(pvContext);
     LPWSTR sczThemePath = pContext->sczThemePath;
+    LPWSTR sczWxlPath = pContext->sczWxlPath;
     HWND hWnd = pContext->hWnd;
 
     // We can signal the initialization event as soon as we have copied the context
@@ -94,7 +106,7 @@ static DWORD WINAPI LoadThreadProc(
     hr = PathGetDirectory(sczThemePath, &sczDirectory);
     ExitOnFailure(hr, "Failed to get path directory.");
 
-     wzFileName = PathFile(sczThemePath);
+    wzFileName = PathFile(sczThemePath);
 
     hDirectory = ::CreateFileW(sczDirectory, FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
     if (INVALID_HANDLE_VALUE == hDirectory)
@@ -118,6 +130,15 @@ static DWORD WINAPI LoadThreadProc(
         }
         else
         {
+            if (sczWxlPath)
+            {
+                hr = LocLoadFromFile(sczWxlPath, &pWixLoc);
+                ExitOnFailure(hr, "Failed to load loc file from path: %ls", sczWxlPath);
+
+                hr = ThemeLocalize(pTheme, pWixLoc);
+                ExitOnFailure(hr, "Failed to localize theme: %ls", sczWxlPath);
+            }
+
             hr = AllocHandleTheme(pTheme, &pHandle);
             ExitOnFailure(hr, "Failed to allocate handle to theme");
 
@@ -165,9 +186,11 @@ LExit:
         ::CoUninitialize();
     }
 
+    LocFree(pWixLoc);
     ReleaseFileHandle(hDirectory);
     ReleaseStr(sczDirectory);
     ReleaseStr(sczThemePath);
+    ReleaseStr(sczWxlPath);
     return hr;
 }
 
