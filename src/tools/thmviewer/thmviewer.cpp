@@ -49,6 +49,11 @@ static LRESULT CALLBACK MainWndProc(
     __in WPARAM wParam,
     __in LPARAM lParam
     );
+static void OnThemeLoadError(
+    __in THEME* pTheme,
+    __in HWND hWnd,
+    __in HRESULT hrFailure
+    );
 static void OnNewTheme(
     __in THEME* pTheme,
     __in HWND hWnd,
@@ -306,6 +311,10 @@ static LRESULT CALLBACK MainWndProc(
         }
         break;
 
+    case WM_THMVWR_THEME_LOAD_ERROR:
+        OnThemeLoadError(vpTheme, hWnd, lParam);
+        return 0;
+
     case WM_THMVWR_NEW_THEME:
         OnNewTheme(vpTheme, hWnd, reinterpret_cast<HANDLE_THEME*>(lParam));
         return 0;
@@ -319,7 +328,7 @@ static LRESULT CALLBACK MainWndProc(
         NMHDR* pnmhdr = reinterpret_cast<NMHDR*>(lParam);
         switch (pnmhdr->code)
         {
-        case TVN_SELCHANGED:
+        case TVN_SELCHANGEDW:
             {
             NMTREEVIEWW* ptv = reinterpret_cast<NMTREEVIEWW*>(lParam);
             ::PostThreadMessageW(vdwDisplayThreadId, WM_THMVWR_SHOWPAGE, SW_HIDE, ptv->itemOld.lParam);
@@ -341,6 +350,44 @@ static LRESULT CALLBACK MainWndProc(
 
     return ThemeDefWindowProc(vpTheme, hWnd, uMsg, wParam, lParam);
 }
+
+static void OnThemeLoadError(
+    __in THEME* pTheme,
+    __in HWND hWnd,
+    __in HRESULT hrFailure
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczMessage = NULL;
+    TVINSERTSTRUCTW tvi = {};
+    TVITEMW item = {};
+
+    // Add the application node.
+    tvi.hParent = NULL;
+    tvi.hInsertAfter = TVI_ROOT;
+    tvi.item.mask = TVIF_TEXT | TVIF_PARAM;
+    tvi.item.lParam = 0;
+    tvi.item.pszText = L"Failed to load theme.";
+    tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
+
+    hr = StrAllocFormatted(&sczMessage, L"Error 0x%08x.", hrFailure);
+    ExitOnFailure(hr, "Failed to format error message.", hr);
+
+    tvi.item.pszText = sczMessage;
+    ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi));
+
+    hr = StrAllocFromError(&sczMessage, hrFailure, NULL);
+    ExitOnFailure(hr, "Failed to format error message text.", hr);
+
+    tvi.item.pszText = sczMessage;
+    ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi));
+
+    ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_EXPAND, TVE_EXPAND, reinterpret_cast<LPARAM>(tvi.hParent));
+
+LExit:
+    ReleaseStr(sczMessage);
+}
+
 
 static void OnNewTheme(
     __in THEME* pTheme,
@@ -386,10 +433,10 @@ static void OnNewTheme(
     tvi.hInsertAfter = TVI_ROOT;
     tvi.item.mask = TVIF_TEXT | TVIF_PARAM;
     tvi.item.lParam = 0;
-    tvi.item.pszText = L"Application";
+    tvi.item.pszText = pHandle && pHandle->pTheme && pHandle->pTheme->sczCaption ? pHandle->pTheme->sczCaption : L"Window";
 
     // Add the pages.
-    tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&tvi)));
+    tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
     tvi.hInsertAfter = TVI_SORT;
     for (DWORD i = 0; i < pNewTheme->cPages; ++i)
     {
@@ -399,7 +446,7 @@ static void OnNewTheme(
             tvi.item.pszText = pPage->sczName;
             tvi.item.lParam = i + 1; //prgdwPageIds[i]; - TODO: do the right thing here by calling ThemeGetPageIds(), should not assume we know how the page ids will be calculated.
 
-            HTREEITEM hti = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&tvi)));
+            HTREEITEM hti = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
             if (*wzSelectedPage && CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pPage->sczName, -1, wzSelectedPage, -1))
             {
                 htiSelected = hti;
@@ -417,6 +464,4 @@ static void OnNewTheme(
     {
         ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_SELECTITEM, TVGN_CARET, reinterpret_cast<LPARAM>(htiSelected));
     }
-
-    return;
 }
