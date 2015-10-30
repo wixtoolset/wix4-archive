@@ -181,6 +181,7 @@ namespace WixToolset.Bootstrapper
         Help,
         Layout,
         Uninstall,
+        Cache,
         Install,
         Modify,
         Repair,
