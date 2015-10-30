@@ -32,6 +32,7 @@
   * Update Burn to parse CommandLine table in manifest and apply it during ExePackage execution.
 
 * SeanHall: WIXBUG:4412 - Improve cache progress.
+>>>>>>> upstream/develop
 
 * HeathS: WIXFEAT:4663 - Default to language-specific major upgrades with option to ignore language.
 
