@@ -13,7 +13,6 @@
     <AssemblyName>wconsole</AssemblyName>
     <OutputType>Library</OutputType>
     <RootNamespace>WixToolset</RootNamespace>
-    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CommandLineResponseFile.cs" />
