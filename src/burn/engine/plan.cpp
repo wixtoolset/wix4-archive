@@ -1066,6 +1066,9 @@ extern "C" HRESULT PlanCachePackage(
 
     if (fBARequestedCache || NeedsCache(pPlan, pPackage))
     {
+        // The behavior for cache only mode is to do nothing on rollback, e.g. for subsequent install on demand scenarios.
+        pPackage->rollback = BOOTSTRAPPER_ACTION_STATE_NONE;
+
         hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
         ExitOnFailure(hr, "Failed to plan cache package.");
 
@@ -1075,7 +1078,7 @@ extern "C" HRESULT PlanCachePackage(
         }
     }
 
-    // Make sure the package is properly ref-counted.
+    // Make sure the package is properly ref-counted
     hr = PlanDependencyActions(fPerMachine, pPlan, pPackage);
     ExitOnFailure(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
 
