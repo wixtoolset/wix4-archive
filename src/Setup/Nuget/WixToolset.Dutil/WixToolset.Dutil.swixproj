@@ -13,10 +13,6 @@
     <ProjectGuid>{3026E85C-B63F-4CFF-A74A-BF80E1DA32E5}</ProjectGuid>
     <OutputName>WixToolset.Dutil</OutputName>
     <OutputType>Nuget</OutputType>
-    <PackagePreprocessorDefinitions>
-      $(PackagePreprocessorDefinitions);
-      includeDir=$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\src\libs\dutil\inc;
-    </PackagePreprocessorDefinitions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +21,12 @@
     <Package Include="WixToolset.Dutil.v110.swr" Condition=" $(VS2012Available) " />
     <Package Include="WixToolset.Dutil.v120.swr" Condition=" $(VS2013Available) " />
     <Package Include="WixToolset.Dutil.v140.swr" Condition=" $(VS2015Available) " />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageSearchPaths Include="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\src\libs\dutil\inc" />
+    <PackageSearchPaths Include="$(MSBuildProjectDirectory)" />
+    <PackageSearchPaths Include="$(BaseOutputPath)" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
