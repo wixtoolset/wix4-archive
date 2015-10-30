@@ -1,0 +1,70 @@
+use nuget
+
+package name=WixToolset.DUtil
+        manufacturer="Outercurve Foundation"
+        version=$(version)
+        description="Common utility functions used by the WiX toolset."
+        about=http://wixtoolset.org/
+        license=http://wixtoolset.org/about/license/
+
+nuget.metadata developmentDependency=true
+
+file build\native\WixToolset.DUtil.targets source=$(projectDir)\WixToolset.DUtil.targets
+
+folder lib
+  folder native id=native
+    folder include
+      file aclutil.h source=$(includeDir)\aclutil.h
+      file apuputil.h source=$(includeDir)\apuputil.h
+      file atomutil.h source=$(includeDir)\atomutil.h
+      file buffutil.h source=$(includeDir)\buffutil.h
+      file butil.h source=$(includeDir)\butil.h
+      file cabcutil.h source=$(includeDir)\cabcutil.h
+      file cabutil.h source=$(includeDir)\cabutil.h
+      file certutil.h source=$(includeDir)\certutil.h
+      file condutil.h source=$(includeDir)\condutil.h
+      file conutil.h source=$(includeDir)\conutil.h
+      file cryputil.h source=$(includeDir)\cryputil.h
+      file dictutil.h source=$(includeDir)\dictutil.h
+      file dirutil.h source=$(includeDir)\dirutil.h
+      file dlutil.h source=$(includeDir)\dlutil.h
+      file dutil.h source=$(includeDir)\dutil.h
+      file eseutil.h source=$(includeDir)\eseutil.h
+      file fileutil.h source=$(includeDir)\fileutil.h
+      file gdiputil.h source=$(includeDir)\gdiputil.h
+      file guidutil.h source=$(includeDir)\guidutil.h
+      file iis7util.h source=$(includeDir)\iis7util.h
+      file inetutil.h source=$(includeDir)\inetutil.h
+      file iniutil.h source=$(includeDir)\iniutil.h
+      file jsonutil.h source=$(includeDir)\jsonutil.h
+      file locutil.h source=$(includeDir)\locutil.h
+      file logutil.h source=$(includeDir)\logutil.h
+      file memutil.h source=$(includeDir)\memutil.h
+      file metautil.h source=$(includeDir)\metautil.h
+      file monutil.h source=$(includeDir)\monutil.h
+      file osutil.h source=$(includeDir)\osutil.h
+      file pathutil.h source=$(includeDir)\pathutil.h
+      file perfutil.h source=$(includeDir)\perfutil.h
+      file polcutil.h source=$(includeDir)\polcutil.h
+      file procutil.h source=$(includeDir)\procutil.h
+      file regutil.h source=$(includeDir)\regutil.h
+      file resrutil.h source=$(includeDir)\resrutil.h
+      file reswutil.h source=$(includeDir)\reswutil.h
+      file rexutil.h source=$(includeDir)\rexutil.h
+      file rmutil.h source=$(includeDir)\rmutil.h
+      file rssutil.h source=$(includeDir)\rssutil.h
+      file sceutil.h source=$(includeDir)\sceutil.h
+      file shelutil.h source=$(includeDir)\shelutil.h
+      file sqlutil.h source=$(includeDir)\sqlutil.h
+      file srputil.h source=$(includeDir)\srputil.h
+      file strutil.h source=$(includeDir)\strutil.h
+      file svcutil.h source=$(includeDir)\svcutil.h
+      file thmutil.h source=$(includeDir)\thmutil.h
+      file timeutil.h source=$(includeDir)\timeutil.h
+      file uncutil.h source=$(includeDir)\uncutil.h
+      file uriutil.h source=$(includeDir)\uriutil.h
+      file userutil.h source=$(includeDir)\userutil.h
+      file varutil.h source=$(includeDir)\varutil.h
+      file wiutil.h source=$(includeDir)\wiutil.h
+      file wuautil.h source=$(includeDir)\wuautil.h
+      file xmlutil.h source=$(includeDir)\xmlutil.h

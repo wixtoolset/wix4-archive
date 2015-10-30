@@ -15,7 +15,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);version=$(FullBuildVersionString)</PackagePreprocessorDefinitions>
+    <PackagePreprocessorDefinitions>
+      $(PackagePreprocessorDefinitions);
+      version=$(FullBuildVersionString);
+      outputPath_x86=$(OutputPath_x86);
+      outputPath_x64=$(OutputPath_x64);
+      projectDir=$(MSBuildProjectDirectory);
+    </PackagePreprocessorDefinitions>
   </PropertyGroup>
 
   <ItemGroup>
