@@ -353,7 +353,7 @@ static LRESULT CALLBACK MainWndProc(
 
 static void OnThemeLoadError(
     __in THEME* pTheme,
-    __in HWND hWnd,
+    __in HWND /* hWnd */,
     __in HRESULT hrFailure
     )
 {
