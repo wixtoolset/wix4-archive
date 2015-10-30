@@ -17,6 +17,7 @@
     </ProjectReference>
 
     <ProjectReference Include="Bundle\Bundle.wixproj" />
+    <ProjectReference Include="Nuget\WixToolset.DUtil\WixToolset.DUtil.swixproj" />
     <ProjectReference Include="Nuget\WixToolset.Tools\WixToolset.Tools.swixproj" />
   </ItemGroup>
 
