@@ -1,3 +1,30 @@
+## WixBuild: Version 4.0.3430.0
+
+* HeathS: WIXFEAT:4909 - Add NuGet package for dutil
+
+* BobArnson: Update ThmViewer theme for ThmUtil v4 schema.
+
+* BobArnson: Add `DisableVS201x` properties to skip versions of VS during the build.
+  This is useful to save build time during debugging and to diagnose codegen problems in different versions of VS.
+
+* BobArnson: WIXFEAT:4719: Implement MsiProperty/@Condition.
+
+* HeathS: WIXBUG:4880 - Add detection support for VS15
+
+* BMurri: WIXBUG:3902 - Fix ability to find config files in certain circumstances.
+
+* jmcooper8654: WIXFEAT:4437 - Modify Wix.CA.targets to add PDB files to CA Package when /p:Configuration=Debug.
+
+* BMurri: WIXBUG:4499 - Bind MBApreq language to correct langid
+
+* ErnestT: WIXBUG:4432 - Add burn support for only caching packages
+
+* HeathS: Refactor cache-only support in Burn
+  * Remove /cache command line support from engine
+  * Allow BA to request cache-only support
+
+* HeathS: Fix variadic macros for custom action messages
+
 ## WixBuild: Version 4.0.3226.0
 
 * HeathS: WIXBUG:4775 - Always set WixBundleOriginalSourceFolder if not already set
