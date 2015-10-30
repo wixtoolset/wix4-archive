@@ -20172,6 +20172,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string value = null;
+            string condition = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -20184,6 +20185,9 @@ namespace WixToolset
                             break;
                         case "Value":
                             value = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Condition":
+                            condition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -20210,10 +20214,15 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
-                row[0] = packageId;
-                row[1] = name;
-                row[2] = value;
+                WixBundleMsiPropertyRow row = (WixBundleMsiPropertyRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
+                row.ChainPackageId = packageId;
+                row.Name = name;
+                row.Value = value;
+
+                if (!String.IsNullOrEmpty(condition))
+                {
+                    row.Condition = condition;
+                }
             }
         }
 

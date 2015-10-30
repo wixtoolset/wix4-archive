@@ -304,6 +304,13 @@ extern "C" HRESULT MsiEngineParsePropertiesFromXml(
                 ExitOnFailure(hr, "Failed to get @RollbackValue.");
             }
 
+            // @Condition
+            hr = XmlGetAttributeEx(pixnNode, L"Condition", &pProperty->sczCondition);
+            if (E_NOTFOUND != hr)
+            {
+                ExitOnFailure(hr, "Failed to get @Condition.");
+            }
+
             // prepare next iteration
             ReleaseNullObject(pixnNode);
         }
@@ -358,6 +365,7 @@ extern "C" void MsiEnginePackageUninitialize(
             ReleaseStr(pProperty->sczId);
             ReleaseStr(pProperty->sczValue);
             ReleaseStr(pProperty->sczRollbackValue);
+            ReleaseStr(pProperty->sczCondition);
         }
         MemFree(pPackage->Msi.rgProperties);
     }
@@ -1328,6 +1336,18 @@ extern "C" HRESULT MsiEngineConcatProperties(
     for (DWORD i = 0; i < cProperties; ++i)
     {
         BURN_MSIPROPERTY* pProperty = &rgProperties[i];
+
+        if (pProperty->sczCondition && *pProperty->sczCondition)
+        {
+            BOOL fCondition = FALSE;
+
+            hr = ConditionEvaluate(pVariables, pProperty->sczCondition, &fCondition);
+            if (FAILED(hr) || !fCondition)
+            {
+                LogId(REPORT_VERBOSE, MSG_MSI_PROPERTY_CONDITION_FAILED, pProperty->sczId, pProperty->sczCondition, LoggingTrueFalseToString(fCondition));
+                continue;
+            }
+        }
 
         // format property value
         if (fObfuscateHiddenVariables)
