@@ -93,7 +93,7 @@ namespace WixToolset.Data
         /// <returns>The Pdb represented by the Xml.</returns>
         internal static Pdb Read(XmlReader reader, bool suppressVersionCheck)
         {
-            if (!reader.LocalName.Equals("wixPdb" == reader.LocalName))
+            if ("wixPdb" != reader.LocalName)
             {
                 throw new XmlException();
             }

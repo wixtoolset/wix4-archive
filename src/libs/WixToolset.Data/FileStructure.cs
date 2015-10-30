@@ -89,13 +89,16 @@ namespace WixToolset.Data
             {
                 fs.FileFormat = FileStructure.ReadFileFormat(reader);
 
-                fs.embeddedFileSizes = FileStructure.ReadEmbeddedFileSizes(reader);
-
-                // Remember the data stream offset, which is right after the embedded files have been written.
-                fs.dataStreamOffset = stream.Position;
-                foreach (long size in fs.embeddedFileSizes)
+                if (FileFormat.Unknown != fs.FileFormat)
                 {
-                    fs.dataStreamOffset += size;
+                    fs.embeddedFileSizes = FileStructure.ReadEmbeddedFileSizes(reader);
+
+                    // Remember the data stream offset, which is right after the embedded files have been written.
+                    fs.dataStreamOffset = stream.Position;
+                    foreach (long size in fs.embeddedFileSizes)
+                    {
+                        fs.dataStreamOffset += size;
+                    }
                 }
             }
 
