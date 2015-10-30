@@ -1,6 +1,6 @@
 use nuget
 
-package name=WixToolset.DUtil
+package name=WixToolset.Dutil
         manufacturer="Outercurve Foundation"
         version=$(version)
         description="Common utility functions used by the WiX toolset."
@@ -9,7 +9,7 @@ package name=WixToolset.DUtil
 
 nuget.metadata developmentDependency=true
 
-file build\native\WixToolset.DUtil.targets source=$(projectDir)\WixToolset.DUtil.targets
+file build\native\WixToolset.Dutil.targets source=$(projectDir)\WixToolset.Dutil.targets
 
 folder lib
   folder native id=native
