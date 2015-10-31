@@ -67,6 +67,8 @@
 #include <atomutil.h>
 #include <apuputil.h>
 
+#include "BootstrapperEngine.h"
+#include "BootstrapperApplication.h"
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
