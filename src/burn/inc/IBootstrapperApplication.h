@@ -648,8 +648,21 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
 
 // Move into BootstrapperApplication.h once IBootstrapperEngine and IBootstrapperApplication have been moved out of the engine.
-extern "C" typedef HRESULT (WINAPI *PFN_BOOTSTRAPPER_APPLICATION_CREATE)(
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppApplication
+struct BOOTSTRAPPER_CREATE_ARGS
+{
+    DWORD cbSize;
+    DWORD64 qwEngineAPIVersion;
+    IBootstrapperEngine* pEngine; // will be removed once IBootstrapperEngine is moved out of the engine.
+    BOOTSTRAPPER_COMMAND* pCommand;
+};
+
+struct BOOTSTRAPPER_CREATE_RESULTS
+{
+    DWORD cbSize;
+    IBootstrapperApplication* pApplication; // will be removed once IBootstrapperApplication is moved out of the engine.
+};
+
+extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_CREATE)(
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
     );

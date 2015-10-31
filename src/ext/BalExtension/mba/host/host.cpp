@@ -102,23 +102,22 @@ extern "C" BOOL WINAPI DllMain(
 
 // Note: This function assumes that COM was already initialized on the thread.
 extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppBA
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK; 
     HRESULT hrHostInitialization = S_OK;
     _AppDomain* pAppDomain = NULL;
 
-    BalInitialize(pEngine);
+    BalInitialize(pArgs->pEngine);
 
     hr = GetAppDomain(&pAppDomain);
     if (SUCCEEDED(hr))
     {
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Loading managed bootstrapper application.");
 
-        hr = CreateManagedBootstrapperApplication(pAppDomain, pEngine, pCommand, ppBA);
+        hr = CreateManagedBootstrapperApplication(pAppDomain, pArgs->pEngine, pArgs->pCommand, &pResults->pApplication);
         BalExitOnFailure(hr, "Failed to create the managed bootstrapper application.");
     }
     else // fallback to the prerequisite BA.
@@ -135,7 +134,7 @@ extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Loading prerequisite bootstrapper application because managed host could not be loaded, error: 0x%08x.", hr);
 
-        hr = CreatePrerequisiteBA(hrHostInitialization, pEngine, pCommand, ppBA);
+        hr = CreatePrerequisiteBA(hrHostInitialization, pArgs->pEngine, pArgs->pCommand, &pResults->pApplication);
         BalExitOnFailure(hr, "Failed to create the pre-requisite bootstrapper application.");
     }
 
