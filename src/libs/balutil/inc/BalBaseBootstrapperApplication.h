@@ -10,6 +10,8 @@
 #include <windows.h>
 #include <msiquery.h>
 
+#include "BootstrapperEngine.h"
+#include "BootstrapperApplication.h"
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
