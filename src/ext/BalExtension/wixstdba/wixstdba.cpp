@@ -38,16 +38,15 @@ extern "C" BOOL WINAPI DllMain(
 
 
 extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppApplication
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK;
 
-    BalInitialize(pEngine);
+    BalInitialize(pArgs->pEngine);
 
-    hr = CreateBootstrapperApplication(vhInstance, FALSE, S_OK, pEngine, pCommand, ppApplication);
+    hr = CreateBootstrapperApplication(vhInstance, FALSE, S_OK, pArgs->pEngine, pArgs->pCommand, &pResults->pApplication);
     BalExitOnFailure(hr, "Failed to create bootstrapper application interface.");
 
 LExit:

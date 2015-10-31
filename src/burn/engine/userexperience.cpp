@@ -94,18 +94,29 @@ extern "C" HRESULT UserExperienceLoad(
     )
 {
     HRESULT hr = S_OK;
+    BOOTSTRAPPER_CREATE_ARGS args = { };
+    BOOTSTRAPPER_CREATE_RESULTS results = { };
 
-    // load UX DLL
+    args.cbSize = sizeof(BOOTSTRAPPER_CREATE_ARGS);
+    args.pCommand = pCommand;
+    args.pEngine = pEngine;
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // need to decide whether to keep this, and if so when to update it.
+
+    results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
+
+    // Load BA DLL.
     pUserExperience->hUXModule = ::LoadLibraryW(pUserExperience->payloads.rgPayloads[0].sczLocalFilePath);
     ExitOnNullWithLastError(pUserExperience->hUXModule, hr, "Failed to load UX DLL.");
 
-    // get BoostrapperApplicationCreate entry-point
+    // Get BootstrapperApplicationCreate entry-point.
     PFN_BOOTSTRAPPER_APPLICATION_CREATE pfnCreate = (PFN_BOOTSTRAPPER_APPLICATION_CREATE)::GetProcAddress(pUserExperience->hUXModule, "BootstrapperApplicationCreate");
     ExitOnNullWithLastError(pfnCreate, hr, "Failed to get BootstrapperApplicationCreate entry-point");
 
-    // create UX
-    hr = pfnCreate(pEngine, pCommand, &pUserExperience->pUserExperience);
-    ExitOnFailure(hr, "Failed to create UX.");
+    // Create BA.
+    hr = pfnCreate(&args, &results);
+    ExitOnFailure(hr, "Failed to create BA.");
+
+    pUserExperience->pUserExperience = results.pApplication;
 
 LExit:
     return hr;
