@@ -117,6 +117,8 @@ extern "C" HRESULT UserExperienceLoad(
     ExitOnFailure(hr, "Failed to create BA.");
 
     pUserExperience->pUserExperience = results.pApplication;
+    pUserExperience->pfnBAProc = results.pfnBootstrapperApplicationProc;
+    pUserExperience->pvBAProcContext = results.pvBootstrapperApplicationProcContext;
 
 LExit:
     return hr;

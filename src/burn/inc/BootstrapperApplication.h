@@ -84,6 +84,11 @@ enum BOOTSTRAPPER_RELATION_TYPE
     BOOTSTRAPPER_RELATION_UPDATE,
 };
 
+enum BOOTSTRAPPER_APPLICATION_MESSAGE
+{
+
+};
+
 struct BOOTSTRAPPER_COMMAND
 {
     BOOTSTRAPPER_ACTION action;
@@ -103,5 +108,12 @@ struct BOOTSTRAPPER_COMMAND
     LPWSTR wzLayoutDirectory;
 };
 
+
+extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_PROC)(
+    __in LPVOID pvContext,
+    __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+    __in const LPVOID pvArgs,
+    __in LPVOID pvResults
+    );
 
 extern "C" typedef void (WINAPI *PFN_BOOTSTRAPPER_APPLICATION_DESTROY)();

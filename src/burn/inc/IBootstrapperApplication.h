@@ -644,6 +644,15 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in HRESULT hrStatus,
         __in DWORD dwProcessId
         ) = 0;
+
+    // BAProc - The PFN_BOOTSTRAPPER_APPLICATION_PROC can call this method to give the BA raw access to the callback from the engine.
+    //          This might be used to help the BA support more than one version of the engine.
+    STDMETHOD_(HRESULT, BAProc)(
+        __in LPVOID pvContext,
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID pvArgs,
+        __in LPVOID pvResults
+        ) = 0;
 };
 
 
@@ -660,6 +669,8 @@ struct BOOTSTRAPPER_CREATE_RESULTS
 {
     DWORD cbSize;
     IBootstrapperApplication* pApplication; // will be removed once IBootstrapperApplication is moved out of the engine.
+    PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBootstrapperApplicationProc;
+    LPVOID pvBootstrapperApplicationProcContext;
 };
 
 extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_CREATE)(

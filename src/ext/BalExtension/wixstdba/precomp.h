@@ -51,9 +51,8 @@ HRESULT CreateBootstrapperApplication(
     __in HMODULE hModule,
     __in BOOL fPrereq,
     __in HRESULT hrHostInitialization,
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppApplication
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
     );
 
 #include "IBootstrapperBAFunction.h"

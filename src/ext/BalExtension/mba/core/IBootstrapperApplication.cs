@@ -397,6 +397,15 @@ namespace WixToolset.Bootstrapper
             int hrStatus,
             int processId
             );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int BAProc(
+            IntPtr pvContext,
+            BOOTSTRAPPER_APPLICATION_MESSAGE message,
+            IntPtr pvArgs,
+            IntPtr pvResults
+            );
     }
 
     /// <summary>
@@ -655,5 +664,12 @@ namespace WixToolset.Bootstrapper
         /// The user is logging off.
         /// </summary>
         Logoff = unchecked((int)0x80000000)
+    }
+
+    /// <summary>
+    /// The message code.
+    /// </summary>
+    public enum BOOTSTRAPPER_APPLICATION_MESSAGE
+    {
     }
 }

@@ -1,0 +1,43 @@
+//-------------------------------------------------------------------------------------------------
+// <copyright file="BalBaseBootstrapperApplicationProc.h" company="Outercurve Foundation">
+//   Copyright (c) 2004, Outercurve Foundation.
+//   This software is released under Microsoft Reciprocal License (MS-RL).
+//   The license and further copyright text can be found in the file
+//   LICENSE.TXT at the root directory of the distribution.
+// </copyright>
+//-------------------------------------------------------------------------------------------------
+
+#include <windows.h>
+
+#include "BootstrapperEngine.h"
+#include "BootstrapperApplication.h"
+#include "IBootstrapperEngine.h"
+#include "IBootstrapperApplication.h"
+
+/*******************************************************************
+BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
+                                     Provides a default mapping between the new message based BA interface and
+                                     the old COM-based BA interface.
+
+*******************************************************************/
+static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
+    __in LPVOID pvContext,
+    __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+    __in const LPVOID pvArgs,
+    __in LPVOID pvResults
+    )
+{
+    IBootstrapperApplication* pBA = reinterpret_cast<IBootstrapperApplication*>(pvContext);
+    HRESULT hr = pBA->BAProc(pvContext, message, pvArgs, pvResults);
+    
+    if (E_NOTIMPL == hr)
+    {
+        switch (message)
+        {
+        default:
+            break;
+        }
+    }
+
+    return hr;
+}

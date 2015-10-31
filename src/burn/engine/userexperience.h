@@ -33,6 +33,8 @@ typedef struct _BURN_USER_EXPERIENCE
 
     HMODULE hUXModule;
     IBootstrapperApplication* pUserExperience;
+    PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBAProc;
+    LPVOID pvBAProcContext;
     LPWSTR sczTempDirectory;
 
     CRITICAL_SECTION csEngineActive;    // Changing the engine active state in the user experience must be
