@@ -297,6 +297,31 @@ extern "C" void UserExperienceExecutePhaseComplete(
     }
 }
 
+extern "C" HRESULT UserExperienceOnDetectBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fInstalled,
+    __in DWORD cPackages
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTBEGIN_ARGS args = { };
+    BA_ONDETECTBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(BA_ONDETECTBEGIN_ARGS);
+    args.cPackages = cPackages;
+    args.fInstalled = fInstalled;
+
+    results.cbSize = sizeof(BA_ONDETECTBEGIN_RESULTS);
+
+    hr = pUserExperience->pfnBAProc(pUserExperience->pvBAProcContext, BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results);
+    if (SUCCEEDED(hr) && results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+    return hr;
+}
+
 extern "C" int UserExperienceCheckExecuteResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fRollback,

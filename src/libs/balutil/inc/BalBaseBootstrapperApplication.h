@@ -92,12 +92,14 @@ public: // IBootstrapperApplication
         return IDCANCEL;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectBegin(
+    virtual STDMETHODIMP_(HRESULT) OnDetectBegin(
         __in BOOL /*fInstalled*/,
-        __in DWORD /*cPackages*/
+        __in DWORD /*cPackages*/,
+        __out BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel = CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectForwardCompatibleBundle(

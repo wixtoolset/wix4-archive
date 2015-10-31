@@ -18,6 +18,44 @@ namespace WixToolset.Bootstrapper
     using System.Collections.ObjectModel;
 
     /// <summary>
+    /// Base class for BA <see cref="EventArgs"/> classes.
+    /// </summary>
+    [Serializable]
+    public abstract class HResultEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="HResultEventArgs"/> class.
+        /// </summary>
+        public HResultEventArgs()
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="HResult"/> of the operation. This is passed back to the engine.
+        /// </summary>
+        public int HResult { get; set; }
+    }
+
+    /// <summary>
+    /// Base class for cancellable BA <see cref="EventArgs"/> classes.
+    /// </summary>
+    [Serializable]
+    public abstract class CancellableHResultEventArgs : HResultEventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="CancellableHResultEventArgs"/> class.
+        /// </summary>
+        public CancellableHResultEventArgs()
+        {
+        }
+
+        /// <summary>
+        /// Gets or sets whether to cancel the operation. This is passed back to the engine.
+        /// </summary>
+        public bool Cancel { get; set; }
+    }
+
+    /// <summary>
     /// Base class for <see cref="EventArgs"/> classes that must return a value.
     /// </summary>
     [Serializable]
@@ -191,11 +229,8 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the overall detection phase has begun.
     /// </summary>
     [Serializable]
-    public class DetectBeginEventArgs : ResultEventArgs
+    public class DetectBeginEventArgs : CancellableHResultEventArgs
     {
-        private bool installed;
-        private int packageCount;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectBeginEventArgs"/> class.
         /// </summary>
@@ -203,25 +238,19 @@ namespace WixToolset.Bootstrapper
         /// <param name="packageCount">The number of packages to detect.</param>
         public DetectBeginEventArgs(bool installed, int packageCount)
         {
-            this.installed = installed;
-            this.packageCount = packageCount;
+            this.Installed = installed;
+            this.PackageCount = packageCount;
         }
 
         /// <summary>
         /// Gets whether the bundle is installed.
         /// </summary>
-        public bool Installed
-        {
-            get { return this.installed; }
-        }
+        public bool Installed { get; private set; }
 
         /// <summary>
         /// Gets the number of packages to detect.
         /// </summary>
-        public int PackageCount
-        {
-            get { return this.packageCount; }
-        }
+        public int PackageCount { get; private set; }
     }
 
     /// <summary>

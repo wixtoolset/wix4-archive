@@ -1120,12 +1120,13 @@ namespace WixToolset.Bootstrapper
             return args.Result;
         }
 
-        Result IBootstrapperApplication.OnDetectBegin(bool fInstalled, int cPackages)
+        int IBootstrapperApplication.OnDetectBegin(bool fInstalled, int cPackages, ref bool fCancel)
         {
             DetectBeginEventArgs args = new DetectBeginEventArgs(fInstalled, cPackages);
             this.OnDetectBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectForwardCompatibleBundle(string wzBundleId, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, int nRecommendation)

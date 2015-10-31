@@ -14,6 +14,11 @@
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
+static HRESULT BalBaseBAProcOnDetectBegin(IBootstrapperApplication* pBA, BA_ONDETECTBEGIN_ARGS* pArgs, BA_ONDETECTBEGIN_RESULTS* pResults)
+{
+    return pBA->OnDetectBegin(pArgs->fInstalled, pArgs->cPackages, &pResults->fCancel);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -34,7 +39,8 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
     {
         switch (message)
         {
-        default:
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN:
+            hr = BalBaseBAProcOnDetectBegin(pBA, reinterpret_cast<BA_ONDETECTBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTBEGIN_RESULTS*>(pvResults));
             break;
         }
     }
