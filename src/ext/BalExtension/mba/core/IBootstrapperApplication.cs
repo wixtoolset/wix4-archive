@@ -41,9 +41,10 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectBegin(
+        int OnDetectBegin(
             [MarshalAs(UnmanagedType.Bool)] bool fInstalled,
-            [MarshalAs(UnmanagedType.U4)] int cPackages
+            [MarshalAs(UnmanagedType.U4)] int cPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

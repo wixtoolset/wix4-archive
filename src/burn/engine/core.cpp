@@ -244,6 +244,7 @@ extern "C" HRESULT CoreDetect(
     BOOL fActivated = FALSE;
     BURN_PACKAGE* pPackage = NULL;
     HRESULT hrFirstPackageFailure = S_OK;
+    int nResult = IDNOACTION;
 
     LogId(REPORT_STANDARD, MSG_DETECT_BEGIN, pEngineState->packages.cPackages);
 
@@ -268,8 +269,7 @@ extern "C" HRESULT CoreDetect(
         ExitOnFailure(hr, "Failed to unset the bundle installed built-in variable.");
     }
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnDetectBegin(pEngineState->registration.fInstalled, pEngineState->packages.cPackages);
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
+    hr = UserExperienceOnDetectBegin(&pEngineState->userExperience, pEngineState->registration.fInstalled, pEngineState->packages.cPackages);
     ExitOnRootFailure(hr, "UX aborted detect begin.");
 
     pEngineState->userExperience.hwndDetect = hwndParent;

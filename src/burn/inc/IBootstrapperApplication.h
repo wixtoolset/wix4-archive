@@ -41,14 +41,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectBegin - called when the engine begins detection.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectBegin)(
+    STDMETHOD_(HRESULT, OnDetectBegin)(
         __in BOOL fInstalled,
-        __in DWORD cPackages
+        __in DWORD cPackages,
+        __out BOOL* pfCancel
         ) = 0;
 
     // OnDetectForwardCompatibleBundle - called when the engine detects a forward compatible bundle.

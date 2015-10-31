@@ -86,7 +86,7 @@ enum BOOTSTRAPPER_RELATION_TYPE
 
 enum BOOTSTRAPPER_APPLICATION_MESSAGE
 {
-
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN,
 };
 
 struct BOOTSTRAPPER_COMMAND
@@ -106,6 +106,19 @@ struct BOOTSTRAPPER_COMMAND
     BOOL fPassthrough;
 
     LPWSTR wzLayoutDirectory;
+};
+
+struct BA_ONDETECTBEGIN_ARGS
+{
+    DWORD cbSize;
+    BOOL fInstalled;
+    DWORD cPackages;
+};
+
+struct BA_ONDETECTBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
 };
 
 

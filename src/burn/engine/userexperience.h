@@ -109,6 +109,11 @@ void UserExperienceExecutePhaseComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrResult
     );
+HRESULT UserExperienceOnDetectBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fInstalled,
+    __in DWORD cPackages
+    );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwAllowedResults,
