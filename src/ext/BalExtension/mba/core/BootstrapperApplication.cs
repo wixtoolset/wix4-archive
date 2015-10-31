@@ -1499,6 +1499,15 @@ namespace WixToolset.Bootstrapper
             this.OnLaunchApprovedExeComplete(new LaunchApprovedExeCompleteArgs(hrStatus, processId));
         }
 
+        int IBootstrapperApplication.BAProc(IntPtr pvContext, BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults)
+        {
+            switch (message)
+            {
+                default:
+                    return NativeMethods.E_NOTIMPL;
+            }
+        }
+
         #endregion
     }
 }

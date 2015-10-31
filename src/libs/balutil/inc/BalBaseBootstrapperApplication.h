@@ -585,6 +585,20 @@ public: // IBootstrapperApplication
     {
     }
 
+    virtual STDMETHODIMP_(HRESULT) BAProc(
+        __in LPVOID /*pvContext*/,
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID /*pvArgs*/,
+        __in LPVOID /*pvResults*/
+        )
+    {
+        switch (message)
+        {
+        default:
+            return E_NOTIMPL;
+        }
+    }
+
 protected:
     //
     // PromptCancel - prompts the user to close (if not forced).
@@ -637,18 +651,17 @@ protected:
     }
 
     CBalBaseBootstrapperApplication(
-        __in IBootstrapperEngine* pEngine,
-        __in const BOOTSTRAPPER_COMMAND* pCommand,
+        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
         __in DWORD dwRetryCount = 0,
         __in DWORD dwRetryTimeout = 1000
         )
     {
         m_cReferences = 1;
-        m_display = pCommand->display;
-        m_restart = pCommand->restart;
+        m_display = pArgs->pCommand->display;
+        m_restart = pArgs->pCommand->restart;
 
-        pEngine->AddRef();
-        m_pEngine = pEngine;
+        pArgs->pEngine->AddRef();
+        m_pEngine = pArgs->pEngine;
 
         ::InitializeCriticalSection(&m_csCanceled);
         m_fCanceled = FALSE;
