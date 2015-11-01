@@ -214,7 +214,15 @@ public: // IBootstrapperEngine
         __in_opt HWND hwndParent
         )
     {
-        return m_pEngine->Detect(hwndParent);
+        BAENGINE_DETECT_ARGS args = { };
+        BAENGINE_DETECT_RESULTS results = { };
+
+        args.cbSize = sizeof(BAENGINE_DETECT_ARGS);
+        args.hwndParent = hwndParent;
+
+        results.cbSize = sizeof(BAENGINE_DETECT_RESULTS);
+
+        return m_pfnBAEngineProc(m_pvBAEngineProcContext, BOOTSTRAPPER_ENGINE_MESSAGE_DETECT, &args, &results);
     }
 
     virtual STDMETHODIMP Plan(
