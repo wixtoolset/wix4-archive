@@ -29,7 +29,8 @@ extern "C" typedef HRESULT (WINAPI *PFN_CORBINDTOCURRENTRUNTIME)(
 extern "C" typedef HRESULT(WINAPI *PFN_MBAPREQ_BOOTSTRAPPER_APPLICATION_CREATE)(
     __in HRESULT hrHostInitialization,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
+    __in IBootstrapperEngine* pEngine
     );
 
 static HINSTANCE vhInstance = NULL;
@@ -60,7 +61,8 @@ static HRESULT GetCLRHost(
 static HRESULT CreateManagedBootstrapperApplication(
     __in _AppDomain* pAppDomain,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
+    __in IBootstrapperEngine* pEngine
     );
 static HRESULT CreateManagedBootstrapperApplicationFactory(
     __in _AppDomain* pAppDomain,
@@ -69,7 +71,8 @@ static HRESULT CreateManagedBootstrapperApplicationFactory(
 static HRESULT CreatePrerequisiteBA(
     __in HRESULT hrHostInitialization,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
+    __in IBootstrapperEngine* pEngine
     );
 static HRESULT VerifyNET4RuntimeIsSupported(
     );
@@ -107,15 +110,17 @@ extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
     HRESULT hr = S_OK; 
     HRESULT hrHostInitialization = S_OK;
     _AppDomain* pAppDomain = NULL;
+    IBootstrapperEngine* pEngine = NULL;
 
-    BalInitialize(pArgs->pEngine);
+    hr = BalInitializeFromCreateArgs(pArgs, &pEngine);
+    ExitOnFailure(hr, "Failed to initialize Bal.");
 
     hr = GetAppDomain(&pAppDomain);
     if (SUCCEEDED(hr))
     {
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Loading managed bootstrapper application.");
 
-        hr = CreateManagedBootstrapperApplication(pAppDomain, pArgs, pResults);
+        hr = CreateManagedBootstrapperApplication(pAppDomain, pArgs, pResults, pEngine);
         BalExitOnFailure(hr, "Failed to create the managed bootstrapper application.");
     }
     else // fallback to the prerequisite BA.
@@ -132,7 +137,7 @@ extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Loading prerequisite bootstrapper application because managed host could not be loaded, error: 0x%08x.", hr);
 
-        hr = CreatePrerequisiteBA(hrHostInitialization, pArgs, pResults);
+        hr = CreatePrerequisiteBA(hrHostInitialization, pArgs, pResults, pEngine);
         BalExitOnFailure(hr, "Failed to create the pre-requisite bootstrapper application.");
     }
 
@@ -508,7 +513,8 @@ LExit:
 static HRESULT CreateManagedBootstrapperApplication(
     __in _AppDomain* pAppDomain,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
+    __in IBootstrapperEngine* pEngine
     )
 {
     HRESULT hr = S_OK;
@@ -518,7 +524,7 @@ static HRESULT CreateManagedBootstrapperApplication(
     hr = CreateManagedBootstrapperApplicationFactory(pAppDomain, &pAppFactory);
     ExitOnFailure(hr, "Failed to create the factory to create the bootstrapper application.");
 
-    hr = pAppFactory->Create(pArgs->pEngine, pArgs->pCommand, &pApp);
+    hr = pAppFactory->Create(pEngine, pArgs->pCommand, &pApp);
     ExitOnFailure(hr, "Failed to create the bootstrapper application.");
 
     pResults->pfnBootstrapperApplicationProc = BalBaseBootstrapperApplicationProc;
@@ -527,6 +533,7 @@ static HRESULT CreateManagedBootstrapperApplication(
     pApp = NULL;
 
 LExit:
+    ReleaseNullObject(pApp);
     ReleaseNullObject(pAppFactory);
 
     return hr;
@@ -574,7 +581,8 @@ LExit:
 static HRESULT CreatePrerequisiteBA(
     __in HRESULT hrHostInitialization,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
+    __in IBootstrapperEngine* pEngine
     )
 {
     HRESULT hr = S_OK;
@@ -590,7 +598,7 @@ static HRESULT CreatePrerequisiteBA(
     PFN_MBAPREQ_BOOTSTRAPPER_APPLICATION_CREATE pfnCreate = reinterpret_cast<PFN_MBAPREQ_BOOTSTRAPPER_APPLICATION_CREATE>(::GetProcAddress(hModule, "MbaPrereqBootstrapperApplicationCreate"));
     ExitOnNullWithLastError(pfnCreate, hr, "Failed to get MbaPrereqBootstrapperApplicationCreate entry-point from: %ls", sczMbapreqPath);
 
-    hr = pfnCreate(hrHostInitialization, pArgs, pResults);
+    hr = pfnCreate(hrHostInitialization, pArgs, pResults, pEngine);
     ExitOnFailure(hr, "Failed to create prequisite bootstrapper app.");
 
     vhMbapreqModule = hModule;

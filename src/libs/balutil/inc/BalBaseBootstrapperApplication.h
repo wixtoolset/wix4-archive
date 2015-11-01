@@ -654,6 +654,7 @@ protected:
 
     CBalBaseBootstrapperApplication(
         __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+        __in IBootstrapperEngine* pEngine,
         __in DWORD dwRetryCount = 0,
         __in DWORD dwRetryTimeout = 1000
         )
@@ -662,8 +663,8 @@ protected:
         m_display = pArgs->pCommand->display;
         m_restart = pArgs->pCommand->restart;
 
-        pArgs->pEngine->AddRef();
-        m_pEngine = pArgs->pEngine;
+        pEngine->AddRef();
+        m_pEngine = pEngine;
 
         ::InitializeCriticalSection(&m_csCanceled);
         m_fCanceled = FALSE;

@@ -58,7 +58,6 @@ typedef struct _BURN_USER_EXPERIENCE
     DWORD dwExitCode;                   // Exit code returned by the user experience for the engine overall.
 } BURN_USER_EXPERIENCE;
 
-
 // functions
 
 HRESULT UserExperienceParseFromXml(
@@ -70,7 +69,7 @@ void UserExperienceUninitialize(
     );
 HRESULT UserExperienceLoad(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in IBootstrapperEngine* pEngine,
+    __in LPVOID pvEngineContext,
     __in BOOTSTRAPPER_COMMAND* pCommand
     );
 HRESULT UserExperienceUnload(

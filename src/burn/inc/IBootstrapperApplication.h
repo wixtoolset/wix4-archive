@@ -658,6 +658,8 @@ struct BOOTSTRAPPER_CREATE_ARGS
     DWORD cbSize;
     DWORD64 qwEngineAPIVersion;
     IBootstrapperEngine* pEngine; // will be removed once IBootstrapperEngine is moved out of the engine.
+    PFN_BOOTSTRAPPER_ENGINE_PROC pfnBootstrapperEngineProc;
+    LPVOID pvBootstrapperEngineProcContext;
     BOOTSTRAPPER_COMMAND* pCommand;
 };
 

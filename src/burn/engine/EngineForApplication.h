@@ -36,12 +36,28 @@ enum WM_BURN
     WM_BURN_LAST, // this enum value must always be last.
 };
 
+// structs
+
+typedef struct _BOOTSTRAPPER_ENGINE_CONTEXT
+{
+    BURN_ENGINE_STATE* pEngineState;
+    DWORD dwThreadId;
+    IBootstrapperEngine* pEngineForApplication; // delete after moving IBootstrapperEngine out of the engine.
+} BOOTSTRAPPER_ENGINE_CONTEXT;
+
 // function declarations
 
 HRESULT EngineForApplicationCreate(
     __in BURN_ENGINE_STATE* pEngineState,
     __in DWORD dwThreadId,
     __out IBootstrapperEngine** ppEngineForApplication
+    );
+
+HRESULT WINAPI EngineForApplicationProc(
+    __in LPVOID pvContext,
+    __in BOOTSTRAPPER_ENGINE_MESSAGE message,
+    __in const LPVOID pvArgs,
+    __in LPVOID pvResults
     );
 
 #if defined(__cplusplus)
