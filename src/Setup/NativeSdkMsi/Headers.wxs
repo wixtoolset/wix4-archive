@@ -23,6 +23,14 @@
             </Component>
 
             <Component>
+                <File Source="libs\balutil\inc\BalBaseBootstrapperApplicationProc.h" />
+            </Component>
+
+            <Component>
+                <File Source="libs\balutil\inc\BalBootstrapperEngine.h" />
+            </Component>
+
+            <Component>
                 <File Source="libs\balutil\inc\balcondition.h" />
             </Component>
 
@@ -40,6 +48,14 @@
 
             <Component>
                 <File Source="libs\balutil\inc\IBootstrapperBAFunction.h" />
+            </Component>
+
+            <Component>
+                <File Source="BootstrapperApplication.h" />
+            </Component>
+
+            <Component>
+                <File Source="BootstrapperEngine.h" />
             </Component>
 
             <Component>

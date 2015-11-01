@@ -9,6 +9,10 @@
 
 #pragma once
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #define IDERROR -1
 #define IDNOACTION 0
 
@@ -103,7 +107,19 @@ enum BOOTSTRAPPER_UPDATE_HASH_TYPE
 
 enum BOOTSTRAPPER_ENGINE_MESSAGE
 {
+    BOOTSTRAPPER_ENGINE_MESSAGE_DETECT,
 };
+
+typedef struct _BAENGINE_DETECT_ARGS
+{
+    DWORD cbSize;
+    HWND hwndParent;
+} BAENGINE_DETECT_ARGS;
+
+typedef struct _BAENGINE_DETECT_RESULTS
+{
+    DWORD cbSize;
+} BAENGINE_DETECT_RESULTS;
 
 
 extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_ENGINE_PROC)(
@@ -112,3 +128,7 @@ extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_ENGINE_PROC)(
     __in const LPVOID pvArgs,
     __in LPVOID pvResults
     );
+
+#if defined(__cplusplus)
+}
+#endif
