@@ -566,21 +566,22 @@ static HRESULT RunApplication(
     )
 {
     HRESULT hr = S_OK;
-    DWORD dwThreadId = 0;
-    IBootstrapperEngine* pEngineForApplication = NULL;
+    BOOTSTRAPPER_ENGINE_CONTEXT engineContext = { };
     BOOL fStartupCalled = FALSE;
     BOOL fRet = FALSE;
     MSG msg = { };
 
     ::PeekMessageW(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
-    dwThreadId = ::GetCurrentThreadId();
 
-    // Load the bootstrapper application.
-    hr = EngineForApplicationCreate(pEngineState, dwThreadId, &pEngineForApplication);
+    // Setup the bootstrapper engine.
+    engineContext.dwThreadId = ::GetCurrentThreadId();
+    engineContext.pEngineState = pEngineState;
+    hr = EngineForApplicationCreate(pEngineState, engineContext.dwThreadId, &engineContext.pEngineForApplication);
     ExitOnFailure(hr, "Failed to create engine for UX.");
 
-    hr = UserExperienceLoad(&pEngineState->userExperience, pEngineForApplication, &pEngineState->command);
-    ExitOnFailure(hr, "Failed to load UX.");
+    // Load the bootstrapper application.
+    hr = UserExperienceLoad(&pEngineState->userExperience, &engineContext, &pEngineState->command);
+    ExitOnFailure(hr, "Failed to load BA.");
 
     fStartupCalled = TRUE;
     hr = pEngineState->userExperience.pUserExperience->OnStartup();
@@ -622,7 +623,7 @@ LExit:
     // unload UX
     UserExperienceUnload(&pEngineState->userExperience);
 
-    ReleaseObject(pEngineForApplication);
+    ReleaseObject(engineContext.pEngineForApplication);
 
     return hr;
 }

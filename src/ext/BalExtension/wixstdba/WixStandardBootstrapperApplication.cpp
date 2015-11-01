@@ -2740,8 +2740,9 @@ public:
         __in HMODULE hModule,
         __in BOOL fPrereq,
         __in HRESULT hrHostInitialization,
-        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs
-        ) : CBalBaseBootstrapperApplication(pArgs, 3, 3000)
+        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+        __in IBootstrapperEngine* pEngine
+        ) : CBalBaseBootstrapperApplication(pArgs, pEngine, 3, 3000)
     {
         m_hModule = hModule;
         memcpy_s(&m_command, sizeof(m_command), pArgs->pCommand, sizeof(BOOTSTRAPPER_COMMAND));
@@ -2822,8 +2823,8 @@ public:
         m_fPrereqInstalled = FALSE;
         m_fPrereqAlreadyInstalled = FALSE;
 
-        pArgs->pEngine->AddRef();
-        m_pEngine = pArgs->pEngine;
+        pEngine->AddRef();
+        m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
         m_pBAFunction = NULL;
@@ -2929,13 +2930,14 @@ HRESULT CreateBootstrapperApplication(
     __in BOOL fPrereq,
     __in HRESULT hrHostInitialization,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
+    __in IBootstrapperEngine* pEngine
     )
 {
     HRESULT hr = S_OK;
     CWixStandardBootstrapperApplication* pApplication = NULL;
 
-    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pArgs);
+    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pArgs, pEngine);
     ExitOnNull(pApplication, hr, E_OUTOFMEMORY, "Failed to create new standard bootstrapper application object.");
 
     pResults->pfnBootstrapperApplicationProc = BalBaseBootstrapperApplicationProc;

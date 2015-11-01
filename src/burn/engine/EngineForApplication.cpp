@@ -996,3 +996,24 @@ LExit:
     ReleaseObject(pEngine);
     return hr;
 }
+
+HRESULT WINAPI EngineForApplicationProc(
+    __in LPVOID pvContext,
+    __in BOOTSTRAPPER_ENGINE_MESSAGE message,
+    __in const LPVOID /*pvArgs*/,
+    __in LPVOID /*pvResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    BOOTSTRAPPER_ENGINE_CONTEXT* pContext = reinterpret_cast<BOOTSTRAPPER_ENGINE_CONTEXT*>(pvContext);
+    UNREFERENCED_PARAMETER(pContext);
+
+    switch (message)
+    {
+    default:
+        hr = E_NOTIMPL;
+        break;
+    }
+
+    return hr;
+}

@@ -33,6 +33,7 @@
 #include "IBootstrapperBAFunction.h"
 
 #include "balutil.h"
+#include "BalBootstrapperEngine.h"
 #include "balcondition.h"
 #include "balinfo.h"
 #include "balretry.h"

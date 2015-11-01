@@ -28,6 +28,31 @@ DAPI_(void) BalInitialize(
     vpEngine = pEngine;
 }
 
+DAPI_(HRESULT) BalInitializeFromCreateArgs(
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __out_opt IBootstrapperEngine** ppEngine
+    )
+{
+    HRESULT hr = S_OK;
+    IBootstrapperEngine* pEngine = NULL;
+
+    hr = BalBootstrapperEngineCreate(pArgs->pEngine, pArgs->pfnBootstrapperEngineProc, pArgs->pvBootstrapperEngineProcContext, &pEngine);
+    ExitOnFailure(hr, "Failed to create BalBootstrapperEngine.");
+
+    BalInitialize(pEngine);
+
+    if (ppEngine)
+    {
+        *ppEngine = pEngine;
+    }
+    pEngine = NULL;
+
+LExit:
+    ReleaseObject(pEngine);
+
+    return hr;
+}
+
 
 DAPI_(void) BalUninitialize()
 {
