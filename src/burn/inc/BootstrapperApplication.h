@@ -123,10 +123,10 @@ struct BA_ONDETECTBEGIN_RESULTS
 
 
 extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_PROC)(
-    __in LPVOID pvContext,
     __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
     __in const LPVOID pvArgs,
-    __in LPVOID pvResults
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
     );
 
 extern "C" typedef void (WINAPI *PFN_BOOTSTRAPPER_APPLICATION_DESTROY)();

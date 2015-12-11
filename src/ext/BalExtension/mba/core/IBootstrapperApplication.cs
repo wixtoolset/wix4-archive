@@ -402,10 +402,10 @@ namespace WixToolset.Bootstrapper
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
         int BAProc(
-            IntPtr pvContext,
             BOOTSTRAPPER_APPLICATION_MESSAGE message,
             IntPtr pvArgs,
-            IntPtr pvResults
+            IntPtr pvResults,
+            IntPtr pvContext
             );
     }
 
@@ -672,5 +672,6 @@ namespace WixToolset.Bootstrapper
     /// </summary>
     public enum BOOTSTRAPPER_APPLICATION_MESSAGE
     {
+        OnDetectBegin,
     }
 }

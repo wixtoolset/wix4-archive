@@ -1001,10 +1001,10 @@ LExit:
 }
 
 HRESULT WINAPI EngineForApplicationProc(
-    __in LPVOID pvContext,
     __in BOOTSTRAPPER_ENGINE_MESSAGE message,
     __in const LPVOID pvArgs,
-    __in LPVOID pvResults
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
     )
 {
     HRESULT hr = S_OK;

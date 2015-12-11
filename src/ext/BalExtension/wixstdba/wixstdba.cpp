@@ -39,7 +39,7 @@ extern "C" BOOL WINAPI DllMain(
 
 extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK;
@@ -48,7 +48,7 @@ extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
     hr = BalInitializeFromCreateArgs(pArgs, &pEngine);
     ExitOnFailure(hr, "Failed to initialize Bal.");
 
-    hr = CreateBootstrapperApplication(vhInstance, FALSE, S_OK, pArgs, pResults, pEngine);
+    hr = CreateBootstrapperApplication(vhInstance, FALSE, S_OK, pEngine, pArgs, pResults);
     BalExitOnFailure(hr, "Failed to create bootstrapper application interface.");
 
 LExit:
@@ -66,16 +66,16 @@ extern "C" void WINAPI BootstrapperApplicationDestroy()
 
 extern "C" HRESULT WINAPI MbaPrereqBootstrapperApplicationCreate(
     __in HRESULT hrHostInitialization,
+    __in IBootstrapperEngine* pEngine,
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults,
-    __in IBootstrapperEngine* pEngine
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK;
 
     BalInitialize(pEngine);
 
-    hr = CreateBootstrapperApplication(vhInstance, TRUE, hrHostInitialization, pArgs, pResults, pEngine);
+    hr = CreateBootstrapperApplication(vhInstance, TRUE, hrHostInitialization, pEngine, pArgs, pResults);
     BalExitOnFailure(hr, "Failed to create managed prerequisite bootstrapper application interface.");
 
 LExit:

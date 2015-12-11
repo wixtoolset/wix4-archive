@@ -89,21 +89,20 @@ extern "C" void UserExperienceUninitialize(
 *******************************************************************/
 extern "C" HRESULT UserExperienceLoad(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in LPVOID pvEngineContext,
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pEngineContext,
     __in BOOTSTRAPPER_COMMAND* pCommand
     )
 {
     HRESULT hr = S_OK;
     BOOTSTRAPPER_CREATE_ARGS args = { };
     BOOTSTRAPPER_CREATE_RESULTS results = { };
-    BOOTSTRAPPER_ENGINE_CONTEXT* pEngineContext = reinterpret_cast<BOOTSTRAPPER_ENGINE_CONTEXT*>(pvEngineContext); // temporary hack to avoid dealing with correct ordering of header files.
 
     args.cbSize = sizeof(BOOTSTRAPPER_CREATE_ARGS);
     args.pCommand = pCommand;
     args.pEngine = pEngineContext->pEngineForApplication;
     args.pfnBootstrapperEngineProc = EngineForApplicationProc;
     args.pvBootstrapperEngineProcContext = pEngineContext;
-    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // need to decide whether to keep this, and if so when to update it.
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 
@@ -319,7 +318,7 @@ extern "C" HRESULT UserExperienceOnDetectBegin(
 
     results.cbSize = sizeof(BA_ONDETECTBEGIN_RESULTS);
 
-    hr = pUserExperience->pfnBAProc(pUserExperience->pvBAProcContext, BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results);
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results, pUserExperience->pvBAProcContext);
     if (SUCCEEDED(hr) && results.fCancel)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
