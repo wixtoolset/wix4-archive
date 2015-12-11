@@ -14,7 +14,11 @@
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
-static HRESULT BalBaseBAProcOnDetectBegin(IBootstrapperApplication* pBA, BA_ONDETECTBEGIN_ARGS* pArgs, BA_ONDETECTBEGIN_RESULTS* pResults)
+static HRESULT BalBaseBAProcOnDetectBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONDETECTBEGIN_ARGS* pArgs,
+    __inout BA_ONDETECTBEGIN_RESULTS* pResults
+    )
 {
     return pBA->OnDetectBegin(pArgs->fInstalled, pArgs->cPackages, &pResults->fCancel);
 }
@@ -26,14 +30,14 @@ BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrap
 
 *******************************************************************/
 static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
-    __in LPVOID pvContext,
     __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
     __in const LPVOID pvArgs,
-    __in LPVOID pvResults
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
     )
 {
     IBootstrapperApplication* pBA = reinterpret_cast<IBootstrapperApplication*>(pvContext);
-    HRESULT hr = pBA->BAProc(pvContext, message, pvArgs, pvResults);
+    HRESULT hr = pBA->BAProc(message, pvArgs, pvResults, pvContext);
     
     if (E_NOTIMPL == hr)
     {

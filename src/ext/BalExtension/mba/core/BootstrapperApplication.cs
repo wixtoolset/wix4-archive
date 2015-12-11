@@ -1500,7 +1500,7 @@ namespace WixToolset.Bootstrapper
             this.OnLaunchApprovedExeComplete(new LaunchApprovedExeCompleteArgs(hrStatus, processId));
         }
 
-        int IBootstrapperApplication.BAProc(IntPtr pvContext, BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults)
+        int IBootstrapperApplication.BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults, IntPtr pvContext)
         {
             switch (message)
             {

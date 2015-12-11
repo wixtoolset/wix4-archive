@@ -588,10 +588,10 @@ public: // IBootstrapperApplication
     }
 
     virtual STDMETHODIMP_(HRESULT) BAProc(
-        __in LPVOID /*pvContext*/,
         __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
         __in const LPVOID /*pvArgs*/,
-        __in LPVOID /*pvResults*/
+        __inout LPVOID /*pvResults*/,
+        __in_opt LPVOID /*pvContext*/
         )
     {
         switch (message)
@@ -653,8 +653,8 @@ protected:
     }
 
     CBalBaseBootstrapperApplication(
-        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
         __in IBootstrapperEngine* pEngine,
+        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
         __in DWORD dwRetryCount = 0,
         __in DWORD dwRetryTimeout = 1000
         )

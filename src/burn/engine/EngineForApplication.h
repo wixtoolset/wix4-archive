@@ -5,12 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//    Module: Core
-//
-//    Setup chainer/bootstrapper UX core for WiX toolset.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -38,12 +32,12 @@ enum WM_BURN
 
 // structs
 
-typedef struct _BOOTSTRAPPER_ENGINE_CONTEXT
+struct BOOTSTRAPPER_ENGINE_CONTEXT
 {
     BURN_ENGINE_STATE* pEngineState;
     DWORD dwThreadId;
-    IBootstrapperEngine* pEngineForApplication; // delete after moving IBootstrapperEngine out of the engine.
-} BOOTSTRAPPER_ENGINE_CONTEXT;
+    IBootstrapperEngine* pEngineForApplication; // TODO: delete after moving IBootstrapperEngine out of the engine.
+};
 
 // function declarations
 
@@ -54,10 +48,10 @@ HRESULT EngineForApplicationCreate(
     );
 
 HRESULT WINAPI EngineForApplicationProc(
-    __in LPVOID pvContext,
     __in BOOTSTRAPPER_ENGINE_MESSAGE message,
     __in const LPVOID pvArgs,
-    __in LPVOID pvResults
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
     );
 
 #if defined(__cplusplus)

@@ -26,6 +26,8 @@ const DWORD MB_RETRYTRYAGAIN = 0xF;
 
 // structs
 
+struct BOOTSTRAPPER_ENGINE_CONTEXT;
+
 typedef struct _BURN_USER_EXPERIENCE
 {
     BOOL fSplashScreen;
@@ -69,7 +71,7 @@ void UserExperienceUninitialize(
     );
 HRESULT UserExperienceLoad(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in LPVOID pvEngineContext,
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pEngineContext,
     __in BOOTSTRAPPER_COMMAND* pCommand
     );
 HRESULT UserExperienceUnload(

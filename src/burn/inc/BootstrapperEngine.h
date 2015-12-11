@@ -123,10 +123,10 @@ typedef struct _BAENGINE_DETECT_RESULTS
 
 
 extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_ENGINE_PROC)(
-    __in LPVOID pvContext,
     __in BOOTSTRAPPER_ENGINE_MESSAGE message,
     __in const LPVOID pvArgs,
-    __in LPVOID pvResults
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
     );
 
 #if defined(__cplusplus)

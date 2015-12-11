@@ -644,20 +644,20 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // BAProc - The PFN_BOOTSTRAPPER_APPLICATION_PROC can call this method to give the BA raw access to the callback from the engine.
     //          This might be used to help the BA support more than one version of the engine.
     STDMETHOD_(HRESULT, BAProc)(
-        __in LPVOID pvContext,
         __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
         __in const LPVOID pvArgs,
-        __in LPVOID pvResults
+        __inout LPVOID pvResults,
+        __in_opt LPVOID pvContext
         ) = 0;
 };
 
 
-// Move into BootstrapperApplication.h once IBootstrapperEngine and IBootstrapperApplication have been moved out of the engine.
+// TODO: Move into BootstrapperApplication.h once IBootstrapperEngine and IBootstrapperApplication have been moved out of the engine.
 struct BOOTSTRAPPER_CREATE_ARGS
 {
     DWORD cbSize;
     DWORD64 qwEngineAPIVersion;
-    IBootstrapperEngine* pEngine; // will be removed once IBootstrapperEngine is moved out of the engine.
+    IBootstrapperEngine* pEngine; // TODO: remove once IBootstrapperEngine is moved out of the engine.
     PFN_BOOTSTRAPPER_ENGINE_PROC pfnBootstrapperEngineProc;
     LPVOID pvBootstrapperEngineProcContext;
     BOOTSTRAPPER_COMMAND* pCommand;
@@ -666,12 +666,12 @@ struct BOOTSTRAPPER_CREATE_ARGS
 struct BOOTSTRAPPER_CREATE_RESULTS
 {
     DWORD cbSize;
-    IBootstrapperApplication* pApplication; // will be removed once IBootstrapperApplication is moved out of the engine.
+    IBootstrapperApplication* pApplication; // TODO: remove once IBootstrapperApplication is moved out of the engine.
     PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBootstrapperApplicationProc;
     LPVOID pvBootstrapperApplicationProcContext;
 };
 
 extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_CREATE)(
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __in BOOTSTRAPPER_CREATE_RESULTS* pResults
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     );

@@ -222,7 +222,7 @@ public: // IBootstrapperEngine
 
         results.cbSize = sizeof(BAENGINE_DETECT_RESULTS);
 
-        return m_pfnBAEngineProc(m_pvBAEngineProcContext, BOOTSTRAPPER_ENGINE_MESSAGE_DETECT, &args, &results);
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_DETECT, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Plan(
@@ -416,9 +416,9 @@ public: // IMarshal
 
 public:
     CBalBootstrapperEngine(
-        __in IBootstrapperEngine* pEngine, // remove after IBootstrapperEngine is moved out of the engine.
+        __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
         __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
-        __in LPVOID pvBAEngineProcContext
+        __in_opt LPVOID pvBAEngineProcContext
         )
     {
         m_cReferences = 1;
@@ -442,9 +442,9 @@ private:
 };
 
 HRESULT BalBootstrapperEngineCreate(
-    __in IBootstrapperEngine* pEngine, // remove after IBootstrapperEngine is moved out of the engine.
+    __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
     __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
-    __in LPVOID pvBAEngineProcContext,
+    __in_opt LPVOID pvBAEngineProcContext,
     __out IBootstrapperEngine** ppBootstrapperEngine
     )
 {
