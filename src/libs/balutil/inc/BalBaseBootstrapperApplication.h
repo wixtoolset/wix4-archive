@@ -611,8 +611,8 @@ protected:
     virtual BOOL PromptCancel(
         __in HWND hWnd,
         __in BOOL fForceCancel,
-        __in_z LPCWSTR wzMessage,
-        __in_z LPCWSTR wzCaption
+        __in_z_opt LPCWSTR wzMessage,
+        __in_z_opt LPCWSTR wzCaption
         )
     {
         ::EnterCriticalSection(&m_csCanceled);
@@ -685,14 +685,16 @@ protected:
         ReleaseNullObject(m_pEngine);
     }
 
+protected:
+    CRITICAL_SECTION m_csCanceled;
+    BOOL m_fCanceled;
+
 private:
     long m_cReferences;
     BOOTSTRAPPER_DISPLAY m_display;
     BOOTSTRAPPER_RESTART m_restart;
     IBootstrapperEngine* m_pEngine;
 
-    CRITICAL_SECTION m_csCanceled;
-    BOOL m_fCanceled;
     BOOL m_fApplying;
     BOOL m_fRollingBack;
 
