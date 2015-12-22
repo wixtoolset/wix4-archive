@@ -116,13 +116,13 @@ extern "C" UINT __stdcall WixSchedFormatFiles(
     // schedule deferred CAs if there's anything to do
     if (sczRollbackCustomActionData && *sczRollbackCustomActionData)
     {
-        hr = WcaDoDeferredAction(L"WixRollbackFormatFiles", sczRollbackCustomActionData, cFiles * COST_FILEFORMATTING);
+        hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"WixRollbackFormatFiles"), sczRollbackCustomActionData, cFiles * COST_FILEFORMATTING);
         ExitOnFailure(hr, "Failed to schedule WixRollbackFormatFiles");
     }
 
     if (sczExecCustomActionData && *sczExecCustomActionData)
     {
-        hr = WcaDoDeferredAction(L"WixExecFormatFiles", sczExecCustomActionData, cFiles * COST_FILEFORMATTING);
+        hr = WcaDoDeferredAction(PLATFORM_DECORATION(L"WixExecFormatFiles"), sczExecCustomActionData, cFiles * COST_FILEFORMATTING);
         ExitOnFailure(hr, "Failed to schedule WixExecFormatFiles");
     }
 
@@ -208,8 +208,17 @@ extern "C" UINT __stdcall WixExecFormatFiles(
         WcaLog(LOGMSG_STANDARD, "Content: %ls", sczFileContent);
 #endif
 
+        // write file and preserve modified time
+        FILETIME filetime;
+
+        hr = FileGetTime(sczFilePath, NULL, NULL, &filetime);
+        ExitOnFailure(hr, "Failed to get modified time of file : %ls", sczFilePath);
+
         hr = FileWrite(sczFilePath, FILE_ATTRIBUTE_NORMAL, pbData, static_cast<DWORD>(cbData), NULL);
         ExitOnFailure(hr, "Failed to write file content: %ls", sczFilePath);
+
+        hr = FileSetTime(sczFilePath, NULL, NULL, &filetime);
+        ExitOnFailure(hr, "Failed to set modified time of file : %ls", sczFilePath);
 
         // Tick the progress bar
         hr = WcaProgressMessage(COST_FILEFORMATTING, FALSE);
