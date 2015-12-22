@@ -252,6 +252,9 @@ namespace WixToolset.Extensions
                         case "EventManifest":
                             this.ParseEventManifestElement(element, fileComponentId, fileId);
                             break;
+                        case "FormatFile":
+                            this.ParseFormatFileElement(element, fileComponentId, fileId);
+                            break;
                         default:
                             this.Core.UnexpectedElement(parentElement, element);
                             break;
@@ -2262,6 +2265,55 @@ namespace WixToolset.Extensions
                 // All other supported platforms use x86
                 this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "ConfigurePerfmonManifestRegister");
                 this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "ConfigurePerfmonManifestUnregister");
+            }
+        }
+
+        /// <summary>
+        /// Parses a format files element.
+        /// </summary>
+        /// <param name="node">Element to parse.</param>
+        /// <param name="componentId">Identifier of parent component.</param>
+        /// <param name="fileId">Identifier of referenced file.</param>
+        private void ParseFormatFileElement(XElement node, string componentId, string fileId)
+        {
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string binaryId = null;
+
+            foreach (XAttribute attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
+                {
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "BinaryKey":
+                            binaryId = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            this.Core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionAttribute(node, attrib);
+                }
+            }
+
+            this.Core.ParseForExtensionElements(node);
+
+            if (null == binaryId)
+            {
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "BinaryKey"));
+            }
+
+            if (!this.Core.EncounteredError)
+            {
+                Row row = this.Core.CreateRow(sourceLineNumbers, "WixFormatFiles");
+                row[0] = binaryId;
+                row[1] = fileId;
+
+                this.Core.CreateSimpleReference(sourceLineNumbers, "Binary", binaryId);
+                this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFormatFiles");
             }
         }
 

@@ -15,6 +15,17 @@
   The following actions do not support X64.
   -->
   <?if $(var.platform)!=x64 ?>
+  
+  <Fragment>
+    <CustomAction Id="WixSchedFormatFiles" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixSchedFormatFiles" />
+    <CustomAction Id="WixExecFormatFiles" Execute="deferred" Impersonate="no" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixExecFormatFiles" />
+    <CustomAction Id="WixRollbackFormatFiles" Execute="rollback" Impersonate="no" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixExecFormatFiles" />
+
+    <InstallExecuteSequence>
+      <Custom Action="WixSchedFormatFiles" After="InstallFiles" />
+    </InstallExecuteSequence>
+  </Fragment>
+
   <Fragment>
     <CustomAction Id="WixCheckRebootRequired$(var.Suffix)" BinaryKey="WixCA$(var.Suffix)" DllEntry="WixCheckRebootRequired" Execute="immediate" Return="ignore" SuppressModularization="yes" />
 

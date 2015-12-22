@@ -66,6 +66,7 @@
     <ClCompile Include="CheckReboot.cpp" />
     <ClCompile Include="CloseApps.cpp" />
     <ClCompile Include="exitearlywithsuccess.cpp" />
+    <ClCompile Include="FormatFiles.cpp" />
     <ClCompile Include="netshortcuts.cpp" />
     <ClCompile Include="osinfo.cpp" />
     <ClCompile Include="qtexecca.cpp" />

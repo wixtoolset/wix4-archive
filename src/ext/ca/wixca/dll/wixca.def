@@ -20,6 +20,9 @@ EXPORTS
 ; closeapps.cpp
     WixCloseApplications
     WixCloseApplicationsDeferred
+; FormatFiles.cpp
+    WixSchedFormatFiles
+    WixExecFormatFiles
 ; osinfo.cpp
     WixQueryOsInfo
     WixQueryOsDirs
