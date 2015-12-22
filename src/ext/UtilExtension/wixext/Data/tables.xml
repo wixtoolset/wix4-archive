@@ -236,4 +236,10 @@
         <columnDefinition name="Sequence" type="number" length="2" nullable="yes"
                 description="Order to execute the XML modifications."/>
     </tableDefinition>
+    <tableDefinition name="WixFormatFiles">
+        <columnDefinition name="Binary_" type="string" length="72" primaryKey="yes" modularize="column"
+                keyTable="Binary" keyColumn="1" category="identifier" description="Binary data to be formatted."/>
+        <columnDefinition name="File_" type="string" length="72" primaryKey="yes" modularize="column"
+                keyTable="File" keyColumn="1" category="identifier" description="File whose component controls the custom action and where the formatted data is written."/>
+    </tableDefinition>
 </tableDefinitions>
