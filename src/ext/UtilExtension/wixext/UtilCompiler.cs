@@ -253,7 +253,7 @@ namespace WixToolset.Extensions
                             this.ParseEventManifestElement(element, fileComponentId, fileId);
                             break;
                         case "FormatFile":
-                            this.ParseFormatFileElement(element, fileComponentId, fileId);
+                            this.ParseFormatFileElement(element, fileId, fileWin64);
                             break;
                         default:
                             this.Core.UnexpectedElement(parentElement, element);
@@ -2274,7 +2274,7 @@ namespace WixToolset.Extensions
         /// <param name="node">Element to parse.</param>
         /// <param name="componentId">Identifier of parent component.</param>
         /// <param name="fileId">Identifier of referenced file.</param>
-        private void ParseFormatFileElement(XElement node, string componentId, string fileId)
+        private void ParseFormatFileElement(XElement node, string fileId, bool win64)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string binaryId = null;
@@ -2308,12 +2308,25 @@ namespace WixToolset.Extensions
 
             if (!this.Core.EncounteredError)
             {
+                switch (this.Core.CurrentPlatform)
+                {
+                    case Platform.X86:
+                        this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFormatFiles");
+                        break;
+                    case Platform.X64:
+                        this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFormatFiles_x64");
+                        break;
+                    case Platform.IA64:
+                    case Platform.ARM:
+                        this.Core.OnMessage(WixErrors.UnsupportedPlatformForElement(sourceLineNumbers, this.Core.CurrentPlatform.ToString(), node.Name.LocalName));
+                        break;
+                }
+
                 Row row = this.Core.CreateRow(sourceLineNumbers, "WixFormatFiles");
                 row[0] = binaryId;
                 row[1] = fileId;
 
                 this.Core.CreateSimpleReference(sourceLineNumbers, "Binary", binaryId);
-                this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFormatFiles");
             }
         }
 

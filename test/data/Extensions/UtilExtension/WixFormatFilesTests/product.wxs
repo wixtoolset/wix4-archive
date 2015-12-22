@@ -15,20 +15,33 @@
 
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder" Name="PFiles">
-        <Directory Id="WixTestFolder" Name="WixTestFolder">
-          
-        </Directory>
+        <Directory Id="WixTestFolder" Name="WixTestFolder" />
+      </Directory>
+      <Directory Id="ProgramFiles64Folder" Name="PFiles">
+        <Directory Id="WixTestFolder64" Name="WixTestFolder" />
       </Directory>
     </Directory>
 
     <Binary Id="BinaryBatchFile" SourceFile="command.cmd" />
 
+    <?if $(sys.BUILDARCH)="x64" ?>
+    <Binary Id="BinaryBatchFile64" SourceFile="command64.cmd" />
+    <?endif?>
+
     <ComponentGroup Id="MyComponentGroup">
-      <Component Directory="WixTestFolder">
+      <Component Directory="WixTestFolder" Win64="no">
         <File Id="command.cmd" Source="command.cmd" KeyPath="yes">
           <util:FormatFile BinaryKey="BinaryBatchFile" />
         </File>
       </Component>
+      
+      <?if $(sys.BUILDARCH)="x64" ?>
+      <Component Directory="WixTestFolder64">
+        <File Id="command64.cmd" Source="command64.cmd" KeyPath="yes">
+          <util:FormatFile BinaryKey="BinaryBatchFile64" />
+        </File>
+      </Component>
+      <?endif?>
     </ComponentGroup>
     
     <Feature Id="MyFeature" Title="My 1st Feature" Level="1">
