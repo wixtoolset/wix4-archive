@@ -80,7 +80,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExceptionHandling>false</ExceptionHandling>
       <AdditionalOptions>-YlprecompDefine</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MultiProcessorCompilation Condition=" $(NUMBER_OF_PROCESSORS) &gt; 4 ">true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>$(ArmPreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
