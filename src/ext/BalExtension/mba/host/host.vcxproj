@@ -48,5 +48,9 @@
     <ResourceCompile Include="host.rc" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\core\core.csproj" />
+  </ItemGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>
