@@ -200,7 +200,7 @@ extern "C" void IncrementHandleTheme(
     ::InterlockedIncrement(reinterpret_cast<LONG*>(&pHandle->cReferences));
 }
 
-extern "C"  void DecrementHandleTheme(
+extern "C" void DecrementHandleTheme(
     __in HANDLE_THEME* pHandle
     )
 {
