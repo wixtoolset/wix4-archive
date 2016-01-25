@@ -28,6 +28,7 @@ namespace WixToolset.Bootstrapper
         internal const int E_CANCELLED = unchecked((int)0x800704c7);
         internal const int E_ALREADYINITIALIZED = unchecked((int)0x800704df);
         internal const int E_NOTFOUND = unchecked((int)0x80070490);
+        internal const int E_NOTIMPL = unchecked((int)0x80004001);
         internal const int E_UNEXPECTED = unchecked((int)0x8000ffff);
         #endregion
 

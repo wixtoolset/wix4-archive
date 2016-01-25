@@ -11,6 +11,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BalBootstrapperEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="balcondition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,7 +28,22 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\BalBaseBootstrapperApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\BalBaseBootstrapperApplicationProc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\BalBootstrapperEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\balcondition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\balinfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\balretry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\balutil.h">
@@ -34,17 +52,5 @@
     <ClInclude Include="precomp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\BalBaseBootstrapperApplication.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\balretry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\balinfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="balutil.build" />
   </ItemGroup>
 </Project>

@@ -41,9 +41,10 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectBegin(
+        int OnDetectBegin(
             [MarshalAs(UnmanagedType.Bool)] bool fInstalled,
-            [MarshalAs(UnmanagedType.U4)] int cPackages
+            [MarshalAs(UnmanagedType.U4)] int cPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -397,6 +398,15 @@ namespace WixToolset.Bootstrapper
             int hrStatus,
             int processId
             );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int BAProc(
+            BOOTSTRAPPER_APPLICATION_MESSAGE message,
+            IntPtr pvArgs,
+            IntPtr pvResults,
+            IntPtr pvContext
+            );
     }
 
     /// <summary>
@@ -655,5 +665,13 @@ namespace WixToolset.Bootstrapper
         /// The user is logging off.
         /// </summary>
         Logoff = unchecked((int)0x80000000)
+    }
+
+    /// <summary>
+    /// The message code.
+    /// </summary>
+    public enum BOOTSTRAPPER_APPLICATION_MESSAGE
+    {
+        OnDetectBegin,
     }
 }

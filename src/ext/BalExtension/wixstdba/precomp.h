@@ -38,6 +38,8 @@
 #include "uriutil.h"
 #include "xmlutil.h"
 
+#include "BootstrapperEngine.h"
+#include "BootstrapperApplication.h"
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
@@ -50,8 +52,8 @@ HRESULT CreateBootstrapperApplication(
     __in BOOL fPrereq,
     __in HRESULT hrHostInitialization,
     __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppApplication
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     );
 
 #include "IBootstrapperBAFunction.h"

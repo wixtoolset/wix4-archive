@@ -42,6 +42,16 @@ DAPI_(void) BalInitialize(
     );
 
 /*******************************************************************
+ BalInitializeFromCreateArgs - convenience function to call BalBootstrapperEngineCreate
+                               then pass it along to BalInitialize.
+
+********************************************************************/
+DAPI_(HRESULT) BalInitializeFromCreateArgs(
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __out IBootstrapperEngine** ppEngine
+    );
+
+/*******************************************************************
  BalUninitialize - cleans up utility layer internals.
 
 ********************************************************************/

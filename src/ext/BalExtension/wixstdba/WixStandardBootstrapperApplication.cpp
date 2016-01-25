@@ -9,6 +9,7 @@
 
 
 #include "precomp.h"
+#include "BalBaseBootstrapperApplicationProc.h"
 
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
@@ -2740,11 +2741,11 @@ public:
         __in BOOL fPrereq,
         __in HRESULT hrHostInitialization,
         __in IBootstrapperEngine* pEngine,
-        __in const BOOTSTRAPPER_COMMAND* pCommand
-        ) : CBalBaseBootstrapperApplication(pEngine, pCommand, 3, 3000)
+        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs
+        ) : CBalBaseBootstrapperApplication(pEngine, pArgs, 3, 3000)
     {
         m_hModule = hModule;
-        memcpy_s(&m_command, sizeof(m_command), pCommand, sizeof(BOOTSTRAPPER_COMMAND));
+        memcpy_s(&m_command, sizeof(m_command), pArgs->pCommand, sizeof(BOOTSTRAPPER_COMMAND));
 
         // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
         if (fPrereq && BOOTSTRAPPER_ACTION_HELP != m_command.action && BOOTSTRAPPER_ACTION_INSTALL != m_command.action)
@@ -2929,17 +2930,19 @@ HRESULT CreateBootstrapperApplication(
     __in BOOL fPrereq,
     __in HRESULT hrHostInitialization,
     __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppApplication
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK;
     CWixStandardBootstrapperApplication* pApplication = NULL;
 
-    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pEngine, pCommand);
+    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pEngine, pArgs);
     ExitOnNull(pApplication, hr, E_OUTOFMEMORY, "Failed to create new standard bootstrapper application object.");
 
-    *ppApplication = pApplication;
+    pResults->pfnBootstrapperApplicationProc = BalBaseBootstrapperApplicationProc;
+    pResults->pvBootstrapperApplicationProcContext = pApplication;
+    pResults->pApplication = pApplication;
     pApplication = NULL;
 
 LExit:

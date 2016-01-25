@@ -5,15 +5,26 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//    Module: Core
-//
-//    Setup chainer/bootstrapper UX core for WiX toolset.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
+
+static HRESULT BAEngineDetect(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_DETECT_ARGS* pArgs,
+    __in BAENGINE_DETECT_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!::PostThreadMessageW(pContext->dwThreadId, WM_BURN_DETECT, 0, reinterpret_cast<LPARAM>(pArgs->hwndParent)))
+    {
+        ExitWithLastError(hr, "Failed to post detect message.");
+    }
+
+LExit:
+    return hr;
+}
 
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
@@ -671,18 +682,10 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP Detect(
-        __in_opt HWND hwndParent
+        __in_opt HWND /*hwndParent*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (!::PostThreadMessageW(m_dwThreadId, WM_BURN_DETECT, 0, reinterpret_cast<LPARAM>(hwndParent)))
-        {
-            ExitWithLastError(hr, "Failed to post detect message.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP Plan(
@@ -994,5 +997,28 @@ extern "C" HRESULT EngineForApplicationCreate(
 
 LExit:
     ReleaseObject(pEngine);
+    return hr;
+}
+
+HRESULT WINAPI EngineForApplicationProc(
+    __in BOOTSTRAPPER_ENGINE_MESSAGE message,
+    __in const LPVOID pvArgs,
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
+    )
+{
+    HRESULT hr = S_OK;
+    BOOTSTRAPPER_ENGINE_CONTEXT* pContext = reinterpret_cast<BOOTSTRAPPER_ENGINE_CONTEXT*>(pvContext);
+
+    switch (message)
+    {
+    case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
+        hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
+        break;
+    default:
+        hr = E_NOTIMPL;
+        break;
+    }
+
     return hr;
 }

@@ -26,6 +26,8 @@ const DWORD MB_RETRYTRYAGAIN = 0xF;
 
 // structs
 
+struct BOOTSTRAPPER_ENGINE_CONTEXT;
+
 typedef struct _BURN_USER_EXPERIENCE
 {
     BOOL fSplashScreen;
@@ -33,6 +35,8 @@ typedef struct _BURN_USER_EXPERIENCE
 
     HMODULE hUXModule;
     IBootstrapperApplication* pUserExperience;
+    PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBAProc;
+    LPVOID pvBAProcContext;
     LPWSTR sczTempDirectory;
 
     CRITICAL_SECTION csEngineActive;    // Changing the engine active state in the user experience must be
@@ -56,7 +60,6 @@ typedef struct _BURN_USER_EXPERIENCE
     DWORD dwExitCode;                   // Exit code returned by the user experience for the engine overall.
 } BURN_USER_EXPERIENCE;
 
-
 // functions
 
 HRESULT UserExperienceParseFromXml(
@@ -68,7 +71,7 @@ void UserExperienceUninitialize(
     );
 HRESULT UserExperienceLoad(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in IBootstrapperEngine* pEngine,
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pEngineContext,
     __in BOOTSTRAPPER_COMMAND* pCommand
     );
 HRESULT UserExperienceUnload(
@@ -106,6 +109,11 @@ void UserExperienceExecuteReset(
 void UserExperienceExecutePhaseComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrResult
+    );
+HRESULT UserExperienceOnDetectBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fInstalled,
+    __in DWORD cPackages
     );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
