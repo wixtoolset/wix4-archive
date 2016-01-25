@@ -588,17 +588,20 @@ public: // IBootstrapperApplication
     }
 
     virtual STDMETHODIMP_(HRESULT) BAProc(
-        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE /*message*/,
         __in const LPVOID /*pvArgs*/,
         __inout LPVOID /*pvResults*/,
         __in_opt LPVOID /*pvContext*/
         )
     {
+        /*
         switch (message)
         {
         default:
             return E_NOTIMPL;
         }
+        */
+        return E_NOTIMPL;
     }
 
 protected:
