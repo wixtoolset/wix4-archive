@@ -89,23 +89,38 @@ extern "C" void UserExperienceUninitialize(
 *******************************************************************/
 extern "C" HRESULT UserExperienceLoad(
     __in BURN_USER_EXPERIENCE* pUserExperience,
-    __in IBootstrapperEngine* pEngine,
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pEngineContext,
     __in BOOTSTRAPPER_COMMAND* pCommand
     )
 {
     HRESULT hr = S_OK;
+    BOOTSTRAPPER_CREATE_ARGS args = { };
+    BOOTSTRAPPER_CREATE_RESULTS results = { };
 
-    // load UX DLL
+    args.cbSize = sizeof(BOOTSTRAPPER_CREATE_ARGS);
+    args.pCommand = pCommand;
+    args.pEngine = pEngineContext->pEngineForApplication;
+    args.pfnBootstrapperEngineProc = EngineForApplicationProc;
+    args.pvBootstrapperEngineProcContext = pEngineContext;
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
+
+    results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
+
+    // Load BA DLL.
     pUserExperience->hUXModule = ::LoadLibraryW(pUserExperience->payloads.rgPayloads[0].sczLocalFilePath);
     ExitOnNullWithLastError(pUserExperience->hUXModule, hr, "Failed to load UX DLL.");
 
-    // get BoostrapperApplicationCreate entry-point
+    // Get BootstrapperApplicationCreate entry-point.
     PFN_BOOTSTRAPPER_APPLICATION_CREATE pfnCreate = (PFN_BOOTSTRAPPER_APPLICATION_CREATE)::GetProcAddress(pUserExperience->hUXModule, "BootstrapperApplicationCreate");
     ExitOnNullWithLastError(pfnCreate, hr, "Failed to get BootstrapperApplicationCreate entry-point");
 
-    // create UX
-    hr = pfnCreate(pEngine, pCommand, &pUserExperience->pUserExperience);
-    ExitOnFailure(hr, "Failed to create UX.");
+    // Create BA.
+    hr = pfnCreate(&args, &results);
+    ExitOnFailure(hr, "Failed to create BA.");
+
+    pUserExperience->pUserExperience = results.pApplication;
+    pUserExperience->pfnBAProc = results.pfnBootstrapperApplicationProc;
+    pUserExperience->pvBAProcContext = results.pvBootstrapperApplicationProcContext;
 
 LExit:
     return hr;
@@ -285,6 +300,31 @@ extern "C" void UserExperienceExecutePhaseComplete(
     {
         pUserExperience->hrApplyError = hrResult;
     }
+}
+
+extern "C" HRESULT UserExperienceOnDetectBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fInstalled,
+    __in DWORD cPackages
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTBEGIN_ARGS args = { };
+    BA_ONDETECTBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(BA_ONDETECTBEGIN_ARGS);
+    args.cPackages = cPackages;
+    args.fInstalled = fInstalled;
+
+    results.cbSize = sizeof(BA_ONDETECTBEGIN_RESULTS);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    if (SUCCEEDED(hr) && results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+    return hr;
 }
 
 extern "C" int UserExperienceCheckExecuteResult(

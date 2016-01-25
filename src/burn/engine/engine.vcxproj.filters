@@ -212,6 +212,12 @@
     <ClInclude Include="bitsengine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\BootstrapperApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\BootstrapperEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\inc\IBootstrapperEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
