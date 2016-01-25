@@ -224,7 +224,7 @@ namespace WixToolset.Bind
                                     variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.MsiPackage.Manufacturer);
                                 }
                             }
-                            
+
                         }
                         break;
 
@@ -529,6 +529,12 @@ namespace WixToolset.Bind
             string bundleTempPath = Path.Combine(this.TempFilesLocation, Path.GetFileName(this.OutputPath));
 
             Messaging.Instance.OnMessage(WixVerboses.GeneratingBundle(bundleTempPath, stubFile));
+
+            string bundleFilename = Path.GetFileName(this.OutputPath);
+            if ("setup.exe".Equals(bundleFilename, StringComparison.OrdinalIgnoreCase))
+            {
+                Messaging.Instance.OnMessage(WixErrors.InsecureBundleFilename(bundleFilename));
+            }
 
             FileTransfer bundleTransfer;
             if (FileTransfer.TryCreate(bundleTempPath, this.OutputPath, true, "Bundle", bundleRow.SourceLineNumbers, out bundleTransfer))
