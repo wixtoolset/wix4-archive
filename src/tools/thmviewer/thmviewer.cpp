@@ -32,7 +32,8 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
 
 static HRESULT ProcessCommandLine(
     __in_z_opt LPCWSTR wzCommandLine,
-    __out_z LPWSTR* psczThemeFile
+    __out_z LPWSTR* psczThemeFile,
+    __out_z LPWSTR* psczWxlFile
     );
 static HRESULT CreateTheme(
     __in HINSTANCE hInstance,
@@ -64,7 +65,7 @@ static void OnNewTheme(
 int WINAPI wWinMain(
     __in HINSTANCE hInstance,
     __in_opt HINSTANCE /* hPrevInstance */,
-    __in_z_opt LPWSTR lpCmdLine,
+    __in_z LPWSTR lpCmdLine,
     __in int /*nCmdShow*/
     )
 {
@@ -73,6 +74,7 @@ int WINAPI wWinMain(
     HRESULT hr = S_OK;
     BOOL fComInitialized = FALSE;
     LPWSTR sczThemeFile = NULL;
+    LPWSTR sczWxlFile = NULL;
     ATOM atom = 0;
     HWND hWnd = NULL;
 
@@ -86,7 +88,7 @@ int WINAPI wWinMain(
     ExitOnFailure(hr, "Failed to initialize COM.");
     fComInitialized = TRUE;
 
-    hr = ProcessCommandLine(lpCmdLine, &sczThemeFile);
+    hr = ProcessCommandLine(lpCmdLine, &sczThemeFile, &sczWxlFile);
     ExitOnFailure(hr, "Failed to process command line.");
 
     hr = CreateTheme(hInstance, &vpTheme);
@@ -128,7 +130,7 @@ int WINAPI wWinMain(
     hr = DisplayStart(hInstance, hWnd, &hDisplayThread, &vdwDisplayThreadId);
     ExitOnFailure(hr, "Failed to start display.");
 
-    hr = LoadStart(sczThemeFile, hWnd, &hLoadThread);
+    hr = LoadStart(sczThemeFile, sczWxlFile, hWnd, &hLoadThread);
     ExitOnFailure(hr, "Failed to start load.");
 
     // message pump
@@ -179,6 +181,7 @@ LExit:
     }
 
     ReleaseStr(sczThemeFile);
+    ReleaseStr(sczWxlFile);
     return hr;
 }
 
@@ -188,7 +191,8 @@ LExit:
 //
 static HRESULT ProcessCommandLine(
     __in_z_opt LPCWSTR wzCommandLine,
-    __out_z LPWSTR* psczThemeFile
+    __out_z LPWSTR* psczThemeFile,
+    __out_z LPWSTR* psczWxlFile
     )
 {
     HRESULT hr = S_OK;
@@ -216,8 +220,16 @@ static HRESULT ProcessCommandLine(
             }
             else
             {
-                hr = StrAllocString(psczThemeFile, argv[i], 0);
-                ExitOnFailure(hr, "Failed to copy path to theme file.");
+                LPCWSTR wzExtension = PathExtension(argv[i]);
+                if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, wzExtension, -1, L".wxl", -1))
+                {
+                    hr = StrAllocString(psczWxlFile, argv[i], 0);
+                }
+                else
+                {
+                    hr = StrAllocString(psczThemeFile, argv[i], 0);
+                }
+                ExitOnFailure(hr, "Failed to copy path to file.");
             }
         }
     }
@@ -353,14 +365,13 @@ static LRESULT CALLBACK MainWndProc(
 
 static void OnThemeLoadError(
     __in THEME* pTheme,
-    __in HWND /* hWnd */,
+    __in HWND /*hWnd*/,
     __in HRESULT hrFailure
     )
 {
     HRESULT hr = S_OK;
     LPWSTR sczMessage = NULL;
     TVINSERTSTRUCTW tvi = {};
-    TVITEMW item = {};
 
     // Add the application node.
     tvi.hParent = NULL;
@@ -371,13 +382,13 @@ static void OnThemeLoadError(
     tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
 
     hr = StrAllocFormatted(&sczMessage, L"Error 0x%08x.", hrFailure);
-    ExitOnFailure(hr, "Failed to format error message.", hr);
+    ExitOnFailure(hr, "Failed to format error message.");
 
     tvi.item.pszText = sczMessage;
     ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi));
 
     hr = StrAllocFromError(&sczMessage, hrFailure, NULL);
-    ExitOnFailure(hr, "Failed to format error message text.", hr);
+    ExitOnFailure(hr, "Failed to format error message text.");
 
     tvi.item.pszText = sczMessage;
     ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi));
