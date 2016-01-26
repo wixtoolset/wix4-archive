@@ -59,6 +59,14 @@ typedef struct WCA_CASCRIPT_STRUCT
     HANDLE hScriptFile;
 } *WCA_CASCRIPT_HANDLE;
 
+typedef enum WCA_ENCODING
+{
+    WCA_ENCODING_UNKNOWN,
+    WCA_ENCODING_UTF_16,
+    WCA_ENCODING_UTF_8,
+    WCA_ENCODING_ANSI,
+} WCA_ENCODING;
+
 void WIXAPI WcaGlobalInitialize(
     __in HINSTANCE hInst
     );
@@ -354,8 +362,31 @@ HRESULT WIXAPI QuietExec(
     __in BOOL fLogOutput
     );
 
+HRESULT WIXAPI QuietExecCapture(
+    __inout_z LPWSTR wzCommand,
+    __in DWORD dwTimeout,
+    __in BOOL fLogCommand,
+    __in BOOL fLogOutput,
+    __out_z_opt LPWSTR* psczOutput
+    );
+
 WCA_TODO WIXAPI WcaGetComponentToDo(
     __in_z LPCWSTR wzComponentId
+    );
+
+HRESULT WIXAPI WcaExtractBinaryToBuffer(
+    __in LPCWSTR wzBinaryId,
+    __out BYTE** pbData,
+    __out DWORD* pcbData
+    );
+HRESULT WIXAPI WcaExtractBinaryToFile(
+    __in LPCWSTR wzBinaryId,
+    __in LPCWSTR wzPath
+    );
+HRESULT WIXAPI WcaExtractBinaryToString(
+    __in LPCWSTR wzBinaryId,
+    __deref_out_z LPWSTR* psczOutput,
+    __out WCA_ENCODING* encoding
     );
 
 #ifdef __cplusplus

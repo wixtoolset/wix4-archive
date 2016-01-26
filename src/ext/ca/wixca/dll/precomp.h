@@ -37,6 +37,7 @@
 #include "procutil.h"
 #include "stierr.h"
 #include "strutil.h"
+#include "sczutil.h"
 #include "rmutil.h"
 #include "xmlutil.h"
 #include "wiutil.h"

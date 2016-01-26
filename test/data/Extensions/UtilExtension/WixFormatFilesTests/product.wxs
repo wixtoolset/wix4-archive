@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  <copyright file="product.wxs" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Product Id="*" Name="WixFormatFilesTests" Language="1033" Version="1.0.0.0" Manufacturer="Outercurve Foundation" UpgradeCode="{7D7F099B-EAC2-40C3-AD99-6A898C10D73D}">
+    <Package InstallScope="perMachine" Compressed="yes" />
+
+    <MediaTemplate />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+        <Directory Id="WixTestFolder" Name="WixTestFolder" />
+      </Directory>
+      <Directory Id="ProgramFiles64Folder" Name="PFiles">
+        <Directory Id="WixTestFolder64" Name="WixTestFolder" />
+      </Directory>
+    </Directory>
+
+    <Binary Id="BinaryBatchFile" SourceFile="command.cmd" />
+
+    <?if $(sys.BUILDARCH)="x64" ?>
+    <Binary Id="BinaryBatchFile64" SourceFile="command64.cmd" />
+    <?endif?>
+
+    <ComponentGroup Id="MyComponentGroup">
+      <Component Directory="WixTestFolder" Win64="no">
+        <File Id="command.cmd" Source="command.cmd" KeyPath="yes">
+          <util:FormatFile BinaryKey="BinaryBatchFile" />
+        </File>
+      </Component>
+      
+      <?if $(sys.BUILDARCH)="x64" ?>
+      <Component Directory="WixTestFolder64">
+        <File Id="command64.cmd" Source="command64.cmd" KeyPath="yes">
+          <util:FormatFile BinaryKey="BinaryBatchFile64" />
+        </File>
+      </Component>
+      <?endif?>
+    </ComponentGroup>
+    
+    <Feature Id="MyFeature" Title="My 1st Feature" Level="1">
+      <ComponentGroupRef Id="MyComponentGroup" />
+    </Feature>
+  </Product>
+</Wix>

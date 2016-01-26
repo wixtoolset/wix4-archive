@@ -60,12 +60,13 @@
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\libs\wcautil;..\..\inc</ProjectAdditionalIncludeDirectories>
     <ProjectAdditionalLinkLibraries>msi.lib;dutil.lib;wcautil.lib;shlwapi.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(Platform)'!='x64' ">
     <ClCompile Include="BroadcastSettingChange.cpp" />
     <ClCompile Include="cacleanup.cpp" />
     <ClCompile Include="CheckReboot.cpp" />
     <ClCompile Include="CloseApps.cpp" />
     <ClCompile Include="exitearlywithsuccess.cpp" />
+    <ClCompile Include="FormatFiles.cpp" />
     <ClCompile Include="netshortcuts.cpp" />
     <ClCompile Include="osinfo.cpp" />
     <ClCompile Include="qtexecca.cpp" />
@@ -79,6 +80,10 @@
     <ClCompile Include="wixca.cpp" />
     <ClCompile Include="XmlFile.cpp" />
     <ClCompile Include="XmlConfig.cpp" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Platform)'=='x64' ">
+    <ClCompile Include="FormatFiles.cpp" />
+    <ClCompile Include="secureobj.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cost.h" />

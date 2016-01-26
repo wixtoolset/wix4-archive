@@ -14,8 +14,6 @@
 #include "precomp.h"
 
 #define OUTPUT_BUFFER 1024
-
-
 #define ONEMINUTE 60000
 
 static HRESULT CreatePipes(
@@ -110,10 +108,11 @@ LExit:
 
 static HRESULT HandleOutput(
     __in BOOL fLogOutput,
-    __in HANDLE hRead
+    __in HANDLE hRead,
+    __out_z_opt LPWSTR* psczOutput
     )
 {
-    BYTE *pBuffer = NULL;
+    BYTE* pBuffer = NULL;
     LPWSTR szLog = NULL;
     LPWSTR szTemp = NULL;
     LPWSTR pEnd = NULL;
@@ -157,14 +156,26 @@ static HRESULT HandleOutput(
             if (bUnicode)
             {
                 hr = StrAllocConcat(&szLog, (LPCWSTR)pBuffer, 0);
-                ExitOnFailure(hr, "Failed to concatenate output strings");
+                ExitOnFailure(hr, "Failed to concatenate output strings.");
+
+                if (psczOutput)
+                {
+                    hr = StrAllocConcat(psczOutput, (LPCWSTR)pBuffer, 0);
+                    ExitOnFailure(hr, "Failed to concatenate output to return string.");
+                }
             }
             else
             {
                 hr = StrAllocStringAnsi(&szTemp, (LPCSTR)pBuffer, 0, CP_OEMCP);
-                ExitOnFailure(hr, "Failed to allocate output string");
+                ExitOnFailure(hr, "Failed to allocate output string.");
                 hr = StrAllocConcat(&szLog, szTemp, 0);
-                ExitOnFailure(hr, "Failed to concatenate output strings");
+                ExitOnFailure(hr, "Failed to concatenate output strings.");
+
+                if (psczOutput)
+                {
+                    hr = StrAllocConcat(psczOutput, szTemp, 0);
+                    ExitOnFailure(hr, "Failed to concatenate output to return string.");
+                }
             }
 
             // Log each line of the output
@@ -235,11 +246,12 @@ LExit:
     return hr;
 }
 
-HRESULT WIXAPI QuietExec(
+static HRESULT QuietExecImpl(
     __inout_z LPWSTR wzCommand,
     __in DWORD dwTimeout,
     __in BOOL fLogCommand,
-    __in BOOL fLogOutput
+    __in BOOL fLogOutput,
+    __out_z_opt LPWSTR* psczOutput
     )
 {
     HRESULT hr = S_OK;
@@ -292,7 +304,7 @@ HRESULT WIXAPI QuietExec(
         ReleaseFile(hInRead);
 
         // Log output if we were asked to do so; otherwise just read the output handle
-        HandleOutput(fLogOutput, hOutRead);
+        HandleOutput(fLogOutput, hOutRead, psczOutput);
 
         // Wait for everything to finish
         ::WaitForSingleObject(oProcInfo.hProcess, dwTimeout);
@@ -316,3 +328,24 @@ LExit:
     return hr;
 }
 
+
+HRESULT WIXAPI QuietExec(
+    __inout_z LPWSTR wzCommand,
+    __in DWORD dwTimeout,
+    __in BOOL fLogCommand,
+    __in BOOL fLogOutput
+    )
+{
+    return QuietExecImpl(wzCommand, dwTimeout, fLogCommand, fLogOutput, NULL);
+}
+
+HRESULT WIXAPI QuietExecCapture(
+    __inout_z LPWSTR wzCommand,
+    __in DWORD dwTimeout,
+    __in BOOL fLogCommand,
+    __in BOOL fLogOutput,
+    __out_z_opt LPWSTR* psczOutput
+    )
+{
+    return QuietExecImpl(wzCommand, dwTimeout, fLogCommand, fLogOutput, psczOutput);
+}

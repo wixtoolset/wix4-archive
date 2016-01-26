@@ -461,6 +461,27 @@
       </xs:attribute>
     </xs:complexType>
   </xs:element>
+  <xs:element name="FormatFile">
+    <xs:annotation>
+      <xs:appinfo>
+        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+      </xs:appinfo>
+      <xs:documentation>
+        Formats a file's contents at install time. The contents are formatted according to the rules of the
+        <html:a href="http://msdn.microsoft.com/library/aa368609.aspx" target="_blank">Formatted</html:a> data type.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="BinaryKey" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The id of a Binary row that contains a copy of the file. The file in the Binary table overwrites whatever
+          file is installed by the parent component.
+        </xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Group">
     <xs:annotation>
       <xs:appinfo>

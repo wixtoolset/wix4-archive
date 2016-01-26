@@ -87,7 +87,9 @@ namespace WixToolset.Bind
                     type |= OpenDatabase.OpenPatchFile;
                 }
 
+#if DEBUG
                 Console.WriteLine("Opening database at: {0}", this.OutputPath);
+#endif
 
                 using (Database db = new Database(this.OutputPath, type))
                 {

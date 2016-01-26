@@ -5785,7 +5785,7 @@ namespace WixToolset
                 }
                 else
                 {
-                    Dictionary<string, string> context = new Dictionary<string, string>() { { "FileId", id.Id }, { "ComponentId", componentId } };
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "FileId", id.Id }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
                     this.core.ParseExtensionElement(node, child, context);
                 }
             }

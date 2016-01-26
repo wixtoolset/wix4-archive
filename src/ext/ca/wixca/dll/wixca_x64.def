@@ -10,6 +10,9 @@
 LIBRARY      "wixca"
 
 EXPORTS
+; FormatFiles.cpp
+    WixSchedFormatFiles
+    WixExecFormatFiles
 ; secureobjects.cpp
     SchedSecureObjects
     SchedSecureObjectsRollback
