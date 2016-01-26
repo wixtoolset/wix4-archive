@@ -22,7 +22,6 @@
     <Compile Include="Extensions.wxs" />
     <Compile Include="Lux.wxs" />
     <Compile Include="MSBuild.wxs" />
-    <Compile Include="Nant.wxs" />
     <Compile Include="Swix.wxs" />
     <Compile Include="Toolset.wxs" />
   </ItemGroup>
