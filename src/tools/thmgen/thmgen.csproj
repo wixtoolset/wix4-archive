@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  <copyright file="thmgen.csproj" company="Outercurve Foundation">
+    Copyright (c) 2004, Outercurve Foundation.
+    This software is released under Microsoft Reciprocal License (MS-RL).
+    The license and further copyright text can be found in the file
+    LICENSE.TXT at the root directory of the distribution.
+  </copyright>
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{351FF633-899B-4411-9866-4C7838AD109F}</ProjectGuid>
+    <AssemblyName>thmgen</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WixToolset.Tools</RootNamespace>
+    <PlatformTarget>x86</PlatformTarget>
+    <FxCopEnabled>false</FxCopEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\Controls.cpp" />
+    <EmbeddedResource Include="Templates\Pages.h" />
+    <EmbeddedResource Include="Templates\Pages.cpp" />
+    <Compile Include="thmgen.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="ThmGenCommandLine.cs" />
+    <Compile Include="ThmGenStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ThmGenStrings.resx</DependentUpon>
+    </Compile>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedNativeResource Include="thmgen.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ThmGenStrings.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ThmGenStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="wix">
+      <HintPath>..\..\..\..\..\dev\wix4\wix.dll</HintPath>
+    </Reference>
+    <Reference Include="wconsole">
+      <HintPath>..\..\..\..\..\dev\wix4\wconsole.dll</HintPath>
+    </Reference>
+    <Reference Include="WixToolset.Data">
+      <HintPath>..\..\..\..\..\dev\wix4\WixToolset.Data.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\Controls.h" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>
