@@ -74,6 +74,7 @@ static void UpdateCacheSuccessProgress(
     );
 static HRESULT LayoutBundle(
     __in BURN_USER_EXPERIENCE* pUX,
+    __in BURN_VARIABLES* pVariables,
     __in HANDLE hPipe,
     __in_z LPCWSTR wzExecutableName,
     __in_z LPCWSTR wzLayoutDirectory,
@@ -490,7 +491,7 @@ extern "C" HRESULT ApplyCache(
                 break;
 
             case BURN_CACHE_ACTION_TYPE_LAYOUT_BUNDLE:
-                hr = LayoutBundle(pUX, hPipe, pCacheAction->bundleLayout.sczExecutableName, pCacheAction->bundleLayout.sczLayoutDirectory, pCacheAction->bundleLayout.sczUnverifiedPath, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal);
+                hr = LayoutBundle(pUX, pVariables, hPipe, pCacheAction->bundleLayout.sczExecutableName, pCacheAction->bundleLayout.sczLayoutDirectory, pCacheAction->bundleLayout.sczUnverifiedPath, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal);
                 if (SUCCEEDED(hr))
                 {
                     UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
@@ -977,6 +978,7 @@ static void UpdateCacheSuccessProgress(
 
 static HRESULT LayoutBundle(
     __in BURN_USER_EXPERIENCE* pUX,
+    __in BURN_VARIABLES* pVariables,
     __in HANDLE hPipe,
     __in_z LPCWSTR wzExecutableName,
     __in_z LPCWSTR wzLayoutDirectory,
@@ -987,6 +989,7 @@ static HRESULT LayoutBundle(
 {
     HRESULT hr = S_OK;
     LPWSTR sczBundlePath = NULL;
+    LPWSTR sczBundleSourcePath = NULL;
     LPWSTR sczDestinationPath = NULL;
     int nEquivalentPaths = 0;
     BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT progress = { };
@@ -1005,6 +1008,21 @@ static HRESULT LayoutBundle(
     if (CSTR_EQUAL == nEquivalentPaths)
     {
         ExitFunction1(hr = S_OK);
+    }
+
+    hr = VariableGetString(pVariables, BURN_BUNDLE_SOURCE_PROCESS_PATH, &sczBundleSourcePath);
+    if (E_NOTFOUND != hr)
+    {
+        ExitOnFailure(hr, "Failed to get path to bundle source process path to layout.");
+
+        // If the destination path is the currently running bundles source process, bail.
+        hr = PathCompare(sczBundleSourcePath, sczDestinationPath, &nEquivalentPaths);
+        ExitOnFailure(hr, "Failed to determine if layout bundle path was equivalent with source process path.");
+
+        if (CSTR_EQUAL == nEquivalentPaths)
+        {
+            ExitFunction1(hr = S_OK);
+        }
     }
 
     progress.pUX = pUX;
@@ -1074,6 +1092,7 @@ static HRESULT LayoutBundle(
     LogExitOnFailure(hr, MSG_FAILED_LAYOUT_BUNDLE, "Failed to layout bundle: %ls to layout directory: %ls", sczBundlePath, wzLayoutDirectory);
 
 LExit:
+    ReleaseStr(sczBundleSourcePath);
     ReleaseStr(sczDestinationPath);
     ReleaseStr(sczBundlePath);
 
