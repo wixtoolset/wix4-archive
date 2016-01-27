@@ -101,33 +101,39 @@ namespace WixToolset.Tools
             var outputHeaderFile = Path.ChangeExtension(this.commandLine.OutputFile ?? "theme.h", ".h");
             var outputModuleFile = Path.ChangeExtension(outputHeaderFile, ".cpp");
             var prefix = this.commandLine.Prefix ?? String.Empty;
-            var pch = this.commandLine.PchName ?? "stdafx.h";
+            var header = this.commandLine.HeaderName ?? "stdafx.h";
 
             // load the theme file and find all the controls and pages with a Name attribute
             var doc = XDocument.Load(this.commandLine.InputFile);
             var named = doc.Descendants().Elements().Where(xelem => xelem.Attribute("Name") != null);
-            var controls = named.Where(xelem => xelem.Name != this.NameSpace + "Page");
-            var pages = named.Where(xelem => xelem.Name == this.NameSpace + "Page");
+            var controls = named.Where(xelem => xelem.Name.LocalName != "Page");
+            var pages = named.Where(xelem => xelem.Name.LocalName == "Page");
 
             // theme.h
             var templateControlsDeclaration = GetTemplateFromResource("WixToolset.Tools.Templates.Controls.h");
             var templatePagesDeclaration = GetTemplateFromResource("WixToolset.Tools.Templates.Pages.h");
 
-            var controlsDeclaration = String.Join(",\n", GetDeclaration(controls));
-            var pagesDeclaration = String.Join(",\n", GetDeclaration(pages));
+            var controlsDeclaration = String.Join(",\n", GetControlsDeclaration(controls));
 
             File.WriteAllText(outputHeaderFile, String.Format(templateControlsDeclaration, prefix, controlsDeclaration));
-            File.AppendAllText(outputHeaderFile, String.Format(templatePagesDeclaration, prefix, pagesDeclaration));
+            if (pages.Any())
+            {
+                var pagesDeclaration = String.Join(",\n", GetPagesDeclaration(pages));
+                File.AppendAllText(outputHeaderFile, String.Format(templatePagesDeclaration, prefix, pagesDeclaration));
+            }
 
             // theme.cpp
             var templateControlsInitialization = GetTemplateFromResource("WixToolset.Tools.Templates.Controls.cpp");
             var templatePagesInitializations = GetTemplateFromResource("WixToolset.Tools.Templates.Pages.cpp");
 
             var controlsInitialization = String.Join(",\n", GetControlsInitialization(controls, prefix));
-            var pagesInitialization = String.Join(",\n", GetPagesInitialization(pages));
 
-            File.WriteAllText(outputModuleFile, String.Format(templateControlsInitialization, prefix, controlsInitialization, pch));
-            File.AppendAllText(outputModuleFile, String.Format(templatePagesInitializations, prefix, pagesInitialization));
+            File.WriteAllText(outputModuleFile, String.Format(templateControlsInitialization, prefix, controlsInitialization, header));
+            if (pages.Any())
+            {
+                var pagesInitialization = String.Join(",\n", GetPagesInitialization(pages));
+                File.AppendAllText(outputModuleFile, String.Format(templatePagesInitializations, prefix, pagesInitialization));
+            }
         }
 
         private static string GetTemplateFromResource(string resourceName)
@@ -139,9 +145,18 @@ namespace WixToolset.Tools
             }
         }
 
-        private static IEnumerable<string> GetDeclaration(IEnumerable<XElement> elems)
+        private static IEnumerable<string> GetPagesDeclaration(IEnumerable<XElement> elems)
         {
             return elems.Select(elem => elem.Attribute("Name").Value);
+        }
+
+        private static IEnumerable<string> GetControlsDeclaration(IEnumerable<XElement> elems)
+        {
+            yield return String.Format("{0} = 100", elems.First().Attribute("Name").Value);
+            foreach (var elem in elems.Skip(1))
+            {
+                yield return elem.Attribute("Name").Value;
+            }
         }
 
         private static IEnumerable<string> GetPagesInitialization(IEnumerable<XElement> pages)

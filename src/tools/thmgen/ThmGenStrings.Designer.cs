@@ -64,7 +64,7 @@ namespace WixToolset.Tools {
         ///   Looks up a localized string similar to  usage:  thmgen.exe [-?] themeFile
         ///
         ///   -nologo     skip printing logo information
-        ///   -pch        specify header file to include in generated module
+        ///   -header     specify header file to include (default: stdafx.h)
         ///   -prefix     add a prefix to the generated enum and function names
         ///   -o[ut]      specify output file for header (default: theme.h)
         ///   -? | -help  this help information.

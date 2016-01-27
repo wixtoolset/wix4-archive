@@ -35,7 +35,7 @@ namespace WixToolset.Tools
 
         public string Prefix { get; private set; }
 
-        public string PchName { get; private set; }
+        public string HeaderName { get; private set; }
 
         /// <summary>
         /// Parse the commandline arguments.
@@ -82,11 +82,11 @@ namespace WixToolset.Tools
                         this.ShowHelp = true;
                         break;
                     }
-                    else if ("pch" == parameter)
+                    else if ("header" == parameter)
                     {
                         if (CommandLine.IsValidArg(args, ++i))
                         {
-                            this.PchName = args[i];
+                            this.HeaderName = args[i];
                         }
                     }
                     else if ("prefix" == parameter)
