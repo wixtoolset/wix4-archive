@@ -270,14 +270,19 @@
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
                 <xs:annotation>
-                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control.</xs:documentation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control. Only valid when using graphic buttons.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="HoverFontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is hovered over. Only valid when using graphic buttons.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="ImageFile" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>
                         Relative path to an image file to define a graphic button.
-                        The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
+                        The image must be 4x the height to represent the button in 4 states: unselected, hover, selected, focused.
                         Mutually exclusive with ImageResource and SourceX and SourceY attributes.
                     </xs:documentation>
                 </xs:annotation>
@@ -286,9 +291,14 @@
                 <xs:annotation>
                     <xs:documentation>
                         Identifier that references an image resource in the module to define a graphic button.
-                        The image must be 3x the height to represent the button in 3 states: unselected, hover, selected.
+                        The image must be 4x the height to represent the button in 4 states: unselected, hover, selected, focused.
                         Mutually exclusive with ImageFile and SourceX and SourceY attributes.
                     </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="SelectedFontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is selected. Only valid when using graphic buttons.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="StringId" type="xs:nonNegativeInteger">
@@ -512,7 +522,7 @@
 
     <xs:element name="Image">
         <xs:annotation>
-            <xs:documentation>Defines an image.</xs:documentation>
+            <xs:documentation>Defines an image for an ImageList or Billboard.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:attribute name="ImageFile" type="xs:string">
@@ -634,6 +644,16 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="Panel">
+        <xs:annotation>
+            <xs:documentation>Defines a collection of controls.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group ref="ControlElements" maxOccurs="unbounded"/>
+            <xs:attributeGroup ref="CommonControlAttributes" />
         </xs:complexType>
     </xs:element>
 
@@ -920,6 +940,11 @@
         <xs:attribute name="Name" type="xs:string">
             <xs:annotation>
                 <xs:documentation>Optional name for the control.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="DisableAutomaticBehavior" type="YesNoType">
+            <xs:annotation>
+                <xs:documentation>Set to 'yes' to disable automatic variable getting and setting, EnableCondition, VisibleCondition, and conditional Text elements. The default is 'no'.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="EnableCondition" type="xs:string">

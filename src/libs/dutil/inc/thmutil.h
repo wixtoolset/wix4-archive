@@ -68,6 +68,7 @@ typedef enum THEME_CONTROL_TYPE
     THEME_CONTROL_TYPE_HYPERTEXT,
     THEME_CONTROL_TYPE_IMAGE,
     THEME_CONTROL_TYPE_LABEL,
+    THEME_CONTROL_TYPE_PANEL,
     THEME_CONTROL_TYPE_PROGRESSBAR,
     THEME_CONTROL_TYPE_RADIOBUTTON,
     THEME_CONTROL_TYPE_RICHEDIT,
@@ -75,6 +76,7 @@ typedef enum THEME_CONTROL_TYPE
     THEME_CONTROL_TYPE_LISTVIEW,
     THEME_CONTROL_TYPE_TREEVIEW,
     THEME_CONTROL_TYPE_TAB,
+    THEME_CONTROL_TYPE_COMBOBOX,
 } THEME_CONTROL_TYPE;
 
 typedef enum THEME_SHOW_PAGE_REASON
@@ -83,12 +85,6 @@ typedef enum THEME_SHOW_PAGE_REASON
     THEME_SHOW_PAGE_REASON_CANCEL,
     THEME_SHOW_PAGE_REASON_REFRESH,
 } THEME_SHOW_PAGE_REASON;
-
-
-struct THEME_BILLBOARD
-{
-    HBITMAP hImage;
-};
 
 
 struct THEME_COLUMN
@@ -173,9 +169,11 @@ struct THEME_CONTROL
 
     DWORD dwFontId;
 
+    // child controls
+    DWORD cControls;
+    THEME_CONTROL* rgControls;
+
     // Used by billboard controls
-    THEME_BILLBOARD* ptbBillboards;
-    DWORD cBillboards;
     WORD wBillboardInterval;
     BOOL fBillboardLoops;
 
@@ -184,7 +182,7 @@ struct THEME_CONTROL
     DWORD cActions;
     THEME_ACTION* pDefaultAction;
 
-    // Used by hyperlink controls
+    // Used by hyperlink and owner-drawn button controls
     DWORD dwFontHoverId;
     DWORD dwFontSelectedId;
 
@@ -230,7 +228,6 @@ struct THEME_PAGE
     LPWSTR sczName;
 
     DWORD cControlIndices;
-    DWORD* rgdwControlIndices;
 
     DWORD cSavedVariables;
     THEME_SAVEDVARIABLE* rgSavedVariables;
@@ -278,7 +275,7 @@ struct THEME
     DWORD cControls;
     THEME_CONTROL* rgControls;
 
-    // state variables that should be ignored
+    // internal state variables -- do not use outside ThmUtil.cpp
     HWND hwndParent; // parent for loaded controls
     HWND hwndHover; // current hwnd hovered over
     DWORD dwCurrentPageId;
@@ -450,7 +447,7 @@ LRESULT CALLBACK ThemeDefWindowProc(
 DAPI_(void) ThemeGetPageIds(
     __in const THEME* pTheme,
     __in_ecount(cGetPages) LPCWSTR* rgwzFindNames,
-    __in_ecount(cGetPages) DWORD* rgdwPageIds,
+    __inout_ecount(cGetPages) DWORD* rgdwPageIds,
     __in DWORD cGetPages
     );
 
@@ -486,6 +483,17 @@ DAPI_(HRESULT) ThemeShowPageEx(
     __in DWORD dwPage,
     __in int nCmdShow,
     __in THEME_SHOW_PAGE_REASON reason
+    );
+
+
+/********************************************************************
+ThemeShowChild - shows a control's specified child control, hiding the rest.
+
+*******************************************************************/
+DAPI_(void) ThemeShowChild(
+    __in THEME* pTheme,
+    __in THEME_CONTROL* pParentControl,
+    __in DWORD dwIndex
     );
 
 /********************************************************************
@@ -611,29 +619,6 @@ DAPI_(BOOL) ThemeSetControlColor(
     );
 
 /********************************************************************
- ThemeStartBillboard - starts a billboard control changing images according
-                       to their interval.
-
- NOTE: iImage specifies the image to start on. If iImage is
-       greater than the number of images, the last image shown
-       will be the start image.
-*******************************************************************/
-DAPI_(HRESULT) ThemeStartBillboard(
-    __in const THEME* pTheme,
-    __in DWORD dwControl,
-    __in WORD iImage
-    );
-
-/********************************************************************
- ThemeStopBillboard - stops a billboard control from changing images.
-
-*******************************************************************/
-DAPI_(HRESULT) ThemeStopBillboard(
-    __in const THEME* pTheme,
-    __in DWORD dwControl
-    );
-
-/********************************************************************
  ThemeSetProgressControl - sets the current percentage complete in a
                            progress bar control.
 
@@ -662,7 +647,20 @@ DAPI_(HRESULT) ThemeSetProgressControlColor(
 DAPI_(HRESULT) ThemeSetTextControl(
     __in const THEME* pTheme,
     __in DWORD dwControl,
-    __in_z LPCWSTR wzText
+    __in_z_opt LPCWSTR wzText
+    );
+
+/********************************************************************
+ThemeSetTextControl - sets the text of a control and optionally
+                      invalidates the control.
+
+*******************************************************************/
+DAPI_(HRESULT) ThemeSetTextControlEx(
+    __in const THEME* pTheme,
+    __in DWORD dwControl,
+    __in BOOL fInvalidateControl,
+    __in BOOL fInvalidateParent,
+    __in_z_opt LPCWSTR wzText
     );
 
 /********************************************************************
@@ -672,7 +670,7 @@ DAPI_(HRESULT) ThemeSetTextControl(
 DAPI_(HRESULT) ThemeGetTextControl(
     __in const THEME* pTheme,
     __in DWORD dwControl,
-    __out LPWSTR* psczText
+    __out_z LPWSTR* psczText
     );
 
 /********************************************************************
