@@ -150,7 +150,7 @@ extern "C" HRESULT DAPI MemReAllocArray(
         if (cbCurrent < cbNew)
         {
             pvNew = MemReAlloc(*ppvArray, cbNew, TRUE);
-            ExitOnNull(pvNew, hr, E_OUTOFMEMORY, "Failed to allocate array larger.");
+            ExitOnNull(pvNew, hr, E_OUTOFMEMORY, "Failed to allocate larger array.");
 
             *ppvArray = pvNew;
         }
