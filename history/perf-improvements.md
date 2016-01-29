@@ -1,0 +1,1 @@
+* RobMen: Improve performance of compiler when handling anonymous Directories and Components and simple references.

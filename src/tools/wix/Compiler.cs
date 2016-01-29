@@ -35,8 +35,8 @@ namespace WixToolset
         public const string UpgradePreventedCondition = "NOT WIX_UPGRADE_DETECTED";
         public const string DowngradeDetectedProperty = "WIX_DOWNGRADE_DETECTED";
         public const string DowngradePreventedCondition = "NOT WIX_DOWNGRADE_DETECTED";
-        public const string DefaultComponentIdPlaceholder = "OfficialWixComponentIdPlaceholder";
-        public const string DefaultComponentIdPlaceholderWixVariable = "!(wix.OfficialWixComponentIdPlaceholder)";
+        public const string DefaultComponentIdPlaceholderFormat = "WixComponentIdPlaceholder{0}";
+        public const string DefaultComponentIdPlaceholderWixVariableFormat = "!(wix.{0})";
         public const string BurnUXContainerId = "WixUXContainer";
         public const string BurnDefaultAttachedContainerId = "WixAttachedContainer";
 
@@ -61,6 +61,8 @@ namespace WixToolset
         private bool useShortFileNames;
         private string activeName;
         private string activeLanguage;
+
+        private WixVariableResolver componentIdPlaceholdersResolver;
 
         /// <summary>
         /// Creates a new compiler object with a default set of table definitions.
@@ -179,6 +181,7 @@ namespace WixToolset
                 this.core = new CompilerCore(target, this.tableDefinitions, this.extensions);
                 this.core.ShowPedanticMessages = this.showPedanticMessages;
                 this.core.CurrentPlatform = this.CurrentPlatform;
+                this.componentIdPlaceholdersResolver = new WixVariableResolver();
 
                 foreach (CompilerExtension extension in this.extensions.Values)
                 {
@@ -209,6 +212,29 @@ namespace WixToolset
                 else
                 {
                     this.core.OnMessage(WixErrors.InvalidDocumentElement(sourceLineNumbers, source.Root.Name.LocalName, "source", "Wix"));
+                }
+
+                // Resolve any Component Id placeholders compiled into the intermediate.
+                if (0 < this.componentIdPlaceholdersResolver.VariableCount)
+                {
+                    foreach (var section in target.Sections)
+                    {
+                        foreach (Table table in section.Tables)
+                        {
+                            foreach (Row row in table.Rows)
+                            {
+                                foreach (Field field in row.Fields)
+                                {
+                                    if (field.Data is string)
+                                    {
+                                        bool isDefault = false;
+                                        bool delayedResolve = false;
+                                        field.Data = this.componentIdPlaceholdersResolver.ResolveVariables(row.SourceLineNumbers, (string)field.Data, false, false, ref isDefault, ref delayedResolve);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // inspect the document
@@ -2098,8 +2124,9 @@ namespace WixToolset
             bool explicitWin64 = false;
             int files = 0;
             string guid = "*";
-            string autoId = Compiler.DefaultComponentIdPlaceholder; // placeholder id for defaulting Component/@Id to keypath id.
-            Identifier id = new Identifier(Compiler.DefaultComponentIdPlaceholderWixVariable, AccessModifier.Private);
+            string componentIdPlaceholder = String.Format(Compiler.DefaultComponentIdPlaceholderFormat, this.componentIdPlaceholdersResolver.VariableCount); // placeholder id for defaulting Component/@Id to keypath id.
+            string componentIdPlaceholderWixVariable = String.Format(Compiler.DefaultComponentIdPlaceholderWixVariableFormat, componentIdPlaceholder);
+            Identifier id = new Identifier(componentIdPlaceholderWixVariable, AccessModifier.Private);
             int keyBits = 0;
             bool keyFound = false;
             string keyPath = null;
@@ -2472,29 +2499,13 @@ namespace WixToolset
             // if there isn't an @Id attribute value, replace the placeholder with the id of the keypath.
             // either an explicit KeyPath="yes" attribute must be specified or requirements for 
             // generatable guid must be met.
-            if (Compiler.DefaultComponentIdPlaceholderWixVariable == id.Id)
+            if (componentIdPlaceholderWixVariable == id.Id)
             {
                 if (isGeneratableGuidOk || keyFound && !String.IsNullOrEmpty(keyPath))
                 {
-                    id = new Identifier(keyPath, AccessModifier.Private);
+                    this.componentIdPlaceholdersResolver.AddVariable(componentIdPlaceholder, keyPath);
 
-                    WixVariableResolver resolver = new WixVariableResolver();
-                    resolver.AddVariable(autoId, keyPath);
-                    foreach (Table table in this.core.ActiveSection.Tables)
-                    {
-                        foreach (Row row in table.Rows)
-                        {
-                            foreach (Field field in row.Fields)
-                            {
-                                if (field.Data is string)
-                                {
-                                    bool isDefault = false;
-                                    bool delayedResolve = false;
-                                    field.Data = resolver.ResolveVariables(row.SourceLineNumbers, (string)field.Data, false, false, ref isDefault, ref delayedResolve);
-                                }
-                            }
-                        }
-                    }
+                    id = new Identifier(keyPath, AccessModifier.Private);
                 }
                 else
                 {

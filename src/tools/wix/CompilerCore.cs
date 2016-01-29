@@ -136,6 +136,9 @@ namespace WixToolset
         private Intermediate intermediate;
         private bool showPedanticMessages;
 
+        private HashSet<string> activeSectionInlinedDirectoryIds;
+        private HashSet<string> activeSectionSimpleReferences;
+
         /// <summary>
         /// Constructor for all compiler core.
         /// </summary>
@@ -638,9 +641,16 @@ namespace WixToolset
         {
             if (!this.EncounteredError)
             {
-                WixSimpleReferenceRow wixSimpleReferenceRow = (WixSimpleReferenceRow)this.CreateRow(sourceLineNumbers, "WixSimpleReference");
-                wixSimpleReferenceRow.TableName = tableName;
-                wixSimpleReferenceRow.PrimaryKeys = String.Join("/", primaryKeys);
+                string joinedKeys = String.Join("/", primaryKeys);
+                string id = String.Concat(tableName, ":", joinedKeys);
+
+                // If this simple reference hasn't been added to the active section already, add it.
+                if (this.activeSectionSimpleReferences.Add(id))
+                {
+                    WixSimpleReferenceRow wixSimpleReferenceRow = (WixSimpleReferenceRow)this.CreateRow(sourceLineNumbers, "WixSimpleReference");
+                    wixSimpleReferenceRow.TableName = tableName;
+                    wixSimpleReferenceRow.PrimaryKeys = joinedKeys;
+                }
             }
         }
 
@@ -1597,6 +1607,10 @@ namespace WixToolset
         internal Section CreateActiveSection(string id, SectionType type, int codepage)
         {
             this.ActiveSection = this.CreateSection(id, type, codepage);
+
+            this.activeSectionInlinedDirectoryIds = new HashSet<string>();
+            this.activeSectionSimpleReferences = new HashSet<string>();
+
             return this.ActiveSection;
         }
 
@@ -1701,9 +1715,17 @@ namespace WixToolset
                 }
             }
 
+            // For anonymous directories, create the identifier. If this identifier already exists in the
+            // active section, bail so we don't add duplicate anonymous directory rows (which are legal
+            // but bloat the intermediate and ultimately make the linker do "busy work").
             if (null == id)
             {
                 id = this.CreateIdentifier("dir", parentId, name, shortName, sourceName, shortSourceName);
+
+                if (!this.activeSectionInlinedDirectoryIds.Add(id.Id))
+                {
+                    return id;
+                }
             }
 
             Row row = this.CreateRow(sourceLineNumbers, "Directory", id);
