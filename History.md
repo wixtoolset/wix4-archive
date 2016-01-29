@@ -1,3 +1,54 @@
+## WixBuild: Version 4.0.3729.0
+
+* jchoover: WIXBUG:5193 - Fix /layout default directory with clean room:
+  * Attempt to use WixBundleSourceProcessPath / WixBundleSourceProcessFolder before defaulting to PathForCurrentProcess
+  * Prevent trying to layout the origional bundle exe on top of the existing exe, if the path provided to layout is the same as the bundles working directory.
+
+* RobMen: Improve performance of compiler when handling anonymous Directories and Components and simple references.
+
+* @barnson: Add child control support to ThmUtil.
+  * Add Panel control to hold children.
+  * Billboards can now host panels for mixing text and graphics.
+  * Graphic buttons can now have localized text drawn on them.
+  * Graphic buttons now support four states: unselected, hover, selected, focused.
+  * Controls now have a DisableAutomaticBehavior attribute to turn off variable getting and setting, EnableCondition, VisibleCondition, and conditional Text elements.
+
+* @barnson: Add ThemeGen utility, which generates the control and page arrays to simplify control and page management for ThmUtil.
+
+* BMurri: WIXBUG:5186 - Fix build warning MSB3277:
+  * Starting with VSIP 10 SP1 the Assemblies directory was split into two subdirectories: v2.0 & v4.0. That change wasn't properly reflected in the code, rendering many of the various HintPaths ineffective.
+  * MSBuild was picking a different version of Microsoft.VisualStudio.CommonIDE than the one most likely intended (and that particular assembly never was in VSIP 2010 SP1).
+  * It's possible that the build warning could possibly mask some unexpected behaviors introduced after support for some VS post-2010 was added do to the different version of the assembly selected from the original code's assumption.
+
+* MikeGC: Add StrAllocConcatFormatted to concatenate a formatted string to an existing string.
+
+* BobArnson: Have Burn rewrite ARP DisplayName during modify so changes to WixBundleName are reflected in ARP.
+
+* BobArnson: Change Burn's behavior to, instead of skipping all related bundles when the current bundle is embedded, skip only dependent bundles when the current bundle is a related bundle. (Burn supports embedded mode in cases other than when being executed as a related bundle.)
+
+* @barnson: Make CBalBaseBootstrapperApplication::PromptCancel usefully overrideable.
+  * Make cancellation related members protected rather than private so PromptCancel can be overridden to provide custom cancellation prompt UI.
+
+* @barnson: Add FormatFiles custom action from FireGiant.
+  * FormatFiles element as a child of File schedules a custom action to format the file's content at install time (using [Formatted](http://msdn.microsoft.com/library/aa368609.aspx) data type rules).
+  * Adds PSCZ C++ class to DUtil for automatic memory management for LPWSTR strings.
+
+* @barnson: Adding some useful WcaUtil functions from FireGiant.
+  * Add QuietExecCapture to get process output as a string.
+  * Add WcaExtractBinaryToBuffer, WcaExtractBinaryToFile, and WcaExtractBinaryToString to extract content from the Binary table.
+
+* BobArnson: ThmViewer and ThmUtil usability updates.
+  * ThmViewer: Update theme for ThmUtil v4 schema. Show theme load errors. Add support for specifying a .wxl on the command line to view localized strings.
+  * ThmUtil: Automatically localize controls if their name is the same as a .wxl loc string id.
+
+* SeanHall: Change the interface between the Burn engine and BA's by moving to messages instead of COM interfaces.
+
+* RobMen: WIXBUG:5184 - Create Burn "clean room" to prevent DLL hijacking.
+
+* RobMen: Do not continue reading in unknown file formats.
+
+* MikeGC: Fix ability to load Wixpdbs.
+
 ## WixBuild: Version 4.0.3430.0
 
 * HeathS: WIXFEAT:4909 - Add NuGet package for dutil
