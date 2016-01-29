@@ -29,14 +29,14 @@ namespace WixToolset
     public sealed class WixVariableResolver
     {
         private Localizer localizer;
-        private Hashtable wixVariables;
+        private Dictionary<string, string> wixVariables;
 
         /// <summary>
         /// Instantiate a new WixVariableResolver.
         /// </summary>
         public WixVariableResolver()
         {
-            this.wixVariables = new Hashtable();
+            this.wixVariables = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -50,17 +50,25 @@ namespace WixToolset
         }
 
         /// <summary>
+        /// Gets the count of variables added to the resolver.
+        /// </summary>
+        public int VariableCount
+        {
+            get { return this.wixVariables.Count; }
+        }
+
+        /// <summary>
         /// Add a variable.
         /// </summary>
         /// <param name="name">The name of the variable.</param>
         /// <param name="value">The value of the variable.</param>
         public void AddVariable(string name, string value)
         {
-            if (!this.wixVariables.Contains(name))
+            try
             {
                 this.wixVariables.Add(name, value);
             }
-            else
+            catch (ArgumentException)
             {
                 Messaging.Instance.OnMessage(WixErrors.WixVariableCollision(null, name));
             }
@@ -72,13 +80,16 @@ namespace WixToolset
         /// <param name="wixVariableRow">The WixVariableRow to add.</param>
         public void AddVariable(WixVariableRow wixVariableRow)
         {
-            if (!this.wixVariables.Contains(wixVariableRow.Id))
+            try
             {
                 this.wixVariables.Add(wixVariableRow.Id, wixVariableRow.Value);
             }
-            else if (!wixVariableRow.Overridable) // collision
+            catch (ArgumentException)
             {
-                Messaging.Instance.OnMessage(WixErrors.WixVariableCollision(wixVariableRow.SourceLineNumbers, wixVariableRow.Id));
+                if (!wixVariableRow.Overridable) // collision
+                {
+                    Messaging.Instance.OnMessage(WixErrors.WixVariableCollision(wixVariableRow.SourceLineNumbers, wixVariableRow.Id));
+                }
             }
         }
 
@@ -212,16 +223,14 @@ namespace WixToolset
                             }
                             else
                             {
-                                // default the resolved value to the inline value if one was specified
-                                if (null != variableDefaultValue)
+                                if (this.wixVariables.TryGetValue(variableId, out resolvedValue))
+                                {
+                                    resolvedValue = resolvedValue ?? String.Empty;
+                                    isDefault = false;
+                                }
+                                else if (null != variableDefaultValue) // default the resolved value to the inline value if one was specified
                                 {
                                     resolvedValue = variableDefaultValue;
-                                }
-
-                                if (this.wixVariables.Contains(variableId))
-                                {
-                                    resolvedValue = (string)this.wixVariables[variableId] ?? String.Empty;
-                                    isDefault = false;
                                 }
                             }
                         }
