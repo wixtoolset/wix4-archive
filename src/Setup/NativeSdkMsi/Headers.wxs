@@ -189,6 +189,9 @@
                 <File Source="sceutil.h" />
             </Component>
             <Component>
+                <File Source="sczutil.h" />
+            </Component>
+            <Component>
                 <File Source="shelutil.h" />
             </Component>
             <Component>

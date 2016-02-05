@@ -2272,8 +2272,8 @@ namespace WixToolset.Extensions
         /// Parses a format files element.
         /// </summary>
         /// <param name="node">Element to parse.</param>
-        /// <param name="componentId">Identifier of parent component.</param>
         /// <param name="fileId">Identifier of referenced file.</param>
+        /// <param name="win64">Flag to determine whether the component is 64-bit.</param>
         private void ParseFormatFileElement(XElement node, string fileId, bool win64)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
