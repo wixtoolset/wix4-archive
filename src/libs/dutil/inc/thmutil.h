@@ -501,7 +501,7 @@ DAPI_(void) ThemeShowChild(
 
  *******************************************************************/
 DAPI_(BOOL) ThemeControlExists(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl
     );
 
@@ -658,8 +658,7 @@ ThemeSetTextControl - sets the text of a control and optionally
 DAPI_(HRESULT) ThemeSetTextControlEx(
     __in const THEME* pTheme,
     __in DWORD dwControl,
-    __in BOOL fInvalidateControl,
-    __in BOOL fInvalidateParent,
+    __in BOOL fUpdate,
     __in_z_opt LPCWSTR wzText
     );
 
