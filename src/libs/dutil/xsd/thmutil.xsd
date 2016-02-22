@@ -76,24 +76,24 @@
                             <xs:documentation>Font weight.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="Foreground" type="xs:string">
+                    <xs:attribute name="Foreground" type="FontColorType">
                         <xs:annotation>
                             <xs:documentation>
-                              A system color id or a hexadecimal value representing BGR foreground color of the font.
-                              "ffffff" is white, "ff0000" is pure blue, "00ff00" is pure green, "0000ff" is pure red, and "000000" is black.
-                              If this value is absent the foreground will be transparent.
-                              Supported system color ids are: $btnface, $btntext, $graytext, $highlight, $highlighttext, $hotlight, $window, and $windowtext.
+                                A system color id or a hexadecimal value representing BGR foreground color of the font.
+                                "ffffff" is white, "ff0000" is pure blue, "00ff00" is pure green, "0000ff" is pure red, and "000000" is black.
+                                If this attribute is absent the foreground will be transparent.
+                                Supported system color ids are: btnface, btntext, graytext, highlight, highlighttext, hotlight, window, and windowtext.
                             </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="Background" type="xs:string">
+                    <xs:attribute name="Background" type="FontColorType">
                         <xs:annotation>
-                          <xs:documentation>
-                            A system color id or a hexadecimal value representing BGR background color of the font.
-                            "ffffff" is white, "ff0000" is pure blue, "00ff00" is pure green, "0000ff" is pure red, and "000000" is black.
-                            If this value is absent the background will be transparent.
-                            Supported system color ids are: $btnface, $btntext, $graytext, $highlight, $highlighttext, $hotlight, $window, and $windowtext.
-                          </xs:documentation>
+                            <xs:documentation>
+                                A system color id or a hexadecimal value representing BGR background color of the font.
+                                "ffffff" is white, "ff0000" is pure blue, "00ff00" is pure green, "0000ff" is pure red, and "000000" is black.
+                                If this attribute is absent the background will be transparent.
+                                Supported system color ids are: btnface, btntext, graytext, highlight, highlighttext, hotlight, window, and windowtext.
+                            </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attribute name="Underline" type="YesNoType">
@@ -283,7 +283,7 @@
                     <xs:documentation>Numeric identifier to the Font element that serves as the font for the control. Only valid when using graphic buttons.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="HoverFontId" type="xs:nonNegativeInteger" use="required">
+            <xs:attribute name="HoverFontId" type="xs:nonNegativeInteger">
                 <xs:annotation>
                     <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is hovered over. Only valid when using graphic buttons.</xs:documentation>
                 </xs:annotation>
@@ -306,7 +306,7 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="SelectedFontId" type="xs:nonNegativeInteger" use="required">
+            <xs:attribute name="SelectedFontId" type="xs:nonNegativeInteger">
                 <xs:annotation>
                     <xs:documentation>Numeric identifier to the Font element that serves as the font when the control is selected. Only valid when using graphic buttons.</xs:documentation>
                 </xs:annotation>
@@ -843,7 +843,7 @@
                             </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                </xs:extension>                
+                </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
     </xs:element>
@@ -1019,5 +1019,32 @@
             <xs:enumeration value="no"/>
             <xs:enumeration value="yes"/>
         </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SystemColorType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates a system color for a font.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:NMTOKEN">
+            <xs:enumeration value="btnface" />
+            <xs:enumeration value="btntext" />
+            <xs:enumeration value="graytext" />
+            <xs:enumeration value="highlight" />
+            <xs:enumeration value="highlighttext" />
+            <xs:enumeration value="hotlight" />
+            <xs:enumeration value="window" />
+            <xs:enumeration value="windowtext" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FontColorType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates the foreground or background color of a font.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:union memberTypes="SystemColorType xs:string"/>
     </xs:simpleType>
 </xs:schema>
