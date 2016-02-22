@@ -63,6 +63,7 @@ typedef enum THEME_CONTROL_TYPE
     THEME_CONTROL_TYPE_BILLBOARD,
     THEME_CONTROL_TYPE_BUTTON,
     THEME_CONTROL_TYPE_CHECKBOX,
+    THEME_CONTROL_TYPE_COMMANDLINK,
     THEME_CONTROL_TYPE_EDITBOX,
     THEME_CONTROL_TYPE_HYPERLINK,
     THEME_CONTROL_TYPE_HYPERTEXT,
@@ -146,6 +147,7 @@ struct THEME_CONTROL
 
     LPWSTR sczName; // optional name for control, used to apply control id and link the control to a variable.
     LPWSTR sczText;
+    LPWSTR sczNote; // optional text for command link
     int nX;
     int nY;
     int nHeight;
@@ -159,6 +161,7 @@ struct THEME_CONTROL
     BOOL fDisableVariableFunctionality;
 
     HBITMAP hImage;
+    HICON hIcon;
 
     // Don't free these; it's just a handle to the central image lists stored in THEME. The handle is freed once, there.
     HIMAGELIST rghImageList[4];
@@ -177,7 +180,7 @@ struct THEME_CONTROL
     WORD wBillboardInterval;
     BOOL fBillboardLoops;
 
-    // Used by button controls
+    // Used by button and command link controls
     THEME_ACTION* rgActions;
     DWORD cActions;
     THEME_ACTION* pDefaultAction;
@@ -202,6 +205,10 @@ struct THEME_CONTROL
     // Used by controls that have text
     DWORD cConditionalText;
     THEME_CONDITIONAL_TEXT* rgConditionalText;
+
+    // Used by command link controls
+    DWORD cConditionalNotes;
+    THEME_CONDITIONAL_TEXT* rgConditionalNotes;
 
     // state variables that should be ignored
     HWND hWnd;
