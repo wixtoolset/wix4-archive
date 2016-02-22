@@ -9,6 +9,15 @@
 
 #include "precomp.h"
 
+
+#ifndef BS_COMMANDLINK
+#define BS_COMMANDLINK          0x0000000EL
+#endif
+
+#ifndef BCM_SETNOTE
+#define BCM_SETNOTE         (BCM_FIRST + 0x0009)
+#endif
+
 #ifndef BCM_SETSHIELD
 #define BCM_SETSHIELD       (BCM_FIRST + 0x000C)
 #endif
@@ -65,6 +74,12 @@ static HRESULT ParseImage(
     __in_opt LPCWSTR wzRelativePath,
     __in IXMLDOMNode* pElement,
     __out HBITMAP* phImage
+    );
+static HRESULT ParseIcon(
+    __in_opt HMODULE hModule,
+    __in_z_opt LPCWSTR wzRelativePath,
+    __in IXMLDOMNode* pElement,
+    __out HICON* phIcon
     );
 static HRESULT ParseWindow(
     __in_opt HMODULE hModule,
@@ -126,6 +141,10 @@ static HRESULT ParseTabs(
     __in THEME_CONTROL* pControl
     );
 static HRESULT ParseText(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    );
+static HRESULT ParseNotes(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl
     );
@@ -1606,7 +1625,7 @@ LExit:
 
 static HRESULT ParseImage(
     __in_opt HMODULE hModule,
-    __in_opt LPCWSTR wzRelativePath,
+    __in_z_opt LPCWSTR wzRelativePath,
     __in IXMLDOMNode* pElement,
     __out HBITMAP* phImage
     )
@@ -1677,6 +1696,62 @@ LExit:
 
     return hr;
 }
+
+
+static HRESULT ParseIcon(
+    __in_opt HMODULE hModule,
+    __in_z_opt LPCWSTR wzRelativePath,
+    __in IXMLDOMNode* pElement,
+    __out HICON* phIcon
+    )
+{
+    HRESULT hr = S_OK;
+    BSTR bstr = NULL;
+    LPWSTR sczImageFile = NULL;
+    int iResourceId = 0;
+
+    hr = XmlGetAttribute(pElement, L"IconResource", &bstr);
+    ExitOnFailure(hr, "Failed to get icon resource attribute.");
+
+    if (S_OK == hr)
+    {
+        iResourceId = wcstol(bstr, NULL, 10);
+
+        *phIcon = reinterpret_cast<HICON>(::LoadImageW(hModule, MAKEINTRESOURCEW(iResourceId), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
+        ExitOnNullWithLastError(*phIcon, hr, "Failed to load icon.");
+    }
+    else
+    {
+        ReleaseNullBSTR(bstr);
+
+        hr = XmlGetAttribute(pElement, L"IconFile", &bstr);
+        ExitOnFailure(hr, "Failed to get icon file attribute.");
+
+        if (S_OK == hr)
+        {
+            if (wzRelativePath)
+            {
+                hr = PathConcat(wzRelativePath, bstr, &sczImageFile);
+                ExitOnFailure(hr, "Failed to combine image file path.");
+            }
+            else
+            {
+                hr = PathRelativeToModule(&sczImageFile, bstr, hModule);
+                ExitOnFailure(hr, "Failed to get image filename.");
+            }
+
+            *phIcon = reinterpret_cast<HICON>(::LoadImageW(NULL, sczImageFile, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE));
+            ExitOnNullWithLastError(*phIcon, hr, "Failed to load icon: %ls.", sczImageFile);
+        }
+    }
+
+LExit:
+    ReleaseStr(sczImageFile);
+    ReleaseBSTR(bstr);
+
+    return hr;
+}
+
 
 static HRESULT ParseWindow(
     __in_opt HMODULE hModule,
@@ -2205,7 +2280,7 @@ static HRESULT ParseControls(
     hr = ParseRadioButtons(hModule, wzRelativePath, pElement, pTheme, pParentControl, pPage);
     ExitOnFailure(hr, "Failed to parse radio buttons.");
 
-    hr = XmlSelectNodes(pElement, L"Billboard|Button|Checkbox|Editbox|Hyperlink|Hypertext|ImageControl|Label|ListView|Panel|Progressbar|Richedit|Static|Tabs|TreeView", &pixnl);
+    hr = XmlSelectNodes(pElement, L"Billboard|Button|Checkbox|CommandLink|Editbox|Hyperlink|Hypertext|ImageControl|Label|ListView|Panel|Progressbar|Richedit|Static|Tabs|TreeView", &pixnl);
     ExitOnFailure(hr, "Failed to find control elements.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&cNewControls));
@@ -2251,6 +2326,10 @@ static HRESULT ParseControls(
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Checkbox", -1))
         {
             type = THEME_CONTROL_TYPE_CHECKBOX;
+        }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"CommandLink", -1))
+        {
+            type = THEME_CONTROL_TYPE_COMMANDLINK;
         }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Editbox", -1))
         {
@@ -2569,6 +2648,14 @@ static HRESULT ParseControl(
 
         hr = ParseControls(hModule, wzRelativePath, pixn, pTheme, pControl, pPage);
         ExitOnFailure(hr, "Failed to parse billboard children.");
+    }
+    else if (THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
+    {
+        hr = ParseIcon(hModule, wzRelativePath, pixn, &pControl->hIcon);
+        ExitOnFailure(hr, "Failed while parsing control icon.");
+
+        hr = ParseNotes(pixn, pControl);
+        ExitOnFailure(hr, "Failed to parse note text nodes of the control.");
     }
     else if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
     {
@@ -3142,6 +3229,71 @@ LExit:
 }
 
 
+static HRESULT ParseNotes(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD i = 0;
+    IXMLDOMNodeList* pixnl = NULL;
+    IXMLDOMNode* pixnChild = NULL;
+    BSTR bstrText = NULL;
+
+    hr = XmlSelectNodes(pixn, L"Note", &pixnl);
+    ExitOnFailure(hr, "Failed to select child Note nodes.");
+
+    hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cConditionalNotes));
+    ExitOnFailure(hr, "Failed to count the number of Note nodes.");
+
+    if (0 < pControl->cConditionalNotes)
+    {
+        MemAllocArray(reinterpret_cast<LPVOID*>(&pControl->rgConditionalNotes), sizeof(THEME_CONDITIONAL_TEXT), pControl->cConditionalNotes);
+        ExitOnNull(pControl->rgConditionalNotes, hr, E_OUTOFMEMORY, "Failed to allocate note THEME_CONDITIONAL_TEXT structs.");
+
+        i = 0;
+        while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
+        {
+            THEME_CONDITIONAL_TEXT* pConditionalNode = pControl->rgConditionalNotes + i;
+
+            hr = XmlGetAttributeEx(pixnChild, L"Condition", &pConditionalNode->sczCondition);
+            if (E_NOTFOUND == hr)
+            {
+                hr = S_OK;
+            }
+            ExitOnFailure(hr, "Failed when querying Note/@Condition attribute.");
+
+            hr = XmlGetText(pixnChild, &bstrText);
+            ExitOnFailure(hr, "Failed to get inner text of Note element.");
+
+            if (S_OK == hr)
+            {
+                if (pConditionalNode->sczCondition)
+                {
+                    hr = StrAllocString(&pConditionalNode->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to conditional note text.");
+                }
+                else
+                {
+                    hr = StrAllocString(&pControl->sczNote, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to command link control.");
+                }
+            }
+
+            ++i;
+            ReleaseNullBSTR(bstrText);
+        }
+    }
+
+LExit:
+    ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseBSTR(bstrText);
+
+    return hr;
+}
+
+
 static HRESULT StartBillboard(
     __in THEME* pTheme,
     __in DWORD dwControl
@@ -3466,6 +3618,7 @@ static void FreeControl(
 
         ReleaseStr(pControl->sczName);
         ReleaseStr(pControl->sczText);
+        ReleaseStr(pControl->sczNote);
         ReleaseStr(pControl->sczEnableCondition);
         ReleaseStr(pControl->sczVisibleCondition);
         ReleaseStr(pControl->sczValue);
@@ -3496,6 +3649,11 @@ static void FreeControl(
             FreeConditionalText(&(pControl->rgConditionalText[i]));
         }
 
+        for (DWORD i = 0; i < pControl->cConditionalNotes; ++i)
+        {
+            FreeConditionalText(&(pControl->rgConditionalNotes[i]));
+        }
+
         for (DWORD i = 0; i < pControl->cTabs; ++i)
         {
             FreeTab(&(pControl->pttTabs[i]));
@@ -3504,6 +3662,7 @@ static void FreeControl(
         ReleaseMem(pControl->rgActions)
         ReleaseMem(pControl->ptcColumns);
         ReleaseMem(pControl->rgConditionalText);
+        ReleaseMem(pControl->rgConditionalNotes);
         ReleaseMem(pControl->pttTabs);
     }
 }
@@ -3725,7 +3884,7 @@ static BOOL OnButtonClicked(
     HRESULT hr = S_OK;
     BOOL fHandled = FALSE;
 
-    if (THEME_CONTROL_TYPE_BUTTON == pControl->type)
+    if (THEME_CONTROL_TYPE_BUTTON == pControl->type || THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
     {
         if (pControl->cActions)
         {
@@ -4065,6 +4224,25 @@ static HRESULT ShowControl(
                         }
                     }
                 }
+
+                for (DWORD j = 0; j < pControl->cConditionalNotes; ++j)
+                {
+                    THEME_CONDITIONAL_TEXT* pConditionalNote = pControl->rgConditionalNotes + j;
+
+                    if (pConditionalNote->sczCondition)
+                    {
+                        BOOL fCondition = FALSE;
+
+                        hr = pTheme->pfnEvaluateCondition(pConditionalNote->sczCondition, &fCondition, pTheme->pvVariableContext);
+                        ExitOnFailure(hr, "Failed to evaluate condition: %ls", pConditionalNote->sczCondition);
+
+                        if (fCondition)
+                        {
+                            wzText = pConditionalNote->sczText;
+                            break;
+                        }
+                    }
+                }
             }
 
             if (wzText && *wzText)
@@ -4356,6 +4534,11 @@ static HRESULT LoadControls(
             }
             break;
 
+        case THEME_CONTROL_TYPE_COMMANDLINK:
+            wzWindowClass = WC_BUTTONW;
+            dwWindowBits |= BS_COMMANDLINK;
+            break;
+
         case THEME_CONTROL_TYPE_EDITBOX:
             wzWindowClass = WC_EDITW;
             dwWindowBits |= ES_LEFT | ES_AUTOHSCROLL;
@@ -4513,7 +4696,23 @@ static HRESULT LoadControls(
         pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, pTheme);
         ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
 
-        if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
+        if (THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
+        {
+            if (pControl->sczNote)
+            {
+                ::SendMessageW(pControl->hWnd, BCM_SETNOTE, 0, reinterpret_cast<WPARAM>(pControl->sczNote));
+            }
+
+            if (pControl->hImage)
+            {
+                ::SendMessageW(pControl->hWnd, BM_SETIMAGE, IMAGE_BITMAP, reinterpret_cast<LPARAM>(pControl->hImage));
+            }
+            else if (pControl->hIcon)
+            {
+                ::SendMessageW(pControl->hWnd, BM_SETIMAGE, IMAGE_ICON, reinterpret_cast<LPARAM>(pControl->hIcon));
+            }
+        }
+        else if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
         {
             if (pControl->dwInternalStyle & INTERNAL_CONTROL_STYLE_FILESYSTEM_AUTOCOMPLETE)
             {
@@ -4658,6 +4857,12 @@ static HRESULT LocalizeControl(
         ExitOnFailure(hr, "Failed to localize conditional text.");
     }
 
+    for (DWORD j = 0; j < pControl->cConditionalNotes; ++j)
+    {
+        hr = LocLocalizeString(pWixLoc, &pControl->rgConditionalNotes[j].sczText);
+        ExitOnFailure(hr, "Failed to localize conditional note.");
+    }
+
     for (DWORD j = 0; j < pControl->cColumns; ++j)
     {
         hr = LocLocalizeString(pWixLoc, &pControl->ptcColumns[j].pszName);
@@ -4753,12 +4958,14 @@ static void ResizeControl(
 
     GetControlDimensions(prcParent, pControl, &w, &h, &x, &y);
     ::MoveWindow(pControl->hWnd, x, y, w, h, TRUE);
-    
+
+#ifdef DEBUG
     if (THEME_CONTROL_TYPE_BUTTON == pControl->type)
     {
         Trace(REPORT_STANDARD, "Resizing button (%ls/%ls) to (%d,%d)+(%d,%d) for parent (%d,%d)-(%d,%d)",
             pControl->sczName, pControl->sczText, x, y, w, h, prcParent->left, prcParent->top, prcParent->right, prcParent->bottom);
     }
+#endif
 
     if (THEME_CONTROL_TYPE_LISTVIEW == pControl->type)
     {

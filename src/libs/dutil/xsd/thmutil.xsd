@@ -311,6 +311,78 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="CommandLink">
+        <xs:annotation>
+            <xs:documentation>Defines a button.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Text to display in the button.
+                    Mutually exclusive with the StringId attribute and child Text elements.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        If multiple Action elements are given, the conditions should be mutually exclusive (when multiple conditions are true, the behavior is undefined and could be changed at any time).
+                        If none of the conditions of the Action elements are true, then it uses the Action element without the Condition attribute.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:element ref="BrowseDirectoryAction" />
+                <xs:element ref="ChangePageAction" />
+                <xs:element ref="CloseWindowAction" />
+                <xs:element ref="Note" />
+                <xs:element ref="Text" />
+            </xs:choice>
+            <xs:attributeGroup ref="CommonControlAttributes" />
+            <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
+                <xs:annotation>
+                    <xs:documentation>Numeric identifier to the Font element that serves as the font for the control. Only valid when using graphic buttons.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="IconFile" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Relative path to an icon file to define a command link glyph.
+                        Mutually exclusive with ImageResource and SourceX and SourceY attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="IconResource" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references an icon resource in the module to define a command link glyph.
+                        Mutually exclusive with ImageFile and SourceX and SourceY attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ImageFile" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Relative path to an image file to define a command link glyph.
+                        Mutually exclusive with ImageResource and SourceX and SourceY attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ImageResource" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references an image resource in the module to define a command link glyph.
+                        Mutually exclusive with ImageFile and SourceX and SourceY attributes.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="StringId" type="xs:nonNegativeInteger">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier that references a string resource in the module to define the text for the control.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="BrowseDirectoryAction">
         <xs:annotation>
             <xs:documentation>
@@ -647,6 +719,34 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="Note">
+        <xs:annotation>
+            <xs:documentation>
+                Defines note text for a command link control based on an optional condition.
+                If multiple Note elements are given for one control, the conditions should be mutually exclusive (when multiple conditions are true, the behavior is undefined and may be changed at any time).
+                If none of the conditions of a control's Note elements are true, then it uses the text of the Note element without the Condition attribute.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Note text for the parent command link control.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute name="Condition" type="xs:string">
+                        <xs:annotation>
+                            <xs:documentation>
+                                The condition that determines when the parent control will use this note text.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>                
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
     <xs:element name="Panel">
         <xs:annotation>
             <xs:documentation>Defines a collection of controls.</xs:documentation>
@@ -813,7 +913,7 @@
     <xs:element name="Text">
         <xs:annotation>
             <xs:documentation>
-                Defines text for the parent control based on a condition.
+                Defines text for the parent control based on an optional condition.
                 If multiple Text elements are given for one control, the conditions should be mutually exclusive (when multiple conditions are true, the behavior is undefined and may be changed at any time).
                 If none of the conditions of a control's Text elements are true, then it uses the text of the Text element without the Condition attribute.
             </xs:documentation>
@@ -921,12 +1021,14 @@
             <xs:element ref="Billboard" />
             <xs:element ref="Button" />
             <xs:element ref="Checkbox" />
+            <xs:element ref="CommandLink" />
             <xs:element ref="Editbox" />
             <xs:element ref="Hyperlink" />
             <xs:element ref="Hypertext" />
             <xs:element ref="ImageControl" />
             <xs:element ref="Label" />
             <xs:element ref="ListView" />
+            <xs:element ref="Panel" />
             <xs:element ref="Progressbar" />
             <xs:element ref="RadioButtons" />
             <xs:element ref="Richedit" />
