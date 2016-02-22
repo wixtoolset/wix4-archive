@@ -1018,7 +1018,7 @@ LExit:
 
 
 DAPI_(BOOL) ThemeControlExists(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl
     )
 {
@@ -1381,35 +1381,36 @@ DAPI_(HRESULT) ThemeSetTextControl(
     __in_z_opt LPCWSTR wzText
     )
 {
-    return ThemeSetTextControlEx(pTheme, dwControl, FALSE, FALSE, wzText);
+    return ThemeSetTextControlEx(pTheme, dwControl, FALSE, wzText);
 }
 
 
 DAPI_(HRESULT) ThemeSetTextControlEx(
     __in const THEME* pTheme,
     __in DWORD dwControl,
-    __in BOOL fInvalidateControl,
-    __in BOOL fInvalidateParent,
+    __in BOOL fUpdate,
     __in_z_opt LPCWSTR wzText
     )
 {
     HRESULT hr = S_OK;
     HWND hWnd = ::GetDlgItem(pTheme->hwndParent, dwControl);
 
-    if (hWnd && !::SetWindowTextW(hWnd, wzText))
+    if (hWnd)
     {
-        ExitWithLastError(hr, "Failed to set control text.");
-    }
+        if (fUpdate)
+        {
+            ::ShowWindow(hWnd, SW_HIDE);
+        }
 
-    if (fInvalidateParent)
-    {
-        ::InvalidateRect(pTheme->hwndParent, NULL, TRUE);
-    }
+        if (!::SetWindowTextW(hWnd, wzText))
+        {
+            ExitWithLastError(hr, "Failed to set control text.");
+        }
 
-    if (fInvalidateControl)
-    {
-        ::InvalidateRect(hWnd, NULL, TRUE);
-        ::UpdateWindow(pTheme->hwndParent);
+        if (fUpdate)
+        {
+            ::ShowWindow(hWnd, SW_SHOW);
+        }
     }
 
 LExit:
