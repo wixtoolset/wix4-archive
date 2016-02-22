@@ -1997,46 +1997,49 @@ static HRESULT GetFontColor(
     }
     ExitOnFailure(hr, "Failed to find font %ls color.", wzAttributeName);
 
-    if (pdwSystemColor && '$' == bstr[0])
+    if (pdwSystemColor)
     {
-        if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$btnface", -1))
+        if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"btnface", -1))
         {
             *pdwSystemColor = COLOR_BTNFACE;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$btntext", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"btntext", -1))
         {
             *pdwSystemColor = COLOR_BTNTEXT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$graytext", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"graytext", -1))
         {
             *pdwSystemColor = COLOR_GRAYTEXT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$highlight", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"highlight", -1))
         {
             *pdwSystemColor = COLOR_HIGHLIGHT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$highlighttext", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"highlighttext", -1))
         {
             *pdwSystemColor = COLOR_HIGHLIGHTTEXT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$hotlight", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"hotlight", -1))
         {
             *pdwSystemColor = COLOR_HOTLIGHT;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$window", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"window", -1))
         {
             *pdwSystemColor = COLOR_WINDOW;
         }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"$windowtext", -1))
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstr, -1, L"windowtext", -1))
         {
             *pdwSystemColor = COLOR_WINDOWTEXT;
         }
+        else
+        {
+            *pColorRef = wcstoul(bstr, NULL, 16);
+        }
 
-        *pColorRef = ::GetSysColor(*pdwSystemColor);
-    }
-    else
-    {
-        *pColorRef = wcstoul(bstr, NULL, 16);
+        if (*pdwSystemColor)
+        {
+            *pColorRef = ::GetSysColor(*pdwSystemColor);
+        }
     }
 
 LExit:
