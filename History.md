@@ -1,3 +1,29 @@
+## WixBuild: Version 4.0.3826.0
+
+* @barnson: Add support for command links to ThmUtil.
+  * Command links are supported on Windows Vista and later. On Windows XP, they're plain buttons.
+
+* @barnson: Support system colors in themes.
+  * Implements wixtoolset/issues#4787.
+  * The following "colors" are supported in Font/@Foreground and Font/@Background with the color indices as used by [::GetSysColor](https://msdn.microsoft.com/en-us/library/windows/desktop/ms724371%28v=vs.85%29.aspx):
+    * btnface: COLOR_BTNFACE
+    * btntext: COLOR_BTNTEXT
+    * graytext: COLOR_GRAYTEXT
+    * highlight: COLOR_HIGHLIGHT
+    * highlighttext: COLOR_HIGHLIGHTTEXT
+    * hotlight: COLOR_HOTLIGHT
+    * window: COLOR_WINDOW
+    * windowtext: COLOR_WINDOWTEXT
+
+* @firegiantco via @barnson: ThmUtil cleanups.
+  * ThemeControlExists should take a `const THEME*`.
+  * ThemeSetTextControlEx exposed clunky `fInvalidateControl` and `fInvalidateParent` arguments in an attempt to force controls to redraw. Replace with `fUpdate` more generically and, hidden in the code, hide and show the control, which we found to be the cleanest way of getting transparent text redrawn over a graphical background.
+
+* SeanHall: WIXBUG:4857 - Fix DTF custom actions in Win10 Apps and Features. 
+* SeanHall: Make VS2015 C++ custom action project template reference VS2015 WiX libs.
+
+* BMurri: WIXBUG:5132 - fix incomplete usage of kbKeyBitness parameter of RegDelete() function in DUtil's RegUtil.
+
 ## WixBuild: Version 4.0.3729.0
 
 * jchoover: WIXBUG:5193 - Fix /layout default directory with clean room:
