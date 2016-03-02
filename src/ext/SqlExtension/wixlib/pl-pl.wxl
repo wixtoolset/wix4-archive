@@ -8,15 +8,15 @@
   </copyright>
 -->
 <WixLocalization Culture="pl-pl" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-    <String Id="msierrSQLFailedCreateDatabase" Overridable="yes">B³¹d [2]: nie uda³o siê utowrzyæ bazy danych: [3]. Szczegó³y b³êdu: [4].</String>
-    <String Id="msierrSQLFailedDropDatabase" Overridable="yes">B³¹d [2]: nie uda³o siê usun¹æ bazy danych: [3]. Szczegó³y b³êdu: [4].</String>
-    <String Id="msierrSQLFailedConnectDatabase" Overridable="yes">Nie uda³o siê po³¹czyæ z baz¹ danych.  ([2]   [3]   [4]   [5])</String>
-    <String Id="msierrSQLFailedExecString" Overridable="yes">B³¹d [2]: nie uda³o siê wykonaæ zapytania SQL. Szczegó³y b³êdu: [3], klucz: [4] zapytanie SQL: [5]</String>
-    <String Id="msierrSQLDatabaseAlreadyExists" Overridable="yes">Baza danych [3] ju¿ istnieje. Czy chcesz kontynuowaæ?</String>
+    <String Id="msierrSQLFailedCreateDatabase" Overridable="yes">BÅ‚Ä…d [2]: nie udaÅ‚o siÄ™ utworzyÄ‡ bazy danych: [3]. SzczegÃ³Å‚y bÅ‚Ä™du: [4].</String>
+    <String Id="msierrSQLFailedDropDatabase" Overridable="yes">BÅ‚Ä…d [2]: nie udaÅ‚o siÄ™ usunÄ…Ä‡ bazy danych: [3]. SzczegÃ³Å‚y bÅ‚Ä™du: [4].</String>
+    <String Id="msierrSQLFailedConnectDatabase" Overridable="yes">Nie udaÅ‚o siÄ™ poÅ‚Ä…czyÄ‡ z bazÄ… danych.  ([2]   [3]   [4]   [5])</String>
+    <String Id="msierrSQLFailedExecString" Overridable="yes">BÅ‚Ä…d [2]: nie udaÅ‚o siÄ™ wykonaÄ‡ zapytania SQL. SzczegÃ³Å‚y bÅ‚Ä™du: [3], klucz: [4] zapytanie SQL: [5]</String>
+    <String Id="msierrSQLDatabaseAlreadyExists" Overridable="yes">Baza danych [3] juÅ¼ istnieje. Czy chcesz kontynuowaÄ‡?</String>
 
     <String Id="ConfigureSql" Overridable="yes">Konfigurowanie programu SQL Server</String>
     <String Id="CreateDatabase" Overridable="yes">Tworzenie baz danych</String>
     <String Id="DropDatabase" Overridable="yes">Usuwanie baz danych</String>
-    <String Id="ExecuteSqlStrings" Overridable="yes">Wykonywanie zapytañ SQL</String>
-    <String Id="RollbackExecuteSqlStrings" Overridable="yes">Cofanie zapytañ SQL</String>
+    <String Id="ExecuteSqlStrings" Overridable="yes">Wykonywanie zapytaÅ„ SQL</String>
+    <String Id="RollbackExecuteSqlStrings" Overridable="yes">Cofanie zapytaÅ„ SQL</String>
 </WixLocalization>
