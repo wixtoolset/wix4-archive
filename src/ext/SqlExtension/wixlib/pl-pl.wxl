@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  <copyright file="en-us.wxl" company="Outercurve Foundation">
+  <copyright file="pl-pl.wxl" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
     This software is released under Microsoft Reciprocal License (MS-RL).
     The license and further copyright text can be found in the file
@@ -8,13 +8,13 @@
   </copyright>
 -->
 <WixLocalization Culture="pl-pl" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-    <String Id="msierrSQLFailedCreateDatabase" Overridable="yes">B³¹d [2]: nie uda³o siê stworzyæ bazy danych: [3]. Szczegó³y b³êdu: [4].</String>
+    <String Id="msierrSQLFailedCreateDatabase" Overridable="yes">B³¹d [2]: nie uda³o siê utowrzyæ bazy danych: [3]. Szczegó³y b³êdu: [4].</String>
     <String Id="msierrSQLFailedDropDatabase" Overridable="yes">B³¹d [2]: nie uda³o siê usun¹æ bazy danych: [3]. Szczegó³y b³êdu: [4].</String>
     <String Id="msierrSQLFailedConnectDatabase" Overridable="yes">Nie uda³o siê po³¹czyæ z baz¹ danych.  ([2]   [3]   [4]   [5])</String>
     <String Id="msierrSQLFailedExecString" Overridable="yes">B³¹d [2]: nie uda³o siê wykonaæ zapytania SQL. Szczegó³y b³êdu: [3], klucz: [4] zapytanie SQL: [5]</String>
     <String Id="msierrSQLDatabaseAlreadyExists" Overridable="yes">Baza danych [3] ju¿ istnieje. Czy chcesz kontynuowaæ?</String>
 
-    <String Id="ConfigureSql" Overridable="yes">Konfigurowanie SQL Server</String>
+    <String Id="ConfigureSql" Overridable="yes">Konfigurowanie programu SQL Server</String>
     <String Id="CreateDatabase" Overridable="yes">Tworzenie baz danych</String>
     <String Id="DropDatabase" Overridable="yes">Usuwanie baz danych</String>
     <String Id="ExecuteSqlStrings" Overridable="yes">Wykonywanie zapytañ SQL</String>
