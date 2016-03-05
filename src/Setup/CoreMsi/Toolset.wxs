@@ -136,6 +136,10 @@
                 <File Source="ThmViewer.exe" />
             </Component>
 
+            <Component>
+                <File Source="ThmGen.exe" />
+            </Component>
+
             <ComponentGroupRef Id="BurnComponents" />
         </ComponentGroup>
     </Fragment>
