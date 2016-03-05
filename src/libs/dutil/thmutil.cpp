@@ -4896,6 +4896,12 @@ static HRESULT LocalizeControl(
         }
     }
 
+    if (pControl->sczNote && *pControl->sczNote)
+    {
+        hr = LocLocalizeString(pWixLoc, &pControl->sczNote);
+        ExitOnFailure(hr, "Failed to localize control note text.");
+    }
+
     for (DWORD j = 0; j < pControl->cConditionalText; ++j)
     {
         hr = LocLocalizeString(pWixLoc, &pControl->rgConditionalText[j].sczText);

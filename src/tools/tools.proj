@@ -29,6 +29,7 @@
     <ProjectReference Include="swix\swix.proj" />
 
     <ProjectReference Include="thmviewer\thmviewer.vcxproj" />
+    <ProjectReference Include="thmgen\thmgen.csproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
