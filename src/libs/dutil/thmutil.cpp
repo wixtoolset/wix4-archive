@@ -141,11 +141,13 @@ static HRESULT ParseTabs(
     );
 static HRESULT ParseText(
     __in IXMLDOMNode* pixn,
-    __in THEME_CONTROL* pControl
+    __in THEME_CONTROL* pControl,
+    __out BOOL* pfAnyChildren
     );
 static HRESULT ParseNotes(
     __in IXMLDOMNode* pixn,
-    __in THEME_CONTROL* pControl
+    __in THEME_CONTROL* pControl,
+    __out BOOL* pfAnyChildren
     );
 static HRESULT StopBillboard(
     __in THEME* pTheme,
@@ -2471,6 +2473,8 @@ static HRESULT ParseControl(
     DWORD dwValue = 0;
     BOOL fValue = FALSE;
     BSTR bstrText = NULL;
+    BOOL fAnyTextChildren = FALSE;
+    BOOL fAnyNoteChildren = FALSE;
 
     hr = XmlGetAttributeEx(pixn, L"Name", &pControl->sczName);
     if (E_NOTFOUND == hr)
@@ -2612,16 +2616,16 @@ static HRESULT ParseControl(
     hr = ParseActions(pixn, pControl);
     ExitOnFailure(hr, "Failed to parse action nodes of the control.");
 
-    hr = ParseText(pixn, pControl);
+    hr = ParseText(pixn, pControl, &fAnyTextChildren);
     ExitOnFailure(hr, "Failed to parse text nodes of the control.");
 
     if (THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
     {
-        hr = ParseNotes(pixn, pControl);
+        hr = ParseNotes(pixn, pControl, &fAnyNoteChildren);
         ExitOnFailure(hr, "Failed to parse note text nodes of the control.");
     }
 
-    if (pControl->cConditionalText || pControl->cConditionalNotes)
+    if (fAnyTextChildren || fAnyNoteChildren)
     {
         pControl->uStringId = UINT_MAX;
     }
@@ -3187,7 +3191,8 @@ LExit:
 
 static HRESULT ParseText(
     __in IXMLDOMNode* pixn,
-    __in THEME_CONTROL* pControl
+    __in THEME_CONTROL* pControl,
+    __out BOOL* pfAnyChildren
     )
 {
     HRESULT hr = S_OK;
@@ -3201,6 +3206,11 @@ static HRESULT ParseText(
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cConditionalText));
     ExitOnFailure(hr, "Failed to count the number of Text nodes.");
+
+    if (pfAnyChildren)
+    {
+        *pfAnyChildren = 0 < pControl->cConditionalText;
+    }
 
     if (0 < pControl->cConditionalText)
     {
@@ -3224,19 +3234,26 @@ static HRESULT ParseText(
 
             if (S_OK == hr)
             {
-                hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
-                ExitOnFailure(hr, "Failed to copy text to conditional text.");
-
-                if (!pConditionalText->sczCondition)
+                if (pConditionalText->sczCondition)
+                {
+                    hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to conditional text.");
+                }
+                else
                 {
                     if (pControl->sczText)
                     {
                         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-                        ExitOnFailure(hr, "The text for the '%ls' control is specified multiple times.", pControl->sczName);
+                        ExitOnFailure(hr, "Unconditional text for the '%ls' control is specified multiple times.", pControl->sczName);
                     }
 
                     hr = StrAllocString(&pControl->sczText, bstrText, 0);
                     ExitOnFailure(hr, "Failed to copy text to control.");
+
+                    // Unconditional text entries aren't stored in the conditional text list.
+                    --pControl->cConditionalText;
+                    ReleaseNullBSTR(bstrText);
+                    continue;
                 }
             }
 
@@ -3256,7 +3273,8 @@ LExit:
 
 static HRESULT ParseNotes(
     __in IXMLDOMNode* pixn,
-    __in THEME_CONTROL* pControl
+    __in THEME_CONTROL* pControl,
+    __out BOOL* pfAnyChildren
     )
 {
     HRESULT hr = S_OK;
@@ -3270,6 +3288,11 @@ static HRESULT ParseNotes(
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cConditionalNotes));
     ExitOnFailure(hr, "Failed to count the number of Note nodes.");
+
+    if (pfAnyChildren)
+    {
+        *pfAnyChildren = 0 < pControl->cConditionalNotes;
+    }
 
     if (0 < pControl->cConditionalNotes)
     {
@@ -3293,19 +3316,26 @@ static HRESULT ParseNotes(
 
             if (S_OK == hr)
             {
-                hr = StrAllocString(&pConditionalNote->sczText, bstrText, 0);
-                ExitOnFailure(hr, "Failed to copy text to conditional note text.");
-
-                if (!pConditionalNote->sczCondition)
+                if (pConditionalNote->sczCondition)
+                {
+                    hr = StrAllocString(&pConditionalNote->sczText, bstrText, 0);
+                    ExitOnFailure(hr, "Failed to copy text to conditional note text.");
+                }
+                else
                 {
                     if (pControl->sczNote)
                     {
                         hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-                        ExitOnFailure(hr, "The note for the '%ls' control is specified multiple times.", pControl->sczName);
+                        ExitOnFailure(hr, "Unconditional note text for the '%ls' control is specified multiple times.", pControl->sczName);
                     }
 
                     hr = StrAllocString(&pControl->sczNote, bstrText, 0);
                     ExitOnFailure(hr, "Failed to copy text to command link control.");
+
+                    // Unconditional note entries aren't stored in the conditional notes list.
+                    --pControl->cConditionalNotes;
+                    ReleaseNullBSTR(bstrText);
+                    continue;
                 }
             }
 
