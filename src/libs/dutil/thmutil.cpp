@@ -2615,7 +2615,13 @@ static HRESULT ParseControl(
     hr = ParseText(pixn, pControl);
     ExitOnFailure(hr, "Failed to parse text nodes of the control.");
 
-    if (pControl->cConditionalText)
+    if (THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
+    {
+        hr = ParseNotes(pixn, pControl);
+        ExitOnFailure(hr, "Failed to parse note text nodes of the control.");
+    }
+
+    if (pControl->cConditionalText || pControl->cConditionalNotes)
     {
         pControl->uStringId = UINT_MAX;
     }
@@ -2677,9 +2683,6 @@ static HRESULT ParseControl(
     {
         hr = ParseIcon(hModule, wzRelativePath, pixn, &pControl->hIcon);
         ExitOnFailure(hr, "Failed while parsing control icon.");
-
-        hr = ParseNotes(pixn, pControl);
-        ExitOnFailure(hr, "Failed to parse note text nodes of the control.");
     }
     else if (THEME_CONTROL_TYPE_EDITBOX == pControl->type)
     {
@@ -3221,12 +3224,10 @@ static HRESULT ParseText(
 
             if (S_OK == hr)
             {
-                if (pConditionalText->sczCondition)
-                {
-                    hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
-                    ExitOnFailure(hr, "Failed to copy text to conditional text.");
-                }
-                else
+                hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
+                ExitOnFailure(hr, "Failed to copy text to conditional text.");
+
+                if (!pConditionalText->sczCondition)
                 {
                     if (pControl->sczText)
                     {
@@ -3278,9 +3279,9 @@ static HRESULT ParseNotes(
         i = 0;
         while (S_OK == (hr = XmlNextElement(pixnl, &pixnChild, NULL)))
         {
-            THEME_CONDITIONAL_TEXT* pConditionalNode = pControl->rgConditionalNotes + i;
+            THEME_CONDITIONAL_TEXT* pConditionalNote = pControl->rgConditionalNotes + i;
 
-            hr = XmlGetAttributeEx(pixnChild, L"Condition", &pConditionalNode->sczCondition);
+            hr = XmlGetAttributeEx(pixnChild, L"Condition", &pConditionalNote->sczCondition);
             if (E_NOTFOUND == hr)
             {
                 hr = S_OK;
@@ -3292,13 +3293,17 @@ static HRESULT ParseNotes(
 
             if (S_OK == hr)
             {
-                if (pConditionalNode->sczCondition)
+                hr = StrAllocString(&pConditionalNote->sczText, bstrText, 0);
+                ExitOnFailure(hr, "Failed to copy text to conditional note text.");
+
+                if (!pConditionalNote->sczCondition)
                 {
-                    hr = StrAllocString(&pConditionalNode->sczText, bstrText, 0);
-                    ExitOnFailure(hr, "Failed to copy text to conditional note text.");
-                }
-                else
-                {
+                    if (pControl->sczNote)
+                    {
+                        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                        ExitOnFailure(hr, "The note for the '%ls' control is specified multiple times.", pControl->sczName);
+                    }
+
                     hr = StrAllocString(&pControl->sczNote, bstrText, 0);
                     ExitOnFailure(hr, "Failed to copy text to command link control.");
                 }
@@ -4225,6 +4230,7 @@ static HRESULT ShowControl(
         if (pTheme->pfnFormatString && ((pControl->sczText && *pControl->sczText) || pControl->cConditionalText) && THEME_CONTROL_TYPE_EDITBOX != pControl->type)
         {
             LPWSTR wzText = pControl->sczText;
+            LPWSTR wzNote = pControl->sczNote;
 
             if (pTheme->pfnEvaluateCondition)
             {
@@ -4233,6 +4239,7 @@ static HRESULT ShowControl(
                 for (DWORD j = 0; j < pControl->cConditionalText; ++j)
                 {
                     THEME_CONDITIONAL_TEXT* pConditionalText = pControl->rgConditionalText + j;
+                    wzText = pConditionalText->sczText;
 
                     if (pConditionalText->sczCondition)
                     {
@@ -4252,17 +4259,18 @@ static HRESULT ShowControl(
                 for (DWORD j = 0; j < pControl->cConditionalNotes; ++j)
                 {
                     THEME_CONDITIONAL_TEXT* pConditionalNote = pControl->rgConditionalNotes + j;
+                    wzNote = pConditionalNote->sczText;
 
                     if (pConditionalNote->sczCondition)
                     {
                         BOOL fCondition = FALSE;
 
                         hr = pTheme->pfnEvaluateCondition(pConditionalNote->sczCondition, &fCondition, pTheme->pvVariableContext);
-                        ExitOnFailure(hr, "Failed to evaluate condition: %ls", pConditionalNote->sczCondition);
+                        ExitOnFailure(hr, "Failed to evaluate note condition: %ls", pConditionalNote->sczCondition);
 
                         if (fCondition)
                         {
-                            wzText = pConditionalNote->sczText;
+                            wzNote = pConditionalNote->sczText;
                             break;
                         }
                     }
@@ -4280,6 +4288,18 @@ static HRESULT ShowControl(
             }
 
             ThemeSetTextControl(pTheme, pControl->wId, sczText);
+
+            if (wzNote && *wzNote)
+            {
+                hr = pTheme->pfnFormatString(wzNote, &sczText, pTheme->pvVariableContext);
+                ExitOnFailure(hr, "Failed to format note: %ls", wzNote);
+            }
+            else
+            {
+                ReleaseNullStr(sczText);
+            }
+
+            ::SendMessageW(pControl->hWnd, BCM_SETNOTE, 0, reinterpret_cast<WPARAM>(sczText));
         }
 
         // If this is a named control, do variable magic.
