@@ -30,7 +30,7 @@
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
-#include "IBootstrapperBAFunction.h"
+#include "IBAFunctions.h"
 
 #include "balutil.h"
 #include "BalBootstrapperEngine.h"

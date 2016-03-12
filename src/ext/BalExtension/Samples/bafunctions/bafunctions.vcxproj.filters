@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WixBootstrapperBAFunction.cpp">
+    <ClCompile Include="bafunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bafunctions.cpp">
+    <ClCompile Include="WixSampleBAFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -27,9 +27,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WixBootstrapperBAFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

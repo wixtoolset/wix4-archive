@@ -299,10 +299,10 @@ public: // IBootstrapperApplication
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunction)
+        if (SUCCEEDED(hrStatus) && m_pBAFunctions)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect complete BA function");
-            m_pBAFunction->OnDetectComplete();
+            m_pBAFunctions->OnDetectComplete();
         }
 
         if (SUCCEEDED(hrStatus))
@@ -446,10 +446,10 @@ public: // IBootstrapperApplication
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunction)
+        if (SUCCEEDED(hrStatus) && m_pBAFunctions)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan complete BA function");
-            m_pBAFunction->OnPlanComplete();
+            m_pBAFunctions->OnPlanComplete();
         }
 
         if (m_fPrereq)
@@ -1046,7 +1046,7 @@ private: // privates
         hr = BalConditionsParseFromXml(&m_Conditions, pixdManifest, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load conditions from XML.");
 
-        hr = LoadBootstrapperBAFunctions();
+        hr = LoadBAFunctions();
         BalExitOnFailure(hr, "Failed to load bootstrapper functions.");
 
         GetBundleFileVersion();
@@ -1929,10 +1929,10 @@ private: // privates
     {
         HRESULT hr = S_OK;
 
-        if (m_pBAFunction)
+        if (m_pBAFunctions)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect BA function");
-            hr = m_pBAFunction->OnDetect();
+            hr = m_pBAFunctions->OnDetect();
             BalExitOnFailure(hr, "Failed calling detect BA function.");
         }
 
@@ -1987,10 +1987,10 @@ private: // privates
 
         SetState(WIXSTDBA_STATE_PLANNING, hr);
 
-        if (m_pBAFunction)
+        if (m_pBAFunctions)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan BA function");
-            m_pBAFunction->OnPlan();
+            m_pBAFunctions->OnPlan();
         }
 
         hr = m_pEngine->Plan(action);
@@ -2692,36 +2692,36 @@ private: // privates
     }
 
 
-    HRESULT LoadBootstrapperBAFunctions()
+    HRESULT LoadBAFunctions()
     {
         HRESULT hr = S_OK;
         LPWSTR sczBafPath = NULL;
 
         hr = PathRelativeToModule(&sczBafPath, L"bafunctions.dll", m_hModule);
-        BalExitOnFailure(hr, "Failed to get path to BA function DLL.");
+        BalExitOnFailure(hr, "Failed to get path to BA functions DLL.");
 
 #ifdef DEBUG
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBootstrapperBAFunctions() - BA function DLL %ls", sczBafPath);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBAFunctions() - BA functions DLL %ls", sczBafPath);
 #endif
 
         m_hBAFModule = ::LoadLibraryW(sczBafPath);
         if (m_hBAFModule)
         {
-            PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE pfnBAFunctionCreate = reinterpret_cast<PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE>(::GetProcAddress(m_hBAFModule, "CreateBootstrapperBAFunction"));
-            BalExitOnNullWithLastError(pfnBAFunctionCreate, hr, "Failed to get CreateBootstrapperBAFunction entry-point from: %ls", sczBafPath);
+            PFN_CREATE_BA_FUNCTIONS pfnCreateBAFunctions = reinterpret_cast<PFN_CREATE_BA_FUNCTIONS>(::GetProcAddress(m_hBAFModule, "CreateBAFunctions"));
+            BalExitOnNullWithLastError(pfnCreateBAFunctions, hr, "Failed to get CreateBAFunctions entry-point from: %ls", sczBafPath);
 
-            hr = pfnBAFunctionCreate(m_pEngine, m_hBAFModule, &m_pBAFunction);
+            hr = pfnCreateBAFunctions(m_pEngine, m_hBAFModule, &m_pBAFunctions);
             BalExitOnFailure(hr, "Failed to create BA function.");
         }
 #ifdef DEBUG
         else
         {
-            BalLogError(HRESULT_FROM_WIN32(::GetLastError()), "WIXSTDBA: LoadBootstrapperBAFunctions() - Failed to load DLL %ls", sczBafPath);
+            BalLogError(HRESULT_FROM_WIN32(::GetLastError()), "WIXSTDBA: LoadBAFunctions() - Failed to load DLL %ls", sczBafPath);
         }
 #endif
 
     LExit:
-        if (m_hBAFModule && !m_pBAFunction)
+        if (m_hBAFModule && !m_pBAFunctions)
         {
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
@@ -2827,7 +2827,7 @@ public:
         m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
-        m_pBAFunction = NULL;
+        m_pBAFunctions = NULL;
     }
 
 
@@ -2918,7 +2918,7 @@ private:
     BOOL m_fTriedToLaunchElevated;
 
     HMODULE m_hBAFModule;
-    IBootstrapperBAFunction* m_pBAFunction;
+    IBAFunctions* m_pBAFunctions;
 };
 
 

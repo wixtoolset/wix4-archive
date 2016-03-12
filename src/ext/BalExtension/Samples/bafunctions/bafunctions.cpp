@@ -7,7 +7,7 @@
 // </copyright>
 //
 // <summary>
-//   Entry point for bootstrapper BA function DLL.
+//   Entry point for bafunctions DLL.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 

@@ -58,6 +58,7 @@
     <ClInclude Include="inc\balinfo.h" />
     <ClInclude Include="inc\balretry.h" />
     <ClInclude Include="inc\balutil.h" />
+    <ClInclude Include="inc\IBAFunctions.h" />
     <ClInclude Include="precomp.h" />
   </ItemGroup>
 
