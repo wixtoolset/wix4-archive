@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-// WiX Extendend Bootstrapper BA function resource file.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #include <winver.h>
@@ -18,8 +14,8 @@
 #define VER_APP
 #define VER_ORIGINAL_FILENAME "bafunctions.dll"
 #define VER_INTERNAL_NAME "bafunctions"
-#define VER_PRODUCT_NAME "WiX Bootstrapper functions"
-#define VER_FILE_DESCRIPTION "WiX Bootstrapper functions"
+#define VER_PRODUCT_NAME "WiX Sample BAFunctions"
+#define VER_FILE_DESCRIPTION "WiX Sample BAFunctions"
 
 #ifdef DEBUG
     #define VER_DEBUG                VS_FF_DEBUG

@@ -49,6 +49,9 @@
     <ClInclude Include="inc\balutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\IBAFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="precomp.h">
       <Filter>Header Files</Filter>
     </ClInclude>

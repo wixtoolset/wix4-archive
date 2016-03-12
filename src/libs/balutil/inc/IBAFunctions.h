@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="IBootstrapperBAFunction.h" company="Outercurve Foundation">
+// <copyright file="IBAFunctions.h" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -13,7 +13,7 @@
 
 #include "IBootstrapperEngine.h"
 
-interface IBootstrapperBAFunction
+interface IBAFunctions
 {
     STDMETHOD(OnDetect)() = 0;
     STDMETHOD(OnDetectComplete)() = 0;
@@ -25,10 +25,10 @@ interface IBootstrapperBAFunction
 extern "C" {
 #endif
 
-typedef HRESULT (WINAPI *PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE)(
+typedef HRESULT (WINAPI *PFN_CREATE_BA_FUNCTIONS)(
     __in IBootstrapperEngine* pEngine,
     __in HMODULE hModule,
-    __out IBootstrapperBAFunction** ppBAFunction
+    __out IBAFunctions** ppBAFunction
     );
 
 #ifdef __cplusplus

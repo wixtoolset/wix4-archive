@@ -28,7 +28,6 @@
       <Platform>ARM</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EB0A7D51-2133-4EE7-B6CA-87DBEAC67E02}</ProjectGuid>
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -36,16 +35,13 @@
     <TargetName>BAFunctions</TargetName>
     <ProjectModuleDefinitionFile>bafunctions.def</ProjectModuleDefinitionFile>
   </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
-
   <PropertyGroup>
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\burn\inc;$(WixRoot)src\libs\balutil\inc</ProjectAdditionalIncludeDirectories>
     <ProjectAdditionalLinkLibraries>dutil.lib;balutil.lib;comctl32.lib;gdiplus.lib;shlwapi.lib;wininet.lib;version.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
-
   <ItemGroup>
-    <ClCompile Include="WixBootstrapperBAFunction.cpp" />
+    <ClCompile Include="WixSampleBAFunctions.cpp" />
     <ClCompile Include="bafunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +55,5 @@
   <ItemGroup>
     <ResourceCompile Include="bafunctions.rc" />
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

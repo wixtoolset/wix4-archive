@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------------------------
-// <copyright file="WixBootstrapperBAFunction.cpp" company="Outercurve Foundation">
+// <copyright file="WixSampleBAFunctions.cpp" company="Outercurve Foundation">
 //   Copyright (c) 2004, Outercurve Foundation.
 //   This software is released under Microsoft Reciprocal License (MS-RL).
 //   The license and further copyright text can be found in the file
@@ -10,7 +10,7 @@
 
 #include "precomp.h"
 
-class CWixBootstrapperBAFunction : IBootstrapperBAFunction
+class CWixSampleBAFunctions : IBAFunctions
 {
 public:
     STDMETHODIMP OnDetect()
@@ -92,7 +92,7 @@ public:
     //
     // Constructor - initialize member variables.
     //
-    CWixBootstrapperBAFunction(
+	CWixSampleBAFunctions(
         __in IBootstrapperEngine* pEngine,
         __in HMODULE hModule
         )
@@ -104,31 +104,31 @@ public:
     //
     // Destructor - release member variables.
     //
-    ~CWixBootstrapperBAFunction()
+    ~CWixSampleBAFunctions()
     {
     }
 };
 
 
-extern "C" HRESULT WINAPI CreateBootstrapperBAFunction(
+extern "C" HRESULT WINAPI CreateBAFunctions(
     __in IBootstrapperEngine* pEngine,
     __in HMODULE hModule,
-    __out CWixBootstrapperBAFunction** ppBAFunction
+    __out IBAFunctions** ppBAFunctions
     )
 {
     HRESULT hr = S_OK;
-    CWixBootstrapperBAFunction* pBAFunction = NULL;
+	CWixSampleBAFunctions* pBAFunctions = NULL;
 
-    // This is required to enable logging functions
+    // This is required to enable logging functions.
     BalInitialize(pEngine);
 
-    pBAFunction = new CWixBootstrapperBAFunction(pEngine, hModule);
-    ExitOnNull(pBAFunction, hr, E_OUTOFMEMORY, "Failed to create new bootstrapper BA function object.");
+    pBAFunctions = new CWixSampleBAFunctions(pEngine, hModule);
+    ExitOnNull(pBAFunctions, hr, E_OUTOFMEMORY, "Failed to create new CWixSampleBAFunctions object.");
 
-    *ppBAFunction = pBAFunction;
-    pBAFunction = NULL;
+	*ppBAFunctions = reinterpret_cast<IBAFunctions*>(pBAFunctions);
+	pBAFunctions = NULL;
 
 LExit:
-    delete pBAFunction;
+    delete pBAFunctions;
     return hr;
 }

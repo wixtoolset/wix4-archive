@@ -47,7 +47,7 @@
             </Component>
 
             <Component>
-                <File Source="libs\balutil\inc\IBootstrapperBAFunction.h" />
+                <File Source="libs\balutil\inc\IBAFunctions.h" />
             </Component>
 
             <Component>

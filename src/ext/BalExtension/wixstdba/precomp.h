@@ -56,5 +56,5 @@ HRESULT CreateBootstrapperApplication(
     __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     );
 
-#include "IBootstrapperBAFunction.h"
+#include "IBAFunctions.h"
 
