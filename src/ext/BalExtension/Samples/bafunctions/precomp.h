@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-//    Precompiled header for standard bootstrapper application.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -48,11 +44,11 @@
 //#include "balcondition.h"
 #include "balutil.h"
 
+#include "BAFunctions.h"
 #include "IBAFunctions.h"
 
 HRESULT WINAPI CreateBAFunctions(
     __in HMODULE hModule,
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __out IBAFunctions** ppBAFunctions
+    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
+    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
     );

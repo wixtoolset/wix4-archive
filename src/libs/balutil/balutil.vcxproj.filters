@@ -28,7 +28,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\BAFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\BalBaseBAFunctions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\BalBaseBAFunctionsProc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\BalBaseBootstrapperApplication.h">

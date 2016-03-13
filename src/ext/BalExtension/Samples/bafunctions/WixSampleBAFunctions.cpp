@@ -10,6 +10,7 @@
 
 #include "precomp.h"
 #include "BalBaseBAFunctions.h"
+#include "BalBaseBAFunctionsProc.h"
 
 class CWixSampleBAFunctions : public CBalBaseBAFunctions
 {
@@ -52,7 +53,7 @@ public:
     CWixSampleBAFunctions(
         __in HMODULE hModule,
         __in IBootstrapperEngine* pEngine,
-        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs
+        __in const BA_FUNCTIONS_CREATE_ARGS* pArgs
         ) : CBalBaseBAFunctions(hModule, pEngine, pArgs)
     {
     }
@@ -68,24 +69,29 @@ public:
 
 HRESULT WINAPI CreateBAFunctions(
     __in HMODULE hModule,
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __out IBAFunctions** ppBAFunctions
+    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
+    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK;
     CWixSampleBAFunctions* pBAFunctions = NULL;
+    IBootstrapperEngine* pEngine = NULL;
 
     // This is required to enable logging functions.
-    BalInitialize(pEngine);
+    hr = BalInitializeFromCreateArgs(pArgs->pBootstrapperCreateArgs, &pEngine);
+    ExitOnFailure(hr, "Failed to initialize Bal.");
 
     pBAFunctions = new CWixSampleBAFunctions(hModule, pEngine, pArgs);
     ExitOnNull(pBAFunctions, hr, E_OUTOFMEMORY, "Failed to create new CWixSampleBAFunctions object.");
 
-    hr = pBAFunctions->QueryInterface(IID_PPV_ARGS(ppBAFunctions));
-    ExitOnFailure(hr, "Failed to QI for IBAFunctions from CWixSampleBAFunctions object.");
+    pResults->pfnBAFunctionsProc = BalBaseBAFunctionsProc;
+    pResults->pvBAFunctionsProcContext = pBAFunctions;
+    pResults->pBAFunctions = pBAFunctions;
+    pBAFunctions = NULL;
 
 LExit:
     ReleaseObject(pBAFunctions);
+    ReleaseObject(pEngine);
+
     return hr;
 }

@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-//    Precompiled header for Bootstrapper Application Layer Utility Library.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -30,6 +26,7 @@
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
+#include "BAFunctions.h"
 #include "IBAFunctions.h"
 
 #include "balutil.h"

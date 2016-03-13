@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-//    Precompiled header for standard bootstrapper application.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -46,6 +42,8 @@
 #include "balutil.h"
 #include "balinfo.h"
 #include "balcondition.h"
+
+#include "BAFunctions.h"
 
 HRESULT CreateBootstrapperApplication(
     __in HMODULE hModule,

@@ -7,6 +7,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
+#pragma once
+
 #include <windows.h>
 
 #include "BootstrapperEngine.h"
