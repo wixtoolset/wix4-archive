@@ -2697,6 +2697,8 @@ private: // privates
     {
         HRESULT hr = S_OK;
         LPWSTR sczBafPath = NULL;
+        BA_FUNCTIONS_CREATE_ARGS bafCreateArgs = { };
+        BA_FUNCTIONS_CREATE_RESULTS bafCreateResults = { };
 
         hr = PathRelativeToModule(&sczBafPath, L"bafunctions.dll", m_hModule);
         BalExitOnFailure(hr, "Failed to get path to BA functions DLL.");
@@ -2711,8 +2713,18 @@ private: // privates
             PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));
             BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
 
-            hr = pfnBAFunctionsCreate(m_pEngine, &m_createArgs, &m_pBAFunctions);
+            bafCreateArgs.cbSize = sizeof(bafCreateArgs);
+            bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
+            bafCreateArgs.pBootstrapperCreateArgs = &m_createArgs;
+
+            bafCreateResults.cbSize = sizeof(bafCreateResults);
+
+            hr = pfnBAFunctionsCreate(&bafCreateArgs, &bafCreateResults);
             BalExitOnFailure(hr, "Failed to create BAFunctions.");
+
+            m_pBAFunctions = bafCreateResults.pBAFunctions;
+            m_pfnBAFunctionsProc = bafCreateResults.pfnBAFunctionsProc;
+            m_pvBAFunctionsProcContext = bafCreateResults.pvBAFunctionsProcContext;
         }
 #ifdef DEBUG
         else
@@ -2861,6 +2873,12 @@ public:
         ReleaseObject(m_pBAFunctions);
         if (m_hBAFModule)
         {
+            PFN_BA_FUNCTIONS_DESTROY pfnBAFunctionsDestroy = reinterpret_cast<PFN_BA_FUNCTIONS_DESTROY>(::GetProcAddress(m_hBAFModule, "BAFunctionsDestroy"));
+            if (pfnBAFunctionsDestroy)
+            {
+                pfnBAFunctionsDestroy();
+            }
+
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
         }
@@ -2924,6 +2942,8 @@ private:
 
     HMODULE m_hBAFModule;
     IBAFunctions* m_pBAFunctions;
+    PFN_BA_FUNCTIONS_PROC m_pfnBAFunctionsProc;
+    LPVOID m_pvBAFunctionsProcContext;
 };
 
 

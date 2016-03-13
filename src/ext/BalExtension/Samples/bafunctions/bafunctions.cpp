@@ -37,11 +37,21 @@ extern "C" BOOL WINAPI DllMain(
 }
 
 extern "C" HRESULT WINAPI BAFunctionsCreate(
-    __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __out IBAFunctions** ppBAFunctions
+    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
+    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
     )
 {
-    HRESULT hr = CreateBAFunctions(static_cast<HMODULE>(vhInstance), pEngine, pArgs, ppBAFunctions);
+    HRESULT hr = S_OK;
+    
+    hr = CreateBAFunctions(vhInstance, pArgs, pResults);
+    BalExitOnFailure(hr, "Failed to create BAFunctions interface.");
+
+LExit:
     return hr;
+}
+
+extern "C" void WINAPI BAFunctionsDestroy(
+    )
+{
+    BalUninitialize();
 }

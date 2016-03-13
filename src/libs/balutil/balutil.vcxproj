@@ -28,7 +28,6 @@
       <Platform>ARM</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EDCB8095-0E6A-43E0-BC33-C4F762FC5CDB}</ProjectGuid>
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -36,13 +35,10 @@
     <TargetName>balutil</TargetName>
     <MultiTargetLibrary>true</MultiTargetLibrary>
   </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
-
   <PropertyGroup>
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\burn\inc</ProjectAdditionalIncludeDirectories>
   </PropertyGroup>
-
   <ItemGroup>
     <ClCompile Include="BalBootstrapperEngine.cpp" />
     <ClCompile Include="balcondition.cpp" />
@@ -51,7 +47,9 @@
     <ClCompile Include="balutil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\BAFunctions.h" />
     <ClInclude Include="inc\BalBaseBAFunctions.h" />
+    <ClInclude Include="inc\BalBaseBAFunctionsProc.h" />
     <ClInclude Include="inc\BalBaseBootstrapperApplication.h" />
     <ClInclude Include="inc\BalBaseBootstrapperApplicationProc.h" />
     <ClInclude Include="inc\BalBootstrapperEngine.h" />
@@ -62,6 +60,5 @@
     <ClInclude Include="inc\IBAFunctions.h" />
     <ClInclude Include="precomp.h" />
   </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

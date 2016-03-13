@@ -9,4 +9,4 @@
 
 EXPORTS
     BAFunctionsCreate
-
+    BAFunctionsDestroy

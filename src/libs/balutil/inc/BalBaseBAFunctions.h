@@ -550,13 +550,19 @@ protected:
     CBalBaseBAFunctions(
         __in HMODULE hModule,
         __in IBootstrapperEngine* pEngine,
-        __in const BOOTSTRAPPER_CREATE_ARGS* /*pArgs*/
+        __in const BA_FUNCTIONS_CREATE_ARGS* pArgs
         )
     {
         m_cReferences = 1;
         m_hModule = hModule;
         pEngine->AddRef();
         m_pEngine = pEngine;
+
+        memcpy_s(&m_command, sizeof(m_command), pArgs->pBootstrapperCreateArgs->pCommand, sizeof(BOOTSTRAPPER_COMMAND));
+        memcpy_s(&m_baCreateArgs, sizeof(m_baCreateArgs), pArgs->pBootstrapperCreateArgs, sizeof(BOOTSTRAPPER_CREATE_ARGS));
+        memcpy_s(&m_bafCreateArgs, sizeof(m_bafCreateArgs), pArgs, sizeof(BA_FUNCTIONS_CREATE_ARGS));
+        m_baCreateArgs.pCommand = &m_command;
+        m_bafCreateArgs.pBootstrapperCreateArgs = &m_baCreateArgs;
     }
 
     virtual ~CBalBaseBAFunctions()
@@ -570,4 +576,7 @@ private:
 protected:
     IBootstrapperEngine* m_pEngine;
     HMODULE m_hModule;
+    BA_FUNCTIONS_CREATE_ARGS m_bafCreateArgs;
+    BOOTSTRAPPER_CREATE_ARGS m_baCreateArgs;
+    BOOTSTRAPPER_COMMAND m_command;
 };
