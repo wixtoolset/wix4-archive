@@ -21,7 +21,7 @@ extern "C" BOOL WINAPI DllMain(
     IN LPVOID /* pvReserved */
     )
 {
-    switch(dwReason)
+    switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
         ::DisableThreadLibraryCalls(hInstance);
@@ -34,4 +34,14 @@ extern "C" BOOL WINAPI DllMain(
     }
 
     return TRUE;
+}
+
+extern "C" HRESULT WINAPI BAFunctionsCreate(
+    __in IBootstrapperEngine* pEngine,
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __out IBAFunctions** ppBAFunctions
+    )
+{
+    HRESULT hr = CreateBAFunctions(static_cast<HMODULE>(vhInstance), pEngine, pArgs, ppBAFunctions);
+    return hr;
 }

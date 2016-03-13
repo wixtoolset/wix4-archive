@@ -43,7 +43,7 @@
 #include "IBootstrapperEngine.h"
 #include "IBootstrapperApplication.h"
 
-#include "BalBaseBootstrapperApplication.h"
+#include "balutil.h"
 #include "balinfo.h"
 #include "balcondition.h"
 

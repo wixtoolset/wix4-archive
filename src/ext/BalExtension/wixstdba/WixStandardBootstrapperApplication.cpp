@@ -10,6 +10,7 @@
 
 #include "precomp.h"
 #include "BalBaseBootstrapperApplicationProc.h"
+#include "BalBaseBootstrapperApplication.h"
 
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
@@ -302,13 +303,13 @@ public: // IBootstrapperApplication
         if (SUCCEEDED(hrStatus) && m_pBAFunctions)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect complete BA function");
-            m_pBAFunctions->OnDetectComplete();
+            m_pBAFunctions->OnDetectComplete(hrStatus);
         }
 
         if (SUCCEEDED(hrStatus))
         {
             hrStatus = EvaluateConditions();
-            
+
             if (m_fPrereq)
             {
                 m_fPrereqAlreadyInstalled = TRUE;
@@ -449,7 +450,7 @@ public: // IBootstrapperApplication
         if (SUCCEEDED(hrStatus) && m_pBAFunctions)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan complete BA function");
-            m_pBAFunctions->OnPlanComplete();
+            m_pBAFunctions->OnPlanComplete(hrStatus);
         }
 
         if (m_fPrereq)
@@ -2327,7 +2328,7 @@ private: // privates
 
         hr = LocLocalizeString(m_pWixLoc, &sczLicenseUrl);
         BalExitOnFailure(hr, "Failed to localize license URL: %ls", m_sczLicenseUrl);
-        
+
         // Assume there is no hidden variables to be formatted
         // so don't worry about securely freeing it.
         hr = BalFormatString(sczLicenseUrl, &sczLicenseUrl);
@@ -2707,11 +2708,11 @@ private: // privates
         m_hBAFModule = ::LoadLibraryW(sczBafPath);
         if (m_hBAFModule)
         {
-            PFN_CREATE_BA_FUNCTIONS pfnCreateBAFunctions = reinterpret_cast<PFN_CREATE_BA_FUNCTIONS>(::GetProcAddress(m_hBAFModule, "CreateBAFunctions"));
-            BalExitOnNullWithLastError(pfnCreateBAFunctions, hr, "Failed to get CreateBAFunctions entry-point from: %ls", sczBafPath);
+            PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));
+            BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
 
-            hr = pfnCreateBAFunctions(m_pEngine, m_hBAFModule, &m_pBAFunctions);
-            BalExitOnFailure(hr, "Failed to create BA function.");
+            hr = pfnBAFunctionsCreate(m_pEngine, &m_createArgs, &m_pBAFunctions);
+            BalExitOnFailure(hr, "Failed to create BAFunctions.");
         }
 #ifdef DEBUG
         else
@@ -2746,6 +2747,8 @@ public:
     {
         m_hModule = hModule;
         memcpy_s(&m_command, sizeof(m_command), pArgs->pCommand, sizeof(BOOTSTRAPPER_COMMAND));
+        memcpy_s(&m_createArgs, sizeof(m_createArgs), pArgs, sizeof(BOOTSTRAPPER_CREATE_ARGS));
+        m_createArgs.pCommand = &m_command;
 
         // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
         if (fPrereq && BOOTSTRAPPER_ACTION_HELP != m_command.action && BOOTSTRAPPER_ACTION_INSTALL != m_command.action)
@@ -2855,6 +2858,7 @@ public:
         ReleaseStr(m_sczAfterForcedRestartPackage);
         ReleaseNullObject(m_pEngine);
 
+        ReleaseObject(m_pBAFunctions);
         if (m_hBAFModule)
         {
             ::FreeLibrary(m_hBAFModule);
@@ -2864,6 +2868,7 @@ public:
 
 private:
     HMODULE m_hModule;
+    BOOTSTRAPPER_CREATE_ARGS m_createArgs;
     BOOTSTRAPPER_COMMAND m_command;
     IBootstrapperEngine* m_pEngine;
     BOOTSTRAPPER_ACTION m_plannedAction;

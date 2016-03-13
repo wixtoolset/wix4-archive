@@ -50,3 +50,9 @@
 
 #include "IBAFunctions.h"
 
+HRESULT WINAPI CreateBAFunctions(
+    __in HMODULE hModule,
+    __in IBootstrapperEngine* pEngine,
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __out IBAFunctions** ppBAFunctions
+    );
