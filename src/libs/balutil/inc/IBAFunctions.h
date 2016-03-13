@@ -11,23 +11,22 @@
 
 #include <windows.h>
 
+#include "IBootstrapperApplication.h"
 #include "IBootstrapperEngine.h"
 
-interface IBAFunctions
+DECLARE_INTERFACE_IID_(IBAFunctions, IBootstrapperApplication, "0FB445ED-17BD-49C7-BE19-479776F8AE96")
 {
     STDMETHOD(OnDetect)() = 0;
-    STDMETHOD(OnDetectComplete)() = 0;
     STDMETHOD(OnPlan)() = 0;
-    STDMETHOD(OnPlanComplete)() = 0;
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef HRESULT (WINAPI *PFN_CREATE_BA_FUNCTIONS)(
+typedef HRESULT(WINAPI *PFN_BA_FUNCTIONS_CREATE)(
     __in IBootstrapperEngine* pEngine,
-    __in HMODULE hModule,
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
     __out IBAFunctions** ppBAFunction
     );
 

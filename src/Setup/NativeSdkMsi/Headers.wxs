@@ -19,6 +19,10 @@
     <Fragment>
         <ComponentGroup Id="BurnHeaderComponents" Directory="SdkIncFolder">
             <Component>
+                <File Source="libs\balutil\inc\BalBaseBAFunctions.h" />
+            </Component>
+
+            <Component>
                 <File Source="libs\balutil\inc\BalBaseBootstrapperApplication.h" />
             </Component>
 

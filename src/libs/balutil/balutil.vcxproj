@@ -51,6 +51,7 @@
     <ClCompile Include="balutil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\BalBaseBAFunctions.h" />
     <ClInclude Include="inc\BalBaseBootstrapperApplication.h" />
     <ClInclude Include="inc\BalBaseBootstrapperApplicationProc.h" />
     <ClInclude Include="inc\BalBootstrapperEngine.h" />
