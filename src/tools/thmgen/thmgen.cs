@@ -114,6 +114,7 @@ namespace WixToolset.Tools
             // theme.cpp
             var templateControlsInitialization = GetTemplateFromResource("WixToolset.Tools.Templates.Controls.cpp");
             var templatePagesInitializations = GetTemplateFromResource("WixToolset.Tools.Templates.Pages.cpp");
+            var templateControlsFunction = GetTemplateFromResource("WixToolset.Tools.Templates.ControlsFunctions.cpp");
 
             var controlsInitialization = String.Join(",\n", GetControlsInitialization(controls, prefix));
 
@@ -123,6 +124,10 @@ namespace WixToolset.Tools
                 var pagesInitialization = String.Join(",\n", GetPagesInitialization(pages));
                 File.AppendAllText(outputModuleFile, String.Format(templatePagesInitializations, prefix, pagesInitialization));
             }
+
+            File.AppendAllText(outputModuleFile, String.Format(templateControlsFunction, prefix));
+
+            Console.WriteLine("{0}: {1}, {2}", Path.GetFileName(this.commandLine.InputFile), outputHeaderFile, outputModuleFile);
         }
 
         private static string GetTemplateFromResource(string resourceName)

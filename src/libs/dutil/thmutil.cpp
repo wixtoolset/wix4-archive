@@ -3238,6 +3238,8 @@ static HRESULT ParseText(
                 {
                     hr = StrAllocString(&pConditionalText->sczText, bstrText, 0);
                     ExitOnFailure(hr, "Failed to copy text to conditional text.");
+
+                    ++i;
                 }
                 else
                 {
@@ -3252,12 +3254,9 @@ static HRESULT ParseText(
 
                     // Unconditional text entries aren't stored in the conditional text list.
                     --pControl->cConditionalText;
-                    ReleaseNullBSTR(bstrText);
-                    continue;
                 }
             }
 
-            ++i;
             ReleaseNullBSTR(bstrText);
         }
     }
@@ -3320,6 +3319,8 @@ static HRESULT ParseNotes(
                 {
                     hr = StrAllocString(&pConditionalNote->sczText, bstrText, 0);
                     ExitOnFailure(hr, "Failed to copy text to conditional note text.");
+
+                    ++i;
                 }
                 else
                 {
@@ -3334,12 +3335,9 @@ static HRESULT ParseNotes(
 
                     // Unconditional note entries aren't stored in the conditional notes list.
                     --pControl->cConditionalNotes;
-                    ReleaseNullBSTR(bstrText);
-                    continue;
                 }
             }
 
-            ++i;
             ReleaseNullBSTR(bstrText);
         }
     }
