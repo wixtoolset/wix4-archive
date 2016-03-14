@@ -594,14 +594,17 @@ public: // IBootstrapperApplication
         __in_opt LPVOID /*pvContext*/
         )
     {
-        /*
-        switch (message)
-        {
-        default:
-            return E_NOTIMPL;
-        }
-        */
         return E_NOTIMPL;
+    }
+
+    virtual STDMETHODIMP_(void) BAProcFallback(
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE /*message*/,
+        __in const LPVOID /*pvArgs*/,
+        __inout LPVOID /*pvResults*/,
+        __inout HRESULT* /*phr*/,
+        __in_opt LPVOID /*pvContext*/
+        )
+    {
     }
 
 protected:

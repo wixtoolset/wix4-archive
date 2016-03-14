@@ -649,6 +649,17 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout LPVOID pvResults,
         __in_opt LPVOID pvContext
         ) = 0;
+
+    // BAProcFallback - The PFN_BOOTSTRAPPER_APPLICATION_PROC can call this method
+    //                  to give the BA the ability to use default behavior
+    //                  and then forward the message to extensions.
+    STDMETHOD_(void, BAProcFallback)(
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID pvArgs,
+        __inout LPVOID pvResults,
+        __inout HRESULT* phr,
+        __in_opt LPVOID pvContext
+        ) = 0;
 };
 
 

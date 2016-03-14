@@ -51,5 +51,7 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
         }
     }
 
+    pBA->BAProcFallback(message, pvArgs, pvResults, &hr, pvContext);
+
     return hr;
 }

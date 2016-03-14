@@ -1509,6 +1509,10 @@ namespace WixToolset.Bootstrapper
             }
         }
 
+        void IBootstrapperApplication.BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults, ref int phr, IntPtr pvContext)
+        {
+        }
+
         #endregion
     }
 }

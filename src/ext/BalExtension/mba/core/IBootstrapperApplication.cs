@@ -407,6 +407,14 @@ namespace WixToolset.Bootstrapper
             IntPtr pvResults,
             IntPtr pvContext
             );
+
+        void BAProcFallback(
+            BOOTSTRAPPER_APPLICATION_MESSAGE message,
+            IntPtr pvArgs,
+            IntPtr pvResults,
+            ref int phr,
+            IntPtr pvContext
+            );
     }
 
     /// <summary>
