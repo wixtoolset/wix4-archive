@@ -7,11 +7,18 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
-#include <windows.h>
+#pragma once
 
+#include <windows.h>
+#include <msiquery.h>
+
+#include "dutil.h"
+#include "BAFunctions.h"
 #include "IBAFunctions.h"
 #include "BootstrapperEngine.h"
 #include "BootstrapperApplication.h"
+#include "IBootstrapperEngine.h"
+#include "IBootstrapperApplication.h"
 
 class CBalBaseBAFunctions : public IBAFunctions
 {
@@ -534,16 +541,20 @@ public: // IBootstrapperApplication
     }
 
 public: // IBAFunctions
-    virtual STDMETHODIMP OnDetect(
+    virtual STDMETHODIMP OnPlan(
         )
     {
         return S_OK;
     }
 
-    virtual STDMETHODIMP OnPlan(
+    virtual STDMETHODIMP BAFunctionsProc(
+        __in BA_FUNCTIONS_MESSAGE /*message*/,
+        __in const LPVOID /*pvArgs*/,
+        __inout LPVOID /*pvResults*/,
+        __in_opt LPVOID /*pvContext*/
         )
     {
-        return S_OK;
+        return E_NOTIMPL;
     }
 
 protected:

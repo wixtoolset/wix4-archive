@@ -11,6 +11,7 @@
 
 #include "BalBaseBootstrapperApplicationProc.h"
 #include "BAFunctions.h"
+#include "IBAFunctions.h"
 
 /*******************************************************************
 BalBaseBAFunctionsProc - requires pvContext to be of type IBAFunctions.
@@ -25,12 +26,16 @@ static HRESULT WINAPI BalBaseBAFunctionsProc(
     __in_opt LPVOID pvContext
     )
 {
-    HRESULT hr = E_NOTIMPL;
+    IBAFunctions* pBAFunctions = reinterpret_cast<IBAFunctions*>(pvContext);
+    HRESULT hr = pBAFunctions->BAFunctionsProc(message, pvArgs, pvResults, pvContext);
 
-    switch (message)
+    if (E_NOTIMPL == hr)
     {
-    case BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN:
-        hr = BalBaseBootstrapperApplicationProc((BOOTSTRAPPER_APPLICATION_MESSAGE)message, pvArgs, pvResults, pvContext);
+        switch (message)
+        {
+        case BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN:
+            hr = BalBaseBootstrapperApplicationProc((BOOTSTRAPPER_APPLICATION_MESSAGE)message, pvArgs, pvResults, pvContext);
+        }
     }
 
     return hr;
