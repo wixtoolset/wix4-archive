@@ -916,8 +916,43 @@ public: // IBootstrapperApplication
         }
     }
 
+    virtual STDMETHODIMP_(void) BAProcFallback(
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID pvArgs,
+        __inout LPVOID pvResults,
+        __inout HRESULT* phr,
+        __in_opt LPVOID /*pvContext*/
+        )
+    {
+        if (!m_pfnBAFunctionsProc || FAILED(*phr))
+        {
+            return;
+        }
+
+        // Always log before and after so we don't get blamed when BAFunctions changes something.
+        switch (message)
+        {
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN:
+            OnDetectBeginFallback(reinterpret_cast<BA_ONDETECTBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTBEGIN_RESULTS*>(pvResults));
+            break;
+        default:
+            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
+            m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
+            break;
+        }
+    }
+
 
 private: // privates
+    void OnDetectBeginFallback(
+        __in BA_ONDETECTBEGIN_ARGS* pArgs,
+        __inout BA_ONDETECTBEGIN_RESULTS* pResults)
+    {
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+    }
+
     //
     // UiThreadProc - entrypoint for UI thread.
     //
@@ -1929,13 +1964,6 @@ private: // privates
     void OnDetect()
     {
         HRESULT hr = S_OK;
-
-        if (m_pBAFunctions)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect BA function");
-            hr = m_pBAFunctions->OnDetect();
-            BalExitOnFailure(hr, "Failed calling detect BA function.");
-        }
 
         SetState(WIXSTDBA_STATE_DETECTING, hr);
 
