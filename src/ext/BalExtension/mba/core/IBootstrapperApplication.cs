@@ -200,7 +200,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] ActionState rollback
             );
 
-        void OnPlanComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanComplete(
             int hrStatus
             );
 
