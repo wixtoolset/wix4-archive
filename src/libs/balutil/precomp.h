@@ -13,12 +13,14 @@
 #include <bitsmsg.h>
 #include <msi.h>
 #include <wininet.h>
+#include <CommCtrl.h>
 
 #include <dutil.h>
 #include <pathutil.h>
 #include <locutil.h>
 #include <memutil.h>
 #include <strutil.h>
+#include <thmutil.h>
 #include <xmlutil.h>
 
 #include "BootstrapperEngine.h"

@@ -1855,6 +1855,8 @@ private: // privates
         LPWSTR sczLicensePath = NULL;
         LPWSTR sczLicenseDirectory = NULL;
         LPWSTR sczLicenseFilename = NULL;
+        BA_FUNCTIONS_ONTHEMELOADED_ARGS themeLoadedArgs = { };
+        BA_FUNCTIONS_ONTHEMELOADED_RESULTS themeLoadedResults = { };
 
         hr = ThemeLoadControls(m_pTheme, hWnd, vrgInitControls, countof(vrgInitControls));
         BalExitOnFailure(hr, "Failed to load theme controls.");
@@ -1908,6 +1910,16 @@ private: // privates
                 BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Failed to load file into license richedit control from path '%ls' manifest value: %ls", sczLicensePath, m_sczLicenseFile);
                 hr = S_OK;
             }
+        }
+
+        if (m_pfnBAFunctionsProc)
+        {
+            themeLoadedArgs.cbSize = sizeof(themeLoadedArgs);
+            themeLoadedArgs.pTheme = m_pTheme;
+            themeLoadedArgs.pWixLoc = m_pWixLoc;
+            themeLoadedResults.cbSize = sizeof(themeLoadedResults);
+            hr = m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONTHEMELOADED, &themeLoadedArgs, &themeLoadedResults, m_pvBAFunctionsProcContext);
+            BalExitOnFailure(hr, "BAFunctions OnThemeLoaded failed.");
         }
 
     LExit:

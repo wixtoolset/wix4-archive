@@ -18,6 +18,7 @@
 #include <shlwapi.h>
 #include <stdlib.h>
 #include <strsafe.h>
+#include <CommCtrl.h>
 
 // Standard WiX header files, include as required
 #include "dutil.h"
@@ -25,13 +26,13 @@
 //#include "dictutil.h"
 //#include "dirutil.h"
 #include "fileutil.h"
-//#include "locutil.h"
+#include "locutil.h"
 //#include "logutil.h"
 #include "pathutil.h"
 //#include "resrutil.h"
 //#include "shelutil.h"
 #include "strutil.h"
-//#include "thmutil.h"
+#include "thmutil.h"
 //#include "uriutil.h"
 //#include "xmlutil.h"
 #include "regutil.h"

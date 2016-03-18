@@ -13,6 +13,8 @@
 #include <msiquery.h>
 
 #include "dutil.h"
+#include "locutil.h"
+#include "thmutil.h"
 #include "BAFunctions.h"
 #include "IBAFunctions.h"
 #include "BootstrapperEngine.h"
@@ -547,6 +549,19 @@ public: // IBAFunctions
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnThemeLoaded(
+        THEME* pTheme,
+        WIX_LOCALIZATION* pWixLoc
+        )
+    {
+        HRESULT hr = S_OK;
+
+        m_pTheme = pTheme;
+        m_pWixLoc = pWixLoc;
+
+        return hr;
+    }
+
     virtual STDMETHODIMP BAFunctionsProc(
         __in BA_FUNCTIONS_MESSAGE /*message*/,
         __in const LPVOID /*pvArgs*/,
@@ -590,4 +605,6 @@ protected:
     BA_FUNCTIONS_CREATE_ARGS m_bafCreateArgs;
     BOOTSTRAPPER_CREATE_ARGS m_baCreateArgs;
     BOOTSTRAPPER_COMMAND m_command;
+    THEME* m_pTheme;
+    WIX_LOCALIZATION* m_pWixLoc;
 };
