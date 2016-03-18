@@ -95,7 +95,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP_(HRESULT) OnDetectBegin(
         __in BOOL /*fInstalled*/,
         __in DWORD /*cPackages*/,
-        __out BOOL* pfCancel
+        __inout BOOL* pfCancel
         )
     {
         *pfCancel = CheckCanceled();
@@ -223,11 +223,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanBegin(
-        __in DWORD /*cPackages*/
+    virtual STDMETHODIMP OnPlanBegin(
+        __in DWORD /*cPackages*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel = CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnPlanRelatedBundle(

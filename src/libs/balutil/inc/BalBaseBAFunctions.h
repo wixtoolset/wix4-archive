@@ -97,7 +97,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP_(HRESULT) OnDetectBegin(
         __in BOOL /*fInstalled*/,
         __in DWORD /*cPackages*/,
-        __out BOOL* /*pfCancel*/
+        __inout BOOL* /*pfCancel*/
         )
     {
         return S_OK;
@@ -224,11 +224,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanBegin(
-        __in DWORD /*cPackages*/
+    virtual STDMETHODIMP OnPlanBegin(
+        __in DWORD /*cPackages*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnPlanRelatedBundle(

@@ -44,7 +44,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnDetectBegin)(
         __in BOOL fInstalled,
         __in DWORD cPackages,
-        __out BOOL* pfCancel
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectForwardCompatibleBundle - called when the engine detects a forward compatible bundle.
@@ -196,13 +196,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnPlanBegin - called when the engine begins planning.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanBegin)(
-        __in DWORD cPackages
+    STDMETHOD(OnPlanBegin)(
+        __in DWORD cPackages,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanRelatedBundle - called when the engine begins planning a related bundle.

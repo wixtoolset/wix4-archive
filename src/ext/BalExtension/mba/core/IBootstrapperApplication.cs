@@ -149,8 +149,9 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanBegin(
-            [MarshalAs(UnmanagedType.U4)] int cPackages
+        int OnPlanBegin(
+            [MarshalAs(UnmanagedType.U4)] int cPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -683,5 +684,7 @@ namespace WixToolset.Bootstrapper
     public enum BOOTSTRAPPER_APPLICATION_MESSAGE
     {
         OnDetectBegin,
+        OnDetectComplete,
+        OnPlanBegin,
     }
 }
