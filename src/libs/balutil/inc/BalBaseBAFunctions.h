@@ -217,10 +217,11 @@ public: // IBootstrapperApplication
     {
     }
 
-    virtual STDMETHODIMP_(void) OnDetectComplete(
+    virtual STDMETHODIMP OnDetectComplete(
         __in HRESULT /*hrStatus*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnPlanBegin(

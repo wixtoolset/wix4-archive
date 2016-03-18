@@ -5,14 +5,10 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
-
+#define BAAPI EXTERN_C HRESULT __stdcall
 
 // internal function declarations
 
@@ -302,7 +298,7 @@ extern "C" void UserExperienceExecutePhaseComplete(
     }
 }
 
-extern "C" HRESULT UserExperienceOnDetectBegin(
+BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
     __in DWORD cPackages
@@ -324,6 +320,27 @@ extern "C" HRESULT UserExperienceOnDetectBegin(
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTCOMPLETE_ARGS detectCompleteArgs = { };
+    BA_ONDETECTCOMPLETE_RESULTS detectCompleteResults = { };
+
+    detectCompleteArgs.cbSize = sizeof(detectCompleteArgs);
+    detectCompleteArgs.hrStatus = hrStatus;
+
+    detectCompleteResults.cbSize = sizeof(detectCompleteResults);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE, &detectCompleteArgs, &detectCompleteResults, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectComplete failed.");
+
+LExit:
     return hr;
 }
 

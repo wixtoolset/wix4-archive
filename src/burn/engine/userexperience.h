@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -114,6 +110,10 @@ HRESULT UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
     __in DWORD cPackages
+    );
+HRESULT UserExperienceOnDetectComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
     );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,

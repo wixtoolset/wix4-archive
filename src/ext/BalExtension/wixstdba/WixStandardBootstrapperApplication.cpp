@@ -296,15 +296,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(void) OnDetectComplete(
+    virtual STDMETHODIMP OnDetectComplete(
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunctions)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect complete BA function");
-            m_pBAFunctions->OnDetectComplete(hrStatus);
-        }
+        HRESULT hr = S_OK;
 
         if (SUCCEEDED(hrStatus))
         {
@@ -355,6 +351,8 @@ public: // IBootstrapperApplication
                 ::PostMessageW(m_hWnd, WM_WIXSTDBA_PLAN_PACKAGES, 0, m_command.action);
             }
         }
+
+        return hr;
     }
 
 
@@ -935,6 +933,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN:
             OnDetectBeginFallback(reinterpret_cast<BA_ONDETECTBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTBEGIN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE:
+            OnDetectCompleteFallback(reinterpret_cast<BA_ONDETECTCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPLETE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -951,6 +952,13 @@ private: // privates
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+    }
+
+    void OnDetectCompleteFallback(
+        __in BA_ONDETECTCOMPLETE_ARGS* pArgs,
+        __inout BA_ONDETECTCOMPLETE_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

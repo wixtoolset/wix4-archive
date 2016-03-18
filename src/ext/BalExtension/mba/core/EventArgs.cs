@@ -94,7 +94,7 @@ namespace WixToolset.Bootstrapper
     /// Base class for <see cref="EventArgs"/> classes that receive status from the engine.
     /// </summary>
     [Serializable]
-    public abstract class StatusEventArgs : EventArgs
+    public abstract class StatusEventArgs : HResultEventArgs
     {
         private int status;
 

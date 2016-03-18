@@ -41,7 +41,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectBegin - called when the engine begins detection.
-    STDMETHOD_(HRESULT, OnDetectBegin)(
+    STDMETHOD(OnDetectBegin)(
         __in BOOL fInstalled,
         __in DWORD cPackages,
         __out BOOL* pfCancel
@@ -191,7 +191,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnDetectPackageComplete - called after the engine completes detection.
     //
-    STDMETHOD_(void, OnDetectComplete)(
+    STDMETHOD(OnDetectComplete)(
         __in HRESULT hrStatus
         ) = 0;
 

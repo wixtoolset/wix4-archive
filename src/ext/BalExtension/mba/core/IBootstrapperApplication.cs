@@ -141,7 +141,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] PackageState state
             );
 
-        void OnDetectComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectComplete(
             int hrStatus
             );
 

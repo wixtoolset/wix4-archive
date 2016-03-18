@@ -1214,9 +1214,12 @@ namespace WixToolset.Bootstrapper
             this.OnDetectPackageComplete(new DetectPackageCompleteEventArgs(wzPackageId, hrStatus, state));
         }
 
-        void IBootstrapperApplication.OnDetectComplete(int hrStatus)
+        int IBootstrapperApplication.OnDetectComplete(int hrStatus)
         {
-            this.OnDetectComplete(new DetectCompleteEventArgs(hrStatus));
+            DetectCompleteEventArgs args = new DetectCompleteEventArgs(hrStatus);
+            this.OnDetectComplete(args);
+
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnPlanBegin(int cPackages)
