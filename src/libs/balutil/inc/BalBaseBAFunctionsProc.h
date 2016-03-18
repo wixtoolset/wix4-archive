@@ -13,6 +13,15 @@
 #include "BAFunctions.h"
 #include "IBAFunctions.h"
 
+static HRESULT BalBaseBAFunctionsProcOnThemeLoaded(
+    __in IBAFunctions* pBAFunctions,
+    __in BA_FUNCTIONS_ONTHEMELOADED_ARGS* pArgs,
+    __inout BA_FUNCTIONS_ONTHEMELOADED_RESULTS* /*pResults*/
+    )
+{
+    return pBAFunctions->OnThemeLoaded(pArgs->pTheme, pArgs->pWixLoc);
+}
+
 /*******************************************************************
 BalBaseBAFunctionsProc - requires pvContext to be of type IBAFunctions.
 Provides a default mapping between the message based BAFunctions interface and
@@ -35,6 +44,10 @@ static HRESULT WINAPI BalBaseBAFunctionsProc(
         {
         case BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN:
             hr = BalBaseBootstrapperApplicationProc((BOOTSTRAPPER_APPLICATION_MESSAGE)message, pvArgs, pvResults, pvContext);
+            break;
+        case BA_FUNCTIONS_MESSAGE_ONTHEMELOADED:
+            hr = BalBaseBAFunctionsProcOnThemeLoaded(pBAFunctions, reinterpret_cast<BA_FUNCTIONS_ONTHEMELOADED_ARGS*>(pvArgs), reinterpret_cast<BA_FUNCTIONS_ONTHEMELOADED_RESULTS*>(pvResults));
+            break;
         }
     }
 
