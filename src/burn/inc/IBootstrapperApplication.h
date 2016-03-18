@@ -273,7 +273,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnPlanComplete - called when the engine completes planning.
     //
-    STDMETHOD_(void, OnPlanComplete)(
+    STDMETHOD(OnPlanComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
@@ -639,7 +639,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // BAProc - The PFN_BOOTSTRAPPER_APPLICATION_PROC can call this method to give the BA raw access to the callback from the engine.
     //          This might be used to help the BA support more than one version of the engine.
-    STDMETHOD_(HRESULT, BAProc)(
+    STDMETHOD(BAProc)(
         __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
         __in const LPVOID pvArgs,
         __inout LPVOID pvResults,

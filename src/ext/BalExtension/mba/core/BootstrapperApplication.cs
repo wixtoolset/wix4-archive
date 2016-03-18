@@ -1281,9 +1281,12 @@ namespace WixToolset.Bootstrapper
             this.OnPlanPackageComplete(new PlanPackageCompleteEventArgs(wzPackageId, hrStatus, state, requested, execute, rollback));
         }
 
-        void IBootstrapperApplication.OnPlanComplete(int hrStatus)
+        int IBootstrapperApplication.OnPlanComplete(int hrStatus)
         {
-            this.OnPlanComplete(new PlanCompleteEventArgs(hrStatus));
+            PlanCompleteEventArgs args = new PlanCompleteEventArgs(hrStatus);
+            this.OnPlanComplete(args);
+
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnApplyBegin(int dwPhaseCount)

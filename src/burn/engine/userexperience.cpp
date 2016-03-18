@@ -367,6 +367,27 @@ BAAPI UserExperienceOnPlanBegin(
     return hr;
 }
 
+BAAPI UserExperienceOnPlanComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANCOMPLETE_ARGS args = { };
+    BA_ONPLANCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnPlanComplete failed.");
+
+LExit:
+    return hr;
+}
+
 extern "C" int UserExperienceCheckExecuteResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fRollback,

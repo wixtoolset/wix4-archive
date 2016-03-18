@@ -545,7 +545,7 @@ LExit:
 
     if (fPlanBegan)
     {
-        pEngineState->userExperience.pUserExperience->OnPlanComplete(hr);
+        UserExperienceOnPlanComplete(&pEngineState->userExperience, hr);
     }
 
     LogId(REPORT_STANDARD, MSG_PLAN_COMPLETE, hr);

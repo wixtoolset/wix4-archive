@@ -441,15 +441,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(void) OnPlanComplete(
+    virtual STDMETHODIMP OnPlanComplete(
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunctions)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan complete BA function");
-            m_pBAFunctions->OnPlanComplete(hrStatus);
-        }
+        HRESULT hr = S_OK;
 
         if (m_fPrereq)
         {
@@ -476,6 +472,8 @@ public: // IBootstrapperApplication
         m_fStartedExecution = FALSE;
         m_dwCalculatedCacheProgress = 0;
         m_dwCalculatedExecuteProgress = 0;
+
+        return hr;
     }
 
 
@@ -939,6 +937,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN:
             OnPlanBeginFallback(reinterpret_cast<BA_ONPLANBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANBEGIN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE:
+            OnPlanCompleteFallback(reinterpret_cast<BA_ONPLANCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPLETE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -971,6 +972,13 @@ private: // privates
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+    }
+
+    void OnPlanCompleteFallback(
+        __in BA_ONPLANCOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANCOMPLETE_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //
