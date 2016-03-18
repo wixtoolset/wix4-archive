@@ -434,6 +434,7 @@ extern "C" HRESULT CorePlan(
 {
     HRESULT hr = S_OK;
     BOOL fActivated = FALSE;
+    BOOL fPlanBegan = FALSE;
     LPWSTR sczLayoutDirectory = NULL;
     HANDLE hSyncpointEvent = NULL;
     BURN_PACKAGE* pUpgradeBundlePackage = NULL;
@@ -444,9 +445,9 @@ extern "C" HRESULT CorePlan(
     hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
     ExitOnFailure(hr, "Engine cannot start plan because it is busy with another action.");
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnPlanBegin(pEngineState->packages.cPackages);
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted plan begin.");
+    fPlanBegan = TRUE;
+    hr = UserExperienceOnPlanBegin(&pEngineState->userExperience, pEngineState->packages.cPackages);
+    ExitOnRootFailure(hr, "BA aborted plan begin.");
 
     // Always reset the plan.
     PlanReset(&pEngineState->plan, &pEngineState->packages);
@@ -542,7 +543,10 @@ LExit:
         UserExperienceDeactivateEngine(&pEngineState->userExperience);
     }
 
-    pEngineState->userExperience.pUserExperience->OnPlanComplete(hr);
+    if (fPlanBegan)
+    {
+        pEngineState->userExperience.pUserExperience->OnPlanComplete(hr);
+    }
 
     LogId(REPORT_STANDARD, MSG_PLAN_COMPLETE, hr);
     ReleaseStr(sczLayoutDirectory);

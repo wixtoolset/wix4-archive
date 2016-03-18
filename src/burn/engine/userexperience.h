@@ -115,6 +115,10 @@ HRESULT UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     );
+HRESULT UserExperienceOnPlanBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD cPackages
+    );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwAllowedResults,

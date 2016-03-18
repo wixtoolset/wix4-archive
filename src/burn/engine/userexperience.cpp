@@ -308,11 +308,11 @@ BAAPI UserExperienceOnDetectBegin(
     BA_ONDETECTBEGIN_ARGS args = { };
     BA_ONDETECTBEGIN_RESULTS results = { };
 
-    args.cbSize = sizeof(BA_ONDETECTBEGIN_ARGS);
+    args.cbSize = sizeof(args);
     args.cPackages = cPackages;
     args.fInstalled = fInstalled;
 
-    results.cbSize = sizeof(BA_ONDETECTBEGIN_RESULTS);
+    results.cbSize = sizeof(results);
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results, pUserExperience->pvBAProcContext);
     if (SUCCEEDED(hr) && results.fCancel)
@@ -329,18 +329,41 @@ BAAPI UserExperienceOnDetectComplete(
     )
 {
     HRESULT hr = S_OK;
-    BA_ONDETECTCOMPLETE_ARGS detectCompleteArgs = { };
-    BA_ONDETECTCOMPLETE_RESULTS detectCompleteResults = { };
+    BA_ONDETECTCOMPLETE_ARGS args = { };
+    BA_ONDETECTCOMPLETE_RESULTS results = { };
 
-    detectCompleteArgs.cbSize = sizeof(detectCompleteArgs);
-    detectCompleteArgs.hrStatus = hrStatus;
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
 
-    detectCompleteResults.cbSize = sizeof(detectCompleteResults);
+    results.cbSize = sizeof(results);
 
-    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE, &detectCompleteArgs, &detectCompleteResults, pUserExperience->pvBAProcContext);
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnDetectComplete failed.");
 
 LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnPlanBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD cPackages
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANBEGIN_ARGS args = { };
+    BA_ONPLANBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.cPackages = cPackages;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    if (SUCCEEDED(hr) && results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
     return hr;
 }
 

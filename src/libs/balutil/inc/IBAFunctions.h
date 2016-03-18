@@ -11,7 +11,6 @@
 
 DECLARE_INTERFACE_IID_(IBAFunctions, IBootstrapperApplication, "0FB445ED-17BD-49C7-BE19-479776F8AE96")
 {
-    STDMETHOD(OnPlan)() = 0;
     STDMETHOD(OnThemeLoaded)(
         THEME* pTheme,
         WIX_LOCALIZATION* pWixLoc

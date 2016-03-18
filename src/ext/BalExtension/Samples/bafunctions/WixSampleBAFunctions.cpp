@@ -18,7 +18,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP OnDetectBegin(
         __in BOOL fInstalled,
         __in DWORD cPackages,
-        __out BOOL* pfCancel
+        __inout BOOL* pfCancel
         )
     {
         HRESULT hr = S_OK;
@@ -36,11 +36,14 @@ public: // IBootstrapperApplication
 
 public: // IBAFunctions
 
-    virtual STDMETHODIMP OnPlan()
+    virtual STDMETHODIMP OnPlanBegin(
+        __in DWORD cPackages,
+        __inout BOOL* pfCancel
+        )
     {
         HRESULT hr = S_OK;
 
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan BA function");
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan begin BA function. cPackages=%u, fCancel=%d", cPackages, *pfCancel);
 
         //-------------------------------------------------------------------------------------------------
         // YOUR CODE GOES HERE
