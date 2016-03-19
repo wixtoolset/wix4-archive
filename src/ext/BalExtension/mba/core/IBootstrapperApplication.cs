@@ -688,5 +688,6 @@ namespace WixToolset.Bootstrapper
         OnDetectBegin,
         OnDetectComplete,
         OnPlanBegin,
+        OnPlanComplete,
     }
 }

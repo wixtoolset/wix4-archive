@@ -2784,7 +2784,6 @@ private: // privates
             hr = pfnBAFunctionsCreate(&bafCreateArgs, &bafCreateResults);
             BalExitOnFailure(hr, "Failed to create BAFunctions.");
 
-            m_pBAFunctions = bafCreateResults.pBAFunctions;
             m_pfnBAFunctionsProc = bafCreateResults.pfnBAFunctionsProc;
             m_pvBAFunctionsProcContext = bafCreateResults.pvBAFunctionsProcContext;
         }
@@ -2796,7 +2795,7 @@ private: // privates
 #endif
 
     LExit:
-        if (m_hBAFModule && !m_pBAFunctions)
+        if (m_hBAFModule && !m_pfnBAFunctionsProc)
         {
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
@@ -2904,7 +2903,6 @@ public:
         m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
-        m_pBAFunctions = NULL;
     }
 
 
@@ -2932,7 +2930,6 @@ public:
         ReleaseStr(m_sczAfterForcedRestartPackage);
         ReleaseNullObject(m_pEngine);
 
-        ReleaseObject(m_pBAFunctions);
         if (m_hBAFModule)
         {
             PFN_BA_FUNCTIONS_DESTROY pfnBAFunctionsDestroy = reinterpret_cast<PFN_BA_FUNCTIONS_DESTROY>(::GetProcAddress(m_hBAFModule, "BAFunctionsDestroy"));
@@ -3003,7 +3000,6 @@ private:
     BOOL m_fTriedToLaunchElevated;
 
     HMODULE m_hBAFModule;
-    IBAFunctions* m_pBAFunctions;
     PFN_BA_FUNCTIONS_PROC m_pfnBAFunctionsProc;
     LPVOID m_pvBAFunctionsProcContext;
 };
