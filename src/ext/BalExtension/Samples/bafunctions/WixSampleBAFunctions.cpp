@@ -35,7 +35,6 @@ public: // IBootstrapperApplication
     }
 
 public: // IBAFunctions
-
     virtual STDMETHODIMP OnPlanBegin(
         __in DWORD cPackages,
         __inout BOOL* pfCancel
@@ -94,7 +93,6 @@ HRESULT WINAPI CreateBAFunctions(
 
     pResults->pfnBAFunctionsProc = BalBaseBAFunctionsProc;
     pResults->pvBAFunctionsProcContext = pBAFunctions;
-    pResults->pBAFunctions = pBAFunctions;
     pBAFunctions = NULL;
 
 LExit:

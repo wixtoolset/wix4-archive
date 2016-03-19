@@ -11,6 +11,8 @@
 
 DECLARE_INTERFACE_IID_(IBAFunctions, IBootstrapperApplication, "0FB445ED-17BD-49C7-BE19-479776F8AE96")
 {
+    // OnThemeLoaded - Called after the BA finished loading all the controls for the theme.
+    //
     STDMETHOD(OnThemeLoaded)(
         THEME* pTheme,
         WIX_LOCALIZATION* pWixLoc
@@ -25,25 +27,3 @@ DECLARE_INTERFACE_IID_(IBAFunctions, IBootstrapperApplication, "0FB445ED-17BD-49
         __in_opt LPVOID pvContext
         ) = 0;
 };
-
-// TODO: move everything below into BAFunctions.h
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-struct BA_FUNCTIONS_CREATE_RESULTS
-{
-    DWORD cbSize;
-    IBAFunctions* pBAFunctions;  // TODO: remove when all methods go through the proc
-    PFN_BA_FUNCTIONS_PROC pfnBAFunctionsProc;
-    LPVOID pvBAFunctionsProcContext;
-};
-
-typedef HRESULT(WINAPI *PFN_BA_FUNCTIONS_CREATE)(
-    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
-    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
-    );
-
-#ifdef __cplusplus
-}
-#endif

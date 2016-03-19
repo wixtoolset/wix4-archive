@@ -98,7 +98,7 @@ extern "C" HRESULT UserExperienceLoad(
     args.pEngine = pEngineContext->pEngineForApplication;
     args.pfnBootstrapperEngineProc = EngineForApplicationProc;
     args.pvBootstrapperEngineProcContext = pEngineContext;
-    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 

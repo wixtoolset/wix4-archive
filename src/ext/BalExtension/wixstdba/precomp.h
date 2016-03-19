@@ -53,6 +53,3 @@ HRESULT CreateBootstrapperApplication(
     __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
     __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     );
-
-#include "IBAFunctions.h"
-

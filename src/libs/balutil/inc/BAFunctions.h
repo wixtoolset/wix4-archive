@@ -24,11 +24,25 @@ enum BA_FUNCTIONS_MESSAGE
     BA_FUNCTIONS_MESSAGE_ONTHEMELOADED = 1024,
 };
 
+typedef HRESULT(WINAPI *PFN_BA_FUNCTIONS_PROC)(
+    __in BA_FUNCTIONS_MESSAGE message,
+    __in const LPVOID pvArgs,
+    __inout LPVOID pvResults,
+    __in_opt LPVOID pvContext
+    );
+
 struct BA_FUNCTIONS_CREATE_ARGS
 {
     DWORD cbSize;
     DWORD64 qwBAFunctionsAPIVersion;
     BOOTSTRAPPER_CREATE_ARGS* pBootstrapperCreateArgs;
+};
+
+struct BA_FUNCTIONS_CREATE_RESULTS
+{
+    DWORD cbSize;
+    PFN_BA_FUNCTIONS_PROC pfnBAFunctionsProc;
+    LPVOID pvBAFunctionsProcContext;
 };
 
 struct BA_FUNCTIONS_ONTHEMELOADED_ARGS
@@ -43,11 +57,9 @@ struct BA_FUNCTIONS_ONTHEMELOADED_RESULTS
     DWORD cbSize;
 };
 
-typedef HRESULT(WINAPI *PFN_BA_FUNCTIONS_PROC)(
-    __in BA_FUNCTIONS_MESSAGE message,
-    __in const LPVOID pvArgs,
-    __inout LPVOID pvResults,
-    __in_opt LPVOID pvContext
+typedef HRESULT(WINAPI *PFN_BA_FUNCTIONS_CREATE)(
+    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
+    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
     );
 
 typedef void (WINAPI *PFN_BA_FUNCTIONS_DESTROY)();
