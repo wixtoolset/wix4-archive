@@ -47,15 +47,18 @@
     <Reference Include="System" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="wix">
-      <HintPath>..\..\..\..\..\dev\wix4\wix.dll</HintPath>
-    </Reference>
-    <Reference Include="wconsole">
-      <HintPath>..\..\..\..\..\dev\wix4\wconsole.dll</HintPath>
-    </Reference>
-    <Reference Include="WixToolset.Data">
-      <HintPath>..\..\..\..\..\dev\wix4\WixToolset.Data.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\wconsole\wconsole.csproj">
+      <Project>{4B2BD779-59F7-4BF1-871C-A75952BCA749}</Project>
+      <Name>wconsole</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\wix\Wix.csproj">
+      <Project>{9E03A94C-C70E-45C6-A269-E737BBD8B319}</Project>
+      <Name>Wix</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\Controls.h" />

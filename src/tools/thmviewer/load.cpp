@@ -16,8 +16,8 @@
 struct LOAD_THREAD_CONTEXT
 {
     HWND hWnd;
-    LPWSTR sczThemePath;
-    LPWSTR sczWxlPath;
+    LPCWSTR wzThemePath;
+    LPCWSTR wzWxlPath;
 
     HANDLE hInit;
 };
@@ -36,25 +36,14 @@ extern "C" HRESULT LoadStart(
 {
     HRESULT hr = S_OK;
     HANDLE rgHandles[2] = { };
-    LPWSTR sczThemePath = NULL;
-    LPWSTR sczWxlPath = NULL;
     LOAD_THREAD_CONTEXT context = { };
 
     rgHandles[0] = ::CreateEventW(NULL, TRUE, FALSE, NULL);
     ExitOnNullWithLastError(rgHandles[0], hr, "Failed to create load init event.");
 
-    hr = StrAllocString(&sczThemePath, wzThemePath, 0);
-    ExitOnFailure(hr, "Failed to copy path to initial theme file.");
-
-    if (wzWxlPath)
-    {
-        hr = StrAllocString(&sczWxlPath, wzWxlPath, 0);
-        ExitOnFailure(hr, "Failed to copy .wxl path to initial file.");
-    }
-
     context.hWnd = hWnd;
-    context.sczThemePath = sczThemePath;
-    context.sczWxlPath = sczWxlPath;
+    context.wzThemePath = wzThemePath;
+    context.wzWxlPath = wzWxlPath;
     context.hInit = rgHandles[0];
 
     rgHandles[1] = ::CreateThread(NULL, 0, LoadThreadProc, &context, 0, NULL);
@@ -64,12 +53,10 @@ extern "C" HRESULT LoadStart(
 
     *phThread = rgHandles[1];
     rgHandles[1] = NULL;
-    sczThemePath = NULL;
 
 LExit:
     ReleaseHandle(rgHandles[1]);
     ReleaseHandle(rgHandles[0]);
-    ReleaseStr(sczThemePath);
     return hr;
 }
 
@@ -80,16 +67,8 @@ static DWORD WINAPI LoadThreadProc(
 {
     HRESULT hr = S_OK;
     WIX_LOCALIZATION* pWixLoc = NULL;
-
-    LOAD_THREAD_CONTEXT* pContext = static_cast<LOAD_THREAD_CONTEXT*>(pvContext);
-    LPWSTR sczThemePath = pContext->sczThemePath;
-    LPWSTR sczWxlPath = pContext->sczWxlPath;
-    HWND hWnd = pContext->hWnd;
-
-    // We can signal the initialization event as soon as we have copied the context
-    // values into local variables.
-    ::SetEvent(pContext->hInit);
-
+    LPWSTR sczThemePath = NULL;
+    LPWSTR sczWxlPath = NULL;
     BOOL fComInitialized = FALSE;
     HANDLE hDirectory = INVALID_HANDLE_VALUE;
     LPWSTR sczDirectory = NULL;
@@ -97,6 +76,22 @@ static DWORD WINAPI LoadThreadProc(
 
     THEME* pTheme = NULL;
     HANDLE_THEME* pHandle = NULL;
+
+    LOAD_THREAD_CONTEXT* pContext = static_cast<LOAD_THREAD_CONTEXT*>(pvContext);
+    HWND hWnd = pContext->hWnd;
+
+    hr = StrAllocString(&sczThemePath, pContext->wzThemePath, 0);
+    ExitOnFailure(hr, "Failed to copy path to initial theme file.");
+
+    if (pContext->wzWxlPath)
+    {
+        hr = StrAllocString(&sczWxlPath, pContext->wzWxlPath, 0);
+        ExitOnFailure(hr, "Failed to copy .wxl path to initial file.");
+    }
+
+    // We can signal the initialization event as soon as we have copied the context
+    // values into local variables.
+    ::SetEvent(pContext->hInit);
 
     hr = ::CoInitialize(NULL);
     ExitOnFailure(hr, "Failed to initialize COM on load thread.");

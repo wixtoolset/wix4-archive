@@ -464,7 +464,7 @@
   <xs:element name="FormatFile">
     <xs:annotation>
       <xs:appinfo>
-        <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="File" />
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
       </xs:appinfo>
       <xs:documentation>
         Formats a file's contents at install time. The contents are formatted according to the rules of the

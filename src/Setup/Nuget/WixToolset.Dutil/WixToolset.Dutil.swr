@@ -15,6 +15,7 @@ folder lib
   folder native id=native
     folder include
       file aclutil.h source=aclutil.h
+      file apputil.h source=apputil.h
       file apuputil.h source=apuputil.h
       file atomutil.h source=atomutil.h
       file buffutil.h source=buffutil.h
@@ -54,6 +55,7 @@ folder lib
       file rmutil.h source=rmutil.h
       file rssutil.h source=rssutil.h
       file sceutil.h source=sceutil.h
+      file sczutil.h source=sczutil.h
       file shelutil.h source=shelutil.h
       file sqlutil.h source=sqlutil.h
       file srputil.h source=srputil.h
