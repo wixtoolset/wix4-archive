@@ -71,7 +71,7 @@
                             <xs:documentation>Font size. Use negative numbers to specify the font in pixels.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="Weight" type="xs:nonNegativeInteger" use="required">
+                    <xs:attribute name="Weight" type="xs:nonNegativeInteger">
                         <xs:annotation>
                             <xs:documentation>Font weight.</xs:documentation>
                         </xs:annotation>
