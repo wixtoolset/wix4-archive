@@ -1889,6 +1889,7 @@ static HRESULT ExecuteExePackage(
     HRESULT hrExecute = S_OK;
     GENERIC_EXECUTE_MESSAGE message = { };
     int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->exePackage.pPackage->hrCacheResult))
     {
@@ -1898,6 +1899,7 @@ static HRESULT ExecuteExePackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->exePackage.pPackage;
+    fBeginCalled = TRUE;
 
     // send package execute begin to UX
     nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->exePackage.pPackage->sczId, !fRollback);
@@ -1937,7 +1939,11 @@ static HRESULT ExecuteExePackage(
     ExitOnRootFailure(hr, "UX aborted EXE package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->exePackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->exePackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -1954,6 +1960,7 @@ static HRESULT ExecuteMsiPackage(
     HRESULT hr = S_OK;
     HRESULT hrExecute = S_OK;
     int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->msiPackage.pPackage->hrCacheResult))
     {
@@ -1963,6 +1970,7 @@ static HRESULT ExecuteMsiPackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->msiPackage.pPackage;
+    fBeginCalled = TRUE;
 
     // send package execute begin to UX
     nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->msiPackage.pPackage->sczId, !fRollback);
@@ -1988,7 +1996,11 @@ static HRESULT ExecuteMsiPackage(
     ExitOnRootFailure(hr, "UX aborted MSI package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msiPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msiPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -2005,6 +2017,7 @@ static HRESULT ExecuteMspPackage(
     HRESULT hr = S_OK;
     HRESULT hrExecute = S_OK;
     int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->mspTarget.pPackage->hrCacheResult))
     {
@@ -2014,6 +2027,7 @@ static HRESULT ExecuteMspPackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->mspTarget.pPackage;
+    fBeginCalled = TRUE;
 
     // send package execute begin to UX
     nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->mspTarget.pPackage->sczId, !fRollback);
@@ -2049,7 +2063,11 @@ static HRESULT ExecuteMspPackage(
     ExitOnRootFailure(hr, "UX aborted MSP package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->mspTarget.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->mspTarget.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -2068,6 +2086,7 @@ static HRESULT ExecuteMsuPackage(
     HRESULT hrExecute = S_OK;
     GENERIC_EXECUTE_MESSAGE message = { };
     int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->msuPackage.pPackage->hrCacheResult))
     {
@@ -2077,6 +2096,7 @@ static HRESULT ExecuteMsuPackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->msuPackage.pPackage;
+    fBeginCalled = TRUE;
 
     // send package execute begin to UX
     nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->msuPackage.pPackage->sczId, !fRollback);
@@ -2116,7 +2136,11 @@ static HRESULT ExecuteMsuPackage(
     ExitOnRootFailure(hr, "UX aborted MSU package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msuPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msuPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
