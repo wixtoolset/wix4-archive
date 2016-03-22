@@ -89,28 +89,27 @@ extern "C" HRESULT DAPI LocProbeForFile(
     {
         ULONG nLangs;
         ULONG cchLangs = 0;
-        if (!(*pvfnGetThreadPreferredUILanguages)(MUI_LANGUAGE_ID | MUI_MERGE_USER_FALLBACK | MUI_MERGE_SYSTEM_FALLBACK,
-                &nLangs, NULL, &cchLangs))
+        DWORD dwFlags = MUI_LANGUAGE_ID | MUI_MERGE_USER_FALLBACK | MUI_MERGE_SYSTEM_FALLBACK;
+        if (!(*pvfnGetThreadPreferredUILanguages)(dwFlags, &nLangs, NULL, &cchLangs))
         {
-            ExitWithLastError(hr, "GetUserPreferredUILanguages failed to return buffer size");
+            ExitWithLastError(hr, "GetThreadPreferredUILanguages failed to return buffer size.");
         }
 
         hr = StrAlloc(&sczLangsBuff, cchLangs);
         ExitOnFailure(hr, "Failed to allocate buffer for languages");
 
         nLangs = 0;
-        if (!(*pvfnGetThreadPreferredUILanguages)(MUI_LANGUAGE_ID | MUI_MERGE_USER_FALLBACK | MUI_MERGE_SYSTEM_FALLBACK,
-                &nLangs, sczLangsBuff, &cchLangs))
+        if (!(*pvfnGetThreadPreferredUILanguages)(dwFlags, &nLangs, sczLangsBuff, &cchLangs))
         {
-            ExitWithLastError(hr, "GetUserPreferredUILanguages failed to return language list");
+            ExitWithLastError(hr, "GetThreadPreferredUILanguages failed to return language list.");
         }
 
         LPWSTR szLangs = sczLangsBuff;
         for (ULONG i = 0; i < nLangs; ++i, szLangs += 5)
         {
-            // StrHexDecode assumes low byte is first. We'll need to swap the bytes once we parse out the value
+            // StrHexDecode assumes low byte is first. We'll need to swap the bytes once we parse out the value.
             hr = StrHexDecode(szLangs, reinterpret_cast<BYTE*>(&langid), sizeof(langid));
-            ExitOnFailure(hr, "Failed to parse langId");
+            ExitOnFailure(hr, "Failed to parse langId.");
 
             langid = MAKEWORD(HIBYTE(langid), LOBYTE(langid));
             hr = StrAllocFormatted(&sczLangIdFile, L"%u\\%ls", langid, wzLocFileName); 

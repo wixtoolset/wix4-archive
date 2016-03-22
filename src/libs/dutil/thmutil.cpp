@@ -307,13 +307,28 @@ static LRESULT CALLBACK PanelWndProc(
     __in WPARAM wParam,
     __in LPARAM lParam
     );
+static HRESULT LocalizeControls(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls,
+    __in const WIX_LOCALIZATION *pWixLoc
+    );
 static HRESULT LocalizeControl(
     __in THEME_CONTROL* pControl,
     __in const WIX_LOCALIZATION *pWixLoc
     );
+static HRESULT LoadControlsString(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls,
+    __in HMODULE hResModule
+    );
 static HRESULT LoadControlString(
     __in THEME_CONTROL* pControl,
     __in HMODULE hResModule
+    );
+static void ResizeControls(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls,
+    __in const RECT* prcParent
     );
 static void ResizeControl(
     __in THEME_CONTROL* pControl,
@@ -330,6 +345,10 @@ static void GetControls(
     __in_opt const THEME_CONTROL* pParentControl,
     __out DWORD& cControls,
     __out THEME_CONTROL*& rgControls
+    );
+static void UnloadControls(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls
     );
 
 
@@ -535,17 +554,7 @@ DAPI_(void) ThemeUnloadControls(
     __in THEME* pTheme
     )
 {
-    for (DWORD i = 0; i < pTheme->cControls; ++i)
-    {
-        THEME_CONTROL* pControl = pTheme->rgControls + i;
-        pControl->hWnd = NULL;
-
-        for (DWORD j = 0; j < pControl->cControls; ++j)
-        {
-            THEME_CONTROL* pChildControl = pControl->rgControls + j;
-            pChildControl->hWnd = NULL;
-        }
-    }
+    UnloadControls(pTheme->cControls, pTheme->rgControls);
 
     pTheme->hwndHover = NULL;
     pTheme->hwndParent = NULL;
@@ -571,21 +580,7 @@ DAPI_(HRESULT) ThemeLocalize(
         }
     }
 
-    for (DWORD i = 0; i < pTheme->cControls; ++i)
-    {
-        THEME_CONTROL* pControl = pTheme->rgControls + i;
-        
-        hr = LocalizeControl(pControl, pWixLoc);
-        ExitOnFailure(hr, "Failed to localize control: %ls", pControl->sczName);
-
-        for (DWORD j = 0; j < pControl->cControls; ++j)
-        {
-            THEME_CONTROL* pChildControl = pControl->rgControls + j;
-
-            hr = LocalizeControl(pChildControl, pWixLoc);
-            ExitOnFailure(hr, "Failed to localize child control: %ls", pChildControl->sczName);
-        }
-    }
+    hr = LocalizeControls(pTheme->cControls, pTheme->rgControls, pWixLoc);
 
 LExit:
     ReleaseStr(sczCaption);
@@ -612,21 +607,7 @@ DAPI_(HRESULT) ThemeLoadStrings(
         ExitOnFailure(hr, "Failed to load theme caption.");
     }
 
-    for (DWORD i = 0; i < pTheme->cControls; ++i)
-    {
-        THEME_CONTROL* pControl = pTheme->rgControls + i;
-
-        hr = LoadControlString(pControl, hResModule);
-        ExitOnFailure(hr, "Failed to load string for control: %ls", pControl->sczName);
-
-        for (DWORD j = 0; j < pControl->cControls; ++j)
-        {
-            THEME_CONTROL* pChildControl = pControl->rgControls + j;
-
-            hr = LoadControlString(pChildControl, hResModule);
-            ExitOnFailure(hr, "Failed to load string for control: %ls", pChildControl->sczName);
-        }
-    }
+    hr = LoadControlsString(pTheme->cControls, pTheme->rgControls, hResModule);
 
 LExit:
     return hr;
@@ -824,25 +805,7 @@ extern "C" LRESULT CALLBACK ThemeDefWindowProc(
             if (pTheme->fAutoResize)
             {
                 ::GetClientRect(pTheme->hwndParent, &rcParent);
-                
-                for (DWORD i = 0; i < pTheme->cControls; ++i)
-                {
-                    THEME_CONTROL* pControl = pTheme->rgControls + i;
-                    ResizeControl(pControl, &rcParent);
-
-                    if (pControl->cControls)
-                    {
-                        RECT rcControl = {};
-                        ::GetClientRect(pControl->hWnd, &rcControl);
-
-                        for (DWORD j = 0; j < pControl->cControls; ++j)
-                        {
-                            THEME_CONTROL* pChildControl = pControl->rgControls + j;
-                            ResizeControl(pChildControl, &rcControl);
-                        }
-                    }
-                }
-
+                ResizeControls(pTheme->cControls, pTheme->rgControls, &rcParent);
                 return 0;
             }
             break;
@@ -1532,7 +1495,7 @@ DAPI_(void) ThemeShowChild(
     for (DWORD i = 0; i < pParentControl->cControls; ++i)
     {
         THEME_CONTROL* pControl = pParentControl->rgControls + i;
-        ShowControl(pTheme, pControl, dwIndex == i ? SW_SHOW : SW_HIDE, FALSE, THEME_SHOW_PAGE_REASON_DEFAULT, 0, NULL);
+        ShowControl(pTheme, pControl, dwIndex == i ? SW_SHOW : SW_HIDE, FALSE, THEME_SHOW_PAGE_REASON_REFRESH, 0, NULL);
     }
 }
 
@@ -1544,8 +1507,8 @@ static HRESULT RegisterWindowClasses(
     )
 {
     HRESULT hr = S_OK;
-    WNDCLASSW wcHyperlink = {};
-    WNDCLASSW wcPanel = {};
+    WNDCLASSW wcHyperlink = { };
+    WNDCLASSW wcPanel = { };
 
     vhCursorHand = ::LoadCursorA(NULL, IDC_HAND);
 
@@ -2348,7 +2311,7 @@ static HRESULT ParseControls(
     hr = ParseRadioButtons(hModule, wzRelativePath, pElement, pTheme, pParentControl, pPage);
     ExitOnFailure(hr, "Failed to parse radio buttons.");
 
-    hr = XmlSelectNodes(pElement, L"Billboard|Button|Checkbox|CommandLink|Editbox|Hyperlink|Hypertext|ImageControl|Label|ListView|Panel|Progressbar|Richedit|Static|Tabs|TreeView", &pixnl);
+    hr = XmlSelectNodes(pElement, L"Billboard|Button|Checkbox|Combobox|CommandLink|Editbox|Hyperlink|Hypertext|ImageControl|Label|ListView|Panel|Progressbar|Richedit|Static|Tabs|TreeView", &pixnl);
     ExitOnFailure(hr, "Failed to find control elements.");
 
     hr = pixnl->get_length(reinterpret_cast<long*>(&cNewControls));
@@ -3502,7 +3465,7 @@ static void DrawControlText(
     __in BOOL fDrawFocusRect
     )
 {
-    WCHAR wzText[256] = {};
+    WCHAR wzText[256] = { };
     DWORD cchText = 0;
     THEME_FONT* pFont = NULL;
     HFONT hfPrev = NULL;
@@ -4487,7 +4450,7 @@ static HRESULT ShowControls(
         THEME_CONTROL* pControl = rgControls + i;
 
         // Only look at non-page controls and the specified page's controls.
-        if (pControl->wPageId == dwPageId)
+        if (!pControl->wPageId || pControl->wPageId == dwPageId)
         {
             hr = ShowControl(pTheme, pControl, nCmdShow, fSaveEditboxes, reason, dwPageId, &hwndFocus);
             ExitOnFailure(hr, "Failed to show control '%ls' at index %d.", pControl->sczName, i);
@@ -4550,17 +4513,19 @@ static HRESULT LoadControls(
     )
 {
     HRESULT hr = S_OK;
-    RECT rcParent = {};
+    RECT rcParent = { };
     LPWSTR sczText = NULL;
     BOOL fStartNewGroup = FALSE;
     DWORD cControls = 0;
     THEME_CONTROL* rgControls = NULL;
 
-    GetControls(pTheme, pParentControl, cControls, rgControls);
     if (!pParentControl)
     {
+        AssertSz(!pTheme->hwndParent, "Theme already loaded controls because it has a parent window.");
         pTheme->hwndParent = hwndParent;
     }
+
+    GetControls(pTheme, pParentControl, cControls, rgControls);
     ::GetClientRect(pParentControl ? pParentControl->hWnd : pTheme->hwndParent, &rcParent);
 
     for (DWORD i = 0; i < cControls; ++i)
@@ -4796,7 +4761,7 @@ static HRESULT LoadControls(
 
             for (DWORD j = 0; j < pControl->cColumns; ++j)
             {
-                LVCOLUMNW lvc = {};
+                LVCOLUMNW lvc = { };
                 lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
                 lvc.cx = pControl->ptcColumns[j].nWidth;
                 lvc.iSubItem = j;
@@ -4848,7 +4813,7 @@ static HRESULT LoadControls(
 
             for (DWORD j = 0; j < pControl->cTabs; ++j)
             {
-                TCITEMW tci = {};
+                TCITEMW tci = { };
                 tci.mask = TCIF_TEXT | TCIF_IMAGE;
                 tci.iImage = -1;
                 tci.pszText = pControl->pttTabs[j].pszName;
@@ -4885,6 +4850,25 @@ static HRESULT LoadControls(
 LExit:
     ReleaseStr(sczText);
 
+    return hr;
+}
+
+static HRESULT LocalizeControls(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls,
+    __in const WIX_LOCALIZATION *pWixLoc
+    )
+{
+    HRESULT hr = S_OK;
+
+    for (DWORD i = 0; i < cControls; ++i)
+    {
+        THEME_CONTROL* pControl = rgControls + i;
+        hr = LocalizeControl(pControl, pWixLoc);
+        ExitOnFailure(hr, "Failed to localize control: %ls", pControl->sczName);
+    }
+
+LExit:
     return hr;
 }
 
@@ -4977,9 +4961,30 @@ static HRESULT LocalizeControl(
         ExitOnFailure(hr, "Failed to localize control text.");
     }
 
+    hr = LocalizeControls(pControl->cControls, pControl->rgControls, pWixLoc);
+
 LExit:
     ReleaseStr(sczLocStringId);
 
+    return hr;
+}
+
+static HRESULT LoadControlsString(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls,
+    __in HMODULE hResModule
+    )
+{
+    HRESULT hr = S_OK;
+
+    for (DWORD i = 0; i < cControls; ++i)
+    {
+        THEME_CONTROL* pControl = rgControls + i;
+        hr = LoadControlString(pControl, hResModule);
+        ExitOnFailure(hr, "Failed to load string for control: %ls", pControl->sczName);
+    }
+
+LExit:
     return hr;
 }
 
@@ -5013,8 +5018,23 @@ static HRESULT LoadControlString(
         }
     }
 
+    hr = LoadControlsString(pControl->cControls, pControl->rgControls, hResModule);
+
 LExit:
     return hr;
+}
+
+static void ResizeControls(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls,
+    __in const RECT* prcParent
+    )
+{
+    for (DWORD i = 0; i < cControls; ++i)
+    {
+        THEME_CONTROL* pControl = rgControls + i;
+        ResizeControl(pControl, prcParent);
+    }
 }
 
 static void ResizeControl(
@@ -5047,6 +5067,27 @@ static void ResizeControl(
                 return;
             }
         }
+    }
+
+    if (pControl->cControls)
+    {
+        RECT rcControl = { };
+        ::GetClientRect(pControl->hWnd, &rcControl);
+        ResizeControls(pControl->cControls, pControl->rgControls, &rcControl);
+    }
+}
+
+static void UnloadControls(
+    __in DWORD cControls,
+    __in THEME_CONTROL* rgControls
+    )
+{
+    for (DWORD i = 0; i < cControls; ++i)
+    {
+        THEME_CONTROL* pControl = rgControls + i;
+        pControl->hWnd = NULL;
+
+        UnloadControls(pControl->cControls, pControl->rgControls);
     }
 }
 

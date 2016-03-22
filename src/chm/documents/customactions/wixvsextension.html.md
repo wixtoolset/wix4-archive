@@ -1379,7 +1379,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Full path to devenv.exe for Visual Studio 15 if it is installed on the system. This property is available starting with WiX v3.10.</p>
+      <p>Full path to devenv.exe for Visual Studio 15 if it is installed on the system. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1389,7 +1389,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Full path to the Visual Studio 15 extensions directory. This property is available starting with WiX v3.10.</p>
+      <p>Full path to the Visual Studio 15 extensions directory. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1399,7 +1399,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Full path to the Visual Studio 15 item templates directory. This property is available starting with WiX v3.10.</p>
+      <p>Full path to the Visual Studio 15 item templates directory. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1409,7 +1409,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Full path to the Visual Studio 15 project templates directory. This property is available starting with WiX v3.10.</p>
+      <p>Full path to the Visual Studio 15 project templates directory. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1419,7 +1419,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Full path to the Visual Studio 15 XML schemas directory. This property is available starting with WiX v3.10.</p>
+      <p>Full path to the Visual Studio 15 XML schemas directory. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1429,7 +1429,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Full path to the Visual Studio 15 root installation directory. This property is available starting with WiX v3.10.</p>
+      <p>Full path to the Visual Studio 15 root installation directory. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1439,7 +1439,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual Basic project system is installed for it. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual Basic project system is installed for it. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1449,7 +1449,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual C++ project system is installed for it. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual C++ project system is installed for it. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1459,7 +1459,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual C# project system is installed for it. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual C# project system is installed for it. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1469,7 +1469,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual Web Developer project system is installed for it. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether Visual Studio 15 Professional Edition or higher is installed and the Visual Web Developer project system is installed for it. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1479,7 +1479,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether or not the Visual Studio 15 Team Test project system is installed on the system. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether or not the Visual Studio 15 Team Test project system is installed on the system. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1489,7 +1489,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether or not the Visual Studio 15 Modeling project system is installed on the system. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether or not the Visual Studio 15 Modeling project system is installed on the system. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1499,7 +1499,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>Indicates whether or not the Visual Studio 15 F# project system is installed on the system. This property is available starting with WiX v3.10.</p>
+      <p>Indicates whether or not the Visual Studio 15 F# project system is installed on the system. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 
@@ -1509,7 +1509,7 @@ Here is a complete list of properties for the <a name="vs15properties">**Visual 
     </td>
 
     <td>
-      <p>The location of the Visual Studio 15 bootstrapper package folder. This property is available starting with WiX v3.10.</p>
+      <p>The location of the Visual Studio 15 bootstrapper package folder. This property is available starting with WiX v3.11.</p>
     </td>
   </tr>
 </table>

@@ -52,7 +52,6 @@ static LRESULT CALLBACK MainWndProc(
     );
 static void OnThemeLoadError(
     __in THEME* pTheme,
-    __in HWND hWnd,
     __in HRESULT hrFailure
     );
 static void OnNewTheme(
@@ -324,7 +323,7 @@ static LRESULT CALLBACK MainWndProc(
         break;
 
     case WM_THMVWR_THEME_LOAD_ERROR:
-        OnThemeLoadError(vpTheme, hWnd, lParam);
+        OnThemeLoadError(vpTheme, lParam);
         return 0;
 
     case WM_THMVWR_NEW_THEME:
@@ -365,13 +364,12 @@ static LRESULT CALLBACK MainWndProc(
 
 static void OnThemeLoadError(
     __in THEME* pTheme,
-    __in HWND /*hWnd*/,
     __in HRESULT hrFailure
     )
 {
     HRESULT hr = S_OK;
     LPWSTR sczMessage = NULL;
-    TVINSERTSTRUCTW tvi = {};
+    TVINSERTSTRUCTW tvi = { };
 
     // Add the application node.
     tvi.hParent = NULL;
