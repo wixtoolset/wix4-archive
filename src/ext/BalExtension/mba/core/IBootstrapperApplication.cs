@@ -141,14 +141,17 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] PackageState state
             );
 
-        void OnDetectComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectComplete(
             int hrStatus
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanBegin(
-            [MarshalAs(UnmanagedType.U4)] int cPackages
+        int OnPlanBegin(
+            [MarshalAs(UnmanagedType.U4)] int cPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -197,7 +200,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] ActionState rollback
             );
 
-        void OnPlanComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanComplete(
             int hrStatus
             );
 
@@ -405,6 +410,14 @@ namespace WixToolset.Bootstrapper
             BOOTSTRAPPER_APPLICATION_MESSAGE message,
             IntPtr pvArgs,
             IntPtr pvResults,
+            IntPtr pvContext
+            );
+
+        void BAProcFallback(
+            BOOTSTRAPPER_APPLICATION_MESSAGE message,
+            IntPtr pvArgs,
+            IntPtr pvResults,
+            ref int phr,
             IntPtr pvContext
             );
     }
@@ -673,5 +686,8 @@ namespace WixToolset.Bootstrapper
     public enum BOOTSTRAPPER_APPLICATION_MESSAGE
     {
         OnDetectBegin,
+        OnDetectComplete,
+        OnPlanBegin,
+        OnPlanComplete,
     }
 }

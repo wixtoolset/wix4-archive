@@ -7,7 +7,7 @@
 // </copyright>
 //
 // <summary>
-//   Entry point for bootstrapper BA function DLL.
+//   Entry point for bafunctions DLL.
 // </summary>
 //-------------------------------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ extern "C" BOOL WINAPI DllMain(
     IN LPVOID /* pvReserved */
     )
 {
-    switch(dwReason)
+    switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
         ::DisableThreadLibraryCalls(hInstance);
@@ -34,4 +34,24 @@ extern "C" BOOL WINAPI DllMain(
     }
 
     return TRUE;
+}
+
+extern "C" HRESULT WINAPI BAFunctionsCreate(
+    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
+    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    
+    hr = CreateBAFunctions(vhInstance, pArgs, pResults);
+    BalExitOnFailure(hr, "Failed to create BAFunctions interface.");
+
+LExit:
+    return hr;
+}
+
+extern "C" void WINAPI BAFunctionsDestroy(
+    )
+{
+    BalUninitialize();
 }

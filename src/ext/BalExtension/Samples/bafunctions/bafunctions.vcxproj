@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
-  <copyright file="balutil.vcxproj" company="Outercurve Foundation">
+  <copyright file="bafunctions.vcxproj" company="Outercurve Foundation">
     Copyright (c) 2004, Outercurve Foundation.
     This software is released under Microsoft Reciprocal License (MS-RL).
     The license and further copyright text can be found in the file
@@ -29,36 +29,31 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{EDCB8095-0E6A-43E0-BC33-C4F762FC5CDB}</ProjectGuid>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <TargetName>balutil</TargetName>
-    <MultiTargetLibrary>true</MultiTargetLibrary>
+    <ProjectGuid>{EB0A7D51-2133-4EE7-B6CA-87DBEAC67E02}</ProjectGuid>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <TargetName>BAFunctions</TargetName>
+    <ProjectModuleDefinitionFile>bafunctions.def</ProjectModuleDefinitionFile>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
   <PropertyGroup>
-    <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\burn\inc</ProjectAdditionalIncludeDirectories>
+    <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\burn\inc;$(WixRoot)src\libs\balutil\inc</ProjectAdditionalIncludeDirectories>
+    <ProjectAdditionalLinkLibraries>dutil.lib;balutil.lib;comctl32.lib;gdiplus.lib;shlwapi.lib;wininet.lib;version.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="BalBootstrapperEngine.cpp" />
-    <ClCompile Include="balcondition.cpp" />
-    <ClCompile Include="balinfo.cpp" />
-    <ClCompile Include="balretry.cpp" />
-    <ClCompile Include="balutil.cpp" />
+    <ClCompile Include="WixSampleBAFunctions.cpp" />
+    <ClCompile Include="bafunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\BAFunctions.h" />
-    <ClInclude Include="inc\BalBaseBAFunctions.h" />
-    <ClInclude Include="inc\BalBaseBAFunctionsProc.h" />
-    <ClInclude Include="inc\BalBaseBootstrapperApplication.h" />
-    <ClInclude Include="inc\BalBaseBootstrapperApplicationProc.h" />
-    <ClInclude Include="inc\BalBootstrapperEngine.h" />
-    <ClInclude Include="inc\balcondition.h" />
-    <ClInclude Include="inc\balinfo.h" />
-    <ClInclude Include="inc\balretry.h" />
-    <ClInclude Include="inc\balutil.h" />
-    <ClInclude Include="inc\IBAFunctions.h" />
     <ClInclude Include="precomp.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bafunctions.def" />
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="bafunctions.rc" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

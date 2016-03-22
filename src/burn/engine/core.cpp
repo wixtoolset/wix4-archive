@@ -242,6 +242,7 @@ extern "C" HRESULT CoreDetect(
 {
     HRESULT hr = S_OK;
     BOOL fActivated = FALSE;
+    BOOL fDetectBegan = FALSE;
     BURN_PACKAGE* pPackage = NULL;
     HRESULT hrFirstPackageFailure = S_OK;
     int nResult = IDNOACTION;
@@ -269,6 +270,7 @@ extern "C" HRESULT CoreDetect(
         ExitOnFailure(hr, "Failed to unset the bundle installed built-in variable.");
     }
 
+    fDetectBegan = TRUE;
     hr = UserExperienceOnDetectBegin(&pEngineState->userExperience, pEngineState->registration.fInstalled, pEngineState->packages.cPackages);
     ExitOnRootFailure(hr, "UX aborted detect begin.");
 
@@ -413,7 +415,11 @@ LExit:
         UserExperienceDeactivateEngine(&pEngineState->userExperience);
     }
 
-    pEngineState->userExperience.pUserExperience->OnDetectComplete(hr);
+    if (fDetectBegan)
+    {
+        UserExperienceOnDetectComplete(&pEngineState->userExperience, hr);
+    }
+
     pEngineState->userExperience.hwndDetect = NULL;
 
     LogId(REPORT_STANDARD, MSG_DETECT_COMPLETE, hr);
@@ -428,6 +434,7 @@ extern "C" HRESULT CorePlan(
 {
     HRESULT hr = S_OK;
     BOOL fActivated = FALSE;
+    BOOL fPlanBegan = FALSE;
     LPWSTR sczLayoutDirectory = NULL;
     HANDLE hSyncpointEvent = NULL;
     BURN_PACKAGE* pUpgradeBundlePackage = NULL;
@@ -438,9 +445,9 @@ extern "C" HRESULT CorePlan(
     hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
     ExitOnFailure(hr, "Engine cannot start plan because it is busy with another action.");
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnPlanBegin(pEngineState->packages.cPackages);
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted plan begin.");
+    fPlanBegan = TRUE;
+    hr = UserExperienceOnPlanBegin(&pEngineState->userExperience, pEngineState->packages.cPackages);
+    ExitOnRootFailure(hr, "BA aborted plan begin.");
 
     // Always reset the plan.
     PlanReset(&pEngineState->plan, &pEngineState->packages);
@@ -536,7 +543,10 @@ LExit:
         UserExperienceDeactivateEngine(&pEngineState->userExperience);
     }
 
-    pEngineState->userExperience.pUserExperience->OnPlanComplete(hr);
+    if (fPlanBegan)
+    {
+        UserExperienceOnPlanComplete(&pEngineState->userExperience, hr);
+    }
 
     LogId(REPORT_STANDARD, MSG_PLAN_COMPLETE, hr);
     ReleaseStr(sczLayoutDirectory);

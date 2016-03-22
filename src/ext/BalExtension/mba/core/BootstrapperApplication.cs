@@ -1214,17 +1214,21 @@ namespace WixToolset.Bootstrapper
             this.OnDetectPackageComplete(new DetectPackageCompleteEventArgs(wzPackageId, hrStatus, state));
         }
 
-        void IBootstrapperApplication.OnDetectComplete(int hrStatus)
+        int IBootstrapperApplication.OnDetectComplete(int hrStatus)
         {
-            this.OnDetectComplete(new DetectCompleteEventArgs(hrStatus));
+            DetectCompleteEventArgs args = new DetectCompleteEventArgs(hrStatus);
+            this.OnDetectComplete(args);
+
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnPlanBegin(int cPackages)
+        int IBootstrapperApplication.OnPlanBegin(int cPackages, ref bool fCancel)
         {
             PlanBeginEventArgs args = new PlanBeginEventArgs(cPackages);
             this.OnPlanBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, ref RequestState pRequestedState)
@@ -1277,9 +1281,12 @@ namespace WixToolset.Bootstrapper
             this.OnPlanPackageComplete(new PlanPackageCompleteEventArgs(wzPackageId, hrStatus, state, requested, execute, rollback));
         }
 
-        void IBootstrapperApplication.OnPlanComplete(int hrStatus)
+        int IBootstrapperApplication.OnPlanComplete(int hrStatus)
         {
-            this.OnPlanComplete(new PlanCompleteEventArgs(hrStatus));
+            PlanCompleteEventArgs args = new PlanCompleteEventArgs(hrStatus);
+            this.OnPlanComplete(args);
+
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnApplyBegin(int dwPhaseCount)
@@ -1507,6 +1514,10 @@ namespace WixToolset.Bootstrapper
                 default:
                     return NativeMethods.E_NOTIMPL;
             }
+        }
+
+        void IBootstrapperApplication.BAProcFallback(BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults, ref int phr, IntPtr pvContext)
+        {
         }
 
         #endregion
