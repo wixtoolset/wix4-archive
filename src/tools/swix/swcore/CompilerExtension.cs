@@ -9,6 +9,7 @@
 
 namespace WixToolset.Simplified
 {
+    using CompilerBackend;
     using System;
     using System.IO;
     using System.Reflection;
@@ -35,6 +36,22 @@ namespace WixToolset.Simplified
         public virtual CompilerFileManager FileManager
         {
             get { return null; }
+        }
+
+        /// <summary>
+        /// Indicates whether the extension has a backend compiler that supports the given output type
+        /// </summary>
+        public virtual bool HasBackendCompiler(string outputType)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Creates the backend compiler to use for output generation
+        /// </summary>
+        public virtual BackendCompiler CreateBackendCompiler()
+        {
+            return null;
         }
 
         /// <summary>
