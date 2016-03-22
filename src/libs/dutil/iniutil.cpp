@@ -89,6 +89,8 @@ extern "C" void DAPI IniUninitialize(
     }
     ReleaseMem(pi->rgivValues);
 
+    ReleaseStrArray(pi->rgsczLines, pi->cLines);
+
     ReleaseMem(pi);
 }
 

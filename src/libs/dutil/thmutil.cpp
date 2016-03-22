@@ -1639,7 +1639,6 @@ static HRESULT ParseImage(
 {
     HRESULT hr = S_OK;
     BSTR bstr = NULL;
-    LPSTR pszId = NULL;
     LPWSTR sczImageFile = NULL;
     int iResourceId = 0;
     Gdiplus::Bitmap* pBitmap = NULL;
@@ -1698,7 +1697,6 @@ LExit:
     }
 
     ReleaseStr(sczImageFile);
-    ReleaseStr(pszId);
     ReleaseBSTR(bstr);
 
     return hr;
@@ -2397,6 +2395,10 @@ static HRESULT ParseControls(
         {
             type = THEME_CONTROL_TYPE_CHECKBOX;
         }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Combobox", -1))
+        {
+            type = THEME_CONTROL_TYPE_COMBOBOX;
+        }
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"CommandLink", -1))
         {
             type = THEME_CONTROL_TYPE_COMMANDLINK;
@@ -2448,10 +2450,6 @@ static HRESULT ParseControls(
         else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"TreeView", -1))
         {
             type = THEME_CONTROL_TYPE_TREEVIEW;
-        }
-        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, bstrType, -1, L"Combobox", -1))
-        {
-            type = THEME_CONTROL_TYPE_COMBOBOX;
         }
 
         if (THEME_CONTROL_TYPE_UNKNOWN != type)
@@ -4604,6 +4602,11 @@ static HRESULT LoadControls(
             }
             break;
 
+        case THEME_CONTROL_TYPE_COMBOBOX:
+            wzWindowClass = WC_COMBOBOXW;
+            dwWindowBits |= CBS_DROPDOWNLIST | CBS_HASSTRINGS;
+            break;
+
         case THEME_CONTROL_TYPE_COMMANDLINK:
             wzWindowClass = WC_BUTTONW;
             dwWindowBits |= BS_COMMANDLINK;
@@ -4696,11 +4699,6 @@ static HRESULT LoadControls(
 
         case THEME_CONTROL_TYPE_TREEVIEW:
             wzWindowClass = WC_TREEVIEWW;
-            break;
-
-        case THEME_CONTROL_TYPE_COMBOBOX:
-            wzWindowClass = WC_COMBOBOXW;
-            dwWindowBits |= CBS_DROPDOWNLIST | CBS_HASSTRINGS;
             break;
         }
         ExitOnNull(wzWindowClass, hr, E_INVALIDDATA, "Failed to configure control %u because of unknown type: %u", i, pControl->type);
