@@ -10,6 +10,7 @@
 
 #include "precomp.h"
 #include "BalBaseBootstrapperApplicationProc.h"
+#include "BalBaseBootstrapperApplication.h"
 
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
@@ -295,15 +296,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(void) OnDetectComplete(
+    virtual STDMETHODIMP OnDetectComplete(
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect complete BA function");
-            m_pBAFunction->OnDetectComplete();
-        }
+        HRESULT hr = S_OK;
 
         if (SUCCEEDED(hrStatus))
         {
@@ -354,6 +351,8 @@ public: // IBootstrapperApplication
                 ::PostMessageW(m_hWnd, WM_WIXSTDBA_PLAN_PACKAGES, 0, m_command.action);
             }
         }
+
+        return hr;
     }
 
 
@@ -442,15 +441,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(void) OnPlanComplete(
+    virtual STDMETHODIMP OnPlanComplete(
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan complete BA function");
-            m_pBAFunction->OnPlanComplete();
-        }
+        HRESULT hr = S_OK;
 
         if (m_fPrereq)
         {
@@ -477,6 +472,8 @@ public: // IBootstrapperApplication
         m_fStartedExecution = FALSE;
         m_dwCalculatedCacheProgress = 0;
         m_dwCalculatedExecuteProgress = 0;
+
+        return hr;
     }
 
 
@@ -915,8 +912,75 @@ public: // IBootstrapperApplication
         }
     }
 
+    virtual STDMETHODIMP_(void) BAProcFallback(
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID pvArgs,
+        __inout LPVOID pvResults,
+        __inout HRESULT* phr,
+        __in_opt LPVOID /*pvContext*/
+        )
+    {
+        if (!m_pfnBAFunctionsProc || FAILED(*phr))
+        {
+            return;
+        }
+
+        // Always log before and after so we don't get blamed when BAFunctions changes something.
+        switch (message)
+        {
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN:
+            OnDetectBeginFallback(reinterpret_cast<BA_ONDETECTBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE:
+            OnDetectCompleteFallback(reinterpret_cast<BA_ONDETECTCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN:
+            OnPlanBeginFallback(reinterpret_cast<BA_ONPLANBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE:
+            OnPlanCompleteFallback(reinterpret_cast<BA_ONPLANCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPLETE_RESULTS*>(pvResults));
+            break;
+        default:
+            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
+            m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
+            break;
+        }
+    }
+
 
 private: // privates
+    void OnDetectBeginFallback(
+        __in BA_ONDETECTBEGIN_ARGS* pArgs,
+        __inout BA_ONDETECTBEGIN_RESULTS* pResults)
+    {
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+    }
+
+    void OnDetectCompleteFallback(
+        __in BA_ONDETECTCOMPLETE_ARGS* pArgs,
+        __inout BA_ONDETECTCOMPLETE_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanBeginFallback(
+        __in BA_ONPLANBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANBEGIN_RESULTS* pResults)
+    {
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
+    }
+
+    void OnPlanCompleteFallback(
+        __in BA_ONPLANCOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANCOMPLETE_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
     //
     // UiThreadProc - entrypoint for UI thread.
     //
@@ -1046,7 +1110,7 @@ private: // privates
         hr = BalConditionsParseFromXml(&m_Conditions, pixdManifest, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load conditions from XML.");
 
-        hr = LoadBootstrapperBAFunctions();
+        hr = LoadBAFunctions();
         BalExitOnFailure(hr, "Failed to load bootstrapper functions.");
 
         GetBundleFileVersion();
@@ -1819,6 +1883,8 @@ private: // privates
         LPWSTR sczLicensePath = NULL;
         LPWSTR sczLicenseDirectory = NULL;
         LPWSTR sczLicenseFilename = NULL;
+        BA_FUNCTIONS_ONTHEMELOADED_ARGS themeLoadedArgs = { };
+        BA_FUNCTIONS_ONTHEMELOADED_RESULTS themeLoadedResults = { };
 
         hr = ThemeLoadControls(m_pTheme, hWnd, vrgInitControls, countof(vrgInitControls));
         BalExitOnFailure(hr, "Failed to load theme controls.");
@@ -1872,6 +1938,16 @@ private: // privates
                 BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Failed to load file into license richedit control from path '%ls' manifest value: %ls", sczLicensePath, m_sczLicenseFile);
                 hr = S_OK;
             }
+        }
+
+        if (m_pfnBAFunctionsProc)
+        {
+            themeLoadedArgs.cbSize = sizeof(themeLoadedArgs);
+            themeLoadedArgs.pTheme = m_pTheme;
+            themeLoadedArgs.pWixLoc = m_pWixLoc;
+            themeLoadedResults.cbSize = sizeof(themeLoadedResults);
+            hr = m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONTHEMELOADED, &themeLoadedArgs, &themeLoadedResults, m_pvBAFunctionsProcContext);
+            BalExitOnFailure(hr, "BAFunctions OnThemeLoaded failed.");
         }
 
     LExit:
@@ -1929,13 +2005,6 @@ private: // privates
     {
         HRESULT hr = S_OK;
 
-        if (m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect BA function");
-            hr = m_pBAFunction->OnDetect();
-            BalExitOnFailure(hr, "Failed calling detect BA function.");
-        }
-
         SetState(WIXSTDBA_STATE_DETECTING, hr);
 
         // If the UI should be visible, display it now and hide the splash screen
@@ -1986,12 +2055,6 @@ private: // privates
         }
 
         SetState(WIXSTDBA_STATE_PLANNING, hr);
-
-        if (m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan BA function");
-            m_pBAFunction->OnPlan();
-        }
 
         hr = m_pEngine->Plan(action);
         BalExitOnFailure(hr, "Failed to start planning packages.");
@@ -2327,7 +2390,7 @@ private: // privates
 
         hr = LocLocalizeString(m_pWixLoc, &sczLicenseUrl);
         BalExitOnFailure(hr, "Failed to localize license URL: %ls", m_sczLicenseUrl);
-        
+
         // Assume there is no hidden variables to be formatted
         // so don't worry about securely freeing it.
         hr = BalFormatString(sczLicenseUrl, &sczLicenseUrl);
@@ -2692,36 +2755,47 @@ private: // privates
     }
 
 
-    HRESULT LoadBootstrapperBAFunctions()
+    HRESULT LoadBAFunctions()
     {
         HRESULT hr = S_OK;
         LPWSTR sczBafPath = NULL;
+        BA_FUNCTIONS_CREATE_ARGS bafCreateArgs = { };
+        BA_FUNCTIONS_CREATE_RESULTS bafCreateResults = { };
 
         hr = PathRelativeToModule(&sczBafPath, L"bafunctions.dll", m_hModule);
-        BalExitOnFailure(hr, "Failed to get path to BA function DLL.");
+        BalExitOnFailure(hr, "Failed to get path to BA functions DLL.");
 
 #ifdef DEBUG
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBootstrapperBAFunctions() - BA function DLL %ls", sczBafPath);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBAFunctions() - BA functions DLL %ls", sczBafPath);
 #endif
 
         m_hBAFModule = ::LoadLibraryW(sczBafPath);
         if (m_hBAFModule)
         {
-            PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE pfnBAFunctionCreate = reinterpret_cast<PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE>(::GetProcAddress(m_hBAFModule, "CreateBootstrapperBAFunction"));
-            BalExitOnNullWithLastError(pfnBAFunctionCreate, hr, "Failed to get CreateBootstrapperBAFunction entry-point from: %ls", sczBafPath);
+            PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));
+            BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
 
-            hr = pfnBAFunctionCreate(m_pEngine, m_hBAFModule, &m_pBAFunction);
-            BalExitOnFailure(hr, "Failed to create BA function.");
+            bafCreateArgs.cbSize = sizeof(bafCreateArgs);
+            bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
+            bafCreateArgs.pBootstrapperCreateArgs = &m_createArgs;
+
+            bafCreateResults.cbSize = sizeof(bafCreateResults);
+
+            hr = pfnBAFunctionsCreate(&bafCreateArgs, &bafCreateResults);
+            BalExitOnFailure(hr, "Failed to create BAFunctions.");
+
+            m_pfnBAFunctionsProc = bafCreateResults.pfnBAFunctionsProc;
+            m_pvBAFunctionsProcContext = bafCreateResults.pvBAFunctionsProcContext;
         }
 #ifdef DEBUG
         else
         {
-            BalLogError(HRESULT_FROM_WIN32(::GetLastError()), "WIXSTDBA: LoadBootstrapperBAFunctions() - Failed to load DLL %ls", sczBafPath);
+            BalLogError(HRESULT_FROM_WIN32(::GetLastError()), "WIXSTDBA: LoadBAFunctions() - Failed to load DLL %ls", sczBafPath);
         }
 #endif
 
     LExit:
-        if (m_hBAFModule && !m_pBAFunction)
+        if (m_hBAFModule && !m_pfnBAFunctionsProc)
         {
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
@@ -2746,6 +2820,8 @@ public:
     {
         m_hModule = hModule;
         memcpy_s(&m_command, sizeof(m_command), pArgs->pCommand, sizeof(BOOTSTRAPPER_COMMAND));
+        memcpy_s(&m_createArgs, sizeof(m_createArgs), pArgs, sizeof(BOOTSTRAPPER_CREATE_ARGS));
+        m_createArgs.pCommand = &m_command;
 
         // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
         if (fPrereq && BOOTSTRAPPER_ACTION_HELP != m_command.action && BOOTSTRAPPER_ACTION_INSTALL != m_command.action)
@@ -2827,7 +2903,6 @@ public:
         m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
-        m_pBAFunction = NULL;
     }
 
 
@@ -2857,6 +2932,12 @@ public:
 
         if (m_hBAFModule)
         {
+            PFN_BA_FUNCTIONS_DESTROY pfnBAFunctionsDestroy = reinterpret_cast<PFN_BA_FUNCTIONS_DESTROY>(::GetProcAddress(m_hBAFModule, "BAFunctionsDestroy"));
+            if (pfnBAFunctionsDestroy)
+            {
+                pfnBAFunctionsDestroy();
+            }
+
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
         }
@@ -2864,6 +2945,7 @@ public:
 
 private:
     HMODULE m_hModule;
+    BOOTSTRAPPER_CREATE_ARGS m_createArgs;
     BOOTSTRAPPER_COMMAND m_command;
     IBootstrapperEngine* m_pEngine;
     BOOTSTRAPPER_ACTION m_plannedAction;
@@ -2918,7 +3000,8 @@ private:
     BOOL m_fTriedToLaunchElevated;
 
     HMODULE m_hBAFModule;
-    IBootstrapperBAFunction* m_pBAFunction;
+    PFN_BA_FUNCTIONS_PROC m_pfnBAFunctionsProc;
+    LPVOID m_pvBAFunctionsProcContext;
 };
 
 

@@ -7,6 +7,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------------------------
 
+#pragma once
+
 #include <windows.h>
 
 #include "BootstrapperEngine.h"
@@ -21,6 +23,33 @@ static HRESULT BalBaseBAProcOnDetectBegin(
     )
 {
     return pBA->OnDetectBegin(pArgs->fInstalled, pArgs->cPackages, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnDetectComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONDETECTCOMPLETE_ARGS* pArgs,
+    __inout BA_ONDETECTCOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnDetectComplete(pArgs->hrStatus);
+}
+
+static HRESULT BalBaseBAProcOnPlanBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANBEGIN_ARGS* pArgs,
+    __inout BA_ONPLANBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanBegin(pArgs->cPackages, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANCOMPLETE_ARGS* pArgs,
+    __inout BA_ONPLANCOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnPlanComplete(pArgs->hrStatus);
 }
 
 /*******************************************************************
@@ -46,8 +75,19 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN:
             hr = BalBaseBAProcOnDetectBegin(pBA, reinterpret_cast<BA_ONDETECTBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTBEGIN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE:
+            hr = BalBaseBAProcOnDetectComplete(pBA, reinterpret_cast<BA_ONDETECTCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN:
+            hr = BalBaseBAProcOnPlanBegin(pBA, reinterpret_cast<BA_ONPLANBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE:
+            hr = BalBaseBAProcOnPlanComplete(pBA, reinterpret_cast<BA_ONPLANCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPLETE_RESULTS*>(pvResults));
+            break;
         }
     }
+
+    pBA->BAProcFallback(message, pvArgs, pvResults, &hr, pvContext);
 
     return hr;
 }

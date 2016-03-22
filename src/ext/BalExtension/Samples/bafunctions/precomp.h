@@ -5,10 +5,6 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-// 
-// <summary>
-//    Precompiled header for standard bootstrapper application.
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #pragma once
@@ -22,6 +18,7 @@
 #include <shlwapi.h>
 #include <stdlib.h>
 #include <strsafe.h>
+#include <CommCtrl.h>
 
 // Standard WiX header files, include as required
 #include "dutil.h"
@@ -29,13 +26,13 @@
 //#include "dictutil.h"
 //#include "dirutil.h"
 #include "fileutil.h"
-//#include "locutil.h"
+#include "locutil.h"
 //#include "logutil.h"
 #include "pathutil.h"
 //#include "resrutil.h"
 //#include "shelutil.h"
 #include "strutil.h"
-//#include "thmutil.h"
+#include "thmutil.h"
 //#include "uriutil.h"
 //#include "xmlutil.h"
 #include "regutil.h"
@@ -48,5 +45,11 @@
 //#include "balcondition.h"
 #include "balutil.h"
 
-#include "IBootstrapperBAFunction.h"
+#include "BAFunctions.h"
+#include "IBAFunctions.h"
 
+HRESULT WINAPI CreateBAFunctions(
+    __in HMODULE hModule,
+    __in const BA_FUNCTIONS_CREATE_ARGS* pArgs,
+    __inout BA_FUNCTIONS_CREATE_RESULTS* pResults
+    );

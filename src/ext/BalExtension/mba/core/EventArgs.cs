@@ -94,26 +94,21 @@ namespace WixToolset.Bootstrapper
     /// Base class for <see cref="EventArgs"/> classes that receive status from the engine.
     /// </summary>
     [Serializable]
-    public abstract class StatusEventArgs : EventArgs
+    public abstract class StatusEventArgs : HResultEventArgs
     {
-        private int status;
-
         /// <summary>
         /// Creates a new instance of the <see cref="StatusEventArgs"/> class.
         /// </summary>
         /// <param name="status">The return code of the operation.</param>
         public StatusEventArgs(int status)
         {
-            this.status = status;
+            this.Status = status;
         }
 
         /// <summary>
         /// Gets the return code of the operation.
         /// </summary>
-        public int Status
-        {
-            get { return this.status; }
-        }
+        public int Status { get; private set; }
     }
 
     /// <summary>
@@ -859,26 +854,21 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun planning the installation.
     /// </summary>
     [Serializable]
-    public class PlanBeginEventArgs : ResultEventArgs
+    public class PlanBeginEventArgs : CancellableHResultEventArgs
     {
-        private int packageCount;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageCount">The number of packages to plan for.</param>
         public PlanBeginEventArgs(int packageCount)
         {
-            this.packageCount = packageCount;
+            this.PackageCount = packageCount;
         }
 
         /// <summary>
         /// Gets the number of packages to plan for.
         /// </summary>
-        public int PackageCount
-        {
-            get { return this.packageCount; }
-        }
+        public int PackageCount { get; private set; }
     }
 
     /// <summary>

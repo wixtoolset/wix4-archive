@@ -5,14 +5,10 @@
 //   The license and further copyright text can be found in the file
 //   LICENSE.TXT at the root directory of the distribution.
 // </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
 //-------------------------------------------------------------------------------------------------
 
 #include "precomp.h"
-
+#define BAAPI EXTERN_C HRESULT __stdcall
 
 // internal function declarations
 
@@ -102,7 +98,7 @@ extern "C" HRESULT UserExperienceLoad(
     args.pEngine = pEngineContext->pEngineForApplication;
     args.pfnBootstrapperEngineProc = EngineForApplicationProc;
     args.pvBootstrapperEngineProcContext = pEngineContext;
-    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 
@@ -302,7 +298,7 @@ extern "C" void UserExperienceExecutePhaseComplete(
     }
 }
 
-extern "C" HRESULT UserExperienceOnDetectBegin(
+BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
     __in DWORD cPackages
@@ -312,11 +308,11 @@ extern "C" HRESULT UserExperienceOnDetectBegin(
     BA_ONDETECTBEGIN_ARGS args = { };
     BA_ONDETECTBEGIN_RESULTS results = { };
 
-    args.cbSize = sizeof(BA_ONDETECTBEGIN_ARGS);
+    args.cbSize = sizeof(args);
     args.cPackages = cPackages;
     args.fInstalled = fInstalled;
 
-    results.cbSize = sizeof(BA_ONDETECTBEGIN_RESULTS);
+    results.cbSize = sizeof(results);
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results, pUserExperience->pvBAProcContext);
     if (SUCCEEDED(hr) && results.fCancel)
@@ -324,6 +320,71 @@ extern "C" HRESULT UserExperienceOnDetectBegin(
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTCOMPLETE_ARGS args = { };
+    BA_ONDETECTCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectComplete failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnPlanBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD cPackages
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANBEGIN_ARGS args = { };
+    BA_ONPLANBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.cPackages = cPackages;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    if (SUCCEEDED(hr) && results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+    return hr;
+}
+
+BAAPI UserExperienceOnPlanComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANCOMPLETE_ARGS args = { };
+    BA_ONPLANCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnPlanComplete failed.");
+
+LExit:
     return hr;
 }
 

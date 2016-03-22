@@ -41,10 +41,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectBegin - called when the engine begins detection.
-    STDMETHOD_(HRESULT, OnDetectBegin)(
+    STDMETHOD(OnDetectBegin)(
         __in BOOL fInstalled,
         __in DWORD cPackages,
-        __out BOOL* pfCancel
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectForwardCompatibleBundle - called when the engine detects a forward compatible bundle.
@@ -191,18 +191,14 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnDetectPackageComplete - called after the engine completes detection.
     //
-    STDMETHOD_(void, OnDetectComplete)(
+    STDMETHOD(OnDetectComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
     // OnPlanBegin - called when the engine begins planning.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanBegin)(
-        __in DWORD cPackages
+    STDMETHOD(OnPlanBegin)(
+        __in DWORD cPackages,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanRelatedBundle - called when the engine begins planning a related bundle.
@@ -277,7 +273,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnPlanComplete - called when the engine completes planning.
     //
-    STDMETHOD_(void, OnPlanComplete)(
+    STDMETHOD(OnPlanComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
@@ -643,10 +639,21 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // BAProc - The PFN_BOOTSTRAPPER_APPLICATION_PROC can call this method to give the BA raw access to the callback from the engine.
     //          This might be used to help the BA support more than one version of the engine.
-    STDMETHOD_(HRESULT, BAProc)(
+    STDMETHOD(BAProc)(
         __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
         __in const LPVOID pvArgs,
         __inout LPVOID pvResults,
+        __in_opt LPVOID pvContext
+        ) = 0;
+
+    // BAProcFallback - The PFN_BOOTSTRAPPER_APPLICATION_PROC can call this method
+    //                  to give the BA the ability to use default behavior
+    //                  and then forward the message to extensions.
+    STDMETHOD_(void, BAProcFallback)(
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID pvArgs,
+        __inout LPVOID pvResults,
+        __inout HRESULT* phr,
         __in_opt LPVOID pvContext
         ) = 0;
 };
