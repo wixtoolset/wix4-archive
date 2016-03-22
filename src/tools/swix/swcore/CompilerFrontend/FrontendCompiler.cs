@@ -33,6 +33,7 @@ namespace WixToolset.Simplified.CompilerFrontend
         private FileSystemResourceManager fileSystemManager;
 
         private List<PackageItem> unresolved;
+        private List<CompilerExtension> extensions;
 
         public FrontendCompiler(PackageArchitecture architecture, List<System.Reflection.Assembly> referenceAssemblies)
         {
@@ -50,6 +51,7 @@ namespace WixToolset.Simplified.CompilerFrontend
             this.services.Add(this.fileSystemManager.GetType(), this.fileSystemManager);
 
             this.unresolved = new List<PackageItem>();
+            this.extensions = new List<CompilerExtension>();
 
             this.AddSystemPackage(); // ensure the system resources are always loaded.
         }
@@ -180,6 +182,12 @@ namespace WixToolset.Simplified.CompilerFrontend
             instantiator.DefaultNamespaces.Add(String.Empty, "WixToolset.Simplified.Lexicon");
             instantiator.TypeCache.AddAssembly(Assembly.GetExecutingAssembly());
 
+            // Include types from the assemblies containing extensions
+            foreach (var extension in this.extensions)
+            {
+                instantiator.TypeCache.AddAssembly(extension.GetType().Assembly);
+            }
+
             List<object> items = instantiator.Instantiate(path, rootStatementNode);
             return items;
         }
@@ -303,6 +311,11 @@ namespace WixToolset.Simplified.CompilerFrontend
         internal bool TryGetItemById(string id, out PackageItem item)
         {
             return this.namedItems.TryGetValue(id, out item);
+        }
+        
+        internal void AddExtensions(IEnumerable<CompilerExtension> extensions)
+        {
+            this.extensions.AddRange(extensions);
         }
 
         private void AddSystemPackage()
