@@ -9,10 +9,10 @@
 
 namespace WixToolset.Simplified
 {
-    using CompilerBackend;
     using System;
     using System.IO;
     using System.Reflection;
+    using CompilerBackend;
 
     /// <summary>
     /// Compiler extension.
