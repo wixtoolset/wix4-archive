@@ -1,3 +1,37 @@
+## WixBuild: Version 4.0.3922.0
+
+* SeanHall: WIXFEAT:4951 - Make the BAFunctions interface binary, make WixStdBA forward all BA messages to BAFunctions, and give BAFunctions access to the theme and localization.
+
+* PavelAnfimov: WIXBUG:4772 - Add support for Windows XP for ShelExecUnelevated.
+
+* DavidFlamme: WIXBUG:4785 - Fixing memory leak in InstallPackage.cs
+
+MikeGC: WIXBUG:4878 - fix iniutil memory leak
+
+* jchoover: WIXBUG:4899 - Modified WixStdBA handling of XmlGetAttribute to handle S_FALSE.
+
+* BobArnson: Work around Dev14 change that breaks XP compatibility even when used with v140_xp toolset. See [Connect item on this very issue](https://connect.microsoft.com/VisualStudio/feedback/details/1789709/visual-c-2015-runtime-broken-on-windows-server-2003-c-11-magic-statics). Fixes WIXBUG:4902 and WIXBUG:4908.
+
+* @barnson: Correct file name of local name for Web package per wixtoolset/issues#4904
+
+* @barnson: Write VersionMajor/VersionMinor Uninstall values.
+  * Partial fix for wixtoolset/issues#5171. (Does not write InstallLocation.)
+
+* @barnson: WIXBUG:5185 - correct LPWSTR to LPCWSTR
+
+* @barnson for @firegiantco: Fix wixtoolset/issues#5221.
+  * Use better logic to determine when to send the Burn ancestors switches.
+
+* MikeGC: Add simple combo box support to ThmUtil.
+
+* @barnson: Fix up bad/old links in Learning WiX topic.
+
+* HeathS: WIXFEAT:5230 - Support adding users to Performance Log users group
+
+* HeathS: WIXBUG:5229 - Allow processes to terminate with 0 exit code
+
+* HeathS: WIXBUG:5241 - Call OnExecutePackageComplete only when OnExecutePackageBegin was called
+
 ## WixBuild: Version 4.0.3826.0
 
 * @barnson: Add support for command links to ThmUtil.
