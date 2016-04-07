@@ -20,6 +20,7 @@
 #include <stddef.h>
 
 #include "dutil.h"
+#include "apputil.h"
 #include "memutil.h"
 #include "dictutil.h"
 #include "dirutil.h"

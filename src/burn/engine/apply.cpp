@@ -60,8 +60,7 @@ static HRESULT ExecuteDependentRegistrationActions(
     __in DWORD cActions
     );
 static HRESULT ExtractContainer(
-    __in HANDLE hEngineFile,
-    __in BURN_USER_EXPERIENCE* pUX,
+    __in HANDLE hSourceEngineFile,
     __in BURN_CONTAINER* pContainer,
     __in_z LPCWSTR wzContainerPath,
     __in_ecount(cExtractPayloads) BURN_EXTRACT_PAYLOAD* rgExtractPayloads,
@@ -432,7 +431,7 @@ LExit:
 }
 
 extern "C" HRESULT ApplyCache(
-    __in HANDLE hEngineFile,
+    __in HANDLE hSourceEngineFile,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_VARIABLES* pVariables,
     __in BURN_PLAN* pPlan,
@@ -538,7 +537,7 @@ extern "C" HRESULT ApplyCache(
                     break;
                 }
 
-                hr = ExtractContainer(hEngineFile, pUX, pCacheAction->extractContainer.pContainer, pCacheAction->extractContainer.sczContainerUnverifiedPath, pCacheAction->extractContainer.rgPayloads, pCacheAction->extractContainer.cPayloads);
+                hr = ExtractContainer(hSourceEngineFile, pCacheAction->extractContainer.pContainer, pCacheAction->extractContainer.sczContainerUnverifiedPath, pCacheAction->extractContainer.rgPayloads, pCacheAction->extractContainer.cPayloads);
                 if (FAILED(hr))
                 {
                     LogErrorId(hr, MSG_FAILED_EXTRACT_CONTAINER, pCacheAction->extractContainer.pContainer->sczId, pCacheAction->extractContainer.sczContainerUnverifiedPath, NULL);
@@ -862,8 +861,7 @@ LExit:
 }
 
 static HRESULT ExtractContainer(
-    __in HANDLE /*hEngineFile*/,
-    __in BURN_USER_EXPERIENCE* /*pUX*/,
+    __in HANDLE hSourceEngineFile,
     __in BURN_CONTAINER* pContainer,
     __in_z LPCWSTR wzContainerPath,
     __in_ecount(cExtractPayloads) BURN_EXTRACT_PAYLOAD* rgExtractPayloads,
@@ -873,8 +871,13 @@ static HRESULT ExtractContainer(
     HRESULT hr = S_OK;
     BURN_CONTAINER_CONTEXT context = { };
     HANDLE hContainerHandle = INVALID_HANDLE_VALUE;
-    LPWSTR sczCurrentProcessPath = NULL;
     LPWSTR sczExtractPayloadId = NULL;
+
+    // If the container is actually attached, then it was planned to be acquired through hSourceEngineFile.
+    if (pContainer->fActuallyAttached)
+    {
+        hContainerHandle = hSourceEngineFile;
+    }
 
     hr = ContainerOpen(&context, pContainer, hContainerHandle, wzContainerPath);
     ExitOnFailure(hr, "Failed to open container: %ls.", pContainer->sczId);
@@ -912,7 +915,6 @@ static HRESULT ExtractContainer(
 
 LExit:
     ReleaseStr(sczExtractPayloadId);
-    ReleaseStr(sczCurrentProcessPath);
     ContainerClose(&context);
 
     return hr;
@@ -1142,9 +1144,8 @@ static HRESULT AcquireContainerOrPayload(
 
         hr = CacheFindLocalSource(wzSourcePath, pVariables, &fFoundLocal, &sczSourceFullPath);
         ExitOnFailure(hr, "Failed to search local source.");
-
-        // If the file exists locally, copy it.
-        if (fFoundLocal)
+        
+        if (fFoundLocal) // the file exists locally, so copy it.
         {
             // If the source path and destination path are different, do the copy (otherwise there's no point).
             hr = PathCompare(sczSourceFullPath, wzDestinationPath, &nEquivalentPaths);
@@ -1152,7 +1153,7 @@ static HRESULT AcquireContainerOrPayload(
 
             fCopy = (CSTR_EQUAL != nEquivalentPaths);
         }
-        else // can't find the file locally so prompt for source.
+        else // can't find the file locally, so prompt for source.
         {
             DWORD dwLogId = pContainer ? (wzPayloadId ? MSG_PROMPT_CONTAINER_PAYLOAD_SOURCE : MSG_PROMPT_CONTAINER_SOURCE) : pPackage ? MSG_PROMPT_PACKAGE_PAYLOAD_SOURCE : MSG_PROMPT_BUNDLE_PAYLOAD_SOURCE;
             LogId(REPORT_STANDARD, dwLogId, wzPackageOrContainerId ? wzPackageOrContainerId : L"", wzPayloadId ? wzPayloadId : L"", sczSourceFullPath);
