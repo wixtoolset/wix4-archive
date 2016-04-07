@@ -2903,6 +2903,8 @@ public:
         m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
+        m_pfnBAFunctionsProc = NULL;
+        m_pvBAFunctionsProcContext = NULL;
     }
 
 
