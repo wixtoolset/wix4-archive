@@ -1216,6 +1216,14 @@ namespace WixToolset
                         this.OnMessage(WixErrors.IllegalLongFilename(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
                     }
                 }
+                else if (allowRelative)
+                {
+                    string normalizedPath = value.Replace('\\', '/');
+                    if (normalizedPath.StartsWith("../", StringComparison.Ordinal) || normalizedPath.Contains("/../"))
+                    {
+                        this.OnMessage(WixErrors.PayloadMustBeRelativeToCache(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
+                    }
+                }
                 else if (CompilerCore.IsAmbiguousFilename(value))
                 {
                     this.OnMessage(WixWarnings.AmbiguousFileOrDirectoryName(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
