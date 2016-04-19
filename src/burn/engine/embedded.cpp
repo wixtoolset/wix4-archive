@@ -84,9 +84,9 @@ extern "C" HRESULT EmbeddedRunBundle(
     hr = StrAllocFormattedSecure(&sczCommand, L"%ls -%ls %ls %ls %u", wzArguments, BURN_COMMANDLINE_SWITCH_EMBEDDED, connection.sczName, connection.sczSecret, dwCurrentProcessId);
     ExitOnFailure(hr, "Failed to allocate embedded command.");
 
-    if (!::CreateProcessW(wzExecutablePath, sczCommand, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
+    if (!::CreateProcessW(wzExecutablePath, sczCommand, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
     {
-        ExitWithLastError(hr, "Failed to create embedded process atpath: %ls", wzExecutablePath);
+        ExitWithLastError(hr, "Failed to create embedded process at path: %ls", wzExecutablePath);
     }
 
     connection.dwProcessId = ::GetProcessId(pi.hProcess);

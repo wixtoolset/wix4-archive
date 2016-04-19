@@ -200,8 +200,8 @@ static HRESULT ProcessCommandLine(
 
     if (wzCommandLine && *wzCommandLine)
     {
-        argv = ::CommandLineToArgvW(wzCommandLine, &argc);
-        ExitOnNullWithLastError(argv, hr, "Failed to get command line.");
+        hr = AppParseCommandLine(wzCommandLine, &argc, &argv);
+        ExitOnFailure(hr, "Failed to parse command line.");
 
         for (int i = 0; i < argc; ++i)
         {
@@ -236,7 +236,7 @@ static HRESULT ProcessCommandLine(
 LExit:
     if (argv)
     {
-        ::LocalFree(argv);
+        AppFreeCommandLineArgs(argv);
     }
 
     return hr;

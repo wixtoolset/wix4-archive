@@ -1150,8 +1150,8 @@ private: // privates
 
         if (m_command.wzCommandLine && *m_command.wzCommandLine)
         {
-            argv = ::CommandLineToArgvW(m_command.wzCommandLine, &argc);
-            ExitOnNullWithLastError(argv, hr, "Failed to get command line.");
+            hr = AppParseCommandLine(m_command.wzCommandLine, &argc, &argv);
+            ExitOnFailure(hr, "Failed to parse command line.");
 
             for (int i = 0; i < argc; ++i)
             {
@@ -1209,7 +1209,7 @@ private: // privates
     LExit:
         if (argv)
         {
-            ::LocalFree(argv);
+            AppFreeCommandLineArgs(argv);
         }
 
         ReleaseStr(sczVariableName);
@@ -2903,6 +2903,8 @@ public:
         m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
+        m_pfnBAFunctionsProc = NULL;
+        m_pvBAFunctionsProcContext = NULL;
     }
 
 
