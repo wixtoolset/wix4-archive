@@ -2823,10 +2823,13 @@ public:
         memcpy_s(&m_createArgs, sizeof(m_createArgs), pArgs, sizeof(BOOTSTRAPPER_CREATE_ARGS));
         m_createArgs.pCommand = &m_command;
 
-        // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
-        if (fPrereq && BOOTSTRAPPER_ACTION_HELP != m_command.action && BOOTSTRAPPER_ACTION_INSTALL != m_command.action)
+        if (fPrereq)
         {
-            m_command.action = BOOTSTRAPPER_ACTION_INSTALL;
+            // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
+            if (BOOTSTRAPPER_ACTION_HELP != m_command.action)
+            {
+                m_command.action = BOOTSTRAPPER_ACTION_INSTALL;
+            }
         }
         else // maybe modify the action state if the bundle is or is not already installed.
         {
