@@ -198,6 +198,9 @@ namespace WixToolset.Data
                 case "WixMerge":
                     row = new WixMergeRow(sourceLineNumbers, this);
                     break;
+                case "WixPayloadProperties":
+                    row = new WixPayloadPropertiesRow(sourceLineNumbers, this);
+                    break;
                 case "WixProperty":
                     row = new WixPropertyRow(sourceLineNumbers, this);
                     break;

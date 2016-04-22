@@ -187,6 +187,29 @@ namespace WixToolset.Extensions
                         }
                     }
                     break;
+                case "Payload":
+                    string payloadId;
+                    if (!context.TryGetValue("Id", out payloadId) || String.IsNullOrEmpty(payloadId))
+                    {
+                        this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, parentElement.Name.LocalName, "Id", attribute.Name.LocalName));
+                    }
+                    else
+                    {
+                        switch (attribute.Name.LocalName)
+                        {
+                            case "BAFunctions":
+                                if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
+                                {
+                                    row = this.Core.CreateRow(sourceLineNumbers, "WixBalBAFunctions");
+                                    row[0] = payloadId;
+                                }
+                                break;
+                            default:
+                                this.Core.UnexpectedAttribute(parentElement, attribute);
+                                break;
+                        }
+                    }
+                    break;
                 case "Variable":
                     // at the time the extension attribute is parsed, the compiler might not yet have
                     // parsed the Name attribute, so we need to get it directly from the parent element.

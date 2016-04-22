@@ -18707,6 +18707,8 @@ namespace WixToolset
             Debug.Assert(ComplexReferenceChildType.Unknown == previousType || ComplexReferenceChildType.PayloadGroup == previousType || ComplexReferenceChildType.Payload == previousType);
 
             string id = ParsePayloadElementContent(node, parentType, parentId, previousType, previousId, true);
+            Dictionary<string, string> context = new Dictionary<string, string>();
+            context["Id"] = id;
 
             foreach (XElement child in node.Elements())
             {
@@ -18721,10 +18723,9 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
-
 
             return id;
         }
@@ -18747,6 +18748,10 @@ namespace WixToolset
             string sourceFile = null;
             string downloadUrl = null;
             Wix.RemotePayload remotePayload = null;
+
+            // This list lets us evaluate extension attributes *after* all core attributes
+            // have been parsed and dealt with, regardless of authoring order.
+            List<XAttribute> extensionAttributes = new List<XAttribute>();
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18779,7 +18784,7 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionAttribute(node, attrib);
+                    extensionAttributes.Add(attrib);
                 }
             }
 
@@ -18787,6 +18792,20 @@ namespace WixToolset
             {
                 // Nothing left to do!
                 return null;
+            }
+
+            if (null == id)
+            {
+                id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
+            }
+
+            // Now that the PayloadId is known, we can parse the extension attributes.
+            Dictionary<string, string> context = new Dictionary<string, string>();
+            context["Id"] = id.Id;
+
+            foreach (XAttribute extensionAttribute in extensionAttributes)
+            {
+                this.core.ParseExtensionAttribute(node, extensionAttribute, context);
             }
 
             // We only handle the elements we care about.  Let caller handle other children.
@@ -18834,11 +18853,6 @@ namespace WixToolset
                 }
 
                 compressed = YesNoDefaultType.Yes;
-            }
-
-            if (null == id)
-            {
-                id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
             }
 
             this.CreatePayloadRow(sourceLineNumbers, id, name, sourceFile, downloadUrl, parentType, parentId, previousType, previousId, compressed, enableSignatureVerification, null, null, remotePayload);

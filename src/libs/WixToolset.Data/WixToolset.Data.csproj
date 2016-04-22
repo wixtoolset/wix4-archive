@@ -101,6 +101,7 @@
     <Compile Include="Rows\WixMediaRow.cs" />
     <Compile Include="Rows\WixMediaTemplateRow.cs" />
     <Compile Include="Rows\WixMergeRow.cs" />
+    <Compile Include="Rows\WixPayloadPropertiesRow.cs" />
     <Compile Include="Rows\WixPropertyRow.cs" />
     <Compile Include="Rows\WixRelatedBundleRow.cs" />
     <Compile Include="Rows\WixSimpleReferenceRow.cs" />
