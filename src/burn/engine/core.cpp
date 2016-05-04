@@ -132,13 +132,6 @@ extern "C" HRESULT CoreInitialize(
     {
         hr = CacheInitialize(&pEngineState->registration, &pEngineState->variables, sczSourceProcessPath);
         ExitOnFailure(hr, "Failed to initialize internal cache functionality.");
-
-        BOOL fRunningFromCache = CacheBundleRunningFromCache();
-
-        if (BURN_MODE_UNTRUSTED == pEngineState->mode && fRunningFromCache)
-        {
-            pEngineState->mode = BURN_MODE_NORMAL;
-        }
     }
 
     // If we're not elevated then we'll be loading the bootstrapper application, so extract
