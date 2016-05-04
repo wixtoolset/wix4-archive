@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="SimplifiedWixCompiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Simplified
 {
@@ -230,7 +223,7 @@ namespace WixToolset.Simplified
             FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(executingAssembly.Location);
 
             Console.WriteLine("Simplified WiX Compiler version {0}", fileVersion.FileVersion);
-            Console.WriteLine("Copyright (C) Outercurve Foundation. All rights reserved.");
+            Console.WriteLine("Copyright (C) .NET Foundation and contributors. All rights reserved.");
             Console.WriteLine();
         }
 

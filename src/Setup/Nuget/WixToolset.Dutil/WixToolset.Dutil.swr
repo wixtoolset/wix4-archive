@@ -1,7 +1,7 @@
 use nuget
 
 package name=WixToolset.Dutil
-        manufacturer="Outercurve Foundation"
+        manufacturer=".NET Foundation"
         version=$(version)
         description="Common utility functions used by the WiX toolset."
         about=http://wixtoolset.org/

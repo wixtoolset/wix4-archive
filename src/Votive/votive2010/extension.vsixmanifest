@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Vsix Version="1.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2010">
-    <Identifier Id="WiX.OutercurveFoundation">
+    <Identifier Id="WiX.NETFoundation">
         <Name>WiX Toolset</Name>
-        <Author>Outercurve Foundation</Author>
+        <Author>.NET Foundation and contributors</Author>
         <Version>4.0</Version>
         <Description xml:space="preserve">WiX toolset</Description>
         <Locale>1033</Locale>

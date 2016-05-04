@@ -1,7 +1,7 @@
 use nuget
 
 package name=WixToolset.Tools
-        manufacturer="Outercurve Foundation"
+        manufacturer=".NET Foundation"
         version=$(version)
         description="WiX Toolset tools that create MSI, MSP and MSM packages from XML source code."
         about=http://wixtoolset.org/
