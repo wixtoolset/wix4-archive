@@ -2446,6 +2446,7 @@ namespace WixToolset.Extensions
             int permission = 0;
             string[] specialPermissions = null;
             string user = null;
+            bool isInheritable = false;
 
             PermissionType permissionType = PermissionType.SecureObjects;
 
@@ -2453,6 +2454,7 @@ namespace WixToolset.Extensions
             {
                 case "CreateFolder":
                     specialPermissions = UtilConstants.FolderPermissions;
+                    isInheritable = true; // For backward compatibility the default handling for folders is to enable inheritance, all others are not enabled
                     break;
                 case "File":
                     specialPermissions = UtilConstants.FilePermissions;
@@ -2479,6 +2481,9 @@ namespace WixToolset.Extensions
                 {
                     switch (attrib.Name.LocalName)
                     {
+                        case "Inheritable":
+                            isInheritable = YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
                         case "Domain":
                             if (PermissionType.FileSharePermissions == permissionType)
                             {
@@ -2555,8 +2560,9 @@ namespace WixToolset.Extensions
                 row[1] = tableName;
                 row[2] = domain;
                 row[3] = user;
-                row[4] = permission;
-                row[5] = componentId;
+                row[4] = isInheritable ? 1 : 0;
+                row[5] = permission;
+                row[6] = componentId;
             }
         }
 
