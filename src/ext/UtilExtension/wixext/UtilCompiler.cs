@@ -90,13 +90,18 @@ namespace WixToolset.Extensions
             TypeMask = 0xf,
         }
 
+        internal enum WixPermissionExAttributes
+        {
+            Inheritable = 0x01
+        }
+
         internal enum WixRemoveFolderExOn
         {
             Install = 1,
             Uninstall = 2,
             Both = 3,
         }
-
+        
         private static readonly Regex FindPropertyBrackets = new Regex(@"\[(?!\\|\])|(?<!\[\\\]|\[\\|\\\[)\]", RegexOptions.ExplicitCapture | RegexOptions.Compiled);
 
         /// <summary>
@@ -2446,7 +2451,7 @@ namespace WixToolset.Extensions
             int permission = 0;
             string[] specialPermissions = null;
             string user = null;
-            bool isInheritable = false;
+            int attributes = 0;
 
             PermissionType permissionType = PermissionType.SecureObjects;
 
@@ -2454,7 +2459,7 @@ namespace WixToolset.Extensions
             {
                 case "CreateFolder":
                     specialPermissions = UtilConstants.FolderPermissions;
-                    isInheritable = true; // For backward compatibility the default handling for folders is to enable inheritance, all others are not enabled
+                    attributes |= (int)WixPermissionExAttributes.Inheritable; // For backward compatibility the default handling for folders is to enable inheritance, all others are not enabled
                     break;
                 case "File":
                     specialPermissions = UtilConstants.FilePermissions;
@@ -2482,7 +2487,8 @@ namespace WixToolset.Extensions
                     switch (attrib.Name.LocalName)
                     {
                         case "Inheritable":
-                            isInheritable = YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            bool isInheritable = YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            attributes |= isInheritable ? (int)WixPermissionExAttributes.Inheritable : 0;  
                             break;
                         case "Domain":
                             if (PermissionType.FileSharePermissions == permissionType)
@@ -2560,7 +2566,7 @@ namespace WixToolset.Extensions
                 row[1] = tableName;
                 row[2] = domain;
                 row[3] = user;
-                row[4] = isInheritable ? 1 : 0;
+                row[4] = attributes;
                 row[5] = permission;
                 row[6] = componentId;
             }

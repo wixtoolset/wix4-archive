@@ -3,10 +3,10 @@
 #include "precomp.h"
 
 // structs
-LPCWSTR wzQUERY_SECUREOBJECTS = L"SELECT `SecureObjects`.`SecureObject`, `SecureObjects`.`Table`, `SecureObjects`.`Domain`, `SecureObjects`.`User`, `SecureObjects`.`Inheritable`, "
+LPCWSTR wzQUERY_SECUREOBJECTS = L"SELECT `SecureObjects`.`SecureObject`, `SecureObjects`.`Table`, `SecureObjects`.`Domain`, `SecureObjects`.`User`, `SecureObjects`.`Attributes`, "
                                 L"`SecureObjects`.`Permission`, `SecureObjects`.`Component_`, `Component`.`Attributes` FROM `SecureObjects`,`Component` WHERE "
                                 L"`SecureObjects`.`Component_`=`Component`.`Component`";
-enum eQUERY_SECUREOBJECTS { QSO_SECUREOBJECT = 1, QSO_TABLE, QSO_DOMAIN, QSO_USER, QSO_INHERITABLE, QSO_PERMISSION, QSO_COMPONENT, QSO_COMPATTRIBUTES };
+enum eQUERY_SECUREOBJECTS { QSO_SECUREOBJECT = 1, QSO_TABLE, QSO_DOMAIN, QSO_USER, QSO_ATTRIBUTES, QSO_PERMISSION, QSO_COMPONENT, QSO_COMPATTRIBUTES };
 
 LPCWSTR wzQUERY_REGISTRY = L"SELECT `Registry`.`Registry`, `Registry`.`Root`, `Registry`.`Key` FROM `Registry` WHERE `Registry`.`Registry`=?";
 enum eQUERY_OBJECTCOMPONENT { QSOC_REGISTRY = 1, QSOC_REGROOT, QSOC_REGKEY };
@@ -15,6 +15,11 @@ LPCWSTR wzQUERY_SERVICEINSTALL = L"SELECT `ServiceInstall`.`Name` FROM `ServiceI
 enum eQUERY_SECURESERVICEINSTALL { QSSI_NAME = 1 };
 
 enum eOBJECTTYPE { OT_UNKNOWN, OT_SERVICE, OT_FOLDER, OT_FILE, OT_REGISTRY };
+
+enum eSECURE_OBJECT_ATTRIBUTE
+{
+    SECURE_OBJECT_ATTRIBUTE_INHERITABLE = 0x01
+};
 
 static eOBJECTTYPE EObjectTypeFromString(
     __in LPCWSTR pwzTable
@@ -422,10 +427,10 @@ extern "C" UINT __stdcall SchedSecureObjects(
             hr = WcaWriteStringToCaData(pwzData, &pwzCustomActionData);
             ExitOnFailure(hr, "failed to add data to CustomActionData");
 
-            int iData = 0;
-            hr = WcaGetRecordInteger(hRec, QSO_INHERITABLE, &iData);
-            ExitOnFailure(hr, "failed to get inheritable flag to configure object");
-            hr = WcaWriteIntegerToCaData(iData, &pwzCustomActionData);
+            DWORD dwAttributes = 0;
+            hr = WcaGetRecordInteger(hRec, QSO_ATTRIBUTES, reinterpret_cast<int*>(&dwAttributes));
+            ExitOnFailure(hr, "failed to get attributes to configure object");
+            hr = WcaWriteIntegerToCaData(dwAttributes, &pwzCustomActionData);
             ExitOnFailure(hr, "failed to add data to CustomActionData");
 
             hr = WcaGetRecordString(hRec, QSO_PERMISSION, &pwzData);
@@ -573,7 +578,7 @@ LExit:
                    called as Type 1025 CustomAction (deferred binary DLL)
 
  NOTE: deferred CustomAction since it modifies the machine
- NOTE: CustomActionData == wzObject\twzTable\twzDomain\twzUser\tisInheritable\tdwPermissions\t...
+ NOTE: CustomActionData == wzObject\twzTable\twzDomain\twzUser\tdwAttributes\tdwPermissions\t...
 ******************************************************************/
 extern "C" UINT __stdcall ExecSecureObjects(
     __in MSIHANDLE hInstall
@@ -591,7 +596,7 @@ extern "C" UINT __stdcall ExecSecureObjects(
     DWORD dwRevision = 0;
     LPWSTR pwzUser = NULL;
     DWORD dwPermissions = 0;
-    int isInheritable = 0;
+    DWORD dwAttributes = 0;
     LPWSTR pwzAccount = NULL;
     PSID psid = NULL;
 
@@ -632,7 +637,7 @@ extern "C" UINT __stdcall ExecSecureObjects(
         ExitOnFailure(hr, "failed to process CustomActionData");
         hr = WcaReadStringFromCaData(&pwz, &pwzUser);
         ExitOnFailure(hr, "failed to process CustomActionData");
-        hr = WcaReadIntegerFromCaData(&pwz, &isInheritable);
+        hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int*>(&dwAttributes));
         ExitOnFailure(hr, "failed to process CustomActionData");
         hr = WcaReadIntegerFromCaData(&pwz, reinterpret_cast<int*>(&dwPermissions));
         ExitOnFailure(hr, "failed to process CustomActionData");
@@ -698,7 +703,7 @@ extern "C" UINT __stdcall ExecSecureObjects(
         //
         ea.grfAccessMode = SET_ACCESS;
 
-        if (isInheritable > 0)
+        if (dwAttributes & SECURE_OBJECT_ATTRIBUTE_INHERITABLE)
         {
             ea.grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
         }
