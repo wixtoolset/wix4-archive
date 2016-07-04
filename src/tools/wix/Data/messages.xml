@@ -2808,8 +2808,9 @@
       </Message>
       <Message Id="DisallowedMsiProperty" Number="365">
         <Instance>
-          The '{0}' MsiProperty is controlled by the bootstrapper and cannot be authored. Remove the MsiProperty element.
+          The '{0}' MsiProperty is controlled by the bootstrapper and cannot be authored. (Illegal properties are: {1}.) Remove the MsiProperty element.
           <Parameter Type="System.String" Name="property" />
+          <Parameter Type="System.String" Name="illegalValueList" />
         </Instance>
       </Message>
       <Message Id="MissingOrInvalidModuleInstallerVersion" Number="366">

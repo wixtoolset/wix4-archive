@@ -124,6 +124,20 @@ namespace WixToolset
                 "WixBundleVersion",
             });
 
+        private static readonly List<string> DisallowedMsiProperties = new List<string>(
+            new string[] {
+                "ACTION",
+                "ADDLOCAL",
+                "ADDSOURCE",
+                "ADDDEFAULT",
+                "ADVERTISE",
+                "ALLUSERS",
+                "REBOOT",
+                "REINSTALL",
+                "REINSTALLMODE",
+                "REMOVE"
+            });
+
         private TableDefinitionCollection tableDefinitions;
         private Dictionary<XNamespace, ICompilerExtension> extensions;
         private Intermediate intermediate;
@@ -1396,6 +1410,29 @@ namespace WixToolset
                 {
                     string illegalValues = CompilerCore.CreateValueList(ValueListKind.Or, CompilerCore.BuiltinBundleVariables);
                     this.OnMessage(WixErrors.IllegalAttributeValueWithIllegalList(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value, illegalValues));
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Gets an MsiProperty name value and displays an error for an illegal value.
+        /// </summary>
+        /// <param name="sourceLineNumbers">Source line information about the owner element.</param>
+        /// <param name="attribute">The attribute containing the value to get.</param>
+        /// <returns>The attribute's value.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes")]
+        public string GetAttributeMsiPropertyNameValue(SourceLineNumber sourceLineNumbers, XAttribute attribute)
+        {
+            string value = this.GetAttributeValue(sourceLineNumbers, attribute);
+
+            if (0 < value.Length)
+            {
+                if (CompilerCore.DisallowedMsiProperties.Contains(value))
+                {
+                    string illegalValues = CompilerCore.CreateValueList(ValueListKind.Or, CompilerCore.DisallowedMsiProperties);
+                    this.OnMessage(WixErrors.DisallowedMsiProperty(sourceLineNumbers, value, illegalValues));
                 }
             }
 
