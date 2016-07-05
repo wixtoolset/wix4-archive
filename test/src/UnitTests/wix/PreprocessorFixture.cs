@@ -35,7 +35,7 @@ namespace WixTest.WixUnitTest
 
             Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>", d.Declaration.ToString());
             Assert.Equal(expected, d.ToString());
-            Assert.Equal(@"testdata\simple.wxs*5", s.QualifiedFileName);
+            Assert.Equal(@"testdata\simple.wxs*8", s.QualifiedFileName);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace WixTest.WixUnitTest
 
             Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>", d.Declaration.ToString());
             Assert.Equal(expected, d.ToString());
-            Assert.Equal(@"testdata\include.wxi*3", s.QualifiedFileName);
+            Assert.Equal(@"testdata\include.wxi*6", s.QualifiedFileName);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace WixTest.WixUnitTest
 
             Assert.Equal("<?xml version=\"1.0\" encoding=\"utf-8\"?>", d.Declaration.ToString());
             Assert.Equal(expected, d.ToString());
-            Assert.Equal(@"testdata\double_fragment.wxs*10", s.QualifiedFileName);
+            Assert.Equal(@"testdata\double_fragment.wxs*13", s.QualifiedFileName);
         }
 
         [Fact]
