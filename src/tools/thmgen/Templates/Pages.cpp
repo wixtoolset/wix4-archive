@@ -5,23 +5,17 @@ static LPCWSTR vrgwzPageNames[] = {{
 }};
 
 static DWORD vrgdwPageIds[countof(vrgwzPageNames)] = {{ }};
-static Pages vpageCurrent = Pages::PageCount;
 
 void Show{0}Page(
     __in THEME* pTheme,
     __in Pages page
     )
 {{
-    if (Pages::PageCount != vpageCurrent)
+    if (pTheme->dwCurrentPageId)
     {{
-        ThemeShowPage(pTheme, vrgdwPageIds[vpageCurrent], SW_HIDE);
+        ThemeShowPage(pTheme, pTheme->dwCurrentPageId, SW_HIDE);
     }}
 
-    vpageCurrent = page;
     ThemeShowPage(pTheme, vrgdwPageIds[page], SW_SHOW);
 }}
 
-Pages GetCurrent{0}Page()
-{{
-    return vpageCurrent;
-}}
