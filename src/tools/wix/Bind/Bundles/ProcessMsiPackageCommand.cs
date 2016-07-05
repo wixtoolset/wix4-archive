@@ -120,8 +120,6 @@ namespace WixToolset.Bind.Bundles
 
                     ISet<string> msiPropertyNames = this.GetMsiPropertyNames();
 
-                    this.VerifyMsiProperties(msiPropertyNames);
-
                     this.SetPerMachineAppropriately(db, sourcePath);
 
                     // Ensure the MSI package is appropriately marked visible or not.
@@ -174,20 +172,6 @@ namespace WixToolset.Bind.Bundles
                 .Select(r => r.Name);
 
             return new HashSet<string>(properties, StringComparer.Ordinal);
-        }
-
-        /// <summary>
-        /// Verifies that only allowed properties are passed to the MSI.
-        /// </summary>
-        private void VerifyMsiProperties(ISet<string> existingMsiProperties)
-        {
-            foreach (string disallowed in new string[] { "ACTION", "ALLUSERS", "REBOOT", "REINSTALL", "REINSTALLMODE" })
-            {
-                if (existingMsiProperties.Contains(disallowed))
-                {
-                    Messaging.Instance.OnMessage(WixErrors.DisallowedMsiProperty(this.Facade.Package.SourceLineNumbers, disallowed));
-                }
-            }
         }
 
         private void SetPerMachineAppropriately(Dtf.Database db, string sourcePath)
