@@ -43,8 +43,9 @@ namespace WixToolset.UX
 
         public bool ProgressEnabled
         {
-            get { return this.root.InstallState == InstallationState.Applying; }
+            get { return this.root.InstallState == InstallationState.Applying || true; }
         }
+        
 
         public int Progress
         {

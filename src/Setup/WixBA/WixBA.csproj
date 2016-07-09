@@ -92,6 +92,11 @@
     <Reference Include="WindowsBase" />
     <ProjectReference Include="..\..\ext\BalExtension\mba\core\core.csproj" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\logo-white-hollow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\logo-black-hollow.png" />
+  </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

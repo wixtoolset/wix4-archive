@@ -27,5 +27,9 @@
     <System:Double x:Key="FontSizeButton">13</System:Double>
 
     <System:Double x:Key="FontSizeBranding">25</System:Double>
+    
+    <!-- Images -->
+    <BitmapImage x:Key="LogoOverLightBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-white-hollow.png" />
+    <BitmapImage x:Key="LogoOverDarkBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-black-hollow.png" />
 
 </ResourceDictionary>

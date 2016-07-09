@@ -12,23 +12,7 @@
     <!-- Converters -->
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
-    <StreamGeometry x:Key="CloseIcon" po:Freeze="True" >M0,0 L4,4 M0,4 L4,0</StreamGeometry>
-
-    <!-- Brushes -->
-    <!--
-    <LinearGradientBrush x:Key="GradientBackgroundBrush" EndPoint="1.015,0.735" StartPoint="0.098,0.223" po:Freeze="True">
-        <GradientStop Color="#88000000" Offset="0"/>
-        <GradientStop Color="#88452E2E" Offset="0.108"/>
-        <GradientStop Color="#88000000" Offset="0.228"/>
-        <GradientStop Color="#886A3C3C" Offset="0.414"/>
-        <GradientStop Color="#88000000" Offset="0.586"/>
-        <GradientStop Color="#885E4242" Offset="0.737"/>
-        <GradientStop Color="#88000000" Offset="0.948"/>
-    </LinearGradientBrush>
-    -->
-
     <!-- Control Templates -->
-
     <ControlTemplate x:Key="ButtonTemplateKey" TargetType="{x:Type Button}">
         <Grid Margin="3" x:Name="ButtonGrid">
             <Rectangle Fill="{TemplateBinding Button.Background}" />
@@ -71,7 +55,7 @@
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="RenderTransformOrigin" Value=".5,.5" />
     </Style>
-
+<!--
     <Style x:Key="StatusTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Segoe UI"/>
         <Setter Property="FontSize" Value="12"/>
@@ -86,7 +70,7 @@
         <Setter Property="Background" Value="#FFCB0000" />
         <Setter Property="Template" Value="{StaticResource ProgressBarTemplateKey}"/>
     </Style>
-
+-->
  
     <Style x:Key="ActionButtonStyle" TargetType="Button">
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
@@ -115,7 +99,7 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="ChromeButtonStyle" TargetType="Button">
+    <Style x:Key="ChromeButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
         <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MenuFontSizeKey}}"/>
         <Setter Property="Foreground" Value="{DynamicResource  {x:Static SystemColors.WindowTextBrushKey}}"/>
@@ -133,39 +117,149 @@
         </Style.Triggers>
     </Style>
 
-
-
-    <Style x:Key="CloseButton" TargetType="{x:Type Button}">
-        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
-        <Setter Property="Foreground" Value="{DynamicResource  {x:Static SystemColors.WindowTextBrushKey}}"/>
-        <!--<Setter Property="Background" Value="{StaticResource DarkLight}"/>-->
+    <Style x:Key="InfoButtonStyle" TargetType="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MenuFontSizeKey}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate>
-                    <ControlTemplate.Triggers>
-                        <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource HighContrastBackgroundBrush}"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
-                            <Setter Property="Background" Value="{DynamicResource ThemedBackgroundBrush}"/>
-                        </DataTrigger>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <ContentPresenter
+                  Margin="{TemplateBinding Control.Padding}"
+                  HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                  VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                  SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
+                  ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                  RecognizesAccessKey="True"
+                  Content="{TemplateBinding ContentControl.Content}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="IsHitTestVisible" Value="True" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
+                <Setter Property="Background" Value="{DynamicResource HighContrastBackgroundBrush}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
+                <Setter Property="Background" Value="{DynamicResource ThemedBackgroundBrush}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
 
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="Red"/>
-                            <!--<Setter Property="Background" Value="White"/>-->
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                    <Grid>
-                        <Ellipse Fill="{Binding Background, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}"/>
-                        <Path Data="{StaticResource CloseIcon}"  Stretch="Fill"
-                              Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}"
-                              />
+
+    <Style x:Key="LogoStyle" TargetType="Image" BasedOn="{StaticResource {x:Type Image}}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
+                <Setter Property="Source" Value="{DynamicResource LogoOverDarkBackground}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
+                <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="StatusTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMenu}"/>
+        <Setter Property="Margin" Value="8"/>
+        <Setter Property="Foreground" Value="{DynamicResource  {x:Static SystemColors.WindowTextBrushKey}}" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        <Setter Property="MinHeight" Value="60" />
+    </Style>
+
+    <Style x:Key="CheckingStatusProgressBarStyle" TargetType="ProgressBar">
+        <!-- Forground does not impact Indeterminant-->
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
+        <Setter Property="Background" Value="{DynamicResource ThemedBackgroundBrush}" />
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemedBackgroundBrush}"/>
+        <Setter Property="Height" Value="12" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid x:Name="Root">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Determinate"/>
+                                <VisualState x:Name="Indeterminate">
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="IndeterminateGradientFill" Storyboard.TargetProperty="(Shape.Fill).(LinearGradientBrush.Transform).(TransformGroup.Children)[0].X" Duration="00:00:.5" From="0" To="20" />
+                                        <ObjectAnimationUsingKeyFrames Duration="00:00:00" Storyboard.TargetName="IndeterminateRoot" Storyboard.TargetProperty="(UIElement.Visibility)">
+                                            <DiscreteObjectKeyFrame KeyTime="00:00:00">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Visible</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Duration="00:00:00" Storyboard.TargetName="DeterminateRoot" Storyboard.TargetProperty="(UIElement.Visibility)">
+                                            <DiscreteObjectKeyFrame KeyTime="00:00:00">
+                                                <DiscreteObjectKeyFrame.Value>
+                                                    <Visibility>Collapsed</Visibility>
+                                                </DiscreteObjectKeyFrame.Value>
+                                            </DiscreteObjectKeyFrame>
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <!--Default Root Visuals for either type of ProgressBar-->
+                        <Border Name="ProgressBarTrack" CornerRadius="2" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" >
+                            <Grid x:Name="ProgressBarRootGrid" Background="{TemplateBinding Background}">
+                                <!-- Beginning of Gradient over all visuals -->
+                                <Rectangle Canvas.ZIndex="1" x:Name="ProgressBarRootGradient" StrokeThickness="1" Margin="{TemplateBinding BorderThickness}" Stroke="{TemplateBinding Background}" RadiusX="2" RadiusY="2" >
+                                    <!-- Creates barber pole effect and sets the color. -->
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint=".7,0" EndPoint=".7,1">
+                                            <GradientStop Color="#B2FFFFFF" Offset="0" />
+                                            <GradientStop Color="#C6FFFFFF" Offset="0.15"/>
+                                            <GradientStop Color="#D1FFFFFF" Offset="0.275" />
+                                            <GradientStop Color="#C6FFFFFF" Offset="0.4"/>
+                                            <GradientStop Color="#B8FFFFFF" Offset="0.65" />
+                                            <GradientStop Color="#A5FFFFFF" Offset="0.75"/>
+                                            <GradientStop Color="#91FFFFFF" Offset="0.85"/>
+                                            <GradientStop Color="#72FFFFFF" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+
+                                <!-- Beginning of Indeterminate Progress Bar Visuals-->
+                                <Grid x:Name="IndeterminateRoot" Visibility="Collapsed" >
+                                    <Rectangle x:Name="IndeterminateSolidFill" Stroke="Wheat" RadiusX="2" RadiusY="2" StrokeThickness="0" Margin="{TemplateBinding BorderThickness}" Fill="{TemplateBinding Foreground}" Opacity="1" RenderTransformOrigin="0.5,0.5" Height="{TemplateBinding Height}" />
+                                    <Rectangle x:Name="IndeterminateGradientFill" RadiusX="2" RadiusY="2" StrokeThickness="1" Margin="{TemplateBinding BorderThickness}" Opacity="0.7" Height="{TemplateBinding Height}" >
+                                        <Rectangle.Fill>
+                                            <LinearGradientBrush SpreadMethod="Repeat" MappingMode="Absolute" EndPoint="0,1" StartPoint="20,1">
+                                                <LinearGradientBrush.Transform >
+                                                    <TransformGroup>
+                                                        <TranslateTransform X="0" />
+                                                        <SkewTransform AngleX="-30" />
+                                                    </TransformGroup>
+                                                </LinearGradientBrush.Transform>
+                                                <GradientStop Color="#FFFFFFFF" Offset="0"/>
+                                                <GradientStop Color="#00FFFFFF" Offset=".25"/>
+                                                <GradientStop Color="#FFFFFFFF" Offset="0.85"/>
+                                            </LinearGradientBrush>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Grid>
+                                <!-- Beginning of Determinate Progress Bar Visuals-->
+                                <Grid x:Name="DeterminateRoot" Margin="1" >
+                                    <!--Background -->
+                                    <Rectangle HorizontalAlignment="Left" x:Name="ProgressBarIndicator" Margin="{TemplateBinding BorderThickness}" StrokeThickness="0.5" RadiusX="1.5" RadiusY="1.5" Fill="{TemplateBinding Foreground}"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
-
 
 
 </ResourceDictionary>

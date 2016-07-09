@@ -219,7 +219,7 @@ namespace WixToolset.UX
             {
                 if (this.repairCommand == null)
                 {
-                    this.repairCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.Repair), param => true || this.root.DetectState == DetectionState.Present && this.root.InstallState == InstallationState.Waiting);
+                    this.repairCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.Repair), param => this.root.DetectState == DetectionState.Present && this.root.InstallState == InstallationState.Waiting);
                 }
 
                 return this.repairCommand;
@@ -242,7 +242,7 @@ namespace WixToolset.UX
             {
                 if (this.uninstallCommand == null)
                 {
-                    this.uninstallCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.Uninstall), param => true || this.root.DetectState == DetectionState.Present && this.root.InstallState == InstallationState.Waiting);
+                    this.uninstallCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.Uninstall), param => this.root.DetectState == DetectionState.Present && this.root.InstallState == InstallationState.Waiting);
                 }
 
                 return this.uninstallCommand;
