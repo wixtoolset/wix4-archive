@@ -254,6 +254,33 @@ namespace WixToolset.UX
             get { return this.UninstallCommand.CanExecute(this); }
         }
 
+        private ICommand openLogCommand;
+        public ICommand OpenLogCommand
+        {
+            get
+            {
+                if (this.openLogCommand == null)
+                {
+                    this.openLogCommand = new RelayCommand(param => WixBA.OpenLog(new Uri(WixBA.Model.Engine.StringVariables["WixBundleLog"])), param => true);
+                }
+                return this.openLogCommand;
+            }
+        }
+
+        private ICommand openLogFolderCommand;
+        public ICommand OpenLogFolderCommand
+        {
+            get
+            {
+                if (this.openLogFolderCommand == null)
+                {
+                    string logFolder = IO.Path.GetDirectoryName(WixBA.Model.Engine.StringVariables["WixBundleLog"]);
+                    this.openLogFolderCommand = new RelayCommand(param => WixBA.OpenLogFolder(logFolder), param => true);
+                }
+                return this.openLogFolderCommand;
+            }
+        }
+
         public ICommand TryAgainCommand
         {
             get

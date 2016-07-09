@@ -63,6 +63,65 @@ namespace WixToolset.UX
         }
 
         /// <summary>
+        /// Open a log file.
+        /// </summary>
+        /// <param name="uri">URI to a log file.</param>
+        internal static void OpenLog(Uri uri)
+        {
+            // Switch the wait cursor since shellexec can take a second or so.
+            System.Windows.Input.Cursor cursor = WixBA.View.Cursor;
+            WixBA.View.Cursor = System.Windows.Input.Cursors.Wait;
+            Process process = null;
+            try
+            {
+                process = new Process();
+                process.StartInfo.FileName = uri.ToString();
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.Verb = "open";
+
+                process.Start();
+            }
+            finally
+            {
+                if (null != process)
+                {
+                    process.Dispose();
+                }
+                // back to the original cursor.
+                WixBA.View.Cursor = cursor;
+            }
+        }
+        /// <summary>
+        /// Open a log folder.
+        /// </summary>
+        /// <param name="uri">path to a log folder.</param>
+        internal static void OpenLogFolder(string logFolder)
+        {
+            // Switch the wait cursor since shellexec can take a second or so.
+            System.Windows.Input.Cursor cursor = WixBA.View.Cursor;
+            WixBA.View.Cursor = System.Windows.Input.Cursors.Wait;
+            Process process = null;
+            try
+            {
+                process = new Process();
+                process.StartInfo.FileName = logFolder;
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.Verb = "open";
+
+                process.Start();
+            }
+            finally
+            {
+                if (null != process)
+                {
+                    process.Dispose();
+                }
+                // back to the original cursor.
+                WixBA.View.Cursor = cursor;
+            }
+        }
+
+        /// <summary>
         /// Starts planning the appropriate action.
         /// </summary>
         /// <param name="action">Action to plan.</param>
