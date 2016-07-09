@@ -1,5 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
+// WixBAFacelift TODO list:
+// Compile against NetFx452 (supported).  Moved to Net45 to check out using WindowChrome, then backed out Chrome.  check with wix-devs, then update Bundle when framework consenuse exist.
 namespace WixToolset.UX
 {
     using System;

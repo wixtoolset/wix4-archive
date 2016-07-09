@@ -10,116 +10,190 @@
     WindowStyle="None"
     AllowsTransparency="True"
     Background="{x:Null}"
-    Width="400"
-    Height="400">
+    SizeToContent="WidthAndHeight"
+    MinWidth="600"
+    MinHeight="400"
+    >
 
     <Window.Resources>
-        <ResourceDictionary Source="Styles.xaml"/>
+        <!--<ResourceDictionary Source="Styles.xaml"/>-->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/WixBA;component/Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/WixBA;component/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
 
-    <Grid>
-        <Rectangle MouseLeftButtonDown="Background_MouseLeftButtonDown" Fill="{StaticResource BackgroundBrush}"/>
-        <Grid VerticalAlignment="Stretch" Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="1*"/>
-                <RowDefinition Height="1*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
+    <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1" >
+    <!-- A container with an invisable boarder, but rounded corners, and catch MouseLeftButtonDown for Window dragging.-->
+    <Border MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+        <Border.Style>
+            <Style>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
+                        <Setter Property="Border.Background" Value="{DynamicResource HighContrastBackgroundBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
+                        <Setter Property="Border.Background" Value="{DynamicResource ThemedBackgroundBrush}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+            <!-- If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException.-->
+            <StackPanel x:Name="AppArtBoardArea" MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" MouseDown="RootView_IgnoreClick" MouseUp="RootView_IgnoreClick" >
 
-            <!-- Title -->
-            <Button Grid.Row="0" Grid.ColumnSpan="2" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding LaunchHomePageCommand}"/>
-            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource StatusTextStyle}" DataContext="{Binding InstallationViewModel}">WiX Toolset</TextBlock>
-            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource StatusTextStyle}" HorizontalAlignment="Right" DataContext="{Binding InstallationViewModel}" Text="{Binding Version}"/>
-            <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="60" Foreground="White" IsHitTestVisible="False">WiX</TextBlock>
+                <!-- DEV note: Could use Chrome class in system.Window.Shell but that approach requires NetFx45 and Areo on Win8 or later.-->
+                <Grid x:Name="WindowChromeArea" HorizontalAlignment="Stretch" Margin="2,1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" MinHeight="10" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="100" />
+                        <ColumnDefinition Width="auto" MinWidth="5" />
+                        <ColumnDefinition Width="auto" MinWidth="5" />
+                        <ColumnDefinition Width="auto" MinWidth="5" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel x:Name="ChromeExitArea" Grid.Row="0" Grid.Column="3" >
+                        <StackPanel x:Name="ExitBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}" >
+                            <Button x:Name="ExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Press to Exit." VerticalAlignment="Center" HorizontalAlignment="Center" Content="X" Style="{DynamicResource ChromeButtonStyle}" >
+                            </Button>
+                        </StackPanel>
+                        <StackPanel x:Name="CancelBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding}">
+                            <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="X" Style="{DynamicResource ChromeButtonStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
 
-            <!-- License -->
-            <Button Grid.Row="0" Grid.Column="2" DataContext="{Binding InstallationViewModel}" Command="{Binding LicenseCommand}">License</Button>
-            <Image Grid.Row="0" Grid.Column="2" Source="resources\legal.png"/>
+                <Grid x:Name="WindowFooterAreaGrid" HorizontalAlignment="Stretch" Margin="2,1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" MinHeight="10" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="100" />
+                        <ColumnDefinition Width="auto" MinWidth="5" />
+                        <ColumnDefinition Width="auto" MinWidth="5" />
+                        <ColumnDefinition Width="auto" MinWidth="5" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel x:Name="WindowFooterAreaStkPnl" Grid.Row="0" Grid.Column="3" Orientation="Horizontal" >
 
-            <!-- Install -->
-            <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding InstallCommand}" Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Install</Button>
-            <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <StackPanel x:Name="UninstallBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
+                            <Button Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall Button" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
+                        </StackPanel>
+                        <StackPanel x:Name="RepairBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
+                            <Button x:Name="RepairButton" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding RepairCommand}" AutomationProperties.Name="Repair Button}" AutomationProperties.HelpText="Click to Repair" Content="Repair" Style="{DynamicResource ActionButtonStyle}"/>
+                        </StackPanel>
+                        <StackPanel x:Name="InstallBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
+                            <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="Install" Style="{DynamicResource ActionButtonStyle}" HorizontalContentAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+                <!-- Using DataContext Binding Islands. -->
+                <StackPanel x:Name="AppWorkArea" Margin="20,25,10,10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Orientation="Vertical">
 
-            <!-- Repair -->
-            <Button Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding RepairCommand}" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Repair</Button>
-            <Image Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Source="resources\wrench.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-            <!-- Uninstall -->
-            <Button Grid.Row="1" Grid.Column="0" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding UninstallCommand}" Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Uninstall</Button>
-            <Image Grid.Row="1" Grid.Column="0" Source="resources\gear.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    
+                    
+                        <StackPanel x:Name="ActionProgressDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="15,0">
+                            <ProgressBar x:Name="ActionProgress" DataContext="{Binding ProgressViewModel}" Value="{Binding Progress}" VerticalAlignment="Center" Height="20" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380"/>
+                        </StackPanel>
 
-            <!-- Complete -->
-            <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" DataContext="{Binding InstallationViewModel}" IsEnabled="False" Visibility="{Binding CompleteEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Complete</Button>
-            <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding CompleteEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <Grid>
+                        <Grid VerticalAlignment="Stretch" Margin="20">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*"/>
+                                <RowDefinition Height="1*"/>
+                                <RowDefinition Height="1*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
 
-            <!-- Failed -->
-            <Button Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding TryAgainCommand}" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Failed. Try Again?</Button>
-            <TextBlock Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="60" Foreground="White" IsHitTestVisible="False" DataContext="{Binding InstallationViewModel}"  Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">X</TextBlock>
 
-            <!-- Progress -->
-            <ProgressBar Grid.Row="1" Grid.ColumnSpan="3" Margin="3" DataContext="{Binding ProgressViewModel}" Value="{Binding Path=Progress}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-            <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
-                <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Package}"/>
-                <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}"/>
+                            <Button x:Name="TitleBtn" Grid.Row="0" Grid.ColumnSpan="2" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding LaunchHomePageCommand}"/>
+                            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource StatusTextStyle}" DataContext="{Binding InstallationViewModel}">WiX Toolset</TextBlock>
+                            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource StatusTextStyle}" HorizontalAlignment="Right" DataContext="{Binding InstallationViewModel}" Text="{Binding Version}"/>
+                            <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="60" Foreground="White" IsHitTestVisible="False">WiX</TextBlock>
+
+                            <Button x:Name="LicenseBtn" Grid.Row="0" Grid.Column="2" DataContext="{Binding InstallationViewModel}" Command="{Binding LicenseCommand}">License</Button>
+                            <Image Grid.Row="0" Grid.Column="2" Source="resources\legal.png"/>
+
+                            <Button x:Name="InstallBtn" Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding InstallCommand}" Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Install</Button>
+                            <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                            <Button x:Name="RepairBtn" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding RepairCommand}" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Repair</Button>
+                            <Image Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Source="resources\wrench.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                            <Button x:Name="UninstallBtn" Grid.Row="1" Grid.Column="0" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding UninstallCommand}" Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Uninstall</Button>
+                            <Image Grid.Row="1" Grid.Column="0" Source="resources\gear.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                            <Button x:Name="CompleteBtn" Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" DataContext="{Binding InstallationViewModel}" IsEnabled="False" Visibility="{Binding CompleteEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Complete</Button>
+                            <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding CompleteEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                            <Button x:Name="FailedBtn" Grid.Row="1" Grid.ColumnSpan="3" Grid.Column="0" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Command="{Binding TryAgainCommand}" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Failed. Try Again?</Button>
+                            <TextBlock Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="60" Foreground="White" IsHitTestVisible="False" DataContext="{Binding InstallationViewModel}"  Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">X</TextBlock>
+
+                            <ProgressBar x:Name="ProgressBar" Grid.Row="1" Grid.ColumnSpan="3" Margin="3" DataContext="{Binding ProgressViewModel}" Value="{Binding Path=Progress}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <StackPanel Grid.Row="1" Grid.ColumnSpan="3">
+                                <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Package}"/>
+                                <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}"/>
+                            </StackPanel>
+                            <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Image.RenderTransform>
+                                    <RotateTransform x:Name="ProgressRotateTransform" Angle="1"/>
+                                </Image.RenderTransform>
+                                <Image.Triggers>
+                                    <EventTrigger RoutedEvent="Image.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ProgressRotateTransform" Storyboard.TargetProperty="Angle" From="0.0" To="360.0" Duration="0:0:4" RepeatBehavior="Forever"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Image.Triggers>
+                            </Image>
+
+                            <Button x:Name="CheckingForUpdateBtn" Grid.Row="2" Grid.Column="0" IsEnabled="False" DataContext="{Binding UpdateViewModel}" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Checking for Updates</Button>
+                            <Image Grid.Row="2" Grid.Column="0" Source="resources\gear.png" DataContext="{Binding UpdateViewModel}" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Image.RenderTransform>
+                                    <RotateTransform x:Name="UpdateRotateTransform" Angle="1"/>
+                                </Image.RenderTransform>
+                                <Image.Triggers>
+                                    <EventTrigger RoutedEvent="Image.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="UpdateRotateTransform" Storyboard.TargetProperty="Angle" From="0.0" To="360.0" Duration="0:0:4" RepeatBehavior="Forever"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Image.Triggers>
+                            </Image>
+
+                            <Button x:Name="UpToDateBtn" Grid.Row="2" Grid.Column="0" DataContext="{Binding UpdateViewModel}" IsEnabled="False" Visibility="{Binding IsUpToDate, Converter={StaticResource BooleanToVisibilityConverter}}">Up To Date</Button>
+                            <Image Grid.Row="2" Grid.Column="0" DataContext="{Binding UpdateViewModel}" Visibility="{Binding IsUpToDate, Converter={StaticResource BooleanToVisibilityConverter}}" Source="resources\wrench.png"/>
+
+                            <Button x:Name="UpdateAvailableBtn" Grid.Row="2" Grid.Column="0" DataContext="{Binding UpdateViewModel}" Command="{Binding UpdateCommand}" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Update Available</Button>
+                            <Image Grid.Row="2" Grid.Column="0" Source="resources\wrench.png" DataContext="{Binding UpdateViewModel}" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                            <Button x:Name="NewsBtn" Grid.Row="2" Grid.Column="1" DataContext="{Binding InstallationViewModel}" Command="{Binding LaunchNewsCommand}" Background="#FFCB0000">News</Button>
+                            <Image Grid.Row="3" Grid.Column="1" Source="resources\news.png"/>
+<!--
+                            <Button x:Name="ExitBtn" Grid.Row="2" Grid.Column="2" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}">Exit</Button>
+                            <Image Grid.Row="2" Grid.Column="2" Source="resources\exit.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                            <Button x:Name="CancelBtn" Grid.Row="2" Grid.Column="2" Background="#FFCB0000" DataContext="{Binding}" Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}">Cancel</Button>
+                            <TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="60" Foreground="White" IsHitTestVisible="False" DataContext="{Binding}"  Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">X</TextBlock>
+                            -->
+
+                        </Grid>
+
+                    </Grid>
+
+
+                </StackPanel>
             </StackPanel>
-            <Image Grid.Row="1" Grid.Column="2" Source="resources\gear.png" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Image.RenderTransform>
-                    <RotateTransform x:Name="ProgressRotateTransform" Angle="1"/>
-                </Image.RenderTransform>
-                <Image.Triggers>
-                    <EventTrigger RoutedEvent="Image.Loaded">
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="ProgressRotateTransform" Storyboard.TargetProperty="Angle" From="0.0" To="360.0" Duration="0:0:4" RepeatBehavior="Forever"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Image.Triggers>
-            </Image>
-
-            <!-- Checking for Update-->
-            <Button Grid.Row="2" Grid.Column="0" IsEnabled="False" DataContext="{Binding UpdateViewModel}" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Checking for Updates</Button>
-            <Image Grid.Row="2" Grid.Column="0" Source="resources\gear.png" DataContext="{Binding UpdateViewModel}" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Image.RenderTransform>
-                    <RotateTransform x:Name="UpdateRotateTransform" Angle="1"/>
-                </Image.RenderTransform>
-                <Image.Triggers>
-                    <EventTrigger RoutedEvent="Image.Loaded">
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="UpdateRotateTransform" Storyboard.TargetProperty="Angle" From="0.0" To="360.0" Duration="0:0:4" RepeatBehavior="Forever"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Image.Triggers>
-            </Image>
-
-            <!-- Up To Date -->
-            <Button Grid.Row="2" Grid.Column="0" DataContext="{Binding UpdateViewModel}" IsEnabled="False" Visibility="{Binding IsUpToDate, Converter={StaticResource BooleanToVisibilityConverter}}">Up To Date</Button>
-            <Image Grid.Row="2" Grid.Column="0" DataContext="{Binding UpdateViewModel}" Visibility="{Binding IsUpToDate, Converter={StaticResource BooleanToVisibilityConverter}}" Source="resources\wrench.png"/>
-
-            <!-- Update Available -->
-            <Button Grid.Row="2" Grid.Column="0" DataContext="{Binding UpdateViewModel}" Command="{Binding UpdateCommand}" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">Update Available</Button>
-            <Image Grid.Row="2" Grid.Column="0" Source="resources\wrench.png" DataContext="{Binding UpdateViewModel}" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-
-            <!-- News -->
-            <Button Grid.Row="2" Grid.Column="1" DataContext="{Binding InstallationViewModel}" Command="{Binding LaunchNewsCommand}" Background="#FFCB0000">News</Button>
-            <Image Grid.Row="3" Grid.Column="1" Source="resources\news.png"/>
-
-            <!-- Exit -->
-            <Button Grid.Row="2" Grid.Column="2" Background="#FFCB0000" DataContext="{Binding InstallationViewModel}" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}">Exit</Button>
-            <Image Grid.Row="2" Grid.Column="2" Source="resources\exit.png" DataContext="{Binding InstallationViewModel}" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
-
-            <!-- Cancel -->
-            <Button Grid.Row="2" Grid.Column="2" Background="#FFCB0000" DataContext="{Binding}" Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}">Cancel</Button>
-            <TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="60" Foreground="White" IsHitTestVisible="False" DataContext="{Binding}"  Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">X</TextBlock>
-
-        </Grid>
-
-    </Grid>
+        </Border>
+    </Border>
 </Window>

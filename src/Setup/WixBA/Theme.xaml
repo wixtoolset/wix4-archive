@@ -1,0 +1,31 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:col="clr-namespace:System.Collections;assembly=mscorlib"
+    xmlns:System="clr-namespace:System;assembly=mscorlib"
+    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Note:  Synchronize changes with HighContrastThemes.xaml. -->
+
+    <FontFamily x:Key="FontFamily">Segoe UI, Arial</FontFamily>
+    <FontFamily x:Key="FontFamilyLight">Segoe UI Light, Segoe UI, Arial</FontFamily>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="InputBorder" Color="{DynamicResource {x:Static SystemColors.MenuBarColorKey}}" po:Freeze="True"/>
+
+    <!--<SolidColorBrush x:Key="ThemedButtonBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}" po:Freeze="True" />-->
+    <SolidColorBrush x:Key="ThemedButtonForgoundBrush" Color="White" po:Freeze="True" />
+    <SolidColorBrush x:Key="ThemedButtonBackgroundBrush" Color="#FF1DA5B8" po:Freeze="True" />
+    <SolidColorBrush x:Key="ThemedBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" po:Freeze="True" />
+    <SolidColorBrush x:Key="HighContrastForegroundBrush" Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrush}}" po:Freeze="True" />
+    <SolidColorBrush x:Key="HighContrastBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.DesktopColorKey}}" po:Freeze="True" />
+    <SolidColorBrush x:Key="HighContrastButtonBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColor}}" po:Freeze="True" />
+    <SolidColorBrush x:Key="ProgressIndicatorsBrush" Color="#FF1EF1E8" po:Freeze="True" />
+
+    <!-- Font Sizes -->
+    <System:Double x:Key="FontSizeMedium">12</System:Double>
+    <System:Double x:Key="FontSizeButton">13</System:Double>
+
+    <System:Double x:Key="FontSizeBranding">25</System:Double>
+
+</ResourceDictionary>

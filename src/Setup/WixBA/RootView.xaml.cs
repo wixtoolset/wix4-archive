@@ -37,5 +37,16 @@ namespace WixToolset.UX
         {
             this.DragMove();
         }
+ 
+        /// <summary>
+        /// If user clicks on a no-input control (i.e. a TextBlock, etc.) route event to here to avoid  InvalidOperationException
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RootView_IgnoreClick(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
     }
 }
