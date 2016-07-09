@@ -36,42 +36,7 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <ControlTemplate x:Key="ProgressBarTemplateKey" TargetType="{x:Type ProgressBar}">
-        <Grid Name="TemplateRoot" SnapsToDevicePixels="true">
-            <Rectangle Fill="{TemplateBinding Background}" />
-            <Rectangle Name="PART_Track" />
-            <Decorator x:Name="PART_Indicator" HorizontalAlignment="Left">
-                <Grid Name="Foreground">
-                    <Rectangle x:Name="Indicator" Fill="{TemplateBinding Foreground}"/>
-                </Grid>
-            </Decorator>
-        </Grid>
-    </ControlTemplate>
-
     <!-- Styles -->
-    <Style TargetType="Image">
-        <Setter Property="Height" Value="60"/>
-        <Setter Property="Width" Value="60"/>
-        <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="RenderTransformOrigin" Value=".5,.5" />
-    </Style>
-<!--
-    <Style x:Key="StatusTextStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Segoe UI"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Margin" Value="8"/>
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="VerticalAlignment" Value="Bottom" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
-    </Style>
-
-    <Style TargetType="ProgressBar">
-        <Setter Property="Foreground" Value="DarkRed" />
-        <Setter Property="Background" Value="#FFCB0000" />
-        <Setter Property="Template" Value="{StaticResource ProgressBarTemplateKey}"/>
-    </Style>
--->
- 
     <Style x:Key="ActionButtonStyle" TargetType="Button">
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
         <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MenuFontSizeKey}}"/>
@@ -150,8 +115,11 @@
         </Style.Triggers>
     </Style>
 
-
-    <Style x:Key="LogoStyle" TargetType="Image" BasedOn="{StaticResource {x:Type Image}}">
+    <Style x:Key="LogoStyle" TargetType="Image" >
+        <Setter Property="Height" Value="55"/>
+        <Setter Property="Width" Value="55"/>
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="RenderTransformOrigin" Value=".5,.5" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
                 <Setter Property="Source" Value="{DynamicResource LogoOverDarkBackground}"/>
@@ -161,6 +129,7 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
+    
     <Style x:Key="StatusTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeMenu}"/>
@@ -173,7 +142,6 @@
     </Style>
 
     <Style x:Key="CheckingStatusProgressBarStyle" TargetType="ProgressBar">
-        <!-- Forground does not impact Indeterminant-->
         <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
         <Setter Property="Background" Value="{DynamicResource ThemedBackgroundBrush}" />
         <Setter Property="BorderThickness" Value="0"/>

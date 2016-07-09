@@ -72,13 +72,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\exit.png" />
-    <Resource Include="Resources\gear.png" />
-    <Resource Include="Resources\legal.png" />
-    <Resource Include="Resources\news.png" />
-    <Resource Include="Resources\wrench.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />

@@ -11,8 +11,8 @@
     AllowsTransparency="True"
     Background="{x:Null}"
     SizeToContent="WidthAndHeight"
-    MinWidth="500"
-    MinHeight="300"
+    MinWidth="520"
+    MinHeight="325"
     >
 
     <Window.Resources>
@@ -53,7 +53,7 @@
                         <ColumnDefinition Width="auto" MinWidth="5" />
                         <ColumnDefinition Width="auto" MinWidth="5" />
                     </Grid.ColumnDefinitions>
-                    <!-- wix-devs: Do we need window resizing, min and max in Chrome as in the example Contos screen shot, or leave out?  Not implemented yet. -->
+                    <!-- wix-devs: Do we need window resizing, min and max in Chrome as in the example Contos screen shot, or leave out?  Not implemented yet. Also if we allow resizing then we need to handle the X in the Chrome differently (also if we localize and allow a different codepage)-->
                     <StackPanel x:Name="ChromeExitArea" Grid.Row="0" Grid.Column="3" >
                         <StackPanel x:Name="ChromeExitBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}" >
                             <Button x:Name="ChromeExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Press to Exit." VerticalAlignment="Center" HorizontalAlignment="Center" Content="X" Style="{DynamicResource ChromeButtonStyle}" >
@@ -142,8 +142,12 @@
                 </StackPanel>
                 
                 <StackPanel x:Name="OrgLogoStkPnl" MinWidth="150" Margin="0,0,20,0" HorizontalAlignment="Stretch" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}">
-                    <Image Style="{DynamicResource LogoStyle}" />
-                    <ContentPresenter Content="WiX Toolset" TextBlock.FontFamily="{DynamicResource FontFamily}" TextBlock.FontSize="{DynamicResource ResourceKey=FontSizeBranding}" TextBlock.FontWeight="Bold" TextBlock.Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,2,20,5" />
+                    <Image Style="{DynamicResource LogoStyle}" >
+                        <Image.RenderTransform>
+                            <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                        </Image.RenderTransform>
+                    </Image>
+                    <ContentPresenter Content="WiX Toolset" TextBlock.FontFamily="{DynamicResource CambriaFontFamily}" TextBlock.FontSize="{DynamicResource ResourceKey=FontSizeBranding}" TextBlock.FontWeight="Bold" TextBlock.Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,20,5" />
                 </StackPanel>
 
                 <StackPanel Margin="20,10,5,5" HorizontalAlignment="Stretch" DockPanel.Dock="Left">
