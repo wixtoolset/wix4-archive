@@ -134,8 +134,11 @@
                             <StackPanel x:Name="InstallBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
                                 <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="Install" Style="{DynamicResource ActionButtonStyle}" HorizontalContentAlignment="Center"/>
                             </StackPanel>
-                            <StackPanel x:Name="_TryAgainDcIsland" Margin="0,2,0,0" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}">
+                            <StackPanel x:Name="TryAgainBtnDcIsland" Margin="0,2,0,0" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}">
                                 <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again Button" AutomationProperties.HelpText="Click to try again" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
+                            </StackPanel>
+                            <StackPanel x:Name="UpdateBtnDcIsland" Margin="0,2,0,0" HorizontalAlignment="Center" DataContext="{Binding UpdateViewModel}">
+                                <Button Command="{Binding UpdateCommand}" AutomationProperties.Name="Update Button" AutomationProperties.HelpText="An update is availalbe. Click to get the update" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Update Available" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
                         </StackPanel>
                     </Grid>
