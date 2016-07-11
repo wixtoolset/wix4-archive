@@ -13549,6 +13549,8 @@ namespace WixToolset
             string requiredPrivileges = null;
             string sid = null;
 
+            this.core.OnMessage(WixWarnings.ServiceConfigFamilyNotSupported(sourceLineNumbers, node.Name.LocalName));
+
             foreach (XAttribute attrib in node.Attributes())
             {
                 if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
@@ -13890,6 +13892,8 @@ namespace WixToolset
             string command = null;
             string actions = null;
             string actionsDelays = null;
+
+            this.core.OnMessage(WixWarnings.ServiceConfigFamilyNotSupported(sourceLineNumbers, node.Name.LocalName));
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -20185,7 +20189,7 @@ namespace WixToolset
                     switch (attrib.Name.LocalName)
                     {
                         case "Name":
-                            name = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            name = this.core.GetAttributeMsiPropertyNameValue(sourceLineNumbers, attrib);
                             break;
                         case "Value":
                             value = this.core.GetAttributeValue(sourceLineNumbers, attrib);

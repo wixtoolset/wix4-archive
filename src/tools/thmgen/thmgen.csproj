@@ -58,5 +58,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Templates\Controls.h" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\ControlsFunctions.cpp" />
+  </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

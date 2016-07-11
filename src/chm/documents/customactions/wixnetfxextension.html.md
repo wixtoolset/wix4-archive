@@ -77,6 +77,16 @@ The following properties (available starting in WiX v3.10) let you detect a part
       <p>Set to 1 if .NET Framework 4.6 or later is installed.</p>
     </td>
   </tr>
+
+  <tr>
+    <td valign="top">
+      <p>WIX_IS_NETFRAMEWORK_461_OR_LATER_INSTALLED</p>
+    </td>
+
+    <td>
+      <p>Set to 1 if .NET Framework 4.6.1 or later is installed.</p>
+    </td>
+  </tr>
 </table>
 
 The following property is applicable to all versions of the .NET Framework:

@@ -2808,8 +2808,9 @@
       </Message>
       <Message Id="DisallowedMsiProperty" Number="365">
         <Instance>
-          The '{0}' MsiProperty is controlled by the bootstrapper and cannot be authored. Remove the MsiProperty element.
+          The '{0}' MsiProperty is controlled by the bootstrapper and cannot be authored. (Illegal properties are: {1}.) Remove the MsiProperty element.
           <Parameter Type="System.String" Name="property" />
+          <Parameter Type="System.String" Name="illegalValueList" />
         </Instance>
       </Message>
       <Message Id="MissingOrInvalidModuleInstallerVersion" Number="366">
@@ -2964,6 +2965,14 @@
         <Instance>
           The file name '{0}' creates an insecure bundle. Windows will load unnecessary compatibility shims into a bundle with that file name. These compatibility shims can be DLL hijacked allowing attackers to compromise your customers' computer. Choose a different bundle file name.
           <Parameter Type="System.String" Name="filename" />
+        </Instance>
+      </Message>
+      <Message Id="PayloadMustBeRelativeToCache" Number="389">
+        <Instance>
+          The {0}/@{1} attribute's value, '{2}', is not a legal path name: Payload names must be relative to their cache directory and cannot contain '..'.
+          <Parameter Type="System.String" Name="elementName" />
+          <Parameter Type="System.String" Name="attributeName" />
+          <Parameter Type="System.String" Name="attributeValue" />
         </Instance>
       </Message>
     </Class>
@@ -3786,6 +3795,12 @@
                 <Parameter Type="System.String" Name="originalVersion" />
                 <Parameter Type="System.String" Name="package" />
                 <Parameter Type="System.String" Name="truncatedVersion" />
+            </Instance>
+        </Message>
+        <Message Id="ServiceConfigFamilyNotSupported" Number="1149">
+            <Instance>
+                {0} functionality is documented in the Windows Installer SDK to "not [work] as expected." Consider replacing {0} with the WixUtilExtension ServiceConfig element.
+                <Parameter Type="System.String" Name="elementName" />
             </Instance>
         </Message>
     </Class>

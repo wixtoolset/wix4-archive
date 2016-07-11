@@ -1,3 +1,20 @@
+## WixBuild: Version 4.0.4305.0
+
++* @barnson: WIXBUG:5306: Warn against ServiceConfig and ServiceConfigFailureActions.
+
+* @barnson: Fix WIXBUG:5294 - Move MsiProperty check from 
+  ProcessMsiPackageCommand to the compiler for the earliest feedback.
+
+* @barnson: Prevent bad use of ".." in payload names. Fixes wixtoolset/issues#4265.
+
+* FabienL: WIXBUG:4976 - Add support for .net framework 4.6.1 in netfxExtension
+
+* SeanHall: WIXBUG:4810 - Fix bug where mbapreq tried to do something other than HELP or INSTALL.
+
+* SeanHall: WIXBUG:5234 - Make Burn grab a file handle to the original bundle so it can still access compressed payloads even if the original bundle was deleted after initialization (e.g. when a bundle uses Burn's built-in update mechanism). Also, when launching the clean room Burn process, pass a file handle of the original exe to the process on the command line. Use this file handle when using the attached container.
+
+* SeanHall: WIXBUG:5238 - Get the engine's file handle as soon as possible.  Also, when launching Burn processes, pass a file handle of the exe to the process on the command line.
+
 ## WixBuild: Version 4.0.3922.0
 
 * SeanHall: WIXFEAT:4951 - Make the BAFunctions interface binary, make WixStdBA forward all BA messages to BAFunctions, and give BAFunctions access to the theme and localization.
