@@ -5,6 +5,7 @@
 <Window x:Class="WixToolset.UX.RootView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
     xmlns:ux="clr-namespace:WixToolset.UX"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None"
@@ -23,6 +24,10 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
+  
+    <i:Interaction.Behaviors>
+        <ux:WinNoSnapBehavior/>
+    </i:Interaction.Behaviors>
 
     <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="1" >
     <!-- Define background and catch MouseLeftButtonDown for Window dragging.-->
