@@ -340,6 +340,7 @@ extern "C" UINT __stdcall SchedSecureObjects(
 
     DWORD cObjects = 0;
     eOBJECTTYPE eType = OT_UNKNOWN;
+    DWORD dwAttributes = 0;
 
     //
     // initialize
@@ -427,7 +428,6 @@ extern "C" UINT __stdcall SchedSecureObjects(
             hr = WcaWriteStringToCaData(pwzData, &pwzCustomActionData);
             ExitOnFailure(hr, "failed to add data to CustomActionData");
 
-            DWORD dwAttributes = 0;
             hr = WcaGetRecordInteger(hRec, QSO_ATTRIBUTES, reinterpret_cast<int*>(&dwAttributes));
             ExitOnFailure(hr, "failed to get attributes to configure object");
             hr = WcaWriteIntegerToCaData(dwAttributes, &pwzCustomActionData);
