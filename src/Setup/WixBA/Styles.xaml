@@ -14,11 +14,13 @@
 
     <!-- Control Templates -->
     <ControlTemplate x:Key="ButtonTemplateKey" TargetType="{x:Type Button}">
-        <Grid Margin="3" x:Name="ButtonGrid">
-            <Rectangle Fill="{TemplateBinding Button.Background}" />
-            <Rectangle x:Name="HighlightRectangle" Fill="#44FFFFFF" Visibility="Hidden" IsHitTestVisible="False"/>
-            <ContentPresenter VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="5" Content="{TemplateBinding Button.Content}" />
-        </Grid>
+        <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" >
+            <Grid Margin="3" x:Name="ButtonGrid">
+                <Rectangle Fill="{TemplateBinding Button.Background}" />
+                <Rectangle x:Name="HighlightRectangle" Fill="#44FFFFFF" Visibility="Hidden" IsHitTestVisible="False"/>
+                <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="5" Content="{TemplateBinding Button.Content}" RecognizesAccessKey="True" />
+            </Grid>
+        </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsPressed" Value="True">
                 <Setter TargetName="ButtonGrid" Property="RenderTransform">
@@ -37,12 +39,40 @@
     </ControlTemplate>
 
     <!-- Styles -->
+    <Style x:Key="ActionBtnStkPnlStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,2,0,0" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    
+    <Style x:Key="BrandStkPnlStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,20,0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="MinWidth" Value="150" />
+        <Setter Property="DockPanel.Dock" Value="Right" />
+        <Setter Property="DataContext" Value="{Binding InstallationViewModel}" />
+    </Style>
+
+    <Style x:Key="OrgTitleContPresStyle" TargetType="ContentPresenter">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextBlock.FontSize" Value="{DynamicResource ResourceKey=FontSizeBranding}" />
+        <Setter Property="TextBlock.FontWeight" Value="ExtraBold" />
+        <Setter Property="TextBlock.Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
+        <Setter Property="TextBlock.FontFamily" Value="{DynamicResource CambriaFontFamily}" />
+        <Setter Property="TextBlock.HorizontalAlignment" Value="Center" />
+
+    </Style>
+    
     <Style x:Key="ActionButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="{DynamicResource ThemedButtonBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
         <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MenuFontSizeKey}}"/>
-        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="MinHeight" Value="35"/>
         <Setter Property="MinWidth" Value="100" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template" Value="{StaticResource ButtonTemplateKey}"/>
         <Setter Property="IsHitTestVisible" Value="True" />
         <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -52,9 +82,9 @@
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
                 <Setter Property="Foreground" Value="{DynamicResource  {x:Static SystemColors.WindowTextBrushKey}}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
-                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                <Setter Property="Background" Value="{DynamicResource HighContrastBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+                <Setter Property="BorderThickness" Value="1" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -90,12 +120,10 @@
         <Setter Property="Width" Value="55"/>
         <Setter Property="IsHitTestVisible" Value="False" />
         <Setter Property="RenderTransformOrigin" Value=".5,.5" />
+        <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
                 <Setter Property="Source" Value="{DynamicResource LogoOverDarkBackground}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
-                <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>

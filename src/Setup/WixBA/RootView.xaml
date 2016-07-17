@@ -98,45 +98,49 @@
                         </StackPanel>
 
                         <StackPanel x:Name="ActionStkPnl" Grid.Row="0" Grid.Column="3" Orientation="Horizontal" >
-                            <!-- wix-devs: Do we need this Cancel button - or should we just have the X in the Chrome? -->
-                            <StackPanel x:Name="FooterCancelBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding}">
+                            <StackPanel x:Name="FooterCancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
                             <!-- wix-devs: Do we want an Exit button? - or just have the X in the Chrome? or only sometimes like when 'complete', but not failed or not installed? -->
  <!--
-                            <StackPanel x:Name="FooterExitBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}" >
+                            <StackPanel x:Name="FooterExitBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button x:Name="FooterExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Click to Exit" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Exit" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
                             -->
 
-                            <StackPanel x:Name="UninstallBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
+                            <StackPanel x:Name="UninstallBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall Button" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
-                            <StackPanel x:Name="RepairBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
+                            <StackPanel x:Name="RepairBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button x:Name="RepairButton" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding RepairCommand}" AutomationProperties.Name="Repair Button" AutomationProperties.HelpText="Click to Repair" Content="Repair" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
-                            <StackPanel x:Name="InstallBtnDcIsland" Margin="0,2,0,0" DataContext="{Binding InstallationViewModel}">
-                                <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="Install" Style="{DynamicResource ActionButtonStyle}" HorizontalContentAlignment="Center"/>
+                            <StackPanel x:Name="InstallBtnDcIsland" DataContext="{Binding InstallationViewModel}" Style="{DynamicResource ActionBtnStkPnlStyle}">
+                                <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="_Install" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
-                            <StackPanel x:Name="TryAgainBtnDcIsland" Margin="0,2,0,0" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}">
+                            <StackPanel x:Name="TryAgainBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again Button" AutomationProperties.HelpText="Click to try again" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
-                            <StackPanel x:Name="UpdateBtnDcIsland" Margin="0,2,0,0" HorizontalAlignment="Center" DataContext="{Binding UpdateViewModel}">
+                            <StackPanel x:Name="UpdateBtnDcIsland" DataContext="{Binding UpdateViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button Command="{Binding UpdateCommand}" AutomationProperties.Name="Update Button" AutomationProperties.HelpText="An update is availalbe. Click to get the update" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Update" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-                
-                <StackPanel x:Name="OrgLogoStkPnl" MinWidth="150" Margin="0,0,20,0" HorizontalAlignment="Stretch" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}">
-                    <Image Style="{DynamicResource LogoStyle}" >
-                        
+
+                <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" >
+                    <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" >
+                        <!--
                         <Image.RenderTransform>
                             <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
                         </Image.RenderTransform>
-                        
+                        -->
                     </Image>
-                    <ContentPresenter Content="WiX Toolset" TextBlock.FontFamily="{DynamicResource CambriaFontFamily}" TextBlock.FontSize="{DynamicResource ResourceKey=FontSizeBranding}" TextBlock.FontWeight="Bold" TextBlock.Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,20,5" />
+                    <ContentPresenter x:Name="OrgTitle" Style="{DynamicResource OrgTitleContPresStyle}" Content="WiX Toolset" />
+                    <ContentPresenter x:Name="OrgSponsor" Margin="2,2"  Content="a .NET Foundation project" VerticalAlignment="Center" HorizontalAlignment="Center"  />
+                    <Button x:Name="OrgHomePage" Margin="0,2"  Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Launch Home Page Button" AutomationProperties.HelpText="Open the WiX Toolset home page" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Center" >
+                        <TextBlock HorizontalAlignment="Center" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" ><Run Text="www.WiXToolset.org" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                    </Button>
+
                 </StackPanel>
 
                 <StackPanel Margin="20,10,5,5" HorizontalAlignment="Stretch" DockPanel.Dock="Left">
@@ -152,6 +156,7 @@
                             <ColumnDefinition Width="auto" MinWidth="10" />
                             <ColumnDefinition Width="*" MinWidth="10" />
                         </Grid.ColumnDefinitions>
+                        <!--
                         <ContentPresenter x:Name="SkuOrgLabel" Margin="0,2,3,0" Grid.Row="0" Grid.Column="0" Content="Publisher:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
                             <Button x:Name="SkuHomePage" Margin="0,2"  Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Launch Home Page Button" AutomationProperties.HelpText="Open the WiX Toolset home page" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left" >
@@ -159,6 +164,7 @@
                             </Button>
                             <ContentPresenter x:Name="SkuOrg" Margin="2,2"  Content="a .NET Foundation project" VerticalAlignment="Center" HorizontalAlignment="Left"  />
                         </StackPanel>
+                        -->
                         <ContentPresenter x:Name="SkuVersionLabel" Margin="0,2,3,0" Grid.Row="1" Grid.Column="0" Content="Version:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
                         <StackPanel x:Name="SkuVersion" Grid.Row="1" Grid.Column="1" Margin="0,2" VerticalAlignment="Center" HorizontalAlignment="Left" >
                             <ContentPresenter Content="{Binding Version}" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeMedium}" TextBlock.FontWeight="Light" />
