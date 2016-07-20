@@ -169,12 +169,22 @@ namespace WixToolset.UX
                 WixBA.Plan(WixBA.Model.Command.Action);
             }
         }
+        /// <summary>
+        /// Helper to attach a debugger to the cr instance when debugging
+        /// </summary>
+        [Conditional("DEBUG")]
+        private static void AttachDebuger()
+        {
+            System.Diagnostics.Debugger.Launch();
+            return;
+        }
 
         /// <summary>
         /// Thread entry point for WiX Toolset UX.
         /// </summary>
         protected override void Run()
         {
+            //AttachDebuger();
             this.Engine.Log(LogLevel.Verbose, "Running the WiX BA.");
             WixBA.Model = new Model(this);
             WixBA.Dispatcher = Threading.Dispatcher.CurrentDispatcher;

@@ -169,5 +169,16 @@ namespace WixToolset.UX
                 }
             }
         }
+
+        /// <summary>
+        /// The Title of this bundle.
+        /// </summary>
+        public string Title
+        {
+            get
+            {
+                return WixDistribution.Product;
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="ThreeDBorderWindow"
         AllowsTransparency="False"
-        ResizeMode="CanMinimize"
+        ResizeMode="CanResizeWithGrip"
         
         Background="{x:Null}"
         SizeToContent="WidthAndHeight"
@@ -101,13 +101,11 @@
                             <StackPanel x:Name="FooterCancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
-                            <!-- wix-devs: Do we want an Exit button? - or just have the X in the Chrome? or only sometimes like when 'complete', but not failed or not installed? -->
- <!--
-                            <StackPanel x:Name="FooterExitBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button x:Name="FooterExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Click to Exit" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Exit" Style="{DynamicResource ActionButtonStyle}"/>
-                            </StackPanel>
-                            -->
 
+                            <StackPanel x:Name="FooterCloseBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
+                                <Button x:Name="FooterExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource ActionButtonStyle}"/>
+                            </StackPanel>
+                            
                             <StackPanel x:Name="UninstallBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
                                 <Button Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall Button" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
@@ -127,20 +125,18 @@
                     </Grid>
                 </StackPanel>
 
-                <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" >
-                    <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" >
-                        <!--
-                        <Image.RenderTransform>
-                            <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
-                        </Image.RenderTransform>
-                        -->
-                    </Image>
-                    <ContentPresenter x:Name="OrgTitle" Style="{DynamicResource OrgTitleContPresStyle}" Content="WiX Toolset" />
-                    <ContentPresenter x:Name="OrgSponsor" Margin="2,2"  Content="a .NET Foundation project" VerticalAlignment="Center" HorizontalAlignment="Center"  />
-                    <Button x:Name="OrgHomePage" Margin="0,2"  Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Launch Home Page Button" AutomationProperties.HelpText="Open the WiX Toolset home page" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Center" >
-                        <TextBlock HorizontalAlignment="Center" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" ><Run Text="www.WiXToolset.org" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
-                    </Button>
+                <StackPanel x:Name="TitleStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Top" DataContext="{Binding}">
+                    <ContentPresenter x:Name="OrgTitle" Style="{DynamicResource OrgTitleContPresStyle}" Content="{Binding Title, Mode=OneTime}" >
+                        <ContentPresenter.Resources>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                            </Style>
+                        </ContentPresenter.Resources>
+                    </ContentPresenter>
+                </StackPanel>
 
+                <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}" >
+                    <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" />
                 </StackPanel>
 
                 <StackPanel Margin="20,10,5,5" HorizontalAlignment="Stretch" DockPanel.Dock="Left">
@@ -151,31 +147,32 @@
                             <RowDefinition Height="auto" MinHeight="20"/>
                             <RowDefinition Height="auto" MinHeight="20"/>
                             <RowDefinition Height="auto" MinHeight="20"/>
+                            <RowDefinition Height="auto" MinHeight="20"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" MinWidth="10" />
                             <ColumnDefinition Width="*" MinWidth="10" />
                         </Grid.ColumnDefinitions>
-                        <!--
-                        <ContentPresenter x:Name="SkuOrgLabel" Margin="0,2,3,0" Grid.Row="0" Grid.Column="0" Content="Publisher:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1">
-                            <Button x:Name="SkuHomePage" Margin="0,2"  Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Launch Home Page Button" AutomationProperties.HelpText="Open the WiX Toolset home page" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left" >
-                                <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" ><Run Text="www.WiXToolset.org" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
-                            </Button>
-                            <ContentPresenter x:Name="SkuOrg" Margin="2,2"  Content="a .NET Foundation project" VerticalAlignment="Center" HorizontalAlignment="Left"  />
-                        </StackPanel>
-                        -->
-                        <ContentPresenter x:Name="SkuVersionLabel" Margin="0,2,3,0" Grid.Row="1" Grid.Column="0" Content="Version:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <StackPanel x:Name="SkuVersion" Grid.Row="1" Grid.Column="1" Margin="0,2" VerticalAlignment="Center" HorizontalAlignment="Left" >
-                            <ContentPresenter Content="{Binding Version}" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeMedium}" TextBlock.FontWeight="Light" />
-                        </StackPanel>
 
-                        <Button x:Name="SkuLicense" Margin="0,2,3,0" Grid.Row="2" Grid.Column="0" Command="{Binding LicenseCommand}"  AutomationProperties.Name="License Button" AutomationProperties.HelpText="Open the license in a new window" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left" >
-                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LicenseCommand}" IsEnabled="True" ><Run Text="License:" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                        <ContentPresenter x:Name="SkuPublisherLabel" Margin="0,2,3,0" Grid.Row="0" Grid.Column="0" Content="Publisher:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
+                        <ContentPresenter Content="{Binding Publisher, Mode=OneTime}" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeMedium}" TextBlock.FontWeight="Light" />
+
+                        <ContentPresenter x:Name="SkuVersionLabel" Margin="0,2,3,0" Grid.Row="1" Grid.Column="0" Content="Version:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
+                        <ContentPresenter Content="{Binding Version}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeMedium}" TextBlock.FontWeight="Light" />
+
+                        <ContentPresenter x:Name="SkuLicenseLabel" Margin="0,2,3,0" Grid.Row="2" Grid.Column="0" Content="License:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
+                        <Button x:Name="SkuLicenseBtn" Margin="0,2,3,0" Grid.Row="2" Grid.Column="1" Command="{Binding LicenseCommand}"  AutomationProperties.Name="License Button" AutomationProperties.HelpText="View the license" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left" >
+                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LicenseCommand}" IsEnabled="True" ><Run Text="View License" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
-                        <Button x:Name="SkuNews" Margin="0,2,3,0" Grid.Row="3" Grid.Column="0" Command="{Binding NewsCommand}"  AutomationProperties.Name="News Button" AutomationProperties.HelpText="See the latest news in a new window" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left">
-                            <TextBlock HorizontalAlignment="Left"><Hyperlink Command="{Binding LaunchNewsCommand}" IsEnabled="True" ><Run Text="News:" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                        <ContentPresenter x:Name="SkuNewsLabel" Margin="0,2,3,0" Grid.Row="3" Grid.Column="0" Content="News:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
+                        <Button x:Name="SkuNewsBtn" Margin="0,2,3,0" Grid.Row="3" Grid.Column="1" Command="{Binding LaunchNewsCommand}"  AutomationProperties.Name="News Button" AutomationProperties.HelpText="Latest News" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left" >
+                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchNewsCommand}" IsEnabled="True" ><Run Text="Latest News" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
+                        <ContentPresenter x:Name="SkuSupportLabel" Margin="0,2,3,0" Grid.Row="4" Grid.Column="0" Content="Support:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
+                        <Button x:Name="SkuSupportBtn" Margin="0,2,3,0" Grid.Row="4" Grid.Column="1" Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Home Page Button" AutomationProperties.HelpText="View Home Page for Support" Style="{StaticResource InfoButtonStyle}" HorizontalAlignment="Left" >
+                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" ><Run Text="{Binding SupportUrl, Mode=OneTime}" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                        </Button>
+
 
                     </Grid>
                     </StackPanel>

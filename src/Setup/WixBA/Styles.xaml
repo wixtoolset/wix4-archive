@@ -48,8 +48,6 @@
         <Setter Property="Margin" Value="0,0,20,0" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="MinWidth" Value="150" />
-        <Setter Property="DockPanel.Dock" Value="Right" />
-        <Setter Property="DataContext" Value="{Binding InstallationViewModel}" />
     </Style>
 
     <Style x:Key="OrgTitleContPresStyle" TargetType="ContentPresenter">

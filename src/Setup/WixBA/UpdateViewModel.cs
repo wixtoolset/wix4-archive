@@ -89,43 +89,9 @@ namespace WixToolset.UX
                 {
                     this.state = value;
                     base.OnPropertyChanged("State");
-                    base.OnPropertyChanged("Title");
                     base.OnPropertyChanged("CheckingEnabled");
                     base.OnPropertyChanged("IsUpToDate");
                     base.OnPropertyChanged("UpdateEnabled");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets and sets the title of the update view model.
-        /// </summary>
-        public string Title
-        {
-            get
-            {
-                switch (this.state)
-                {
-                    case UpdateState.Initializing:
-                        return "Initializing update detection...";
-
-                    case UpdateState.Checking:
-                        return "Checking for updates...";
-
-                    case UpdateState.Current:
-                        return "Up to date";
-
-                    case UpdateState.Available:
-                        return "Newer version available";
-
-                    case UpdateState.Failed:
-                        return "Failed to check for updates";
-
-                    case UpdateState.Unknown:
-                        return "Check for updates.";
-
-                    default:
-                        return "Unexpected state";
                 }
             }
         }
