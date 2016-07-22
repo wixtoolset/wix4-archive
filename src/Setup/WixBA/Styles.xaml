@@ -62,14 +62,16 @@
     </Style>
     
     <Style x:Key="ActionButtonStyle" TargetType="Button">
+        <!--
         <Setter Property="Background" Value="{DynamicResource ThemedButtonBackgroundBrush}"/>
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
-        <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MenuFontSizeKey}}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/> -->
         <Setter Property="MinHeight" Value="35"/>
         <Setter Property="MinWidth" Value="100" />
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Margin" Value="5,0,0,0" />
+        <!--<Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template" Value="{StaticResource ButtonTemplateKey}"/>
         <Setter Property="IsHitTestVisible" Value="True" />
@@ -84,7 +86,7 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
                 <Setter Property="BorderThickness" Value="1" />
             </DataTrigger>
-        </Style.Triggers>
+        </Style.Triggers>-->
     </Style>
 
     <Style x:Key="InfoButtonStyle" TargetType="Button">

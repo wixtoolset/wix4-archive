@@ -48,22 +48,55 @@
         </Border.Style>
             <!-- If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException.-->
             <DockPanel x:Name="AppArtBoardArea" MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" MouseDown="RootView_IgnoreClick" MouseUp="RootView_IgnoreClick" >
+                
+                <DockPanel x:Name="ActionArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" Margin="0,0,10,10">
+                    <DockPanel x:Name="FinalActionArea" DockPanel.Dock="Right">
+                        
+                        <StackPanel x:Name="FooterCancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource ActionButtonStyle}" />
+                        </StackPanel>
 
-                <StackPanel x:Name="StatusAndActionArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom">
-                    <StackPanel x:Name="ActionProgressDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,15,20,0" >
-                        <ProgressBar x:Name="ActionProgress" DataContext="{Binding ProgressViewModel}" Value="{Binding Progress}" VerticalAlignment="Center" Height="20" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380"/>
-                    </StackPanel>
-                    <StackPanel x:Name="ActionTextDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,15,20,0">
-                        <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}" MaxWidth="{Binding ActionTextMaxWidth}" />
-                    </StackPanel>
+                        <StackPanel x:Name="FooterCloseBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <Button x:Name="FooterExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource ActionButtonStyle}"/>
+                        </StackPanel>
 
-                    <StackPanel x:Name="UpdateCheckingDcIsland" Margin="20,15,20,0" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" DataContext="{Binding UpdateViewModel}" >
-                        <ContentPresenter x:Name="CheckingPresenter"  Content="Checking for updates..." />
-                    </StackPanel>
-                    <StackPanel x:Name="CheckingUpdatesProgressDcIsland"  HorizontalAlignment="Stretch" Margin="20,15,20,0" >
-                        <ProgressBar x:Name="CheckingUpdatesProgress" DataContext="{Binding UpdateViewModel}" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" IsIndeterminate="{Binding CheckingEnabled}" Style="{DynamicResource CheckingStatusProgressBarStyle}"/>
-                    </StackPanel>
+                    </DockPanel>
 
+                    <DockPanel x:Name="InitialActionArea" DockPanel.Dock="Right">
+                        <!-- Displayed from left to right, when ordered from top to bottom.  Most preferred is at the top.-->
+                        <StackPanel x:Name="UpdateBtnDcIsland" DataContext="{Binding UpdateViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <!-- {Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
+                            <Button Command="{Binding UpdateCommand}" AutomationProperties.Name="Update Button" AutomationProperties.HelpText="An update is availalbe. Click to get the update" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Update" Style="{DynamicResource ActionButtonStyle}" />
+                        </StackPanel>
+                        <StackPanel x:Name="InstallBtnDcIsland" DataContext="{Binding InstallationViewModel}" Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <!-- {Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
+                            <Button Visibility="Visible" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="_Install" Style="{DynamicResource ActionButtonStyle}" IsDefault="True" />
+                        </StackPanel>
+                        <StackPanel x:Name="RepairBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <!--{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}} -->
+                            <Button x:Name="RepairButton" Visibility="Visible" Command="{Binding RepairCommand}" AutomationProperties.Name="Repair Button" AutomationProperties.HelpText="Click to Repair" Content="Repair" Style="{DynamicResource ActionButtonStyle}"/>
+                        </StackPanel>
+                        <StackPanel x:Name="UninstallBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <!-- {Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
+                            <Button Visibility="Visible" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall Button" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
+                        </StackPanel>
+                        
+                        <!-- Only displayed on a failure, so not really grouped with the above controls-->
+                        <StackPanel x:Name="TryAgainBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
+                            <!-- {Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
+                            <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again Button" AutomationProperties.HelpText="Click to try again" Visibility="Visible" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- {Binding CheckingEnabled}  {Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
+                    <DockPanel x:Name="LeftMarqueeDcIsland" DockPanel.Dock="Right" HorizontalAlignment="Left" DataContext="{Binding UpdateViewModel}" >
+                        <StackPanel x:Name="CheckingUpdatesProgressDcIsland"  HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="150">
+                            <ProgressBar x:Name="CheckingUpdatesProgress" Visibility="Visible" VerticalAlignment="Center" IsIndeterminate="True" Margin="20,0" MinHeight="10" HorizontalContentAlignment="Stretch" />
+                        </StackPanel>
+                    </DockPanel>
+                </DockPanel>
+
+                <StackPanel x:Name="FinalStatusArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" Background="#FF8CE97C">
                     <StackPanel x:Name="CompleteDcIsland" Margin="20,15,20,0" Orientation="Horizontal" Visibility="{Binding CompleteEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" DataContext="{Binding InstallationViewModel}">
                         <ContentPresenter x:Name="CommpletePresenter" Content="Complete" TextBlock.FontWeight="Bold" Margin="20,0"/>
                         <Button x:Name="CompleteViewLogDcIsland" Command="{Binding OpenLogCommand}" Style="{StaticResource InfoButtonStyle}" >
@@ -82,49 +115,24 @@
                             <TextBlock ><Hyperlink Command="{Binding OpenLogFolderCommand}" IsEnabled="True" ><Run Text="View Log Folder" FontSize="{DynamicResource FontSizeButton}" /></Hyperlink></TextBlock>
                         </Button>
                     </StackPanel>
-
-                    <Grid x:Name="ActionGrid" HorizontalAlignment="Stretch" Margin="15,10" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" MinHeight="10" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" MinWidth="100" />
-                            <ColumnDefinition Width="auto" MinWidth="5" />
-                            <ColumnDefinition Width="auto" MinWidth="5" />
-                            <ColumnDefinition Width="auto" MinWidth="5" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel x:Name="IsUpdateToDateDcIsland" Grid.Row="0" Grid.Column="0" Margin="20,15,20,0" Visibility="{Binding IsUpToDate, Converter={StaticResource BooleanToVisibilityConverter}}" DataContext="{Binding UpdateViewModel}" >
-                            <ContentPresenter x:Name="UpdateAvailablePresenter"  Content="Update to date." />
-                        </StackPanel>
-
-                        <StackPanel x:Name="ActionStkPnl" Grid.Row="0" Grid.Column="3" Orientation="Horizontal" >
-                            <StackPanel x:Name="FooterCancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource ActionButtonStyle}" />
-                            </StackPanel>
-
-                            <StackPanel x:Name="FooterCloseBtnDcIsland" HorizontalAlignment="Center" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button x:Name="FooterExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource ActionButtonStyle}"/>
-                            </StackPanel>
-                            
-                            <StackPanel x:Name="UninstallBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall Button" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
-                            </StackPanel>
-                            <StackPanel x:Name="RepairBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button x:Name="RepairButton" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding RepairCommand}" AutomationProperties.Name="Repair Button" AutomationProperties.HelpText="Click to Repair" Content="Repair" Style="{DynamicResource ActionButtonStyle}"/>
-                            </StackPanel>
-                            <StackPanel x:Name="InstallBtnDcIsland" DataContext="{Binding InstallationViewModel}" Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="_Install" Style="{DynamicResource ActionButtonStyle}"/>
-                            </StackPanel>
-                            <StackPanel x:Name="TryAgainBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again Button" AutomationProperties.HelpText="Click to try again" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
-                            </StackPanel>
-                            <StackPanel x:Name="UpdateBtnDcIsland" DataContext="{Binding UpdateViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button Command="{Binding UpdateCommand}" AutomationProperties.Name="Update Button" AutomationProperties.HelpText="An update is availalbe. Click to get the update" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Update" Style="{DynamicResource ActionButtonStyle}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
                 </StackPanel>
 
+                <StackPanel x:Name="StatusStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" Background="#FF7BC3C3">
+                    <!-- {Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
+                    <StackPanel x:Name="UpdatesProgressDcIsland"  HorizontalAlignment="Stretch" Margin="20,15,20,0" Background="#FF408080">
+                        <ProgressBar x:Name="UpdatesProgress" DataContext="{Binding UpdateViewModel}" Visibility="Visible" VerticalAlignment="Center" IsIndeterminate="{Binding CheckingEnabled}" Style="{DynamicResource CheckingStatusProgressBarStyle}"/>
+                    </StackPanel>
+
+
+
+                    <StackPanel x:Name="ActionTextDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,15,20,0">
+                        <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}" MaxWidth="{Binding ActionTextMaxWidth}" />
+                    </StackPanel>
+                    <StackPanel x:Name="ActionProgressDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,15,20,0" >
+                        <ProgressBar x:Name="ActionProgress" DataContext="{Binding ProgressViewModel}" Value="{Binding Progress}" VerticalAlignment="Center" Height="20" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380"/>
+                    </StackPanel>
+                </StackPanel>
+                
                 <StackPanel x:Name="TitleStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Top" DataContext="{Binding}">
                     <ContentPresenter x:Name="OrgTitle" Style="{DynamicResource OrgTitleContPresStyle}" Content="{Binding Title, Mode=OneTime}" >
                         <ContentPresenter.Resources>
@@ -133,10 +141,6 @@
                             </Style>
                         </ContentPresenter.Resources>
                     </ContentPresenter>
-                </StackPanel>
-
-                <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}" >
-                    <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" />
                 </StackPanel>
 
                 <StackPanel Margin="20,10,5,5" HorizontalAlignment="Stretch" DockPanel.Dock="Left">
@@ -175,7 +179,12 @@
 
 
                     </Grid>
-                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}" >
+                    <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" />
+                </StackPanel>
+
             </DockPanel>
         </Border>
     </Border>
