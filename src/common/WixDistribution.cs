@@ -39,11 +39,6 @@ namespace WixToolset
         public static string Product = "Windows Installer XML Toolset";
 
         /// <summary>
-        /// Publisher for the distribution.
-        /// </summary>
-        public static string Publisher = ".Net Foundation";
-
-        /// <summary>
         /// Support URL for the distribution.
         /// </summary>
         public static string SupportUrl = "http://wixtoolset.org/";

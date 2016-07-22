@@ -13,6 +13,81 @@
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
     <!-- Control Templates -->
+    <ControlTemplate x:Key="HyperlinkedButtonTemplateKey" TargetType="{x:Type Button}">
+        <ContentPresenter
+                  Margin="{TemplateBinding Control.Padding}"
+                  HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
+                  VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
+                  SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
+                  ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
+                  Content="{TemplateBinding ContentControl.Content}" />
+    </ControlTemplate>
+
+    
+    <!-- Styles -->
+    <Style x:Key="ActionBtnStkPnlStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,2,0,0" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    
+    <Style x:Key="BrandStkPnlStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,20,0" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Width" Value="100" />
+        <Setter Property="Width" Value="100" />
+    </Style>
+
+    <Style x:Key="TitleContPresStyle" TargetType="ContentPresenter">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextBlock.FontSize" Value="{DynamicResource ResourceKey=FontSizeBranding}" />
+        <Setter Property="TextBlock.FontWeight" Value="ExtraBold" />
+        <Setter Property="TextBlock.FontFamily" Value="{DynamicResource FontFamily}" />
+        <Setter Property="TextBlock.HorizontalAlignment" Value="Center" />
+
+    </Style>
+    
+    <Style x:Key="ActionButtonStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="MinWidth" Value="100" />
+        <Setter Property="Margin" Value="5,0,0,0" />
+    </Style>
+
+    <Style x:Key="HyperlinkedButtonStyle" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource HyperlinkedButtonTemplateKey}" />
+        <Setter Property="IsHitTestVisible" Value="True" />
+    </Style>
+
+    <Style x:Key="LogoStyle" TargetType="Image" >
+        <Setter Property="Height" Value="55"/>
+        <Setter Property="Width" Value="55"/>
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="RenderTransformOrigin" Value=".5,.5" />
+        <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
+                <Setter Property="Source" Value="{DynamicResource LogoOverDarkBackground}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
+    <Style x:Key="StatusTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMenu}"/>
+        <Setter Property="Margin" Value="8"/>
+        <Setter Property="Foreground" Value="{DynamicResource  {x:Static SystemColors.WindowTextBrushKey}}" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        <Setter Property="MinHeight" Value="60" />
+    </Style>
+
+
+
+</ResourceDictionary>
+
+        <!-- keep temporarily until we resolve the style questions with AppX vrs default OS, design guidlines concerns
     <ControlTemplate x:Key="ButtonTemplateKey" TargetType="{x:Type Button}">
         <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" >
             <Grid Margin="3" x:Name="ButtonGrid">
@@ -38,40 +113,18 @@
         </ControlTemplate.Triggers>
     </ControlTemplate>
 
-    <!-- Styles -->
-    <Style x:Key="ActionBtnStkPnlStyle" TargetType="StackPanel">
-        <Setter Property="Margin" Value="0,2,0,0" />
-        <Setter Property="HorizontalAlignment" Value="Center" />
-    </Style>
-    
-    <Style x:Key="BrandStkPnlStyle" TargetType="StackPanel">
-        <Setter Property="Margin" Value="0,0,20,0" />
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="MinWidth" Value="150" />
-    </Style>
 
-    <Style x:Key="OrgTitleContPresStyle" TargetType="ContentPresenter">
-        <Setter Property="HorizontalAlignment" Value="Center" />
-        <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="TextBlock.FontSize" Value="{DynamicResource ResourceKey=FontSizeBranding}" />
-        <Setter Property="TextBlock.FontWeight" Value="ExtraBold" />
-        <Setter Property="TextBlock.Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
-        <Setter Property="TextBlock.FontFamily" Value="{DynamicResource CambriaFontFamily}" />
-        <Setter Property="TextBlock.HorizontalAlignment" Value="Center" />
-
-    </Style>
+<Style x:Key="ActionButtonStyle" TargetType="Button">
+    <Setter Property="MinHeight" Value="35"/>
+    <Setter Property="MinWidth" Value="100" />
+    <Setter Property="Margin" Value="5,0,0,0" />
     
-    <Style x:Key="ActionButtonStyle" TargetType="Button">
-        <!--
         <Setter Property="Background" Value="{DynamicResource ThemedButtonBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/> -->
-        <Setter Property="MinHeight" Value="35"/>
-        <Setter Property="MinWidth" Value="100" />
-        <Setter Property="Margin" Value="5,0,0,0" />
-        <!--<Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeButton}"/> 
+       <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template" Value="{StaticResource ButtonTemplateKey}"/>
         <Setter Property="IsHitTestVisible" Value="True" />
@@ -86,146 +139,6 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
                 <Setter Property="BorderThickness" Value="1" />
             </DataTrigger>
-        </Style.Triggers>-->
-    </Style>
-
-    <Style x:Key="InfoButtonStyle" TargetType="Button">
-        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
-        <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.MenuFontSizeKey}}"/>
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
-        <Setter Property="Background" Value="{DynamicResource ThemedButtonBackgroundBrush}"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <ContentPresenter
-                  Margin="{TemplateBinding Control.Padding}"
-                  HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
-                  VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}"
-                  SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}"
-                  ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
-                  RecognizesAccessKey="True"
-                  Content="{TemplateBinding ContentControl.Content}" />
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="IsHitTestVisible" Value="True" />
-    </Style>
-
-    <Style x:Key="LogoStyle" TargetType="Image" >
-        <Setter Property="Height" Value="55"/>
-        <Setter Property="Width" Value="55"/>
-        <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="RenderTransformOrigin" Value=".5,.5" />
-        <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
-                <Setter Property="Source" Value="{DynamicResource LogoOverDarkBackground}"/>
-            </DataTrigger>
         </Style.Triggers>
-    </Style>
-    
-    <Style x:Key="StatusTextStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}"/>
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeMenu}"/>
-        <Setter Property="Margin" Value="8"/>
-        <Setter Property="Foreground" Value="{DynamicResource  {x:Static SystemColors.WindowTextBrushKey}}" />
-        <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="TextWrapping" Value="WrapWithOverflow" />
-        <Setter Property="MinHeight" Value="60" />
-    </Style>
-
-    <Style x:Key="CheckingStatusProgressBarStyle" TargetType="ProgressBar">
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
-        <Setter Property="Background" Value="{DynamicResource ThemedBackgroundBrush}" />
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Maximum" Value="100" />
-        <Setter Property="IsTabStop" Value="False"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemedBackgroundBrush}"/>
-        <Setter Property="Height" Value="12" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ProgressBar">
-                    <Grid x:Name="Root">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Determinate"/>
-                                <VisualState x:Name="Indeterminate">
-                                    <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation Storyboard.TargetName="IndeterminateGradientFill" Storyboard.TargetProperty="(Shape.Fill).(LinearGradientBrush.Transform).(TransformGroup.Children)[0].X" Duration="00:00:.5" From="0" To="20" />
-                                        <ObjectAnimationUsingKeyFrames Duration="00:00:00" Storyboard.TargetName="IndeterminateRoot" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                            <DiscreteObjectKeyFrame KeyTime="00:00:00">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <Visibility>Visible</Visibility>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Duration="00:00:00" Storyboard.TargetName="DeterminateRoot" Storyboard.TargetProperty="(UIElement.Visibility)">
-                                            <DiscreteObjectKeyFrame KeyTime="00:00:00">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <Visibility>Collapsed</Visibility>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <!--Default Root Visuals for either type of ProgressBar-->
-                        <Border Name="ProgressBarTrack" CornerRadius="2" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" >
-                            <Grid x:Name="ProgressBarRootGrid" Background="{TemplateBinding Background}">
-                                <!-- Beginning of Gradient over all visuals -->
-                                <Rectangle Canvas.ZIndex="1" x:Name="ProgressBarRootGradient" StrokeThickness="1" Margin="{TemplateBinding BorderThickness}" Stroke="{TemplateBinding Background}" RadiusX="2" RadiusY="2" >
-                                    <!-- Creates barber pole effect and sets the color. -->
-                                    <Rectangle.Fill>
-                                        <LinearGradientBrush StartPoint=".7,0" EndPoint=".7,1">
-                                            <GradientStop Color="#B2FFFFFF" Offset="0" />
-                                            <GradientStop Color="#C6FFFFFF" Offset="0.15"/>
-                                            <GradientStop Color="#D1FFFFFF" Offset="0.275" />
-                                            <GradientStop Color="#C6FFFFFF" Offset="0.4"/>
-                                            <GradientStop Color="#B8FFFFFF" Offset="0.65" />
-                                            <GradientStop Color="#A5FFFFFF" Offset="0.75"/>
-                                            <GradientStop Color="#91FFFFFF" Offset="0.85"/>
-                                            <GradientStop Color="#72FFFFFF" Offset="1" />
-                                        </LinearGradientBrush>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-
-                                <!-- Beginning of Indeterminate Progress Bar Visuals-->
-                                <Grid x:Name="IndeterminateRoot" Visibility="Collapsed" >
-                                    <Rectangle x:Name="IndeterminateSolidFill" Stroke="Wheat" RadiusX="2" RadiusY="2" StrokeThickness="0" Margin="{TemplateBinding BorderThickness}" Fill="{TemplateBinding Foreground}" Opacity="1" RenderTransformOrigin="0.5,0.5" Height="{TemplateBinding Height}" />
-                                    <Rectangle x:Name="IndeterminateGradientFill" RadiusX="2" RadiusY="2" StrokeThickness="1" Margin="{TemplateBinding BorderThickness}" Opacity="0.7" Height="{TemplateBinding Height}" >
-                                        <Rectangle.Fill>
-                                            <LinearGradientBrush SpreadMethod="Repeat" MappingMode="Absolute" EndPoint="0,1" StartPoint="20,1">
-                                                <LinearGradientBrush.Transform >
-                                                    <TransformGroup>
-                                                        <TranslateTransform X="0" />
-                                                        <SkewTransform AngleX="-30" />
-                                                    </TransformGroup>
-                                                </LinearGradientBrush.Transform>
-                                                <GradientStop Color="#FFFFFFFF" Offset="0"/>
-                                                <GradientStop Color="#00FFFFFF" Offset=".25"/>
-                                                <GradientStop Color="#FFFFFFFF" Offset="0.85"/>
-                                            </LinearGradientBrush>
-                                        </Rectangle.Fill>
-                                    </Rectangle>
-                                </Grid>
-                                <!-- Beginning of Determinate Progress Bar Visuals-->
-                                <Grid x:Name="DeterminateRoot" Margin="1" >
-                                    <!--Background -->
-                                    <Rectangle HorizontalAlignment="Left" x:Name="ProgressBarIndicator" Margin="{TemplateBinding BorderThickness}" StrokeThickness="0.5" RadiusX="1.5" RadiusY="1.5" Fill="{TemplateBinding Foreground}"/>
-                                </Grid>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-
-</ResourceDictionary>
+</Style>
+-->    

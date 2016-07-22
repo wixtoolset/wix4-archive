@@ -110,7 +110,8 @@ namespace WixToolset.UX
         {
             get
             {
-                return WixDistribution.Publisher;
+                string company = "[AssemblyCompany]";
+                return WixDistribution.ReplacePlaceholders(company, typeof(WixBA).Assembly);
             }
         }
 

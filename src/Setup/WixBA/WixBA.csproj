@@ -61,6 +61,7 @@
     </Compile>
     <Compile Include="RootViewModel.cs" />
     <Compile Include="UpdateViewModel.cs" />
+    <Compile Include="WebBrowserBehaviors.cs" />
     <Compile Include="WixBA.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="WixBA.BootstrapperCore.config">

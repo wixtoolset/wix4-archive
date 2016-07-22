@@ -32,7 +32,9 @@ namespace WixToolset.UX
         private RootViewModel root;
         private UpdateState state;
         private ICommand updateCommand;
-        
+        private string updateVersion;
+        private string updateChanges;
+
 
         public UpdateViewModel(RootViewModel root)
         {
@@ -95,6 +97,43 @@ namespace WixToolset.UX
                 }
             }
         }
+        /// <summary>
+        /// The version of an available update.
+        /// </summary>
+        public string UpdateVersion
+        {
+            get
+            {
+                return updateVersion;
+            }
+            set
+            {
+                if (this.updateVersion != value)
+                {
+                    this.updateVersion = value;
+                    base.OnPropertyChanged("UpdateVersion");
+                }
+            }
+        }
+
+        /// <summary>
+        /// The changes in the available update.
+        /// </summary>
+        public string UpdateChanges
+        {
+            get
+            {
+                return updateChanges;
+            }
+            set
+            {
+                if (this.updateChanges != value)
+                {
+                    this.updateChanges = value;
+                    base.OnPropertyChanged("UpdateChanges");
+                }
+            }
+        }
 
         private void DetectUpdateBegin(object sender, Bootstrapper.DetectUpdateBeginEventArgs e)
         {
@@ -119,6 +158,9 @@ namespace WixToolset.UX
             if (e.Version > WixBA.Model.Version)
             {
                 WixBA.Model.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
+                this.UpdateVersion = String.Concat("v", e.Version.ToString());
+                string changesFormat = @"<Body>{0}{1}{2}{3}{4}</Body>";
+                this.UpdateChanges = String.Format(changesFormat, e.Content, e.Content, e.Content, e.Content, e.Content);
                 this.State = UpdateState.Available;
                 e.Result = Result.Ok;
             }

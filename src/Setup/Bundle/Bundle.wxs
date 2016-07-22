@@ -10,7 +10,7 @@
      xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag"
      xmlns:util='http://wixtoolset.org/schemas/v4/wxs/util'>
 
-    <Bundle Name='!(loc.ShortProduct) v$(var.WixVersion)' Manufacturer='!(loc.Company)'
+     <Bundle Name='!(loc.ShortProduct) v$(var.WixVersion)' Manufacturer='!(loc.Company)'
             Version='$(var.WixVersion)' UpgradeCode='166BFE1C-EA17-4ADF-A94C-97D50CC0088A'
             IconSourceFile='ProjectFile.ico' SplashScreenSourceFile='SplashScreen.bmp'
             AboutUrl='!(loc.SupportUrl)' UpdateUrl='!(loc.UpdateUrl)'

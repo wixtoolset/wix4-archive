@@ -177,7 +177,14 @@ namespace WixToolset.UX
         {
             get
             {
+                // TODO wix-devs which product name is preferred for the Title area?  I created WixDistribution.Product
+#if true
                 return WixDistribution.Product;
+#else
+                // AssemblyProdcuct is same as WixDistribution.ShortProduct
+                string original = "[AssemblyProduct]";
+                return WixDistribution.ReplacePlaceholders(original, typeof(WixBA).Assembly);
+#endif
             }
         }
     }

@@ -5,10 +5,8 @@
     xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Note:  Synchronize changes with HighContrastThemes.xaml. -->
-
-    <FontFamily x:Key="CambriaFontFamily">Cambria, Arial</FontFamily>
-    <FontFamily x:Key="FontFamily">Segoe UI, Arial</FontFamily>
+    <!-- TODO Wix-devs Need to decide on font. Currently only used for the title.  Other controls use the WPF defaults, unless we want to specify something. -->
+    <FontFamily x:Key="FontFamily">Gabriola, Constantia, Tahoma, Segoe UI, Arial</FontFamily>
     <FontFamily x:Key="FontFamilyLight">Segoe UI Light, Segoe UI, Arial</FontFamily>
 
     <!-- Brushes -->
@@ -28,7 +26,7 @@
     <System:Double x:Key="FontSizeMedium">12</System:Double>
     <System:Double x:Key="FontSizeButton">14</System:Double>
 
-    <System:Double x:Key="FontSizeBranding">22</System:Double>
+    <System:Double x:Key="FontSizeBranding">26</System:Double>
     
     <!-- Images -->
     <BitmapImage x:Key="LogoOverLightBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-white-hollow.png" />
