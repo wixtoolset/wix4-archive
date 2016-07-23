@@ -9,9 +9,9 @@
      xmlns:bal='http://wixtoolset.org/schemas/v4/wxs/bal'
      xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag"
      xmlns:util='http://wixtoolset.org/schemas/v4/wxs/util'>
-<!-- MOCK for testing update detection $(var.WixVersion) -->
-     <Bundle Name='!(loc.ShortProduct) v$(var.WixVersion)' Manufacturer='!(loc.Company)'
-            Version='3.9.0.0' UpgradeCode='166BFE1C-EA17-4ADF-A94C-97D50CC0088A'
+
+    <Bundle Name='!(loc.ShortProduct) v$(var.WixVersion)' Manufacturer='!(loc.Company)'
+            Version='$(var.WixVersion)' UpgradeCode='166BFE1C-EA17-4ADF-A94C-97D50CC0088A'
             IconSourceFile='ProjectFile.ico' SplashScreenSourceFile='SplashScreen.bmp'
             AboutUrl='!(loc.SupportUrl)' UpdateUrl='!(loc.UpdateUrl)'
             Compressed='$(var.WixBundleCompressed)'>

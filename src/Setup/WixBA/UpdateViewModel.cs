@@ -159,8 +159,8 @@ namespace WixToolset.UX
             {
                 WixBA.Model.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
                 this.UpdateVersion = String.Concat("v", e.Version.ToString());
-                string changesFormat = @"<Body>{0}{1}{2}{3}{4}</Body>";
-                this.UpdateChanges = String.Format(changesFormat, e.Content, e.Content, e.Content, e.Content, e.Content);
+                string changesFormat = @"<Body>{0}</Body>";
+                this.UpdateChanges = String.Format(changesFormat, e.Content);
                 this.State = UpdateState.Available;
                 e.Result = Result.Ok;
             }

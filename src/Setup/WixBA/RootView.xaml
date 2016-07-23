@@ -14,8 +14,10 @@
         
         Background="{x:Null}"
         SizeToContent="WidthAndHeight"
-        Width="auto"
         MinHeight="400"
+        MinWidth="550"
+        MaxHeight="600"
+        MaxWidth="800"
     >
 
     <Window.Resources>
@@ -174,14 +176,14 @@
                     </Grid>
                 </StackPanel>
 
-                <DockPanel x:Name="UpdateChangesStkPnl" DockPanel.Dock="Left"   HorizontalAlignment="Stretch" >
+                <DockPanel x:Name="UpdateChangesStkPnl" DockPanel.Dock="Left" HorizontalAlignment="Stretch" >
 
                     <DockPanel x:Name="AboveUpdateChanges" DockPanel.Dock="Top"  >
                         <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}"  >
                             <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" />
                         </StackPanel>
 
-                        <StackPanel x:Name="UpdateInfoStkPnlDcIsland" Margin="10,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" DockPanel.Dock="Left" DataContext="{Binding UpdateViewModel}" >
+                        <StackPanel x:Name="UpdateInfoStkPnlDcIsland" Margin="10,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Stretch" DockPanel.Dock="Left" DataContext="{Binding UpdateViewModel}" >
 
                             <Grid x:Name="UpdateInfo" HorizontalAlignment="Left" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"   >
                                 <Grid.RowDefinitions>
@@ -204,9 +206,8 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <StackPanel x:Name="ChangesStkPnlDcIsland" DockPanel.Dock="Top" DataContext="{Binding UpdateViewModel}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <WebBrowser ux:NavToStringBehavior.HtmlDoc="{Binding UpdateChanges}"  HorizontalAlignment="Stretch" VerticalAlignment="Top" MaxHeight="160" MaxWidth="350
-                                    " Margin="0,0,5,10" />
+                    <StackPanel x:Name="ChangesStkPnlDcIsland" DockPanel.Dock="Top" DataContext="{Binding UpdateViewModel}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+                        <WebBrowser ux:NavToStringBehavior.HtmlDoc="{Binding UpdateChanges}" HorizontalAlignment="Left" VerticalAlignment="Top" MinHeight="200" MinWidth="300" MaxHeight="200" MaxWidth="700" Margin="0,0,5,10" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  />
                     </StackPanel>
                 </DockPanel>
 
