@@ -52,7 +52,7 @@
             <DockPanel x:Name="AppArtBoardArea" MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" MouseDown="RootView_IgnoreClick" MouseUp="RootView_IgnoreClick" >
                 
                 <DockPanel x:Name="ActionArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" Margin="0,0,10,10">
-                    <DockPanel x:Name="FinalActionArea" DockPanel.Dock="Right">
+                    <DockPanel x:Name="FinalActionArea" DockPanel.Dock="Right" Margin="5,0,0,0">
                         <StackPanel x:Name="FooterCancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}">
                             <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource ActionButtonStyle}" />
                         </StackPanel>
@@ -95,7 +95,7 @@
                     </DockPanel>
                 </DockPanel>
 
-                <StackPanel x:Name="FinalStatusArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" Background="#FF8CE97C">
+                <StackPanel x:Name="FinalStatusArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom">
                     <StackPanel x:Name="CompleteDcIsland" Margin="20,15,20,0" Orientation="Horizontal" Visibility="{Binding CompleteEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" DataContext="{Binding InstallationViewModel}">
                         <ContentPresenter x:Name="CommpletePresenter" Content="Complete" TextBlock.FontWeight="Bold" Margin="20,0"/>
                         <Button x:Name="CompleteViewLogDcIsland" Command="{Binding OpenLogCommand}" Style="{StaticResource HyperlinkedButtonStyle}" >
@@ -116,14 +116,13 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel x:Name="StatusStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom">
-<!--
-                    <StackPanel x:Name="ActionTextDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,15,20,0">
-                        <TextBlock Style="{StaticResource StatusTextStyle}" DataContext="{Binding ProgressViewModel}" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}" MaxWidth="{Binding ActionTextMaxWidth}" />
+                <StackPanel x:Name="StatusStkPnlDcIsland" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" DataContext="{Binding ProgressViewModel}">
+
+                    <StackPanel x:Name="ActionTextStkPnl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="20,5,20,0" >
+                        <TextBlock Style="{StaticResource StatusTextStyle}"  Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}" MaxWidth="300" MinHeight="20" TextWrapping="WrapWithOverflow"/>
                     </StackPanel>
-                    -->
-                    <!-- {Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}} -->
-                    <StackPanel x:Name="ActionProgressDcIsland" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,5,20,10" DataContext="{Binding ProgressViewModel}">
+
+                    <StackPanel x:Name="ActionProgressStkPnl" HorizontalAlignment="Stretch" Margin="20,5,20,15">
                         <ProgressBar x:Name="ActionProgress"  Value="{Binding Progress}" VerticalAlignment="Center" Height="10" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380"/>
                     </StackPanel>
                 </StackPanel>
