@@ -25,6 +25,12 @@
         <util:ComponentSearch Guid="{6C65247B-900C-45AD-8ED8-3F20E668348E}" Variable="VS2013WDExpressInstalled" />
 
         <PackageGroup Id='WixPackages'>
+            <MsiPackage Id='Wix64' Vital='yes' Name='data\wix64.msi' SourceFile='data\wix64.msi'
+                        InstallCondition='VersionNT64'
+                        DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'
+                        />
+
+        <!--
             <MsiPackage Id='Wix' Vital='yes' Name='data\core.msi' SourceFile='data\core.msi'
                         DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'
                         >
@@ -77,13 +83,15 @@
             </MsiPackage>
             <?endif?>
 
-            <!-- Votive needs to be last as it runs devenv /setup -->
             <MsiPackage Vital='yes' Name='data\votive.msi' SourceFile='data\votive.msi'
                         InstallCondition='VS2010InstallFolder OR VS2012InstallFolder OR VS2013InstallFolder OR VS2015InstallFolder'
                         DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'
                         >
                 <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
             </MsiPackage>
-        </PackageGroup>
+            -->
+            <!-- Votive needs to be last as it runs devenv /setup -->
+
+            </PackageGroup>
     </Fragment>
 </Wix>

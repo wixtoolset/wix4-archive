@@ -10,11 +10,11 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="ThreeDBorderWindow"
         AllowsTransparency="False"
-        ResizeMode="CanMinimize"
+        ResizeMode="CanResizeWithGrip"
         
         Background="{x:Null}"
         SizeToContent="WidthAndHeight"
-        MinWidth="600"
+        Width="auto"
         MinHeight="400"
     >
 
@@ -176,7 +176,7 @@
 
                 <DockPanel x:Name="UpdateChangesStkPnl" DockPanel.Dock="Left"   HorizontalAlignment="Stretch" >
 
-                    <DockPanel x:Name="AboveUpdateChanges" DockPanel.Dock="Top" >
+                    <DockPanel x:Name="AboveUpdateChanges" DockPanel.Dock="Top"  >
                         <StackPanel x:Name="BrandStkPnl" Style="{DynamicResource BrandStkPnlStyle}" DockPanel.Dock="Right" DataContext="{Binding InstallationViewModel}"  >
                             <Image x:Name="OrgLogo" Style="{DynamicResource LogoStyle}" />
                         </StackPanel>
@@ -204,8 +204,9 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <StackPanel x:Name="ChangesStkPnlDcIsland" DockPanel.Dock="Top" VerticalAlignment="Top" DataContext="{Binding UpdateViewModel}" >
-                       <WebBrowser ux:WebBrowserBehaviors.Body="{Binding UpdateChanges}"  HorizontalAlignment="Left" VerticalAlignment="Top" MaxHeight="160" MaxWidth="350" Margin="0,0,5,10"/>
+                    <StackPanel x:Name="ChangesStkPnlDcIsland" DockPanel.Dock="Top" DataContext="{Binding UpdateViewModel}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <WebBrowser ux:NavToStringBehavior.HtmlDoc="{Binding UpdateChanges}"  HorizontalAlignment="Stretch" VerticalAlignment="Top" MaxHeight="160" MaxWidth="350
+                                    " Margin="0,0,5,10" />
                     </StackPanel>
                 </DockPanel>
 
