@@ -97,5 +97,8 @@
   <ItemGroup>
     <Resource Include="Resources\logo-black-hollow.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\san-image.ico" />
+  </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

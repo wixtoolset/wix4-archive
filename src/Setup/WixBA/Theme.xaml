@@ -7,29 +7,17 @@
 
     <!-- TODO Wix-devs Need to decide on font. Currently only used for the title.  Other controls use the WPF defaults, unless we want to specify something. -->
     <FontFamily x:Key="FontFamily">Gabriola, Constantia, Tahoma, Segoe UI, Arial</FontFamily>
-    <FontFamily x:Key="FontFamilyLight">Segoe UI Light, Segoe UI, Arial</FontFamily>
 
     <!-- Brushes -->
-    <SolidColorBrush x:Key="InputBorder" Color="{DynamicResource {x:Static SystemColors.MenuBarColorKey}}" po:Freeze="True"/>
 
-    <!--<SolidColorBrush x:Key="ThemedButtonBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}" po:Freeze="True" /> FF0D72FA-->
-    <SolidColorBrush x:Key="ThemedButtonForgoundBrush" Color="White" po:Freeze="True" />
     <SolidColorBrush x:Key="ThemedButtonBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}" po:Freeze="True" />
-    <SolidColorBrush x:Key="ThemedButtonHighlightBrush" Color="{DynamicResource {x:Static SystemColors.MenuHighlightColorKey}}" po:Freeze="True" />
     <SolidColorBrush x:Key="ThemedBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" po:Freeze="True" />
-    <SolidColorBrush x:Key="HighContrastForegroundBrush" Color="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrush}}" po:Freeze="True" />
     <SolidColorBrush x:Key="HighContrastBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.DesktopColorKey}}" po:Freeze="True" />
-    <SolidColorBrush x:Key="HighContrastButtonBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColor}}" po:Freeze="True" />
-    <SolidColorBrush x:Key="ProgressIndicatorsBrush" Color="#FF1EF1E8" po:Freeze="True" />
 
     <!-- Font Sizes -->
     <System:Double x:Key="FontSizeMedium">12</System:Double>
     <System:Double x:Key="FontSizeButton">14</System:Double>
 
-    <System:Double x:Key="FontSizeBranding">26</System:Double>
     
-    <!-- Images -->
-    <BitmapImage x:Key="LogoOverLightBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-white-hollow.png" />
-    <BitmapImage x:Key="LogoOverDarkBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-black-hollow.png" />
 
 </ResourceDictionary>
