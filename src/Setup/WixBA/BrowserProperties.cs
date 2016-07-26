@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.UX
 {
-    class NavToStringBehavior
+    using System.Windows;
+    using System.Windows.Controls;
+
+    class BrowserProperties
     {
         public static readonly DependencyProperty HtmlDocProperty =
-            DependencyProperty.RegisterAttached("HtmlDoc", typeof(string), typeof(NavToStringBehavior), new PropertyMetadata(OnHtmlDocChanged));
+            DependencyProperty.RegisterAttached("HtmlDoc", typeof(string), typeof(BrowserProperties), new PropertyMetadata(OnHtmlDocChanged));
 
         public static string GetHtmlDoc(DependencyObject dependencyObject)
         {

@@ -35,7 +35,7 @@
     </i:Interaction.Behaviors>
 
     <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0" >
-    <!-- Define background and catch MouseLeftButtonDown for Window dragging.-->
+    <!-- Catch MouseLeftButtonDown for Window dragging.-->
     <Border MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
         <Border.Style>
             <Style>
@@ -52,6 +52,7 @@
             <!-- If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException.-->
             <DockPanel x:Name="AppArtBoardArea" MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" MouseDown="RootView_IgnoreClick" MouseUp="RootView_IgnoreClick" >
 
+                <!-- Update checking marquee, Initial Actions, and Final Action Buttons, at the bottom of the layout. -->
                 <DockPanel x:Name="ActionArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" Margin="0,0,10,10">
                     <Grid x:Name="ActionGrid" HorizontalAlignment="Stretch">
                         <Grid.RowDefinitions>
@@ -62,8 +63,6 @@
                             <ColumnDefinition Width="auto"  />
                             <ColumnDefinition Width="*" MinWidth="30"/>
                             <ColumnDefinition Width="auto"  />
-                            <ColumnDefinition Width="*" MinWidth="30" MaxWidth="50" />
-                            <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="5" />
                         </Grid.ColumnDefinitions>
 
@@ -96,20 +95,17 @@
                                 <!-- {Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
                                 <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again Button" AutomationProperties.HelpText="Click to try again" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
-                        </StackPanel>
 
-                        <StackPanel x:Name="FooterCancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}" Grid.Column="5" HorizontalAlignment="Right">
-                            <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource ActionButtonStyle}" />
-                        </StackPanel>
+                            <!-- Final Actions - only one of these is expected to be displayed, if any-->
+                            <StackPanel x:Name="CloseBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}" HorizontalAlignment="Right">
+                                <Button x:Name="CloseButton" Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Close Button" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource FinalActionButtonStyle}"/>
+                            </StackPanel>
+                            <StackPanel x:Name="CancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}" HorizontalAlignment="Right">
+                                <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource FinalActionButtonStyle}" />
+                            </StackPanel>
 
-                        <StackPanel x:Name="FooterCloseBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}" Grid.Column="5" HorizontalAlignment="Right">
-                            <Button x:Name="FooterExitButton" Visibility="{Binding ExitEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Exit Button" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource ActionButtonStyle}"/>
                         </StackPanel>
-
                     </Grid>
-
-
-
                 </DockPanel>
 
                 <StackPanel x:Name="FinalStatusArea" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom">
@@ -144,7 +140,7 @@
                     </StackPanel>
                 </StackPanel>
                 
-                <StackPanel x:Name="TitleAndLogoStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Top" DataContext="{Binding}">
+                <StackPanel x:Name="TitleAndLogoStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Top" DataContext="{Binding}" Margin="0,5">
                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                         <Grid x:Name="TitleGrid" HorizontalAlignment="Left">
                             <Grid.RowDefinitions>
@@ -166,7 +162,7 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel x:Name="SkuStkPnl" Margin="20,0,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Top" DockPanel.Dock="Left">
+                <StackPanel x:Name="SkuStkPnl" Margin="20,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" DockPanel.Dock="Left">
 
                     <Grid x:Name="SkuInfo" DataContext="{Binding InstallationViewModel}" HorizontalAlignment="Left">
                         <Grid.RowDefinitions>
@@ -229,7 +225,7 @@
                     </StackPanel>
 
                     <StackPanel x:Name="ChangesStkPnlDcIsland" DockPanel.Dock="Top" DataContext="{Binding UpdateViewModel}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-                        <WebBrowser ux:NavToStringBehavior.HtmlDoc="{Binding UpdateChanges}" HorizontalAlignment="Left" VerticalAlignment="Top" MinHeight="200" MinWidth="300" MaxHeight="200" MaxWidth="900" Margin="0,0,5,10" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  />
+                        <WebBrowser ux:BrowserProperties.HtmlDoc="{Binding UpdateChanges}" HorizontalAlignment="Left" VerticalAlignment="Top" MinHeight="200" MinWidth="300" MaxHeight="200" MaxWidth="900" Margin="0,0,5,10" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  />
                     </StackPanel>
                 </DockPanel>
 

@@ -87,7 +87,7 @@ namespace WixToolset.UX
             if (("DetectState" == e.PropertyName) || ("InstallState" == e.PropertyName))
             {
                 base.OnPropertyChanged("CompleteEnabled");
-                base.OnPropertyChanged("ExitEnabled");
+                base.OnPropertyChanged("CloseEnabled");
                 base.OnPropertyChanged("RepairEnabled");
                 base.OnPropertyChanged("InstallEnabled");
                 base.OnPropertyChanged("TryAgainEnabled");
@@ -212,9 +212,10 @@ namespace WixToolset.UX
             get { return this.root.CloseCommand; }
         }
 
-        public bool ExitEnabled
+        public bool CloseEnabled
         {
-            get { return this.root.InstallState != InstallationState.Applying; }
+            // The control is enabled only on succesful completion.  The chrome close button is used for other scenarios.
+            get { return (this.root.InstallState == InstallationState.Applied); }
         }
 
         public ICommand InstallCommand

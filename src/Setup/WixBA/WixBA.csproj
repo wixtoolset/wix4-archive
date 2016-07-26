@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="Hresult.cs" />
     <Compile Include="Model.cs" />
-    <Compile Include="NavToStringBehavior.cs" />
+    <Compile Include="BrowserProperties.cs" />
     <Compile Include="NewsItem.cs" />
     <Compile Include="NoSnapBehavior.cs" />
     <Compile Include="ProgressViewModel.cs" />
@@ -62,6 +62,7 @@
     </Compile>
     <Compile Include="RootViewModel.cs" />
     <Compile Include="UpdateViewModel.cs" />
+    <Compile Include="WindowProperties.cs" />
     <Compile Include="WixBA.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="WixBA.BootstrapperCore.config">
@@ -79,11 +80,15 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />

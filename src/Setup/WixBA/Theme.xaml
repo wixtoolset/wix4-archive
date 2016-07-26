@@ -9,7 +9,6 @@
     <FontFamily x:Key="FontFamily">Gabriola, Constantia, Tahoma, Segoe UI, Arial</FontFamily>
 
     <!-- Brushes -->
-
     <SolidColorBrush x:Key="ThemedButtonBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}" po:Freeze="True" />
     <SolidColorBrush x:Key="ThemedBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" po:Freeze="True" />
     <SolidColorBrush x:Key="HighContrastBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.DesktopColorKey}}" po:Freeze="True" />

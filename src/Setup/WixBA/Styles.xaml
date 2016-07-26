@@ -39,6 +39,10 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
     
+    <Style x:Key="FinalActionsStkPnlStyle" TargetType="StackPanel">
+        <Setter Property="Margin" Value="80,2,0,0" />
+    </Style>
+    
     <Style x:Key="BrandStkPnlStyle" TargetType="StackPanel">
         <Setter Property="Margin" Value="0,0,20,0" />
         <Setter Property="VerticalAlignment" Value="Top" />
@@ -62,6 +66,11 @@
         <Setter Property="MinWidth" Value="100" />
         <Setter Property="Margin" Value="5,0,0,0" />
     </Style>
+    <Style x:Key="FinalActionButtonStyle" TargetType="Button">
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="MinWidth" Value="100" />
+        <Setter Property="Margin" Value="40,0,0,0" />
+    </Style>
 
     <Style x:Key="HyperlinkedButtonStyle" TargetType="Button">
         <Setter Property="Template" Value="{StaticResource HyperlinkedButtonTemplateKey}" />
@@ -75,7 +84,7 @@
         <Setter Property="RenderTransformOrigin" Value=".5,.5" />
         <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}"/>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
+            <DataTrigger Binding="{Binding Path=IsLightBackground, Source={x:Static ux:WindowProperties.Instance}}" Value="false" >
                 <Setter Property="Source" Value="{DynamicResource LogoOverDarkBackground}"/>
             </DataTrigger>
         </Style.Triggers>
