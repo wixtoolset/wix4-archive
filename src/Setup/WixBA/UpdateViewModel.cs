@@ -3,12 +3,7 @@
 namespace WixToolset.UX
 {
     using System;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Net;
-    using System.ServiceModel.Syndication;
     using System.Windows.Input;
-    using System.Xml;
     using WixToolset.Bootstrapper;
 
     /// <summary>
@@ -159,7 +154,7 @@ namespace WixToolset.UX
             {
                 WixBA.Model.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
                 this.UpdateVersion = String.Concat("v", e.Version.ToString());
-                string changesFormat = @"<Body>{0}{0}{0}{0}{0}{0}{0}</Body>";
+                string changesFormat = @"<Body>{0}</Body>";
                 this.UpdateChanges = String.Format(changesFormat, e.Content);
                 this.State = UpdateState.Available;
                 e.Result = Result.Ok;

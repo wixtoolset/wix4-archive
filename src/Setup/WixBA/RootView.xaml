@@ -56,7 +56,6 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel x:Name="LeftMarqueeDcIsland"  HorizontalAlignment="Left" DataContext="{Binding UpdateViewModel}"  Grid.Column="1" VerticalAlignment="Center">
-                            <!-- {Binding CheckingEnabled}  {Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
                             <StackPanel x:Name="CheckingUpdatesProgressStjPnl"  HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="150">
                                 <ProgressBar x:Name="CheckingUpdatesProgress" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" IsIndeterminate="{Binding CheckingEnabled}" Margin="20,0" MinHeight="10" HorizontalContentAlignment="Stretch" Style="{DynamicResource UpdateMarqueeStyle}" />
                             </StackPanel>
@@ -65,32 +64,27 @@
                         <StackPanel x:Name="InitiateActionArea" Orientation="Horizontal" Grid.Column="3" HorizontalAlignment="Right">
                             <!-- Displayed from left to right, when ordered from top to bottom.  Most preferred is at the top.-->
                             <StackPanel x:Name="UpdateBtnDcIsland" DataContext="{Binding UpdateViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <!-- {Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
-                                <Button Command="{Binding UpdateCommand}" AutomationProperties.Name="Update Button" AutomationProperties.HelpText="An update is availalbe. Click to get the update" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Update" Style="{DynamicResource ActionButtonStyle}" />
+                                <Button Command="{Binding UpdateCommand}" AutomationProperties.Name="Update" AutomationProperties.HelpText="An update is availalbe. Click to get the update" Visibility="{Binding UpdateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Update" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
                             <StackPanel x:Name="InstallBtnDcIsland" DataContext="{Binding InstallationViewModel}" Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <!-- {Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
-                                <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install Button" AutomationProperties.HelpText="Click to accept license and install" Content="_Install" Style="{DynamicResource ActionButtonStyle}" IsDefault="True" />
+                                <Button Visibility="{Binding InstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding InstallCommand}" AutomationProperties.Name="Install" AutomationProperties.HelpText="Click to accept license and install" Content="_Install" Style="{DynamicResource ActionButtonStyle}" IsDefault="True" />
                             </StackPanel>
                             <StackPanel x:Name="RepairBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <!--{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}} -->
-                                <Button x:Name="RepairButton" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding RepairCommand}" AutomationProperties.Name="Repair Button" AutomationProperties.HelpText="Click to Repair" Content="Repair" Style="{DynamicResource ActionButtonStyle}"/>
+                                <Button x:Name="RepairButton" Visibility="{Binding RepairEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding RepairCommand}" AutomationProperties.Name="Repair" AutomationProperties.HelpText="Click to Repair" Content="Repair" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
                             <StackPanel x:Name="UninstallBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <!-- {Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
-                                <Button Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall Button" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
+                                <Button Visibility="{Binding UninstallEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding UninstallCommand}" AutomationProperties.Name="Uninstall" AutomationProperties.HelpText="Click to Uninstall" Content="Uninstall" Style="{DynamicResource ActionButtonStyle}"/>
                             </StackPanel>
                             <StackPanel x:Name="TryAgainBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <!-- {Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
-                                <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again Button" AutomationProperties.HelpText="Click to try again" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
+                                <Button Command="{Binding TryAgainCommand}" AutomationProperties.Name="Try Again?" AutomationProperties.HelpText="Click to try again" Visibility="{Binding TryAgainEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Try Again?" Style="{DynamicResource ActionButtonStyle}" />
                             </StackPanel>
 
                             <!-- Final Actions - only one of these is expected to be displayed, if any-->
                             <StackPanel x:Name="CloseBtnDcIsland" DataContext="{Binding InstallationViewModel}"  Style="{DynamicResource ActionBtnStkPnlStyle}" HorizontalAlignment="Right">
-                                <Button x:Name="CloseButton" Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Close Button" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource FinalActionButtonStyle}"/>
+                                <Button x:Name="CloseButton" Visibility="{Binding CloseEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CloseCommand}" AutomationProperties.Name="Close" AutomationProperties.HelpText="Click to Close" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Close" Style="{DynamicResource FinalActionButtonStyle}"/>
                             </StackPanel>
                             <StackPanel x:Name="CancelBtnDcIsland" DataContext="{Binding}" Style="{DynamicResource ActionBtnStkPnlStyle}" HorizontalAlignment="Right">
-                                <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel Button" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource FinalActionButtonStyle}" />
+                                <Button Visibility="{Binding CancelEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel" AutomationProperties.HelpText="Press to Cancel" VerticalAlignment="Center" HorizontalAlignment="Center" Content="Cancel" Style="{DynamicResource FinalActionButtonStyle}" />
                             </StackPanel>
 
                         </StackPanel>
@@ -173,15 +167,15 @@
                         <ContentPresenter Content="{Binding Version}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeMedium}" TextBlock.FontWeight="Light" />
 
                         <ContentPresenter x:Name="SkuLicenseLabel" Margin="0,2,3,0" Grid.Row="2" Grid.Column="0" Content="License:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <Button x:Name="SkuLicenseBtn" Margin="0,2,3,0" Grid.Row="2" Grid.Column="1" Command="{Binding LicenseCommand}"  AutomationProperties.Name="License Button" AutomationProperties.HelpText="View the license" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False" >
+                        <Button x:Name="SkuLicenseBtn" Margin="0,2,3,0" Grid.Row="2" Grid.Column="1" Command="{Binding LicenseCommand}"  AutomationProperties.Name="License" AutomationProperties.HelpText="View the license" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False" >
                             <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LicenseCommand}" IsEnabled="True" KeyboardNavigation.IsTabStop="False"><Run Text="View License" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
                         <ContentPresenter x:Name="SkuNewsLabel" Margin="0,2,3,0" Grid.Row="3" Grid.Column="0" Content="News:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <Button x:Name="SkuNewsBtn" Margin="0,2,3,0" Grid.Row="3" Grid.Column="1" Command="{Binding LaunchNewsCommand}"  AutomationProperties.Name="News Button" AutomationProperties.HelpText="Latest News" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False">
+                        <Button x:Name="SkuNewsBtn" Margin="0,2,3,0" Grid.Row="3" Grid.Column="1" Command="{Binding LaunchNewsCommand}"  AutomationProperties.Name="News" AutomationProperties.HelpText="Latest News" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False">
                             <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchNewsCommand}" IsEnabled="True" KeyboardNavigation.IsTabStop="False"><Run Text="Latest News" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
                         <ContentPresenter x:Name="SkuSupportLabel" Margin="0,2,3,0" Grid.Row="4" Grid.Column="0" Content="Support:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <Button x:Name="SkuSupportBtn" Margin="0,2,3,0" Grid.Row="4" Grid.Column="1" Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Home Page Button" AutomationProperties.HelpText="View Home Page for Support"  Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False">
+                        <Button x:Name="SkuSupportBtn" Margin="0,2,3,0" Grid.Row="4" Grid.Column="1" Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Home Page" AutomationProperties.HelpText="View Home Page for Support"  Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False">
                             <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" KeyboardNavigation.IsTabStop="False"><Run Text="{Binding SupportUrl, Mode=OneTime}" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
 

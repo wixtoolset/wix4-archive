@@ -5,8 +5,14 @@ namespace WixToolset.UX
     using System.Windows;
     using System.Windows.Controls;
 
+    /// <summary>
+    /// Dependency Properties to support using a WebBrowser object.
+    /// </summary>
     class BrowserProperties
     {
+        /// <summary>
+        /// Dependency Propery used to pass an HTML string to the webBrowser object.
+        /// </summary>
         public static readonly DependencyProperty HtmlDocProperty =
             DependencyProperty.RegisterAttached("HtmlDoc", typeof(string), typeof(BrowserProperties), new PropertyMetadata(OnHtmlDocChanged));
 
@@ -20,6 +26,11 @@ namespace WixToolset.UX
             dependencyObject.SetValue(HtmlDocProperty, htmldoc);
         }
 
+        /// <summary>
+        /// Event handler that passes the HtmlDoc Dependency Property to MavigateToString method.
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
         private static void OnHtmlDocChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var webBrowser = (WebBrowser)d;

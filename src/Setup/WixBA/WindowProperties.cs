@@ -6,8 +6,14 @@ namespace WixToolset.UX
     using System.Windows;
     using System.Windows.Media;
 
+    /// <summary>
+    /// Dependency Propwerties associated with the main Window object.
+    /// </summary>
     public class WindowProperties : DependencyObject
     {
+        /// <summary>
+        /// Dependency Property to hold the result of detcting the releative luminosity (or brightness) of a Windows background.
+        /// </summary>
         public static readonly DependencyProperty IsLightBackgroundProperty = DependencyProperty.Register(
             "IsLightBackground", typeof(bool), typeof(WindowProperties), new PropertyMetadata( false ));
 
@@ -32,6 +38,12 @@ namespace WixToolset.UX
             private set { SetValue(IsLightBackgroundProperty, value); }
         }
 
+        /// <summary>
+        /// Use the Luminosity parameter of the background color to detect light vrs dark theme settings
+        /// </summary>
+        /// <remarks>
+        /// This approach detects both the common High Contrast themes (White vrs Black) and custom themes whichn may have relatively lighter backgrounds.
+        /// </remarks>
         public void CheckBackgroundBrightness()
         {
             SolidColorBrush windowbrush = System.Windows.SystemColors.WindowBrush;

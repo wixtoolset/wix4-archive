@@ -133,23 +133,6 @@ namespace WixToolset.UX
             e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
         }
 
-#if false
-        private void ExecuteMsiMessage(object sender, ExecuteMsiMessageEventArgs e)
-        {
-            lock (this)
-            {
-
-                if (e.MessageType == InstallMessage.ActionStart)
-                {
-                    string message = TrimActionTimeFromMessage.Replace(e.Message, String.Empty);
-                    this.Message = message;
-                }
-
-        e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
-            }
-        }
-#endif
-
         private void ApplyBegin(object sender, ApplyBeginEventArgs e)
         {
             this.progressPhases = e.PhaseCount;

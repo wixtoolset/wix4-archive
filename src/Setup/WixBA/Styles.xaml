@@ -133,7 +133,6 @@
         <Setter Property="MinHeight" Value="60" />
     </Style>
 
-
     <Style x:Key="ActionProgressStyle" TargetType="ProgressBar">
         <Setter Property="Foreground" Value="#FF1EF1E8" />
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
@@ -146,7 +145,5 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
-
-
 </ResourceDictionary>
     
