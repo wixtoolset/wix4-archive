@@ -36,7 +36,11 @@ namespace WixToolset.UX
         /// <param name="e"></param>
         private void Background_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            this.DragMove();
+            if (MouseButtonState.Pressed == Mouse.LeftButton)
+            {
+                this.DragMove();
+                e.Handled = true;
+            }
         }
  
         /// <summary>
@@ -46,8 +50,23 @@ namespace WixToolset.UX
         /// <param name="e"></param>
         private void RootView_IgnoreClick(object sender, MouseButtonEventArgs e)
         {
-            e.Handled = true;
+            //e.Handled = true;
         }
 
+        /// <summary>
+        /// Event is fired when the window is closing.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            RootViewModel rvm = this.DataContext as RootViewModel;
+            if ((null != rvm) && (InstallationState.Applying == rvm.InstallState))
+            {
+                rvm.Canceled = true;
+                // defer closing until the engine has canceled processing, then user wwill get a Close button.
+                e.Cancel = true;
+            }
+        }
     }
 }

@@ -18,13 +18,13 @@
         MinWidth="550"
         MaxHeight="600"
         MaxWidth="1200"
+        Closing="Window_Closing"
        
     >
 
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/WixBA;component/Theme.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/WixBA;component/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -36,19 +36,8 @@
 
     <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0" >
     <!-- Catch MouseLeftButtonDown for Window dragging.-->
-    <Border MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-        <Border.Style>
-            <Style>
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="True">
-                        <Setter Property="Border.Background" Value="{DynamicResource HighContrastBackgroundBrush}"/>
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding Source={x:Static SystemParameters.HighContrast}}" Value="False">
-                        <Setter Property="Border.Background" Value="{DynamicResource ThemedBackgroundBrush}"/>
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </Border.Style>
+        <Border MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" >
+
             <!-- If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException.-->
             <DockPanel x:Name="AppArtBoardArea" MouseLeftButtonDown="Background_MouseLeftButtonDown" VerticalAlignment="Stretch" MouseDown="RootView_IgnoreClick" MouseUp="RootView_IgnoreClick" >
 
@@ -69,7 +58,7 @@
                         <StackPanel x:Name="LeftMarqueeDcIsland"  HorizontalAlignment="Left" DataContext="{Binding UpdateViewModel}"  Grid.Column="1" VerticalAlignment="Center">
                             <!-- {Binding CheckingEnabled}  {Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}-->
                             <StackPanel x:Name="CheckingUpdatesProgressStjPnl"  HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="150">
-                                <ProgressBar x:Name="CheckingUpdatesProgress" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" IsIndeterminate="{Binding CheckingEnabled}" Margin="20,0" MinHeight="10" HorizontalContentAlignment="Stretch" />
+                                <ProgressBar x:Name="CheckingUpdatesProgress" Visibility="{Binding CheckingEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" VerticalAlignment="Center" IsIndeterminate="{Binding CheckingEnabled}" Margin="20,0" MinHeight="10" HorizontalContentAlignment="Stretch" Style="{DynamicResource UpdateMarqueeStyle}" />
                             </StackPanel>
                         </StackPanel>
 
@@ -136,7 +125,7 @@
                     </StackPanel>
 
                     <StackPanel x:Name="ActionProgressStkPnl" HorizontalAlignment="Stretch" Margin="20,5,20,15">
-                        <ProgressBar x:Name="ActionProgress"  Value="{Binding Progress}" VerticalAlignment="Center" Height="10" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380"/>
+                        <ProgressBar x:Name="ActionProgress"  Value="{Binding Progress}" VerticalAlignment="Center" Height="20" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380" Style="{DynamicResource ActionProgressStyle}"/>
                     </StackPanel>
                 </StackPanel>
                 
@@ -184,16 +173,16 @@
                         <ContentPresenter Content="{Binding Version}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeMedium}" TextBlock.FontWeight="Light" />
 
                         <ContentPresenter x:Name="SkuLicenseLabel" Margin="0,2,3,0" Grid.Row="2" Grid.Column="0" Content="License:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <Button x:Name="SkuLicenseBtn" Margin="0,2,3,0" Grid.Row="2" Grid.Column="1" Command="{Binding LicenseCommand}"  AutomationProperties.Name="License Button" AutomationProperties.HelpText="View the license" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" >
-                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LicenseCommand}" IsEnabled="True" ><Run Text="View License" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                        <Button x:Name="SkuLicenseBtn" Margin="0,2,3,0" Grid.Row="2" Grid.Column="1" Command="{Binding LicenseCommand}"  AutomationProperties.Name="License Button" AutomationProperties.HelpText="View the license" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False" >
+                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LicenseCommand}" IsEnabled="True" KeyboardNavigation.IsTabStop="False"><Run Text="View License" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
                         <ContentPresenter x:Name="SkuNewsLabel" Margin="0,2,3,0" Grid.Row="3" Grid.Column="0" Content="News:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <Button x:Name="SkuNewsBtn" Margin="0,2,3,0" Grid.Row="3" Grid.Column="1" Command="{Binding LaunchNewsCommand}"  AutomationProperties.Name="News Button" AutomationProperties.HelpText="Latest News" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" >
-                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchNewsCommand}" IsEnabled="True" ><Run Text="Latest News" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                        <Button x:Name="SkuNewsBtn" Margin="0,2,3,0" Grid.Row="3" Grid.Column="1" Command="{Binding LaunchNewsCommand}"  AutomationProperties.Name="News Button" AutomationProperties.HelpText="Latest News" Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False">
+                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchNewsCommand}" IsEnabled="True" KeyboardNavigation.IsTabStop="False"><Run Text="Latest News" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
                         <ContentPresenter x:Name="SkuSupportLabel" Margin="0,2,3,0" Grid.Row="4" Grid.Column="0" Content="Support:" VerticalAlignment="Center" HorizontalAlignment="Left" TextBlock.FontSize="{DynamicResource FontSizeButton}" TextBlock.FontWeight="Bold" />
-                        <Button x:Name="SkuSupportBtn" Margin="0,2,3,0" Grid.Row="4" Grid.Column="1" Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Home Page Button" AutomationProperties.HelpText="View Home Page for Support"  Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" >
-                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" ><Run Text="{Binding SupportUrl, Mode=OneTime}" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
+                        <Button x:Name="SkuSupportBtn" Margin="0,2,3,0" Grid.Row="4" Grid.Column="1" Command="{Binding LaunchHomePageCommand}"  AutomationProperties.Name="Home Page Button" AutomationProperties.HelpText="View Home Page for Support"  Style="{StaticResource HyperlinkedButtonStyle}" HorizontalAlignment="Left" KeyboardNavigation.IsTabStop="False">
+                            <TextBlock HorizontalAlignment="Left" ><Hyperlink Command="{Binding LaunchHomePageCommand}" IsEnabled="True" KeyboardNavigation.IsTabStop="False"><Run Text="{Binding SupportUrl, Mode=OneTime}" FontSize="{DynamicResource FontSizeButton}"/></Hyperlink></TextBlock>
                         </Button>
 
 
