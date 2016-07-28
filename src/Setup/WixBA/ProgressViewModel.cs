@@ -31,6 +31,7 @@ namespace WixToolset.UX
             this.root.PropertyChanged += this.RootPropertyChanged;
 
             WixBA.Model.Bootstrapper.ExecutePackageBegin += this.ExecutePackageBegin;
+            WixBA.Model.Bootstrapper.ExecutePackageComplete += this.ExecutePackageComplete;
             //WixBA.Model.Bootstrapper.ExecuteMsiMessage += this.ExecuteMsiMessage;
             WixBA.Model.Bootstrapper.ExecuteProgress += this.ApplyExecuteProgress;
             WixBA.Model.Bootstrapper.PlanBegin += this.PlanBegin;
@@ -128,9 +129,20 @@ namespace WixToolset.UX
 
         private void ExecutePackageBegin(object sender, ExecutePackageBeginEventArgs e)
         {
-            this.Package = WixBA.Model.GetPackageName(e.PackageId);
-            this.Message = String.Format("Processing: {0}", this.Package);
-            e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+            lock (this)
+            {
+                this.Package = WixBA.Model.GetPackageName(e.PackageId);
+                this.Message = String.Format("Processing: {0}", this.Package);
+                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+            }
+        }
+
+        private void ExecutePackageComplete(object sender, ExecutePackageCompleteEventArgs e)
+        {
+            lock (this)
+            {   // avoid a stale display
+                this.Message = String.Empty;
+            }
         }
 
         private void ApplyBegin(object sender, ApplyBeginEventArgs e)

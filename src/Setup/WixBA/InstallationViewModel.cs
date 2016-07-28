@@ -452,15 +452,21 @@ namespace WixToolset.UX
 
         private void ExecutePackageBegin(object sender, ExecutePackageBeginEventArgs e)
         {
-            this.executePackageStart = e.ShouldExecute ? DateTime.Now : DateTime.MinValue;
+            lock (this)
+            {
+                this.executePackageStart = e.ShouldExecute ? DateTime.Now : DateTime.MinValue;
+            }
         }
 
         private void ExecutePackageComplete(object sender, ExecutePackageCompleteEventArgs e)
         {
-            if (DateTime.MinValue < this.executePackageStart)
+            lock (this)
             {
-                this.AddPackageTelemetry("Execute", e.PackageId ?? String.Empty, DateTime.Now.Subtract(this.executePackageStart).TotalMilliseconds, e.Status);
-                this.executePackageStart = DateTime.MinValue;
+                if (DateTime.MinValue < this.executePackageStart)
+                {
+                    this.AddPackageTelemetry("Execute", e.PackageId ?? String.Empty, DateTime.Now.Subtract(this.executePackageStart).TotalMilliseconds, e.Status);
+                    this.executePackageStart = DateTime.MinValue;
+                }
             }
         }
 
