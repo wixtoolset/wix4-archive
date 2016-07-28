@@ -114,12 +114,12 @@
 
                 <StackPanel x:Name="StatusStkPnlDcIsland" HorizontalAlignment="Stretch" DockPanel.Dock="Bottom" DataContext="{Binding ProgressViewModel}">
 
-                    <StackPanel x:Name="ActionTextStkPnl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="20,5,20,0" >
-                        <TextBlock Style="{StaticResource StatusTextStyle}"  Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}" MaxWidth="300" MinHeight="20" TextWrapping="WrapWithOverflow"/>
+                    <StackPanel x:Name="ActionPackageNameTextStkPnl" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="20,5,20,0" >
+                        <TextBlock Style="{StaticResource StatusTextStyle}"  Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Text="{Binding Message}" MaxWidth="380" MinHeight="20" TextWrapping="WrapWithOverflow" Panel.ZIndex="3"/>
                     </StackPanel>
 
                     <StackPanel x:Name="ActionProgressStkPnl" HorizontalAlignment="Stretch" Margin="20,5,20,15">
-                        <ProgressBar x:Name="ActionProgress"  Value="{Binding Progress}" VerticalAlignment="Center" Height="20" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380" Style="{DynamicResource ActionProgressStyle}"/>
+                        <ProgressBar x:Name="ActionProgress"  Value="{Binding Progress}" VerticalAlignment="Center" Height="20" Visibility="{Binding ProgressEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"  MinWidth="380" Style="{DynamicResource ActionProgressStyle}" Panel.ZIndex="3"/>
                     </StackPanel>
                 </StackPanel>
                 
