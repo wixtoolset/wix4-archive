@@ -11,7 +11,6 @@
         WindowStyle="ThreeDBorderWindow"
         AllowsTransparency="False"
         ResizeMode="CanResizeWithGrip"
-        Icon="pack://application:,,,/WixBA;component/resources/san-image.ico"
         Background="{x:Null}"
         SizeToContent="WidthAndHeight"
         MinHeight="400"
@@ -124,25 +123,25 @@
                 </StackPanel>
                 
                 <StackPanel x:Name="TitleAndLogoStkPnl" HorizontalAlignment="Stretch" DockPanel.Dock="Top" DataContext="{Binding}" Margin="0,5">
-                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                        <Grid x:Name="TitleGrid" HorizontalAlignment="Left">
+                        <Grid x:Name="TitleGrid" HorizontalAlignment="Stretch">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"  />
                                 <ColumnDefinition Width="*" MinWidth="40" />
                                 <ColumnDefinition Width="auto" />
-                            </Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="40" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="*" MaxWidth="40" />
+                        </Grid.ColumnDefinitions>
 
-                            <TextBlock x:Name="TitleTextBlk" Style="{DynamicResource TitleTextBlkStyle}" Text="{Binding Title, Mode=OneTime}"  Grid.Column="0" />
-                            <Image x:Name="Logo" Style="{DynamicResource LogoStyle}" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="2">
+                            <TextBlock x:Name="TitleTextBlk" Style="{DynamicResource TitleTextBlkStyle}" Text="{Binding Title, Mode=OneTime}"  Grid.Column="1" />
+                            <Image x:Name="Logo" Style="{DynamicResource LogoStyle}" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.Column="3">
                                 <Image.LayoutTransform>
                                     <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
                                 </Image.LayoutTransform>
                             </Image>
                         </Grid>
-                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel x:Name="SkuStkPnl" Margin="20,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" DockPanel.Dock="Left">

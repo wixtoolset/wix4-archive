@@ -34,11 +34,6 @@ namespace WixToolset
         public static string ShortProduct = "WiX Toolset";
 
         /// <summary>
-        /// Product name for the distribution.
-        /// </summary>
-        public static string Product = "Windows Installer XML Toolset";
-
-        /// <summary>
         /// Support URL for the distribution.
         /// </summary>
         public static string SupportUrl = "http://wixtoolset.org/";
