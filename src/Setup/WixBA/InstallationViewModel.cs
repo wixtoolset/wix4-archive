@@ -51,6 +51,8 @@ namespace WixToolset.UX
         private ICommand installCommand;
         private ICommand repairCommand;
         private ICommand uninstallCommand;
+        private ICommand openLogCommand;
+        private ICommand openLogFolderCommand;
         private ICommand tryAgainCommand;
 
         private string message;
@@ -277,7 +279,6 @@ namespace WixToolset.UX
             get { return this.UninstallCommand.CanExecute(this); }
         }
 
-        private ICommand openLogCommand;
         public ICommand OpenLogCommand
         {
             get
@@ -290,7 +291,6 @@ namespace WixToolset.UX
             }
         }
 
-        private ICommand openLogFolderCommand;
         public ICommand OpenLogFolderCommand
         {
             get

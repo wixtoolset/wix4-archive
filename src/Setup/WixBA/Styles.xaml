@@ -93,14 +93,34 @@
         <Setter Property="TextWrapping" Value="WrapWithOverflow" />
     </Style>
 
+    <Style x:Key="LabelTextBlkStyle" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="{DynamicResource ResourceKey=FontSizeButton}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="TextAlignment" Value="Left" />
+        <Setter Property="Margin" Value="0,2,3,0" />
+    </Style>
+
+    <Style x:Key="DataTextBlkStyle" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="FontSize" Value="{DynamicResource ResourceKey=FontSizeMedium}" />
+        <Setter Property="TextAlignment" Value="Left" />
+        <Setter Property="Margin" Value="2,2,3,0" />
+    </Style>
+
     <Style x:Key="ActionButtonStyle" TargetType="Button">
         <Setter Property="MinHeight" Value="30"/>
         <Setter Property="MinWidth" Value="100" />
         <Setter Property="Margin" Value="5,0,0,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
     </Style>
-    <Style x:Key="FinalActionButtonStyle" TargetType="Button">
-        <Setter Property="MinHeight" Value="30"/>
-        <Setter Property="MinWidth" Value="100" />
+
+    <Style x:Key="FinalActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
         <Setter Property="Margin" Value="40,0,0,0" />
     </Style>
 

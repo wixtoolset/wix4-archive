@@ -43,23 +43,7 @@ namespace WixToolset.UX
         /// <param name="uri">URI to open the web browser.</param>
         public static void LaunchUrl(string uri)
         {
-            // Switch the wait cursor since shellexec can take a second or so.
-            Cursor cursor = WixBA.View.Cursor;
-            WixBA.View.Cursor = Cursors.Wait;
-
-            try
-            {
-                Process process = new Process();
-                process.StartInfo.FileName = uri;
-                process.StartInfo.UseShellExecute = true;
-                process.StartInfo.Verb = "open";
-
-                process.Start();
-            }
-            finally
-            {
-                WixBA.View.Cursor = cursor; // back to the original cursor.
-            }
+            WixBA.UseShellExecute(uri);
         }
 
         /// <summary>
@@ -68,34 +52,23 @@ namespace WixToolset.UX
         /// <param name="uri">URI to a log file.</param>
         internal static void OpenLog(Uri uri)
         {
-            // Switch the wait cursor since shellexec can take a second or so.
-            System.Windows.Input.Cursor cursor = WixBA.View.Cursor;
-            WixBA.View.Cursor = System.Windows.Input.Cursors.Wait;
-            Process process = null;
-            try
-            {
-                process = new Process();
-                process.StartInfo.FileName = uri.ToString();
-                process.StartInfo.UseShellExecute = true;
-                process.StartInfo.Verb = "open";
-
-                process.Start();
-            }
-            finally
-            {
-                if (null != process)
-                {
-                    process.Dispose();
-                }
-                // back to the original cursor.
-                WixBA.View.Cursor = cursor;
-            }
+            WixBA.UseShellExecute(uri.ToString());
         }
+
+        /// <summary>
+        /// Open a log folder.
+        /// </summary>
+        /// <param name="string">path to a log folder.</param>
+        internal static void OpenLogFolder(string logFolder)
+        {
+            WixBA.UseShellExecute(logFolder);
+        }
+
         /// <summary>
         /// Open a log folder.
         /// </summary>
         /// <param name="uri">path to a log folder.</param>
-        internal static void OpenLogFolder(string logFolder)
+        private static void UseShellExecute(string path)
         {
             // Switch the wait cursor since shellexec can take a second or so.
             System.Windows.Input.Cursor cursor = WixBA.View.Cursor;
@@ -104,7 +77,7 @@ namespace WixToolset.UX
             try
             {
                 process = new Process();
-                process.StartInfo.FileName = logFolder;
+                process.StartInfo.FileName = path;
                 process.StartInfo.UseShellExecute = true;
                 process.StartInfo.Verb = "open";
 
