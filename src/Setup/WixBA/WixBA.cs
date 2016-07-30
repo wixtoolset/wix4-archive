@@ -157,7 +157,7 @@ namespace WixToolset.UX
         /// </summary>
         protected override void Run()
         {
-            //AttachDebuger();
+            // AttachDebuger();
             this.Engine.Log(LogLevel.Verbose, "Running the WiX BA.");
             WixBA.Model = new Model(this);
             WixBA.Dispatcher = Threading.Dispatcher.CurrentDispatcher;
