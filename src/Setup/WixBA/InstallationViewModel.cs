@@ -51,6 +51,8 @@ namespace WixToolset.UX
         private ICommand installCommand;
         private ICommand repairCommand;
         private ICommand uninstallCommand;
+        private ICommand openLogCommand;
+        private ICommand openLogFolderCommand;
         private ICommand tryAgainCommand;
 
         private string message;
@@ -86,9 +88,8 @@ namespace WixToolset.UX
         {
             if (("DetectState" == e.PropertyName) || ("InstallState" == e.PropertyName))
             {
-                base.OnPropertyChanged("Title");
                 base.OnPropertyChanged("CompleteEnabled");
-                base.OnPropertyChanged("ExitEnabled");
+                base.OnPropertyChanged("CloseEnabled");
                 base.OnPropertyChanged("RepairEnabled");
                 base.OnPropertyChanged("InstallEnabled");
                 base.OnPropertyChanged("TryAgainEnabled");
@@ -97,11 +98,34 @@ namespace WixToolset.UX
         }
 
         /// <summary>
-        /// Gets the title for the application.
+        /// Gets the version for the application.
         /// </summary>
         public string Version 
         {
             get { return String.Concat("v", WixBA.Model.Version.ToString()); }
+        }
+
+        /// <summary>
+        /// The Publisher of this bundle.
+        /// </summary>
+        public string Publisher
+        {
+            get
+            {
+                string company = "[AssemblyCompany]";
+                return WixDistribution.ReplacePlaceholders(company, typeof(WixBA).Assembly);
+            }
+        }
+
+        /// <summary>
+        /// The Publisher of this bundle.
+        /// </summary>
+        public string SupportUrl
+        {
+            get
+            {
+                return WixDistribution.SupportUrl;
+            }
         }
 
         public string Message
@@ -147,7 +171,7 @@ namespace WixToolset.UX
             {
                 if (this.launchHomePageCommand == null)
                 {
-                    this.launchHomePageCommand = new RelayCommand(param => WixBA.LaunchUrl(WixDistribution.SupportUrl), param => true);
+                    this.launchHomePageCommand = new RelayCommand(param => WixBA.LaunchUrl(this.SupportUrl), param => true);
                 }
 
                 return this.launchHomePageCommand;
@@ -190,9 +214,10 @@ namespace WixToolset.UX
             get { return this.root.CloseCommand; }
         }
 
-        public bool ExitEnabled
+        public bool CloseEnabled
         {
-            get { return this.root.InstallState != InstallationState.Applying; }
+            // The control is enabled only on succesful completion.  The chrome close button is used for other scenarios.
+            get { return (this.root.InstallState == InstallationState.Applied); }
         }
 
         public ICommand InstallCommand
@@ -254,6 +279,31 @@ namespace WixToolset.UX
             get { return this.UninstallCommand.CanExecute(this); }
         }
 
+        public ICommand OpenLogCommand
+        {
+            get
+            {
+                if (this.openLogCommand == null)
+                {
+                    this.openLogCommand = new RelayCommand(param => WixBA.OpenLog(new Uri(WixBA.Model.Engine.StringVariables["WixBundleLog"])), param => true);
+                }
+                return this.openLogCommand;
+            }
+        }
+
+        public ICommand OpenLogFolderCommand
+        {
+            get
+            {
+                if (this.openLogFolderCommand == null)
+                {
+                    string logFolder = IO.Path.GetDirectoryName(WixBA.Model.Engine.StringVariables["WixBundleLog"]);
+                    this.openLogFolderCommand = new RelayCommand(param => WixBA.OpenLogFolder(logFolder), param => true);
+                }
+                return this.openLogFolderCommand;
+            }
+        }
+
         public ICommand TryAgainCommand
         {
             get
@@ -274,106 +324,6 @@ namespace WixToolset.UX
         public bool TryAgainEnabled
         {
             get { return this.TryAgainCommand.CanExecute(this); }
-        }
-
-        public string Title
-        {
-            get
-            {
-                switch (this.root.InstallState)
-                {
-                    case InstallationState.Initializing:
-                        return "Initializing...";
-                    case InstallationState.Waiting:
-                        switch (this.root.DetectState)
-                        {
-
-                            case DetectionState.Present:
-                                return "Installed";
-
-                            case DetectionState.Newer:
-                                return "Newer version installed";
-
-                            case DetectionState.Absent:
-                                return "Not installed";
-                            default :
-                                return "Unexpected Detection state";
-                        }
-                    case InstallationState.Applying:
-                        switch (WixBA.Model.PlannedAction)
-                        {
-                            case LaunchAction.Install:
-                                return "Installing...";
-
-                            case LaunchAction.Repair:
-                                return "Repairing...";
-
-                            case LaunchAction.Uninstall:
-                                return "Uninstalling...";
-
-                            case LaunchAction.UpdateReplace:
-                            case LaunchAction.UpdateReplaceEmbedded:
-                                return "Updating...";
-
-                            default:
-                                return "Unexpected action state";
-                        }
-
-                    case InstallationState.Applied:
-                        switch (WixBA.Model.PlannedAction)
-                        {
-                            case LaunchAction.Install:
-                                return "Successfully installed";
-
-                            case LaunchAction.Repair:
-                                return "Successfully repaired";
-
-                            case LaunchAction.Uninstall:
-                                return "Successfully uninstalled";
-
-                            case LaunchAction.UpdateReplace:
-                            case LaunchAction.UpdateReplaceEmbedded:
-                                return "Successfully updated";
-
-                            default:
-                                return "Unexpected action state";
-                        }
-
-                    case InstallationState.Failed:
-                        if (this.root.Canceled)
-                        {
-                            return "Canceled";
-                        }
-                        else if (LaunchAction.Unknown != WixBA.Model.PlannedAction)
-                        {
-                            switch (WixBA.Model.PlannedAction)
-                            {
-                                case LaunchAction.Install:
-                                    return "Failed to install";
-
-                                case LaunchAction.Repair:
-                                    return "Failed to repair";
-
-                                case LaunchAction.Uninstall:
-                                    return "Failed to uninstall";
-
-                                case LaunchAction.UpdateReplace:
-                                case LaunchAction.UpdateReplaceEmbedded:
-                                    return "Failed to update";
-
-                                default:
-                                    return "Unexpected action state";
-                            }
-                        }
-                        else
-                        {
-                            return "Unexpected failure";
-                        }
-
-                    default:
-                        return "Unknown view model state";
-                }
-            }
         }
 
         /// <summary>
@@ -502,15 +452,21 @@ namespace WixToolset.UX
 
         private void ExecutePackageBegin(object sender, ExecutePackageBeginEventArgs e)
         {
-            this.executePackageStart = e.ShouldExecute ? DateTime.Now : DateTime.MinValue;
+            lock (this)
+            {
+                this.executePackageStart = e.ShouldExecute ? DateTime.Now : DateTime.MinValue;
+            }
         }
 
         private void ExecutePackageComplete(object sender, ExecutePackageCompleteEventArgs e)
         {
-            if (DateTime.MinValue < this.executePackageStart)
+            lock (this)
             {
-                this.AddPackageTelemetry("Execute", e.PackageId ?? String.Empty, DateTime.Now.Subtract(this.executePackageStart).TotalMilliseconds, e.Status);
-                this.executePackageStart = DateTime.MinValue;
+                if (DateTime.MinValue < this.executePackageStart)
+                {
+                    this.AddPackageTelemetry("Execute", e.PackageId ?? String.Empty, DateTime.Now.Subtract(this.executePackageStart).TotalMilliseconds, e.Status);
+                    this.executePackageStart = DateTime.MinValue;
+                }
             }
         }
 

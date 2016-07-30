@@ -3,12 +3,7 @@
 namespace WixToolset.UX
 {
     using System;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Net;
-    using System.ServiceModel.Syndication;
     using System.Windows.Input;
-    using System.Xml;
     using WixToolset.Bootstrapper;
 
     /// <summary>
@@ -32,7 +27,9 @@ namespace WixToolset.UX
         private RootViewModel root;
         private UpdateState state;
         private ICommand updateCommand;
-        
+        private string updateVersion;
+        private string updateChanges;
+
 
         public UpdateViewModel(RootViewModel root)
         {
@@ -89,43 +86,46 @@ namespace WixToolset.UX
                 {
                     this.state = value;
                     base.OnPropertyChanged("State");
-                    base.OnPropertyChanged("Title");
                     base.OnPropertyChanged("CheckingEnabled");
                     base.OnPropertyChanged("IsUpToDate");
                     base.OnPropertyChanged("UpdateEnabled");
                 }
             }
         }
-
         /// <summary>
-        /// Gets and sets the title of the update view model.
+        /// The version of an available update.
         /// </summary>
-        public string Title
+        public string UpdateVersion
         {
             get
             {
-                switch (this.state)
+                return updateVersion;
+            }
+            set
+            {
+                if (this.updateVersion != value)
                 {
-                    case UpdateState.Initializing:
-                        return "Initializing update detection...";
+                    this.updateVersion = value;
+                    base.OnPropertyChanged("UpdateVersion");
+                }
+            }
+        }
 
-                    case UpdateState.Checking:
-                        return "Checking for updates...";
-
-                    case UpdateState.Current:
-                        return "Up to date";
-
-                    case UpdateState.Available:
-                        return "Newer version available";
-
-                    case UpdateState.Failed:
-                        return "Failed to check for updates";
-
-                    case UpdateState.Unknown:
-                        return "Check for updates.";
-
-                    default:
-                        return "Unexpected state";
+        /// <summary>
+        /// The changes in the available update.
+        /// </summary>
+        public string UpdateChanges
+        {
+            get
+            {
+                return updateChanges;
+            }
+            set
+            {
+                if (this.updateChanges != value)
+                {
+                    this.updateChanges = value;
+                    base.OnPropertyChanged("UpdateChanges");
                 }
             }
         }
@@ -153,6 +153,9 @@ namespace WixToolset.UX
             if (e.Version > WixBA.Model.Version)
             {
                 WixBA.Model.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
+                this.UpdateVersion = String.Concat("v", e.Version.ToString());
+                string changesFormat = @"<Body>{0}</Body>";
+                this.UpdateChanges = String.Format(changesFormat, e.Content);
                 this.State = UpdateState.Available;
                 e.Result = Result.Ok;
             }

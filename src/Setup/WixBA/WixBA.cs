@@ -1,5 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
+// WixBAFacelift TODO list:
+// Compile against NetFx452 (supported).  Moved to Net45 to check out using WindowChrome, then backed out Chrome.  check with wix-devs, then update Bundle when framework consenuse exist.
 namespace WixToolset.UX
 {
     using System;
@@ -41,14 +43,41 @@ namespace WixToolset.UX
         /// <param name="uri">URI to open the web browser.</param>
         public static void LaunchUrl(string uri)
         {
-            // Switch the wait cursor since shellexec can take a second or so.
-            Cursor cursor = WixBA.View.Cursor;
-            WixBA.View.Cursor = Cursors.Wait;
+            WixBA.UseShellExecute(uri);
+        }
 
+        /// <summary>
+        /// Open a log file.
+        /// </summary>
+        /// <param name="uri">URI to a log file.</param>
+        internal static void OpenLog(Uri uri)
+        {
+            WixBA.UseShellExecute(uri.ToString());
+        }
+
+        /// <summary>
+        /// Open a log folder.
+        /// </summary>
+        /// <param name="string">path to a log folder.</param>
+        internal static void OpenLogFolder(string logFolder)
+        {
+            WixBA.UseShellExecute(logFolder);
+        }
+
+        /// <summary>
+        /// Open a log folder.
+        /// </summary>
+        /// <param name="uri">path to a log folder.</param>
+        private static void UseShellExecute(string path)
+        {
+            // Switch the wait cursor since shellexec can take a second or so.
+            System.Windows.Input.Cursor cursor = WixBA.View.Cursor;
+            WixBA.View.Cursor = System.Windows.Input.Cursors.Wait;
+            Process process = null;
             try
             {
-                Process process = new Process();
-                process.StartInfo.FileName = uri;
+                process = new Process();
+                process.StartInfo.FileName = path;
                 process.StartInfo.UseShellExecute = true;
                 process.StartInfo.Verb = "open";
 
@@ -56,7 +85,12 @@ namespace WixToolset.UX
             }
             finally
             {
-                WixBA.View.Cursor = cursor; // back to the original cursor.
+                if (null != process)
+                {
+                    process.Dispose();
+                }
+                // back to the original cursor.
+                WixBA.View.Cursor = cursor;
             }
         }
 
@@ -108,12 +142,22 @@ namespace WixToolset.UX
                 WixBA.Plan(WixBA.Model.Command.Action);
             }
         }
+        /// <summary>
+        /// Helper to attach a debugger to the cr instance when debugging
+        /// </summary>
+        [Conditional("DEBUG")]
+        private static void AttachDebuger()
+        {
+            System.Diagnostics.Debugger.Launch();
+            return;
+        }
 
         /// <summary>
         /// Thread entry point for WiX Toolset UX.
         /// </summary>
         protected override void Run()
         {
+            // AttachDebuger();
             this.Engine.Log(LogLevel.Verbose, "Running the WiX BA.");
             WixBA.Model = new Model(this);
             WixBA.Dispatcher = Threading.Dispatcher.CurrentDispatcher;
