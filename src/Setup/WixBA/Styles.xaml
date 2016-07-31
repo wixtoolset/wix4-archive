@@ -12,8 +12,8 @@
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
     <!--  Fonts  -->
-    <FontFamily x:Key="FontFamily">Gabriola, Constantia, Tahoma, Segoe UI, Arial</FontFamily>
-    <System:Double x:Key="FontSizeBranding">40</System:Double>
+    <FontFamily x:Key="FontFamily">Segoe UI, Arial</FontFamily>
+    <System:Double x:Key="FontSizeBranding">45</System:Double>
     <System:Double x:Key="FontSizeMedium">12</System:Double>
     <System:Double x:Key="FontSizeButton">14</System:Double>
 
@@ -99,15 +99,16 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="TextAlignment" Value="Center" />
         <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
     </Style>
 
     <Style x:Key="TitleTextBlkStyle"
            BasedOn="{StaticResource CommonTextBlkStyle}"
            TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="FontSize" Value="{DynamicResource ResourceKey=FontSizeBranding}" />
         <Setter Property="FontWeight" Value="ExtraBold" />
-        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
         <Setter Property="Margin" Value="0" />
     </Style>
 
@@ -151,6 +152,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
     </Style>
 
     <Style x:Key="FinalActionButtonStyle"

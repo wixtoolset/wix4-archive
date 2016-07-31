@@ -187,10 +187,11 @@
                                 Orientation="Horizontal"
                                 Visibility="{Binding CompleteEnabled,
                                                      Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <ContentPresenter x:Name="CommpletePresenter"
-                                          Margin="20,0"
-                                          Content="Complete"
-                                          TextBlock.FontWeight="Bold" />
+                        <TextBlock x:Name="CommpleteTextBlk"
+                                   Margin="20,0"
+                                   Style="{DynamicResource LabelTextBlkStyle}"
+                                   Text="Complete:"
+                                   TextBlock.FontWeight="Bold" />
                         <Button x:Name="CompleteViewLogDcIsland"
                                 Command="{Binding OpenLogCommand}"
                                 Style="{StaticResource HyperlinkedButtonStyle}">
@@ -213,10 +214,11 @@
                                 Orientation="Horizontal"
                                 Visibility="{Binding TryAgainEnabled,
                                                      Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <ContentPresenter x:Name="FailedPresenter"
-                                          Margin="20,0"
-                                          Content="Failed"
-                                          TextBlock.FontWeight="Bold" />
+                        <TextBlock x:Name="FailedTextBlk"
+                                   Margin="20,0"
+                                   Style="{DynamicResource LabelTextBlkStyle}"
+                                   Text="Failed:"
+                                   TextBlock.FontWeight="Bold" />
                         <Button x:Name="FailedViewLogDcIsland"
                                 Command="{Binding OpenLogCommand}"
                                 Style="{StaticResource HyperlinkedButtonStyle}">
@@ -279,7 +281,9 @@
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" MinWidth="40" />
+                            <ColumnDefinition Width="*"
+                                              MinWidth="10"
+                                              MaxWidth="20" />
                             <ColumnDefinition Width="auto" />
                             <ColumnDefinition Width="*" MinWidth="40" />
                             <ColumnDefinition Width="auto" />
