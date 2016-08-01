@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--  Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.  -->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 <Window x:Class="WixToolset.UX.RootView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -31,20 +31,20 @@
     </i:Interaction.Behaviors>
 
     <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" BorderThickness="0">
-        <!--  Catch MouseLeftButtonDown for Window dragging.  -->
+        <!-- Catch MouseLeftButtonDown for Window dragging. -->
         <Border HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
                 MouseLeftButtonDown="Background_MouseLeftButtonDown">
 
-            <!--  If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException.  -->
+            <!-- If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException. -->
             <DockPanel x:Name="AppArtBoardArea"
                        VerticalAlignment="Stretch"
                        MouseDown="RootView_IgnoreClick"
                        MouseLeftButtonDown="Background_MouseLeftButtonDown"
                        MouseUp="RootView_IgnoreClick">
 
-                <!--  Update checking marquee, Initial Actions, and Final Action Buttons, at the bottom of the layout.  -->
+                <!-- Update checking marquee, Initial Actions, and Final Action Buttons, at the bottom of the layout. -->
                 <DockPanel x:Name="ActionArea"
                            Margin="0,0,10,10"
                            HorizontalAlignment="Stretch"
@@ -86,7 +86,7 @@
                                     Grid.Column="3"
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal">
-                            <!--  Displayed from left to right, when ordered from top to bottom.  Most preferred is at the top.  -->
+                            <!-- Displayed from left to right, when ordered from top to bottom.  Most preferred is at the top. -->
                             <StackPanel x:Name="UpdateBtnDcIsland"
                                         DataContext="{Binding UpdateViewModel}"
                                         Style="{DynamicResource ActionBtnStkPnlStyle}">
@@ -147,7 +147,7 @@
                                                              Converter={StaticResource BooleanToVisibilityConverter}}" />
                             </StackPanel>
 
-                            <!--  Final Actions - only one of these is expected to be displayed, if any  -->
+                            <!-- Final Actions - only one of these is expected to be displayed, if any -->
                             <StackPanel x:Name="CloseBtnDcIsland"
                                         HorizontalAlignment="Right"
                                         DataContext="{Binding InstallationViewModel}"
