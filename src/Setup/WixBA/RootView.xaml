@@ -90,7 +90,7 @@
                             <StackPanel x:Name="UpdateBtnDcIsland"
                                         DataContext="{Binding UpdateViewModel}"
                                         Style="{DynamicResource ActionBtnStkPnlStyle}">
-                                <Button AutomationProperties.HelpText="An update is availalbe. Click to get the update"
+                                <Button AutomationProperties.HelpText="An update is available. Click to get the update"
                                         AutomationProperties.Name="Update"
                                         Command="{Binding UpdateCommand}"
                                         Content="Update"
