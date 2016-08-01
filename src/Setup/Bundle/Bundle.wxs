@@ -24,7 +24,6 @@
 
           <Payload SourceFile='WixBA.dll' />
           <Payload SourceFile='..\..\..\License.txt' />
-          <Payload Name='System.Windows.Interactivity.dll' SourceFile='System.Windows.Interactivity.dll' />
         </BootstrapperApplicationRef>
 
         <util:RegistrySearchRef Id="NETFRAMEWORK35_SP_LEVEL" />
