@@ -415,7 +415,8 @@ namespace WixToolset.UX
 
         private void PlanPackageBegin(object sender, PlanPackageBeginEventArgs e)
         {
-            if (WixBA.Model.Engine.StringVariables.Contains("MbaNetfxPackageId") && e.PackageId.Equals(WixBA.Model.Engine.StringVariables["MbaNetfxPackageId"], StringComparison.Ordinal))
+            // If this mba is running, we don't need to do anything with the NetFx4x package.
+            if ( e.PackageId.IndexOf("NetFx4", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 e.State = RequestState.None;
             }
