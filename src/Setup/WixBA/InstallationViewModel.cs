@@ -415,8 +415,8 @@ namespace WixToolset.UX
 
         private void PlanPackageBegin(object sender, PlanPackageBeginEventArgs e)
         {
-            // If this mba is running, we don't need to do anything with the NetFx4x package.
-            if ( e.PackageId.IndexOf("NetFx4", StringComparison.OrdinalIgnoreCase) >= 0)
+            // If we're able to run our BA, we don't want to install the .NET Framework since the framework on the machine is already good enough.
+            if ( e.PackageId.StartsWith("NetFx4", StringComparison.OrdinalIgnoreCase))
             {
                 e.State = RequestState.None;
             }
