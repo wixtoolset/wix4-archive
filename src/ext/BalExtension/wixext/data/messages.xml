@@ -22,5 +22,22 @@
                 There may only be one package in the bundle that has either the PrereqLicenseFile attribute or the PrereqLicenseUrl attribute.
             </Instance>
         </Message>
+        <Message Id="MultipleBAFunctions" Number="6804">
+            <Instance>
+                WixStandardBootstrapperApplication doesn't support multiple BAFunctions DLLs.
+            </Instance>
+        </Message>
+        <Message Id="BAFunctionsPayloadRequiredInUXContainer" Number="6805">
+            <Instance>
+                The BAFunctions DLL Payload element must be located inside the BootstrapperApplication container.
+            </Instance>
+        </Message>
+    </Class>
+    <Class Name="BalWarnings" ContainerName="BalWarningEventArgs" BaseContainerName="MessageEventArgs" Level="Warning">
+        <Message Id="UnmarkedBAFunctionsDLL" Number="6501">
+            <Instance>
+                WixStandardBootstrapperApplication doesn't automatically load BAFunctions.dll. Use the bal:BAFunctions attribute to indicate that it should be loaded.
+            </Instance>
+        </Message>
     </Class>
 </Messages>
