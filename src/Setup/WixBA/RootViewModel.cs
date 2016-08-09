@@ -43,7 +43,6 @@ namespace WixToolset.UX
         public ProgressViewModel ProgressViewModel { get; private set; }
         public UpdateViewModel UpdateViewModel { get; private set; }
         public IntPtr ViewWindowHandle { get; set; }
-        public Action CloseAction { get; set; }
 
         public ICommand CloseCommand
         {

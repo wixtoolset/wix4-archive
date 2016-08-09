@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--  Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.  -->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,23 +8,23 @@
                     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
                     xmlns:ux="clr-namespace:WixToolset.UX">
 
-    <!--  Converters  -->
+    <!-- Converters -->
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
-    <!--  Fonts  -->
-    <FontFamily x:Key="FontFamily">Gabriola, Constantia, Tahoma, Segoe UI, Arial</FontFamily>
-    <System:Double x:Key="FontSizeBranding">40</System:Double>
+    <!-- Fonts -->
+    <FontFamily x:Key="FontFamily">Segoe UI, Arial</FontFamily>
+    <System:Double x:Key="FontSizeBranding">45</System:Double>
     <System:Double x:Key="FontSizeMedium">12</System:Double>
     <System:Double x:Key="FontSizeButton">14</System:Double>
 
-    <!--  Images  -->
+    <!-- Images -->
     <BitmapImage x:Key="LogoOverLightBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-white-hollow.png" />
     <BitmapImage x:Key="LogoOverDarkBackground" UriSource="pack://application:,,,/WixBA;component/resources/logo-black-hollow.png" />
 
-    <!--  Colors  -->
+    <!-- Colors -->
     <Color x:Key="ProgressIndicatorColor">#FF1EF1E8</Color>
 
-    <!--  Brushs  -->
+    <!-- Brushs -->
     <SolidColorBrush x:Key="ProgressIndicatorBrush" Color="{DynamicResource ProgressIndicatorColor}" />
 
     <LinearGradientBrush x:Key="ProgressBarIndicatorAnimatedFill" StartPoint="0,0" EndPoint="1,0">
@@ -40,7 +40,7 @@
         </LinearGradientBrush.GradientStops>
     </LinearGradientBrush>
 
-    <!--  Control Templates  -->
+    <!-- Control Templates -->
     <ControlTemplate x:Key="HyperlinkedButtonTemplateKey" TargetType="{x:Type Button}">
         <ContentPresenter Margin="{TemplateBinding Control.Padding}"
                           HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}"
@@ -75,7 +75,7 @@
         </Border>
     </ControlTemplate>
 
-    <!--  Styles  -->
+    <!-- Styles -->
     <Style x:Key="ActionBtnStkPnlStyle" TargetType="StackPanel">
         <Setter Property="Margin" Value="0,2,0,0" />
         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -99,15 +99,16 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="TextAlignment" Value="Center" />
         <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
     </Style>
 
     <Style x:Key="TitleTextBlkStyle"
            BasedOn="{StaticResource CommonTextBlkStyle}"
            TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="FontSize" Value="{DynamicResource ResourceKey=FontSizeBranding}" />
         <Setter Property="FontWeight" Value="ExtraBold" />
-        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
         <Setter Property="Margin" Value="0" />
     </Style>
 
@@ -151,6 +152,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontFamily}" />
     </Style>
 
     <Style x:Key="FinalActionButtonStyle"

@@ -415,7 +415,8 @@ namespace WixToolset.UX
 
         private void PlanPackageBegin(object sender, PlanPackageBeginEventArgs e)
         {
-            if (WixBA.Model.Engine.StringVariables.Contains("MbaNetfxPackageId") && e.PackageId.Equals(WixBA.Model.Engine.StringVariables["MbaNetfxPackageId"], StringComparison.Ordinal))
+            // If we're able to run our BA, we don't want to install the .NET Framework since the framework on the machine is already good enough.
+            if ( e.PackageId.StartsWith("NetFx4", StringComparison.OrdinalIgnoreCase))
             {
                 e.State = RequestState.None;
             }

@@ -30,30 +30,6 @@ namespace WixToolset.UX
         }
 
         /// <summary>
-        /// Allows the user to drag the window around by grabbing the background rectangle.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Background_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (MouseButtonState.Pressed == Mouse.LeftButton)
-            {
-                this.DragMove();
-                e.Handled = true;
-            }
-        }
- 
-        /// <summary>
-        /// If user clicks on a no-input control (i.e. a TextBlock, etc.) route event to here to avoid  InvalidOperationException
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RootView_IgnoreClick(object sender, MouseButtonEventArgs e)
-        {
-            //e.Handled = true;
-        }
-
-        /// <summary>
         /// Event is fired when the window is closing.
         /// </summary>
         /// <param name="sender"></param>

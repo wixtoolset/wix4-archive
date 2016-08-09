@@ -1,7 +1,5 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-// WixBAFacelift TODO list:
-// Compile against NetFx452 (supported).  Moved to Net45 to check out using WindowChrome, then backed out Chrome.  check with wix-devs, then update Bundle when framework consenuse exist.
 namespace WixToolset.UX
 {
     using System;
@@ -142,22 +140,12 @@ namespace WixToolset.UX
                 WixBA.Plan(WixBA.Model.Command.Action);
             }
         }
-        /// <summary>
-        /// Helper to attach a debugger to the cr instance when debugging
-        /// </summary>
-        [Conditional("DEBUG")]
-        private static void AttachDebuger()
-        {
-            System.Diagnostics.Debugger.Launch();
-            return;
-        }
 
         /// <summary>
         /// Thread entry point for WiX Toolset UX.
         /// </summary>
         protected override void Run()
         {
-            // AttachDebuger();
             this.Engine.Log(LogLevel.Verbose, "Running the WiX BA.");
             WixBA.Model = new Model(this);
             WixBA.Dispatcher = Threading.Dispatcher.CurrentDispatcher;
