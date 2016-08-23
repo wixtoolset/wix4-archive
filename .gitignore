@@ -21,7 +21,11 @@ ipch/
 *.tlh
 *.tmp
 *.log
+*.opendb
 *.opensdf
 *.sdf
-*.opendb
+*.aps
+*.ncb
+*.cachefile
 *.VC.db
+*.VC.VC.opendb
