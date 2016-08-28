@@ -136,11 +136,11 @@ extern "C" HRESULT UserExperienceUnload(
             pfnDestroy();
         }
 
-        // free UX DLL
+        // Free BA DLL.
         if (!::FreeLibrary(pUserExperience->hUXModule))
         {
             hr = HRESULT_FROM_WIN32(::GetLastError());
-            TraceError(hr, "Failed to unload UX DLL.");
+            TraceError(hr, "Failed to unload BA DLL.");
         }
         pUserExperience->hUXModule = NULL;
     }
@@ -376,6 +376,29 @@ BAAPI UserExperienceOnPlanComplete(
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnPlanComplete failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONSHUTDOWN_ARGS args = { };
+    BA_ONSHUTDOWN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONSHUTDOWN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnShutdown failed.");
+
+    *pAction = results.action;
 
 LExit:
     return hr;

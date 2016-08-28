@@ -1094,12 +1094,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnShutdown()
+        int IBootstrapperApplication.OnShutdown(ref BOOTSTRAPPER_SHUTDOWN_ACTION action)
         {
-            ShutdownEventArgs args = new ShutdownEventArgs();
+            ShutdownEventArgs args = new ShutdownEventArgs(action);
             this.OnShutdown(args);
 
-            return args.Result;
+            action = args.Action;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnSystemShutdown(EndSessionReasons dwEndSession, int nRecommendation)

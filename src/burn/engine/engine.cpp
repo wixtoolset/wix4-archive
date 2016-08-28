@@ -644,6 +644,7 @@ static HRESULT RunApplication(
     BOOL fStartupCalled = FALSE;
     BOOL fRet = FALSE;
     MSG msg = { };
+    BOOTSTRAPPER_SHUTDOWN_ACTION shutdownAction = BOOTSTRAPPER_SHUTDOWN_ACTION_NONE;
 
     ::PeekMessageW(&msg, NULL, WM_USER, WM_USER, PM_NOREMOVE);
 
@@ -651,7 +652,7 @@ static HRESULT RunApplication(
     engineContext.dwThreadId = ::GetCurrentThreadId();
     engineContext.pEngineState = pEngineState;
     hr = EngineForApplicationCreate(pEngineState, engineContext.dwThreadId, &engineContext.pEngineForApplication);
-    ExitOnFailure(hr, "Failed to create engine for UX.");
+    ExitOnFailure(hr, "Failed to create engine for BA.");
 
     // Load the bootstrapper application.
     hr = UserExperienceLoad(&pEngineState->userExperience, &engineContext, &pEngineState->command);
@@ -675,26 +676,26 @@ static HRESULT RunApplication(
         }
     }
 
-    // get exit code
+    // Get exit code.
     pEngineState->userExperience.dwExitCode = (DWORD)msg.wParam;
 
 LExit:
     if (fStartupCalled)
     {
-        int nResult = pEngineState->userExperience.pUserExperience->OnShutdown();
-        if (IDRESTART == nResult)
+        UserExperienceOnShutdown(&pEngineState->userExperience, &shutdownAction);
+        if (BOOTSTRAPPER_SHUTDOWN_ACTION_RESTART == shutdownAction)
         {
             LogId(REPORT_STANDARD, MSG_BA_REQUESTED_RESTART, LoggingBoolToString(pEngineState->fRestart));
             pEngineState->fRestart = TRUE;
         }
-        else if (IDRELOAD_BOOTSTRAPPER == nResult)
+        else if (BOOTSTRAPPER_SHUTDOWN_ACTION_RELOAD_BOOTSTRAPPER == shutdownAction)
         {
             LogId(REPORT_STANDARD, MSG_BA_REQUESTED_RELOAD);
             *pfReloadApp = TRUE;
         }
     }
 
-    // unload UX
+    // Unload BA.
     UserExperienceUnload(&pEngineState->userExperience);
 
     ReleaseObject(engineContext.pEngineForApplication);

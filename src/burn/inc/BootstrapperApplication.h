@@ -84,6 +84,20 @@ enum BOOTSTRAPPER_APPLICATION_MESSAGE
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN,
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE,
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONSTARTUP,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONSHUTDOWN,
+};
+
+enum BOOTSTRAPPER_SHUTDOWN_ACTION
+{
+    BOOTSTRAPPER_SHUTDOWN_ACTION_NONE,
+    // Instructs the engine to restart.
+    // The engine will not launch again after the machine is rebooted.
+    // Ignored if reboot was already initiated by OnExecutePackageComplete().
+    BOOTSTRAPPER_SHUTDOWN_ACTION_RESTART,
+    // Instructs the engine to unload the bootstrapper application and
+    // restart the engine which will load the bootstrapper application again.
+    // Typically used to switch from a native bootstrapper application to a managed one.
+    BOOTSTRAPPER_SHUTDOWN_ACTION_RELOAD_BOOTSTRAPPER,
 };
 
 struct BOOTSTRAPPER_COMMAND
@@ -150,6 +164,17 @@ struct BA_ONPLANCOMPLETE_ARGS
 struct BA_ONPLANCOMPLETE_RESULTS
 {
     DWORD cbSize;
+};
+
+struct BA_ONSHUTDOWN_ARGS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONSHUTDOWN_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_SHUTDOWN_ACTION action;
 };
 
 struct BA_ONSTARTUP_ARGS

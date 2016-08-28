@@ -9,17 +9,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnStartup)() = 0;
 
     // OnShutdown - called after the bootstrapper application quits the engine.
-    //
-    // Return:
-    //  IDRESTART instructs the engine to restart. The engine will not launch again after the machine
-    //            is rebooted. Ignored if reboot was already initiated by OnExecutePackageComplete().
-    //
-    // IDRELOAD_BOOTSTRAPPER instructs the engine to unload the bootstrapper application and restart
-    //                       the engine which will load the bootstrapper application again. Typically
-    //                       used to switch from a native bootstrapper application to a managed one.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnShutdown)() = 0;
+    STDMETHOD(OnShutdown)(
+        __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+        ) = 0;
 
     // OnSystemShutdown - called when the operating system is instructed to shutdown the machine.
     //

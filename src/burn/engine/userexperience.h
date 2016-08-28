@@ -115,6 +115,10 @@ HRESULT UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     );
+HRESULT UserExperienceOnShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+    );
 HRESULT UserExperienceOnStartup(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
