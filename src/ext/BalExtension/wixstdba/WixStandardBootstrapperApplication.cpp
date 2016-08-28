@@ -932,6 +932,8 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE:
             OnPlanCompleteFallback(reinterpret_cast<BA_ONPLANCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPLETE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSTARTUP: // BAFunctions is loaded during this event on a separate thread so it's not possible to forward it.
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);

@@ -381,6 +381,25 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnStartup(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONSTARTUP_ARGS args = { };
+    BA_ONSTARTUP_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONSTARTUP, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnStartup failed.");
+
+LExit:
+    return hr;
+}
+
 extern "C" int UserExperienceCheckExecuteResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fRollback,

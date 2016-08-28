@@ -15,7 +15,9 @@ namespace WixToolset.Bootstrapper
     [GeneratedCodeAttribute("WixToolset.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
     public interface IBootstrapperApplication
     {
-        void OnStartup();
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnStartup();
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
@@ -678,5 +680,6 @@ namespace WixToolset.Bootstrapper
         OnDetectComplete,
         OnPlanBegin,
         OnPlanComplete,
+        OnStartup,
     }
 }
