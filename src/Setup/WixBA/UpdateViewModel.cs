@@ -160,7 +160,7 @@ namespace WixToolset.UX
             if ((UpdateState.Failed != this.State) && (LaunchAction.Uninstall != WixBA.Model.Command.Action) && (Display.Full == WixBA.Model.Command.Display))
             {
                 this.State = UpdateState.Checking;
-                e.Result = Result.Ok;
+                e.Skip = false;
             }
         }
         
@@ -168,7 +168,7 @@ namespace WixToolset.UX
         {
             // The list of updates is sorted in descending version, so the first callback should be the largest update available.
             // This update should be either larger than ours (so we are out of date), the same as ours (so we are current)
-            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.Result alone and
+            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.StopProcessingUpdates alone and
             // enumerate all of the updates.
             WixBA.Model.Engine.Log(LogLevel.Verbose, String.Format("Potential update v{0} from '{1}'; current version: v{2}", e.Version, e.UpdateLocation, WixBA.Model.Version));
             if (e.Version > WixBA.Model.Version)
@@ -178,13 +178,12 @@ namespace WixToolset.UX
                 string changesFormat = @"<body style='overflow: auto;'>{0}</body>";
                 this.UpdateChanges = String.Format(changesFormat, e.Content);
                 this.State = UpdateState.Available;
-                e.Result = Result.Ok;
             }
-            else if (e.Version <= WixBA.Model.Version)
+            else
             {
                 this.State = UpdateState.Current;
-                e.Result = Result.Cancel;
             }
+            e.StopProcessingUpdates = true;
         }
 
         private void DetectUpdateComplete(object sender, Bootstrapper.DetectUpdateCompleteEventArgs e)

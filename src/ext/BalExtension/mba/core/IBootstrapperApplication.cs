@@ -60,7 +60,7 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectUpdate(
+        int OnDetectUpdate(
             [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation,
             [MarshalAs(UnmanagedType.U8)] long dw64Size,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
@@ -68,7 +68,8 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzSummary,
             [MarshalAs(UnmanagedType.LPWStr)] string wzContentType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzContent,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fStopProcessingUpdates
             );
 
         [PreserveSig]

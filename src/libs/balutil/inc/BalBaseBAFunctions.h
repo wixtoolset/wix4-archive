@@ -120,7 +120,7 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectUpdate(
+    virtual STDMETHODIMP OnDetectUpdate(
         __in_z LPCWSTR /*wzUpdateLocation*/,
         __in DWORD64 /*dw64Size*/,
         __in DWORD64 /*dw64Version*/,
@@ -128,10 +128,11 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzSummary*/,
         __in_z LPCWSTR /*wzContentType*/,
         __in_z LPCWSTR /*wzContent*/,
-        __in int nRecommendation
+        __inout BOOL* /*pfCancel*/,
+        __inout BOOL* /*pfStopProcessingUpdates*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectUpdateComplete(

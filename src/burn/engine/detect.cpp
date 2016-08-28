@@ -390,11 +390,10 @@ static HRESULT DetectAtomFeedUpdate(
 
 
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     LPWSTR sczUpdateFeedTempFile = NULL;
-
     ATOM_FEED* pAtomFeed = NULL;
     APPLICATION_UPDATE_CHAIN* pApupChain = NULL;
+    BOOL fStopProcessingUpdates = FALSE;
 
     hr = AtomInitialize();
     ExitOnFailure(hr, "Failed to initialize Atom.");
@@ -414,27 +413,16 @@ static HRESULT DetectAtomFeedUpdate(
         {
             APPLICATION_UPDATE_ENTRY* pAppUpdateEntry = &pApupChain->rgEntries[i];
 
-            nResult = pUX->pUserExperience->OnDetectUpdate(pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->wzUrl : NULL, 
+            hr = UserExperienceOnDetectUpdate(pUX, pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->wzUrl : NULL, 
                 pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->dw64Size : 0, 
                 pAppUpdateEntry->dw64Version, pAppUpdateEntry->wzTitle,
-                pAppUpdateEntry->wzSummary, pAppUpdateEntry->wzContentType, pAppUpdateEntry->wzContent, IDNOACTION);
+                pAppUpdateEntry->wzSummary, pAppUpdateEntry->wzContentType, pAppUpdateEntry->wzContent, &fStopProcessingUpdates);
+            ExitOnRootFailure(hr, "BA aborted detect update.");
 
-            switch (nResult)
+            if (fStopProcessingUpdates)
             {
-                case IDNOACTION:
-                    hr = S_OK;
-                    continue;
-                case IDOK:   
-                    pUpdate->fUpdateAvailable = TRUE;
-                    hr = S_OK;
-                    break;
-                case IDCANCEL:
-                    hr = S_FALSE;
-                    break;
-                default:
-                    ExitOnRootFailure(hr = E_INVALIDDATA, "UX aborted detect update begin.");
+                break;
             }
-            break;
         }
     }
 
