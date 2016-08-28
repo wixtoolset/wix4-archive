@@ -423,6 +423,31 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnSystemShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwEndSession,
+    __inout BOOL* pfCancel
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONSYSTEMSHUTDOWN_ARGS args = { };
+    BA_ONSYSTEMSHUTDOWN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.dwEndSession = dwEndSession;
+
+    results.cbSize = sizeof(results);
+    results.fCancel = *pfCancel;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnSystemShutdown failed.");
+    
+    *pfCancel = results.fCancel;
+
+LExit:
+    return hr;
+}
+
 extern "C" int UserExperienceCheckExecuteResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fRollback,

@@ -327,7 +327,7 @@ namespace WixTest.BA
         {
             // Always prevent shutdown.
             this.Log("Disallowed system request to shut down the bootstrapper application.");
-            args.Result = Result.Cancel;
+            args.Cancel = true;
 
             this.wait.Set();
         }

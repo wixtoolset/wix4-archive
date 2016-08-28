@@ -122,6 +122,11 @@ HRESULT UserExperienceOnShutdown(
 HRESULT UserExperienceOnStartup(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
+HRESULT UserExperienceOnSystemShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwEndSession,
+    __inout BOOL* pfCancel
+    );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwAllowedResults,

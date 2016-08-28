@@ -40,8 +40,8 @@ namespace WixToolset.Bootstrapper
         /// Fired when the system is shutting down or user is logging off.
         /// </summary>
         /// <remarks>
-        /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-        /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+        /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+        /// true; otherwise, set it to false.</para>
         /// <para>By default setup will prevent shutting down or logging off between
         /// <see cref="BootstrapperApplication.ApplyBegin"/> and <see cref="BootstrapperApplication.ApplyComplete"/>.
         /// Derivatives can change this behavior by overriding <see cref="BootstrapperApplication.OnSystemShutdown"/>
@@ -394,8 +394,8 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
         /// <remarks>
-        /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-        /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+        /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+        /// true; otherwise, set it to false.</para>
         /// <para>By default setup will prevent shutting down or logging off between
         /// <see cref="BootstrapperApplication.ApplyBegin"/> and <see cref="BootstrapperApplication.ApplyComplete"/>.
         /// Derivatives can change this behavior by overriding <see cref="BootstrapperApplication.OnSystemShutdown"/>
@@ -416,7 +416,7 @@ namespace WixToolset.Bootstrapper
             {
                 // Allow requests to shut down when critical or not applying.
                 bool critical = EndSessionReasons.Critical == (EndSessionReasons.Critical & args.Reasons);
-                args.Result = (critical || !this.applying) ? Result.Ok : Result.Cancel;
+                args.Cancel = !critical && this.applying;
             }
         }
 
@@ -1103,12 +1103,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnSystemShutdown(EndSessionReasons dwEndSession, int nRecommendation)
+        int IBootstrapperApplication.OnSystemShutdown(EndSessionReasons dwEndSession, ref bool fCancel)
         {
-            SystemShutdownEventArgs args = new SystemShutdownEventArgs(dwEndSession, nRecommendation);
+            SystemShutdownEventArgs args = new SystemShutdownEventArgs(dwEndSession, fCancel);
             this.OnSystemShutdown(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         int IBootstrapperApplication.OnDetectBegin(bool fInstalled, int cPackages, ref bool fCancel)

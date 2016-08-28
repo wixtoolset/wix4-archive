@@ -81,12 +81,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnSystemShutdown(
+    virtual STDMETHODIMP OnSystemShutdown(
         __in DWORD /*dwEndSession*/,
-        __in int /*nRecommendation*/
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(HRESULT) OnDetectBegin(
