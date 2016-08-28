@@ -38,6 +38,11 @@ namespace WixToolset.Bootstrapper
         {
         }
 
+        public CancellableHResultEventArgs(bool cancelRecommendation)
+        {
+            this.Cancel = cancelRecommendation;
+        }
+
         /// <summary>
         /// Gets or sets whether to cancel the operation. This is passed back to the engine.
         /// </summary>
@@ -175,8 +180,8 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the system is shutting down or the user is logging off.
     /// </summary>
     /// <remarks>
-    /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-    /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+    /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+    /// true; otherwise, set it to false.</para>
     /// <para>By default setup will prevent shutting down or logging off between
     /// <see cref="BootstrapperApplication.ApplyBegin"/> and <see cref="BootstrapperApplication.ApplyComplete"/>.</para>
     /// <para>If <see cref="SystemShutdownEventArgs.Reasons"/> contains <see cref="EndSessionReasons.Critical"/>
@@ -184,35 +189,30 @@ namespace WixToolset.Bootstrapper
     /// critical operations before being closed by the operating system.</para>
     /// </remarks>
     [Serializable]
-    public class SystemShutdownEventArgs : ResultEventArgs
+    public class SystemShutdownEventArgs : CancellableHResultEventArgs
     {
-        private EndSessionReasons reasons;
-
         /// <summary>
         /// Creates a new instance of the <see cref="SystemShutdownEventArgs"/> class.
         /// </summary>
         /// <param name="reasons">The reason the application is requested to close or being closed.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public SystemShutdownEventArgs(EndSessionReasons reasons, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public SystemShutdownEventArgs(EndSessionReasons reasons, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.reasons = reasons;
+            this.Reasons = reasons;
         }
 
         /// <summary>
         /// Gets the reason the application is requested to close or being closed.
         /// </summary>
         /// <remarks>
-        /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-        /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+        /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+        /// true; otherwise, set it to false.</para>
         /// <para>If <see cref="SystemShutdownEventArgs.Reasons"/> contains <see cref="EndSessionReasons.Critical"/>
         /// the bootstrapper cannot prevent the shutdown and only has a few seconds to save state or perform any other
         /// critical operations before being closed by the operating system.</para>
         /// </remarks>
-        public EndSessionReasons Reasons
-        {
-            get { return this.reasons; }
-        }
+        public EndSessionReasons Reasons { get; private set; }
     }
 
     /// <summary>

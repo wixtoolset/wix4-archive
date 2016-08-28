@@ -14,14 +14,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnSystemShutdown - called when the operating system is instructed to shutdown the machine.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to block the shutdown of the machine.
-    //
-    //  All other return codes allow the shutdown to commence.
-    STDMETHOD_(int, OnSystemShutdown)(
+    STDMETHOD(OnSystemShutdown)(
         __in DWORD dwEndSession,
-        __in int nRecommendation
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectBegin - called when the engine begins detection.

@@ -939,6 +939,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSHUTDOWN:
             OnShutdownFallback(reinterpret_cast<BA_ONSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSHUTDOWN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN:
+            OnSystemShutdownFallback(reinterpret_cast<BA_ONSYSTEMSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSYSTEMSHUTDOWN_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -985,6 +988,13 @@ private: // privates
         __inout BA_ONSHUTDOWN_RESULTS* pResults)
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnSystemShutdownFallback(
+        __in BA_ONSYSTEMSHUTDOWN_ARGS* pArgs,
+        __inout BA_ONSYSTEMSHUTDOWN_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSYSTEMSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //
@@ -1744,6 +1754,7 @@ private: // privates
     {
 #pragma warning(suppress:4312)
         CWixStandardBootstrapperApplication* pBA = reinterpret_cast<CWixStandardBootstrapperApplication*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+        BOOL fCancel = FALSE;
 
         switch (uMsg)
         {
@@ -1772,7 +1783,9 @@ private: // privates
             break;
 
         case WM_QUERYENDSESSION:
-            return IDCANCEL != pBA->OnSystemShutdown(static_cast<DWORD>(lParam), IDCANCEL);
+            fCancel = true;
+            pBA->OnSystemShutdown(static_cast<DWORD>(lParam), &fCancel);
+            return !fCancel;
 
         case WM_CLOSE:
             // If the user chose not to close, do *not* let the default window proc handle the message.

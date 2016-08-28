@@ -25,9 +25,9 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnSystemShutdown(
+        int OnSystemShutdown(
             [MarshalAs(UnmanagedType.U4)] EndSessionReasons dwEndSession,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

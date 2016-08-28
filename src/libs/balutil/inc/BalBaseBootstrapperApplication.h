@@ -73,18 +73,17 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnSystemShutdown(
+    virtual STDMETHODIMP OnSystemShutdown(
         __in DWORD dwEndSession,
-        __in int /*nRecommendation*/
+        __inout BOOL* pfCancel
         )
     {
-        // Allow requests to shut down when critical or not applying.
-        if (ENDSESSION_CRITICAL & dwEndSession || !m_fApplying)
-        {
-            return IDOK;
-        }
+        HRESULT hr = S_OK;
 
-        return IDCANCEL;
+        // Allow requests to shut down when critical or not applying.
+        *pfCancel = !(ENDSESSION_CRITICAL & dwEndSession || !m_fApplying);
+
+        return hr;
     }
 
     virtual STDMETHODIMP_(HRESULT) OnDetectBegin(
