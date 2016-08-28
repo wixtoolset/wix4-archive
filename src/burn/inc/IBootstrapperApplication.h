@@ -27,20 +27,14 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectForwardCompatibleBundle - called when the engine detects a forward compatible bundle.
-    //
-    // Return:
-    //  IDOK instructs the engine to use the forward compatible bundle.
-    //
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to not use the forward compatible bundle.
-    STDMETHOD_(int, OnDetectForwardCompatibleBundle)(
+    STDMETHOD(OnDetectForwardCompatibleBundle)(
         __in_z LPCWSTR wzBundleId,
         __in BOOTSTRAPPER_RELATION_TYPE relationType,
         __in_z LPCWSTR wzBundleTag,
         __in BOOL fPerMachine,
         __in DWORD64 dw64Version,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* pfIgnoreBundle
         ) = 0;
 
     // OnDetectUpdateBegin - called when the engine begins detection for bundle update.

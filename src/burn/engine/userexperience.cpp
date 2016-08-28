@@ -337,6 +337,43 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnDetectForwardCompatibleBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __inout BOOL* pfIgnoreBundle
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS args = { };
+    BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzBundleId = wzBundleId;
+    args.relationType = relationType;
+    args.wzBundleTag = wzBundleTag;
+    args.fPerMachine = fPerMachine;
+    args.dw64Version = dw64Version;
+
+    results.cbSize = sizeof(results);
+    results.fIgnoreBundle = *pfIgnoreBundle;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectForwardCompatibleBundle failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pfIgnoreBundle = results.fIgnoreBundle;
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

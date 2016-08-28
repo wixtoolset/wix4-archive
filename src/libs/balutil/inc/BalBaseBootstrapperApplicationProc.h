@@ -72,6 +72,15 @@ static HRESULT BalBaseBAProcOnSystemShutdown(
     return pBA->OnSystemShutdown(pArgs->dwEndSession, &pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnDetectForwardCompatibleBundle(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS* pArgs,
+    __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults
+    )
+{
+    return pBA->OnDetectForwardCompatibleBundle(pArgs->wzBundleId, pArgs->relationType, pArgs->wzBundleTag, pArgs->fPerMachine, pArgs->dw64Version, &pResults->fCancel, &pResults->fIgnoreBundle);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -112,6 +121,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN:
             hr = BalBaseBAProcOnSystemShutdown(pBA, reinterpret_cast<BA_ONSYSTEMSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSYSTEMSHUTDOWN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE:
+            hr = BalBaseBAProcOnDetectForwardCompatibleBundle(pBA, reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS*>(pvResults));
             break;
         }
     }
