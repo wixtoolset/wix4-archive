@@ -207,9 +207,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnShutdown()
+    virtual STDMETHODIMP OnShutdown(
+        __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+        )
     {
-        int nResult = IDNOACTION;
+        HRESULT hr = S_OK;
 
         // wait for UI thread to terminate
         if (m_hUiThread)
@@ -223,7 +225,7 @@ public: // IBootstrapperApplication
         {
             if (m_fAllowRestart)
             {
-                nResult = IDRESTART;
+                *pAction = BOOTSTRAPPER_SHUTDOWN_ACTION_RESTART;
             }
 
             if (m_fPrereq)
@@ -235,7 +237,7 @@ public: // IBootstrapperApplication
         else if (m_fPrereqInstalled)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "The prerequisites were successfully installed. The bootstrapper application will be reloaded.");
-            nResult = IDRELOAD_BOOTSTRAPPER;
+            *pAction = BOOTSTRAPPER_SHUTDOWN_ACTION_RELOAD_BOOTSTRAPPER;
         }
         else if (m_fPrereqAlreadyInstalled)
         {
@@ -246,7 +248,7 @@ public: // IBootstrapperApplication
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "The prerequisites were not successfully installed, error: 0x%x. The bootstrapper application will be not reloaded.", m_hrFinal);
         }
 
-        return nResult;
+        return hr;
     }
 
 
@@ -934,6 +936,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSTARTUP: // BAFunctions is loaded during this event on a separate thread so it's not possible to forward it.
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSHUTDOWN:
+            OnShutdownFallback(reinterpret_cast<BA_ONSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSHUTDOWN_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -973,6 +978,13 @@ private: // privates
         __inout BA_ONPLANCOMPLETE_RESULTS* pResults)
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnShutdownFallback(
+        __in BA_ONSHUTDOWN_ARGS* pArgs,
+        __inout BA_ONSHUTDOWN_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

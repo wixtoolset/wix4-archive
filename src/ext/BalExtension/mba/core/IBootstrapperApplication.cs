@@ -21,7 +21,7 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnShutdown();
+        int OnShutdown(ref BOOTSTRAPPER_SHUTDOWN_ACTION action);
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
@@ -681,5 +681,16 @@ namespace WixToolset.Bootstrapper
         OnPlanBegin,
         OnPlanComplete,
         OnStartup,
+        OnShutdown,
+    }
+
+    /// <summary>
+    /// The available actions for OnShutdown.
+    /// </summary>
+    public enum BOOTSTRAPPER_SHUTDOWN_ACTION
+    {
+        None,
+        Restart,
+        ReloadBootstrapper,
     }
 }

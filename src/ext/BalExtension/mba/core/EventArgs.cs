@@ -155,14 +155,20 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when shutdown has begun.
     /// </summary>
     [Serializable]
-    public class ShutdownEventArgs : ResultEventArgs
+    public class ShutdownEventArgs : HResultEventArgs
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ShutdownEventArgs"/> class.
         /// </summary>
-        public ShutdownEventArgs()
+        public ShutdownEventArgs(BOOTSTRAPPER_SHUTDOWN_ACTION action)
         {
+            this.Action = action;
         }
+
+        /// <summary>
+        /// The action for OnShutdown.
+        /// </summary>
+        public BOOTSTRAPPER_SHUTDOWN_ACTION Action { get; set; }
     }
 
     /// <summary>
