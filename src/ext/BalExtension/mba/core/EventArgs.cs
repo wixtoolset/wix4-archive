@@ -141,7 +141,7 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when startup has begun.
     /// </summary>
     [Serializable]
-    public class StartupEventArgs : EventArgs
+    public class StartupEventArgs : HResultEventArgs
     {
         /// <summary>
         /// Creates a new instance of the <see cref="StartupEventArgs"/> class.

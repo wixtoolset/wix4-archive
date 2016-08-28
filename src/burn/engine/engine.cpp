@@ -658,7 +658,7 @@ static HRESULT RunApplication(
     ExitOnFailure(hr, "Failed to load BA.");
 
     fStartupCalled = TRUE;
-    hr = pEngineState->userExperience.pUserExperience->OnStartup();
+    hr = UserExperienceOnStartup(&pEngineState->userExperience);
     ExitOnFailure(hr, "Failed to start bootstrapper application.");
 
     // Enter the message pump.

@@ -3,7 +3,6 @@
 namespace WixToolset.Bootstrapper
 {
     using System;
-    using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Threading;
 
@@ -1087,10 +1086,12 @@ namespace WixToolset.Bootstrapper
 
         #region IBootstrapperApplication Members
 
-        void IBootstrapperApplication.OnStartup()
+        int IBootstrapperApplication.OnStartup()
         {
             StartupEventArgs args = new StartupEventArgs();
             this.OnStartup(args);
+
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnShutdown()
