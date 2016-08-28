@@ -374,6 +374,35 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnDetectUpdateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __inout BOOL* pfSkip
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTUPDATEBEGIN_ARGS args = { };
+    BA_ONDETECTUPDATEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzUpdateLocation = wzUpdateLocation;
+
+    results.cbSize = sizeof(results);
+    results.fSkip = *pfSkip;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectUpdateBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pfSkip = results.fSkip;
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

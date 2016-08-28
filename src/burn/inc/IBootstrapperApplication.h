@@ -38,16 +38,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectUpdateBegin - called when the engine begins detection for bundle update.
-    //
-    // Return:
-    //  IDOK instructs the engine to attempt update detection.
-    //
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to skip update detection.
-    STDMETHOD_(int, OnDetectUpdateBegin)(
+    STDMETHOD(OnDetectUpdateBegin)(
         __in_z LPCWSTR wzUpdateLocation,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* pfSkip
         ) = 0;
 
     // OnDetectUpdate - called when the engine has an update candidate for bundle update.

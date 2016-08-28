@@ -1131,12 +1131,14 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectUpdateBegin(string wzUpdateLocation, int nRecommendation)
+        int IBootstrapperApplication.OnDetectUpdateBegin(string wzUpdateLocation, ref bool fCancel, ref bool fSkip)
         {
-            DetectUpdateBeginEventArgs args = new DetectUpdateBeginEventArgs(wzUpdateLocation, nRecommendation);
+            DetectUpdateBeginEventArgs args = new DetectUpdateBeginEventArgs(wzUpdateLocation, fCancel, fSkip);
             this.OnDetectUpdateBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            fSkip = args.Skip;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectUpdate(string wzUpdateLocation, long dw64Size, long dw64Version, string wzTitle, string wzSummary, string wzContentType, string wzContent, int nRecommendation)

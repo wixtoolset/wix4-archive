@@ -115,7 +115,7 @@ namespace WixTest.BA
             this.Log("OnDetectUpdateBegin");
             if ((LaunchAction.UpdateReplaceEmbedded == this.action)|(LaunchAction.UpdateReplace == this.action))
             {
-                args.Result = Result.Ok;
+                args.Skip = false;
             }
         }
 
