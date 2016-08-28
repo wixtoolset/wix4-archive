@@ -89,7 +89,7 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(HRESULT) OnDetectBegin(
+    virtual STDMETHODIMP OnDetectBegin(
         __in BOOL /*fInstalled*/,
         __in DWORD /*cPackages*/,
         __inout BOOL* /*pfCancel*/
@@ -98,16 +98,17 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectForwardCompatibleBundle(
+    virtual STDMETHODIMP OnDetectForwardCompatibleBundle(
         __in_z LPCWSTR /*wzBundleId*/,
         __in BOOTSTRAPPER_RELATION_TYPE /*relationType*/,
         __in_z LPCWSTR /*wzBundleTag*/,
         __in BOOL /*fPerMachine*/,
         __in DWORD64 /*dw64Version*/,
-        __in int nRecommendation
+        __inout BOOL* /*pfCancel*/,
+        __inout BOOL* /*pfIgnoreBundle*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectUpdateBegin(

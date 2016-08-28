@@ -1121,12 +1121,14 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectForwardCompatibleBundle(string wzBundleId, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, int nRecommendation)
+        int IBootstrapperApplication.OnDetectForwardCompatibleBundle(string wzBundleId, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, ref bool fCancel, ref bool fIgnoreBundle)
         {
-            DetectForwardCompatibleBundleEventArgs args = new DetectForwardCompatibleBundleEventArgs(wzBundleId, relationType, wzBundleTag, fPerMachine, version, nRecommendation);
+            DetectForwardCompatibleBundleEventArgs args = new DetectForwardCompatibleBundleEventArgs(wzBundleId, relationType, wzBundleTag, fPerMachine, version, fCancel, fIgnoreBundle);
             this.OnDetectForwardCompatibleBundle(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            fIgnoreBundle = args.IgnoreBundle;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectUpdateBegin(string wzUpdateLocation, int nRecommendation)

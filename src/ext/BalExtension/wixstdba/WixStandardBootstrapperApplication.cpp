@@ -955,9 +955,7 @@ private: // privates
         __in BA_ONDETECTBEGIN_ARGS* pArgs,
         __inout BA_ONDETECTBEGIN_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
     }
 
     void OnDetectCompleteFallback(
@@ -971,9 +969,7 @@ private: // privates
         __in BA_ONPLANBEGIN_ARGS* pArgs,
         __inout BA_ONPLANBEGIN_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanBegin to BAFunctions: fCancel=%s", pResults->fCancel ? "true" : "false");
     }
 
     void OnPlanCompleteFallback(
@@ -995,6 +991,15 @@ private: // privates
         __inout BA_ONSYSTEMSHUTDOWN_RESULTS* pResults)
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSYSTEMSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectForwardCompatibleBundleFallback(
+        __in BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS* pArgs,
+        __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults)
+    {
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
     }
 
     //

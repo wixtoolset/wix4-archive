@@ -247,14 +247,8 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when detected a forward compatible bundle.
     /// </summary>
     [Serializable]
-    public class DetectForwardCompatibleBundleEventArgs : ResultEventArgs
+    public class DetectForwardCompatibleBundleEventArgs : CancellableHResultEventArgs
     {
-        private string bundleId;
-        private RelationType relationType;
-        private string bundleTag;
-        private bool perMachine;
-        private Version version;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
         /// </summary>
@@ -263,56 +257,48 @@ namespace WixToolset.Bootstrapper
         /// <param name="bundleTag">The tag of the forward compatible bundle.</param>
         /// <param name="perMachine">Whether the detected forward compatible bundle is per machine.</param>
         /// <param name="version">The version of the forward compatible bundle detected.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectForwardCompatibleBundleEventArgs(string bundleId, RelationType relationType, string bundleTag, bool perMachine, long version, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The cancel recommendation from the engine.</param>
+        /// <param name="ignoreBundleRecommendation">The ignore recommendation from the engine.</param>
+        public DetectForwardCompatibleBundleEventArgs(string bundleId, RelationType relationType, string bundleTag, bool perMachine, long version, bool cancelRecommendation, bool ignoreBundleRecommendation)
+            : base(cancelRecommendation)
         {
-            this.bundleId = bundleId;
-            this.relationType = relationType;
-            this.bundleTag = bundleTag;
-            this.perMachine = perMachine;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
+            this.BundleId = bundleId;
+            this.RelationType = relationType;
+            this.BundleTag = bundleTag;
+            this.PerMachine = perMachine;
+            this.Version = Engine.LongToVersion(version);
+            this.IgnoreBundle = ignoreBundleRecommendation;
         }
 
         /// <summary>
         /// Gets the identity of the forward compatible bundle detected.
         /// </summary>
-        public string BundleId
-        {
-            get { return this.bundleId; }
-        }
+        public string BundleId { get; private set; }
 
         /// <summary>
         /// Gets the relationship type of the forward compatible bundle.
         /// </summary>
-        public RelationType RelationType
-        {
-            get { return this.relationType; }
-        }
+        public RelationType RelationType { get; private set; }
 
         /// <summary>
         /// Gets the tag of the forward compatible bundle.
         /// </summary>
-        public string BundleTag
-        {
-            get { return this.bundleTag; }
-        }
+        public string BundleTag { get; private set; }
 
         /// <summary>
         /// Gets whether the detected forward compatible bundle is per machine.
         /// </summary>
-        public bool PerMachine
-        {
-            get { return this.perMachine; }
-        }
+        public bool PerMachine { get; private set; }
 
         /// <summary>
         /// Gets the version of the forward compatible bundle detected.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
+
+        /// <summary>
+        /// Instructs the engine whether to use the forward compatible bundle.
+        /// </summary>
+        public bool IgnoreBundle { get; set; }
     }
 
     /// <summary>

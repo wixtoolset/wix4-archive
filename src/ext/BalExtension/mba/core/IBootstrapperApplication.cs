@@ -40,13 +40,14 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectForwardCompatibleBundle(
+        int OnDetectForwardCompatibleBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
             [MarshalAs(UnmanagedType.U4)] RelationType relationType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleTag,
             [MarshalAs(UnmanagedType.Bool)] bool fPerMachine,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fIgnoreBundle
             );
 
         [PreserveSig]

@@ -86,19 +86,20 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
     )
 {
     HRESULT hr = S_OK;
-    int nRecommendation = IDNOACTION;
+    BOOL fRecommendIgnore = TRUE;
+    BOOL fIgnoreBundle = FALSE;
 
     if (pRegistration->sczDetectedProviderKeyBundleId &&
         CSTR_EQUAL != ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pRegistration->sczDetectedProviderKeyBundleId, -1, pRegistration->sczId, -1))
     {
-        // Only change the recommendation if an parent was provided.
+        // Only change the recommendation if an active parent was provided.
         if (pRegistration->sczActiveParent && *pRegistration->sczActiveParent)
         {
             // On install, recommend running the forward compatible bundle because there is an active parent. This
             // will essentially register the parent with the forward compatible bundle.
             if (BOOTSTRAPPER_ACTION_INSTALL == pCommand->action)
             {
-                nRecommendation = IDOK;
+                fRecommendIgnore = FALSE;
             }
             else if (BOOTSTRAPPER_ACTION_UNINSTALL == pCommand->action ||
                      BOOTSTRAPPER_ACTION_MODIFY == pCommand->action ||
@@ -108,7 +109,7 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
                 // is already registered as a dependent of the provider key.
                 if (DependencyDependentExists(pRegistration, pRegistration->sczActiveParent))
                 {
-                    nRecommendation = IDOK;
+                    fRecommendIgnore = FALSE;
                 }
             }
         }
@@ -116,16 +117,16 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
         for (DWORD iRelatedBundle = 0; iRelatedBundle < pRegistration->relatedBundles.cRelatedBundles; ++iRelatedBundle)
         {
             BURN_RELATED_BUNDLE* pRelatedBundle = pRegistration->relatedBundles.rgRelatedBundles + iRelatedBundle;
+            fIgnoreBundle = fRecommendIgnore;
 
             if (BOOTSTRAPPER_RELATION_UPGRADE == pRelatedBundle->relationType &&
                 pRegistration->qwVersion <= pRelatedBundle->qwVersion &&
                 CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pRegistration->sczDetectedProviderKeyBundleId, -1, pRelatedBundle->package.sczId, -1))
             {
-                int nResult = pUX->pUserExperience->OnDetectForwardCompatibleBundle(pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, nRecommendation);
-                hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
+                hr = UserExperienceOnDetectForwardCompatibleBundle(pUX, pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, &fIgnoreBundle);
                 ExitOnRootFailure(hr, "BA aborted detect forward compatible bundle.");
 
-                if (IDOK == nResult)
+                if (!fIgnoreBundle)
                 {
                     hr = PseudoBundleInitializePassthrough(&pRegistration->forwardCompatibleBundle, pCommand, NULL, pRegistration->sczActiveParent, pRegistration->sczAncestors, &pRelatedBundle->package);
                     ExitOnFailure(hr, "Failed to initialize update bundle.");
