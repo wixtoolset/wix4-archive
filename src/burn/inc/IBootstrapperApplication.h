@@ -45,14 +45,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectUpdate - called when the engine has an update candidate for bundle update.
-    //
-    // Return:
-    //  IDOK instructs the engine to stop further update detection.
-    //
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to process further update candidates.
-    STDMETHOD_(int, OnDetectUpdate)(
+    STDMETHOD(OnDetectUpdate)(
         __in_z_opt LPCWSTR wzUpdateLocation,
         __in DWORD64 dw64Size,
         __in DWORD64 dw64Version,
@@ -60,7 +53,8 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_z_opt LPCWSTR wzSummary,
         __in_z_opt LPCWSTR wzContentType,
         __in_z_opt LPCWSTR wzContent,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* pfStopProcessingUpdates
         ) = 0;
 
     // OnDetectUpdateComplete - called when the engine completes detection for bundle update.

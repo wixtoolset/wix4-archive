@@ -334,15 +334,8 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the detection for an update has begun.
     /// </summary>
     [Serializable]
-    public class DetectUpdateEventArgs : ResultEventArgs
+    public class DetectUpdateEventArgs : CancellableHResultEventArgs
     {
-        private long size;
-        private Version version;
-        private string title;
-        private string summary;
-        private string contentType;
-        private string content;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
         /// </summary>
@@ -353,17 +346,19 @@ namespace WixToolset.Bootstrapper
         /// <param name="summary">The summary of the updated bundle.</param>
         /// <param name="contentType">The content type of the content of the updated bundle.</param>
         /// <param name="content">The content of the updated bundle.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectUpdateEventArgs(string updateLocation, long size, long version, string title, string summary, string contentType, string content, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        /// <param name="stopRecommendation">The recommendation from the engine.</param>
+        public DetectUpdateEventArgs(string updateLocation, long size, long version, string title, string summary, string contentType, string content, bool cancelRecommendation, bool stopRecommendation)
+            : base(cancelRecommendation)
         {
             this.UpdateLocation = updateLocation;
-            this.size = size;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
-            this.title = title;
-            this.summary = summary;
-            this.contentType = contentType;
-            this.content = content;
+            this.Size = size;
+            this.Version = Engine.LongToVersion(version);
+            this.Title = title;
+            this.Summary = summary;
+            this.ContentType = contentType;
+            this.Content = content;
+            this.StopProcessingUpdates = stopRecommendation;
         }
 
         /// <summary>
@@ -374,50 +369,37 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Gets the size of the updated bundle.
         /// </summary>
-        public long Size
-        {
-            get { return this.size; }
-        }
+        public long Size { get; private set; }
 
         /// <summary>
         /// Gets the version of the updated bundle.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the title of the the updated bundle.
         /// </summary>
-        public string Title
-        {
-            get { return this.title; }
-        }
+        public string Title { get; private set; }
 
         /// <summary>
         /// Gets the summary of the updated bundle.
         /// </summary>
-        public string Summary
-        {
-            get { return this.summary; }
-        }
+        public string Summary { get; private set; }
 
         /// <summary>
         /// Gets the content type of the content of the updated bundle.
         /// </summary>
-        public string ContentType
-        {
-            get { return this.contentType; }
-        }
+        public string ContentType { get; private set; }
 
         /// <summary>
         /// Gets the content of the updated bundle.
         /// </summary>
-        public string Content
-        {
-            get { return this.content; }
-        }
+        public string Content { get; private set; }
+
+        /// <summary>
+        /// Tells the engine to stop giving the rest of the updates found in the feed.
+        /// </summary>
+        public bool StopProcessingUpdates { get; set; }
     }
 
     /// <summary>

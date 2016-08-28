@@ -1141,12 +1141,14 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectUpdate(string wzUpdateLocation, long dw64Size, long dw64Version, string wzTitle, string wzSummary, string wzContentType, string wzContent, int nRecommendation)
+        int IBootstrapperApplication.OnDetectUpdate(string wzUpdateLocation, long dw64Size, long dw64Version, string wzTitle, string wzSummary, string wzContentType, string wzContent, ref bool fCancel, ref bool fStopProcessingUpdates)
         {
-            DetectUpdateEventArgs args = new DetectUpdateEventArgs(wzUpdateLocation, dw64Size, dw64Version, wzTitle, wzSummary, wzContentType, wzContent, nRecommendation);
+            DetectUpdateEventArgs args = new DetectUpdateEventArgs(wzUpdateLocation, dw64Size, dw64Version, wzTitle, wzSummary, wzContentType, wzContent, fCancel, fStopProcessingUpdates);
             this.OnDetectUpdate(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            fStopProcessingUpdates = args.StopProcessingUpdates;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectUpdateComplete(int hrStatus, string wzUpdateLocation, int nRecommendation)

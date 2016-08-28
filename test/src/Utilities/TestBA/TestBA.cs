@@ -123,7 +123,7 @@ namespace WixTest.BA
         {
             // The list of updates is sorted in descending version, so the first callback should be the largest update available.
             // This update should be either larger than ours (so we are out of date), the same as ours (so we are current)
-            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.Result alone and
+            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.StopProcessingUpdates alone and
             // enumerate all of the updates.
             this.Log(String.Format("Potential update v{0} from '{1}'; current version: v{2}", e.Version, e.UpdateLocation, this.Version));
             if (e.Version > this.Version)
@@ -131,13 +131,12 @@ namespace WixTest.BA
                 this.Log(String.Format("Selected update v{0}", e.Version));
                 this.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
                 this.UpdateAvailable = true;
-                e.Result = Result.Ok;
             }
-            else if (e.Version <= this.Version)
+            else
             {
-                e.Result = Result.Cancel;
                 this.UpdateAvailable = false;
             }
+            e.StopProcessingUpdates = true;
         }
 
         protected override void OnDetectUpdateComplete(DetectUpdateCompleteEventArgs e)

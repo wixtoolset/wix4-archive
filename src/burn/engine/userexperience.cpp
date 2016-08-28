@@ -374,6 +374,47 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnDetectUpdate(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __in DWORD64 dw64Size,
+    __in DWORD64 dw64Version,
+    __in_z_opt LPCWSTR wzTitle,
+    __in_z_opt LPCWSTR wzSummary,
+    __in_z_opt LPCWSTR wzContentType,
+    __in_z_opt LPCWSTR wzContent,
+    __inout BOOL* pfStopProcessingUpdates
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTUPDATE_ARGS args = { };
+    BA_ONDETECTUPDATE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzUpdateLocation = wzUpdateLocation;
+    args.dw64Size = dw64Size;
+    args.dw64Version = dw64Version;
+    args.wzTitle = wzTitle;
+    args.wzSummary = wzSummary;
+    args.wzContentType = wzContentType;
+    args.wzContent = wzContent;
+
+    results.cbSize = sizeof(results);
+    results.fStopProcessingUpdates = *pfStopProcessingUpdates;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectUpdate failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pfStopProcessingUpdates = results.fStopProcessingUpdates;
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnDetectUpdateBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzUpdateLocation,
