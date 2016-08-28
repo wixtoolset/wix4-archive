@@ -116,6 +116,11 @@ HRESULT UserExperienceOnDetectForwardCompatibleBundle(
     __in DWORD64 dw64Version,
     __inout BOOL* pfIgnoreBundle
     );
+HRESULT UserExperienceOnDetectUpdateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __inout BOOL* pfSkip
+    );
 HRESULT UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

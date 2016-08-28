@@ -942,6 +942,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN:
             OnSystemShutdownFallback(reinterpret_cast<BA_ONSYSTEMSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSYSTEMSHUTDOWN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATEBEGIN:
+            OnDetectUpdateBeginFallback(reinterpret_cast<BA_ONDETECTUPDATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTUPDATEBEGIN_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1000,6 +1003,13 @@ private: // privates
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
+    }
+
+    void OnDetectUpdateBeginFallback(
+        __in BA_ONDETECTUPDATEBEGIN_ARGS* pArgs,
+        __inout BA_ONDETECTUPDATEBEGIN_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

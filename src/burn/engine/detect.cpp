@@ -220,6 +220,7 @@ extern "C" HRESULT DetectUpdate(
     HRESULT hr = S_OK;
     int nResult = IDNOACTION;
     BOOL fBeginCalled = FALSE;
+    BOOL fSkip = TRUE;
 
     // If no update source was specified, skip update detection.
     if (!pUpdate->sczUpdateSource || !*pUpdate->sczUpdateSource)
@@ -228,16 +229,14 @@ extern "C" HRESULT DetectUpdate(
     }
 
     fBeginCalled = TRUE;
+    hr = UserExperienceOnDetectUpdateBegin(pUX, pUpdate->sczUpdateSource, &fSkip);
+    ExitOnRootFailure(hr, "BA aborted detect update begin.");
 
-    nResult = pUX->pUserExperience->OnDetectUpdateBegin(pUpdate->sczUpdateSource, IDNOACTION);
-    hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted detect update begin.");
-
-    if (IDNOACTION == nResult)
+    if (fSkip)
     {
         //pUpdate->fUpdateAvailable = FALSE;
     }
-    else if (IDOK == nResult)
+    else
     {
         hr = DetectAtomFeedUpdate(wzBundleId, pUX, pUpdate);
         ExitOnFailure(hr, "Failed to detect atom feed update.");

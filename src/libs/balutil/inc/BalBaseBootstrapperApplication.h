@@ -110,12 +110,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectUpdateBegin(
+    virtual STDMETHODIMP OnDetectUpdateBegin(
         __in_z LPCWSTR /*wzUpdateLocation*/,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* /*pfSkip*/
         )
     {
-        return CheckCanceled() ? IDCANCEL : nRecommendation;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectUpdate(

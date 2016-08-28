@@ -305,35 +305,36 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the detection for an update has begun.
     /// </summary>
     [Serializable]
-    public class DetectUpdateBeginEventArgs : ResultEventArgs
+    public class DetectUpdateBeginEventArgs : CancellableHResultEventArgs
     {
-        private string updateLocation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
         /// </summary>
         /// <param name="updateLocation">The location to check for an updated bundle.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectUpdateBeginEventArgs(string updateLocation, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The cancel recommendation from the engine.</param>
+        /// <param name="skipRecommendation">The skip recommendation from the engine.</param>
+        public DetectUpdateBeginEventArgs(string updateLocation, bool cancelRecommendation, bool skipRecommendation)
+            : base(cancelRecommendation)
         {
-            this.updateLocation = updateLocation;
+            this.UpdateLocation = updateLocation;
         }
 
         /// <summary>
         /// Gets the identity of the bundle to detect.
         /// </summary>
-        public string UpdateLocation
-        {
-            get { return this.updateLocation; }
-        }
+        public string UpdateLocation { get; private set; }
+
+        /// <summary>
+        /// Whether to skip checking for bundle updates.
+        /// </summary>
+        public bool Skip { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the detection for an update has begun.
     /// </summary>
     [Serializable]
-    public class DetectUpdateEventArgs : DetectUpdateBeginEventArgs
+    public class DetectUpdateEventArgs : ResultEventArgs
     {
         private long size;
         private Version version;
@@ -354,8 +355,9 @@ namespace WixToolset.Bootstrapper
         /// <param name="content">The content of the updated bundle.</param>
         /// <param name="recommendation">The recommendation from the engine.</param>
         public DetectUpdateEventArgs(string updateLocation, long size, long version, string title, string summary, string contentType, string content, int recommendation)
-            : base(updateLocation, recommendation)
+            : base(recommendation)
         {
+            this.UpdateLocation = updateLocation;
             this.size = size;
             this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
             this.title = title;
@@ -363,6 +365,11 @@ namespace WixToolset.Bootstrapper
             this.contentType = contentType;
             this.content = content;
         }
+
+        /// <summary>
+        /// Gets the identity of the bundle to detect.
+        /// </summary>
+        public string UpdateLocation { get; private set; }
 
         /// <summary>
         /// Gets the size of the updated bundle.
