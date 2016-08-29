@@ -143,19 +143,17 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectCompatiblePackage(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzCompatiblePackageId*/
+    virtual STDMETHODIMP OnDetectRelatedBundle(
+        __in_z LPCWSTR /*wzBundleId*/,
+        __in BOOTSTRAPPER_RELATION_TYPE /*relationType*/,
+        __in_z LPCWSTR /*wzBundleTag*/,
+        __in BOOL /*fPerMachine*/,
+        __in DWORD64 /*dw64Version*/,
+        __in BOOTSTRAPPER_RELATED_OPERATION /*operation*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnDetectPriorBundle(
-        __in_z LPCWSTR /*wzBundleId*/
-        )
-    {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectPackageBegin(
@@ -165,13 +163,9 @@ public: // IBootstrapperApplication
         return IDNOACTION;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectRelatedBundle(
-        __in_z LPCWSTR /*wzBundleId*/,
-        __in BOOTSTRAPPER_RELATION_TYPE /*relationType*/,
-        __in_z LPCWSTR /*wzBundleTag*/,
-        __in BOOL /*fPerMachine*/,
-        __in DWORD64 /*dw64Version*/,
-        __in BOOTSTRAPPER_RELATED_OPERATION /*operation*/
+    virtual STDMETHODIMP_(int) OnDetectCompatiblePackage(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzCompatiblePackageId*/
         )
     {
         return IDNOACTION;

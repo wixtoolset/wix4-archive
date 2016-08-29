@@ -64,18 +64,14 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectRelatedBundle - called when the engine detects a related bundle.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectRelatedBundle)(
+    STDMETHOD(OnDetectRelatedBundle)(
         __in_z LPCWSTR wzBundleId,
         __in BOOTSTRAPPER_RELATION_TYPE relationType,
         __in_z LPCWSTR wzBundleTag,
         __in BOOL fPerMachine,
         __in DWORD64 dw64Version,
-        __in BOOTSTRAPPER_RELATED_OPERATION operation
+        __in BOOTSTRAPPER_RELATED_OPERATION operation,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectPackageBegin - called when the engine begins detecting a package.

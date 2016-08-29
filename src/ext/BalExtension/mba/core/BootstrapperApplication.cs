@@ -79,11 +79,6 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<DetectUpdateCompleteEventArgs> DetectUpdateComplete;
 
         /// <summary>
-        /// Fired when the detection for a prior bundle has begun.
-        /// </summary>
-        public event EventHandler<DetectPriorBundleEventArgs> DetectPriorBundle;
-
-        /// <summary>
         /// Fired when a related bundle has been detected for a bundle.
         /// </summary>
         public event EventHandler<DetectRelatedBundleEventArgs> DetectRelatedBundle;
@@ -479,19 +474,6 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnDetectUpdateComplete(DetectUpdateCompleteEventArgs args)
         {
             EventHandler<DetectUpdateCompleteEventArgs> handler = this.DetectUpdateComplete;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called when the detection for a prior bundle has begun.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnDetectPriorBundle(DetectPriorBundleEventArgs args)
-        {
-            EventHandler<DetectPriorBundleEventArgs> handler = this.DetectPriorBundle;
             if (null != handler)
             {
                 handler(this, args);
@@ -1114,7 +1096,7 @@ namespace WixToolset.Bootstrapper
 
         int IBootstrapperApplication.OnDetectBegin(bool fInstalled, int cPackages, ref bool fCancel)
         {
-            DetectBeginEventArgs args = new DetectBeginEventArgs(fInstalled, cPackages);
+            DetectBeginEventArgs args = new DetectBeginEventArgs(fInstalled, cPackages, fCancel);
             this.OnDetectBegin(args);
 
             fCancel = args.Cancel;
@@ -1160,12 +1142,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectRelatedBundle(string wzProductCode, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, RelatedOperation operation)
+        int IBootstrapperApplication.OnDetectRelatedBundle(string wzProductCode, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, RelatedOperation operation, ref bool fCancel)
         {
-            DetectRelatedBundleEventArgs args = new DetectRelatedBundleEventArgs(wzProductCode, relationType, wzBundleTag, fPerMachine, version, operation);
+            DetectRelatedBundleEventArgs args = new DetectRelatedBundleEventArgs(wzProductCode, relationType, wzBundleTag, fPerMachine, version, operation, fCancel);
             this.OnDetectRelatedBundle(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectPackageBegin(string wzPackageId)
@@ -1223,7 +1206,7 @@ namespace WixToolset.Bootstrapper
 
         int IBootstrapperApplication.OnPlanBegin(int cPackages, ref bool fCancel)
         {
-            PlanBeginEventArgs args = new PlanBeginEventArgs(cPackages);
+            PlanBeginEventArgs args = new PlanBeginEventArgs(cPackages, fCancel);
             this.OnPlanBegin(args);
 
             fCancel = args.Cancel;
