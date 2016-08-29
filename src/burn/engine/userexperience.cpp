@@ -444,6 +444,31 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnDetectUpdateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfIgnoreError
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTUPDATECOMPLETE_ARGS args = { };
+    BA_ONDETECTUPDATECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+    results.fIgnoreError = *pfIgnoreError;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectUpdateComplete failed.");
+
+    *pfIgnoreError = results.fIgnoreError;
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

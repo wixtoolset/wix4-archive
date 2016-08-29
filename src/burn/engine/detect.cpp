@@ -218,9 +218,9 @@ extern "C" HRESULT DetectUpdate(
     )
 {
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     BOOL fBeginCalled = FALSE;
     BOOL fSkip = TRUE;
+    BOOL fIgnoreError = FALSE;
 
     // If no update source was specified, skip update detection.
     if (!pUpdate->sczUpdateSource || !*pUpdate->sczUpdateSource)
@@ -232,11 +232,7 @@ extern "C" HRESULT DetectUpdate(
     hr = UserExperienceOnDetectUpdateBegin(pUX, pUpdate->sczUpdateSource, &fSkip);
     ExitOnRootFailure(hr, "BA aborted detect update begin.");
 
-    if (fSkip)
-    {
-        //pUpdate->fUpdateAvailable = FALSE;
-    }
-    else
+    if (!fSkip)
     {
         hr = DetectAtomFeedUpdate(wzBundleId, pUX, pUpdate);
         ExitOnFailure(hr, "Failed to detect atom feed update.");
@@ -245,18 +241,10 @@ extern "C" HRESULT DetectUpdate(
 LExit:
     if (fBeginCalled)
     {
-        nResult = pUX->pUserExperience->OnDetectUpdateComplete(hr, pUpdate->fUpdateAvailable ? pUpdate->sczUpdateSource : NULL, IDNOACTION);
-        nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-        switch (nResult)
+        hr = UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError);
+        if (SUCCEEDED(hr) && fIgnoreError)
         {
-            case IDNOACTION: // No Action, leave the hr as is and let the engine decide.
-                break;
-            case IDOK: // Ok, ignore any errors and continue on.
-                hr = S_OK;
-                break;
-            case IDCANCEL:
-                hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-                break;
+            hr = S_OK;
         }
     }
 

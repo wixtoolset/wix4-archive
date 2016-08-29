@@ -1151,12 +1151,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectUpdateComplete(int hrStatus, string wzUpdateLocation, int nRecommendation)
+        int IBootstrapperApplication.OnDetectUpdateComplete(int hrStatus, ref bool fIgnoreError)
         {
-            DetectUpdateCompleteEventArgs args = new DetectUpdateCompleteEventArgs(hrStatus, wzUpdateLocation, nRecommendation);
+            DetectUpdateCompleteEventArgs args = new DetectUpdateCompleteEventArgs(hrStatus, fIgnoreError);
             this.OnDetectUpdateComplete(args);
 
-            return args.Result;
+            fIgnoreError = args.IgnoreError;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectRelatedBundle(string wzProductCode, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, RelatedOperation operation)

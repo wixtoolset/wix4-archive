@@ -135,13 +135,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectUpdateComplete(
+    virtual STDMETHODIMP OnDetectUpdateComplete(
         __in HRESULT /*hrStatus*/,
-        __in_z_opt LPCWSTR /*wzUpdateLocation*/,
-        __in int nRecommendation
+        __inout BOOL* /*pfIgnoreError*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectCompatiblePackage(
