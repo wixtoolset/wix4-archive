@@ -34,10 +34,6 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="CancellableHResultEventArgs"/> class.
         /// </summary>
-        public CancellableHResultEventArgs()
-        {
-        }
-
         public CancellableHResultEventArgs(bool cancelRecommendation)
         {
             this.Cancel = cancelRecommendation;
@@ -226,7 +222,9 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="installed">Specifies whether the bundle is installed.</param>
         /// <param name="packageCount">The number of packages to detect.</param>
-        public DetectBeginEventArgs(bool installed, int packageCount)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectBeginEventArgs(bool installed, int packageCount, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
             this.Installed = installed;
             this.PackageCount = packageCount;
@@ -426,44 +424,11 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
-    /// Additional arguments used when the detection for a prior bundle has begun.
-    /// </summary>
-    [Serializable]
-    public class DetectPriorBundleEventArgs : ResultEventArgs
-    {
-        private string bundleId;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DetectPriorBundleEventArgs"/> class.
-        /// </summary>
-        /// <param name="bundleId">The identity of the bundle to detect.</param>
-        public DetectPriorBundleEventArgs(string bundleId)
-        {
-            this.bundleId = bundleId;
-        }
-
-        /// <summary>
-        /// Gets the identity of the bundle to detect.
-        /// </summary>
-        public string BundleId
-        {
-            get { return this.bundleId; }
-        }
-    }
-
-    /// <summary>
     /// Additional arguments used when a related bundle has been detected for a bundle.
     /// </summary>
     [Serializable]
-    public class DetectRelatedBundleEventArgs : ResultEventArgs
+    public class DetectRelatedBundleEventArgs : CancellableHResultEventArgs
     {
-        private string productCode;
-        private RelationType relationType;
-        private string bundleTag;
-        private bool perMachine;
-        private Version version;
-        private RelatedOperation operation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectRelatedBundleEventArgs"/> class.
         /// </summary>
@@ -473,63 +438,47 @@ namespace WixToolset.Bootstrapper
         /// <param name="perMachine">Whether the detected bundle is per machine.</param>
         /// <param name="version">The version of the related bundle detected.</param>
         /// <param name="operation">The operation that will be taken on the detected bundle.</param>
-        public DetectRelatedBundleEventArgs(string productCode, RelationType relationType, string bundleTag, bool perMachine, long version, RelatedOperation operation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectRelatedBundleEventArgs(string productCode, RelationType relationType, string bundleTag, bool perMachine, long version, RelatedOperation operation, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.productCode = productCode;
-            this.relationType = relationType;
-            this.bundleTag = bundleTag;
-            this.perMachine = perMachine;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
-            this.operation = operation;
+            this.ProductCode = productCode;
+            this.RelationType = relationType;
+            this.BundleTag = bundleTag;
+            this.PerMachine = perMachine;
+            this.Version = Engine.LongToVersion(version);
+            this.Operation = operation;
         }
 
         /// <summary>
         /// Gets the identity of the related bundle detected.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets the relationship type of the related bundle.
         /// </summary>
-        public RelationType RelationType
-        {
-            get { return this.relationType; }
-        }
+        public RelationType RelationType { get; private set; }
 
         /// <summary>
         /// Gets the tag of the related package bundle.
         /// </summary>
-        public string BundleTag
-        {
-            get { return this.bundleTag; }
-        }
+        public string BundleTag { get; private set; }
 
         /// <summary>
         /// Gets whether the detected bundle is per machine.
         /// </summary>
-        public bool PerMachine
-        {
-            get { return this.perMachine; }
-        }
+        public bool PerMachine { get; private set; }
 
         /// <summary>
         /// Gets the version of the related bundle detected.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the operation that will be taken on the detected bundle.
         /// </summary>
-        public RelatedOperation Operation
-        {
-            get { return this.operation; }
-        }
+        public RelatedOperation Operation { get; private set; }
     }
 
     /// <summary>
@@ -824,7 +773,9 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="PlanBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageCount">The number of packages to plan for.</param>
-        public PlanBeginEventArgs(int packageCount)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanBeginEventArgs(int packageCount, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
             this.PackageCount = packageCount;
         }

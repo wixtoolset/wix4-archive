@@ -116,6 +116,15 @@ HRESULT UserExperienceOnDetectForwardCompatibleBundle(
     __in DWORD64 dw64Version,
     __inout BOOL* pfIgnoreBundle
     );
+HRESULT UserExperienceOnDetectRelatedBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    );
 HRESULT UserExperienceOnDetectUpdate(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzUpdateLocation,

@@ -81,13 +81,14 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectRelatedBundle(
+        int OnDetectRelatedBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
             [MarshalAs(UnmanagedType.U4)] RelationType relationType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleTag,
             [MarshalAs(UnmanagedType.Bool)] bool fPerMachine,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
-            [MarshalAs(UnmanagedType.U4)] RelatedOperation operation
+            [MarshalAs(UnmanagedType.U4)] RelatedOperation operation,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
