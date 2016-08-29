@@ -1693,7 +1693,8 @@
     <tableDefinition name="WixBundleRollbackBoundary" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixChainItem_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
-        <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
+      <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
+      <columnDefinition name="Transaction" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
     </tableDefinition>
     <tableDefinition name="WixBundlePackageGroup" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackageGroup" type="string" length="0" category="identifier" primaryKey="yes"/>

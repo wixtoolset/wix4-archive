@@ -19219,7 +19219,7 @@ namespace WixToolset
             }
 
             // Ensure there is always a rollback boundary at the beginning of the chain.
-            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
+            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, YesNoType.No, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
 
             string previousId = "WixDefaultBoundary";
             ComplexReferenceChildType previousType = ComplexReferenceChildType.Package;
@@ -19351,6 +19351,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             Identifier id = null;
             YesNoType vital = YesNoType.Yes;
+            YesNoType transaction = YesNoType.No;
 
             // This list lets us evaluate extension attributes *after* all core attributes
             // have been parsed and dealt with, regardless of authoring order.
@@ -19368,6 +19369,9 @@ namespace WixToolset
                             break;
                         case "Vital":
                             vital = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Transaction":
+                            transaction = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             allowed = false;
@@ -19416,7 +19420,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, parentType, parentId, previousType, previousId);
+                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, transaction, parentType, parentId, previousType, previousId);
             }
 
             return id.Id;
@@ -20130,7 +20134,7 @@ namespace WixToolset
         /// <param name="parentId">Identifier of parent group.</param>
         /// <param name="previousType">Type of previous item, if any.</param>
         /// <param name="previousId">Identifier of previous item, if any.</param>
-        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, YesNoType transaction, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
         {
             WixChainItemRow row = (WixChainItemRow)this.core.CreateRow(sourceLineNumbers, "WixChainItem", id);
 
@@ -20139,6 +20143,10 @@ namespace WixToolset
             if (YesNoType.NotSet != vital)
             {
                 rollbackBoundary.Vital = vital;
+            }
+            if (YesNoType.NotSet != transaction)
+            {
+                rollbackBoundary.Transaction = transaction;
             }
 
             this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
