@@ -45,5 +45,15 @@ namespace WixToolset.Data.Rows
             get { return (null == this.Fields[1].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[1].Data; }
             set { this.Fields[1].Data = (int)value; }
         }
+
+        /// <summary>
+        /// Gets or sets whether the rollback-boundary should be installed as an MSI transaction.
+        /// </summary>
+        /// <value>Vitality of the package.</value>
+        public YesNoType Transaction
+        {
+            get { return (null == this.Fields[2].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[2].Data; }
+            set { this.Fields[2].Data = (int)value; }
+        }
     }
 }

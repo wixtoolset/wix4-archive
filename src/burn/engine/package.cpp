@@ -69,6 +69,10 @@ extern "C" HRESULT PackagesParseFromXml(
             hr = XmlGetYesNoAttribute(pixnNode, L"Vital", &pRollbackBoundary->fVital);
             ExitOnFailure(hr, "Failed to get @Vital.");
 
+			// @Transaction
+			hr = XmlGetYesNoAttribute(pixnNode, L"Transaction", &pRollbackBoundary->fTransaction);
+			ExitOnFailure(hr, "Failed to get @Transaction.");
+
             // prepare next iteration
             ReleaseNullObject(pixnNode);
             ReleaseNullBSTR(bstrNodeName);

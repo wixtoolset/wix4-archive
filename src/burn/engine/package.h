@@ -154,6 +154,7 @@ typedef struct _BURN_ROLLBACK_BOUNDARY
 {
     LPWSTR sczId;
     BOOL fVital;
+    BOOL fTransaction;
 } BURN_ROLLBACK_BOUNDARY;
 
 typedef struct _BURN_PATCH_TARGETCODE
