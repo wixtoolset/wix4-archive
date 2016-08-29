@@ -74,10 +74,9 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectUpdateComplete(
+        int OnDetectUpdateComplete(
             int hrStatus,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fIgnoreError
             );
 
         [PreserveSig]

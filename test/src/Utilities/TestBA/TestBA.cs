@@ -147,7 +147,7 @@ namespace WixTest.BA
             if (!Hresult.Succeeded(e.Status))
             {
                 this.Log(String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
-                e.Result = Result.Ok; // But continue on...
+                e.IgnoreError = true; // But continue on...
             }
         }
 

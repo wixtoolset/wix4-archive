@@ -172,7 +172,7 @@ namespace WixToolset.UX
             {
                 this.State = UpdateState.Failed;
                 WixBA.Model.Engine.Log(LogLevel.Verbose, String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
-                e.Result = Result.Ok;
+                e.IgnoreError = true;
             }
             // If we are uninstalling, we don't want to check or show an update
             // If we are checking, then the feed didn't find any valid enclosures

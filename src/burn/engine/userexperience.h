@@ -132,6 +132,11 @@ HRESULT UserExperienceOnDetectUpdateBegin(
     __in_z LPCWSTR wzUpdateLocation,
     __inout BOOL* pfSkip
     );
+HRESULT UserExperienceOnDetectUpdateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfIgnoreError
+    );
 HRESULT UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
