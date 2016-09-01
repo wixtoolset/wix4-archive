@@ -75,13 +75,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectPackageBegin - called when the engine begins detecting a package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectPackageBegin)(
-        __in_z LPCWSTR wzPackageId
+    STDMETHOD(OnDetectPackageBegin)(
+        __in_z LPCWSTR wzPackageId,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectCompatiblePackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.

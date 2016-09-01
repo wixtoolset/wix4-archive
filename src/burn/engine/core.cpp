@@ -232,7 +232,6 @@ extern "C" HRESULT CoreDetect(
     BOOL fDetectBegan = FALSE;
     BURN_PACKAGE* pPackage = NULL;
     HRESULT hrFirstPackageFailure = S_OK;
-    int nResult = IDNOACTION;
 
     LogId(REPORT_STANDARD, MSG_DETECT_BEGIN, pEngineState->packages.cPackages);
 
@@ -314,9 +313,8 @@ extern "C" HRESULT CoreDetect(
     {
         pPackage = pEngineState->packages.rgPackages + i;
 
-        nResult = pEngineState->userExperience.pUserExperience->OnDetectPackageBegin(pPackage->sczId);
-        hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted detect package begin.");
+        hr = UserExperienceOnDetectPackageBegin(&pEngineState->userExperience, pPackage->sczId);
+        ExitOnRootFailure(hr, "BA aborted detect package begin.");
 
         // Detect the cache state of the package.
         hr = DetectPackagePayloadsCached(pPackage);

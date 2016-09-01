@@ -116,6 +116,10 @@ HRESULT UserExperienceOnDetectForwardCompatibleBundle(
     __in DWORD64 dw64Version,
     __inout BOOL* pfIgnoreBundle
     );
+HRESULT UserExperienceOnDetectPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId
+    );
 HRESULT UserExperienceOnDetectRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,
