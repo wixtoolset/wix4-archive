@@ -316,6 +316,34 @@ BAAPI UserExperienceOnDetectBegin(
     return hr;
 }
 
+BAAPI UserExperienceOnDetectCompatiblePackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTCOMPATIBLEPACKAGE_ARGS args = { };
+    BA_ONDETECTCOMPATIBLEPACKAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzCompatiblePackageId = wzCompatiblePackageId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEPACKAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectCompatiblePackage failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
@@ -374,7 +402,7 @@ LExit:
     return hr;
 }
 
-HRESULT UserExperienceOnDetectPackageBegin(
+BAAPI UserExperienceOnDetectPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId
     )

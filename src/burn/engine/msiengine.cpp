@@ -463,9 +463,8 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 {
                     LogId(REPORT_STANDARD, MSG_DETECTED_COMPATIBLE_PACKAGE_FROM_PROVIDER, pPackage->sczId, sczInstalledProviderKey, sczInstalledProductCode, sczInstalledVersion, pPackage->Msi.sczProductCode);
 
-                    nResult = pUserExperience->pUserExperience->OnDetectCompatiblePackage(pPackage->sczId, sczInstalledProductCode);
-                    hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-                    ExitOnRootFailure(hr, "UX aborted detect compatible MSI package.");
+                    hr = UserExperienceOnDetectCompatiblePackage(pUserExperience, pPackage->sczId, sczInstalledProductCode);
+                    ExitOnRootFailure(hr, "BA aborted detect compatible MSI package.");
 
                     hr = StrAllocString(&pPackage->Msi.sczInstalledProductCode, sczInstalledProductCode, 0);
                     ExitOnFailure(hr, "Failed to copy the installed ProductCode to the package.");

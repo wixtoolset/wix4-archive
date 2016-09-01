@@ -508,37 +508,30 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when a package was not found but a newer package using the same provider key was.
     /// </summary>
     [Serializable]
-    public class DetectCompatiblePackageEventArgs : ResultEventArgs
+    public class DetectCompatiblePackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string compatiblePackageId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectCompatiblePackageEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that was not detected.</param>
         /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
-        public DetectCompatiblePackageEventArgs(string packageId, string compatiblePackageId)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectCompatiblePackageEventArgs(string packageId, string compatiblePackageId, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.compatiblePackageId = compatiblePackageId;
+            this.PackageId = packageId;
+            this.CompatiblePackageId = compatiblePackageId;
         }
 
         /// <summary>
         /// Gets the identity of the package that was not detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the compatible package that was detected.
         /// </summary>
-        public string CompatiblePackageId
-        {
-            get { return this.compatiblePackageId; }
-        }
+        public string CompatiblePackageId { get; private set; }
     }
 
     /// <summary>

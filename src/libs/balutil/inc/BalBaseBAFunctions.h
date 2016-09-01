@@ -164,12 +164,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectCompatiblePackage(
+    virtual STDMETHODIMP OnDetectCompatiblePackage(
         __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzCompatiblePackageId*/
+        __in_z LPCWSTR /*wzCompatiblePackageId*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectRelatedMsiPackage(
