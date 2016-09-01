@@ -99,9 +99,10 @@ namespace WixToolset.Bootstrapper
             );
 
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectCompatiblePackage(
+        int OnDetectCompatiblePackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

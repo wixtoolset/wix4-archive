@@ -1053,6 +1053,13 @@ private: // privates
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
+    void OnDetectCompatiblePackageFallback(
+        __in BA_ONDETECTCOMPATIBLEPACKAGE_ARGS* pArgs,
+        __inout BA_ONDETECTCOMPATIBLEPACKAGE_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPATIBLEPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
     //
     // UiThreadProc - entrypoint for UI thread.
     //

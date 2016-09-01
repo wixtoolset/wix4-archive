@@ -103,6 +103,11 @@ HRESULT UserExperienceOnDetectBegin(
     __in BOOL fInstalled,
     __in DWORD cPackages
     );
+HRESULT UserExperienceOnDetectCompatiblePackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId
+    );
 HRESULT UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus

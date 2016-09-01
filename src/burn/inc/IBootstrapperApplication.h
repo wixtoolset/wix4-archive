@@ -81,14 +81,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectCompatiblePackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectCompatiblePackage)(
+    STDMETHOD(OnDetectCompatiblePackage)(
         __in_z LPCWSTR wzPackageId,
-        __in_z LPCWSTR wzCompatiblePackageId
+        __in_z LPCWSTR wzCompatiblePackageId,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectRelatedMsiPackage - called when the engine begins detects a related package.

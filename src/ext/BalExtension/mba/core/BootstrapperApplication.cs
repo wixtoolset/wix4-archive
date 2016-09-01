@@ -1160,12 +1160,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectCompatiblePackage(string wzPackageId, string wzCompatiblePackageId)
+        int IBootstrapperApplication.OnDetectCompatiblePackage(string wzPackageId, string wzCompatiblePackageId, ref bool fCancel)
         {
-            DetectCompatiblePackageEventArgs args = new DetectCompatiblePackageEventArgs(wzPackageId, wzCompatiblePackageId);
+            DetectCompatiblePackageEventArgs args = new DetectCompatiblePackageEventArgs(wzPackageId, wzCompatiblePackageId, fCancel);
             this.OnDetectCompatiblePackage(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnDetectRelatedMsiPackage(string wzPackageId, string wzProductCode, bool fPerMachine, long version, RelatedOperation operation)
