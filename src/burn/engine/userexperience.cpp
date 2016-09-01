@@ -374,6 +374,32 @@ LExit:
     return hr;
 }
 
+HRESULT UserExperienceOnDetectPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTPACKAGEBEGIN_ARGS args = { };
+    BA_ONDETECTPACKAGEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectPackageBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnDetectRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,

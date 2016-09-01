@@ -485,26 +485,23 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the detection for a specific package has begun.
     /// </summary>
     [Serializable]
-    public class DetectPackageBeginEventArgs : ResultEventArgs
+    public class DetectPackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectPackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to detect.</param>
-        public DetectPackageBeginEventArgs(string packageId)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectPackageBeginEventArgs(string packageId, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
+            this.PackageId = packageId;
         }
 
         /// <summary>
         /// Gets the identity of the package to detect.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
     }
 
     /// <summary>
