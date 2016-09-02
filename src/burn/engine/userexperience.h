@@ -143,6 +143,12 @@ HRESULT UserExperienceOnDetectRelatedMsiPackage(
     __in DWORD64 dw64Version,
     __in BOOTSTRAPPER_RELATED_OPERATION operation
     );
+HRESULT UserExperienceOnDetectTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOTSTRAPPER_PACKAGE_STATE patchState
+    );
 HRESULT UserExperienceOnDetectUpdate(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzUpdateLocation,

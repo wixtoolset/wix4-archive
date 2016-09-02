@@ -500,6 +500,36 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnDetectTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOTSTRAPPER_PACKAGE_STATE patchState
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTTARGETMSIPACKAGE_ARGS args = { };
+    BA_ONDETECTTARGETMSIPACKAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzProductCode = wzProductCode;
+    args.patchState = patchState;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTTARGETMSIPACKAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectTargetMsiPackage failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnDetectUpdate(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzUpdateLocation,

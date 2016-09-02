@@ -100,15 +100,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnDetectTargetMsiPackage - called when the engine detects a target MSI package for
     //                            an MSP package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectTargetMsiPackage)(
+    STDMETHOD(OnDetectTargetMsiPackage)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzProductCode,
-        __in BOOTSTRAPPER_PACKAGE_STATE patchState
+        __in BOOTSTRAPPER_PACKAGE_STATE patchState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectMsiFeature - called when the engine detects a feature in an MSI package.

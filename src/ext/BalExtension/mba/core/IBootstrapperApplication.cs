@@ -119,10 +119,11 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectTargetMsiPackage(
+        int OnDetectTargetMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
-            [MarshalAs(UnmanagedType.U4)] PackageState patchState
+            [MarshalAs(UnmanagedType.U4)] PackageState patchState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
