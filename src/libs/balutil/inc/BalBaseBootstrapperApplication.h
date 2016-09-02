@@ -202,13 +202,15 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectMsiFeature(
+    virtual STDMETHODIMP OnDetectMsiFeature(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzFeatureId*/,
-        __in BOOTSTRAPPER_FEATURE_STATE /*state*/
+        __in BOOTSTRAPPER_FEATURE_STATE /*state*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnDetectPackageComplete(

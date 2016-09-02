@@ -128,10 +128,11 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectMsiFeature(
+        int OnDetectMsiFeature(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzFeatureId,
-            [MarshalAs(UnmanagedType.U4)] FeatureState state
+            [MarshalAs(UnmanagedType.U4)] FeatureState state,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         void OnDetectPackageComplete(

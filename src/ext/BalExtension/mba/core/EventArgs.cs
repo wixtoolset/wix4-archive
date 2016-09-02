@@ -631,48 +631,37 @@ namespace WixToolset.Bootstrapper
     /// <summary>
     /// Additional arguments used when a feature in an MSI package has been detected.
     /// </summary>
-    public class DetectMsiFeatureEventArgs : ResultEventArgs
+    public class DetectMsiFeatureEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string featureId;
-        private FeatureState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Detected package identifier.</param>
         /// <param name="featureId">Detected feature identifier.</param>
         /// <param name="state">Feature state detected.</param>
-        public DetectMsiFeatureEventArgs(string packageId, string featureId, FeatureState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectMsiFeatureEventArgs(string packageId, string featureId, FeatureState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.featureId = featureId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.FeatureId = featureId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the feature's package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the feature detected.
         /// </summary>
-        public string FeatureId
-        {
-            get { return this.featureId; }
-        }
+        public string FeatureId { get; private set; }
 
         /// <summary>
         /// Gets the detected feature state.
         /// </summary>
-        public FeatureState State
-        {
-            get { return this.state; }
-        }
+        public FeatureState State { get; private set; }
     }
 
     /// <summary>
