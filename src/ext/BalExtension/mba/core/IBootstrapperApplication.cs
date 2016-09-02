@@ -98,6 +98,7 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
+        [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
         int OnDetectCompatiblePackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
@@ -135,7 +136,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnDetectPackageComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectPackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] PackageState state

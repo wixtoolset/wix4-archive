@@ -274,7 +274,7 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(void) OnDetectPackageComplete(
+    virtual STDMETHODIMP OnDetectPackageComplete(
         __in LPCWSTR wzPackageId,
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_PACKAGE_STATE state
@@ -288,6 +288,8 @@ public: // IBootstrapperApplication
             // If the prerequisite package is already installed, remember that.
             pPrereqPackage->fWasAlreadyInstalled = TRUE;
         }
+
+        return S_OK;
     }
 
 
@@ -967,6 +969,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTMSIFEATURE:
             OnDetectMsiFeatureFallback(reinterpret_cast<BA_ONDETECTMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTMSIFEATURE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE:
+            OnDetectPackageCompleteFallback(reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1088,6 +1093,13 @@ private: // privates
         __inout BA_ONDETECTMSIFEATURE_RESULTS* pResults)
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTMSIFEATURE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectPackageCompleteFallback(
+        __in BA_ONDETECTPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONDETECTPACKAGECOMPLETE_RESULTS* pResults)
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //
@@ -2888,7 +2900,7 @@ private: // privates
             BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
 
             bafCreateArgs.cbSize = sizeof(bafCreateArgs);
-            bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 1); // TODO: need to decide whether to keep this, and if so when to update it.
+            bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
             bafCreateArgs.pBootstrapperCreateArgs = &m_createArgs;
 
             bafCreateResults.cbSize = sizeof(bafCreateResults);

@@ -162,6 +162,15 @@ static HRESULT BalBaseBAProcOnDetectMsiFeature(
     return pBA->OnDetectMsiFeature(pArgs->wzPackageId, pArgs->wzFeatureId, pArgs->state, &pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnDetectPackageComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONDETECTPACKAGECOMPLETE_ARGS* pArgs,
+    __inout BA_ONDETECTPACKAGECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnDetectPackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->state);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -232,6 +241,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTMSIFEATURE:
             hr = BalBaseBAProcOnDetectMsiFeature(pBA, reinterpret_cast<BA_ONDETECTMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTMSIFEATURE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE:
+            hr = BalBaseBAProcOnDetectPackageComplete(pBA, reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_RESULTS*>(pvResults));
             break;
         }
     }

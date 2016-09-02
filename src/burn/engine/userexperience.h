@@ -131,6 +131,12 @@ HRESULT UserExperienceOnDetectPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId
     );
+HRESULT UserExperienceOnDetectPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state
+    );
 HRESULT UserExperienceOnDetectRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,

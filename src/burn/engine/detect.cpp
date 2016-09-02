@@ -240,8 +240,7 @@ extern "C" HRESULT DetectUpdate(
 LExit:
     if (fBeginCalled)
     {
-        hr = UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError);
-        if (SUCCEEDED(hr) && fIgnoreError)
+        if (SUCCEEDED(UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError)) && fIgnoreError)
         {
             hr = S_OK;
         }

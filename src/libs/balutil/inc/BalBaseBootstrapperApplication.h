@@ -213,12 +213,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnDetectPackageComplete(
+    virtual STDMETHODIMP OnDetectPackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_PACKAGE_STATE /*state*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP OnDetectComplete(
