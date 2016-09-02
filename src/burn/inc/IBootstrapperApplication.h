@@ -88,17 +88,14 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectRelatedMsiPackage - called when the engine begins detects a related package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectRelatedMsiPackage)(
+    STDMETHOD(OnDetectRelatedMsiPackage)(
         __in_z LPCWSTR wzPackageId,
+        __in_z LPCWSTR wzUpgradeCode,
         __in_z LPCWSTR wzProductCode,
         __in BOOL fPerMachine,
         __in DWORD64 dw64Version,
-        __in BOOTSTRAPPER_RELATED_OPERATION operation
+        __in BOOTSTRAPPER_RELATED_OPERATION operation,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectTargetMsiPackage - called when the engine detects a target MSI package for

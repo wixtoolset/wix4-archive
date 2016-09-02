@@ -173,15 +173,17 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnDetectRelatedMsiPackage(
+    virtual STDMETHODIMP OnDetectRelatedMsiPackage(
         __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzUpgradeCode*/,
         __in_z LPCWSTR /*wzProductCode*/,
         __in BOOL /*fPerMachine*/,
         __in DWORD64 /*dw64Version*/,
-        __in BOOTSTRAPPER_RELATED_OPERATION /*operation*/
+        __in BOOTSTRAPPER_RELATED_OPERATION /*operation*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnDetectTargetMsiPackage(

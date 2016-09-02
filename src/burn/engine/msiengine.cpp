@@ -437,14 +437,13 @@ extern "C" HRESULT MsiEngineDetectPackage(
             pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_PRESENT;
         }
 
-        // report related MSI package to UX
+        // Report related MSI package to BA.
         if (BOOTSTRAPPER_RELATED_OPERATION_NONE != operation)
         {
             LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, pPackage->Msi.sczProductCode, LoggingPerMachineToString(pPackage->fPerMachine), LoggingVersionToString(pPackage->Msi.qwInstalledVersion), pPackage->Msi.dwLanguage, LoggingRelatedOperationToString(operation));
 
-            nResult = pUserExperience->pUserExperience->OnDetectRelatedMsiPackage(pPackage->sczId, pPackage->Msi.sczProductCode, pPackage->fPerMachine, pPackage->Msi.qwInstalledVersion, operation);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect related MSI package.");
+            hr = UserExperienceOnDetectRelatedMsiPackage(pUserExperience, pPackage->sczId, pPackage->Msi.sczUpgradeCode, pPackage->Msi.sczProductCode, pPackage->fPerMachine, pPackage->Msi.qwInstalledVersion, operation);
+            ExitOnRootFailure(hr, "BA aborted detect related MSI package.");
         }
     }
     else if (HRESULT_FROM_WIN32(ERROR_UNKNOWN_PRODUCT) == hr || HRESULT_FROM_WIN32(ERROR_UNKNOWN_PROPERTY) == hr) // package not present.
@@ -610,10 +609,9 @@ extern "C" HRESULT MsiEngineDetectPackage(
 
             LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, wzProductCode, LoggingPerMachineToString(fPerMachine), LoggingVersionToString(qwVersion), uLcid, LoggingRelatedOperationToString(relatedMsiOperation));
 
-            // pass to UX
-            nResult = pUserExperience->pUserExperience->OnDetectRelatedMsiPackage(pPackage->sczId, wzProductCode, fPerMachine, qwVersion, relatedMsiOperation);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect related MSI package.");
+            // Pass to BA.
+            hr = UserExperienceOnDetectRelatedMsiPackage(pUserExperience, pPackage->sczId, pRelatedMsi->sczUpgradeCode, wzProductCode, fPerMachine, qwVersion, relatedMsiOperation);
+            ExitOnRootFailure(hr, "BA aborted detect related MSI package.");
         }
     }
 
