@@ -1772,7 +1772,7 @@
         <columnDefinition name="Parent" type="string" length="0" />
         <columnDefinition name="Title" type="string" length="0" />
         <columnDefinition name="Description" type="string" length="0" />
-        <columnDefinition name="Display" type="string" length="0" />
+        <columnDefinition name="Display" type="number" length="2" />
         <columnDefinition name="Level" type="number" length="2" />
         <columnDefinition name="Directory" type="string" length="0" />
         <columnDefinition name="Attributes" type="number" length="2" />
