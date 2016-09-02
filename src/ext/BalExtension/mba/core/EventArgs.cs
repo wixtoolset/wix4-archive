@@ -538,70 +538,58 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when a related MSI package has been detected for a package.
     /// </summary>
     [Serializable]
-    public class DetectRelatedMsiPackageEventArgs : ResultEventArgs
+    public class DetectRelatedMsiPackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string productCode;
-        private bool perMachine;
-        private Version version;
-        private RelatedOperation operation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectRelatedMsiPackageEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package detecting.</param>
+        /// <param name="upgradeCode">The upgrade code of the related package detected.</param>
         /// <param name="productCode">The identity of the related package detected.</param>
         /// <param name="perMachine">Whether the detected package is per machine.</param>
         /// <param name="version">The version of the related package detected.</param>
         /// <param name="operation">The operation that will be taken on the detected package.</param>
-        public DetectRelatedMsiPackageEventArgs(string packageId, string productCode, bool perMachine, long version, RelatedOperation operation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectRelatedMsiPackageEventArgs(string packageId, string upgradeCode, string productCode, bool perMachine, long version, RelatedOperation operation, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.productCode = productCode;
-            this.perMachine = perMachine;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
-            this.operation = operation;
+            this.PackageId = packageId;
+            this.UpgradeCode = upgradeCode;
+            this.ProductCode = productCode;
+            this.PerMachine = perMachine;
+            this.Version = Engine.LongToVersion(version);
+            this.Operation = operation;
         }
 
         /// <summary>
         /// Gets the identity of the product's package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the upgrade code of the related package detected.
+        /// </summary>
+        public string UpgradeCode { get; private set; }
 
         /// <summary>
         /// Gets the identity of the related package detected.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets whether the detected package is per machine.
         /// </summary>
-        public bool PerMachine
-        {
-            get { return this.perMachine; }
-        }
+        public bool PerMachine { get; private set; }
 
         /// <summary>
         /// Gets the version of the related package detected.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the operation that will be taken on the detected package.
         /// </summary>
-        public RelatedOperation Operation
-        {
-            get { return this.operation; }
-        }
+        public RelatedOperation Operation { get; private set; }
     }
 
     /// <summary>
