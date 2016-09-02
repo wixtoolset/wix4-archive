@@ -402,6 +402,36 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnDetectMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __in BOOTSTRAPPER_FEATURE_STATE state
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTMSIFEATURE_ARGS args = { };
+    BA_ONDETECTMSIFEATURE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzFeatureId = wzFeatureId;
+    args.state = state;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTMSIFEATURE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectMsiFeature failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnDetectPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId

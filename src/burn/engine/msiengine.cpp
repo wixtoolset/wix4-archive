@@ -411,7 +411,6 @@ extern "C" HRESULT MsiEngineDetectPackage(
     DWORD64 qwVersion = 0;
     UINT uLcid = 0;
     BOOL fPerMachine = FALSE;
-    int nResult = 0;
 
     // detect self by product code
     // TODO: what to do about MSIINSTALLCONTEXT_USERMANAGED?
@@ -658,10 +657,9 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 ExitOnRootFailure(hr, "Invalid state value.");
             }
 
-            // pass to UX
-            nResult = pUserExperience->pUserExperience->OnDetectMsiFeature(pPackage->sczId, pFeature->sczId, pFeature->currentState);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect.");
+            // Pass to BA.
+            hr = UserExperienceOnDetectMsiFeature(pUserExperience, pPackage->sczId, pFeature->sczId, pFeature->currentState);
+            ExitOnRootFailure(hr, "BA aborted detect MSI feature.");
         }
     }
 

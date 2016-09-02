@@ -121,6 +121,12 @@ HRESULT UserExperienceOnDetectForwardCompatibleBundle(
     __in DWORD64 dw64Version,
     __inout BOOL* pfIgnoreBundle
     );
+HRESULT UserExperienceOnDetectMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __in BOOTSTRAPPER_FEATURE_STATE state
+    );
 HRESULT UserExperienceOnDetectPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId
