@@ -595,48 +595,37 @@ namespace WixToolset.Bootstrapper
     /// <summary>
     /// Additional arguments used when a target MSI package has been detected.
     /// </summary>
-    public class DetectTargetMsiPackageEventArgs : ResultEventArgs
+    public class DetectTargetMsiPackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string productCode;
-        private PackageState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Detected package identifier.</param>
         /// <param name="productCode">Detected product code.</param>
         /// <param name="state">Package state detected.</param>
-        public DetectTargetMsiPackageEventArgs(string packageId, string productCode, PackageState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectTargetMsiPackageEventArgs(string packageId, string productCode, PackageState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.productCode = productCode;
-            this.state = state;
+            this.PackageId = packageId;
+            this.ProductCode = productCode;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the target's package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the product code of the target MSI detected.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets the detected patch package state.
         /// </summary>
-        public PackageState State
-        {
-            get { return this.state; }
-        }
+        public PackageState State { get; private set; }
     }
 
     /// <summary>
