@@ -670,9 +670,6 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class DetectPackageCompleteEventArgs : StatusEventArgs
     {
-        private string packageId;
-        private PackageState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectPackageCompleteEventArgs"/> class.
         /// </summary>
@@ -682,25 +679,19 @@ namespace WixToolset.Bootstrapper
         public DetectPackageCompleteEventArgs(string packageId, int status, PackageState state)
             : base(status)
         {
-            this.packageId = packageId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the state of the specified package.
         /// </summary>
-        public PackageState State
-        {
-            get { return this.state; }
-        }
+        public PackageState State { get; private set; }
     }
 
     /// <summary>
