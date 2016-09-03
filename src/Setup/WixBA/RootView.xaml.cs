@@ -2,9 +2,8 @@
 
 namespace WixToolset.UX
 {
-    using System;
+    using System.ComponentModel;
     using System.Windows;
-    using System.Windows.Input;
     using System.Windows.Interop;
 
     /// <summary>
@@ -35,14 +34,18 @@ namespace WixToolset.UX
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             RootViewModel rvm = this.DataContext as RootViewModel;
             if ((null != rvm) && (InstallationState.Applying == rvm.InstallState))
             {
-                rvm.Canceled = true;
-                // defer closing until the engine has canceled processing, then user wwill get a Close button.
-                e.Cancel = true;
+                rvm.CancelButton_Click();
+                if (rvm.Canceled)
+                {
+                    // Defer closing until the engine has canceled processing.
+                    e.Cancel = true;
+                    rvm.AutoClose = true;
+                }
             }
         }
     }

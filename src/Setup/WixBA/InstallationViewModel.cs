@@ -563,11 +563,7 @@ namespace WixToolset.UX
                 if (Bootstrapper.Display.Passive == WixBA.Model.Command.Display)
                 {
                     WixBA.Model.Engine.Log(LogLevel.Verbose, "Automatically closing the window for non-interactive install");
-                    WixBA.Dispatcher.BeginInvoke((Action)delegate()
-                    {
-                        WixBA.View.Close();
-                    }
-                    );
+                    WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
                 }
                 else
                 {
@@ -577,11 +573,12 @@ namespace WixToolset.UX
             else if (Hresult.Succeeded(e.Status) && LaunchAction.UpdateReplace == WixBA.Model.PlannedAction) // if we successfully applied an update close the window since the new Bundle should be running now.
             {
                 WixBA.Model.Engine.Log(LogLevel.Verbose, "Automatically closing the window since update successful.");
-                WixBA.Dispatcher.BeginInvoke((Action)delegate()
-                {
-                    WixBA.View.Close();
-                }
-                );
+                WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
+            }
+            else if (root.AutoClose)
+            {
+                // Automatically closing since the user clicked the X button.
+                WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
             }
 
             // Set the state to applied or failed unless the state has already been set back to the preapply state

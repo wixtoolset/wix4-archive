@@ -155,7 +155,7 @@
                                     Command="{Binding CancelCommand}"
                                     Content="Cancel"
                                     Style="{DynamicResource FinalActionButtonStyle}"
-                                    Visibility="{Binding CancelEnabled,
+                                    Visibility="{Binding CancelAvailable,
                                                          Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
 
