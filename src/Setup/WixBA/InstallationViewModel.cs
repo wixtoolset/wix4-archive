@@ -411,6 +411,10 @@ namespace WixToolset.UX
             {
                 this.root.InstallState = InstallationState.Failed;
             }
+
+            // Force all commands to reevaluate CanExecute.
+            // InvalidateRequerySuggested must be run on the UI thread.
+            root.Dispatcher.Invoke(new Action(CommandManager.InvalidateRequerySuggested));
         }
 
         private void PlanPackageBegin(object sender, PlanPackageBeginEventArgs e)

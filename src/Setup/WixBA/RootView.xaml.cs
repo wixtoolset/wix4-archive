@@ -25,6 +25,7 @@ namespace WixToolset.UX
 
             this.InitializeComponent();
 
+            viewModel.Dispatcher = this.Dispatcher;
             viewModel.ViewWindowHandle = new WindowInteropHelper(this).EnsureHandle();
             WindowProperties.Instance.CheckBackgroundBrightness();
         }

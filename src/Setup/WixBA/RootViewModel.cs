@@ -7,6 +7,7 @@ namespace WixToolset.UX
     using System.Reflection;
     using System.Windows;
     using System.Windows.Input;
+    using System.Windows.Threading;
     using WixToolset.Bootstrapper;
 
     /// <summary>
@@ -42,6 +43,7 @@ namespace WixToolset.UX
         public InstallationViewModel InstallationViewModel { get; private set; }
         public ProgressViewModel ProgressViewModel { get; private set; }
         public UpdateViewModel UpdateViewModel { get; private set; }
+        public Dispatcher Dispatcher { get; set; }
         public IntPtr ViewWindowHandle { get; set; }
 
         public ICommand CloseCommand
