@@ -128,7 +128,7 @@
                                     Command="{Binding TryAgainCommand}"
                                     Content="Try Again?"
                                     Style="{DynamicResource ActionButtonStyle}"
-                                    Visibility="{Binding TryAgainEnabled,
+                                    Visibility="{Binding IsFailedCompletion,
                                                          Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
 
@@ -143,7 +143,7 @@
                                     Command="{Binding CloseCommand}"
                                     Content="Close"
                                     Style="{DynamicResource FinalActionButtonStyle}"
-                                    Visibility="{Binding CloseEnabled,
+                                    Visibility="{Binding IsSuccessfulCompletion,
                                                          Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
                         <StackPanel x:Name="CancelBtnDcIsland"
@@ -164,62 +164,33 @@
             </DockPanel>
 
             <StackPanel x:Name="FinalStatusArea"
+                        DataContext="{Binding InstallationViewModel}"
                         HorizontalAlignment="Stretch"
+                        Margin="20,15,20,0"
+                        Orientation="Horizontal"
+                        Visibility="{Binding IsComplete,
+                                             Converter={StaticResource BooleanToVisibilityConverter}}"
                         DockPanel.Dock="Bottom">
-                <StackPanel x:Name="CompleteDcIsland"
-                            Margin="20,15,20,0"
-                            DataContext="{Binding InstallationViewModel}"
-                            Orientation="Horizontal"
-                            Visibility="{Binding CompleteEnabled,
-                                                 Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TextBlock x:Name="CommpleteTextBlk"
+                <TextBlock x:Name="StatusTextBlk"
                                Margin="20,0"
                                Style="{DynamicResource LabelTextBlkStyle}"
-                               Text="Complete:"
+                               Text="{Binding StatusText, StringFormat={}{0}:}"
                                TextBlock.FontWeight="Bold" />
-                    <Button x:Name="CompleteViewLogDcIsland"
+                <Button x:Name="ViewLogLink"
                             Command="{Binding OpenLogCommand}"
                             Style="{StaticResource HyperlinkedButtonStyle}">
-                        <TextBlock>
-                            <Hyperlink Command="{Binding OpenLogCommand}" IsEnabled="True"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log" /></Hyperlink>
-                        </TextBlock>
-                    </Button>
-                    <Button x:Name="CompleteViewLogFolderDcIsland"
+                    <TextBlock>
+                            <Hyperlink Command="{Binding OpenLogCommand}"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log" /></Hyperlink>
+                    </TextBlock>
+                </Button>
+                <Button x:Name="ViewLogFolderLink"
                             Margin="10,0"
                             Command="{Binding OpenLogFolderCommand}"
                             Style="{StaticResource HyperlinkedButtonStyle}">
-                        <TextBlock>
-                            <Hyperlink Command="{Binding OpenLogFolderCommand}" IsEnabled="True"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log Folder" /></Hyperlink>
-                        </TextBlock>
-                    </Button>
-                </StackPanel>
-                <StackPanel x:Name="FailedStatusDcIsland"
-                            Margin="20,15,20,0"
-                            DataContext="{Binding InstallationViewModel}"
-                            Orientation="Horizontal"
-                            Visibility="{Binding TryAgainEnabled,
-                                                 Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TextBlock x:Name="FailedTextBlk"
-                               Margin="20,0"
-                               Style="{DynamicResource LabelTextBlkStyle}"
-                               Text="Failed:"
-                               TextBlock.FontWeight="Bold" />
-                    <Button x:Name="FailedViewLogDcIsland"
-                            Command="{Binding OpenLogCommand}"
-                            Style="{StaticResource HyperlinkedButtonStyle}">
-                        <TextBlock>
-                            <Hyperlink Command="{Binding OpenLogCommand}" IsEnabled="True"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log" /></Hyperlink>
-                        </TextBlock>
-                    </Button>
-                    <Button x:Name="FailedViewLogFolderDcIsland"
-                            Margin="10,0"
-                            Command="{Binding OpenLogFolderCommand}"
-                            Style="{StaticResource HyperlinkedButtonStyle}">
-                        <TextBlock>
-                            <Hyperlink Command="{Binding OpenLogFolderCommand}" IsEnabled="True"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log Folder" /></Hyperlink>
-                        </TextBlock>
-                    </Button>
-                </StackPanel>
+                    <TextBlock>
+                            <Hyperlink Command="{Binding OpenLogFolderCommand}"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log Folder" /></Hyperlink>
+                    </TextBlock>
+                </Button>
             </StackPanel>
 
             <StackPanel x:Name="StatusStkPnlDcIsland"
