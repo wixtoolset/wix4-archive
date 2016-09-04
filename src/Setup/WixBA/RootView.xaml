@@ -7,11 +7,12 @@
         xmlns:ux="clr-namespace:WixToolset.UX"
         MinWidth="550"
         MinHeight="400"
+        Width="750"
+        Height="400"
         AllowsTransparency="False"
         Background="{x:Null}"
         Closing="Window_Closing"
         ResizeMode="CanResizeWithGrip"
-        SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterScreen"
         WindowStyle="ThreeDBorderWindow">
 
@@ -27,48 +28,36 @@
             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
             BorderThickness="0">
 
-        <!-- If click on no-input control (i.e. TextBlock, ProgressBar) catch click here to avoid InvalidOperationException. -->
-        <DockPanel x:Name="AppArtBoardArea" VerticalAlignment="Stretch">
+        <DockPanel x:Name="AppArtBoardArea"
+                   Margin="20, 10">
 
             <DockPanel x:Name="ActionArea"
-                       Margin="0,0,10,10"
-                       HorizontalAlignment="Stretch"
                        DockPanel.Dock="Bottom">
-                <Grid x:Name="ActionGrid" HorizontalAlignment="Stretch">
+
+                <Grid x:Name="ActionGrid">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="5" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" MinWidth="30" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" MinWidth="150" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel x:Name="LeftMarqueeDcIsland"
-                                Grid.Column="1"
-                                HorizontalAlignment="Left"
+                                Grid.Column="0"
                                 VerticalAlignment="Center"
                                 DataContext="{Binding UpdateViewModel}">
-                        <StackPanel x:Name="CheckingUpdatesProgressStjPnl"
-                                    MinWidth="150"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center">
-                            <ProgressBar x:Name="CheckingUpdatesProgress"
-                                         MinHeight="10"
-                                         Margin="20,0"
-                                         VerticalAlignment="Center"
-                                         HorizontalContentAlignment="Stretch"
-                                         IsIndeterminate="{Binding CheckingEnabled}"
-                                         Style="{DynamicResource UpdateMarqueeStyle}"
-                                         Visibility="{Binding CheckingEnabled,
-                                                              Converter={StaticResource BooleanToVisibilityConverter}}" />
-                        </StackPanel>
+                        <ProgressBar x:Name="CheckingUpdatesProgress"
+                                     MinHeight="10"
+                                     IsIndeterminate="{Binding CheckingEnabled}"
+                                     Style="{DynamicResource UpdateMarqueeStyle}"
+                                     Visibility="{Binding CheckingEnabled,
+                                                          Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
 
                     <StackPanel x:Name="InitiateActionArea"
-                                Grid.Column="3"
+                                Grid.Column="1"
+                                Margin="30, 0, 0, 0"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
                         <!-- Displayed from left to right, when ordered from top to bottom.  Most preferred is at the top. -->
@@ -80,7 +69,7 @@
                                     Command="{Binding UpdateCommand}"
                                     Content="Update"
                                     Style="{DynamicResource ActionButtonStyle}"
-                                    Visibility="{Binding UpdateEnabled,
+                                    Visibility="{Binding CanUpdate,
                                                          Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
                         <StackPanel x:Name="InstallBtnDcIsland"
@@ -158,33 +147,31 @@
                                     Visibility="{Binding CancelAvailable,
                                                          Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
-
                     </StackPanel>
                 </Grid>
             </DockPanel>
 
             <StackPanel x:Name="FinalStatusArea"
                         DataContext="{Binding InstallationViewModel}"
-                        HorizontalAlignment="Stretch"
-                        Margin="20,15,20,0"
+                        HorizontalAlignment="Right"
+                        Margin="0,10,0,20"
                         Orientation="Horizontal"
                         Visibility="{Binding IsComplete,
                                              Converter={StaticResource BooleanToVisibilityConverter}}"
                         DockPanel.Dock="Bottom">
                 <TextBlock x:Name="StatusTextBlk"
-                               Margin="20,0"
-                               Style="{DynamicResource LabelTextBlkStyle}"
-                               Text="{Binding StatusText, StringFormat={}{0}:}"
-                               TextBlock.FontWeight="Bold" />
+                           Style="{DynamicResource LabelTextBlkStyle}"
+                           Text="{Binding StatusText, StringFormat={}{0}:}"
+                           TextBlock.FontWeight="Bold" />
                 <Button x:Name="ViewLogLink"
-                            Command="{Binding OpenLogCommand}"
-                            Style="{StaticResource HyperlinkedButtonStyle}">
+                        Margin="10,2,10,0"
+                        Command="{Binding OpenLogCommand}"
+                        Style="{StaticResource HyperlinkedButtonStyle}">
                     <TextBlock>
                             <Hyperlink Command="{Binding OpenLogCommand}"><Run FontSize="{DynamicResource FontSizeButton}" Text="View Log" /></Hyperlink>
                     </TextBlock>
                 </Button>
                 <Button x:Name="ViewLogFolderLink"
-                            Margin="10,0"
                             Command="{Binding OpenLogFolderCommand}"
                             Style="{StaticResource HyperlinkedButtonStyle}">
                     <TextBlock>
@@ -194,18 +181,13 @@
             </StackPanel>
 
             <StackPanel x:Name="StatusStkPnlDcIsland"
-                        HorizontalAlignment="Stretch"
+                        Margin="0,10"
                         DataContext="{Binding ProgressViewModel}"
                         DockPanel.Dock="Bottom">
 
                 <StackPanel x:Name="ActionPackageNameTextStkPnl"
-                            Margin="20,5,20,0"
-                            HorizontalAlignment="Stretch"
                             VerticalAlignment="Top">
-                    <TextBlock MinHeight="20"
-                               MaxWidth="380"
-                               Panel.ZIndex="3"
-                               Style="{StaticResource StatusTextStyle}"
+                    <TextBlock Style="{StaticResource StatusTextStyle}"
                                Text="{Binding Message}"
                                TextWrapping="WrapWithOverflow"
                                Visibility="{Binding ProgressEnabled,
@@ -213,13 +195,10 @@
                 </StackPanel>
 
                 <StackPanel x:Name="ActionProgressStkPnl"
-                            Margin="20,5,20,15"
-                            HorizontalAlignment="Stretch">
+                            Margin="0,5,0,0">
                     <ProgressBar x:Name="ActionProgress"
                                  Height="20"
-                                 MinWidth="380"
                                  VerticalAlignment="Center"
-                                 Panel.ZIndex="3"
                                  Style="{DynamicResource ActionProgressStyle}"
                                  Visibility="{Binding ProgressEnabled,
                                                       Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -228,60 +207,53 @@
             </StackPanel>
 
             <StackPanel x:Name="TitleAndLogoStkPnl"
-                        Margin="0,5"
-                        HorizontalAlignment="Stretch"
-                        DataContext="{Binding}"
                         DockPanel.Dock="Top">
-                <Grid x:Name="TitleGrid" HorizontalAlignment="Stretch">
+                <Grid x:Name="TitleGrid">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"
-                                          MinWidth="10"
-                                          MaxWidth="20" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" MinWidth="40" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" MaxWidth="40" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <TextBlock x:Name="TitleTextBlk"
-                               Grid.Column="1"
+                               Grid.Column="0"
                                Style="{DynamicResource TitleTextBlkStyle}"
                                Text="{Binding Title,
                                               Mode=OneTime}" />
                     <Image x:Name="Logo"
-                           Grid.Column="3"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Top"
+                           Grid.Column="2"
                            Style="{DynamicResource LogoStyle}">
-                        <Image.LayoutTransform>
-                            <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
-                        </Image.LayoutTransform>
                     </Image>
                 </Grid>
             </StackPanel>
 
-            <StackPanel x:Name="SkuStkPnl"
-                        Margin="20,0,0,0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top"
-                        DockPanel.Dock="Left">
+            <Grid x:Name="MainStkPnl">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="4*" MinWidth="200" />
+                </Grid.ColumnDefinitions>
 
                 <Grid x:Name="SkuInfo"
-                      HorizontalAlignment="Left"
+                      Grid.Column="0"
+                      Grid.Row="0"
                       DataContext="{Binding InstallationViewModel}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" MinHeight="20" />
-                        <RowDefinition Height="auto" MinHeight="20" />
-                        <RowDefinition Height="auto" MinHeight="20" />
-                        <RowDefinition Height="auto" MinHeight="20" />
-                        <RowDefinition Height="auto" MinHeight="20" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" MinWidth="10" />
-                        <ColumnDefinition Width="*" MinWidth="10" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <TextBlock x:Name="SkuPublisherLabel"
@@ -314,7 +286,6 @@
                     <Button x:Name="SkuLicenseBtn"
                             Grid.Row="2"
                             Grid.Column="1"
-                            Margin="0,2,3,0"
                             HorizontalAlignment="Left"
                             AutomationProperties.HelpText="View the license"
                             AutomationProperties.Name="License"
@@ -336,7 +307,6 @@
                     <Button x:Name="SkuNewsBtn"
                             Grid.Row="3"
                             Grid.Column="1"
-                            Margin="0,2,3,0"
                             HorizontalAlignment="Left"
                             AutomationProperties.HelpText="Latest News"
                             AutomationProperties.Name="News"
@@ -358,7 +328,6 @@
                     <Button x:Name="SkuSupportBtn"
                             Grid.Row="4"
                             Grid.Column="1"
-                            Margin="0,2,3,0"
                             HorizontalAlignment="Left"
                             AutomationProperties.HelpText="View Home Page for Support"
                             AutomationProperties.Name="Home Page"
@@ -371,75 +340,42 @@
                                        KeyboardNavigation.IsTabStop="False"><Run FontSize="{DynamicResource FontSizeButton}" Text="{Binding SupportUrl, Mode=OneTime}" /></Hyperlink>
                         </TextBlock>
                     </Button>
-
-
                 </Grid>
-            </StackPanel>
 
-            <DockPanel x:Name="UpdateChangesStkPnl"
-                       HorizontalAlignment="Stretch"
-                       DockPanel.Dock="Left">
+                <DockPanel x:Name="UpdateChangesStkPnlDcIsland"
+                           Grid.Row="0"
+                           Grid.Column="2"
+                           DataContext="{Binding UpdateViewModel}"
+                           Visibility="{Binding IsUpdateAvailable,
+                                                Converter={StaticResource BooleanToVisibilityConverter}}">
 
-                <StackPanel x:Name="UpdateInfoStkPnlDcIsland"
-                            Margin="10,0,0,0"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Top"
-                            DataContext="{Binding UpdateViewModel}"
-                            DockPanel.Dock="Top">
-
-                    <Grid x:Name="UpdateInfo"
-                          HorizontalAlignment="Left"
-                          Visibility="{Binding UpdateEnabled,
-                                               Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid x:Name="UpdateInfoGrid"
+                          DockPanel.Dock="Top">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" MinHeight="20" />
-                            <RowDefinition Height="auto" MinHeight="20" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto" MinWidth="10" />
-                            <ColumnDefinition Width="*" MinWidth="10" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Row="0"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="2"
-                                    Margin="0,2,3,0">
-                            <TextBlock x:Name="UpdateTitleLabel"
-                                       Style="{DynamicResource LabelTextBlkStyle}"
-                                       Text="Available Update:" />
-                        </StackPanel>
+                        <TextBlock x:Name="UpdateTitleLabel"
+                                   Grid.Row="0"
+                                   Grid.Column="0"
+                                   Style="{DynamicResource LabelTextBlkStyle}"
+                                   Text="Available Update:" />
 
                         <TextBlock x:Name="UpdateVersionLabel"
-                                   Grid.Row="1"
-                                   Grid.Column="0"
-                                   Margin="0,2,10,0"
-                                   Style="{DynamicResource LabelTextBlkStyle}"
-                                   Text="Version:" />
-                        <TextBlock Grid.Row="1"
+                                   Grid.Row="0"
                                    Grid.Column="1"
                                    Style="{DynamicResource DataTextBlkStyle}"
                                    Text="{Binding UpdateVersion}" />
-
                     </Grid>
-                </StackPanel>
 
-                <StackPanel x:Name="ChangesStkPnlDcIsland"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            DataContext="{Binding UpdateViewModel}"
-                            DockPanel.Dock="Top">
-                    <WebBrowser MinWidth="300"
-                                MinHeight="200"
-                                MaxWidth="900"
-                                MaxHeight="200"
-                                Margin="0,0,5,10"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                ux:BrowserProperties.HtmlDoc="{Binding UpdateChanges}"
-                                Visibility="{Binding UpdateEnabled,
-                                                     Converter={StaticResource BooleanToVisibilityConverter}}" />
-                </StackPanel>
-            </DockPanel>
+                    <WebBrowser DockPanel.Dock="Bottom"
+                                ux:BrowserProperties.HtmlDoc="{Binding UpdateChanges}" />
+                </DockPanel>
+            </Grid>
         </DockPanel>
     </Border>
 </Window>

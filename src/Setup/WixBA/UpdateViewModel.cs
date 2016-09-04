@@ -3,6 +3,7 @@
 namespace WixToolset.UX
 {
     using System;
+    using System.ComponentModel;
     using System.Windows.Input;
     using WixToolset.Bootstrapper;
 
@@ -38,8 +39,17 @@ namespace WixToolset.UX
             WixBA.Model.Bootstrapper.DetectUpdate += this.DetectUpdate;
             WixBA.Model.Bootstrapper.DetectUpdateComplete += this.DetectUpdateComplete;
 
-            this.State = UpdateState.Initializing;
+            this.root.PropertyChanged += new PropertyChangedEventHandler(this.RootPropertyChanged);
 
+            this.State = UpdateState.Initializing;
+        }
+
+        void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if ("InstallState" == e.PropertyName)
+            {
+                base.OnPropertyChanged("CanUpdate");
+            }
         }
 
         public bool CheckingEnabled
@@ -47,9 +57,20 @@ namespace WixToolset.UX
             get { return this.State == UpdateState.Initializing || this.State == UpdateState.Checking; }
         }
 
-        public bool IsUpToDate
+        public bool CanUpdate
         {
-            get { return this.State == UpdateState.Current; }
+            get
+            {
+                switch(this.root.InstallState)
+                {
+                    case InstallationState.Waiting:
+                    case InstallationState.Applied:
+                    case InstallationState.Failed:
+                        return this.IsUpdateAvailable;
+                    default:
+                        return false;
+                }
+            }
         }
 
         public ICommand UpdateCommand
@@ -58,16 +79,16 @@ namespace WixToolset.UX
             {
                 if (this.updateCommand == null)
                 {
-                    this.updateCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.UpdateReplace), param => this.State == UpdateState.Available);
+                    this.updateCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.UpdateReplace), param => this.CanUpdate);
                 }
 
                 return this.updateCommand;
             }
         }
 
-        public bool UpdateEnabled
+        public bool IsUpdateAvailable
         {
-            get { return this.UpdateCommand.CanExecute(this); }
+            get { return this.State == UpdateState.Available; }
         }
 
         /// <summary>
@@ -86,9 +107,9 @@ namespace WixToolset.UX
                 {
                     this.state = value;
                     base.OnPropertyChanged("State");
+                    base.OnPropertyChanged("CanUpdate");
                     base.OnPropertyChanged("CheckingEnabled");
-                    base.OnPropertyChanged("IsUpToDate");
-                    base.OnPropertyChanged("UpdateEnabled");
+                    base.OnPropertyChanged("IsUpdateAvailable");
                 }
             }
         }
@@ -154,7 +175,7 @@ namespace WixToolset.UX
             {
                 WixBA.Model.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
                 this.UpdateVersion = String.Concat("v", e.Version.ToString());
-                string changesFormat = @"<Body>{0}</Body>";
+                string changesFormat = @"<body style='overflow: auto;'>{0}</body>";
                 this.UpdateChanges = String.Format(changesFormat, e.Content);
                 this.State = UpdateState.Available;
                 e.Result = Result.Ok;

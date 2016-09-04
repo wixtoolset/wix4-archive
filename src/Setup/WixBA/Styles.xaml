@@ -109,7 +109,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="FontSize" Value="{DynamicResource ResourceKey=FontSizeBranding}" />
         <Setter Property="FontWeight" Value="ExtraBold" />
-        <Setter Property="Margin" Value="0" />
+        <Setter Property="Margin" Value="0,5,0,0" />
     </Style>
 
 
@@ -136,12 +136,11 @@
            BasedOn="{StaticResource CommonTextBlkStyle}"
            TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}" />
-        <Setter Property="FontSize" Value="{DynamicResource FontSizeMenu}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMedium}" />
         <Setter Property="Margin" Value="8" />
         <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="MinHeight" Value="60" />
     </Style>
 
     <Style x:Key="ActionButtonStyle" TargetType="Button">
@@ -162,15 +161,16 @@
     </Style>
 
     <Style x:Key="HyperlinkedButtonStyle" TargetType="Button">
+        <Setter Property="Margin" Value="0,2,0,0" />
         <Setter Property="Template" Value="{StaticResource HyperlinkedButtonTemplateKey}" />
         <Setter Property="IsHitTestVisible" Value="True" />
     </Style>
 
     <Style x:Key="LogoStyle" TargetType="Image">
-        <Setter Property="Height" Value="55" />
-        <Setter Property="Width" Value="55" />
+        <Setter Property="Height" Value="65" />
+        <Setter Property="Width" Value="102" />
+        <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsHitTestVisible" Value="False" />
-        <Setter Property="RenderTransformOrigin" Value=".5,.5" />
         <Setter Property="Source" Value="{DynamicResource LogoOverLightBackground}" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding Path=IsLightBackground, Source={x:Static ux:WindowProperties.Instance}}" Value="false">
