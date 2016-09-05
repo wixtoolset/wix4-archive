@@ -5,6 +5,7 @@ namespace WixToolset.UX
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Linq;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Input;
@@ -44,6 +45,7 @@ namespace WixToolset.UX
 
         private Dictionary<string, int> downloadRetries;
         private bool downgrade;
+        private string downgradeMessage;
 
         private ICommand licenseCommand;
         private ICommand launchHomePageCommand;
@@ -162,6 +164,22 @@ namespace WixToolset.UX
                 {
                     this.downgrade = value;
                     base.OnPropertyChanged("Downgrade");
+                }
+            }
+        }
+
+        public string DowngradeMessage
+        {
+            get
+            {
+                return this.downgradeMessage;
+            }
+            set
+            {
+                if (this.downgradeMessage != value)
+                {
+                    this.downgradeMessage = value;
+                    base.OnPropertyChanged("DowngradeMessage");
                 }
             }
         }
@@ -410,8 +428,17 @@ namespace WixToolset.UX
 
                 if (this.Downgrade)
                 {
-                    // TODO: What behavior do we want for downgrade?
                     this.root.DetectState = DetectionState.Newer;
+                    IEnumerable<PackageInfo> relatedPackages = WixBA.Model.Bootstrapper.BAManifest.Bundle.Packages.Values.Where(p => p.Type == PackageType.UpgradeBundle);
+                    Version installedVersion = relatedPackages.Any() ? new Version(relatedPackages.Max(p => p.Version)) : null;
+                    if (installedVersion != null && installedVersion < new Version(4, 1) && installedVersion.Build > 10)
+                    {
+                        this.DowngradeMessage = "You must uninstall WiX v" + installedVersion + " before you can install this.";
+                    }
+                    else
+                    {
+                        this.DowngradeMessage = "There is already a newer version of WiX installed on this machine.";
+                    }
                 }
 
                 if (LaunchAction.Layout == WixBA.Model.Command.Action)

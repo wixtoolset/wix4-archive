@@ -233,6 +233,7 @@
             <Grid x:Name="MainStkPnl">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -375,6 +376,16 @@
                     <WebBrowser DockPanel.Dock="Bottom"
                                 ux:BrowserProperties.HtmlDoc="{Binding UpdateChanges}" />
                 </DockPanel>
+
+                <TextBlock x:Name="DowngradeMessageTextBlk"
+                           Grid.Row="1"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3"
+                           DataContext="{Binding InstallationViewModel}"
+                           Style="{DynamicResource LabelTextBlkStyle}"
+                           Text="{Binding DowngradeMessage}"
+                           Visibility="{Binding Downgrade,
+                                                Converter={StaticResource BooleanToVisibilityConverter}}" />
             </Grid>
         </DockPanel>
     </Border>
