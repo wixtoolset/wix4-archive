@@ -5,6 +5,7 @@ namespace WixToolset.UX
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Linq;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Input;
@@ -44,6 +45,7 @@ namespace WixToolset.UX
 
         private Dictionary<string, int> downloadRetries;
         private bool downgrade;
+        private string downgradeMessage;
 
         private ICommand licenseCommand;
         private ICommand launchHomePageCommand;
@@ -88,11 +90,12 @@ namespace WixToolset.UX
         {
             if (("DetectState" == e.PropertyName) || ("InstallState" == e.PropertyName))
             {
-                base.OnPropertyChanged("CompleteEnabled");
-                base.OnPropertyChanged("CloseEnabled");
                 base.OnPropertyChanged("RepairEnabled");
                 base.OnPropertyChanged("InstallEnabled");
-                base.OnPropertyChanged("TryAgainEnabled");
+                base.OnPropertyChanged("IsComplete");
+                base.OnPropertyChanged("IsSuccessfulCompletion");
+                base.OnPropertyChanged("IsFailedCompletion");
+                base.OnPropertyChanged("StatusText");
                 base.OnPropertyChanged("UninstallEnabled");
             }
         }
@@ -165,6 +168,22 @@ namespace WixToolset.UX
             }
         }
 
+        public string DowngradeMessage
+        {
+            get
+            {
+                return this.downgradeMessage;
+            }
+            set
+            {
+                if (this.downgradeMessage != value)
+                {
+                    this.downgradeMessage = value;
+                    base.OnPropertyChanged("DowngradeMessage");
+                }
+            }
+        }
+
         public ICommand LaunchHomePageCommand
         {
             get
@@ -214,10 +233,19 @@ namespace WixToolset.UX
             get { return this.root.CloseCommand; }
         }
 
-        public bool CloseEnabled
+        public bool IsComplete
         {
-            // The control is enabled only on succesful completion.  The chrome close button is used for other scenarios.
-            get { return (this.root.InstallState == InstallationState.Applied); }
+            get { return IsSuccessfulCompletion || IsFailedCompletion; }
+        }
+
+        public bool IsSuccessfulCompletion
+        {
+            get { return InstallationState.Applied == this.root.InstallState; }
+        }
+
+        public bool IsFailedCompletion
+        {
+            get { return InstallationState.Failed == this.root.InstallState; }
         }
 
         public ICommand InstallCommand
@@ -256,11 +284,6 @@ namespace WixToolset.UX
             get { return this.RepairCommand.CanExecute(this); }
         }
 
-        public bool CompleteEnabled
-        {
-            get { return this.root.InstallState == InstallationState.Applied; }
-        }
-
         public ICommand UninstallCommand
         {
             get
@@ -285,7 +308,7 @@ namespace WixToolset.UX
             {
                 if (this.openLogCommand == null)
                 {
-                    this.openLogCommand = new RelayCommand(param => WixBA.OpenLog(new Uri(WixBA.Model.Engine.StringVariables["WixBundleLog"])), param => true);
+                    this.openLogCommand = new RelayCommand(param => WixBA.OpenLog(new Uri(WixBA.Model.Engine.StringVariables["WixBundleLog"])));
                 }
                 return this.openLogCommand;
             }
@@ -298,7 +321,7 @@ namespace WixToolset.UX
                 if (this.openLogFolderCommand == null)
                 {
                     string logFolder = IO.Path.GetDirectoryName(WixBA.Model.Engine.StringVariables["WixBundleLog"]);
-                    this.openLogFolderCommand = new RelayCommand(param => WixBA.OpenLogFolder(logFolder), param => true);
+                    this.openLogFolderCommand = new RelayCommand(param => WixBA.OpenLogFolder(logFolder));
                 }
                 return this.openLogFolderCommand;
             }
@@ -314,16 +337,27 @@ namespace WixToolset.UX
                         {
                             this.root.Canceled = false;
                             WixBA.Plan(WixBA.Model.PlannedAction);
-                        }, param => this.root.InstallState == InstallationState.Failed);
+                        }, param => IsFailedCompletion);
                 }
 
                 return this.tryAgainCommand;
             }
         }
 
-        public bool TryAgainEnabled
+        public string StatusText
         {
-            get { return this.TryAgainCommand.CanExecute(this); }
+            get
+            {
+                switch(this.root.InstallState)
+                {
+                    case InstallationState.Applied:
+                        return "Complete";
+                    case InstallationState.Failed:
+                        return this.root.Canceled ? "Cancelled" : "Failed";
+                    default:
+                        return "Unknown"; // this shouldn't be shown in the UI.
+                }
+            }
         }
 
         /// <summary>
@@ -360,13 +394,15 @@ namespace WixToolset.UX
             this.ParseCommandLine();
             this.root.InstallState = InstallationState.Waiting;
 
-            if (LaunchAction.Uninstall == WixBA.Model.Command.Action)
+            if (LaunchAction.Uninstall == WixBA.Model.Command.Action &&
+                ResumeType.Arp != WixBA.Model.Command.Resume) // MSI and WixStdBA require some kind of confirmation before proceeding so WixBA should, too.
             {
                 WixBA.Model.Engine.Log(LogLevel.Verbose, "Invoking automatic plan for uninstall");
                 WixBA.Plan(LaunchAction.Uninstall);
             }
             else if (Hresult.Succeeded(e.Status))
             {
+                // TODO: remove this when v4 really doesn't depend on .NET 3.5.
                 // block if CLR v2 isn't available; sorry, it's needed for the MSBuild tasks
                 if (WixBA.Model.Engine.EvaluateCondition("NETFRAMEWORK35_SP_LEVEL < 1"))
                 {
@@ -392,8 +428,17 @@ namespace WixToolset.UX
 
                 if (this.Downgrade)
                 {
-                    // TODO: What behavior do we want for downgrade?
                     this.root.DetectState = DetectionState.Newer;
+                    IEnumerable<PackageInfo> relatedPackages = WixBA.Model.Bootstrapper.BAManifest.Bundle.Packages.Values.Where(p => p.Type == PackageType.UpgradeBundle);
+                    Version installedVersion = relatedPackages.Any() ? new Version(relatedPackages.Max(p => p.Version)) : null;
+                    if (installedVersion != null && installedVersion < new Version(4, 1) && installedVersion.Build > 10)
+                    {
+                        this.DowngradeMessage = "You must uninstall WiX v" + installedVersion + " before you can install this.";
+                    }
+                    else
+                    {
+                        this.DowngradeMessage = "There is already a newer version of WiX installed on this machine.";
+                    }
                 }
 
                 if (LaunchAction.Layout == WixBA.Model.Command.Action)
@@ -411,6 +456,10 @@ namespace WixToolset.UX
             {
                 this.root.InstallState = InstallationState.Failed;
             }
+
+            // Force all commands to reevaluate CanExecute.
+            // InvalidateRequerySuggested must be run on the UI thread.
+            root.Dispatcher.Invoke(new Action(CommandManager.InvalidateRequerySuggested));
         }
 
         private void PlanPackageBegin(object sender, PlanPackageBeginEventArgs e)
@@ -559,25 +608,25 @@ namespace WixToolset.UX
                 if (Bootstrapper.Display.Passive == WixBA.Model.Command.Display)
                 {
                     WixBA.Model.Engine.Log(LogLevel.Verbose, "Automatically closing the window for non-interactive install");
-                    WixBA.Dispatcher.BeginInvoke((Action)delegate()
-                    {
-                        WixBA.View.Close();
-                    }
-                    );
+                    WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
                 }
                 else
                 {
                     WixBA.Dispatcher.InvokeShutdown();
                 }
+                return;
             }
             else if (Hresult.Succeeded(e.Status) && LaunchAction.UpdateReplace == WixBA.Model.PlannedAction) // if we successfully applied an update close the window since the new Bundle should be running now.
             {
                 WixBA.Model.Engine.Log(LogLevel.Verbose, "Automatically closing the window since update successful.");
-                WixBA.Dispatcher.BeginInvoke((Action)delegate()
-                {
-                    WixBA.View.Close();
-                }
-                );
+                WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
+                return;
+            }
+            else if (root.AutoClose)
+            {
+                // Automatically closing since the user clicked the X button.
+                WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
+                return;
             }
 
             // Set the state to applied or failed unless the state has already been set back to the preapply state
@@ -586,6 +635,10 @@ namespace WixToolset.UX
             {
                 this.root.InstallState = Hresult.Succeeded(e.Status) ? InstallationState.Applied : InstallationState.Failed;
             }
+
+            // Force all commands to reevaluate CanExecute.
+            // InvalidateRequerySuggested must be run on the UI thread.
+            root.Dispatcher.Invoke(new Action(CommandManager.InvalidateRequerySuggested));
         }
 
         private void ParseCommandLine()

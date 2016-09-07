@@ -22,7 +22,7 @@ namespace WixToolset.Bootstrapper
 
         public void AddRelatedBundleAsPackage(DetectRelatedBundleEventArgs e)
         {
-            PackageInfo package = PackageInfo.GetRelatedBundleAsPackage(e.ProductCode, e.RelationType, e.PerMachine);
+            PackageInfo package = PackageInfo.GetRelatedBundleAsPackage(e.ProductCode, e.RelationType, e.PerMachine, e.Version);
             this.Packages.Add(package.Id, package);
         }
 

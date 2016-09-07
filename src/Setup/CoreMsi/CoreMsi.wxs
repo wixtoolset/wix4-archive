@@ -7,7 +7,7 @@
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
     <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Core" Language="1033" Manufacturer="!(loc.Company)"
-             Version="$(var.WixVersion)" UpgradeCode="AB318522-BCCD-4091-8068-C5969054D2AB">
+             Version="$(var.WixMsiProductVersion)" UpgradeCode="AB318522-BCCD-4091-8068-C5969054D2AB">
 
         <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
         <swid:Tag Regid="regid.2008-09.org.wixtoolset" Type="component" />

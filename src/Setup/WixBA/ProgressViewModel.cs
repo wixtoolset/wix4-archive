@@ -32,7 +32,6 @@ namespace WixToolset.UX
 
             WixBA.Model.Bootstrapper.ExecutePackageBegin += this.ExecutePackageBegin;
             WixBA.Model.Bootstrapper.ExecutePackageComplete += this.ExecutePackageComplete;
-            //WixBA.Model.Bootstrapper.ExecuteMsiMessage += this.ExecuteMsiMessage;
             WixBA.Model.Bootstrapper.ExecuteProgress += this.ApplyExecuteProgress;
             WixBA.Model.Bootstrapper.PlanBegin += this.PlanBegin;
             WixBA.Model.Bootstrapper.PlanPackageComplete += this.PlanPackageComplete;
@@ -46,7 +45,6 @@ namespace WixToolset.UX
         {
             get { return this.root.InstallState == InstallationState.Applying; }
         }
-        
 
         public int Progress
         {
