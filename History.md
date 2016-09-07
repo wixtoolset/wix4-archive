@@ -1,3 +1,17 @@
+## WixBuild: Version 4.0.0.4506
+
+* SeanHall: WIXBUG:4164 - In WixBA, treat closing the window during apply as if the user clicked the Cancel button and then close the app automatically on ApplyComplete.
+
+* SeanHall: WIXFEAT:4217 - In WixBA when launched from ARP, require user interaction before starting to uninstall. When the user cancels, say that instead of failed.
+
+* SeanHall: WIXFEAT:5195 - **BREAKING CHANGE** Changed bundle version to Major.Minor.0.BuildNumber. This allows us to publish updates as Major.Minor.(GreaterThanZero).BuildNumber. MSI product version numbers remain Major.Minor.BuildNumber so major upgrades continue to work. This bundle will not upgrade from build v4.0.4305.0. If you've installed v4.0.4305.0, you must uninstall before installing a later bundle.
+
+* PhillHgl: WIXFEAT:5352 - New UI for the WiX Toolset setup:
+      * Refactored WixBA to have a non-wizard View which is more familiar to Windows 10 users. 
+      * Added support to display Update 'content' when an update is available.
+      * Added support for 'Windows Ease of Access' High Contrast display modes and screen reader (i.e. Narrator) tools.
+      * Added standard window chrome controls and the ability for user resizing.
+
 ## WixBuild: Version 4.0.4305.0
 
 +* @barnson: WIXBUG:5306: Warn against ServiceConfig and ServiceConfigFailureActions.
