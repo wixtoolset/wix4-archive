@@ -327,6 +327,7 @@ namespace WixToolset.Bind.Bundles
                                     }
 
                                     WixBundleMsiFeatureRow feature = (WixBundleMsiFeatureRow)this.MsiFeatureTable.CreateRow(this.Facade.Package.SourceLineNumbers);
+                                    feature.ChainPackageId = this.Facade.Package.WixChainItemId;
                                     feature.Name = featureName;
                                     feature.Parent = allFeaturesResultRecord.GetString(2);
                                     feature.Title = allFeaturesResultRecord.GetString(3);

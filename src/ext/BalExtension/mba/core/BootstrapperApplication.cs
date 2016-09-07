@@ -3,7 +3,6 @@
 namespace WixToolset.Bootstrapper
 {
     using System;
-    using System.Reflection;
     using System.Runtime.InteropServices;
     using System.Threading;
 
@@ -41,8 +40,8 @@ namespace WixToolset.Bootstrapper
         /// Fired when the system is shutting down or user is logging off.
         /// </summary>
         /// <remarks>
-        /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-        /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+        /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+        /// true; otherwise, set it to false.</para>
         /// <para>By default setup will prevent shutting down or logging off between
         /// <see cref="BootstrapperApplication.ApplyBegin"/> and <see cref="BootstrapperApplication.ApplyComplete"/>.
         /// Derivatives can change this behavior by overriding <see cref="BootstrapperApplication.OnSystemShutdown"/>
@@ -78,11 +77,6 @@ namespace WixToolset.Bootstrapper
         /// Fired when the update detection phase has completed.
         /// </summary>
         public event EventHandler<DetectUpdateCompleteEventArgs> DetectUpdateComplete;
-
-        /// <summary>
-        /// Fired when the detection for a prior bundle has begun.
-        /// </summary>
-        public event EventHandler<DetectPriorBundleEventArgs> DetectPriorBundle;
 
         /// <summary>
         /// Fired when a related bundle has been detected for a bundle.
@@ -395,8 +389,8 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
         /// <remarks>
-        /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-        /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+        /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+        /// true; otherwise, set it to false.</para>
         /// <para>By default setup will prevent shutting down or logging off between
         /// <see cref="BootstrapperApplication.ApplyBegin"/> and <see cref="BootstrapperApplication.ApplyComplete"/>.
         /// Derivatives can change this behavior by overriding <see cref="BootstrapperApplication.OnSystemShutdown"/>
@@ -417,7 +411,7 @@ namespace WixToolset.Bootstrapper
             {
                 // Allow requests to shut down when critical or not applying.
                 bool critical = EndSessionReasons.Critical == (EndSessionReasons.Critical & args.Reasons);
-                args.Result = (critical || !this.applying) ? Result.Ok : Result.Cancel;
+                args.Cancel = !critical && this.applying;
             }
         }
 
@@ -480,19 +474,6 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnDetectUpdateComplete(DetectUpdateCompleteEventArgs args)
         {
             EventHandler<DetectUpdateCompleteEventArgs> handler = this.DetectUpdateComplete;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called when the detection for a prior bundle has begun.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnDetectPriorBundle(DetectPriorBundleEventArgs args)
-        {
-            EventHandler<DetectPriorBundleEventArgs> handler = this.DetectPriorBundle;
             if (null != handler)
             {
                 handler(this, args);
@@ -1087,120 +1068,140 @@ namespace WixToolset.Bootstrapper
 
         #region IBootstrapperApplication Members
 
-        void IBootstrapperApplication.OnStartup()
+        int IBootstrapperApplication.OnStartup()
         {
             StartupEventArgs args = new StartupEventArgs();
             this.OnStartup(args);
+
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnShutdown()
+        int IBootstrapperApplication.OnShutdown(ref BOOTSTRAPPER_SHUTDOWN_ACTION action)
         {
-            ShutdownEventArgs args = new ShutdownEventArgs();
+            ShutdownEventArgs args = new ShutdownEventArgs(action);
             this.OnShutdown(args);
 
-            return args.Result;
+            action = args.Action;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnSystemShutdown(EndSessionReasons dwEndSession, int nRecommendation)
+        int IBootstrapperApplication.OnSystemShutdown(EndSessionReasons dwEndSession, ref bool fCancel)
         {
-            SystemShutdownEventArgs args = new SystemShutdownEventArgs(dwEndSession, nRecommendation);
+            SystemShutdownEventArgs args = new SystemShutdownEventArgs(dwEndSession, fCancel);
             this.OnSystemShutdown(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         int IBootstrapperApplication.OnDetectBegin(bool fInstalled, int cPackages, ref bool fCancel)
         {
-            DetectBeginEventArgs args = new DetectBeginEventArgs(fInstalled, cPackages);
+            DetectBeginEventArgs args = new DetectBeginEventArgs(fInstalled, cPackages, fCancel);
             this.OnDetectBegin(args);
 
             fCancel = args.Cancel;
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectForwardCompatibleBundle(string wzBundleId, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, int nRecommendation)
+        int IBootstrapperApplication.OnDetectForwardCompatibleBundle(string wzBundleId, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, ref bool fCancel, ref bool fIgnoreBundle)
         {
-            DetectForwardCompatibleBundleEventArgs args = new DetectForwardCompatibleBundleEventArgs(wzBundleId, relationType, wzBundleTag, fPerMachine, version, nRecommendation);
+            DetectForwardCompatibleBundleEventArgs args = new DetectForwardCompatibleBundleEventArgs(wzBundleId, relationType, wzBundleTag, fPerMachine, version, fCancel, fIgnoreBundle);
             this.OnDetectForwardCompatibleBundle(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            fIgnoreBundle = args.IgnoreBundle;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectUpdateBegin(string wzUpdateLocation, int nRecommendation)
+        int IBootstrapperApplication.OnDetectUpdateBegin(string wzUpdateLocation, ref bool fCancel, ref bool fSkip)
         {
-            DetectUpdateBeginEventArgs args = new DetectUpdateBeginEventArgs(wzUpdateLocation, nRecommendation);
+            DetectUpdateBeginEventArgs args = new DetectUpdateBeginEventArgs(wzUpdateLocation, fCancel, fSkip);
             this.OnDetectUpdateBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            fSkip = args.Skip;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectUpdate(string wzUpdateLocation, long dw64Size, long dw64Version, string wzTitle, string wzSummary, string wzContentType, string wzContent, int nRecommendation)
+        int IBootstrapperApplication.OnDetectUpdate(string wzUpdateLocation, long dw64Size, long dw64Version, string wzTitle, string wzSummary, string wzContentType, string wzContent, ref bool fCancel, ref bool fStopProcessingUpdates)
         {
-            DetectUpdateEventArgs args = new DetectUpdateEventArgs(wzUpdateLocation, dw64Size, dw64Version, wzTitle, wzSummary, wzContentType, wzContent, nRecommendation);
+            DetectUpdateEventArgs args = new DetectUpdateEventArgs(wzUpdateLocation, dw64Size, dw64Version, wzTitle, wzSummary, wzContentType, wzContent, fCancel, fStopProcessingUpdates);
             this.OnDetectUpdate(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            fStopProcessingUpdates = args.StopProcessingUpdates;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectUpdateComplete(int hrStatus, string wzUpdateLocation, int nRecommendation)
+        int IBootstrapperApplication.OnDetectUpdateComplete(int hrStatus, ref bool fIgnoreError)
         {
-            DetectUpdateCompleteEventArgs args = new DetectUpdateCompleteEventArgs(hrStatus, wzUpdateLocation, nRecommendation);
+            DetectUpdateCompleteEventArgs args = new DetectUpdateCompleteEventArgs(hrStatus, fIgnoreError);
             this.OnDetectUpdateComplete(args);
 
-            return args.Result;
+            fIgnoreError = args.IgnoreError;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectRelatedBundle(string wzProductCode, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, RelatedOperation operation)
+        int IBootstrapperApplication.OnDetectRelatedBundle(string wzProductCode, RelationType relationType, string wzBundleTag, bool fPerMachine, long version, RelatedOperation operation, ref bool fCancel)
         {
-            DetectRelatedBundleEventArgs args = new DetectRelatedBundleEventArgs(wzProductCode, relationType, wzBundleTag, fPerMachine, version, operation);
+            DetectRelatedBundleEventArgs args = new DetectRelatedBundleEventArgs(wzProductCode, relationType, wzBundleTag, fPerMachine, version, operation, fCancel);
             this.OnDetectRelatedBundle(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectPackageBegin(string wzPackageId)
+        int IBootstrapperApplication.OnDetectPackageBegin(string wzPackageId, ref bool fCancel)
         {
-            DetectPackageBeginEventArgs args = new DetectPackageBeginEventArgs(wzPackageId);
+            DetectPackageBeginEventArgs args = new DetectPackageBeginEventArgs(wzPackageId, fCancel);
             this.OnDetectPackageBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectCompatiblePackage(string wzPackageId, string wzCompatiblePackageId)
+        int IBootstrapperApplication.OnDetectCompatiblePackage(string wzPackageId, string wzCompatiblePackageId, ref bool fCancel)
         {
-            DetectCompatiblePackageEventArgs args = new DetectCompatiblePackageEventArgs(wzPackageId, wzCompatiblePackageId);
+            DetectCompatiblePackageEventArgs args = new DetectCompatiblePackageEventArgs(wzPackageId, wzCompatiblePackageId, fCancel);
             this.OnDetectCompatiblePackage(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectRelatedMsiPackage(string wzPackageId, string wzProductCode, bool fPerMachine, long version, RelatedOperation operation)
+        int IBootstrapperApplication.OnDetectRelatedMsiPackage(string wzPackageId, string wzUpgradeCode, string wzProductCode, bool fPerMachine, long version, RelatedOperation operation, ref bool fCancel)
         {
-            DetectRelatedMsiPackageEventArgs args = new DetectRelatedMsiPackageEventArgs(wzPackageId, wzProductCode, fPerMachine, version, operation);
+            DetectRelatedMsiPackageEventArgs args = new DetectRelatedMsiPackageEventArgs(wzPackageId, wzUpgradeCode, wzProductCode, fPerMachine, version, operation, fCancel);
             this.OnDetectRelatedMsiPackage(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectTargetMsiPackage(string wzPackageId, string wzProductCode, PackageState patchState)
+        int IBootstrapperApplication.OnDetectTargetMsiPackage(string wzPackageId, string wzProductCode, PackageState patchState, ref bool fCancel)
         {
-            DetectTargetMsiPackageEventArgs args = new DetectTargetMsiPackageEventArgs(wzPackageId, wzProductCode, patchState);
+            DetectTargetMsiPackageEventArgs args = new DetectTargetMsiPackageEventArgs(wzPackageId, wzProductCode, patchState, fCancel);
             this.OnDetectTargetMsiPackage(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnDetectMsiFeature(string wzPackageId, string wzFeatureId, FeatureState state)
+        int IBootstrapperApplication.OnDetectMsiFeature(string wzPackageId, string wzFeatureId, FeatureState state, ref bool fCancel)
         {
-            DetectMsiFeatureEventArgs args = new DetectMsiFeatureEventArgs(wzPackageId, wzFeatureId, state);
+            DetectMsiFeatureEventArgs args = new DetectMsiFeatureEventArgs(wzPackageId, wzFeatureId, state, fCancel);
             this.OnDetectMsiFeature(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        void IBootstrapperApplication.OnDetectPackageComplete(string wzPackageId, int hrStatus, PackageState state)
+        int IBootstrapperApplication.OnDetectPackageComplete(string wzPackageId, int hrStatus, PackageState state)
         {
-            this.OnDetectPackageComplete(new DetectPackageCompleteEventArgs(wzPackageId, hrStatus, state));
+            DetectPackageCompleteEventArgs args = new DetectPackageCompleteEventArgs(wzPackageId, hrStatus, state);
+            this.OnDetectPackageComplete(args);
+
+            return args.HResult;
         }
 
         int IBootstrapperApplication.OnDetectComplete(int hrStatus)
@@ -1213,7 +1214,7 @@ namespace WixToolset.Bootstrapper
 
         int IBootstrapperApplication.OnPlanBegin(int cPackages, ref bool fCancel)
         {
-            PlanBeginEventArgs args = new PlanBeginEventArgs(cPackages);
+            PlanBeginEventArgs args = new PlanBeginEventArgs(cPackages, fCancel);
             this.OnPlanBegin(args);
 
             fCancel = args.Cancel;

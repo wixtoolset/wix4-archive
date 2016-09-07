@@ -103,9 +103,84 @@ HRESULT UserExperienceOnDetectBegin(
     __in BOOL fInstalled,
     __in DWORD cPackages
     );
+HRESULT UserExperienceOnDetectCompatiblePackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId
+    );
 HRESULT UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
+    );
+HRESULT UserExperienceOnDetectForwardCompatibleBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __inout BOOL* pfIgnoreBundle
+    );
+HRESULT UserExperienceOnDetectMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __in BOOTSTRAPPER_FEATURE_STATE state
+    );
+HRESULT UserExperienceOnDetectPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId
+    );
+HRESULT UserExperienceOnDetectPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state
+    );
+HRESULT UserExperienceOnDetectRelatedBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    );
+HRESULT UserExperienceOnDetectRelatedMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzUpgradeCode,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    );
+HRESULT UserExperienceOnDetectTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOTSTRAPPER_PACKAGE_STATE patchState
+    );
+HRESULT UserExperienceOnDetectUpdate(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __in DWORD64 dw64Size,
+    __in DWORD64 dw64Version,
+    __in_z_opt LPCWSTR wzTitle,
+    __in_z_opt LPCWSTR wzSummary,
+    __in_z_opt LPCWSTR wzContentType,
+    __in_z_opt LPCWSTR wzContent,
+    __inout BOOL* pfStopProcessingUpdates
+    );
+HRESULT UserExperienceOnDetectUpdateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __inout BOOL* pfSkip
+    );
+HRESULT UserExperienceOnDetectUpdateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfIgnoreError
     );
 HRESULT UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
@@ -114,6 +189,18 @@ HRESULT UserExperienceOnPlanBegin(
 HRESULT UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
+    );
+HRESULT UserExperienceOnShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+    );
+HRESULT UserExperienceOnStartup(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+HRESULT UserExperienceOnSystemShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwEndSession,
+    __inout BOOL* pfCancel
     );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,

@@ -91,7 +91,7 @@ extern "C" HRESULT UserExperienceLoad(
     args.pEngine = pEngineContext->pEngineForApplication;
     args.pfnBootstrapperEngineProc = EngineForApplicationProc;
     args.pvBootstrapperEngineProcContext = pEngineContext;
-    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 3); // TODO: need to decide whether to keep this, and if so when to update it.
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 
@@ -136,11 +136,11 @@ extern "C" HRESULT UserExperienceUnload(
             pfnDestroy();
         }
 
-        // free UX DLL
+        // Free BA DLL.
         if (!::FreeLibrary(pUserExperience->hUXModule))
         {
             hr = HRESULT_FROM_WIN32(::GetLastError());
-            TraceError(hr, "Failed to unload UX DLL.");
+            TraceError(hr, "Failed to unload BA DLL.");
         }
         pUserExperience->hUXModule = NULL;
     }
@@ -316,6 +316,34 @@ BAAPI UserExperienceOnDetectBegin(
     return hr;
 }
 
+BAAPI UserExperienceOnDetectCompatiblePackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTCOMPATIBLEPACKAGE_ARGS args = { };
+    BA_ONDETECTCOMPATIBLEPACKAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzCompatiblePackageId = wzCompatiblePackageId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEPACKAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectCompatiblePackage failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 BAAPI UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
@@ -332,6 +360,321 @@ BAAPI UserExperienceOnDetectComplete(
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnDetectComplete failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectForwardCompatibleBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __inout BOOL* pfIgnoreBundle
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS args = { };
+    BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzBundleId = wzBundleId;
+    args.relationType = relationType;
+    args.wzBundleTag = wzBundleTag;
+    args.fPerMachine = fPerMachine;
+    args.dw64Version = dw64Version;
+
+    results.cbSize = sizeof(results);
+    results.fIgnoreBundle = *pfIgnoreBundle;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectForwardCompatibleBundle failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pfIgnoreBundle = results.fIgnoreBundle;
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __in BOOTSTRAPPER_FEATURE_STATE state
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTMSIFEATURE_ARGS args = { };
+    BA_ONDETECTMSIFEATURE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzFeatureId = wzFeatureId;
+    args.state = state;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTMSIFEATURE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectMsiFeature failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTPACKAGEBEGIN_ARGS args = { };
+    BA_ONDETECTPACKAGEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectPackageBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTPACKAGECOMPLETE_ARGS args = { };
+    BA_ONDETECTPACKAGECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.hrStatus = hrStatus;
+    args.state = state;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectPackageComplete failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectRelatedBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTRELATEDBUNDLE_ARGS args = { };
+    BA_ONDETECTRELATEDBUNDLE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzBundleId = wzBundleId;
+    args.relationType = relationType;
+    args.wzBundleTag = wzBundleTag;
+    args.fPerMachine = fPerMachine;
+    args.dw64Version = dw64Version;
+    args.operation = operation;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTRELATEDBUNDLE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectRelatedBundle failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectRelatedMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzUpgradeCode,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTRELATEDMSIPACKAGE_ARGS args = { };
+    BA_ONDETECTRELATEDMSIPACKAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzUpgradeCode = wzUpgradeCode;
+    args.wzProductCode = wzProductCode;
+    args.fPerMachine = fPerMachine;
+    args.dw64Version = dw64Version;
+    args.operation = operation;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTRELATEDMSIPACKAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectRelatedMsiPackage failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOTSTRAPPER_PACKAGE_STATE patchState
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTTARGETMSIPACKAGE_ARGS args = { };
+    BA_ONDETECTTARGETMSIPACKAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzProductCode = wzProductCode;
+    args.patchState = patchState;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTTARGETMSIPACKAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectTargetMsiPackage failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectUpdate(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __in DWORD64 dw64Size,
+    __in DWORD64 dw64Version,
+    __in_z_opt LPCWSTR wzTitle,
+    __in_z_opt LPCWSTR wzSummary,
+    __in_z_opt LPCWSTR wzContentType,
+    __in_z_opt LPCWSTR wzContent,
+    __inout BOOL* pfStopProcessingUpdates
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTUPDATE_ARGS args = { };
+    BA_ONDETECTUPDATE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzUpdateLocation = wzUpdateLocation;
+    args.dw64Size = dw64Size;
+    args.dw64Version = dw64Version;
+    args.wzTitle = wzTitle;
+    args.wzSummary = wzSummary;
+    args.wzContentType = wzContentType;
+    args.wzContent = wzContent;
+
+    results.cbSize = sizeof(results);
+    results.fStopProcessingUpdates = *pfStopProcessingUpdates;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectUpdate failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pfStopProcessingUpdates = results.fStopProcessingUpdates;
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectUpdateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __inout BOOL* pfSkip
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTUPDATEBEGIN_ARGS args = { };
+    BA_ONDETECTUPDATEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzUpdateLocation = wzUpdateLocation;
+
+    results.cbSize = sizeof(results);
+    results.fSkip = *pfSkip;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectUpdateBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pfSkip = results.fSkip;
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnDetectUpdateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfIgnoreError
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONDETECTUPDATECOMPLETE_ARGS args = { };
+    BA_ONDETECTUPDATECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+    results.fIgnoreError = *pfIgnoreError;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnDetectUpdateComplete failed.");
+
+    *pfIgnoreError = results.fIgnoreError;
 
 LExit:
     return hr;
@@ -376,6 +719,73 @@ BAAPI UserExperienceOnPlanComplete(
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnPlanComplete failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONSHUTDOWN_ARGS args = { };
+    BA_ONSHUTDOWN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONSHUTDOWN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnShutdown failed.");
+
+    *pAction = results.action;
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnStartup(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONSTARTUP_ARGS args = { };
+    BA_ONSTARTUP_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONSTARTUP, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnStartup failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnSystemShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwEndSession,
+    __inout BOOL* pfCancel
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONSYSTEMSHUTDOWN_ARGS args = { };
+    BA_ONSYSTEMSHUTDOWN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.dwEndSession = dwEndSession;
+
+    results.cbSize = sizeof(results);
+    results.fCancel = *pfCancel;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnSystemShutdown failed.");
+    
+    *pfCancel = results.fCancel;
 
 LExit:
     return hr;

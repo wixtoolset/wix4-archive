@@ -86,19 +86,20 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
     )
 {
     HRESULT hr = S_OK;
-    int nRecommendation = IDNOACTION;
+    BOOL fRecommendIgnore = TRUE;
+    BOOL fIgnoreBundle = FALSE;
 
     if (pRegistration->sczDetectedProviderKeyBundleId &&
         CSTR_EQUAL != ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pRegistration->sczDetectedProviderKeyBundleId, -1, pRegistration->sczId, -1))
     {
-        // Only change the recommendation if an parent was provided.
+        // Only change the recommendation if an active parent was provided.
         if (pRegistration->sczActiveParent && *pRegistration->sczActiveParent)
         {
             // On install, recommend running the forward compatible bundle because there is an active parent. This
             // will essentially register the parent with the forward compatible bundle.
             if (BOOTSTRAPPER_ACTION_INSTALL == pCommand->action)
             {
-                nRecommendation = IDOK;
+                fRecommendIgnore = FALSE;
             }
             else if (BOOTSTRAPPER_ACTION_UNINSTALL == pCommand->action ||
                      BOOTSTRAPPER_ACTION_MODIFY == pCommand->action ||
@@ -108,7 +109,7 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
                 // is already registered as a dependent of the provider key.
                 if (DependencyDependentExists(pRegistration, pRegistration->sczActiveParent))
                 {
-                    nRecommendation = IDOK;
+                    fRecommendIgnore = FALSE;
                 }
             }
         }
@@ -116,16 +117,16 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
         for (DWORD iRelatedBundle = 0; iRelatedBundle < pRegistration->relatedBundles.cRelatedBundles; ++iRelatedBundle)
         {
             BURN_RELATED_BUNDLE* pRelatedBundle = pRegistration->relatedBundles.rgRelatedBundles + iRelatedBundle;
+            fIgnoreBundle = fRecommendIgnore;
 
             if (BOOTSTRAPPER_RELATION_UPGRADE == pRelatedBundle->relationType &&
                 pRegistration->qwVersion <= pRelatedBundle->qwVersion &&
                 CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pRegistration->sczDetectedProviderKeyBundleId, -1, pRelatedBundle->package.sczId, -1))
             {
-                int nResult = pUX->pUserExperience->OnDetectForwardCompatibleBundle(pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, nRecommendation);
-                hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
+                hr = UserExperienceOnDetectForwardCompatibleBundle(pUX, pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, &fIgnoreBundle);
                 ExitOnRootFailure(hr, "BA aborted detect forward compatible bundle.");
 
-                if (IDOK == nResult)
+                if (!fIgnoreBundle)
                 {
                     hr = PseudoBundleInitializePassthrough(&pRegistration->forwardCompatibleBundle, pCommand, NULL, pRegistration->sczActiveParent, pRegistration->sczAncestors, &pRelatedBundle->package);
                     ExitOnFailure(hr, "Failed to initialize update bundle.");
@@ -201,8 +202,7 @@ extern "C" HRESULT DetectReportRelatedBundles(
 
         LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_BUNDLE, pRelatedBundle->package.sczId, LoggingRelationTypeToString(pRelatedBundle->relationType), LoggingPerMachineToString(pRelatedBundle->package.fPerMachine), LoggingVersionToString(pRelatedBundle->qwVersion), LoggingRelatedOperationToString(operation));
 
-        int nResult = pUX->pUserExperience->OnDetectRelatedBundle(pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, operation);
-        hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
+        hr = UserExperienceOnDetectRelatedBundle(pUX, pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, operation);
         ExitOnRootFailure(hr, "BA aborted detect related bundle.");
     }
 
@@ -217,8 +217,9 @@ extern "C" HRESULT DetectUpdate(
     )
 {
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     BOOL fBeginCalled = FALSE;
+    BOOL fSkip = TRUE;
+    BOOL fIgnoreError = FALSE;
 
     // If no update source was specified, skip update detection.
     if (!pUpdate->sczUpdateSource || !*pUpdate->sczUpdateSource)
@@ -227,16 +228,10 @@ extern "C" HRESULT DetectUpdate(
     }
 
     fBeginCalled = TRUE;
+    hr = UserExperienceOnDetectUpdateBegin(pUX, pUpdate->sczUpdateSource, &fSkip);
+    ExitOnRootFailure(hr, "BA aborted detect update begin.");
 
-    nResult = pUX->pUserExperience->OnDetectUpdateBegin(pUpdate->sczUpdateSource, IDNOACTION);
-    hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted detect update begin.");
-
-    if (IDNOACTION == nResult)
-    {
-        //pUpdate->fUpdateAvailable = FALSE;
-    }
-    else if (IDOK == nResult)
+    if (!fSkip)
     {
         hr = DetectAtomFeedUpdate(wzBundleId, pUX, pUpdate);
         ExitOnFailure(hr, "Failed to detect atom feed update.");
@@ -245,18 +240,9 @@ extern "C" HRESULT DetectUpdate(
 LExit:
     if (fBeginCalled)
     {
-        nResult = pUX->pUserExperience->OnDetectUpdateComplete(hr, pUpdate->fUpdateAvailable ? pUpdate->sczUpdateSource : NULL, IDNOACTION);
-        nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-        switch (nResult)
+        if (SUCCEEDED(UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError)) && fIgnoreError)
         {
-            case IDNOACTION: // No Action, leave the hr as is and let the engine decide.
-                break;
-            case IDOK: // Ok, ignore any errors and continue on.
-                hr = S_OK;
-                break;
-            case IDCANCEL:
-                hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-                break;
+            hr = S_OK;
         }
     }
 
@@ -390,11 +376,10 @@ static HRESULT DetectAtomFeedUpdate(
 
 
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     LPWSTR sczUpdateFeedTempFile = NULL;
-
     ATOM_FEED* pAtomFeed = NULL;
     APPLICATION_UPDATE_CHAIN* pApupChain = NULL;
+    BOOL fStopProcessingUpdates = FALSE;
 
     hr = AtomInitialize();
     ExitOnFailure(hr, "Failed to initialize Atom.");
@@ -414,27 +399,16 @@ static HRESULT DetectAtomFeedUpdate(
         {
             APPLICATION_UPDATE_ENTRY* pAppUpdateEntry = &pApupChain->rgEntries[i];
 
-            nResult = pUX->pUserExperience->OnDetectUpdate(pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->wzUrl : NULL, 
+            hr = UserExperienceOnDetectUpdate(pUX, pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->wzUrl : NULL, 
                 pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->dw64Size : 0, 
                 pAppUpdateEntry->dw64Version, pAppUpdateEntry->wzTitle,
-                pAppUpdateEntry->wzSummary, pAppUpdateEntry->wzContentType, pAppUpdateEntry->wzContent, IDNOACTION);
+                pAppUpdateEntry->wzSummary, pAppUpdateEntry->wzContentType, pAppUpdateEntry->wzContent, &fStopProcessingUpdates);
+            ExitOnRootFailure(hr, "BA aborted detect update.");
 
-            switch (nResult)
+            if (fStopProcessingUpdates)
             {
-                case IDNOACTION:
-                    hr = S_OK;
-                    continue;
-                case IDOK:   
-                    pUpdate->fUpdateAvailable = TRUE;
-                    hr = S_OK;
-                    break;
-                case IDCANCEL:
-                    hr = S_FALSE;
-                    break;
-                default:
-                    ExitOnRootFailure(hr = E_INVALIDDATA, "UX aborted detect update begin.");
+                break;
             }
-            break;
         }
     }
 

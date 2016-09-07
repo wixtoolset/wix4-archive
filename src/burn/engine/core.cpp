@@ -39,6 +39,10 @@ static HRESULT ParsePipeConnection(
     __in LPWSTR* rgArgs,
     __in BURN_PIPE_CONNECTION* pConnection
     );
+static HRESULT DetectPackage(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_PACKAGE* pPackage
+    );
 static HRESULT DetectPackagePayloadsCached(
     __in BURN_PACKAGE* pPackage
     );
@@ -232,7 +236,6 @@ extern "C" HRESULT CoreDetect(
     BOOL fDetectBegan = FALSE;
     BURN_PACKAGE* pPackage = NULL;
     HRESULT hrFirstPackageFailure = S_OK;
-    int nResult = IDNOACTION;
 
     LogId(REPORT_STANDARD, MSG_DETECT_BEGIN, pEngineState->packages.cPackages);
 
@@ -314,37 +317,7 @@ extern "C" HRESULT CoreDetect(
     {
         pPackage = pEngineState->packages.rgPackages + i;
 
-        nResult = pEngineState->userExperience.pUserExperience->OnDetectPackageBegin(pPackage->sczId);
-        hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted detect package begin.");
-
-        // Detect the cache state of the package.
-        hr = DetectPackagePayloadsCached(pPackage);
-        ExitOnFailure(hr, "Failed to detect if payloads are all cached for package: %ls", pPackage->sczId);
-
-        // Use the correct engine to detect the package.
-        switch (pPackage->type)
-        {
-        case BURN_PACKAGE_TYPE_EXE:
-            hr = ExeEngineDetectPackage(pPackage, &pEngineState->variables);
-            break;
-
-        case BURN_PACKAGE_TYPE_MSI:
-            hr = MsiEngineDetectPackage(pPackage, &pEngineState->userExperience);
-            break;
-
-        case BURN_PACKAGE_TYPE_MSP:
-            hr = MspEngineDetectPackage(pPackage, &pEngineState->userExperience);
-            break;
-
-        case BURN_PACKAGE_TYPE_MSU:
-            hr = MsuEngineDetectPackage(pPackage, &pEngineState->variables);
-            break;
-
-        default:
-            hr = E_NOTIMPL;
-            ExitOnRootFailure(hr, "Package type not supported by detect yet.");
-        }
+        hr = DetectPackage(pEngineState, pPackage);
 
         // If the package detection failed, ensure the package state is set to unknown.
         if (FAILED(hr))
@@ -355,15 +328,7 @@ extern "C" HRESULT CoreDetect(
             }
 
             pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_UNKNOWN;
-            LogErrorId(hr, MSG_FAILED_DETECT_PACKAGE, pPackage->sczId, NULL, NULL);
         }
-        // TODO: consider how to notify the UX that a package is cached.
-        //else if (BOOTSTRAPPER_PACKAGE_STATE_CACHED > pPackage->currentState && pPackage->fCached)
-        //{
-        //     pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_CACHED;
-        //}
-
-        pEngineState->userExperience.pUserExperience->OnDetectPackageComplete(pPackage->sczId, hr, pPackage->currentState);
     }
 
     // Log the detected states.
@@ -1520,6 +1485,66 @@ static HRESULT ParsePipeConnection(
     ExitOnFailure(hr, "Failed to copy parent process id from command line.");
 
 LExit:
+    return hr;
+}
+
+static HRESULT DetectPackage(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_PACKAGE* pPackage
+    )
+{
+    HRESULT hr = S_OK;
+    BOOL fBegan = FALSE;
+    
+    fBegan = TRUE;
+    hr = UserExperienceOnDetectPackageBegin(&pEngineState->userExperience, pPackage->sczId);
+    ExitOnRootFailure(hr, "BA aborted detect package begin.");
+
+    // Detect the cache state of the package.
+    hr = DetectPackagePayloadsCached(pPackage);
+    ExitOnFailure(hr, "Failed to detect if payloads are all cached for package: %ls", pPackage->sczId);
+
+    // Use the correct engine to detect the package.
+    switch (pPackage->type)
+    {
+    case BURN_PACKAGE_TYPE_EXE:
+        hr = ExeEngineDetectPackage(pPackage, &pEngineState->variables);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSI:
+        hr = MsiEngineDetectPackage(pPackage, &pEngineState->userExperience);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSP:
+        hr = MspEngineDetectPackage(pPackage, &pEngineState->userExperience);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSU:
+        hr = MsuEngineDetectPackage(pPackage, &pEngineState->variables);
+        break;
+
+    default:
+        hr = E_NOTIMPL;
+        ExitOnRootFailure(hr, "Package type not supported by detect yet.");
+    }
+
+    // TODO: consider how to notify the UX that a package is cached.
+    //else if (BOOTSTRAPPER_PACKAGE_STATE_CACHED > pPackage->currentState && pPackage->fCached)
+    //{
+    //     pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_CACHED;
+    //}
+
+LExit:
+    if (FAILED(hr))
+    {
+        LogErrorId(hr, MSG_FAILED_DETECT_PACKAGE, pPackage->sczId, NULL, NULL);
+    }
+
+    if (fBegan)
+    {
+        UserExperienceOnDetectPackageComplete(&pEngineState->userExperience, pPackage->sczId, hr, pPackage->currentState);
+    }
+
     return hr;
 }
 

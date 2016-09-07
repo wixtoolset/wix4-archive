@@ -34,8 +34,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="CancellableHResultEventArgs"/> class.
         /// </summary>
-        public CancellableHResultEventArgs()
+        public CancellableHResultEventArgs(bool cancelRecommendation)
         {
+            this.Cancel = cancelRecommendation;
         }
 
         /// <summary>
@@ -141,7 +142,7 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when startup has begun.
     /// </summary>
     [Serializable]
-    public class StartupEventArgs : EventArgs
+    public class StartupEventArgs : HResultEventArgs
     {
         /// <summary>
         /// Creates a new instance of the <see cref="StartupEventArgs"/> class.
@@ -155,22 +156,28 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when shutdown has begun.
     /// </summary>
     [Serializable]
-    public class ShutdownEventArgs : ResultEventArgs
+    public class ShutdownEventArgs : HResultEventArgs
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ShutdownEventArgs"/> class.
         /// </summary>
-        public ShutdownEventArgs()
+        public ShutdownEventArgs(BOOTSTRAPPER_SHUTDOWN_ACTION action)
         {
+            this.Action = action;
         }
+
+        /// <summary>
+        /// The action for OnShutdown.
+        /// </summary>
+        public BOOTSTRAPPER_SHUTDOWN_ACTION Action { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the system is shutting down or the user is logging off.
     /// </summary>
     /// <remarks>
-    /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-    /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+    /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+    /// true; otherwise, set it to false.</para>
     /// <para>By default setup will prevent shutting down or logging off between
     /// <see cref="BootstrapperApplication.ApplyBegin"/> and <see cref="BootstrapperApplication.ApplyComplete"/>.</para>
     /// <para>If <see cref="SystemShutdownEventArgs.Reasons"/> contains <see cref="EndSessionReasons.Critical"/>
@@ -178,35 +185,30 @@ namespace WixToolset.Bootstrapper
     /// critical operations before being closed by the operating system.</para>
     /// </remarks>
     [Serializable]
-    public class SystemShutdownEventArgs : ResultEventArgs
+    public class SystemShutdownEventArgs : CancellableHResultEventArgs
     {
-        private EndSessionReasons reasons;
-
         /// <summary>
         /// Creates a new instance of the <see cref="SystemShutdownEventArgs"/> class.
         /// </summary>
         /// <param name="reasons">The reason the application is requested to close or being closed.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public SystemShutdownEventArgs(EndSessionReasons reasons, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public SystemShutdownEventArgs(EndSessionReasons reasons, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.reasons = reasons;
+            this.Reasons = reasons;
         }
 
         /// <summary>
         /// Gets the reason the application is requested to close or being closed.
         /// </summary>
         /// <remarks>
-        /// <para>To prevent shutting down or logging off, set <see cref="ResultEventArgs.Result"/> to
-        /// <see cref="Result.Cancel"/>; otherwise, set it to <see cref="Result.Ok"/>.</para>
+        /// <para>To prevent shutting down or logging off, set <see cref="CancellableHResultEventArgs.Cancel"/> to
+        /// true; otherwise, set it to false.</para>
         /// <para>If <see cref="SystemShutdownEventArgs.Reasons"/> contains <see cref="EndSessionReasons.Critical"/>
         /// the bootstrapper cannot prevent the shutdown and only has a few seconds to save state or perform any other
         /// critical operations before being closed by the operating system.</para>
         /// </remarks>
-        public EndSessionReasons Reasons
-        {
-            get { return this.reasons; }
-        }
+        public EndSessionReasons Reasons { get; private set; }
     }
 
     /// <summary>
@@ -220,7 +222,9 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="installed">Specifies whether the bundle is installed.</param>
         /// <param name="packageCount">The number of packages to detect.</param>
-        public DetectBeginEventArgs(bool installed, int packageCount)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectBeginEventArgs(bool installed, int packageCount, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
             this.Installed = installed;
             this.PackageCount = packageCount;
@@ -241,14 +245,8 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when detected a forward compatible bundle.
     /// </summary>
     [Serializable]
-    public class DetectForwardCompatibleBundleEventArgs : ResultEventArgs
+    public class DetectForwardCompatibleBundleEventArgs : CancellableHResultEventArgs
     {
-        private string bundleId;
-        private RelationType relationType;
-        private string bundleTag;
-        private bool perMachine;
-        private Version version;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
         /// </summary>
@@ -257,99 +255,85 @@ namespace WixToolset.Bootstrapper
         /// <param name="bundleTag">The tag of the forward compatible bundle.</param>
         /// <param name="perMachine">Whether the detected forward compatible bundle is per machine.</param>
         /// <param name="version">The version of the forward compatible bundle detected.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectForwardCompatibleBundleEventArgs(string bundleId, RelationType relationType, string bundleTag, bool perMachine, long version, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The cancel recommendation from the engine.</param>
+        /// <param name="ignoreBundleRecommendation">The ignore recommendation from the engine.</param>
+        public DetectForwardCompatibleBundleEventArgs(string bundleId, RelationType relationType, string bundleTag, bool perMachine, long version, bool cancelRecommendation, bool ignoreBundleRecommendation)
+            : base(cancelRecommendation)
         {
-            this.bundleId = bundleId;
-            this.relationType = relationType;
-            this.bundleTag = bundleTag;
-            this.perMachine = perMachine;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
+            this.BundleId = bundleId;
+            this.RelationType = relationType;
+            this.BundleTag = bundleTag;
+            this.PerMachine = perMachine;
+            this.Version = Engine.LongToVersion(version);
+            this.IgnoreBundle = ignoreBundleRecommendation;
         }
 
         /// <summary>
         /// Gets the identity of the forward compatible bundle detected.
         /// </summary>
-        public string BundleId
-        {
-            get { return this.bundleId; }
-        }
+        public string BundleId { get; private set; }
 
         /// <summary>
         /// Gets the relationship type of the forward compatible bundle.
         /// </summary>
-        public RelationType RelationType
-        {
-            get { return this.relationType; }
-        }
+        public RelationType RelationType { get; private set; }
 
         /// <summary>
         /// Gets the tag of the forward compatible bundle.
         /// </summary>
-        public string BundleTag
-        {
-            get { return this.bundleTag; }
-        }
+        public string BundleTag { get; private set; }
 
         /// <summary>
         /// Gets whether the detected forward compatible bundle is per machine.
         /// </summary>
-        public bool PerMachine
-        {
-            get { return this.perMachine; }
-        }
+        public bool PerMachine { get; private set; }
 
         /// <summary>
         /// Gets the version of the forward compatible bundle detected.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
+
+        /// <summary>
+        /// Instructs the engine whether to use the forward compatible bundle.
+        /// </summary>
+        public bool IgnoreBundle { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the detection for an update has begun.
     /// </summary>
     [Serializable]
-    public class DetectUpdateBeginEventArgs : ResultEventArgs
+    public class DetectUpdateBeginEventArgs : CancellableHResultEventArgs
     {
-        private string updateLocation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
         /// </summary>
         /// <param name="updateLocation">The location to check for an updated bundle.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectUpdateBeginEventArgs(string updateLocation, int recommendation)
-            : base(recommendation)
+        /// <param name="cancelRecommendation">The cancel recommendation from the engine.</param>
+        /// <param name="skipRecommendation">The skip recommendation from the engine.</param>
+        public DetectUpdateBeginEventArgs(string updateLocation, bool cancelRecommendation, bool skipRecommendation)
+            : base(cancelRecommendation)
         {
-            this.updateLocation = updateLocation;
+            this.UpdateLocation = updateLocation;
         }
 
         /// <summary>
         /// Gets the identity of the bundle to detect.
         /// </summary>
-        public string UpdateLocation
-        {
-            get { return this.updateLocation; }
-        }
+        public string UpdateLocation { get; private set; }
+
+        /// <summary>
+        /// Whether to skip checking for bundle updates.
+        /// </summary>
+        public bool Skip { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the detection for an update has begun.
     /// </summary>
     [Serializable]
-    public class DetectUpdateEventArgs : DetectUpdateBeginEventArgs
+    public class DetectUpdateEventArgs : CancellableHResultEventArgs
     {
-        private long size;
-        private Version version;
-        private string title;
-        private string summary;
-        private string contentType;
-        private string content;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateBeginEventArgs"/> class.
         /// </summary>
@@ -360,135 +344,91 @@ namespace WixToolset.Bootstrapper
         /// <param name="summary">The summary of the updated bundle.</param>
         /// <param name="contentType">The content type of the content of the updated bundle.</param>
         /// <param name="content">The content of the updated bundle.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectUpdateEventArgs(string updateLocation, long size, long version, string title, string summary, string contentType, string content, int recommendation)
-            : base(updateLocation, recommendation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        /// <param name="stopRecommendation">The recommendation from the engine.</param>
+        public DetectUpdateEventArgs(string updateLocation, long size, long version, string title, string summary, string contentType, string content, bool cancelRecommendation, bool stopRecommendation)
+            : base(cancelRecommendation)
         {
-            this.size = size;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
-            this.title = title;
-            this.summary = summary;
-            this.contentType = contentType;
-            this.content = content;
+            this.UpdateLocation = updateLocation;
+            this.Size = size;
+            this.Version = Engine.LongToVersion(version);
+            this.Title = title;
+            this.Summary = summary;
+            this.ContentType = contentType;
+            this.Content = content;
+            this.StopProcessingUpdates = stopRecommendation;
         }
+
+        /// <summary>
+        /// Gets the identity of the bundle to detect.
+        /// </summary>
+        public string UpdateLocation { get; private set; }
 
         /// <summary>
         /// Gets the size of the updated bundle.
         /// </summary>
-        public long Size
-        {
-            get { return this.size; }
-        }
+        public long Size { get; private set; }
 
         /// <summary>
         /// Gets the version of the updated bundle.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the title of the the updated bundle.
         /// </summary>
-        public string Title
-        {
-            get { return this.title; }
-        }
+        public string Title { get; private set; }
 
         /// <summary>
         /// Gets the summary of the updated bundle.
         /// </summary>
-        public string Summary
-        {
-            get { return this.summary; }
-        }
+        public string Summary { get; private set; }
 
         /// <summary>
         /// Gets the content type of the content of the updated bundle.
         /// </summary>
-        public string ContentType
-        {
-            get { return this.contentType; }
-        }
+        public string ContentType { get; private set; }
 
         /// <summary>
         /// Gets the content of the updated bundle.
         /// </summary>
-        public string Content
-        {
-            get { return this.content; }
-        }
+        public string Content { get; private set; }
+
+        /// <summary>
+        /// Tells the engine to stop giving the rest of the updates found in the feed.
+        /// </summary>
+        public bool StopProcessingUpdates { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the detection for an update has completed.
     /// </summary>
     [Serializable]
-    public class DetectUpdateCompleteEventArgs : ResultStatusEventArgs
+    public class DetectUpdateCompleteEventArgs : StatusEventArgs
     {
-        private string updateLocation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateCompleteEventArgs"/> class.
         /// </summary>
         /// <param name="status">The return code of the operation.</param>
-        /// <param name="updateLocation">The location of the updated bundle.</param>
-        /// <param name="recommendation">The recommendation from the engine.</param>
-        public DetectUpdateCompleteEventArgs(int status, string updateLocation, int recommendation)
-            : base(status, recommendation)
+        /// <param name="ignoreRecommendation">The recommendation from the engine.</param>
+        public DetectUpdateCompleteEventArgs(int status, bool ignoreRecommendation)
+            : base(status)
         {
-            this.updateLocation = updateLocation;
+            this.IgnoreError = ignoreRecommendation;
         }
 
         /// <summary>
-        /// Gets the location of the updated bundle if one was detected.
+        /// If Status is an error, then set this to true to ignore it and continue detecting.
         /// </summary>
-        public string UpdateLocation
-        {
-            get { return this.updateLocation; }
-        }
-    }
-
-    /// <summary>
-    /// Additional arguments used when the detection for a prior bundle has begun.
-    /// </summary>
-    [Serializable]
-    public class DetectPriorBundleEventArgs : ResultEventArgs
-    {
-        private string bundleId;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DetectPriorBundleEventArgs"/> class.
-        /// </summary>
-        /// <param name="bundleId">The identity of the bundle to detect.</param>
-        public DetectPriorBundleEventArgs(string bundleId)
-        {
-            this.bundleId = bundleId;
-        }
-
-        /// <summary>
-        /// Gets the identity of the bundle to detect.
-        /// </summary>
-        public string BundleId
-        {
-            get { return this.bundleId; }
-        }
+        public bool IgnoreError { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when a related bundle has been detected for a bundle.
     /// </summary>
     [Serializable]
-    public class DetectRelatedBundleEventArgs : ResultEventArgs
+    public class DetectRelatedBundleEventArgs : CancellableHResultEventArgs
     {
-        private string productCode;
-        private RelationType relationType;
-        private string bundleTag;
-        private bool perMachine;
-        private Version version;
-        private RelatedOperation operation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectRelatedBundleEventArgs"/> class.
         /// </summary>
@@ -498,290 +438,230 @@ namespace WixToolset.Bootstrapper
         /// <param name="perMachine">Whether the detected bundle is per machine.</param>
         /// <param name="version">The version of the related bundle detected.</param>
         /// <param name="operation">The operation that will be taken on the detected bundle.</param>
-        public DetectRelatedBundleEventArgs(string productCode, RelationType relationType, string bundleTag, bool perMachine, long version, RelatedOperation operation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectRelatedBundleEventArgs(string productCode, RelationType relationType, string bundleTag, bool perMachine, long version, RelatedOperation operation, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.productCode = productCode;
-            this.relationType = relationType;
-            this.bundleTag = bundleTag;
-            this.perMachine = perMachine;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
-            this.operation = operation;
+            this.ProductCode = productCode;
+            this.RelationType = relationType;
+            this.BundleTag = bundleTag;
+            this.PerMachine = perMachine;
+            this.Version = Engine.LongToVersion(version);
+            this.Operation = operation;
         }
 
         /// <summary>
         /// Gets the identity of the related bundle detected.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets the relationship type of the related bundle.
         /// </summary>
-        public RelationType RelationType
-        {
-            get { return this.relationType; }
-        }
+        public RelationType RelationType { get; private set; }
 
         /// <summary>
         /// Gets the tag of the related package bundle.
         /// </summary>
-        public string BundleTag
-        {
-            get { return this.bundleTag; }
-        }
+        public string BundleTag { get; private set; }
 
         /// <summary>
         /// Gets whether the detected bundle is per machine.
         /// </summary>
-        public bool PerMachine
-        {
-            get { return this.perMachine; }
-        }
+        public bool PerMachine { get; private set; }
 
         /// <summary>
         /// Gets the version of the related bundle detected.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the operation that will be taken on the detected bundle.
         /// </summary>
-        public RelatedOperation Operation
-        {
-            get { return this.operation; }
-        }
+        public RelatedOperation Operation { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when the detection for a specific package has begun.
     /// </summary>
     [Serializable]
-    public class DetectPackageBeginEventArgs : ResultEventArgs
+    public class DetectPackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectPackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to detect.</param>
-        public DetectPackageBeginEventArgs(string packageId)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectPackageBeginEventArgs(string packageId, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
+            this.PackageId = packageId;
         }
 
         /// <summary>
         /// Gets the identity of the package to detect.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when a package was not found but a newer package using the same provider key was.
     /// </summary>
     [Serializable]
-    public class DetectCompatiblePackageEventArgs : ResultEventArgs
+    public class DetectCompatiblePackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string compatiblePackageId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectCompatiblePackageEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that was not detected.</param>
         /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
-        public DetectCompatiblePackageEventArgs(string packageId, string compatiblePackageId)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectCompatiblePackageEventArgs(string packageId, string compatiblePackageId, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.compatiblePackageId = compatiblePackageId;
+            this.PackageId = packageId;
+            this.CompatiblePackageId = compatiblePackageId;
         }
 
         /// <summary>
         /// Gets the identity of the package that was not detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the compatible package that was detected.
         /// </summary>
-        public string CompatiblePackageId
-        {
-            get { return this.compatiblePackageId; }
-        }
+        public string CompatiblePackageId { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when a related MSI package has been detected for a package.
     /// </summary>
     [Serializable]
-    public class DetectRelatedMsiPackageEventArgs : ResultEventArgs
+    public class DetectRelatedMsiPackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string productCode;
-        private bool perMachine;
-        private Version version;
-        private RelatedOperation operation;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectRelatedMsiPackageEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package detecting.</param>
+        /// <param name="upgradeCode">The upgrade code of the related package detected.</param>
         /// <param name="productCode">The identity of the related package detected.</param>
         /// <param name="perMachine">Whether the detected package is per machine.</param>
         /// <param name="version">The version of the related package detected.</param>
         /// <param name="operation">The operation that will be taken on the detected package.</param>
-        public DetectRelatedMsiPackageEventArgs(string packageId, string productCode, bool perMachine, long version, RelatedOperation operation)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectRelatedMsiPackageEventArgs(string packageId, string upgradeCode, string productCode, bool perMachine, long version, RelatedOperation operation, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.productCode = productCode;
-            this.perMachine = perMachine;
-            this.version = new Version((int)(version >> 48 & 0xFFFF), (int)(version >> 32 & 0xFFFF), (int)(version >> 16 & 0xFFFF), (int)(version & 0xFFFF));
-            this.operation = operation;
+            this.PackageId = packageId;
+            this.UpgradeCode = upgradeCode;
+            this.ProductCode = productCode;
+            this.PerMachine = perMachine;
+            this.Version = Engine.LongToVersion(version);
+            this.Operation = operation;
         }
 
         /// <summary>
         /// Gets the identity of the product's package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the upgrade code of the related package detected.
+        /// </summary>
+        public string UpgradeCode { get; private set; }
 
         /// <summary>
         /// Gets the identity of the related package detected.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets whether the detected package is per machine.
         /// </summary>
-        public bool PerMachine
-        {
-            get { return this.perMachine; }
-        }
+        public bool PerMachine { get; private set; }
 
         /// <summary>
         /// Gets the version of the related package detected.
         /// </summary>
-        public Version Version
-        {
-            get { return this.version; }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the operation that will be taken on the detected package.
         /// </summary>
-        public RelatedOperation Operation
-        {
-            get { return this.operation; }
-        }
+        public RelatedOperation Operation { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when a target MSI package has been detected.
     /// </summary>
-    public class DetectTargetMsiPackageEventArgs : ResultEventArgs
+    public class DetectTargetMsiPackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string productCode;
-        private PackageState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Detected package identifier.</param>
         /// <param name="productCode">Detected product code.</param>
         /// <param name="state">Package state detected.</param>
-        public DetectTargetMsiPackageEventArgs(string packageId, string productCode, PackageState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectTargetMsiPackageEventArgs(string packageId, string productCode, PackageState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.productCode = productCode;
-            this.state = state;
+            this.PackageId = packageId;
+            this.ProductCode = productCode;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the target's package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the product code of the target MSI detected.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets the detected patch package state.
         /// </summary>
-        public PackageState State
-        {
-            get { return this.state; }
-        }
+        public PackageState State { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when a feature in an MSI package has been detected.
     /// </summary>
-    public class DetectMsiFeatureEventArgs : ResultEventArgs
+    public class DetectMsiFeatureEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string featureId;
-        private FeatureState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Detected package identifier.</param>
         /// <param name="featureId">Detected feature identifier.</param>
         /// <param name="state">Feature state detected.</param>
-        public DetectMsiFeatureEventArgs(string packageId, string featureId, FeatureState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public DetectMsiFeatureEventArgs(string packageId, string featureId, FeatureState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.featureId = featureId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.FeatureId = featureId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the feature's package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the feature detected.
         /// </summary>
-        public string FeatureId
-        {
-            get { return this.featureId; }
-        }
+        public string FeatureId { get; private set; }
 
         /// <summary>
         /// Gets the detected feature state.
         /// </summary>
-        public FeatureState State
-        {
-            get { return this.state; }
-        }
+        public FeatureState State { get; private set; }
     }
 
     /// <summary>
@@ -790,9 +670,6 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class DetectPackageCompleteEventArgs : StatusEventArgs
     {
-        private string packageId;
-        private PackageState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="DetectPackageCompleteEventArgs"/> class.
         /// </summary>
@@ -802,25 +679,19 @@ namespace WixToolset.Bootstrapper
         public DetectPackageCompleteEventArgs(string packageId, int status, PackageState state)
             : base(status)
         {
-            this.packageId = packageId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the package detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the state of the specified package.
         /// </summary>
-        public PackageState State
-        {
-            get { return this.state; }
-        }
+        public PackageState State { get; private set; }
     }
 
     /// <summary>
@@ -849,7 +720,9 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="PlanBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageCount">The number of packages to plan for.</param>
-        public PlanBeginEventArgs(int packageCount)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanBeginEventArgs(int packageCount, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
             this.PackageCount = packageCount;
         }
