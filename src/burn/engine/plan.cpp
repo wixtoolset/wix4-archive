@@ -1285,11 +1285,10 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
 
         pRelatedBundle->package.defaultRequested = pRelatedBundle->package.requested;
 
-        int nResult = pUserExperience->pUserExperience->OnPlanRelatedBundle(pRelatedBundle->package.sczId, &pRelatedBundle->package.requested);
-        hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted plan related bundle.");
+        hr = UserExperienceOnPlanRelatedBundle(pUserExperience, pRelatedBundle->package.sczId, &pRelatedBundle->package.requested);
+        ExitOnRootFailure(hr, "BA aborted plan related bundle.");
 
-        // Log when the UX changed the bundle state so the engine doesn't get blamed for planning the wrong thing.
+        // Log when the BA changed the bundle state so the engine doesn't get blamed for planning the wrong thing.
         if (pRelatedBundle->package.requested != pRelatedBundle->package.defaultRequested)
         {
             LogId(REPORT_STANDARD, MSG_PLANNED_BUNDLE_UX_CHANGED_REQUEST, pRelatedBundle->package.sczId, LoggingRequestStateToString(pRelatedBundle->package.requested), LoggingRequestStateToString(pRelatedBundle->package.defaultRequested));

@@ -737,38 +737,30 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun planning for a related bundle.
     /// </summary>
     [Serializable]
-    public class PlanRelatedBundleEventArgs : ResultEventArgs
+    public class PlanRelatedBundleEventArgs : CancellableHResultEventArgs
     {
-        private string bundleId;
-        private RequestState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanRelatedBundleEventArgs"/> class.
         /// </summary>
         /// <param name="bundleId">The identity of the bundle to plan for.</param>
         /// <param name="state">The requested state for the bundle.</param>
-        public PlanRelatedBundleEventArgs(string bundleId, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanRelatedBundleEventArgs(string bundleId, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.bundleId = bundleId;
-            this.state = state;
+            this.BundleId = bundleId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the bundle to plan for.
         /// </summary>
-        public string BundleId
-        {
-            get { return this.bundleId; }
-        }
+        public string BundleId { get; private set; }
 
         /// <summary>
         /// Gets or sets the requested state for the bundle.
         /// </summary>
-        public RequestState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public RequestState State { get; set; }
     }
 
     /// <summary>

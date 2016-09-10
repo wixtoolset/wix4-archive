@@ -136,14 +136,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnPlanRelatedBundle - called when the engine begins planning a related bundle.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanRelatedBundle)(
+    STDMETHOD(OnPlanRelatedBundle)(
         __in_z LPCWSTR wzBundleId,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanPackageBegin - called when the engine begins planning a package.

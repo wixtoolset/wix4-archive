@@ -185,6 +185,9 @@ static HRESULT DAPI SetVariableStringCallback(
     __in_z_opt LPCWSTR wzValue,
     __in_opt LPVOID pvContext
     );
+static LPCSTR LoggingRequestStateToString(
+    __in BOOTSTRAPPER_REQUEST_STATE requestState
+    );
 
 
 class CWixStandardBootstrapperApplication : public CBalBaseBootstrapperApplication
@@ -353,9 +356,10 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnPlanRelatedBundle(
-        __in_z LPCWSTR /*wzBundleId*/,
-        __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    virtual STDMETHODIMP OnPlanRelatedBundle(
+        __in_z LPCWSTR wzBundleId,
+        __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         )
     {
         // If we're only installing prerequisites, do not touch related bundles.
@@ -364,7 +368,7 @@ public: // IBootstrapperApplication
             *pRequestedState = BOOTSTRAPPER_REQUEST_STATE_NONE;
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, pRequestedState, pfCancel);
     }
 
 
@@ -972,6 +976,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE:
             OnDetectPackageCompleteFallback(reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANRELATEDBUNDLE:
+            OnPlanRelatedBundleFallback(reinterpret_cast<BA_ONPLANRELATEDBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANRELATEDBUNDLE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1100,6 +1107,15 @@ private: // privates
         __inout BA_ONDETECTPACKAGECOMPLETE_RESULTS* pResults)
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanRelatedBundleFallback(
+        __in BA_ONPLANRELATEDBUNDLE_ARGS* pArgs,
+        __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults)
+    {
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanRelatedBundle to BAFunctions: requestedState=%s", LoggingRequestStateToString(pResults->requestedState));
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanRelatedBundle to BAFunctions: requestedState=%s", LoggingRequestStateToString(pResults->requestedState));
     }
 
     //
@@ -3247,4 +3263,27 @@ static HRESULT DAPI SetVariableStringCallback(
     )
 {
     return BalSetStringVariable(wzVariable, wzValue);
+}
+
+static LPCSTR LoggingRequestStateToString(
+    __in BOOTSTRAPPER_REQUEST_STATE requestState
+)
+{
+    switch (requestState)
+    {
+    case BOOTSTRAPPER_REQUEST_STATE_NONE:
+        return "None";
+    case BOOTSTRAPPER_REQUEST_STATE_FORCE_ABSENT:
+        return "ForceAbsent";
+    case BOOTSTRAPPER_REQUEST_STATE_ABSENT:
+        return "Absent";
+    case BOOTSTRAPPER_REQUEST_STATE_CACHE:
+        return "Cache";
+    case BOOTSTRAPPER_REQUEST_STATE_PRESENT:
+        return "Present";
+    case BOOTSTRAPPER_REQUEST_STATE_REPAIR:
+        return "Repair";
+    default:
+        return "Invalid";
+    }
 }

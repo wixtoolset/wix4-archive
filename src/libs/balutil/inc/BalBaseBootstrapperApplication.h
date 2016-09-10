@@ -238,12 +238,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanRelatedBundle(
+    virtual STDMETHODIMP OnPlanRelatedBundle(
         __in_z LPCWSTR /*wzBundleId*/,
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/
-        )
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
+        __inout BOOL* pfCancel
+    )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnPlanPackageBegin(
