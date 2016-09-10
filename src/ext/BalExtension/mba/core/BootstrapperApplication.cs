@@ -1221,13 +1221,14 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, ref RequestState pRequestedState)
+        int IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanRelatedBundleEventArgs args = new PlanRelatedBundleEventArgs(wzBundleId, pRequestedState);
+            PlanRelatedBundleEventArgs args = new PlanRelatedBundleEventArgs(wzBundleId, pRequestedState, fCancel);
             this.OnPlanRelatedBundle(args);
 
             pRequestedState = args.State;
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, ref RequestState pRequestedState)

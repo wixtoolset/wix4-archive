@@ -308,11 +308,14 @@ BAAPI UserExperienceOnDetectBegin(
     results.cbSize = sizeof(results);
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN, &args, &results, pUserExperience->pvBAProcContext);
-    if (SUCCEEDED(hr) && results.fCancel)
+    ExitOnFailure(hr, "BA OnDetectBegin failed.");
+
+    if (results.fCancel)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
+LExit:
     return hr;
 }
 
@@ -695,11 +698,14 @@ BAAPI UserExperienceOnPlanBegin(
     results.cbSize = sizeof(results);
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN, &args, &results, pUserExperience->pvBAProcContext);
-    if (SUCCEEDED(hr) && results.fCancel)
+    ExitOnFailure(hr, "BA OnPlanBegin failed.");
+
+    if (results.fCancel)
     {
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
+LExit:
     return hr;
 }
 
@@ -719,6 +725,35 @@ BAAPI UserExperienceOnPlanComplete(
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnPlanComplete failed.");
+
+LExit:
+    return hr;
+}
+
+BAAPI UserExperienceOnPlanRelatedBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANRELATEDBUNDLE_ARGS args = { };
+    BA_ONPLANRELATEDBUNDLE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzBundleId = wzBundleId;
+
+    results.cbSize = sizeof(results);
+    results.requestedState = *pRequestedState;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANRELATEDBUNDLE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnPlanRelatedBundle failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pRequestedState = results.requestedState;
 
 LExit:
     return hr;
