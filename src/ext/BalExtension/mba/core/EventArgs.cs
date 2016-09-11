@@ -767,38 +767,30 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun planning the installation of a specific package.
     /// </summary>
     [Serializable]
-    public class PlanPackageBeginEventArgs : ResultEventArgs
+    public class PlanPackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private RequestState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanPackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to plan for.</param>
         /// <param name="state">The requested state for the package.</param>
-        public PlanPackageBeginEventArgs(string packageId, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanPackageBeginEventArgs(string packageId, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the package to plan for.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the requested state for the package.
         /// </summary>
-        public RequestState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public RequestState State { get; set; }
     }
 
     /// <summary>

@@ -1231,13 +1231,14 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, ref RequestState pRequestedState)
+        int IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanPackageBeginEventArgs args = new PlanPackageBeginEventArgs(wzPackageId, pRequestedState);
+            PlanPackageBeginEventArgs args = new PlanPackageBeginEventArgs(wzPackageId, pRequestedState, fCancel);
             this.OnPlanPackageBegin(args);
 
             pRequestedState = args.State;
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnPlanCompatiblePackage(string wzPackageId, ref RequestState pRequestedState)

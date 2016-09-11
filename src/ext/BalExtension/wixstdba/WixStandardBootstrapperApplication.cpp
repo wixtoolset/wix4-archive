@@ -372,9 +372,10 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnPlanPackageBegin(
+    virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState
+        __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState,
+        __inout BOOL* pfCancel
         )
     {
         HRESULT hr = S_OK;
@@ -438,7 +439,7 @@ public: // IBootstrapperApplication
             }
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, pRequestState, pfCancel);
     }
 
 
@@ -979,6 +980,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANRELATEDBUNDLE:
             OnPlanRelatedBundleFallback(reinterpret_cast<BA_ONPLANRELATEDBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANRELATEDBUNDLE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGEBEGIN:
+            OnPlanPackageBeginFallback(reinterpret_cast<BA_ONPLANPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1034,9 +1038,9 @@ private: // privates
         __in BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS* pArgs,
         __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectForwardCompatibleBundle to BAFunctions: bundleId=%ls, fIgnoreBundle=%s", pArgs->wzBundleId, pResults->fIgnoreBundle ? "true" : "false");
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectForwardCompatibleBundle to BAFunctions: bundleId=%ls, fIgnoreBundle=%s", pArgs->wzBundleId, pResults->fIgnoreBundle ? "true" : "false");
     }
 
     void OnDetectUpdateBeginFallback(
@@ -1113,9 +1117,18 @@ private: // privates
         __in BA_ONPLANRELATEDBUNDLE_ARGS* pArgs,
         __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanRelatedBundle to BAFunctions: requestedState=%s", LoggingRequestStateToString(pResults->requestedState));
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanRelatedBundle to BAFunctions: bundleId=%ls, requestedState=%s", pArgs->wzBundleId, LoggingRequestStateToString(pResults->requestedState));
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanRelatedBundle to BAFunctions: requestedState=%s", LoggingRequestStateToString(pResults->requestedState));
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanRelatedBundle to BAFunctions: bundleId=%ls, requestedState=%s", pArgs->wzBundleId, LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanPackageBeginFallback(
+        __in BA_ONPLANPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults)
+    {
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanPackageBegin to BAFunctions: packageId=%ls, requestedState=%s", pArgs->wzPackageId, LoggingRequestStateToString(pResults->requestedState));
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanPackageBegin to BAFunctions: packageId=%ls, requestedState=%s", pArgs->wzPackageId, LoggingRequestStateToString(pResults->requestedState));
     }
 
     //
