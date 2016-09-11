@@ -878,14 +878,14 @@ static HRESULT ProcessPackage(
     if (fPlanCompatible)
     {
         nResult = pUX->pUserExperience->OnPlanCompatiblePackage(pPackage->sczId, &pPackage->requested);
+        hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
+        ExitOnRootFailure(hr, "BA aborted plan compatible package begin.");
     }
     else
     {
-        nResult = pUX->pUserExperience->OnPlanPackageBegin(pPackage->sczId, &pPackage->requested);
+        hr = UserExperienceOnPlanPackageBegin(pUX, pPackage->sczId, &pPackage->requested);
+        ExitOnRootFailure(hr, "BA aborted plan package begin.");
     }
-
-    hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted plan package begin.");
 
     pEffectiveRollbackBoundary = (BOOTSTRAPPER_ACTION_UNINSTALL == pPlan->action) ? pPackage->pRollbackBoundaryBackward : pPackage->pRollbackBoundaryForward;
     hr = ProcessPackageRollbackBoundary(pPlan, pEffectiveRollbackBoundary, ppRollbackBoundary);

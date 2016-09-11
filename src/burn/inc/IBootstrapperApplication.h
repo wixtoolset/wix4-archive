@@ -143,14 +143,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnPlanPackageBegin - called when the engine begins planning a package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanPackageBegin)(
+    STDMETHOD(OnPlanPackageBegin)(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanCompatiblePackage - called when the engine plans a newer, compatible package using the same provider key.

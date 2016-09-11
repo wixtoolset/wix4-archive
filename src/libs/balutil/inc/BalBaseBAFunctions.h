@@ -239,12 +239,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanPackageBegin(
+    virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR /*wzPackageId*/,
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestState*/
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestState*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnPlanCompatiblePackage(

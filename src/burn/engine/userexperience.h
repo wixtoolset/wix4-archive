@@ -190,11 +190,16 @@ HRESULT UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     );
+HRESULT UserExperienceOnPlanPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    );
 HRESULT UserExperienceOnPlanRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
-);
+    );
 HRESULT UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
