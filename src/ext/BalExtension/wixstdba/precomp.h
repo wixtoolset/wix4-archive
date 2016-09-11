@@ -39,6 +39,8 @@
 
 #include "BAFunctions.h"
 
+#include "wixstdba.messages.h"
+
 HRESULT CreateBootstrapperApplication(
     __in HMODULE hModule,
     __in BOOL fPrereq,

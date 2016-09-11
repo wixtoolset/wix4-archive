@@ -950,6 +950,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN:
             OnSystemShutdownFallback(reinterpret_cast<BA_ONSYSTEMSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSYSTEMSHUTDOWN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE:
+            OnDetectForwardCompatibleBundleFallback(reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS*>(pvResults));
+            break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATEBEGIN:
             OnDetectUpdateBeginFallback(reinterpret_cast<BA_ONDETECTUPDATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTUPDATEBEGIN_RESULTS*>(pvResults));
             break;
@@ -1038,9 +1041,9 @@ private: // privates
         __in BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS* pArgs,
         __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectForwardCompatibleBundle to BAFunctions: bundleId=%ls, fIgnoreBundle=%s", pArgs->wzBundleId, pResults->fIgnoreBundle ? "true" : "false");
+        BOOL fIgnoreBundle = pResults->fIgnoreBundle;
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectForwardCompatibleBundle to BAFunctions: bundleId=%ls, fIgnoreBundle=%s", pArgs->wzBundleId, pResults->fIgnoreBundle ? "true" : "false");
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_DETECTED_FORWARD_COMPATIBLE_BUNDLE, m_hModule, pArgs->wzBundleId, fIgnoreBundle ? "ignore" : "enable", pResults->fIgnoreBundle ? "ignore" : "enable");
     }
 
     void OnDetectUpdateBeginFallback(
@@ -1117,18 +1120,18 @@ private: // privates
         __in BA_ONPLANRELATEDBUNDLE_ARGS* pArgs,
         __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanRelatedBundle to BAFunctions: bundleId=%ls, requestedState=%s", pArgs->wzBundleId, LoggingRequestStateToString(pResults->requestedState));
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanRelatedBundle to BAFunctions: bundleId=%ls, requestedState=%s", pArgs->wzBundleId, LoggingRequestStateToString(pResults->requestedState));
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_RELATED_BUNDLE, m_hModule, pArgs->wzBundleId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
     }
 
     void OnPlanPackageBeginFallback(
         __in BA_ONPLANPACKAGEBEGIN_ARGS* pArgs,
         __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults)
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnPlanPackageBegin to BAFunctions: packageId=%ls, requestedState=%s", pArgs->wzPackageId, LoggingRequestStateToString(pResults->requestedState));
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnPlanPackageBegin to BAFunctions: packageId=%ls, requestedState=%s", pArgs->wzPackageId, LoggingRequestStateToString(pResults->requestedState));
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_PACKAGE, m_hModule, pArgs->wzPackageId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
     }
 
     //

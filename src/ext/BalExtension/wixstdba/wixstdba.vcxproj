@@ -36,7 +36,7 @@
 
   <PropertyGroup>
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\burn\inc;$(WixRoot)src\libs\balutil\inc</ProjectAdditionalIncludeDirectories>
-    <ProjectAdditionalLinkLibraries>comctl32.lib;gdiplus.lib;msimg32.lib;shlwapi.lib;wininet.lib;dutil.lib;balutil.lib</ProjectAdditionalLinkLibraries>
+    <ProjectAdditionalLinkLibraries>comctl32.lib;gdiplus.lib;msimg32.lib;shlwapi.lib;wininet.lib;dutil.lib;balutil.lib;wixstdba.res</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
 
   <ItemGroup>
@@ -94,6 +94,12 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wixstdba.rc" />
+    <CustomBuild Include="wixstdba.mc">
+      <Message>Compiling message file...</Message>
+      <Command>mc.exe -h "$(IntDir)." -r "$(IntDir)." -A -c -z wixstdba.messages "$(InputDir)wixstdba.mc"
+rc.exe -fo "$(OutDir)wixstdba.res" "$(IntDir)wixstdba.messages.rc"</Command>
+      <Outputs>$(IntDir)wixstdba.messages.h;$(OutDir)wixstdba.messages.rc</Outputs>
+    </CustomBuild>
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />

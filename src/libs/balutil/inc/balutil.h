@@ -141,6 +141,25 @@ DAPIV_(HRESULT) BalLogError(
     ...
     );
 
+/*******************************************************************
+BalLogId - logs a message with the engine with a string embedded in a 
+           MESSAGETABLE resource.
+
+********************************************************************/
+DAPIV_(HRESULT) BalLogId(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    ...
+    );
+
+DAPI_(HRESULT) BalLogIdArgs(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    __in va_list args
+    );
+
 #ifdef __cplusplus
 }
 #endif
