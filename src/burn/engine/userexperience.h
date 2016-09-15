@@ -103,10 +103,11 @@ HRESULT UserExperienceOnDetectBegin(
     __in BOOL fInstalled,
     __in DWORD cPackages
     );
-HRESULT UserExperienceOnDetectCompatiblePackage(
+HRESULT UserExperienceOnDetectCompatibleMsiPackage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
-    __in_z LPCWSTR wzCompatiblePackageId
+    __in_z LPCWSTR wzCompatiblePackageId,
+    __in DWORD64 dw64CompatiblePackageVersion
     );
 HRESULT UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
@@ -185,6 +186,23 @@ HRESULT UserExperienceOnDetectUpdateComplete(
 HRESULT UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
+    );
+HRESULT UserExperienceOnPlanCompatibleMsiPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId,
+    __in DWORD64 dw64CompatiblePackageVersion,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    );
+HRESULT UserExperienceOnPlanCompatibleMsiPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state,
+    __in BOOTSTRAPPER_REQUEST_STATE requested,
+    __in BOOTSTRAPPER_ACTION_STATE execute,
+    __in BOOTSTRAPPER_ACTION_STATE rollback
     );
 HRESULT UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,

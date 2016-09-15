@@ -461,7 +461,7 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 {
                     LogId(REPORT_STANDARD, MSG_DETECTED_COMPATIBLE_PACKAGE_FROM_PROVIDER, pPackage->sczId, sczInstalledProviderKey, sczInstalledProductCode, sczInstalledVersion, pPackage->Msi.sczProductCode);
 
-                    hr = UserExperienceOnDetectCompatiblePackage(pUserExperience, pPackage->sczId, sczInstalledProductCode);
+                    hr = UserExperienceOnDetectCompatibleMsiPackage(pUserExperience, pPackage->sczId, sczInstalledProductCode, qwVersion);
                     ExitOnRootFailure(hr, "BA aborted detect compatible MSI package.");
 
                     hr = StrAllocString(&pPackage->Msi.sczInstalledProductCode, sczInstalledProductCode, 0);
