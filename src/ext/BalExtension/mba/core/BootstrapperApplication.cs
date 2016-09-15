@@ -91,7 +91,7 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Fired when a package was not detected but a package using the same provider key was.
         /// </summary>
-        public event EventHandler<DetectCompatiblePackageEventArgs> DetectCompatiblePackage;
+        public event EventHandler<DetectCompatibleMsiPackageEventArgs> DetectCompatibleMsiPackage;
 
         /// <summary>
         /// Fired when a related MSI package has been detected for a package.
@@ -136,7 +136,12 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Fired when the engine plans a new, compatible package using the same provider key.
         /// </summary>
-        public event EventHandler<PlanCompatiblePackageEventArgs> PlanCompatiblePackage;
+        public event EventHandler<PlanCompatibleMsiPackageBeginEventArgs> PlanCompatibleMsiPackageBegin;
+
+        /// <summary>
+        /// Fired when the engine has completed planning the installation of a specific package.
+        /// </summary>
+        public event EventHandler<PlanCompatibleMsiPackageCompleteEventArgs> PlanCompatibleMsiPackageComplete;
 
         /// <summary>
         /// Fired when the engine is about to plan the target MSI of a MSP package.
@@ -510,9 +515,9 @@ namespace WixToolset.Bootstrapper
         /// Called when a package was not detected but a package using the same provider key was.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnDetectCompatiblePackage(DetectCompatiblePackageEventArgs args)
+        protected virtual void OnDetectCompatibleMsiPackage(DetectCompatibleMsiPackageEventArgs args)
         {
-            EventHandler<DetectCompatiblePackageEventArgs> handler = this.DetectCompatiblePackage;
+            EventHandler<DetectCompatibleMsiPackageEventArgs> handler = this.DetectCompatibleMsiPackage;
             if (null != handler)
             {
                 handler(this, args);
@@ -627,9 +632,22 @@ namespace WixToolset.Bootstrapper
         /// Called when the engine plans a new, compatible package using the same provider key.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnPlanCompatiblePackage(PlanCompatiblePackageEventArgs args)
+        protected virtual void OnPlanCompatibleMsiPackageBegin(PlanCompatibleMsiPackageBeginEventArgs args)
         {
-            EventHandler<PlanCompatiblePackageEventArgs> handler = this.PlanCompatiblePackage;
+            EventHandler<PlanCompatibleMsiPackageBeginEventArgs> handler = this.PlanCompatibleMsiPackageBegin;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when the engine has completed planning the installation of a specific package.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnPlanCompatibleMsiPackageComplete(PlanCompatibleMsiPackageCompleteEventArgs args)
+        {
+            EventHandler<PlanCompatibleMsiPackageCompleteEventArgs> handler = this.PlanCompatibleMsiPackageComplete;
             if (null != handler)
             {
                 handler(this, args);
@@ -1160,10 +1178,10 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnDetectCompatiblePackage(string wzPackageId, string wzCompatiblePackageId, ref bool fCancel)
+        int IBootstrapperApplication.OnDetectCompatibleMsiPackage(string wzPackageId, string wzCompatiblePackageId, long dw64CompatiblePackageVersion, ref bool fCancel)
         {
-            DetectCompatiblePackageEventArgs args = new DetectCompatiblePackageEventArgs(wzPackageId, wzCompatiblePackageId, fCancel);
-            this.OnDetectCompatiblePackage(args);
+            DetectCompatibleMsiPackageEventArgs args = new DetectCompatibleMsiPackageEventArgs(wzPackageId, wzCompatiblePackageId, dw64CompatiblePackageVersion, fCancel);
+            this.OnDetectCompatibleMsiPackage(args);
 
             fCancel = args.Cancel;
             return args.HResult;
@@ -1241,13 +1259,22 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnPlanCompatiblePackage(string wzPackageId, ref RequestState pRequestedState)
+        int IBootstrapperApplication.OnPlanCompatibleMsiPackageBegin(string wzPackageId, string wzCompatiblePackageId, long dw64CompatiblePackageVersion, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanCompatiblePackageEventArgs args = new PlanCompatiblePackageEventArgs(wzPackageId, pRequestedState);
-            this.OnPlanCompatiblePackage(args);
+            PlanCompatibleMsiPackageBeginEventArgs args = new PlanCompatibleMsiPackageBeginEventArgs(wzPackageId, wzCompatiblePackageId, dw64CompatiblePackageVersion, pRequestedState, fCancel);
+            this.OnPlanCompatibleMsiPackageBegin(args);
 
             pRequestedState = args.State;
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnPlanCompatibleMsiPackageComplete(string wzPackageId, string wzCompatiblePackageId, int hrStatus, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
+        {
+            PlanCompatibleMsiPackageCompleteEventArgs args = new PlanCompatibleMsiPackageCompleteEventArgs(wzPackageId, wzCompatiblePackageId, hrStatus, state, requested, execute, rollback);
+            this.OnPlanCompatibleMsiPackageComplete(args);
+
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnPlanTargetMsiPackage(string wzPackageId, string wzProductCode, ref RequestState pRequestedState)

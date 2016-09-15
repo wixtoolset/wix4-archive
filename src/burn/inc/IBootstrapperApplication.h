@@ -80,10 +80,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout BOOL* pfCancel
         ) = 0;
 
-    // OnDetectCompatiblePackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.
-    STDMETHOD(OnDetectCompatiblePackage)(
+    // OnDetectCompatibleMsiPackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.
+    STDMETHOD(OnDetectCompatibleMsiPackage)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzCompatiblePackageId,
+        __in DWORD64 dw64CompatiblePackageVersion,
         __inout BOOL* pfCancel
         ) = 0;
 
@@ -149,15 +150,25 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout BOOL* pfCancel
         ) = 0;
 
-    // OnPlanCompatiblePackage - called when the engine plans a newer, compatible package using the same provider key.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanCompatiblePackage)(
+    // OnPlanCompatibleMsiPackageBegin - called when the engine plans a newer, compatible package using the same provider key.
+    STDMETHOD(OnPlanCompatibleMsiPackageBegin)(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __in_z LPCWSTR wzCompatiblePackageId,
+        __in DWORD64 dw64CompatiblePackageVersion,
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
+        ) = 0;
+
+    // OnPlanCompatibleMsiPackageComplete - called after the engine plans the package.
+    //
+    STDMETHOD(OnPlanCompatibleMsiPackageComplete)(
+        __in_z LPCWSTR wzPackageId,
+        __in_z LPCWSTR wzCompatiblePackageId,
+        __in HRESULT hrStatus,
+        __in BOOTSTRAPPER_PACKAGE_STATE state,
+        __in BOOTSTRAPPER_REQUEST_STATE requested,
+        __in BOOTSTRAPPER_ACTION_STATE execute,
+        __in BOOTSTRAPPER_ACTION_STATE rollback
         ) = 0;
 
     // OnPlanTargetMsiPackage - called when the engine plans an MSP package
