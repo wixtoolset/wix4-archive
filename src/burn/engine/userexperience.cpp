@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
-#define BAAPI EXTERN_C HRESULT __stdcall
 
 // internal function declarations
 
@@ -291,7 +290,7 @@ extern "C" void UserExperienceExecutePhaseComplete(
     }
 }
 
-BAAPI UserExperienceOnDetectBegin(
+EXTERN_C BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
     __in DWORD cPackages
@@ -319,7 +318,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectCompatibleMsiPackage(
+EXTERN_C BAAPI UserExperienceOnDetectCompatibleMsiPackage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzCompatiblePackageId,
@@ -349,7 +348,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectComplete(
+EXTERN_C BAAPI UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     )
@@ -370,7 +369,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectForwardCompatibleBundle(
+EXTERN_C BAAPI UserExperienceOnDetectForwardCompatibleBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,
     __in BOOTSTRAPPER_RELATION_TYPE relationType,
@@ -407,7 +406,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectMsiFeature(
+EXTERN_C BAAPI UserExperienceOnDetectMsiFeature(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzFeatureId,
@@ -437,7 +436,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectPackageBegin(
+EXTERN_C BAAPI UserExperienceOnDetectPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId
     )
@@ -463,7 +462,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectPackageComplete(
+EXTERN_C BAAPI UserExperienceOnDetectPackageComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in HRESULT hrStatus,
@@ -488,7 +487,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectRelatedBundle(
+EXTERN_C BAAPI UserExperienceOnDetectRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,
     __in BOOTSTRAPPER_RELATION_TYPE relationType,
@@ -524,7 +523,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectRelatedMsiPackage(
+EXTERN_C BAAPI UserExperienceOnDetectRelatedMsiPackage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzUpgradeCode,
@@ -560,7 +559,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectTargetMsiPackage(
+EXTERN_C BAAPI UserExperienceOnDetectTargetMsiPackage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzProductCode,
@@ -590,7 +589,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectUpdate(
+EXTERN_C BAAPI UserExperienceOnDetectUpdate(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzUpdateLocation,
     __in DWORD64 dw64Size,
@@ -631,7 +630,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectUpdateBegin(
+EXTERN_C BAAPI UserExperienceOnDetectUpdateBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzUpdateLocation,
     __inout BOOL* pfSkip
@@ -660,7 +659,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnDetectUpdateComplete(
+EXTERN_C BAAPI UserExperienceOnDetectUpdateComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus,
     __inout BOOL* pfIgnoreError
@@ -685,7 +684,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnPlanBegin(
+EXTERN_C BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
     )
@@ -711,7 +710,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnPlanCompatibleMsiPackageBegin(
+EXTERN_C BAAPI UserExperienceOnPlanCompatibleMsiPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzCompatiblePackageId,
@@ -744,7 +743,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnPlanCompatibleMsiPackageComplete(
+EXTERN_C BAAPI UserExperienceOnPlanCompatibleMsiPackageComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzCompatiblePackageId,
@@ -777,7 +776,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnPlanComplete(
+EXTERN_C BAAPI UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     )
@@ -798,11 +797,11 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnPlanPackageBegin(
+EXTERN_C BAAPI UserExperienceOnPlanPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
-)
+    )
 {
     HRESULT hr = S_OK;
     BA_ONPLANPACKAGEBEGIN_ARGS args = { };
@@ -827,7 +826,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnPlanRelatedBundle(
+EXTERN_C BAAPI UserExperienceOnPlanRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
@@ -856,7 +855,38 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnShutdown(
+EXTERN_C BAAPI UserExperienceOnPlanTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANTARGETMSIPACKAGE_ARGS args = { };
+    BA_ONPLANTARGETMSIPACKAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzProductCode = wzProductCode;
+
+    results.cbSize = sizeof(results);
+    results.requestedState = *pRequestedState;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANTARGETMSIPACKAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnPlanTargetMsiPackage failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pRequestedState = results.requestedState;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
     )
@@ -879,7 +909,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnStartup(
+EXTERN_C BAAPI UserExperienceOnStartup(
     __in BURN_USER_EXPERIENCE* pUserExperience
     )
 {
@@ -898,7 +928,7 @@ LExit:
     return hr;
 }
 
-BAAPI UserExperienceOnSystemShutdown(
+EXTERN_C BAAPI UserExperienceOnSystemShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwEndSession,
     __inout BOOL* pfCancel

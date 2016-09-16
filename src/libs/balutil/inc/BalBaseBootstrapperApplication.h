@@ -243,7 +243,7 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzBundleId*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* pfCancel
-    )
+        )
     {
         *pfCancel |= CheckCanceled();
         return S_OK;
@@ -279,18 +279,20 @@ public: // IBootstrapperApplication
         __in BOOTSTRAPPER_REQUEST_STATE /*requested*/,
         __in BOOTSTRAPPER_ACTION_STATE /*execute*/,
         __in BOOTSTRAPPER_ACTION_STATE /*rollback*/
-    )
+        )
     {
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanTargetMsiPackage(
+    virtual STDMETHODIMP OnPlanTargetMsiPackage(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzProductCode*/,
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnPlanMsiFeature(
