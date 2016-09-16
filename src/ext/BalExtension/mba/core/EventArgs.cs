@@ -906,49 +906,37 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when engine is about to plan a MSP applied to a target MSI package.
     /// </summary>
     [Serializable]
-    public class PlanTargetMsiPackageEventArgs : ResultEventArgs
+    public class PlanTargetMsiPackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string productCode;
-        private RequestState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Package identifier of the patch being planned.</param>
         /// <param name="productCode">Product code identifier being planned.</param>
         /// <param name="state">Package state of the patch being planned.</param>
-        public PlanTargetMsiPackageEventArgs(string packageId, string productCode, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanTargetMsiPackageEventArgs(string packageId, string productCode, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.productCode = productCode;
-            this.state = state;
+            this.PackageId = packageId;
+            this.ProductCode = productCode;
+            this.State = state;
         }
 
         /// <summary>
-        /// Gets the identity of the feature's package to plan.
+        /// Gets the identity of the patch package to plan.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
-        /// Gets the identity of the feature to plan.
+        /// Gets the identity of the patch's target MSI to plan.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets or sets the state of the patch to use by planning.
         /// </summary>
-        public RequestState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public RequestState State { get; set; }
     }
 
     /// <summary>
