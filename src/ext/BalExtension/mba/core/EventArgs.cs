@@ -943,49 +943,37 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when engine is about to plan a feature in an MSI package.
     /// </summary>
     [Serializable]
-    public class PlanMsiFeatureEventArgs : ResultEventArgs
+    public class PlanMsiFeatureEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string featureId;
-        private FeatureState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Package identifier being planned.</param>
         /// <param name="featureId">Feature identifier being planned.</param>
         /// <param name="state">Feature state being planned.</param>
-        public PlanMsiFeatureEventArgs(string packageId, string featureId, FeatureState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanMsiFeatureEventArgs(string packageId, string featureId, FeatureState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.featureId = featureId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.FeatureId = featureId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the feature's package to plan.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the feature to plan.
         /// </summary>
-        public string FeatureId
-        {
-            get { return this.featureId; }
-        }
+        public string FeatureId { get; private set; }
 
         /// <summary>
         /// Gets or sets the feature state to use by planning.
         /// </summary>
-        public FeatureState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public FeatureState State { get; set; }
     }
 
     /// <summary>

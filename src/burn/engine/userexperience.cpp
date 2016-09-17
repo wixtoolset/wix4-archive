@@ -776,6 +776,37 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnPlanMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANMSIFEATURE_ARGS args = { };
+    BA_ONPLANMSIFEATURE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzFeatureId = wzFeatureId;
+
+    results.cbSize = sizeof(results);
+    results.requestedState = *pRequestedState;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSIFEATURE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnPlanMsiFeature failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    *pRequestedState = results.requestedState;
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus

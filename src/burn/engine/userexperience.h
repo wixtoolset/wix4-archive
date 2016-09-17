@@ -209,6 +209,12 @@ BAAPI UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     );
+BAAPI UserExperienceOnPlanMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState
+    );
 BAAPI UserExperienceOnPlanPackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

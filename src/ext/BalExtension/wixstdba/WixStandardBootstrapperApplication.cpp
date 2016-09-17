@@ -188,6 +188,9 @@ static HRESULT DAPI SetVariableStringCallback(
 static LPCSTR LoggingRequestStateToString(
     __in BOOTSTRAPPER_REQUEST_STATE requestState
     );
+static LPCSTR LoggingMsiFeatureStateToString(
+    __in BOOTSTRAPPER_FEATURE_STATE featureState
+    );
 
 
 class CWixStandardBootstrapperApplication : public CBalBaseBootstrapperApplication
@@ -998,6 +1001,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANTARGETMSIPACKAGE:
             OnPlanTargetMsiPackageFallback(reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSIFEATURE:
+            OnPlanMsiFeatureFallback(reinterpret_cast<BA_ONPLANMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSIFEATURE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1191,6 +1197,16 @@ private: // privates
         BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANTARGETMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
         BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_TARGET_MSI_PACKAGE, m_hModule, pArgs->wzPackageId, pArgs->wzProductCode, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanMsiFeatureFallback(
+        __in BA_ONPLANMSIFEATURE_ARGS* pArgs,
+        __inout BA_ONPLANMSIFEATURE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_FEATURE_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANMSIFEATURE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_MSI_FEATURE, m_hModule, pArgs->wzPackageId, pArgs->wzFeatureId, LoggingMsiFeatureStateToString(requestedState), LoggingMsiFeatureStateToString(pResults->requestedState));
     }
 
     //
@@ -3342,7 +3358,7 @@ static HRESULT DAPI SetVariableStringCallback(
 
 static LPCSTR LoggingRequestStateToString(
     __in BOOTSTRAPPER_REQUEST_STATE requestState
-)
+    )
 {
     switch (requestState)
     {
@@ -3358,6 +3374,27 @@ static LPCSTR LoggingRequestStateToString(
         return "Present";
     case BOOTSTRAPPER_REQUEST_STATE_REPAIR:
         return "Repair";
+    default:
+        return "Invalid";
+    }
+}
+
+static LPCSTR LoggingMsiFeatureStateToString(
+    __in BOOTSTRAPPER_FEATURE_STATE featureState
+    )
+{
+    switch (featureState)
+    {
+    case BOOTSTRAPPER_FEATURE_STATE_UNKNOWN:
+        return "Unknown";
+    case BOOTSTRAPPER_FEATURE_STATE_ABSENT:
+        return "Absent";
+    case BOOTSTRAPPER_FEATURE_STATE_ADVERTISED:
+        return "Advertised";
+    case BOOTSTRAPPER_FEATURE_STATE_LOCAL:
+        return "Local";
+    case BOOTSTRAPPER_FEATURE_STATE_SOURCE:
+        return "Source";
     default:
         return "Invalid";
     }

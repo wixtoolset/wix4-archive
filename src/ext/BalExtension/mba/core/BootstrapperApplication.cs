@@ -1287,13 +1287,14 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnPlanMsiFeature(string wzPackageId, string wzFeatureId, ref FeatureState pRequestedState)
+        int IBootstrapperApplication.OnPlanMsiFeature(string wzPackageId, string wzFeatureId, ref FeatureState pRequestedState, ref bool fCancel)
         {
-            PlanMsiFeatureEventArgs args = new PlanMsiFeatureEventArgs(wzPackageId, wzFeatureId, pRequestedState);
+            PlanMsiFeatureEventArgs args = new PlanMsiFeatureEventArgs(wzPackageId, wzFeatureId, pRequestedState, fCancel);
             this.OnPlanMsiFeature(args);
 
             pRequestedState = args.State;
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         void IBootstrapperApplication.OnPlanPackageComplete(string wzPackageId, int hrStatus, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
