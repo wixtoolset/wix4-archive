@@ -220,6 +220,15 @@ BAAPI UserExperienceOnPlanPackageBegin(
     __in_z LPCWSTR wzPackageId,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
     );
+BAAPI UserExperienceOnPlanPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state,
+    __in BOOTSTRAPPER_REQUEST_STATE requested,
+    __in BOOTSTRAPPER_ACTION_STATE execute,
+    __in BOOTSTRAPPER_ACTION_STATE rollback
+    );
 BAAPI UserExperienceOnPlanRelatedBundle(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzBundleId,

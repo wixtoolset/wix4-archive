@@ -306,7 +306,7 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnPlanPackageComplete(
+    virtual STDMETHODIMP OnPlanPackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_PACKAGE_STATE /*state*/,
@@ -315,6 +315,7 @@ public: // IBootstrapperApplication
         __in BOOTSTRAPPER_ACTION_STATE /*rollback*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP OnPlanComplete(

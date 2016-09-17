@@ -1297,9 +1297,12 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        void IBootstrapperApplication.OnPlanPackageComplete(string wzPackageId, int hrStatus, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
+        int IBootstrapperApplication.OnPlanPackageComplete(string wzPackageId, int hrStatus, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
         {
-            this.OnPlanPackageComplete(new PlanPackageCompleteEventArgs(wzPackageId, hrStatus, state, requested, execute, rollback));
+            var args = new PlanPackageCompleteEventArgs(wzPackageId, hrStatus, state, requested, execute, rollback);
+            this.OnPlanPackageComplete(args);
+
+            return args.HResult;
         }
 
         int IBootstrapperApplication.OnPlanComplete(int hrStatus)

@@ -214,7 +214,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnPlanPackageComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanPackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] PackageState state,

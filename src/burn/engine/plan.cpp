@@ -958,7 +958,7 @@ LExit:
         }
         else
         {
-            pUX->pUserExperience->OnPlanPackageComplete(pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+            UserExperienceOnPlanPackageComplete(pUX, pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
         }
     }
 

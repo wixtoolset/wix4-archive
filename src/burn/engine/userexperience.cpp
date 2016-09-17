@@ -90,7 +90,7 @@ extern "C" HRESULT UserExperienceLoad(
     args.pEngine = pEngineContext->pEngineForApplication;
     args.pfnBootstrapperEngineProc = EngineForApplicationProc;
     args.pvBootstrapperEngineProcContext = pEngineContext;
-    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 3); // TODO: need to decide whether to keep this, and if so when to update it.
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 4); // TODO: need to decide whether to keep this, and if so when to update it.
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 
@@ -852,6 +852,37 @@ EXTERN_C BAAPI UserExperienceOnPlanPackageBegin(
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     *pRequestedState = results.requestedState;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnPlanPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state,
+    __in BOOTSTRAPPER_REQUEST_STATE requested,
+    __in BOOTSTRAPPER_ACTION_STATE execute,
+    __in BOOTSTRAPPER_ACTION_STATE rollback
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPLANPACKAGECOMPLETE_ARGS args = { };
+    BA_ONPLANPACKAGECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.hrStatus = hrStatus;
+    args.state = state;
+    args.requested = requested;
+    args.execute = execute;
+    args.rollback = rollback;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnPlanPackageComplete failed.");
 
 LExit:
     return hr;
