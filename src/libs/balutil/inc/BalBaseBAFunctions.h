@@ -283,13 +283,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanMsiFeature(
+    virtual STDMETHODIMP OnPlanMsiFeature(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzFeatureId*/,
-        __inout BOOTSTRAPPER_FEATURE_STATE* /*pRequestedState*/
+        __inout BOOTSTRAPPER_FEATURE_STATE* /*pRequestedState*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnPlanPackageComplete(

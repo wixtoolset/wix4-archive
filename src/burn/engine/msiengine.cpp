@@ -691,7 +691,6 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
     BOOTSTRAPPER_ACTION_STATE rollback = BOOTSTRAPPER_ACTION_STATE_NONE;
     BOOL fFeatureActionDelta = FALSE;
     BOOL fRollbackFeatureActionDelta = FALSE;
-    int nResult = 0;
     BOOL fBARequestedCache = FALSE;
 
     if (pPackage->Msi.cFeatures)
@@ -709,22 +708,21 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
             BOOTSTRAPPER_FEATURE_STATE featureRequestedState = BOOTSTRAPPER_FEATURE_STATE_UNKNOWN;
             BOOTSTRAPPER_FEATURE_STATE featureExpectedState = BOOTSTRAPPER_FEATURE_STATE_UNKNOWN;
 
-            // evaluate feature conditions
+            // Evaluate feature conditions.
             hr = EvaluateActionStateConditions(pVariables, pFeature->sczAddLocalCondition, pFeature->sczAddSourceCondition, pFeature->sczAdvertiseCondition, &defaultFeatureRequestedState);
             ExitOnFailure(hr, "Failed to evaluate requested state conditions.");
 
             hr = EvaluateActionStateConditions(pVariables, pFeature->sczRollbackAddLocalCondition, pFeature->sczRollbackAddSourceCondition, pFeature->sczRollbackAdvertiseCondition, &featureExpectedState);
             ExitOnFailure(hr, "Failed to evaluate expected state conditions.");
 
-            // Remember the default feature requested state so the engine doesn't get blamed for planning the wrong thing if the UX changes it.
+            // Remember the default feature requested state so the engine doesn't get blamed for planning the wrong thing if the BA changes it.
             featureRequestedState = defaultFeatureRequestedState;
 
-            // send MSI feature plan message to UX
-            nResult = pUserExperience->pUserExperience->OnPlanMsiFeature(pPackage->sczId, pFeature->sczId, &featureRequestedState);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted plan MSI feature.");
+            // Send plan MSI feature message to BA.
+            hr = UserExperienceOnPlanMsiFeature(pUserExperience, pPackage->sczId, pFeature->sczId, &featureRequestedState);
+            ExitOnRootFailure(hr, "BA aborted plan MSI feature.");
 
-            // calculate feature actions
+            // Calculate feature actions.
             hr = CalculateFeatureAction(pFeature->currentState, featureRequestedState, fRepairingPackage, &pFeature->execute, &fFeatureActionDelta);
             ExitOnFailure(hr, "Failed to calculate execute feature state.");
 

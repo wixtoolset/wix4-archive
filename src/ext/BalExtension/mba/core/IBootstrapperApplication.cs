@@ -207,10 +207,11 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanMsiFeature(
+        int OnPlanMsiFeature(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzFeatureId,
-            [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         void OnPlanPackageComplete(

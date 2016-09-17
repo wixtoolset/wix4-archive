@@ -64,3 +64,10 @@ Language=English
 WIXSTDBA: Planned target MSI package: %1!ls!, productCode: %2!ls!, wixstdba requested: %3!hs!, bafunctions requested: %4!hs!
 .
 
+MessageId=6
+Severity=Success
+SymbolicName=MSG_WIXSTDBA_PLANNED_MSI_FEATURE
+Language=English
+WIXSTDBA: Planned MSI feature: %2!ls! for %1!ls!, wixstdba requested: %3!hs!, bafunctions requested: %4!hs!
+.
+
