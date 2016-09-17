@@ -982,12 +982,6 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class PlanPackageCompleteEventArgs : StatusEventArgs
     {
-        private string packageId;
-        private PackageState state;
-        private RequestState requested;
-        private ActionState execute;
-        private ActionState rollback;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanPackageCompleteEventArgs"/> class.
         /// </summary>
@@ -1000,52 +994,37 @@ namespace WixToolset.Bootstrapper
         public PlanPackageCompleteEventArgs(string packageId, int status, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
             : base(status)
         {
-            this.packageId = packageId;
-            this.state = state;
-            this.requested = requested;
-            this.execute = execute;
-            this.rollback = rollback;
+            this.PackageId = packageId;
+            this.State = state;
+            this.Requested = requested;
+            this.Execute = execute;
+            this.Rollback = rollback;
         }
 
         /// <summary>
         /// Gets the identity of the package planned for.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the current state of the package.
         /// </summary>
-        public PackageState State
-        {
-            get { return this.state; }
-        }
+        public PackageState State { get; private set; }
 
         /// <summary>
         /// Gets the requested state for the package.
         /// </summary>
-        public RequestState Requested
-        {
-            get { return this.requested; }
-        }
+        public RequestState Requested { get; private set; }
 
         /// <summary>
         /// Gets the execution action to take.
         /// </summary>
-        public ActionState Execute
-        {
-            get { return this.execute; }
-        }
+        public ActionState Execute { get; private set; }
 
         /// <summary>
         /// Gets the rollback action to take.
         /// </summary>
-        public ActionState Rollback
-        {
-            get { return this.rollback; }
-        }
+        public ActionState Rollback { get; private set; }
     }
 
     /// <summary>
