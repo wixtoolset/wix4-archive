@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
-
-
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <ProjectGuid>{31FCC013-485E-487D-89D8-6C19EDCDD9A3}</ProjectGuid>
@@ -17,6 +15,7 @@
     <Compile Include="BundleBuilder.cs" />
     <Compile Include="BundleInstaller.cs" />
     <Compile Include="BundleRegistration.cs" />
+    <Compile Include="Burn\Burn.TransactionTests.cs" />
     <Compile Include="Burn\BurnTests.cs" />
     <Compile Include="Burn\Burn.DependencyTests.cs" />
     <Compile Include="Burn\Burn.EmbeddedTests.cs" />
@@ -541,6 +540,16 @@
     <Content Include="..\..\data\Burn\SlipstreamTests\BundleOnlyPatchA.wxs">
       <Link>Burn\SlipstreamTests\BundleOnlyPatchA.wxs</Link>
     </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\A.wxs">
+      <Link>Burn\TransactionTests\A.wxs</Link>
+    </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\B.wxs">
+      <Link>Burn\TransactionTests\B.wxs</Link>
+    </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\BundleA.wxs">
+      <Link>Burn\TransactionTests\BundleA.wxs</Link>
+    </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>
