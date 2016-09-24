@@ -8,8 +8,8 @@
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Bundle Name="~$(var.TestName) - Bundle A" Version="$(var.Version)" UpgradeCode="{90ED10D5-B187-4470-B498-05D80DAB729A}">
-    <Log Prefix="~$(var.TestName)_BundleA"/>
+  <Bundle Name="~$(var.TestName) - Bundle B" Version="$(var.Version)" UpgradeCode="{0A5C4330-ED22-45DF-A8E4-9B9AE4BB7358}">
+    <Log Prefix="~$(var.TestName)_BundleB"/>
 
     <Variable Name="TestName" Value="$(var.TestName)" />
 
@@ -19,7 +19,7 @@
       <MsiPackage Id="PackageA" Name="~$(var.TestName)_PackageA.msi" Compressed="yes" SourceFile="!(bindpath.packageA)\A.msi" />
       <RollbackBoundary Transaction='yes' />
       <MsiPackage Id="PackageB" Name="~$(var.TestName)_PackageB.msi" Compressed="yes" SourceFile="!(bindpath.packageB)\B.msi" />
-      <MsiPackage Id="PackageC" Name="~$(var.TestName)_PackageC.msi" Compressed="yes" SourceFile="!(bindpath.packageC)\C.msi" />
+      <MsiPackage Id="PackageD" Name="~$(var.TestName)_PackageD.msi" Compressed="yes" SourceFile="!(bindpath.packageD)\D.msi" />
     </Chain>
   </Bundle>
 </Wix>
