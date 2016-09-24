@@ -8,11 +8,11 @@
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Product Id="*" Name="~$(var.TestName) - B" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation"
+  <Product Id="*" Name="~$(var.TestName) - E" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation"
            UpgradeCode="{04ABCDBB-2C66-4338-9B1D-DE2AC9B0D1C2}">
     <Package Compressed="yes" InstallerVersion="405" InstallScope="perMachine"/>
 
-    <MajorUpgrade DowngradeErrorMessage="B newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
+    <MajorUpgrade DowngradeErrorMessage="E newer version of [ProductName] is already installed." />
     <MediaTemplate />
 
     <Property Id="MsiLogging" Value="voicewarmup"/>
@@ -21,6 +21,7 @@
     <Feature Id="Complete" Level="1">
       <ComponentRef Id="FileComponent"/>
     </Feature>
+    
   </Product>
 
   <Fragment>
@@ -28,7 +29,7 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="WixDir" Name="~Test WiX">
           <Directory Id="TestDir" Name="$(var.TestName)">
-            <Directory Id="INSTALLFOLDER" Name="B"/>
+            <Directory Id="INSTALLFOLDER" Name="E"/>
           </Directory>
         </Directory>
       </Directory>
@@ -36,7 +37,7 @@
   </Fragment>
 
   <Fragment>
-    <Component Id="FileComponent" Guid="{9B7ABE55-AA0A-433E-A633-5EAC02F0B177}" Directory="INSTALLFOLDER">
+    <Component Id="FileComponent" Guid="{40D03443-CDDF-45DD-B8EC-2FACA2879324}" Directory="INSTALLFOLDER">
       <File Source="$(sys.SOURCEFILEPATH)"/>
     </Component>
   </Fragment>
