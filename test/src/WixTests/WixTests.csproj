@@ -551,6 +551,15 @@
     <Content Include="..\..\data\Burn\TransactionTests\BundleA.wxs">
       <Link>Burn\TransactionTests\BundleA.wxs</Link>
     </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\BundleB.wxs">
+      <Link>Burn\TransactionTests\BundleB.wxs</Link>
+    </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\C.wxs">
+      <Link>Burn\TransactionTests\C.wxs</Link>
+    </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\D.wxs">
+      <Link>Burn\TransactionTests\D.wxs</Link>
+    </Content>
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
