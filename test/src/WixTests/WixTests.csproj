@@ -552,11 +552,17 @@
     <Content Include="..\..\data\Burn\TransactionTests\BundleB.wxs">
       <Link>Burn\TransactionTests\BundleB.wxs</Link>
     </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\BundleC.wxs">
+      <Link>Burn\TransactionTests\BundleC.wxs</Link>
+    </Content>
     <Content Include="..\..\data\Burn\TransactionTests\C.wxs">
       <Link>Burn\TransactionTests\C.wxs</Link>
     </Content>
     <Content Include="..\..\data\Burn\TransactionTests\D.wxs">
       <Link>Burn\TransactionTests\D.wxs</Link>
+    </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\E.wxs">
+      <Link>Burn\TransactionTests\E.wxs</Link>
     </Content>
   </ItemGroup>
   <ItemGroup />
