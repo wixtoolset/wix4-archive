@@ -199,6 +199,15 @@ namespace WixToolset.Data.Rows
         }
 
         /// <summary>
+        /// Gets or sets whether the package is x64.
+        /// </summary>
+        public YesNoType x64
+        {
+            get { return (null == this.Fields[19].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[19].Data; }
+            set { this.Fields[19].Data = (int)value; }
+        }
+
+        /// <summary>
         /// Gets whether the package is permanent.
         /// </summary>
         public bool Permanent

@@ -557,6 +557,9 @@
     <Content Include="..\..\data\Burn\TransactionTests\BundleC.wxs">
       <Link>Burn\TransactionTests\BundleC.wxs</Link>
     </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\BundleD.wxs">
+      <Link>Burn\TransactionTests\BundleD.wxs</Link>
+    </Content>
     <Content Include="..\..\data\Burn\TransactionTests\C.wxs">
       <Link>Burn\TransactionTests\C.wxs</Link>
     </Content>
@@ -565,6 +568,9 @@
     </Content>
     <Content Include="..\..\data\Burn\TransactionTests\E.wxs">
       <Link>Burn\TransactionTests\E.wxs</Link>
+    </Content>
+    <Content Include="..\..\data\Burn\TransactionTests\F.wxs">
+      <Link>Burn\TransactionTests\F.wxs</Link>
     </Content>
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
