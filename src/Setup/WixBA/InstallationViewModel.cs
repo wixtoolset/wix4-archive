@@ -601,6 +601,13 @@ namespace WixToolset.UX
         {
             WixBA.Model.Result = e.Status; // remember the final result of the apply.
 
+            // Set the state to applied or failed unless the state has already been set back to the preapply state
+            // which means we need to show the UI as it was before the apply started.
+            if (this.root.InstallState != this.root.PreApplyState)
+            {
+                this.root.InstallState = Hresult.Succeeded(e.Status) ? InstallationState.Applied : InstallationState.Failed;
+            }
+
             // If we're not in Full UI mode, we need to alert the dispatcher to stop and close the window for passive.
             if (Bootstrapper.Display.Full != WixBA.Model.Command.Display)
             {
@@ -627,13 +634,6 @@ namespace WixToolset.UX
                 // Automatically closing since the user clicked the X button.
                 WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
                 return;
-            }
-
-            // Set the state to applied or failed unless the state has already been set back to the preapply state
-            // which means we need to show the UI as it was before the apply started.
-            if (this.root.InstallState != this.root.PreApplyState)
-            {
-                this.root.InstallState = Hresult.Succeeded(e.Status) ? InstallationState.Applied : InstallationState.Failed;
             }
 
             // Force all commands to reevaluate CanExecute.
