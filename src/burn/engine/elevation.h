@@ -158,20 +158,20 @@ HRESULT ElevationChildResumeAutomaticUpdates();
 
 
 HRESULT ElevationMsiBeginTransaction(
-	__in HANDLE hPipe,
-	__in_opt HWND hwndParent,
-	__in LPVOID pvContext
-	);
+    __in HANDLE hPipe,
+    __in_opt HWND hwndParent,
+    __in LPVOID pvContext
+);
 HRESULT ElevationMsiCommitTransaction(
-	__in HANDLE hPipe,
-	__in_opt HWND hwndParent,
-	__in LPVOID pvContext
-	);
+    __in HANDLE hPipe,
+    __in_opt HWND hwndParent,
+    __in LPVOID pvContext
+);
 HRESULT ElevationMsiRollbackTransaction(
-	__in HANDLE hPipe,
-	__in_opt HWND hwndParent,
-	__in LPVOID pvContext
-	);
+    __in HANDLE hPipe,
+    __in_opt HWND hwndParent,
+    __in LPVOID pvContext
+);
 
 #ifdef __cplusplus
 }
