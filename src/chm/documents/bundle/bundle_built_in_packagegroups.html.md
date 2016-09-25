@@ -178,4 +178,26 @@ The package groups in the second column are in the WixBalExtension, but also req
       <p>.Net Framework 4.6.1 standalone setup.</p>
     </td>
   </tr>
+  <tr>
+    <td valign="top">
+      <p>NetFx462Web</p>
+    </td>
+    <td valign="top">
+      <p>NetFx462WebAsPrereq</p>
+    </td>
+    <td>
+      <p>.Net Framework 4.6.2 web setup.</p>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p>NetFx462Redist</p>
+    </td>
+    <td valign="top">
+      <p>NetFx462RedistAsPrereq</p>
+    </td>
+    <td>
+      <p>.Net Framework 4.6.2 standalone setup.</p>
+    </td>
+  </tr>
 </table>
