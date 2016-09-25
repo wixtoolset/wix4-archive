@@ -55,6 +55,7 @@ namespace WixTest
             candle.SourceFiles.Add(this.SourceFile);
             candle.SourceFiles.AddRange(this.AdditionalSourceFiles);
             candle.WorkingDirectory = this.TestDataDirectory;
+            candle.ExpectedExitCode = ExpectedCandleExitCode;
             candle.Run();
 
             // Make sure the output directory is cleaned up.
@@ -70,6 +71,7 @@ namespace WixTest
             light.SuppressPatchSequenceData = this.SuppressPatchSequenceData;
             light.SuppressMSIAndMSMValidation = true;
             light.WorkingDirectory = this.TestDataDirectory;
+            light.ExpectedExitCode = ExpectedLightExitCode;
             light.Run();
 
             // Make sure the output directory is cleaned up.
@@ -97,5 +99,8 @@ namespace WixTest
             bundle.Arguments = sb.ToString();
             bundle.Run(false);
         }
+
+        public int? ExpectedCandleExitCode { get; set; }
+        public int? ExpectedLightExitCode { get; set; }
     }
 }

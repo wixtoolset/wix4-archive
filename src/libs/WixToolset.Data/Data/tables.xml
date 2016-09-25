@@ -1723,7 +1723,8 @@
                 keyTable="WixBundleRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixBundleRollbackBoundary table."/>
         <columnDefinition name="RollbackBoundaryBackward_" type="string" length="0" nullable="yes"
                 keyTable="WixBundleRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixBundleRollbackBoundary table."/>
-      </tableDefinition>
+      <columnDefinition name="x64" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
+    </tableDefinition>
     <tableDefinition name="WixBundleExePackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>

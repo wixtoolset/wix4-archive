@@ -125,5 +125,28 @@ namespace WixTest.Tests.Burn
 
             this.Complete();
         }
+
+        [NamedFact]
+        [Priority(2)]
+        [Description("Builds a bundle with an MSI transaction that has a x64 package after a x86 package.")]
+        [RuntimeTest]
+        public void Burn_x64Afterx86()
+        {
+            // Build the packages.
+            string packageA = new PackageBuilder(this, "A").Build().Output;
+            string packageB = new PackageBuilder(this, "B").Build().Output;
+            string packageF = new PackageBuilder(this, "F").Build().Output;
+
+            // Create the named bind paths to the packages.
+            Dictionary<string, string> bindPaths = new Dictionary<string, string>();
+            bindPaths.Add("packageA", Path.GetDirectoryName(packageA));
+            bindPaths.Add("packageB", Path.GetDirectoryName(packageB));
+            bindPaths.Add("packageF", Path.GetDirectoryName(packageF));
+
+            // Shoud ld fail build, x64 after x86 in transaction
+            new BundleBuilder(this, "BundleD") { BindPaths = bindPaths, Extensions = Extensions, ExpectedLightExitCode = 390 }.Build();
+
+            this.Complete();
+        }
     }
 }
