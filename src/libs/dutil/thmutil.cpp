@@ -64,7 +64,7 @@ static HRESULT ParseTheme(
     );
 static HRESULT ParseImage(
     __in_opt HMODULE hModule,
-    __in_opt LPCWSTR wzRelativePath,
+    __in_z_opt LPCWSTR wzRelativePath,
     __in IXMLDOMNode* pElement,
     __out HBITMAP* phImage
     );
@@ -84,7 +84,7 @@ static HRESULT GetFontColor(
     __in IXMLDOMNode* pixn,
     __in_z LPCWSTR wzAttributeName,
     __out COLORREF* pColorRef,
-    __out_opt DWORD* pdwSystemColor
+    __out DWORD* pdwSystemColor
     );
 static HRESULT ParseFonts(
     __in IXMLDOMElement* pElement,
@@ -142,7 +142,12 @@ static HRESULT ParseTabs(
 static HRESULT ParseText(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl,
-    __out BOOL* pfAnyChildren
+    __inout BOOL* pfAnyChildren
+);
+static HRESULT ParseTooltips(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl,
+    __inout BOOL* pfAnyChildren
     );
 static HRESULT ParseNotes(
     __in IXMLDOMNode* pixn,
@@ -1078,6 +1083,21 @@ DAPI_(void) ThemeShowControl(
 }
 
 
+DAPI_(void) ThemeShowControlEx(
+    __in THEME* pTheme,
+    __in DWORD dwControl,
+    __in int nCmdShow
+    )
+{
+    HWND hWnd = ::GetDlgItem(pTheme->hwndParent, dwControl);
+    THEME_CONTROL* pControl = const_cast<THEME_CONTROL*>(FindControlFromHWnd(pTheme, hWnd));
+    if (pControl)
+    {
+        ShowControl(pTheme, pControl, nCmdShow, THEME_CONTROL_TYPE_EDITBOX == pControl->type, THEME_SHOW_PAGE_REASON_REFRESH, 0, NULL);
+    }
+}
+
+
 DAPI_(BOOL) ThemeControlVisible(
     __in THEME* pTheme,
     __in DWORD dwControl
@@ -1237,6 +1257,8 @@ DAPI_(BOOL) ThemeSetControlColor(
 {
     THEME_FONT* pFont = NULL;
     BOOL fHasBackground = FALSE;
+
+    *phBackgroundBrush = NULL;
 
     if (hWnd == pTheme->hwndParent)
     {
@@ -1490,7 +1512,7 @@ DAPI_(void) ThemeShowChild(
     for (DWORD i = 0; i < pParentControl->cControls; ++i)
     {
         THEME_CONTROL* pControl = pParentControl->rgControls + i;
-        ShowControl(pTheme, pControl, dwIndex == i ? SW_SHOW : SW_HIDE, FALSE, THEME_SHOW_PAGE_REASON_REFRESH, 0, NULL);
+        ShowControl(pTheme, pControl, dwIndex == i ? SW_SHOW : SW_HIDE, FALSE, THEME_SHOW_PAGE_REASON_DEFAULT, 0, NULL);
     }
 }
 
@@ -2013,7 +2035,7 @@ static HRESULT GetFontColor(
     __in IXMLDOMNode* pixn,
     __in_z LPCWSTR wzAttributeName,
     __out COLORREF* pColorRef,
-    __out_opt DWORD* pdwSystemColor
+    __out DWORD* pdwSystemColor
     )
 {
     HRESULT hr = S_OK;
@@ -2619,6 +2641,9 @@ static HRESULT ParseControl(
     hr = ParseText(pixn, pControl, &fAnyTextChildren);
     ExitOnFailure(hr, "Failed to parse text nodes of the control.");
 
+    hr = ParseTooltips(pixn, pControl, &fAnyTextChildren);
+    ExitOnFailure(hr, "Failed to parse control Tooltip.");
+
     if (THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
     {
         hr = ParseNotes(pixn, pControl, &fAnyNoteChildren);
@@ -3192,7 +3217,7 @@ LExit:
 static HRESULT ParseText(
     __in IXMLDOMNode* pixn,
     __in THEME_CONTROL* pControl,
-    __out BOOL* pfAnyChildren
+    __inout BOOL* pfAnyChildren
     )
 {
     HRESULT hr = S_OK;
@@ -3207,10 +3232,7 @@ static HRESULT ParseText(
     hr = pixnl->get_length(reinterpret_cast<long*>(&pControl->cConditionalText));
     ExitOnFailure(hr, "Failed to count the number of Text nodes.");
 
-    if (pfAnyChildren)
-    {
-        *pfAnyChildren = 0 < pControl->cConditionalText;
-    }
+    *pfAnyChildren |= 0 < pControl->cConditionalText;
 
     if (0 < pControl->cConditionalText)
     {
@@ -3263,6 +3285,41 @@ static HRESULT ParseText(
 
 LExit:
     ReleaseObject(pixnl);
+    ReleaseObject(pixnChild);
+    ReleaseBSTR(bstrText);
+
+    return hr;
+}
+
+
+static HRESULT ParseTooltips(
+    __in IXMLDOMNode* pixn,
+    __in THEME_CONTROL* pControl,
+    __inout BOOL* pfAnyChildren
+)
+{
+    HRESULT hr = S_OK;
+    IXMLDOMNode* pixnChild = NULL;
+    BSTR bstrText = NULL;
+
+    hr = XmlSelectSingleNode(pixn, L"Tooltip", &pixnChild);
+    ExitOnFailure(hr, "Failed to select child Tooltip node.");
+
+    if (S_OK == hr)
+    {
+        *pfAnyChildren |= TRUE;
+
+        hr = XmlGetText(pixnChild, &bstrText);
+        ExitOnFailure(hr, "Failed to get inner text of Tooltip element.");
+
+        if (S_OK == hr)
+        {
+            hr = StrAllocString(&pControl->sczTooltip, bstrText, 0);
+            ExitOnFailure(hr, "Failed to copy tooltip text to control.");
+        }
+    }
+
+LExit:
     ReleaseObject(pixnChild);
     ReleaseBSTR(bstrText);
 
@@ -3675,6 +3732,7 @@ static void FreeControl(
 
         ReleaseStr(pControl->sczName);
         ReleaseStr(pControl->sczText);
+        ReleaseStr(pControl->sczTooltip);
         ReleaseStr(pControl->sczNote);
         ReleaseStr(pControl->sczEnableCondition);
         ReleaseStr(pControl->sczVisibleCondition);
@@ -4770,6 +4828,25 @@ static HRESULT LoadControls(
         pControl->hWnd = ::CreateWindowExW(dwWindowExBits, wzWindowClass, pControl->sczText, pControl->dwStyle | dwWindowBits, x, y, w, h, hwndParent, reinterpret_cast<HMENU>(wControlId), NULL, pTheme);
         ExitOnNullWithLastError(pControl->hWnd, hr, "Failed to create window.");
 
+        if (pControl->sczTooltip)
+        {
+            if (!pTheme->hwndTooltip)
+            {
+                pTheme->hwndTooltip = ::CreateWindowExW(WS_EX_TOOLWINDOW, TOOLTIPS_CLASSW, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON | TTS_NOPREFIX, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndParent, NULL, NULL, NULL);
+            }
+
+            if (pTheme->hwndTooltip)
+            {
+                TOOLINFOW toolinfo = {};
+                toolinfo.cbSize = sizeof(toolinfo);
+                toolinfo.hwnd = hwndParent;
+                toolinfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+                toolinfo.uId = reinterpret_cast<UINT_PTR>(pControl->hWnd);
+                toolinfo.lpszText = pControl->sczTooltip;
+                ::SendMessageW(pTheme->hwndTooltip, TTM_ADDTOOLW, 0, reinterpret_cast<LPARAM>(&toolinfo));
+            }
+        }
+
         if (THEME_CONTROL_TYPE_COMMANDLINK == pControl->type)
         {
             if (pControl->sczNote)
@@ -4944,6 +5021,12 @@ static HRESULT LocalizeControl(
         }
     }
 
+    if (pControl->sczTooltip && *pControl->sczTooltip)
+    {
+        hr = LocLocalizeString(pWixLoc, &pControl->sczTooltip);
+        ExitOnFailure(hr, "Failed to localize control tooltip text.");
+    }
+
     if (pControl->sczNote && *pControl->sczNote)
     {
         hr = LocLocalizeString(pWixLoc, &pControl->sczNote);
@@ -4975,37 +5058,40 @@ static HRESULT LocalizeControl(
     }
 
     // Localize control's size, location, and text.
-    hr = LocGetControl(pWixLoc, pControl->sczName, &pLocControl);
-    if (E_NOTFOUND == hr)
+    if (pControl->sczName)
     {
-        ExitFunction1(hr = S_OK);
-    }
-    ExitOnFailure(hr, "Failed to localize control.");
+        hr = LocGetControl(pWixLoc, pControl->sczName, &pLocControl);
+        if (E_NOTFOUND == hr)
+        {
+            ExitFunction1(hr = S_OK);
+        }
+        ExitOnFailure(hr, "Failed to localize control.");
 
-    if (LOC_CONTROL_NOT_SET != pLocControl->nX)
-    {
-        pControl->nX = pLocControl->nX;
-    }
+        if (LOC_CONTROL_NOT_SET != pLocControl->nX)
+        {
+            pControl->nX = pLocControl->nX;
+        }
 
-    if (LOC_CONTROL_NOT_SET != pLocControl->nY)
-    {
-        pControl->nY = pLocControl->nY;
-    }
+        if (LOC_CONTROL_NOT_SET != pLocControl->nY)
+        {
+            pControl->nY = pLocControl->nY;
+        }
 
-    if (LOC_CONTROL_NOT_SET != pLocControl->nWidth)
-    {
-        pControl->nWidth = pLocControl->nWidth;
-    }
+        if (LOC_CONTROL_NOT_SET != pLocControl->nWidth)
+        {
+            pControl->nWidth = pLocControl->nWidth;
+        }
 
-    if (LOC_CONTROL_NOT_SET != pLocControl->nHeight)
-    {
-        pControl->nHeight = pLocControl->nHeight;
-    }
+        if (LOC_CONTROL_NOT_SET != pLocControl->nHeight)
+        {
+            pControl->nHeight = pLocControl->nHeight;
+        }
 
-    if (pLocControl->wzText && *pLocControl->wzText)
-    {
-        hr = StrAllocString(&pControl->sczText, pLocControl->wzText, 0);
-        ExitOnFailure(hr, "Failed to localize control text.");
+        if (pLocControl->wzText && *pLocControl->wzText)
+        {
+            hr = StrAllocString(&pControl->sczText, pLocControl->wzText, 0);
+            ExitOnFailure(hr, "Failed to localize control text.");
+        }
     }
 
     hr = LocalizeControls(pControl->cControls, pControl->rgControls, pWixLoc);

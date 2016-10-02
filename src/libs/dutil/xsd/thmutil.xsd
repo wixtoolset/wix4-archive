@@ -271,6 +271,7 @@
                 <xs:element ref="ChangePageAction" />
                 <xs:element ref="CloseWindowAction" />
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -401,6 +402,7 @@
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -553,6 +555,7 @@
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -594,6 +597,7 @@
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -661,6 +665,7 @@
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="Center" type="YesNoType" use="optional">
@@ -808,6 +813,7 @@
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -859,6 +865,7 @@
             </xs:annotation>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="Text" />
+                <xs:element ref="Tooltip" maxOccurs="1" />
             </xs:choice>
             <xs:attributeGroup ref="CommonControlAttributes" />
             <xs:attribute name="FontId" type="xs:nonNegativeInteger" use="required">
@@ -952,6 +959,25 @@
                             </xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
+                </xs:extension>                
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="Tooltip">
+        <xs:annotation>
+            <xs:documentation>
+                Defines text for the parent control's tooltip.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Text for the parent control's tooltip.
+                        </xs:documentation>
+                    </xs:annotation>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
