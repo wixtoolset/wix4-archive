@@ -8,6 +8,7 @@ namespace WixToolset.Msi
     using System.Globalization;
     using System.Text;
     using System.Runtime.InteropServices;
+    using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
     using WixToolset.Msi.Interop;
 
     /// <summary>
