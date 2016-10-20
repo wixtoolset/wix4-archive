@@ -4,6 +4,8 @@ namespace WixToolset.Ole32
 {
     using System;
     using System.Runtime.InteropServices;
+    using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
+    using STATSTG = System.Runtime.InteropServices.ComTypes.STATSTG;
 
     /// <summary>
     /// Specifies the access mode to use when opening, creating, or deleting a storage object.
