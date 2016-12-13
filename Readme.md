@@ -1,4 +1,6 @@
 # WiX Toolset on GitHub
+
+[![Join the chat at https://gitter.im/wixtoolset/wix4](https://badges.gitter.im/wixtoolset/wix4.svg)](https://gitter.im/wixtoolset/wix4?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 The WiX Toolset builds Windows installation packages from XML source code. The toolset supports a command-line environment that developers may integrate into their build processes to build Windows Installer (MSI) packages and executable bundles. The WiX GitHub project hosts the WiX source code Git repositories. The following links will take you to more details:
 
 ## [Home page](http://wixtoolset.org/ "WiX Toolset home page")
