@@ -3,6 +3,7 @@
 namespace WixToolset.Extensions
 {
     using System;
+    using System.Linq;
     using System.Diagnostics;
     using System.IO;
     using WixToolset;
@@ -62,7 +63,7 @@ namespace WixToolset.Extensions
                 Util.PerformanceCategory perfCategory = new Util.PerformanceCategory();
 
                 // Get the performance counter category and set the appropriate WiX attributes
-                PerformanceCounterCategory pcc = new PerformanceCounterCategory(category);
+                PerformanceCounterCategory pcc = PerformanceCounterCategory.GetCategories().Single(c => string.Equals(c.CategoryName, category));
                 perfCategory.Id = this.Core.CreateIdentifierFromFilename(pcc.CategoryName);
                 perfCategory.Name = pcc.CategoryName;
                 perfCategory.Help = pcc.CategoryHelp;
@@ -71,15 +72,24 @@ namespace WixToolset.Extensions
                     perfCategory.MultiInstance = Util.YesNoType.yes;
                 }
                 
-                foreach (InstanceDataCollection counter in pcc.ReadCategory().Values)
+                // If it's multi-instance, check if there are any instances and get counters from there; else we get 
+                // the counters straight up. For multi-instance, GetCounters() fails if there are any instances. If there
+                // are no instances, then GetCounters(instance) can't be called since there is no instance. Instances
+                // will exist for each counter even if only one of the counters was "intialized."
+                string[] instances = pcc.GetInstanceNames();
+                bool hasInstances = instances.Length > 0;
+                PerformanceCounter[] counters = hasInstances
+                    ? pcc.GetCounters(instances.First())
+                    : pcc.GetCounters();
+                    
+                foreach (PerformanceCounter counter in counters)
                 {
                     Util.PerformanceCounter perfCounter = new Util.PerformanceCounter();
 
                     // Get the performance counter and set the appropriate WiX attributes
-                    PerformanceCounter pc = new PerformanceCounter(pcc.CategoryName, counter.CounterName);
-                    perfCounter.Name = pc.CounterName;
-                    perfCounter.Type = CounterTypeToWix(pc.CounterType);
-                    perfCounter.Help = pc.CounterHelp;
+                    perfCounter.Name = counter.CounterName;
+                    perfCounter.Type = CounterTypeToWix(counter.CounterType);
+                    perfCounter.Help = counter.CounterHelp;
 
                     perfCategory.AddChild(perfCounter);
                 }
