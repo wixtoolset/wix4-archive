@@ -11,7 +11,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Product Id="*" Name="~$(var.TestName) - F" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="96B5B824-C9A7-47D2-939F-AC48887B0B94">
     <Package Compressed="yes" InstallerVersion="300" InstallScope="perMachine" />
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

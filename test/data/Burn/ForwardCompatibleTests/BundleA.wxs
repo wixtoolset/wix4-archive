@@ -7,8 +7,8 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs"
-     xmlns:dep='http://schemas.microsoft.com/wix/DependencyExtension'>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:dep='http://wixtoolset.org/schemas/v4/wxs'>
   <Bundle Name="~$(var.TestName) - Bundle A" Manufacturer="!(bind.packageManufacturer.PackageA)" Version="$(var.Version)" UpgradeCode="C1A20E89-C80A-4D69-BB4C-1949F32E3A5E"
           dep:ProviderKey='~$(var.TestName)_BundleA'>
 

@@ -2,7 +2,7 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:iis="http://schemas.microsoft.com/wix/IIsExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:iis="http://wixtoolset.org/schemas/v4/wxs/iis">
   <Product  Id="3008BEEE-39C6-437c-91F1-D9E733E2A1A3" Name="TestWebSDirProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{076650CE-FECC-44a6-8172-2237B1932F1F}">
     <Package Description="Test Web dir Product" Comments="Test Web dir Product" InstallerVersion="200" Compressed="yes" />
     <Property Id="PORT" Value="3062" />

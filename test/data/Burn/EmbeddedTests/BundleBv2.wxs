@@ -7,7 +7,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs">
   <Bundle Compressed="no" Name="~$(var.TestName) - Bundle Bv2" Manufacturer="!(bind.packageManufacturer.PackageC)" Version="$(var.Version)" UpgradeCode="68AA492B-A014-495F-880D-3629D3354D6B" dep:ProviderKey="{276C181D-39AB-477B-9750-D4E0A768AFA7}">
     <RelatedBundle Id="5802E2D0-AC39-4486-86FF-D4B7AD012EB5" Action="Patch" />
     <Log Prefix="~$(var.TestName)_BundleBv2" />
