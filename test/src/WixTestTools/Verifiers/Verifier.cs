@@ -251,37 +251,48 @@ namespace WixTest
         /// </remarks>
         public static string GetSummaryInformationProperty(string msi, int propertyIndex)
         {
-            // Load the wix.dll assembly
-            string wixDllLocation = Path.Combine(Settings.WixToolsDirectory, "wix.dll");
-            Assembly wix = Assembly.LoadFile(wixDllLocation);
-
-            // Find the SummaryInformation type
-            string summaryInformationTypeName = "WixToolset.Msi.SummaryInformation";
-            Type summaryInformationType = wix.GetType(summaryInformationTypeName);
-            if (null == summaryInformationType)
+            using (DTF.SummaryInfo summaryInfo = new DTF.SummaryInfo(msi, false))
             {
-                throw new NullReferenceException(String.Format("The Type {0} could not be found in {1}", summaryInformationTypeName, wixDllLocation));
+                switch (propertyIndex)
+                {
+                    case 1:
+                        return summaryInfo.CodePage.ToString();
+                    case 2:
+                        return summaryInfo.Title;
+                    case 3:
+                        return summaryInfo.Subject;
+                    case 4:
+                        return summaryInfo.Author;
+                    case 5:
+                        return summaryInfo.Keywords;
+                    case 6:
+                        return summaryInfo.Comments;
+                    case 7:
+                        return summaryInfo.Template;
+                    case 8:
+                        return summaryInfo.LastSavedBy;
+                    case 9:
+                        return summaryInfo.RevisionNumber;
+                    case 11:
+                        return summaryInfo.LastPrintTime.ToString();
+                    case 12:
+                        return summaryInfo.CreateTime.ToString();
+                    case 13:
+                        return summaryInfo.LastSaveTime.ToString();
+                    case 14:
+                        return summaryInfo.PageCount.ToString();
+                    case 15:
+                        return summaryInfo.WordCount.ToString();
+                    case 16:
+                        return summaryInfo.CharacterCount.ToString();
+                    case 18:
+                        return summaryInfo.CreatingApp;
+                    case 19:
+                        return summaryInfo.Security.ToString();
+                    default:
+                        throw new NotImplementedException(String.Format("Unknown summary information property: {0}", propertyIndex));
+                }
             }
-
-            // Find the SummaryInformation.GetProperty method
-            BindingFlags getPropertyBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            string getPropertyMethodName = "GetProperty";
-            MethodInfo getPropertyMethod = summaryInformationType.GetMethod(getPropertyMethodName, getPropertyBindingFlags);
-            if (null == getPropertyMethod)
-            {
-                throw new NullReferenceException(String.Format("The Method {0} could not be found in {1}", getPropertyMethodName, summaryInformationTypeName));
-            }
-
-            // Create an instance of a SummaryInformation object
-            Object[] constructorArguments = { msi };
-            BindingFlags constructorBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            Object instance = wix.CreateInstance(summaryInformationTypeName, false, constructorBindingFlags, null, constructorArguments, CultureInfo.InvariantCulture, null);
-
-            // Call the SummaryInformation.GetProperty method
-            Object[] arguments = { propertyIndex };
-            string value = (string)getPropertyMethod.Invoke(instance, arguments);
-
-            return value;
         }
 
         /// <summary>
