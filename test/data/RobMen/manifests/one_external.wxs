@@ -4,10 +4,10 @@
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 <Bundle Version="0.1.0.0" Compressed="no">
-   <UX SourceFile="stdux.dll">
+   <BootstrapperApplication SourceFile="stdux.dll">
        <Payload SourceFile="en-us.wxl" />
        <Payload SourceFile="thm.xml" />
-   </UX>
+   </BootstrapperApplication>
 
    <Chain>
       <MsiPackage Id='Package2' Vital='yes' SourceFile='Package2.msi' Name='Package2.msi'>

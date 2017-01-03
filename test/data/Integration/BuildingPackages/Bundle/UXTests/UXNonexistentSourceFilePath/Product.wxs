@@ -7,8 +7,8 @@
   <?define TestDataDirectory="$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files"?>
 
   <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
-    <UX SourceFile="NonExistentFileBootstrapper.exe">
-    </UX>
+    <BootstrapperApplication SourceFile="NonExistentFileBootstrapper.exe">
+    </BootstrapperApplication>
     <Chain>
       <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
     </Chain>

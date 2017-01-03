@@ -8,8 +8,9 @@
 
   <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
 
-    <UX Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
-    </UX>
+    <BootstrapperApplication Name="Name1" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
+      <Payload SourceFile="$(var.TestDataDirectory)\UXPayload\PayloadFile1.txt"/>
+    </BootstrapperApplication>
 
     <PayloadGroup Id="PayloadGroup1">
       <Payload SourceFile="$(var.TestDataDirectory)\UXPayload\PayloadFile1.txt" />
@@ -17,7 +18,7 @@
     </PayloadGroup>
 
     <Chain>
-	<MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
+      <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
     </Chain>
   </Bundle>
 </Wix>

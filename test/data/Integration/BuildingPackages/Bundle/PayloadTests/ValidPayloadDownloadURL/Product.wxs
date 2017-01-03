@@ -8,7 +8,7 @@
 
   <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
 
-    <UX Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe"/>
+    <BootstrapperApplication Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe"/>
 
     <Chain>
       <MsiPackage Id="MsiPackage" Name="MsiPackage.msi" SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi">

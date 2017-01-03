@@ -7,17 +7,17 @@
   <?define TestDataDirectory="$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files"?>
 
     <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
-        <UX Name="Name1" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
+        <BootstrapperApplication Name="Name1" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
             <Payload SourceFile="$(var.TestDataDirectory)\UXPayload\PayloadFile1.txt"/>
-        </UX>
+        </BootstrapperApplication>
 
-        <!-- Adding second UX element -->
-        <UX Name="Name2" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
+        <!-- Adding second BootstrapperApplication element -->
+        <BootstrapperApplication Name="Name2" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
             <Payload SourceFile="$(var.TestDataDirectory)\UXPayload\PayloadFile2.txt"/>
-        </UX>
-	
-	<Chain>
-	   <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
-	</Chain>
+        </BootstrapperApplication>
+
+        <Chain>
+            <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
+        </Chain>
     </Bundle>
 </Wix>

@@ -3,10 +3,10 @@
 
 
 <BurnManifest xmlns="http://wixtoolset.org/schemas/v4/2008/Burn">
-   <UX SourceFile="stdux.dll">
+   <BootstrapperApplication SourceFile="stdux.dll">
        <Resource SourceFile="en-us.wxl" />
        <Resource SourceFile="thm.xml" />
-   </UX>
+   </BootstrapperApplication>
 
    <Registration Id="external_nocache" ExecutableName='b.exe' PerMachine='yes'>
 

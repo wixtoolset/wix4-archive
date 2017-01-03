@@ -7,10 +7,10 @@
         IconSourceFile="$(env.WIX_ROOT)\src\Votive\votive2010\Templates\Projects\WixProject\WixProject.ico"
         SplashScreenSourceFile="logo.bmp">
    <Log />
-   <UX SourceFile="stdux.dll">
+   <BootstrapperApplication SourceFile="stdux.dll">
        <Payload SourceFile="en-us.wxl" />
        <Payload SourceFile="thm.xml" />
-   </UX>
+   </BootstrapperApplication>
 
     <PayloadGroup Id="LayoutOnlyPayloads">
         <Payload SourceFile="$(sys.SOURCEFILEDIR)\readme.html" />
