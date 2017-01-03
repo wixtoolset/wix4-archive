@@ -20,7 +20,10 @@
   <Fragment>
     <PackageGroup Id="PackageGroup1">
       <MsiPackage Id="MsiPackage" SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
+      <!--
+      TODO: Find/fake an MSU package.
       <MsuPackage Id="MsuPackage" SourceFile="$(var.TestDataDirectory)\Packages\MsuPackage.msu"/>
+      -->
       <MspPackage Id="MspPackage" SourceFile="$(var.TestDataDirectory)\Packages\MspPackage.msp"/>
       <ExePackage Id="ExePackage" SourceFile="$(var.TestDataDirectory)\Packages\ExePackage.exe"/>
     </PackageGroup>

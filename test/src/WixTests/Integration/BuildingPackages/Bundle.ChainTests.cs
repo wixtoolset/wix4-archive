@@ -26,10 +26,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             string bootstrapper = Builder.BuildBundlePackage(outputDirectory, sourceFile);
 
             // verify the ParameterInfo and burnManifest has the correct information 
-            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, false, false, string.Format("{0}v0.1.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
-            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, false, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
-            PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
-            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, false, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
+            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, true, false, string.Format("{0}v1.0.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
+            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, true, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
+            //TODO: Find/fake an MSU package.
+            //PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
+            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, true, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
         }
 
         [NamedFact]
@@ -44,10 +45,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             string bootstrapper = Builder.BuildBundlePackage(outputDirectory, sourceFile);
 
             // verify the ParameterInfo and burnManifest has the correct information 
-            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, false, false, string.Format("{0}v0.1.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
-            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, false, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
-            PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
-            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, false, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
+            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, true, false, string.Format("{0}v1.0.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
+            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, true, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
+            //TODO: Find/fake an MSU package.
+            //PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
+            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, true, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
         }
 
         [NamedFact(Skip = "Ignore")]
