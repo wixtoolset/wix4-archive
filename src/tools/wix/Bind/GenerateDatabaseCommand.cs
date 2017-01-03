@@ -299,6 +299,7 @@ namespace WixToolset.Bind
             command.TempFilesLocation = this.TempFilesLocation;
             command.Transform = transform;
             command.OutputPath = outputPath;
+            command.TableDefinitions = this.TableDefinitions;
             command.Execute();
         }
 
