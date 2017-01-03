@@ -20,9 +20,9 @@
     <Variable Name="Variable4" Value="Variable4Value"/>
     <Variable Name="Variable5" Value="Variable5Value"/>
 
-    <util:ComponentSearch Id="ComponentSearch1" Variable="Variable1" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A1}" Condition="1 &amp; 2 &lt; 3" Result="Directory" After="ComponentSearch3"/>
-    <util:ComponentSearch Id="ComponentSearch2" Variable="Variable2" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A2}" Result="State" After="ComponentSearch4"/>
-    <util:ComponentSearch Id="ComponentSearch4" Variable="Variable4" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A4}" Result="KeyPath"/>
+    <util:ComponentSearch Id="ComponentSearch1" Variable="Variable1" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A1}" Condition="1 &amp; 2 &lt; 3" Result="directory" After="ComponentSearch3"/>
+    <util:ComponentSearch Id="ComponentSearch2" Variable="Variable2" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A2}" Result="state" After="ComponentSearch4"/>
+    <util:ComponentSearch Id="ComponentSearch4" Variable="Variable4" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A4}" Result="keyPath"/>
     <util:ComponentSearch Id="ComponentSearch3" Variable="Variable # 3" Guid="{738D02BF-E231-4370-8209-E9FD4E1BE2A3}" ProductCode="738D02BF-E231-4370-8209-E9FD4E1BE2A5" After="ComponentSearch4" />
 
 

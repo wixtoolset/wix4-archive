@@ -67,7 +67,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             Light light = new Light();
             light.ObjectFiles.Add(candleOutput);
             light.OutputFile = "setup.exe";
-            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'ChainPackage:Package1' found.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'WixBundlePackage:Package1' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(92, "Location of symbol related to previous error.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'WixBundlePayload:Package1' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(92, "Location of symbol related to previous error.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'WixChainItem:Package1' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", Message.MessageTypeEnum.Error));
             light.ExpectedWixMessages.Add(new WixMessage(92, "Location of symbol related to previous error.", Message.MessageTypeEnum.Error));
             light.ExpectedExitCode = 92;
             light.Run();

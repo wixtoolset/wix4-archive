@@ -24,7 +24,7 @@
           <util:PermissionEx User="LocalService" GenericAll="yes" />
         </File>
 
-        <RegistryKey Id="MynewServiceCore" Root="HKLM" Key="SOFTWARE\Microsoft\Office\Delivery\MynewService" Action="createAndRemoveOnUninstall">
+        <RegistryKey Id="MynewServiceCore" Root="HKLM" Key="SOFTWARE\Microsoft\Office\Delivery\MynewService" ForceCreateOnInstall="yes">
           <util:PermissionEx User="Guests" Read="yes" Write="yes" CreateSubkeys="yes" EnumerateSubkeys="yes" Notify="yes" CreateLink="yes" />
         </RegistryKey>
 
