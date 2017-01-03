@@ -77,7 +77,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchPredefinedVariable\Product.wxs"));
-            candle.OutputFile = "Setup.exe";
+            candle.OutputFile = "TestBundle.exe";
             candle.Extensions.Add("WixUtilExtension");
             candle.ExpectedWixMessages.Add(new WixMessage(348, expectedErrorMessage, Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 348;
@@ -107,7 +107,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Light light = new Light();
             light.ObjectFiles.AddRange(candleOutputs);
-            light.OutputFile = "Setup.exe";
+            light.OutputFile = "TestBundle.exe";
             light.Extensions.Add("WixUtilExtension");
             light.ExpectedWixMessages.Add(new WixMessage(91, Message.MessageTypeEnum.Error));  //  duplicate symbol error
             light.ExpectedWixMessages.Add(new WixMessage(92, Message.MessageTypeEnum.Error));  //  Location of symbol related to previous error.
@@ -126,7 +126,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Light light = new Light();
             light.ObjectFiles.AddRange(candleOutputs);
-            light.OutputFile = "Setup.exe";
+            light.OutputFile = "TestBundle.exe";
             light.Extensions.Add("WixUtilExtension");
             light.ExpectedWixMessages.Add(new WixMessage(94, Message.MessageTypeEnum.Error));  //  Unresolved reference to symbol 'WixSearch:UndefinedSearch'
             light.ExpectedExitCode = 94;
@@ -143,7 +143,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Light light = new Light();
             light.ObjectFiles.AddRange(candleOutputs);
-            light.OutputFile = "Setup.exe";
+            light.OutputFile = "TestBundle.exe";
             light.Extensions.Add("WixUtilExtension");
             light.ExpectedWixMessages.Add(new WixMessage(5060, "A circular reference of search ordering constraints was detected: ComponentSearch1 -> ComponentSearch2 -> ComponentSearch1. Search ordering references must form a directed acyclic graph.", Message.MessageTypeEnum.Error));
             light.ExpectedWixMessages.Add(new WixMessage(5060, "A circular reference of search ordering constraints was detected: ComponentSearch2 -> ComponentSearch1 -> ComponentSearch2. Search ordering references must form a directed acyclic graph.", Message.MessageTypeEnum.Error));

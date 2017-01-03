@@ -723,7 +723,7 @@ namespace WixTest
         public static XmlNodeList QueryBurnManifest(string burnManifestPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("burn", "http://schemas.microsoft.com/wix/2008/Burn");
+            xmlNamespaceManager.AddNamespace("burn", "http://wixtoolset.org/schemas/v4/2008/Burn");
             XmlNodeList nodeList = Verifier.QueryXML(burnManifestPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }
@@ -738,7 +738,7 @@ namespace WixTest
         public static XmlNodeList QueryBurnUxManifest(string burnUxManifestPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("burnUx", "http://schemas.microsoft.com/wix/2010/UxManifest");
+            xmlNamespaceManager.AddNamespace("burnUx", "http://wixtoolset.org/schemas/v4/2010/BootstrapperApplicationData");
             XmlNodeList nodeList = Verifier.QueryXML(burnUxManifestPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }
