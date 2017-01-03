@@ -1054,7 +1054,14 @@ namespace WixToolset
                 access = (AccessModifier)Enum.Parse(typeof(AccessModifier), match.Groups["access"].Value, true);
             }
 
-            return new Identifier(match.Groups["id"].Value, access);
+            value = match.Groups["id"].Value;
+
+            if (Common.IsIdentifier(value) && 72 < value.Length)
+            {
+                this.OnMessage(WixWarnings.IdentifierTooLong(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
+            }
+
+            return new Identifier(value, access);
         }
 
         /// <summary>
