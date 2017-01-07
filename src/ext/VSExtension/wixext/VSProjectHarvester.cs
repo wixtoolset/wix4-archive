@@ -471,6 +471,7 @@ namespace WixToolset.Extensions
             int fileCount = 0;
 
             Wix.ISchemaElement exeFile = null;
+            Wix.ISchemaElement dllFile = null;
             Wix.ISchemaElement appConfigFile = null;
 
             // Keep track of files inserted
@@ -540,6 +541,10 @@ namespace WixToolset.Extensions
                     {
                         exeFile = file;
                     }
+                    else if (String.Equals(Path.GetExtension(file.Source), ".dll", StringComparison.OrdinalIgnoreCase))
+                    {
+                        dllFile = file;
+                    }
                     else if (file.Source.EndsWith("app.config", StringComparison.OrdinalIgnoreCase))
                     {
                         appConfigFile = file;
@@ -547,6 +552,12 @@ namespace WixToolset.Extensions
                 }
 
                 fileCount++;
+            }
+
+            // if there was no exe file found fallback on the dll file found
+            if (exeFile == null && dllFile != null)
+            {
+                exeFile = dllFile;
             }
 
             // Special case for the app.config file in the Binaries POG...
