@@ -167,9 +167,10 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP OnDetectCompatiblePackage(
+    virtual STDMETHODIMP OnDetectCompatibleMsiPackage(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzCompatiblePackageId*/,
+        __in DWORD64 /*dw64CompatiblePackageVersion*/,
         __inout BOOL* pfCancel
         )
     {
@@ -238,49 +239,74 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanRelatedBundle(
+    virtual STDMETHODIMP OnPlanRelatedBundle(
         __in_z LPCWSTR /*wzBundleId*/,
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanPackageBegin(
+    virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR /*wzPackageId*/, 
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestState*/
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestState*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanCompatiblePackage(
+    virtual STDMETHODIMP OnPlanCompatibleMsiPackageBegin(
         __in_z LPCWSTR /*wzPackageId*/,
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/
+        __in_z LPCWSTR /*wzCompatiblePackageId*/,
+        __in DWORD64 /*dw64CompatiblePackageVersion*/,
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanTargetMsiPackage(
+    virtual STDMETHODIMP OnPlanCompatibleMsiPackageComplete(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzCompatiblePackageId*/,
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_PACKAGE_STATE /*state*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*requested*/,
+        __in BOOTSTRAPPER_ACTION_STATE /*execute*/,
+        __in BOOTSTRAPPER_ACTION_STATE /*rollback*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnPlanTargetMsiPackage(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzProductCode*/,
-        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/
+        __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnPlanMsiFeature(
+    virtual STDMETHODIMP OnPlanMsiFeature(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzFeatureId*/,
-        __inout BOOTSTRAPPER_FEATURE_STATE* /*pRequestedState*/
+        __inout BOOTSTRAPPER_FEATURE_STATE* /*pRequestedState*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnPlanPackageComplete(
+    virtual STDMETHODIMP OnPlanPackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_PACKAGE_STATE /*state*/,
@@ -289,6 +315,7 @@ public: // IBootstrapperApplication
         __in BOOTSTRAPPER_ACTION_STATE /*rollback*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP OnPlanComplete(

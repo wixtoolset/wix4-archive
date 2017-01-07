@@ -25,7 +25,7 @@ static void ResetPlannedPackageState(
     );
 static HRESULT ProcessPackage(
     __in BOOL fBundlePerMachine,
-    __in BOOL fPlanCompatible,
+    __in BURN_PACKAGE* pCompatiblePackageParent,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_PLAN* pPlan,
     __in BURN_PACKAGE* pPackage,
@@ -511,7 +511,7 @@ extern "C" HRESULT PlanPackages(
             }
         }
 
-        hr = ProcessPackage(fBundlePerMachine, FALSE, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
+        hr = ProcessPackage(fBundlePerMachine, NULL, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
         ExitOnFailure(hr, "Failed to process package.");
 
         // Attempt to remove orphaned packages during uninstall. Currently only MSI packages are supported and should not require source.
@@ -536,7 +536,7 @@ extern "C" HRESULT PlanPackages(
             ExitOnFailure(hr, "Failed to copy installed ProductCode");
 
             // Process the compatible MSI package like any other.
-            hr = ProcessPackage(fBundlePerMachine, TRUE, pUX, pPlan, pCompatiblePackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
+            hr = ProcessPackage(fBundlePerMachine, pPackage, pUX, pPlan, pCompatiblePackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
             ExitOnFailure(hr, "Failed to process compatible package.");
 
             if (BOOTSTRAPPER_ACTION_STATE_UNINSTALL == pCompatiblePackage->execute)
@@ -797,7 +797,7 @@ extern "C" HRESULT PlanPassThroughBundle(
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundary = NULL;
 
     // Plan passthrough package.
-    hr = ProcessPackage(fBundlePerMachine, FALSE, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
+    hr = ProcessPackage(fBundlePerMachine, NULL, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
     ExitOnFailure(hr, "Failed to process passthrough package.");
 
     // If we still have an open rollback boundary, complete it.
@@ -831,7 +831,7 @@ extern "C" HRESULT PlanUpdateBundle(
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundary = NULL;
 
     // Plan update package.
-    hr = ProcessPackage(fBundlePerMachine, FALSE, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
+    hr = ProcessPackage(fBundlePerMachine, NULL, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
     ExitOnFailure(hr, "Failed to process update package.");
 
     // If we still have an open rollback boundary, complete it.
@@ -851,7 +851,7 @@ LExit:
 
 static HRESULT ProcessPackage(
     __in BOOL fBundlePerMachine,
-    __in BOOL fPlanCompatible,
+    __in BURN_PACKAGE* pCompatiblePackageParent,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_PLAN* pPlan,
     __in BURN_PACKAGE* pPackage,
@@ -867,25 +867,27 @@ static HRESULT ProcessPackage(
 {
     HRESULT hr = S_OK;
     BURN_ROLLBACK_BOUNDARY* pEffectiveRollbackBoundary = NULL;
+    BOOL fPlanPackageBegan = FALSE;
 
-    // Remember the default requested state so the engine doesn't get blamed for planning the wrong thing if the UX changes it.
+    // Remember the default requested state so the engine doesn't get blamed for planning the wrong thing if the BA changes it.
     hr = PlanDefaultPackageRequestState(pPackage->type, pPackage->currentState, !pPackage->fUninstallable, pPlan->action, pVariables, pPackage->sczInstallCondition, relationType, &pPackage->defaultRequested);
     ExitOnFailure(hr, "Failed to set default package state.");
 
     pPackage->requested = pPackage->defaultRequested;
+    fPlanPackageBegan = TRUE;
 
-    int nResult = IDNOACTION;
-    if (fPlanCompatible)
+    if (pCompatiblePackageParent)
     {
-        nResult = pUX->pUserExperience->OnPlanCompatiblePackage(pPackage->sczId, &pPackage->requested);
+        AssertSz(BURN_PACKAGE_TYPE_MSI == pPackage->type, "Currently only MSI packages have compatible packages.");
+
+        hr = UserExperienceOnPlanCompatibleMsiPackageBegin(pUX, pCompatiblePackageParent->sczId, pPackage->sczId, pPackage->Msi.qwVersion, &pPackage->requested);
+        ExitOnRootFailure(hr, "BA aborted plan compatible MSI package begin.");
     }
     else
     {
-        nResult = pUX->pUserExperience->OnPlanPackageBegin(pPackage->sczId, &pPackage->requested);
+        hr = UserExperienceOnPlanPackageBegin(pUX, pPackage->sczId, &pPackage->requested);
+        ExitOnRootFailure(hr, "BA aborted plan package begin.");
     }
-
-    hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted plan package begin.");
 
     pEffectiveRollbackBoundary = (BOOTSTRAPPER_ACTION_UNINSTALL == pPlan->action) ? pPackage->pRollbackBoundaryBackward : pPackage->pRollbackBoundaryForward;
     hr = ProcessPackageRollbackBoundary(pPlan, pEffectiveRollbackBoundary, ppRollbackBoundary);
@@ -948,7 +950,18 @@ static HRESULT ProcessPackage(
     }
 
 LExit:
-    pUX->pUserExperience->OnPlanPackageComplete(pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+    if (fPlanPackageBegan)
+    {
+        if (pCompatiblePackageParent)
+        {
+            UserExperienceOnPlanCompatibleMsiPackageComplete(pUX, pCompatiblePackageParent->sczId, pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+        }
+        else
+        {
+            UserExperienceOnPlanPackageComplete(pUX, pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+        }
+    }
+
     return hr;
 }
 
@@ -1285,11 +1298,10 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
 
         pRelatedBundle->package.defaultRequested = pRelatedBundle->package.requested;
 
-        int nResult = pUserExperience->pUserExperience->OnPlanRelatedBundle(pRelatedBundle->package.sczId, &pRelatedBundle->package.requested);
-        hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted plan related bundle.");
+        hr = UserExperienceOnPlanRelatedBundle(pUserExperience, pRelatedBundle->package.sczId, &pRelatedBundle->package.requested);
+        ExitOnRootFailure(hr, "BA aborted plan related bundle.");
 
-        // Log when the UX changed the bundle state so the engine doesn't get blamed for planning the wrong thing.
+        // Log when the BA changed the bundle state so the engine doesn't get blamed for planning the wrong thing.
         if (pRelatedBundle->package.requested != pRelatedBundle->package.defaultRequested)
         {
             LogId(REPORT_STANDARD, MSG_PLANNED_BUNDLE_UX_CHANGED_REQUEST, pRelatedBundle->package.sczId, LoggingRequestStateToString(pRelatedBundle->package.requested), LoggingRequestStateToString(pRelatedBundle->package.defaultRequested));

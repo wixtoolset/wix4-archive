@@ -508,19 +508,21 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when a package was not found but a newer package using the same provider key was.
     /// </summary>
     [Serializable]
-    public class DetectCompatiblePackageEventArgs : CancellableHResultEventArgs
+    public class DetectCompatibleMsiPackageEventArgs : CancellableHResultEventArgs
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="DetectCompatiblePackageEventArgs"/> class.
+        /// Creates a new instance of the <see cref="DetectCompatibleMsiPackageEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that was not detected.</param>
         /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
+        /// <param name="compatiblePackageVersion">The version of the compatible package that was detected.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public DetectCompatiblePackageEventArgs(string packageId, string compatiblePackageId, bool cancelRecommendation)
+        public DetectCompatibleMsiPackageEventArgs(string packageId, string compatiblePackageId, long compatiblePackageVersion, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.PackageId = packageId;
             this.CompatiblePackageId = compatiblePackageId;
+            this.CompatiblePackageVersion = Engine.LongToVersion(compatiblePackageVersion);
         }
 
         /// <summary>
@@ -532,6 +534,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the identity of the compatible package that was detected.
         /// </summary>
         public string CompatiblePackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the version of the compatible package that was detected.
+        /// </summary>
+        public Version CompatiblePackageVersion { get; private set; }
     }
 
     /// <summary>
@@ -737,212 +744,236 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun planning for a related bundle.
     /// </summary>
     [Serializable]
-    public class PlanRelatedBundleEventArgs : ResultEventArgs
+    public class PlanRelatedBundleEventArgs : CancellableHResultEventArgs
     {
-        private string bundleId;
-        private RequestState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanRelatedBundleEventArgs"/> class.
         /// </summary>
         /// <param name="bundleId">The identity of the bundle to plan for.</param>
         /// <param name="state">The requested state for the bundle.</param>
-        public PlanRelatedBundleEventArgs(string bundleId, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanRelatedBundleEventArgs(string bundleId, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.bundleId = bundleId;
-            this.state = state;
+            this.BundleId = bundleId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the bundle to plan for.
         /// </summary>
-        public string BundleId
-        {
-            get { return this.bundleId; }
-        }
+        public string BundleId { get; private set; }
 
         /// <summary>
         /// Gets or sets the requested state for the bundle.
         /// </summary>
-        public RequestState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public RequestState State { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the engine has begun planning the installation of a specific package.
     /// </summary>
     [Serializable]
-    public class PlanPackageBeginEventArgs : ResultEventArgs
+    public class PlanPackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private RequestState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanPackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to plan for.</param>
         /// <param name="state">The requested state for the package.</param>
-        public PlanPackageBeginEventArgs(string packageId, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanPackageBeginEventArgs(string packageId, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the package to plan for.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets or sets the requested state for the package.
         /// </summary>
-        public RequestState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public RequestState State { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when the engine is about to plan a newer package using the same provider key.
     /// </summary>
     [Serializable]
-    public class PlanCompatiblePackageEventArgs : ResultEventArgs
+    public class PlanCompatibleMsiPackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private RequestState state;
-
         /// <summary>
-        /// Creates a new instance of the <see cref="PlanCompatiblePackageEventArgs"/> class.
+        /// Creates a new instance of the <see cref="PlanCompatibleMsiPackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that was not detected.</param>
+        /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
+        /// <param name="compatiblePackageVersion">The version of the compatible package that was detected.</param>
         /// <param name="state">The requested state for the compatible package.</param>
-        public PlanCompatiblePackageEventArgs(string packageId, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanCompatibleMsiPackageBeginEventArgs(string packageId, string compatiblePackageId, long compatiblePackageVersion, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.CompatiblePackageId = compatiblePackageId;
+            this.CompatiblePackageVersion = Engine.LongToVersion(compatiblePackageVersion);
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the package that was not detected.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the identity of the compatible package detected.
+        /// </summary>
+        public string CompatiblePackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the version of the compatible package detected.
+        /// </summary>
+        public Version CompatiblePackageVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the state to use for the compatible package for planning.
         /// </summary>
-        public RequestState State
+        public RequestState State { get; set; }
+    }
+
+    /// <summary>
+    /// Additional arguments used when the engine has completed planning the installation of a specific package.
+    /// </summary>
+    [Serializable]
+    public class PlanCompatibleMsiPackageCompleteEventArgs : StatusEventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="PlanCompatibleMsiPackageCompleteEventArgs"/> class.
+        /// </summary>
+        /// <param name="packageId">The identity of the package planned for.</param>
+        /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
+        /// <param name="status">The return code of the operation.</param>
+        /// <param name="state">The current state of the package.</param>
+        /// <param name="requested">The requested state for the package</param>
+        /// <param name="execute">The execution action to take.</param>
+        /// <param name="rollback">The rollback action to take.</param>
+        public PlanCompatibleMsiPackageCompleteEventArgs(string packageId, string compatiblePackageId, int status, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
+            : base(status)
         {
-            get { return this.state; }
-            set { this.state = value; }
+            this.PackageId = packageId;
+            this.CompatiblePackageId = compatiblePackageId;
+            this.State = state;
+            this.Requested = requested;
+            this.Execute = execute;
+            this.Rollback = rollback;
         }
+
+        /// <summary>
+        /// Gets the identity of the package planned for.
+        /// </summary>
+        public string PackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the identity of the compatible package detected.
+        /// </summary>
+        public string CompatiblePackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the current state of the package.
+        /// </summary>
+        public PackageState State { get; private set; }
+
+        /// <summary>
+        /// Gets the requested state for the package.
+        /// </summary>
+        public RequestState Requested { get; private set; }
+
+        /// <summary>
+        /// Gets the execution action to take.
+        /// </summary>
+        public ActionState Execute { get; private set; }
+
+        /// <summary>
+        /// Gets the rollback action to take.
+        /// </summary>
+        public ActionState Rollback { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when engine is about to plan a MSP applied to a target MSI package.
     /// </summary>
     [Serializable]
-    public class PlanTargetMsiPackageEventArgs : ResultEventArgs
+    public class PlanTargetMsiPackageEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string productCode;
-        private RequestState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Package identifier of the patch being planned.</param>
         /// <param name="productCode">Product code identifier being planned.</param>
         /// <param name="state">Package state of the patch being planned.</param>
-        public PlanTargetMsiPackageEventArgs(string packageId, string productCode, RequestState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanTargetMsiPackageEventArgs(string packageId, string productCode, RequestState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.productCode = productCode;
-            this.state = state;
+            this.PackageId = packageId;
+            this.ProductCode = productCode;
+            this.State = state;
         }
 
         /// <summary>
-        /// Gets the identity of the feature's package to plan.
+        /// Gets the identity of the patch package to plan.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
-        /// Gets the identity of the feature to plan.
+        /// Gets the identity of the patch's target MSI to plan.
         /// </summary>
-        public string ProductCode
-        {
-            get { return this.productCode; }
-        }
+        public string ProductCode { get; private set; }
 
         /// <summary>
         /// Gets or sets the state of the patch to use by planning.
         /// </summary>
-        public RequestState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public RequestState State { get; set; }
     }
 
     /// <summary>
     /// Additional arguments used when engine is about to plan a feature in an MSI package.
     /// </summary>
     [Serializable]
-    public class PlanMsiFeatureEventArgs : ResultEventArgs
+    public class PlanMsiFeatureEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string featureId;
-        private FeatureState state;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanMsiFeatureEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">Package identifier being planned.</param>
         /// <param name="featureId">Feature identifier being planned.</param>
         /// <param name="state">Feature state being planned.</param>
-        public PlanMsiFeatureEventArgs(string packageId, string featureId, FeatureState state)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public PlanMsiFeatureEventArgs(string packageId, string featureId, FeatureState state, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.featureId = featureId;
-            this.state = state;
+            this.PackageId = packageId;
+            this.FeatureId = featureId;
+            this.State = state;
         }
 
         /// <summary>
         /// Gets the identity of the feature's package to plan.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the feature to plan.
         /// </summary>
-        public string FeatureId
-        {
-            get { return this.featureId; }
-        }
+        public string FeatureId { get; private set; }
 
         /// <summary>
         /// Gets or sets the feature state to use by planning.
         /// </summary>
-        public FeatureState State
-        {
-            get { return this.state; }
-            set { this.state = value; }
-        }
+        public FeatureState State { get; set; }
     }
 
     /// <summary>
@@ -951,12 +982,6 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class PlanPackageCompleteEventArgs : StatusEventArgs
     {
-        private string packageId;
-        private PackageState state;
-        private RequestState requested;
-        private ActionState execute;
-        private ActionState rollback;
-
         /// <summary>
         /// Creates a new instance of the <see cref="PlanPackageCompleteEventArgs"/> class.
         /// </summary>
@@ -969,52 +994,37 @@ namespace WixToolset.Bootstrapper
         public PlanPackageCompleteEventArgs(string packageId, int status, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
             : base(status)
         {
-            this.packageId = packageId;
-            this.state = state;
-            this.requested = requested;
-            this.execute = execute;
-            this.rollback = rollback;
+            this.PackageId = packageId;
+            this.State = state;
+            this.Requested = requested;
+            this.Execute = execute;
+            this.Rollback = rollback;
         }
 
         /// <summary>
         /// Gets the identity of the package planned for.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the current state of the package.
         /// </summary>
-        public PackageState State
-        {
-            get { return this.state; }
-        }
+        public PackageState State { get; private set; }
 
         /// <summary>
         /// Gets the requested state for the package.
         /// </summary>
-        public RequestState Requested
-        {
-            get { return this.requested; }
-        }
+        public RequestState Requested { get; private set; }
 
         /// <summary>
         /// Gets the execution action to take.
         /// </summary>
-        public ActionState Execute
-        {
-            get { return this.execute; }
-        }
+        public ActionState Execute { get; private set; }
 
         /// <summary>
         /// Gets the rollback action to take.
         /// </summary>
-        public ActionState Rollback
-        {
-            get { return this.rollback; }
-        }
+        public ActionState Rollback { get; private set; }
     }
 
     /// <summary>

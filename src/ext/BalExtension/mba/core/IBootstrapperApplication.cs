@@ -100,9 +100,10 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        int OnDetectCompatiblePackage(
+        int OnDetectCompatibleMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            [MarshalAs(UnmanagedType.U8)] long dw64CompatiblePackageVersion,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
@@ -159,42 +160,63 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanRelatedBundle(
+        int OnPlanRelatedBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanPackageBegin(
+        int OnPlanPackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanCompatiblePackage(
+        int OnPlanCompatibleMsiPackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            [MarshalAs(UnmanagedType.U8)] long dw64CompatiblePackageVersion,
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanTargetMsiPackage(
+        int OnPlanCompatibleMsiPackageComplete(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            int hrStatus,
+            [MarshalAs(UnmanagedType.U4)] PackageState state,
+            [MarshalAs(UnmanagedType.U4)] RequestState requested,
+            [MarshalAs(UnmanagedType.U4)] ActionState execute,
+            [MarshalAs(UnmanagedType.U4)] ActionState rollback
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanTargetMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanMsiFeature(
+        int OnPlanMsiFeature(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzFeatureId,
-            [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnPlanPackageComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanPackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] PackageState state,

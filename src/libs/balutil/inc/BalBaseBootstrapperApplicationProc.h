@@ -128,11 +128,11 @@ static HRESULT BalBaseBAProcOnDetectPackageBegin(
 
 static HRESULT BalBaseBAProcOnDetectCompatiblePackage(
     __in IBootstrapperApplication* pBA,
-    __in BA_ONDETECTCOMPATIBLEPACKAGE_ARGS* pArgs,
-    __inout BA_ONDETECTCOMPATIBLEPACKAGE_RESULTS* pResults
+    __in BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS* pArgs,
+    __inout BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS* pResults
     )
 {
-    return pBA->OnDetectCompatiblePackage(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, &pResults->fCancel);
+    return pBA->OnDetectCompatibleMsiPackage(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->dw64CompatiblePackageVersion, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnDetectRelatedMsiPackage(
@@ -169,6 +169,69 @@ static HRESULT BalBaseBAProcOnDetectPackageComplete(
     )
 {
     return pBA->OnDetectPackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->state);
+}
+
+static HRESULT BalBaseBAProcOnPlanRelatedBundle(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANRELATEDBUNDLE_ARGS* pArgs,
+    __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanRelatedBundle(pArgs->wzBundleId, &pResults->requestedState, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanPackageBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANPACKAGEBEGIN_ARGS* pArgs,
+    __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanPackageBegin(pArgs->wzPackageId, &pResults->requestedState, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS* pArgs,
+    __inout BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanCompatibleMsiPackageBegin(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->dw64CompatiblePackageVersion, &pResults->requestedState, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_ARGS* pArgs,
+    __inout BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnPlanCompatibleMsiPackageComplete(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->hrStatus, pArgs->state, pArgs->requested, pArgs->execute, pArgs->rollback);
+}
+
+static HRESULT BalBaseBAProcOnPlanTargetMsiPackage(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANTARGETMSIPACKAGE_ARGS* pArgs,
+    __inout BA_ONPLANTARGETMSIPACKAGE_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanTargetMsiPackage(pArgs->wzPackageId, pArgs->wzProductCode, &pResults->requestedState, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanMsiFeature(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANMSIFEATURE_ARGS* pArgs,
+    __inout BA_ONPLANMSIFEATURE_RESULTS* pResults
+    )
+{
+    return pBA->OnPlanMsiFeature(pArgs->wzPackageId, pArgs->wzFeatureId, &pResults->requestedState, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnPlanPackageComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPLANPACKAGECOMPLETE_ARGS* pArgs,
+    __inout BA_ONPLANPACKAGECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnPlanPackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->state, pArgs->requested, pArgs->execute, pArgs->rollback);
 }
 
 /*******************************************************************
@@ -230,8 +293,8 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGEBEGIN:
             hr = BalBaseBAProcOnDetectPackageBegin(pBA, reinterpret_cast<BA_ONDETECTPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGEBEGIN_RESULTS*>(pvResults));
             break;
-        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEPACKAGE:
-            hr = BalBaseBAProcOnDetectCompatiblePackage(pBA, reinterpret_cast<BA_ONDETECTCOMPATIBLEPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPATIBLEPACKAGE_RESULTS*>(pvResults));
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE:
+            hr = BalBaseBAProcOnDetectCompatiblePackage(pBA, reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS*>(pvResults));
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTRELATEDMSIPACKAGE:
             hr = BalBaseBAProcOnDetectRelatedMsiPackage(pBA, reinterpret_cast<BA_ONDETECTRELATEDMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTRELATEDMSIPACKAGE_RESULTS*>(pvResults));
@@ -244,6 +307,27 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE:
             hr = BalBaseBAProcOnDetectPackageComplete(pBA, reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANRELATEDBUNDLE:
+            hr = BalBaseBAProcOnPlanRelatedBundle(pBA, reinterpret_cast<BA_ONPLANRELATEDBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANRELATEDBUNDLE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGEBEGIN:
+            hr = BalBaseBAProcOnPlanPackageBegin(pBA, reinterpret_cast<BA_ONPLANPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGEBEGIN:
+            hr = BalBaseBAProcOnPlanCompatibleMsiPackageBegin(pBA, reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE:
+            hr = BalBaseBAProcOnPlanCompatibleMsiPackageComplete(pBA, reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANTARGETMSIPACKAGE:
+            hr = BalBaseBAProcOnPlanTargetMsiPackage(pBA, reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSIFEATURE:
+            hr = BalBaseBAProcOnPlanMsiFeature(pBA, reinterpret_cast<BA_ONPLANMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSIFEATURE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE:
+            hr = BalBaseBAProcOnPlanPackageComplete(pBA, reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_RESULTS*>(pvResults));
             break;
         }
     }

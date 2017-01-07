@@ -185,6 +185,12 @@ static HRESULT DAPI SetVariableStringCallback(
     __in_z_opt LPCWSTR wzValue,
     __in_opt LPVOID pvContext
     );
+static LPCSTR LoggingRequestStateToString(
+    __in BOOTSTRAPPER_REQUEST_STATE requestState
+    );
+static LPCSTR LoggingMsiFeatureStateToString(
+    __in BOOTSTRAPPER_FEATURE_STATE featureState
+    );
 
 
 class CWixStandardBootstrapperApplication : public CBalBaseBootstrapperApplication
@@ -353,9 +359,10 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnPlanRelatedBundle(
-        __in_z LPCWSTR /*wzBundleId*/,
-        __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    virtual STDMETHODIMP OnPlanRelatedBundle(
+        __in_z LPCWSTR wzBundleId,
+        __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         )
     {
         // If we're only installing prerequisites, do not touch related bundles.
@@ -364,13 +371,14 @@ public: // IBootstrapperApplication
             *pRequestedState = BOOTSTRAPPER_REQUEST_STATE_NONE;
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, pRequestedState, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnPlanPackageBegin(
+    virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState
+        __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState,
+        __inout BOOL* pfCancel
         )
     {
         HRESULT hr = S_OK;
@@ -434,7 +442,7 @@ public: // IBootstrapperApplication
             }
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, pRequestState, pfCancel);
     }
 
 
@@ -945,6 +953,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN:
             OnSystemShutdownFallback(reinterpret_cast<BA_ONSYSTEMSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSYSTEMSHUTDOWN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE:
+            OnDetectForwardCompatibleBundleFallback(reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS*>(pvResults));
+            break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATEBEGIN:
             OnDetectUpdateBeginFallback(reinterpret_cast<BA_ONDETECTUPDATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTUPDATEBEGIN_RESULTS*>(pvResults));
             break;
@@ -960,6 +971,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGEBEGIN:
             OnDetectPackageBeginFallback(reinterpret_cast<BA_ONDETECTPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGEBEGIN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE:
+            OnDetectCompatibleMsiPackageFallback(reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS*>(pvResults));
+            break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTRELATEDMSIPACKAGE:
             OnDetectRelatedMsiPackageFallback(reinterpret_cast<BA_ONDETECTRELATEDMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTRELATEDMSIPACKAGE_RESULTS*>(pvResults));
             break;
@@ -972,8 +986,29 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE:
             OnDetectPackageCompleteFallback(reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANRELATEDBUNDLE:
+            OnPlanRelatedBundleFallback(reinterpret_cast<BA_ONPLANRELATEDBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANRELATEDBUNDLE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGEBEGIN:
+            OnPlanPackageBeginFallback(reinterpret_cast<BA_ONPLANPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGEBEGIN:
+            OnPlanCompatibleMsiPackageBeginFallback(reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE:
+            OnPlanCompatibleMsiPackageCompleteFallback(reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANTARGETMSIPACKAGE:
+            OnPlanTargetMsiPackageFallback(reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSIFEATURE:
+            OnPlanMsiFeatureFallback(reinterpret_cast<BA_ONPLANMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSIFEATURE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE:
+            OnPlanPackageCompleteFallback(reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
         default:
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Forwarding unknown BA message: %d", message);
+            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
             break;
         }
@@ -983,123 +1018,206 @@ public: // IBootstrapperApplication
 private: // privates
     void OnDetectBeginFallback(
         __in BA_ONDETECTBEGIN_ARGS* pArgs,
-        __inout BA_ONDETECTBEGIN_RESULTS* pResults)
+        __inout BA_ONDETECTBEGIN_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectCompleteFallback(
         __in BA_ONDETECTCOMPLETE_ARGS* pArgs,
-        __inout BA_ONDETECTCOMPLETE_RESULTS* pResults)
+        __inout BA_ONDETECTCOMPLETE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnPlanBeginFallback(
         __in BA_ONPLANBEGIN_ARGS* pArgs,
-        __inout BA_ONPLANBEGIN_RESULTS* pResults)
+        __inout BA_ONPLANBEGIN_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnPlanCompleteFallback(
         __in BA_ONPLANCOMPLETE_ARGS* pArgs,
-        __inout BA_ONPLANCOMPLETE_RESULTS* pResults)
+        __inout BA_ONPLANCOMPLETE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnShutdownFallback(
         __in BA_ONSHUTDOWN_ARGS* pArgs,
-        __inout BA_ONSHUTDOWN_RESULTS* pResults)
+        __inout BA_ONSHUTDOWN_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnSystemShutdownFallback(
         __in BA_ONSYSTEMSHUTDOWN_ARGS* pArgs,
-        __inout BA_ONSYSTEMSHUTDOWN_RESULTS* pResults)
+        __inout BA_ONSYSTEMSHUTDOWN_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSYSTEMSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectForwardCompatibleBundleFallback(
         __in BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS* pArgs,
-        __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults)
+        __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults
+        )
     {
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Before forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
+        BOOL fIgnoreBundle = pResults->fIgnoreBundle;
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "After forwarding OnDetectForwardCompatibleBundle to BAFunctions: fIgnoreBundle=%s", pResults->fIgnoreBundle ? "true" : "false");
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_DETECTED_FORWARD_COMPATIBLE_BUNDLE, m_hModule, pArgs->wzBundleId, fIgnoreBundle ? "ignore" : "enable", pResults->fIgnoreBundle ? "ignore" : "enable");
     }
 
     void OnDetectUpdateBeginFallback(
         __in BA_ONDETECTUPDATEBEGIN_ARGS* pArgs,
-        __inout BA_ONDETECTUPDATEBEGIN_RESULTS* pResults)
+        __inout BA_ONDETECTUPDATEBEGIN_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectUpdateFallback(
         __in BA_ONDETECTUPDATE_ARGS* pArgs,
-        __inout BA_ONDETECTUPDATE_RESULTS* pResults)
+        __inout BA_ONDETECTUPDATE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectUpdateCompleteFallback(
         __in BA_ONDETECTUPDATECOMPLETE_ARGS* pArgs,
-        __inout BA_ONDETECTUPDATECOMPLETE_RESULTS* pResults)
+        __inout BA_ONDETECTUPDATECOMPLETE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectRelatedBundleFallback(
         __in BA_ONDETECTRELATEDBUNDLE_ARGS* pArgs,
-        __inout BA_ONDETECTRELATEDBUNDLE_RESULTS* pResults)
+        __inout BA_ONDETECTRELATEDBUNDLE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectPackageBeginFallback(
         __in BA_ONDETECTPACKAGEBEGIN_ARGS* pArgs,
-        __inout BA_ONDETECTPACKAGEBEGIN_RESULTS* pResults)
+        __inout BA_ONDETECTPACKAGEBEGIN_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
-    void OnDetectCompatiblePackageFallback(
-        __in BA_ONDETECTCOMPATIBLEPACKAGE_ARGS* pArgs,
-        __inout BA_ONDETECTCOMPATIBLEPACKAGE_RESULTS* pResults)
+    void OnDetectCompatibleMsiPackageFallback(
+        __in BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS* pArgs,
+        __inout BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS* pResults
+        )
     {
-        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPATIBLEPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectRelatedMsiPackageFallback(
         __in BA_ONDETECTRELATEDMSIPACKAGE_ARGS* pArgs,
-        __inout BA_ONDETECTRELATEDMSIPACKAGE_RESULTS* pResults)
+        __inout BA_ONDETECTRELATEDMSIPACKAGE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTRELATEDMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectTargetMsiPackageFallback(
         __in BA_ONDETECTTARGETMSIPACKAGE_ARGS* pArgs,
-        __inout BA_ONDETECTTARGETMSIPACKAGE_RESULTS* pResults)
+        __inout BA_ONDETECTTARGETMSIPACKAGE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTTARGETMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectMsiFeatureFallback(
         __in BA_ONDETECTMSIFEATURE_ARGS* pArgs,
-        __inout BA_ONDETECTMSIFEATURE_RESULTS* pResults)
+        __inout BA_ONDETECTMSIFEATURE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTMSIFEATURE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     void OnDetectPackageCompleteFallback(
         __in BA_ONDETECTPACKAGECOMPLETE_ARGS* pArgs,
-        __inout BA_ONDETECTPACKAGECOMPLETE_RESULTS* pResults)
+        __inout BA_ONDETECTPACKAGECOMPLETE_RESULTS* pResults
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanRelatedBundleFallback(
+        __in BA_ONPLANRELATEDBUNDLE_ARGS* pArgs,
+        __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_RELATED_BUNDLE, m_hModule, pArgs->wzBundleId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanPackageBeginFallback(
+        __in BA_ONPLANPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_PACKAGE, m_hModule, pArgs->wzPackageId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanCompatibleMsiPackageBeginFallback(
+        __in BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_COMPATIBLE_MSI_PACKAGE, m_hModule, pArgs->wzPackageId, pArgs->wzCompatiblePackageId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanCompatibleMsiPackageCompleteFallback(
+        __in BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanTargetMsiPackageFallback(
+        __in BA_ONPLANTARGETMSIPACKAGE_ARGS* pArgs,
+        __inout BA_ONPLANTARGETMSIPACKAGE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANTARGETMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_TARGET_MSI_PACKAGE, m_hModule, pArgs->wzPackageId, pArgs->wzProductCode, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanMsiFeatureFallback(
+        __in BA_ONPLANMSIFEATURE_ARGS* pArgs,
+        __inout BA_ONPLANMSIFEATURE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_FEATURE_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANMSIFEATURE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_MSI_FEATURE, m_hModule, pArgs->wzPackageId, pArgs->wzFeatureId, LoggingMsiFeatureStateToString(requestedState), LoggingMsiFeatureStateToString(pResults->requestedState));
+    }
+
+    void OnPlanPackageCompleteFallback(
+        __in BA_ONPLANPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //
@@ -3247,4 +3365,48 @@ static HRESULT DAPI SetVariableStringCallback(
     )
 {
     return BalSetStringVariable(wzVariable, wzValue);
+}
+
+static LPCSTR LoggingRequestStateToString(
+    __in BOOTSTRAPPER_REQUEST_STATE requestState
+    )
+{
+    switch (requestState)
+    {
+    case BOOTSTRAPPER_REQUEST_STATE_NONE:
+        return "None";
+    case BOOTSTRAPPER_REQUEST_STATE_FORCE_ABSENT:
+        return "ForceAbsent";
+    case BOOTSTRAPPER_REQUEST_STATE_ABSENT:
+        return "Absent";
+    case BOOTSTRAPPER_REQUEST_STATE_CACHE:
+        return "Cache";
+    case BOOTSTRAPPER_REQUEST_STATE_PRESENT:
+        return "Present";
+    case BOOTSTRAPPER_REQUEST_STATE_REPAIR:
+        return "Repair";
+    default:
+        return "Invalid";
+    }
+}
+
+static LPCSTR LoggingMsiFeatureStateToString(
+    __in BOOTSTRAPPER_FEATURE_STATE featureState
+    )
+{
+    switch (featureState)
+    {
+    case BOOTSTRAPPER_FEATURE_STATE_UNKNOWN:
+        return "Unknown";
+    case BOOTSTRAPPER_FEATURE_STATE_ABSENT:
+        return "Absent";
+    case BOOTSTRAPPER_FEATURE_STATE_ADVERTISED:
+        return "Advertised";
+    case BOOTSTRAPPER_FEATURE_STATE_LOCAL:
+        return "Local";
+    case BOOTSTRAPPER_FEATURE_STATE_SOURCE:
+        return "Source";
+    default:
+        return "Invalid";
+    }
 }
