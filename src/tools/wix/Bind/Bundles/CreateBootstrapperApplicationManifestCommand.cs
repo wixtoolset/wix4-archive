@@ -160,14 +160,14 @@ namespace WixToolset.Bind.Bundles
 
             foreach (WixBundlePayloadRow payload in this.Payloads.Values)
             {
-                Row row = wixPayloadPropertiesTable.CreateRow(payload.SourceLineNumbers);
-                row[0] = payload.Id;
-                row[1] = payload.Package;
-                row[2] = payload.Container;
-                row[3] = payload.Name;
-                row[4] = payload.FileSize.ToString();
-                row[5] = payload.DownloadUrl;
-                row[6] = payload.LayoutOnly ? "yes" : "no";
+                WixPayloadPropertiesRow row = (WixPayloadPropertiesRow)wixPayloadPropertiesTable.CreateRow(payload.SourceLineNumbers);
+                row.Id = payload.Id;
+                row.Package = payload.Package;
+                row.Container = payload.Container;
+                row.Name = payload.Name;
+                row.Size = payload.FileSize.ToString();
+                row.DownloadUrl = payload.DownloadUrl;
+                row.LayoutOnly = payload.LayoutOnly ? "yes" : "no";
             }
         }
 

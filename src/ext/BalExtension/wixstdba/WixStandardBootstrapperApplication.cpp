@@ -1231,7 +1231,7 @@ private: // privates
         hr = BalConditionsParseFromXml(&m_Conditions, pixdManifest, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load conditions from XML.");
 
-        hr = LoadBAFunctions();
+        hr = LoadBAFunctions(pixdManifest);
         BalExitOnFailure(hr, "Failed to load bootstrapper functions.");
 
         GetBundleFileVersion();
@@ -2879,44 +2879,66 @@ private: // privates
     }
 
 
-    HRESULT LoadBAFunctions()
+    HRESULT LoadBAFunctions(
+        __in IXMLDOMDocument* pixdManifest
+        )
     {
         HRESULT hr = S_OK;
+        IXMLDOMNode* pBAFunctionsNode = NULL;
+        IXMLDOMNode* pPayloadNode = NULL;
+        LPWSTR sczPayloadId = NULL;
+        LPWSTR sczPayloadXPath = NULL;
+        LPWSTR sczBafName = NULL;
         LPWSTR sczBafPath = NULL;
         BA_FUNCTIONS_CREATE_ARGS bafCreateArgs = { };
         BA_FUNCTIONS_CREATE_RESULTS bafCreateResults = { };
 
-        hr = PathRelativeToModule(&sczBafPath, L"bafunctions.dll", m_hModule);
-        BalExitOnFailure(hr, "Failed to get path to BA functions DLL.");
+        hr = XmlSelectSingleNode(pixdManifest, L"/BootstrapperApplicationData/WixBalBAFunctions", &pBAFunctionsNode);
+        BalExitOnFailure(hr, "Failed to read WixBalBAFunctions node from BootstrapperApplicationData.xml.");
 
-#ifdef DEBUG
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBAFunctions() - BA functions DLL %ls", sczBafPath);
-#endif
+        if (S_FALSE == hr)
+        {
+            ExitFunction();
+        }
+
+        hr = XmlGetAttributeEx(pBAFunctionsNode, L"PayloadId", &sczPayloadId);
+        BalExitOnFailure(hr, "Failed to get BAFunctions PayloadId.");
+
+        hr = StrAllocFormatted(&sczPayloadXPath, L"/BootstrapperApplicationData/WixPayloadProperties[@Payload='%ls']", sczPayloadId);
+        BalExitOnFailure(hr, "Failed to format BAFunctions payload XPath.");
+
+        hr = XmlSelectSingleNode(pixdManifest, sczPayloadXPath, &pPayloadNode);
+        if (S_FALSE == hr)
+        {
+            hr = E_NOTFOUND;
+        }
+        BalExitOnFailure(hr, "Failed to find WixPayloadProperties node for BAFunctions PayloadId: %ls.", sczPayloadId);
+
+        hr = XmlGetAttributeEx(pPayloadNode, L"Name", &sczBafName);
+        BalExitOnFailure(hr, "Failed to get BAFunctions Name.");
+
+        hr = PathRelativeToModule(&sczBafPath, sczBafName, m_hModule);
+        BalExitOnFailure(hr, "Failed to get path to BAFunctions DLL.");
+
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBAFunctions() - BAFunctions DLL %ls", sczBafPath);
 
         m_hBAFModule = ::LoadLibraryW(sczBafPath);
-        if (m_hBAFModule)
-        {
-            PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));
-            BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
+        BalExitOnNullWithLastError(m_hBAFModule, hr, "WIXSTDBA: LoadBAFunctions() - Failed to load DLL %ls", sczBafPath);
 
-            bafCreateArgs.cbSize = sizeof(bafCreateArgs);
-            bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
-            bafCreateArgs.pBootstrapperCreateArgs = &m_createArgs;
+        PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));
+        BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
 
-            bafCreateResults.cbSize = sizeof(bafCreateResults);
+        bafCreateArgs.cbSize = sizeof(bafCreateArgs);
+        bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
+        bafCreateArgs.pBootstrapperCreateArgs = &m_createArgs;
 
-            hr = pfnBAFunctionsCreate(&bafCreateArgs, &bafCreateResults);
-            BalExitOnFailure(hr, "Failed to create BAFunctions.");
+        bafCreateResults.cbSize = sizeof(bafCreateResults);
 
-            m_pfnBAFunctionsProc = bafCreateResults.pfnBAFunctionsProc;
-            m_pvBAFunctionsProcContext = bafCreateResults.pvBAFunctionsProcContext;
-        }
-#ifdef DEBUG
-        else
-        {
-            BalLogError(HRESULT_FROM_WIN32(::GetLastError()), "WIXSTDBA: LoadBAFunctions() - Failed to load DLL %ls", sczBafPath);
-        }
-#endif
+        hr = pfnBAFunctionsCreate(&bafCreateArgs, &bafCreateResults);
+        BalExitOnFailure(hr, "Failed to create BAFunctions.");
+
+        m_pfnBAFunctionsProc = bafCreateResults.pfnBAFunctionsProc;
+        m_pvBAFunctionsProcContext = bafCreateResults.pvBAFunctionsProcContext;
 
     LExit:
         if (m_hBAFModule && !m_pfnBAFunctionsProc)
@@ -2925,6 +2947,11 @@ private: // privates
             m_hBAFModule = NULL;
         }
         ReleaseStr(sczBafPath);
+        ReleaseStr(sczBafName);
+        ReleaseStr(sczPayloadXPath);
+        ReleaseStr(sczPayloadId);
+        ReleaseObject(pBAFunctionsNode);
+        ReleaseObject(pPayloadNode);
 
         return hr;
     }

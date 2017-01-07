@@ -186,6 +186,17 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:attribute name="BAFunctions" type="YesNoType">
+        <xs:annotation>
+            <xs:documentation>
+                When set to "yes", WixStdBA will load the DLL and work with it to handle BA messages.
+            </xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Payload" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
+
     <xs:attribute name="Overridable" type="YesNoType">
         <xs:annotation>
             <xs:documentation>
