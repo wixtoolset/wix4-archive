@@ -854,6 +854,13 @@
           </xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="Transaction" type="YesNoTypeUnion">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies whether the rollback boundary is wrapped in an MSI transaction. The default is "no"
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
   <xs:attributeGroup name="ChainPackageCommonAttributes">

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Bundle Name="~$(var.TestName) - Bundle B" Version="$(var.Version)" UpgradeCode="{CAAD4202-2097-4065-82BB-83F9F3FF61CE}">
+    <Log Prefix="~$(var.TestName)_BundleB"/>
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense" />
+
+    <Chain>
+      <MsiPackage Id="PackageE" Name="~$(var.TestName)_PackageE.msi" Compressed="yes" SourceFile="!(bindpath.packageE)\E.msi" />
+    </Chain>
+  </Bundle>
+</Wix>

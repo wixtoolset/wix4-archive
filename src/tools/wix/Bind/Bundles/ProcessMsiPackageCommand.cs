@@ -47,6 +47,7 @@ namespace WixToolset.Bind.Bundles
             string sourcePath = packagePayload.FullFileName;
             bool longNamesInImage = false;
             bool compressed = false;
+            bool x64 = false;
             try
             {
                 // Read data out of the msi database...
@@ -61,10 +62,13 @@ namespace WixToolset.Bind.Bundles
                     // files are compressed in the MSI by default when the bit is set.
                     compressed = 2 == (sumInfo.WordCount & 2);
 
+                    x64 = (sumInfo.Template.Contains("x64") || sumInfo.Template.Contains("Intel64"));
+
                     // 8 is the Word Count summary information stream bit that means
                     // "Elevated privileges are not required to install this package."
                     // in MSI 4.5 and below, if this bit is 0, elevation is required.
                     this.Facade.Package.PerMachine = (0 == (sumInfo.WordCount & 8)) ? YesNoDefaultType.Yes : YesNoDefaultType.No;
+                    this.Facade.Package.x64 = x64 ? YesNoType.Yes : YesNoType.No;
                 }
 
                 using (Dtf.Database db = new Dtf.Database(sourcePath))

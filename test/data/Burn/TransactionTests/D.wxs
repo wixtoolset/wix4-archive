@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="~$(var.TestName) - D" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation"
+           UpgradeCode="{071E88CF-47F1-4470-A0CD-EEC69BAFD5D4}">
+    <Package Compressed="yes" InstallerVersion="405" InstallScope="perMachine"/>
+
+    <MajorUpgrade DowngradeErrorMessage="D newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+
+    <Property Id="MsiLogging" Value="voicewarmup"/>
+    <PropertyRef Id="TestVersion"/>
+
+    <Feature Id="Complete" Level="1">
+      <ComponentRef Id="FileComponent"/>
+    </Feature>
+
+    <CustomAction Id="Fail" Error="10000" Execute="deferred" />
+    <UI>
+      <Error Id="10000"><![CDATA[Intentional Failure]]></Error>
+    </UI>
+    <InstallExecuteSequence>
+      <Custom Action="Fail" After="InstallFiles"><![CDATA[Not Installed]]></Custom>
+    </InstallExecuteSequence>
+    
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="WixDir" Name="~Test WiX">
+          <Directory Id="TestDir" Name="$(var.TestName)">
+            <Directory Id="INSTALLFOLDER" Name="D"/>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <Component Id="FileComponent" Guid="{40D03443-CDDF-45DD-B8EC-2FACA2879324}" Directory="INSTALLFOLDER">
+      <File Source="$(sys.SOURCEFILEPATH)"/>
+    </Component>
+  </Fragment>
+
+  <Fragment>
+    <Property Id="TestVersion" Value="$(var.Version)"/>
+  </Fragment>
+</Wix>
