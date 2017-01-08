@@ -2,12 +2,12 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 <Bundle Version="0.1.0.0">
-   <UX SourceFile="stdux.dll">
+   <BootstrapperApplication SourceFile="stdux.dll">
        <Payload SourceFile="en-us.wxl" />
        <Payload SourceFile="thm.xml" />
-   </UX>
+   </BootstrapperApplication>
 
    <Chain>
       <PackageGroupRef Id="Contained"/>

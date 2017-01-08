@@ -7,7 +7,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
     <Patch AllowRemoval="yes" Classification="Update" ClientPatchId="$(var.TestName)_PatchC" Description="Patch C in test $(var.TestName)" DisplayName="$(var.TestName) - Patch C" Manufacturer="Microsoft Corporation" MinorUpdateTargetRTM="yes">
         <Media Id="100" Cabinet="C" EmbedCab="yes">
             <PatchBaseline Id="PatchC">

@@ -123,14 +123,14 @@ namespace WixTest
             List<string> errors = new List<string>();
             errors.AddRange(base.CheckResult(result));
 
-            // Verify that the expected messages are present
+            // Verify that the expected messages are present (in stderr in WiX v4)
             if (this.IgnoreWixMessageOrder)
             {
-                errors.AddRange(this.UnorderedWixMessageVerification(result.StandardOutput));
+                errors.AddRange(this.UnorderedWixMessageVerification(result.StandardError));
             }
             else
             {
-                errors.AddRange(this.OrderedWixMessageVerification(result.StandardOutput));
+                errors.AddRange(this.OrderedWixMessageVerification(result.StandardError));
             }
 
             return errors;

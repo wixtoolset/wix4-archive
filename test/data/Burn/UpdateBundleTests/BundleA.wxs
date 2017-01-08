@@ -7,7 +7,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Bundle Name="~$(var.TestName) - Bundle A" Manufacturer="!(bind.packageManufacturer.PackageA)" Version="$(var.Version)" UpgradeCode="7C322279-17A2-4B08-9129-ABAFAE0AF58A">
     <!-- SOFTWARE\[Manufacturer]\Updates\[ProductFamily]\[Name] -->
     <OptionalUpdateRegistration />

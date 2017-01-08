@@ -30,7 +30,7 @@ namespace WixTest
         /// <summary>
         /// Name of the Burn UX Manifest file
         /// </summary>
-        public static string UXManifestFileName = Path.Combine(Builder.UXContainerFolderName, "UxManifest.xml");
+        public static string UXManifestFileName = Path.Combine(Builder.UXContainerFolderName, "BootstrapperApplicationData.xml");
         
 
         /// <summary>

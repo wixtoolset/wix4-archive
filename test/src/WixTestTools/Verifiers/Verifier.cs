@@ -147,7 +147,7 @@ namespace WixTest
 
         /// <summary>
         /// Properties of Msi Summary Information stream.
-        /// For more information see: 
+        /// For more information see:
         ///     http://msdn.microsoft.com/en-us/library/aa372046(v=VS.85).aspx
         /// </summary>
         public enum MsiSummaryInformationProperty
@@ -158,13 +158,13 @@ namespace WixTest
             Codepage = 1,
 
             /// <summary>
-            /// The Title Summary property briefly describes the type of the installer package. 
+            /// The Title Summary property briefly describes the type of the installer package.
             /// Phrases such as "Installation Database" or "Transform" or "Patch" may be used for this property.
             /// </summary>
             Title = 2,
 
             /// <summary>
-            /// The value of the Subject Summary property conveys the name of the product, transform, or patch that is installed by the package. 
+            /// The value of the Subject Summary property conveys the name of the product, transform, or patch that is installed by the package.
             /// </summary>
             Subject = 3,
 
@@ -174,7 +174,7 @@ namespace WixTest
             Author = 4,
 
             /// <summary>
-            /// The Keywords Summary property in installation databases or transforms contains a list of keywords. 
+            /// The Keywords Summary property in installation databases or transforms contains a list of keywords.
             /// </summary>
             Keywords = 5,
 
@@ -184,14 +184,14 @@ namespace WixTest
             Comments = 6,
 
             /// <summary>
-            /// For an installation package, the Template Summary property indicates the platform and language versions that are compatible with this installation database. 
-            /// The syntax of the Template Summary property information for an installation database is the following: 
+            /// For an installation package, the Template Summary property indicates the platform and language versions that are compatible with this installation database.
+            /// The syntax of the Template Summary property information for an installation database is the following:
             ///     [platform property];[language id][,language id][,...].
             /// </summary>
             TargetPlatformAndLanguage = 7,
 
             /// <summary>
-            /// For an installation package, the Revision Number Summary property contains the package code for the installer package. 
+            /// For an installation package, the Revision Number Summary property contains the package code for the installer package.
             /// </summary>
             PackageCode = 9,
 
@@ -203,7 +203,7 @@ namespace WixTest
             /// <summary>
             /// The Last Saved Time/Date Summary property conveys the last time when this installation package, transform, or patch package was modified.
             /// </summary>
-            /// 
+            ///
             LastSavedDatatime = 13,
 
             /// <summary>
@@ -212,18 +212,18 @@ namespace WixTest
             Schema = 14,
 
             /// <summary>
-            /// In the summary information of an installation package, the Word Count Summary property indicates the type of source file image. 
+            /// In the summary information of an installation package, the Word Count Summary property indicates the type of source file image.
             /// If this property is not present, it defaults to zero (0).
             /// </summary>
             WordCount = 15,
 
             /// <summary>
-            /// The Creating Application Summary property conveys which application created the installer database. 
+            /// The Creating Application Summary property conveys which application created the installer database.
             /// </summary>
             CreatingApplication = 18,
 
             /// <summary>
-            /// The Security Summary property conveys whether the package should be opened as read-only. 
+            /// The Security Summary property conveys whether the package should be opened as read-only.
             /// </summary>
             Security = 19
         };
@@ -251,49 +251,48 @@ namespace WixTest
         /// </remarks>
         public static string GetSummaryInformationProperty(string msi, int propertyIndex)
         {
-            // Load the wix.dll assembly
-            string wixDllLocation = Path.Combine(Settings.WixToolsDirectory, "wix.dll");
-            Assembly wix = Assembly.LoadFile(wixDllLocation);
-
-            // Find the SummaryInformation type
-            string summaryInformationTypeName = "WixToolset.Msi.SummaryInformation";
-            Type summaryInformationType = wix.GetType(summaryInformationTypeName);
-            if (null == summaryInformationType)
+            using (DTF.SummaryInfo summaryInfo = new DTF.SummaryInfo(msi, false))
             {
-                throw new NullReferenceException(String.Format("The Type {0} could not be found in {1}", summaryInformationTypeName, wixDllLocation));
+                switch (propertyIndex)
+                {
+                    case 1:
+                        return summaryInfo.CodePage.ToString();
+                    case 2:
+                        return summaryInfo.Title;
+                    case 3:
+                        return summaryInfo.Subject;
+                    case 4:
+                        return summaryInfo.Author;
+                    case 5:
+                        return summaryInfo.Keywords;
+                    case 6:
+                        return summaryInfo.Comments;
+                    case 7:
+                        return summaryInfo.Template;
+                    case 8:
+                        return summaryInfo.LastSavedBy;
+                    case 9:
+                        return summaryInfo.RevisionNumber;
+                    case 11:
+                        return summaryInfo.LastPrintTime.ToString();
+                    case 12:
+                        return summaryInfo.CreateTime.ToString();
+                    case 13:
+                        return summaryInfo.LastSaveTime.ToString();
+                    case 14:
+                        return summaryInfo.PageCount.ToString();
+                    case 15:
+                        return summaryInfo.WordCount.ToString();
+                    case 16:
+                        return summaryInfo.CharacterCount.ToString();
+                    case 18:
+                        return summaryInfo.CreatingApp;
+                    case 19:
+                        return summaryInfo.Security.ToString();
+                    default:
+                        throw new NotImplementedException(String.Format("Unknown summary information property: {0}", propertyIndex));
+                }
             }
-
-            // Find the SummaryInformation.GetProperty method
-            BindingFlags getPropertyBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            string getPropertyMethodName = "GetProperty";
-            MethodInfo getPropertyMethod = summaryInformationType.GetMethod(getPropertyMethodName, getPropertyBindingFlags);
-            if (null == getPropertyMethod)
-            {
-                throw new NullReferenceException(String.Format("The Method {0} could not be found in {1}", getPropertyMethodName, summaryInformationTypeName));
-            }
-
-            // Find the SummaryInformation.Dispose method
-            BindingFlags disposeBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            string disposeMethodName = "Dispose";
-            MethodInfo disposeMethod = summaryInformationType.GetMethod(disposeMethodName, disposeBindingFlags);
-            if (null == disposeMethod)
-            {
-                throw new NullReferenceException(String.Format("The Method {0} could not be found in {1}", disposeMethodName, summaryInformationTypeName));
-            }
-
-            // Create an instance of a SummaryInformation object
-            Object[] constructorArguments = { msi };
-            BindingFlags constructorBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            Object instance = wix.CreateInstance(summaryInformationTypeName, false, constructorBindingFlags, null, constructorArguments, CultureInfo.InvariantCulture, null);
-
-            // Call the SummaryInformation.GetProperty method
-            Object[] arguments = { propertyIndex };
-            string value = (string)getPropertyMethod.Invoke(instance, arguments);
-            
-            // Dispose this instance explicitly so it is disposed on the same thread, avoiding a ?bug? in MSIHANDLEs
-            disposeMethod.Invoke(instance, null);
-
-            return value;
         }
 
         /// <summary>
@@ -493,7 +492,7 @@ namespace WixTest
         }
 
         /// <summary>
-        /// Given a list of column names, and expected values, the method composes an SQL query against the specified file; 
+        /// Given a list of column names, and expected values, the method composes an SQL query against the specified file;
         /// the query results has to match to exactly one row; if not an assert is raised.
         /// </summary>
         /// <param name="msiFile">MSI File name</param>
@@ -724,7 +723,7 @@ namespace WixTest
         public static XmlNodeList QueryBurnManifest(string burnManifestPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("burn", "http://schemas.microsoft.com/wix/2008/Burn");
+            xmlNamespaceManager.AddNamespace("burn", "http://wixtoolset.org/schemas/v4/2008/Burn");
             XmlNodeList nodeList = Verifier.QueryXML(burnManifestPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }
@@ -739,7 +738,7 @@ namespace WixTest
         public static XmlNodeList QueryBurnUxManifest(string burnUxManifestPath, string xpathQuery)
         {
             XmlNamespaceManager xmlNamespaceManager = new XmlNamespaceManager(new NameTable());
-            xmlNamespaceManager.AddNamespace("burnUx", "http://schemas.microsoft.com/wix/2010/UxManifest");
+            xmlNamespaceManager.AddNamespace("burnUx", "http://wixtoolset.org/schemas/v4/2010/BootstrapperApplicationData");
             XmlNodeList nodeList = Verifier.QueryXML(burnUxManifestPath, xpathQuery, xmlNamespaceManager);
             return nodeList;
         }

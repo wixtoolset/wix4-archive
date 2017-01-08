@@ -3,7 +3,7 @@
 
 
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <Product Id="{9F5C45A2-CC90-40c7-8F17-07673C18D4D8}" Name="WiX Test Product" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{0223D9CA-8E2B-45a0-81FE-28BE5BEF2881}">
     <Package Description="This package is used for testing purposes" Manufacturer="Microsoft" InstallerVersion="200" />
