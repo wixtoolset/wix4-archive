@@ -7,7 +7,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Bundle Name="~$(var.TestName) - Bundle B" Manufacturer="!(bind.packageManufacturer.PackageB)" Version="$(var.Version)" UpgradeCode="2F01987E-D9CE-40B5-AD38-90AB5719D16F">
     <Log Prefix="~$(var.TestName)_BundleB"/>
 

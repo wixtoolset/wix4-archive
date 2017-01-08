@@ -62,7 +62,7 @@ namespace WixTest.Tests
                 WixTests.originalWixValue = Environment.GetEnvironmentVariable("WIX");
 
                 string wixRoot = Environment.GetEnvironmentVariable("WIX_ROOT");
-                if (String.IsNullOrEmpty(wixRoot))
+                if (!String.IsNullOrEmpty(wixRoot))
                 {
                     Environment.SetEnvironmentVariable("WIX", wixRoot);
                 }

@@ -23,6 +23,7 @@ namespace WixTest.Tests.Extensions.NetFXExtension
         [NamedFact]
         [Description("Verify that the (NetFxNativeImage,CustomAction) Tables are created in the MSI and have expected data.")]
         [Priority(1)]
+        [RuntimeTest] // not really a runtime test but TestUninitialize tries to write to HKLM
         public void NativeImage_VerifyMSITableData()
         {
             string sourceFile = Path.Combine(NativeImageTests.TestDataDirectory, @"product.wxs");

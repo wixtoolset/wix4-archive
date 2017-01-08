@@ -41,6 +41,9 @@
     <RestoreNugetPackage Include="xunit">
       <Version>1.9.2</Version>
     </RestoreNugetPackage>
+    <RestoreNugetPackage Include="xunit.runner.visualstudio">
+      <Version>2.1.0</Version>
+    </RestoreNugetPackage>
 	<RestoreNugetPackage Include="Nancy">
       <Version>0.23.2</Version>
     </RestoreNugetPackage>

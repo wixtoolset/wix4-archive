@@ -11,7 +11,7 @@
 <?define TestName = Test?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency">
   <Product Id="*" Name="~$(var.TestName) - E" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="6E1C9166-C676-445F-B341-A41092E6DEE3">
     <Package Compressed="yes" InstallerVersion="300" InstallScope="perMachine" />
     <MajorUpgrade Schedule="afterInstallInitialize" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

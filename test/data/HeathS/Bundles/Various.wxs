@@ -2,7 +2,7 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs">
     <Bundle Name="Various" Version="1.0.0.0" UpgradeCode="B6E3E73E-A337-4FC2-846E-8B2695B5F1EE" IconSourceFile="Setup.ico" Compressed="yes">
         <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
             <Payload Name='BootstrapperCore.config' SourceFile='$(var.TestBA.TargetDir)\TestBA.BootstrapperCore.config' />

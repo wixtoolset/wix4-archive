@@ -22,7 +22,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchVariableMissing\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(10, "The util:ComponentSearch/@Variable attribute was not found; it is required.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(10, "The ComponentSearch/@Variable attribute was not found; it is required.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 10;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -35,7 +35,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchGuidMissing\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(10, "The util:ComponentSearch/@Guid attribute was not found; it is required.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(10, "The ComponentSearch/@Guid attribute was not found; it is required.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 10;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -48,7 +48,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchInvalidGuid\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(9, "The util:ComponentSearch/@Guid attribute's value, 'Not_A_Product_Guid', is not a legal guid value.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(9, "The ComponentSearch/@Guid attribute's value, 'Not_A_Product_Guid', is not a legal guid value.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 9;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -61,7 +61,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchInvalidProductCode\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(9, "The util:ComponentSearch/@ProductCode attribute's value, 'Not_A_Product_Guid', is not a legal guid value.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(9, "The ComponentSearch/@ProductCode attribute's value, 'Not_A_Product_Guid', is not a legal guid value.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 9;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -73,11 +73,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         [Trait("Bug Link", "https://sourceforge.net/tracker/?func=detail&atid=642714&aid=2980329&group_id=105970")]
         public void ComponentSearchPredefinedVariable()
         {
-            string expectedErrorMessage = @"The util:ComponentSearch/@Variable attribute's value, 'ProgramFilesFolder', is one of the illegal options: 'AdminToolsFolder', 'AppDataFolder', 'CommonAppDataFolder', 'CommonFilesFolder', 'CompatibilityMode', 'DesktopFolder', 'FavoritesFolder', 'FontsFolder', 'LocalAppDataFolder', 'MyPicturesFolder', 'NTProductType', 'NTSuiteBackOffice', 'NTSuiteDataCenter', 'NTSuiteEnterprise', 'NTSuitePersonal', 'NTSuiteSmallBusiness', 'NTSuiteSmallBusinessRestricted', 'NTSuiteWebServer', 'PersonalFolder', 'Privileged', 'ProgramFilesFolder', 'ProgramMenuFolder', 'SendToFolder', 'StartMenuFolder', 'StartupFolder', 'SystemFolder', 'TempFolder', 'TemplateFolder', 'VersionMsi', 'VersionNT', 'VersionNT64', 'WindowsFolder', or 'WindowsVolume'.";
+            string expectedErrorMessage = @"The ComponentSearch/@Variable attribute's value, 'ProgramFilesFolder', is one of the illegal options: 'AdminToolsFolder', 'AppDataFolder', 'CommonAppDataFolder', 'CommonFiles64Folder', 'CommonFilesFolder', 'CompatibilityMode', 'Date', 'DesktopFolder', 'FavoritesFolder', 'FontsFolder', 'InstallerName', 'InstallerVersion', 'LocalAppDataFolder', 'LogonUser', 'MyPicturesFolder', 'NTProductType', 'NTSuiteBackOffice', 'NTSuiteDataCenter', 'NTSuiteEnterprise', 'NTSuitePersonal', 'NTSuiteSmallBusiness', 'NTSuiteSmallBusinessRestricted', 'NTSuiteWebServer', 'PersonalFolder', 'Privileged', 'ProgramFiles64Folder', 'ProgramFiles6432Folder', 'ProgramFilesFolder', 'ProgramMenuFolder', 'RebootPending', 'SendToFolder', 'ServicePackLevel', 'StartMenuFolder', 'StartupFolder', 'System64Folder', 'SystemFolder', 'TempFolder', 'TemplateFolder', 'TerminalServer', 'UserLanguageID', 'VersionMsi', 'VersionNT', 'VersionNT64', 'WindowsFolder', 'WindowsVolume', 'WixBundleAction', 'WixBundleForcedRestartPackage', 'WixBundleElevated', 'WixBundleInstalled', 'WixBundleProviderKey', 'WixBundleTag', or 'WixBundleVersion'.";
 
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchPredefinedVariable\Product.wxs"));
-            candle.OutputFile = "Setup.exe";
+            candle.OutputFile = "TestBundle.exe";
             candle.Extensions.Add("WixUtilExtension");
             candle.ExpectedWixMessages.Add(new WixMessage(348, expectedErrorMessage, Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 348;
@@ -91,7 +91,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(ComponentSearchTests.TestDataDirectory, @"ComponentSearchInvalidResultValue\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(21, "The util:ComponentSearch/@Result attribute's value, 'NotState', is not one of the legal options: 'Directory', 'State', or 'KeyPath'.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(21, "The ComponentSearch/@Result attribute's value, 'NotState', is not one of the legal options: 'directory', 'state', or 'keyPath'.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 21;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -107,7 +107,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Light light = new Light();
             light.ObjectFiles.AddRange(candleOutputs);
-            light.OutputFile = "Setup.exe";
+            light.OutputFile = "TestBundle.exe";
             light.Extensions.Add("WixUtilExtension");
             light.ExpectedWixMessages.Add(new WixMessage(91, Message.MessageTypeEnum.Error));  //  duplicate symbol error
             light.ExpectedWixMessages.Add(new WixMessage(92, Message.MessageTypeEnum.Error));  //  Location of symbol related to previous error.
@@ -126,7 +126,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Light light = new Light();
             light.ObjectFiles.AddRange(candleOutputs);
-            light.OutputFile = "Setup.exe";
+            light.OutputFile = "TestBundle.exe";
             light.Extensions.Add("WixUtilExtension");
             light.ExpectedWixMessages.Add(new WixMessage(94, Message.MessageTypeEnum.Error));  //  Unresolved reference to symbol 'WixSearch:UndefinedSearch'
             light.ExpectedExitCode = 94;
@@ -143,7 +143,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Light light = new Light();
             light.ObjectFiles.AddRange(candleOutputs);
-            light.OutputFile = "Setup.exe";
+            light.OutputFile = "TestBundle.exe";
             light.Extensions.Add("WixUtilExtension");
             light.ExpectedWixMessages.Add(new WixMessage(5060, "A circular reference of search ordering constraints was detected: ComponentSearch1 -> ComponentSearch2 -> ComponentSearch1. Search ordering references must form a directed acyclic graph.", Message.MessageTypeEnum.Error));
             light.ExpectedWixMessages.Add(new WixMessage(5060, "A circular reference of search ordering constraints was detected: ComponentSearch2 -> ComponentSearch1 -> ComponentSearch2. Search ordering references must form a directed acyclic graph.", Message.MessageTypeEnum.Error));

@@ -22,7 +22,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(DirectorySearchTests.TestDataDirectory, @"DirectorySearchVariableMissing\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(10, "The util:DirectorySearch/@Variable attribute was not found; it is required.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(10, "The DirectorySearch/@Variable attribute was not found; it is required.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 10;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -35,7 +35,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(DirectorySearchTests.TestDataDirectory, @"DirectorySearchPathMissing\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(10, "The util:DirectorySearch/@Path attribute was not found; it is required.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(10, "The DirectorySearch/@Path attribute was not found; it is required.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 10;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();
@@ -52,7 +52,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             Candle candle = new Candle();
             candle.SourceFiles.Add(sourceFile);
             candle.Extensions.Add("WixUtilExtension");
-            candle.ExpectedWixMessages.Add(new WixMessage(346, "The util:DirectorySearch/@Path attribute's value, '%windir%\\System|*32', is not a valid relative long name because it contains illegal characters.  Legal relative long names contain no more than 260 characters and must contain at least one non-period character.  Any character except for the follow may be used: ? | > < : / * \".", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(346, "The DirectorySearch/@Path attribute's value, '%windir%\\System|*32', is not a valid relative long name because it contains illegal characters.  Legal relative long names contain no more than 260 characters and must contain at least one non-period character.  Any character except for the follow may be used: ? | > < : / * \".", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 346;
             candle.Run();
         }
@@ -63,7 +63,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         [Trait("Bug Link", "https://sourceforge.net/tracker/?func=detail&atid=642714&aid=2980329&group_id=105970")]
         public void DirectorySearchPredefinedVariable()
         {
-            string expectedErrorMessage = @"The util:DirectorySearch/@Variable attribute's value, 'AdminToolsFolder', is one of the illegal options: 'AdminToolsFolder', 'AppDataFolder', 'CommonAppDataFolder', 'CommonFilesFolder', 'CompatibilityMode', 'DesktopFolder', 'FavoritesFolder', 'FontsFolder', 'LocalAppDataFolder', 'MyPicturesFolder', 'NTProductType', 'NTSuiteBackOffice', 'NTSuiteDataCenter', 'NTSuiteEnterprise', 'NTSuitePersonal', 'NTSuiteSmallBusiness', 'NTSuiteSmallBusinessRestricted', 'NTSuiteWebServer', 'PersonalFolder', 'Privileged', 'ProgramFilesFolder', 'ProgramMenuFolder', 'SendToFolder', 'StartMenuFolder', 'StartupFolder', 'SystemFolder', 'TempFolder', 'TemplateFolder', 'VersionMsi', 'VersionNT', 'VersionNT64', 'WindowsFolder', or 'WindowsVolume'.";
+            string expectedErrorMessage = @"The DirectorySearch/@Variable attribute's value, 'AdminToolsFolder', is one of the illegal options: 'AdminToolsFolder', 'AppDataFolder', 'CommonAppDataFolder', 'CommonFiles64Folder', 'CommonFilesFolder', 'CompatibilityMode', 'Date', 'DesktopFolder', 'FavoritesFolder', 'FontsFolder', 'InstallerName', 'InstallerVersion', 'LocalAppDataFolder', 'LogonUser', 'MyPicturesFolder', 'NTProductType', 'NTSuiteBackOffice', 'NTSuiteDataCenter', 'NTSuiteEnterprise', 'NTSuitePersonal', 'NTSuiteSmallBusiness', 'NTSuiteSmallBusinessRestricted', 'NTSuiteWebServer', 'PersonalFolder', 'Privileged', 'ProgramFiles64Folder', 'ProgramFiles6432Folder', 'ProgramFilesFolder', 'ProgramMenuFolder', 'RebootPending', 'SendToFolder', 'ServicePackLevel', 'StartMenuFolder', 'StartupFolder', 'System64Folder', 'SystemFolder', 'TempFolder', 'TemplateFolder', 'TerminalServer', 'UserLanguageID', 'VersionMsi', 'VersionNT', 'VersionNT64', 'WindowsFolder', 'WindowsVolume', 'WixBundleAction', 'WixBundleForcedRestartPackage', 'WixBundleElevated', 'WixBundleInstalled', 'WixBundleProviderKey', 'WixBundleTag', or 'WixBundleVersion'.";
 
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(DirectorySearchTests.TestDataDirectory, @"DirectorySearchPredefinedVariable\Product.wxs"));
@@ -81,7 +81,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         {
             Candle candle = new Candle();
             candle.SourceFiles.Add(Path.Combine(DirectorySearchTests.TestDataDirectory, @"DirectorySearchInvalidResultValue\Product.wxs"));
-            candle.ExpectedWixMessages.Add(new WixMessage(21, "The util:DirectorySearch/@Result attribute's value, 'NotExists', is not one of the legal options: 'Exists'.", Message.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(21, "The DirectorySearch/@Result attribute's value, 'NotExists', is not one of the legal options: 'exists'.", Message.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 21;
             candle.Extensions.Add("WixUtilExtension");
             candle.Run();

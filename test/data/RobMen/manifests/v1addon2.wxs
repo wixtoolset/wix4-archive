@@ -2,12 +2,12 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 <Bundle Name="Bundle Test v1 Addon (2)" Version="0.1.0.0">
-   <UX SourceFile="stdux.dll">
+   <BootstrapperApplication SourceFile="stdux.dll">
        <Payload SourceFile="en-us.wxl" />
        <Payload SourceFile="thm.xml" />
-   </UX>
+   </BootstrapperApplication>
 
    <RelatedBundle Id="{8c78f409-835e-46dd-a00f-5e5802fea6d8}" Action="Addon"/>
 
