@@ -34,6 +34,8 @@ namespace WixToolset.Bind.Bundles
             // we get these install/repair (aka: forward) rollback boundaries
             // defined.
             WixBundleRollbackBoundaryRow previousRollbackBoundary = null;
+            WixBundleRollbackBoundaryRow lastRollbackBoundary = null;
+            bool boundaryHadX86Package = false;
 
             foreach (WixGroupRow row in this.WixGroupTable.Rows)
             {
@@ -45,10 +47,20 @@ namespace WixToolset.Bind.Bundles
                         if (null != previousRollbackBoundary)
                         {
                             usedBoundaries.Add(previousRollbackBoundary);
-
                             facade.Package.RollbackBoundary = previousRollbackBoundary.ChainPackageId;
                             previousRollbackBoundary = null;
+
+                            boundaryHadX86Package = (facade.Package.x64 == YesNoType.Yes);
                         }
+
+                        // Error if MSI transaction has x86 package preceding x64 packages
+                        if ((lastRollbackBoundary != null) && (lastRollbackBoundary.Transaction == YesNoType.Yes) 
+                            && boundaryHadX86Package 
+                            && (facade.Package.x64 == YesNoType.Yes))
+                        {
+                            Messaging.Instance.OnMessage(WixErrors.MsiTransactionX86BeforeX64(lastRollbackBoundary.SourceLineNumbers));
+                        }
+                        boundaryHadX86Package = boundaryHadX86Package || (facade.Package.x64 == YesNoType.No);
 
                         orderedFacades.Add(facade);
                     }
@@ -63,6 +75,7 @@ namespace WixToolset.Bind.Bundles
                         else
                         {
                             previousRollbackBoundary = nextRollbackBoundary;
+                            lastRollbackBoundary = nextRollbackBoundary;
                         }
                     }
                 }

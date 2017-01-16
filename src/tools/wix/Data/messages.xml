@@ -2975,6 +2975,11 @@
           <Parameter Type="System.String" Name="attributeValue" />
         </Instance>
       </Message>
+      <Message Id="MsiTransactionX86BeforeX64" Number="390">
+        <Instance>
+          MSI transactions must install all x64 packages before any x86 package.
+        </Instance>
+      </Message>
     </Class>
 
     <Class Name="WixWarnings" ContainerName="WixWarningEventArgs" BaseContainerName="MessageEventArgs" Level="Warning">
