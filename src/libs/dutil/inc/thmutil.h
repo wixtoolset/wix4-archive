@@ -141,6 +141,7 @@ struct THEME_CONTROL
 
     LPWSTR sczName; // optional name for control, used to apply control id and link the control to a variable.
     LPWSTR sczText;
+    LPWSTR sczTooltip;
     LPWSTR sczNote; // optional text for command link
     int nX;
     int nY;
@@ -280,6 +281,7 @@ struct THEME
     HWND hwndParent; // parent for loaded controls
     HWND hwndHover; // current hwnd hovered over
     DWORD dwCurrentPageId;
+    HWND hwndTooltip;
 
     // callback functions
     PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition;
@@ -540,6 +542,17 @@ DAPI_(void) ThemeControlElevates(
 
  *******************************************************************/
 DAPI_(void) ThemeShowControl(
+    __in THEME* pTheme,
+    __in DWORD dwControl,
+    __in int nCmdShow
+    );
+
+/********************************************************************
+ThemeShowControlEx - shows/hides a control with support for 
+conditional text and notes.
+
+*******************************************************************/
+DAPI_(void) ThemeShowControlEx(
     __in THEME* pTheme,
     __in DWORD dwControl,
     __in int nCmdShow
