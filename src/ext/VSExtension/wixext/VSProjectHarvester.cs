@@ -55,14 +55,15 @@ namespace WixToolset.Extensions
         private bool generateWixVars;
 
 
-        private static readonly ProjectOutputGroup[] allOutputGroups = new ProjectOutputGroup[]
+        private static ProjectOutputGroup[] allOutputGroups = new ProjectOutputGroup[]
         {
-            new ProjectOutputGroup("Binaries",   "BuiltProjectOutputGroup",         "TargetDir"),
-            new ProjectOutputGroup("Symbols",    "DebugSymbolsProjectOutputGroup",  "TargetDir"),
-            new ProjectOutputGroup("Documents",  "DocumentationProjectOutputGroup", "ProjectDir"),
-            new ProjectOutputGroup("Satellites", "SatelliteDllsProjectOutputGroup", "TargetDir"),
-            new ProjectOutputGroup("Sources",    "SourceFilesProjectOutputGroup",   "ProjectDir"),
-            new ProjectOutputGroup("Content",    "ContentFilesProjectOutputGroup",  "ProjectDir"),
+            new ProjectOutputGroup("Binaries",   "BuiltProjectOutputGroup",         "TargetDir", 	null, 				null),
+            new ProjectOutputGroup("Symbols",    "DebugSymbolsProjectOutputGroup",  "TargetDir", 	null, 				null),
+            new ProjectOutputGroup("Documents",  "DocumentationProjectOutputGroup", "ProjectDir", 	null, 				null),
+            new ProjectOutputGroup("Satellites", "SatelliteDllsProjectOutputGroup", "TargetDir", 	null, 				null),
+            new ProjectOutputGroup("References", "ResolveAssemblyReferences", 		"TargetDir", 	"ReferencePath", 	"CopyLocal=true"),
+            new ProjectOutputGroup("Sources",    "SourceFilesProjectOutputGroup",   "ProjectDir", 	null, 				null),
+            new ProjectOutputGroup("Content",    "ContentFilesProjectOutputGroup",  "ProjectDir", 	null, 				null),
         };
 
         private string[] outputGroups;
@@ -159,6 +160,36 @@ namespace WixToolset.Extensions
                 names[i] = VSProjectHarvester.allOutputGroups[i].Name;
             }
             return names;
+        }
+
+        public static void SetMetadataFilter(string groupName, string metadataFilters)
+        {
+            for (int i = 0; i < VSProjectHarvester.allOutputGroups.Length; i++)
+            {
+                if (groupName == VSProjectHarvester.allOutputGroups[i].Name)
+                {
+                    allOutputGroups[i].MetadataFilters = metadataFilters;
+                    return;
+                }
+            }
+
+            throw new WixException(VSErrors.InvalidOutputGroup(groupName));
+        }
+
+        /// <summary>
+        /// Gets a list of friendly output group names that will be recognized on the command-line.
+        /// </summary>
+        /// <returns>Array of output group names.</returns>
+        private ProjectOutputGroup GetOutputGroup(string buildOutputGroup)
+        {
+            for (int i = 0; i < VSProjectHarvester.allOutputGroups.Length; i++)
+            {
+                if (buildOutputGroup == VSProjectHarvester.allOutputGroups[i].BuildOutputGroup)
+                {
+                    return VSProjectHarvester.allOutputGroups[i];
+                }
+            }
+            return default(ProjectOutputGroup);
         }
 
         /// <summary>
@@ -267,7 +298,8 @@ namespace WixToolset.Extensions
                 // Try the item group if no outputs
                 if (!hasFiles)
                 {
-                    IEnumerable itemFiles = project.GetEvaluatedItemsByName(String.Concat(buildOutput, "Output"));
+                    var projectOutputGroup = this.GetOutputGroup(buildOutput);
+                    IEnumerable itemFiles = project.GetEvaluatedItemsByName(projectOutputGroup.BuildOutputGroupOutput);
                     List<object> itemFileList = new List<object>();
 
                     // Get each BuildItem and add the file path to our list
@@ -364,7 +396,7 @@ namespace WixToolset.Extensions
                 projectBaseDir = Path.GetDirectoryName(projectFile) + "\\";
             }
 
-            int harvestCount = this.HarvestProjectOutputGroupFiles(projectBaseDir, projectName, pog.Name, pog.FileSource, pogFiles, harvestParent);
+            int harvestCount = this.HarvestProjectOutputGroupFiles(projectBaseDir, projectName, pog.Name, pog.FileSource, pogFiles, harvestParent, pog.MetadataFilters);
 
             if (this.GenerateType == GenerateType.Container)
             {
@@ -465,8 +497,9 @@ namespace WixToolset.Extensions
         /// <param name="pogFileSource">The ProjectOutputGroup file source.</param>
         /// <param name="outputGroupFiles">The files from one output group to harvest.</param>
         /// <param name="parent">The parent element that will contain the components of the harvested files.</param>
+        /// <param name="metadataFilters">A semi-colon separated list of metadata items used to filter out results.</param>
         /// <returns>The number of files harvested.</returns>
-        private int HarvestProjectOutputGroupFiles(string baseDir, string projectName, string pogName, string pogFileSource, IEnumerable outputGroupFiles, Wix.IParentElement parent)
+        private int HarvestProjectOutputGroupFiles(string baseDir, string projectName, string pogName, string pogFileSource, IEnumerable outputGroupFiles, Wix.IParentElement parent, string metadataFilters)
         {
             int fileCount = 0;
 
@@ -492,6 +525,29 @@ namespace WixToolset.Extensions
                 MethodInfo getMetadataMethod = output.GetType().GetMethod("GetMetadata");
                 if (getMetadataMethod != null)
                 {
+                    // if we have Metadata filters, apply them now
+                    if (!String.IsNullOrEmpty(metadataFilters))
+                    {
+                        var match = true;  // assume we will not match all metadata filters
+                        foreach (
+                            var metadataFilter in
+                                metadataFilters.Split(";".ToCharArray(), StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            var pieces = metadataFilter.Split('=');
+                            if (pieces.Length != 2) continue;
+
+                            var metadataName = pieces[0].Trim();
+                            var metdataRegex = pieces[1];
+                            var exclude = metadataName.EndsWith("!");  // allow for including or excluding using != 
+                            var metadataValue = (string)getMetadataMethod.Invoke(output, new object[] { metadataName.TrimEnd('!') });
+                            match &= Regex.Match(metadataValue, metdataRegex,RegexOptions.IgnoreCase).Success ^ exclude;  // exclusive or results in 'match' being correct for both include and exclude expressions
+                        }
+                        if (!match)
+                        {
+                            continue;  // no match
+                        }
+                    }
+
                     link = (string)getMetadataMethod.Invoke(output, new object[] { "Link" });
                     if (!String.IsNullOrEmpty(link))
                     {
@@ -1497,6 +1553,8 @@ namespace WixToolset.Extensions
             public readonly string Name;
             public readonly string BuildOutputGroup;
             public readonly string FileSource;
+            public readonly string BuildOutputGroupOutput;
+            public string MetadataFilters;
 
             /// <summary>
             /// Creates a new project output group.
@@ -1504,11 +1562,15 @@ namespace WixToolset.Extensions
             /// <param name="name">Friendly name used by heat.</param>
             /// <param name="buildOutputGroup">MSBuild's name of the project output group.</param>
             /// <param name="fileSource">VS directory token containing the files of the POG.</param>
-            public ProjectOutputGroup(string name, string buildOutputGroup, string fileSource)
+            /// <param name="buildOutputGroupOutput">MSBuild's name of the project output group output.</param>
+            /// <param name="metadataFilters">Filter build items on these metadata regular expressions.</param>
+            public ProjectOutputGroup(string name, string buildOutputGroup, string fileSource, string buildOutputGroupOutput = null, string metadataFilters = null)
             {
                 this.Name = name;
                 this.BuildOutputGroup = buildOutputGroup;
                 this.FileSource = fileSource;
+                this.BuildOutputGroupOutput = buildOutputGroupOutput ?? buildOutputGroup + "Output";
+                this.MetadataFilters = metadataFilters;
             }
         }
 
