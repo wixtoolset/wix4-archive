@@ -2,6 +2,7 @@
 
 namespace WixToolset.Simplified
 {
+    using CompilerBackend;
     using System;
     using System.IO;
     using System.Reflection;
