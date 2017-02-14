@@ -849,17 +849,16 @@ static HRESULT ScaWebWrite7(
     for (ui = 0; (ui < MAX_ADDRESSES_PER_WEB) && (ui < psw->cExtraAddresses); ++ui)
     {
         // set the IP address appropriately
-				if (0 == wcscmp(psw->swaBinding.wzIP, L""))
-				{
+        if (0 == wcscmp(psw->swaExtraAddresses[ui].wzIP, L""))
+        {
 					hr = ::StringCchCopyW(wzIP, countof(wzIP), L"*"); // if no IP specified = add *
-				}
-				else
-				{
-	#pragma prefast(suppress:26037, "Source string is null terminated - it is populated as target of ::StringCchCopyW")
-					hr = ::StringCchCopyW(wzIP, countof(wzIP), psw->swaBinding.wzIP); // else leave untouched
-				}
-				ExitOnFailure(hr, "Failed to copy IP string");
-
+        }
+        else
+        {
+#pragma prefast(suppress:26037, "Source string is null terminated - it is populated as target of ::StringCchCopyW")
+            hr = ::StringCchCopyW(wzIP, countof(wzIP), psw->swaExtraAddresses[ui].wzIP); //else leave untouched
+        }
+		ExitOnFailure(hr, "Failed to copy IP string");
         hr = ::StringCchPrintfW(wzBinding, countof(wzBinding), L"%s:%d:%s", wzIP, psw->swaExtraAddresses[ui].iPort, psw->swaExtraAddresses[ui].wzHeader);
         ExitOnFailure(hr, "Failed to copy web IP");
 
