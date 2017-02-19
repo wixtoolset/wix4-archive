@@ -36,7 +36,8 @@
     </ItemGroup>
   </Target>
 
-  <!-- This target exists solely to make Microsoft.Common.targets happy -->
+  <!-- These targets exist solely to make Microsoft.Common.targets happy -->
   <Target Name="GetCopyToOutputDirectoryItems" />
+  <Target Name="GetTargetFrameworkProperties" />
 
 </Project>

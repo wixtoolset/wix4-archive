@@ -635,8 +635,11 @@ public: // IBootstrapperApplication
 #endif
         if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == mt || INSTALLMESSAGE_USER == mt))
         {
-            int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
-            return nResult;
+            if (!m_fShowingInternalUiThisPackage)
+            {
+                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
+                return nResult;
+            }
         }
 
         if (INSTALLMESSAGE_ACTIONSTART == mt)
@@ -713,7 +716,8 @@ public: // IBootstrapperApplication
                 wz = sczFormattedString ? sczFormattedString : pPackage->sczDisplayName ? pPackage->sczDisplayName : wzPackageId;
             }
 
-            m_fShowingInternalUiThisPackage = pPackage && pPackage->fDisplayInternalUI;
+            //Burn engine doesn't show internal UI for msi packages during uninstall or repair actions.
+            m_fShowingInternalUiThisPackage = pPackage && pPackage->fDisplayInternalUI && BOOTSTRAPPER_ACTION_UNINSTALL != m_plannedAction && BOOTSTRAPPER_ACTION_REPAIR != m_plannedAction;
 
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_PACKAGE_TEXT, wz);
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_PACKAGE_TEXT, wz);
@@ -2677,6 +2681,7 @@ private: // privates
         LPWSTR sczLaunchTargetElevatedId = NULL;
         LPWSTR sczUnformattedArguments = NULL;
         LPWSTR sczArguments = NULL;
+        LPWSTR sczUnformattedLaunchFolder = NULL;
         LPWSTR sczLaunchFolder = NULL;
         int nCmdShow = SW_SHOWNORMAL;
 
@@ -2705,7 +2710,7 @@ private: // privates
 
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER))
         {
-            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER, &sczLaunchFolder);
+            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER, &sczUnformattedLaunchFolder);
             BalExitOnFailure(hr, "Failed to get launch working directory variable '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER);
         }
 
@@ -2729,6 +2734,12 @@ private: // privates
                 BalExitOnFailure(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
             }
 
+            if (sczUnformattedLaunchFolder)
+            {
+                hr = BalFormatString(sczUnformattedLaunchFolder, &sczLaunchFolder);
+                BalExitOnFailure(hr, "Failed to format launch working directory variable: %ls", sczUnformattedLaunchFolder);
+            }
+
             hr = ShelExec(sczLaunchTarget, sczArguments, L"open", sczLaunchFolder, nCmdShow, m_hWnd, NULL);
             BalExitOnFailure(hr, "Failed to launch target: %ls", sczLaunchTarget);
 
@@ -2736,7 +2747,8 @@ private: // privates
         }
 
     LExit:
-        ReleaseStr(sczLaunchFolder);
+        StrSecureZeroFreeString(sczLaunchFolder);
+        ReleaseStr(sczUnformattedLaunchFolder);
         StrSecureZeroFreeString(sczArguments);
         ReleaseStr(sczUnformattedArguments);
         ReleaseStr(sczLaunchTargetElevatedId);
