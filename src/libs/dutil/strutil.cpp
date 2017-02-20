@@ -2687,7 +2687,7 @@ StrSecureZeroString - zeroes out string to the make sure the contents
 don't remain in memory.
 
 ****************************************************************************/
-extern "C" HRESULT StrSecureZeroString(
+extern "C" DAPI_(HRESULT) StrSecureZeroString(
     __in LPWSTR pwz
     )
 {
@@ -2717,7 +2717,7 @@ StrSecureZeroFreeString - zeroes out string to the make sure the contents
 don't remain in memory, then frees the string.
 
 ****************************************************************************/
-extern "C" HRESULT StrSecureZeroFreeString(
+extern "C" DAPI_(HRESULT) StrSecureZeroFreeString(
     __in LPWSTR pwz
     )
 {
