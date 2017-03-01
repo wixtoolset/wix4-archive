@@ -77,14 +77,6 @@
                 <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
             </MsiPackage>
             <?endif?>
-
-            <!-- Votive needs to be last as it runs devenv /setup -->
-            <MsiPackage Vital='yes' Name='data\votive.msi' SourceFile='data\votive.msi'
-                        InstallCondition='VS2010InstallFolder OR VS2012InstallFolder OR VS2013InstallFolder OR VS2015InstallFolder'
-                        DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'
-                        >
-                <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
-            </MsiPackage>
         </PackageGroup>
     </Fragment>
 </Wix>
