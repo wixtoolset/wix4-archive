@@ -110,6 +110,7 @@ namespace WixToolset
                 "TemplateFolder",
                 "TerminalServer",
                 "UserLanguageID",
+                "UserUILanguageID",
                 "VersionMsi",
                 "VersionNT",
                 "VersionNT64",
