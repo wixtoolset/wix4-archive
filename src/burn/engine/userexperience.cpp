@@ -95,7 +95,7 @@ extern "C" HRESULT UserExperienceLoad(
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 
     // Load BA DLL.
-    pUserExperience->hUXModule = ::LoadLibraryW(pUserExperience->payloads.rgPayloads[0].sczLocalFilePath);
+    pUserExperience->hUXModule = ::LoadLibraryExW(pUserExperience->payloads.rgPayloads[0].sczLocalFilePath, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
     ExitOnNullWithLastError(pUserExperience->hUXModule, hr, "Failed to load UX DLL.");
 
     // Get BootstrapperApplicationCreate entry-point.
