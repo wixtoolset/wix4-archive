@@ -16,7 +16,9 @@
     <Compile Include="FirewallExtension.wxs" />
     <Compile Include="FirewallExtension_x86.wxs" />
     <EmbeddedResource Include="en-us.wxl" />
+    <EmbeddedResource Include="es-es.wxl" />
     <EmbeddedResource Include="ja-jp.wxl" />
+    <EmbeddedResource Include="pl-pl.wxl" />
   </ItemGroup>
 
   <ItemGroup>

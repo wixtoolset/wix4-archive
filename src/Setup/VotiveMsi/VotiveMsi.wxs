@@ -7,7 +7,7 @@
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
     <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Visual Studio Integration" Language="1033" Manufacturer="!(loc.Company)"
-             Version="$(var.WixVersion)" UpgradeCode="FCF6A16A-DB35-431B-A5DC-69C3DB16D7E0">
+             Version="$(var.WixMsiProductVersion)" UpgradeCode="FCF6A16A-DB35-431B-A5DC-69C3DB16D7E0">
 
         <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
         <swid:Tag Regid="regid.2008-09.org.wixtoolset" Type="component" />

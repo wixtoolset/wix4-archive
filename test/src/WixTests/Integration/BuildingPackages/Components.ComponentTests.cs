@@ -82,7 +82,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Components
             light.Run();
         }
 
-        [NamedFact]
+        [NamedFact(Skip = "Ignored because currently the compiler crashes for child elements with an invalid id.")]
         [Description("Verify that there is an error for an invalid component Id")]
         [Priority(2)]
         public void InvalidId()

@@ -3749,14 +3749,14 @@ namespace WixToolset.Extensions
             if (null != value)
             {
                 // cannot specify both the value attribute and inner text
-                if (0 != innerText.Length)
+                if (!String.IsNullOrEmpty(innerText))
                 {
                     this.Core.OnMessage(WixErrors.IllegalAttributeWithInnerText(sourceLineNumbers, node.Name.LocalName, "Value"));
                 }
             }
             else // value attribute not specified
             {
-                if (0 < innerText.Length)
+                if (!String.IsNullOrEmpty(innerText))
                 {
                     value = innerText;
                 }

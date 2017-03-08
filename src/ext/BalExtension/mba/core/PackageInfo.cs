@@ -154,10 +154,11 @@ namespace WixToolset.Bootstrapper
             }
         }
 
-        public static PackageInfo GetRelatedBundleAsPackage(string id, RelationType relationType, bool perMachine)
+        public static PackageInfo GetRelatedBundleAsPackage(string id, RelationType relationType, bool perMachine, Version version)
         {
             PackageInfo package = new PackageInfo();
             package.Id = id;
+            package.Version = version.ToString();
 
             switch (relationType)
             {

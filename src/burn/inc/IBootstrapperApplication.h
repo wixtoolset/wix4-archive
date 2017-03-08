@@ -9,27 +9,14 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnStartup)() = 0;
 
     // OnShutdown - called after the bootstrapper application quits the engine.
-    //
-    // Return:
-    //  IDRESTART instructs the engine to restart. The engine will not launch again after the machine
-    //            is rebooted. Ignored if reboot was already initiated by OnExecutePackageComplete().
-    //
-    // IDRELOAD_BOOTSTRAPPER instructs the engine to unload the bootstrapper application and restart
-    //                       the engine which will load the bootstrapper application again. Typically
-    //                       used to switch from a native bootstrapper application to a managed one.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnShutdown)() = 0;
+    STDMETHOD(OnShutdown)(
+        __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+        ) = 0;
 
     // OnSystemShutdown - called when the operating system is instructed to shutdown the machine.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to block the shutdown of the machine.
-    //
-    //  All other return codes allow the shutdown to commence.
-    STDMETHOD_(int, OnSystemShutdown)(
+    STDMETHOD(OnSystemShutdown)(
         __in DWORD dwEndSession,
-        __in int nRecommendation
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectBegin - called when the engine begins detection.
@@ -40,44 +27,25 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnDetectForwardCompatibleBundle - called when the engine detects a forward compatible bundle.
-    //
-    // Return:
-    //  IDOK instructs the engine to use the forward compatible bundle.
-    //
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to not use the forward compatible bundle.
-    STDMETHOD_(int, OnDetectForwardCompatibleBundle)(
+    STDMETHOD(OnDetectForwardCompatibleBundle)(
         __in_z LPCWSTR wzBundleId,
         __in BOOTSTRAPPER_RELATION_TYPE relationType,
         __in_z LPCWSTR wzBundleTag,
         __in BOOL fPerMachine,
         __in DWORD64 dw64Version,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* pfIgnoreBundle
         ) = 0;
 
     // OnDetectUpdateBegin - called when the engine begins detection for bundle update.
-    //
-    // Return:
-    //  IDOK instructs the engine to attempt update detection.
-    //
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to skip update detection.
-    STDMETHOD_(int, OnDetectUpdateBegin)(
+    STDMETHOD(OnDetectUpdateBegin)(
         __in_z LPCWSTR wzUpdateLocation,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* pfSkip
         ) = 0;
 
     // OnDetectUpdate - called when the engine has an update candidate for bundle update.
-    //
-    // Return:
-    //  IDOK instructs the engine to stop further update detection.
-    //
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to process further update candidates.
-    STDMETHOD_(int, OnDetectUpdate)(
+    STDMETHOD(OnDetectUpdate)(
         __in_z_opt LPCWSTR wzUpdateLocation,
         __in DWORD64 dw64Size,
         __in DWORD64 dw64Version,
@@ -85,97 +53,72 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_z_opt LPCWSTR wzSummary,
         __in_z_opt LPCWSTR wzContentType,
         __in_z_opt LPCWSTR wzContent,
-        __in int nRecommendation
+        __inout BOOL* pfCancel,
+        __inout BOOL* pfStopProcessingUpdates
         ) = 0;
 
     // OnDetectUpdateComplete - called when the engine completes detection for bundle update.
-    //
-    // Remarks:
-    //  wzUpdateLocation is null if no update was available.
-    STDMETHOD_(int, OnDetectUpdateComplete)(
+    STDMETHOD(OnDetectUpdateComplete)(
         __in HRESULT hrStatus,
-        __in_z_opt LPCWSTR wzUpdateLocation,
-        __in int nRecommendation
+        __inout BOOL* pfIgnoreError
         ) = 0;
 
     // OnDetectRelatedBundle - called when the engine detects a related bundle.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectRelatedBundle)(
+    STDMETHOD(OnDetectRelatedBundle)(
         __in_z LPCWSTR wzBundleId,
         __in BOOTSTRAPPER_RELATION_TYPE relationType,
         __in_z LPCWSTR wzBundleTag,
         __in BOOL fPerMachine,
         __in DWORD64 dw64Version,
-        __in BOOTSTRAPPER_RELATED_OPERATION operation
+        __in BOOTSTRAPPER_RELATED_OPERATION operation,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectPackageBegin - called when the engine begins detecting a package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectPackageBegin)(
-        __in_z LPCWSTR wzPackageId
+    STDMETHOD(OnDetectPackageBegin)(
+        __in_z LPCWSTR wzPackageId,
+        __inout BOOL* pfCancel
         ) = 0;
 
-    // OnDetectCompatiblePackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectCompatiblePackage)(
+    // OnDetectCompatibleMsiPackage - called when the engine detects that a package is not installed but a newer package using the same provider key is.
+    STDMETHOD(OnDetectCompatibleMsiPackage)(
         __in_z LPCWSTR wzPackageId,
-        __in_z LPCWSTR wzCompatiblePackageId
+        __in_z LPCWSTR wzCompatiblePackageId,
+        __in DWORD64 dw64CompatiblePackageVersion,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectRelatedMsiPackage - called when the engine begins detects a related package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectRelatedMsiPackage)(
+    STDMETHOD(OnDetectRelatedMsiPackage)(
         __in_z LPCWSTR wzPackageId,
+        __in_z LPCWSTR wzUpgradeCode,
         __in_z LPCWSTR wzProductCode,
         __in BOOL fPerMachine,
         __in DWORD64 dw64Version,
-        __in BOOTSTRAPPER_RELATED_OPERATION operation
+        __in BOOTSTRAPPER_RELATED_OPERATION operation,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectTargetMsiPackage - called when the engine detects a target MSI package for
     //                            an MSP package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectTargetMsiPackage)(
+    STDMETHOD(OnDetectTargetMsiPackage)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzProductCode,
-        __in BOOTSTRAPPER_PACKAGE_STATE patchState
+        __in BOOTSTRAPPER_PACKAGE_STATE patchState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectMsiFeature - called when the engine detects a feature in an MSI package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop detection.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnDetectMsiFeature)(
+    STDMETHOD(OnDetectMsiFeature)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzFeatureId,
-        __in BOOTSTRAPPER_FEATURE_STATE state
+        __in BOOTSTRAPPER_FEATURE_STATE state,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnDetectPackageComplete - called after the engine detects a package.
     //
-    STDMETHOD_(void, OnDetectPackageComplete)(
+    STDMETHOD(OnDetectPackageComplete)(
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
         __in BOOTSTRAPPER_PACKAGE_STATE state
@@ -194,67 +137,61 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnPlanRelatedBundle - called when the engine begins planning a related bundle.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanRelatedBundle)(
+    STDMETHOD(OnPlanRelatedBundle)(
         __in_z LPCWSTR wzBundleId,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanPackageBegin - called when the engine begins planning a package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanPackageBegin)(
+    STDMETHOD(OnPlanPackageBegin)(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         ) = 0;
 
-    // OnPlanCompatiblePackage - called when the engine plans a newer, compatible package using the same provider key.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanCompatiblePackage)(
+    // OnPlanCompatibleMsiPackageBegin - called when the engine plans a newer, compatible package using the same provider key.
+    STDMETHOD(OnPlanCompatibleMsiPackageBegin)(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __in_z LPCWSTR wzCompatiblePackageId,
+        __in DWORD64 dw64CompatiblePackageVersion,
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
+        ) = 0;
+
+    // OnPlanCompatibleMsiPackageComplete - called after the engine plans the package.
+    //
+    STDMETHOD(OnPlanCompatibleMsiPackageComplete)(
+        __in_z LPCWSTR wzPackageId,
+        __in_z LPCWSTR wzCompatiblePackageId,
+        __in HRESULT hrStatus,
+        __in BOOTSTRAPPER_PACKAGE_STATE state,
+        __in BOOTSTRAPPER_REQUEST_STATE requested,
+        __in BOOTSTRAPPER_ACTION_STATE execute,
+        __in BOOTSTRAPPER_ACTION_STATE rollback
         ) = 0;
 
     // OnPlanTargetMsiPackage - called when the engine plans an MSP package
     //                          to apply to an MSI package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanTargetMsiPackage)(
+    STDMETHOD(OnPlanTargetMsiPackage)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzProductCode,
-        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+        __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanMsiFeature - called when the engine plans a feature in an
     //                    MSI package.
-    //
-    // Return:
-    //  IDCANCEL instructs the engine to stop planning.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnPlanMsiFeature)(
+    STDMETHOD(OnPlanMsiFeature)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzFeatureId,
-        __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState
+        __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnPlanPackageComplete - called after the engine plans a package.
     //
-    STDMETHOD_(void, OnPlanPackageComplete)(
+    STDMETHOD(OnPlanPackageComplete)(
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
         __in BOOTSTRAPPER_PACKAGE_STATE state,

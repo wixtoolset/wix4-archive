@@ -2,9 +2,8 @@
 
 namespace WixToolset.UX
 {
-    using System;
+    using System.ComponentModel;
     using System.Windows;
-    using System.Windows.Input;
     using System.Windows.Interop;
 
     /// <summary>
@@ -25,17 +24,28 @@ namespace WixToolset.UX
 
             this.InitializeComponent();
 
+            viewModel.Dispatcher = this.Dispatcher;
             viewModel.ViewWindowHandle = new WindowInteropHelper(this).EnsureHandle();
         }
 
         /// <summary>
-        /// Allows the user to drag the window around by grabbing the background rectangle.
+        /// Event is fired when the window is closing.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Background_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
-            this.DragMove();
+            RootViewModel rvm = this.DataContext as RootViewModel;
+            if ((null != rvm) && (InstallationState.Applying == rvm.InstallState))
+            {
+                rvm.CancelButton_Click();
+                if (rvm.Canceled)
+                {
+                    // Defer closing until the engine has canceled processing.
+                    e.Cancel = true;
+                    rvm.AutoClose = true;
+                }
+            }
         }
     }
 }

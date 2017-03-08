@@ -211,7 +211,7 @@ namespace Bootstrapper
                     L"    <RegistrySearch Id='Search20' Type='value' Root='HKCU' Key='[MyKey]' Value='[MyValue]' Variable='Variable20' VariableType='string' />"
                     L"    <RegistrySearch Id='Search21' Type='value' Root='HKCU' Key='SOFTWARE\\Classes\\CLSID\\WiX_Burn_UnitTest\\Bitness' Value='TestStringSpecificToBitness' Variable='Variable21' VariableType='string' Win64='no' />"
                     L"    <RegistrySearch Id='Search22' Type='value' Root='HKCU' Key='SOFTWARE\\Classes\\CLSID\\WiX_Burn_UnitTest\\Bitness' Value='TestStringSpecificToBitness' Variable='Variable22' VariableType='string' Win64='yes' />"
-                    L"    <RegistrySearch Id='Search23' Type='exists' Root='HKU' Key='.DEFAULT\\System\\CurrentControlSet' Variable='Variable23' />"
+                    L"    <RegistrySearch Id='Search23' Type='exists' Root='HKU' Key='.DEFAULT\\Environment' Variable='Variable23' />"
                     L"    <RegistrySearch Id='Search23' Type='exists' Root='HKU' Key='.DEFAULT\\System\\NetworkServiceSidSubkeyDoesNotExist' Variable='Variable24' />"
                     L"    <RegistrySearch Id='Search24' Type='value' Root='HKCR' Key='.msi' Variable='Variable25' VariableType='string' />"
                     L"</Bundle>";

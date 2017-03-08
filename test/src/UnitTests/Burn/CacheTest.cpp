@@ -33,21 +33,23 @@ namespace Bootstrapper
 
             try
             {
-                hr = PathExpand(&sczPayloadPath, L"%WIX_ROOT%\\src\\Votive\\SDK\\Redist\\ProjectAggregator2.msi", PATH_EXPAND_ENVIRONMENT);
-                Assert::True(S_OK == hr, "Failed to get path to project aggregator MSI.");
+                pin_ptr<const wchar_t> dataDirectory = PtrToStringChars(TestContext->DataDirectory);
+                hr = PathConcat(dataDirectory, L"BurnTestPayloads\\Products\\TestExe\\TestExe.exe", &sczPayloadPath);
+                Assert::True(S_OK == hr, "Failed to get path to test file.");
+                Assert::True(FileExistsEx(sczPayloadPath, NULL), "Test file does not exist.");
 
-                hr = StrAllocHexDecode(L"4A5C7522AA46BFA4089D39974EBDB4A360F7A01D", &pb, &cb);
+                hr = StrAllocHexDecode(L"232BD16B78C1926F95D637731E1EE5379A3C4222", &pb, &cb);
                 Assert::Equal(S_OK, hr);
 
                 package.fPerMachine = FALSE;
                 package.sczCacheId = L"Bootstrapper.CacheTest.CacheSignatureTest";
                 payload.sczKey = L"CacheSignatureTest.PayloadKey";
                 payload.sczFilePath = L"CacheSignatureTest.File";
-                payload.pbCertificateRootPublicKeyIdentifier = pb;
-                payload.cbCertificateRootPublicKeyIdentifier = cb;
+                payload.pbHash = pb;
+                payload.cbHash = cb;
 
                 hr = CacheCompletePayload(package.fPerMachine, &payload, package.sczCacheId, sczPayloadPath, FALSE);
-                Assert::True(S_OK == hr, "Failed while verifying path.");
+                Assert::Equal(S_OK, hr);
             }
             finally
             {

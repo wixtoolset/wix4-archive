@@ -7,7 +7,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:swid="http://schemas.microsoft.com/wix/TagExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
   <Bundle Name="~$(var.TestName) - Patch Bundle C" Version="$(var.Version)" UpgradeCode="D5706E81-BE87-42A2-B0E7-F73D8215F1A4">
     <Log Prefix="~$(var.TestName)_PatchBundleC"/>
 

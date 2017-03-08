@@ -309,3 +309,74 @@ LExit:
     ReleaseStr(sczFormattedAnsi);
     return hr;
 }
+
+DAPIV_(HRESULT) BalLogId(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    ...
+    )
+{
+    HRESULT hr = S_OK;
+    va_list args;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    va_start(args, hModule);
+    hr = BalLogIdArgs(level, dwLogId, hModule, args);
+    va_end(args);
+
+LExit:
+    return hr;
+}
+
+DAPI_(HRESULT) BalLogIdArgs(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    __in va_list args
+    )
+{
+
+    HRESULT hr = S_OK;
+    LPWSTR pwz = NULL;
+    DWORD cch = 0;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    // Get the string for the id.
+#pragma prefast(push)
+#pragma prefast(disable:25028)
+#pragma prefast(disable:25068)
+    cch = ::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE,
+        static_cast<LPCVOID>(hModule), dwLogId, 0, reinterpret_cast<LPWSTR>(&pwz), 0, &args);
+#pragma prefast(pop)
+
+    if (0 == cch)
+    {
+        ExitOnLastError(hr, "Failed to log id: %d", dwLogId);
+    }
+
+    if (2 <= cch && L'\r' == pwz[cch - 2] && L'\n' == pwz[cch - 1])
+    {
+        pwz[cch - 2] = L'\0'; // remove newline from message table.
+    }
+
+    hr = vpEngine->Log(level, pwz);
+
+LExit:
+    if (pwz)
+    {
+        ::LocalFree(pwz);
+    }
+
+    return hr;
+}

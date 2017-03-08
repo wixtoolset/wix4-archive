@@ -4,11 +4,7 @@ namespace WixToolset.UX
 {
     using System;
     using System.ComponentModel;
-    using System.Linq;
-    using System.Net;
-    using System.ServiceModel.Syndication;
     using System.Windows.Input;
-    using System.Xml;
     using WixToolset.Bootstrapper;
 
     /// <summary>
@@ -32,7 +28,9 @@ namespace WixToolset.UX
         private RootViewModel root;
         private UpdateState state;
         private ICommand updateCommand;
-        
+        private string updateVersion;
+        private string updateChanges;
+
 
         public UpdateViewModel(RootViewModel root)
         {
@@ -41,8 +39,17 @@ namespace WixToolset.UX
             WixBA.Model.Bootstrapper.DetectUpdate += this.DetectUpdate;
             WixBA.Model.Bootstrapper.DetectUpdateComplete += this.DetectUpdateComplete;
 
-            this.State = UpdateState.Initializing;
+            this.root.PropertyChanged += new PropertyChangedEventHandler(this.RootPropertyChanged);
 
+            this.State = UpdateState.Initializing;
+        }
+
+        void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if ("InstallState" == e.PropertyName)
+            {
+                base.OnPropertyChanged("CanUpdate");
+            }
         }
 
         public bool CheckingEnabled
@@ -50,9 +57,20 @@ namespace WixToolset.UX
             get { return this.State == UpdateState.Initializing || this.State == UpdateState.Checking; }
         }
 
-        public bool IsUpToDate
+        public bool CanUpdate
         {
-            get { return this.State == UpdateState.Current; }
+            get
+            {
+                switch(this.root.InstallState)
+                {
+                    case InstallationState.Waiting:
+                    case InstallationState.Applied:
+                    case InstallationState.Failed:
+                        return this.IsUpdateAvailable;
+                    default:
+                        return false;
+                }
+            }
         }
 
         public ICommand UpdateCommand
@@ -61,16 +79,16 @@ namespace WixToolset.UX
             {
                 if (this.updateCommand == null)
                 {
-                    this.updateCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.UpdateReplace), param => this.State == UpdateState.Available);
+                    this.updateCommand = new RelayCommand(param => WixBA.Plan(LaunchAction.UpdateReplace), param => this.CanUpdate);
                 }
 
                 return this.updateCommand;
             }
         }
 
-        public bool UpdateEnabled
+        public bool IsUpdateAvailable
         {
-            get { return this.UpdateCommand.CanExecute(this); }
+            get { return this.State == UpdateState.Available; }
         }
 
         /// <summary>
@@ -89,43 +107,46 @@ namespace WixToolset.UX
                 {
                     this.state = value;
                     base.OnPropertyChanged("State");
-                    base.OnPropertyChanged("Title");
+                    base.OnPropertyChanged("CanUpdate");
                     base.OnPropertyChanged("CheckingEnabled");
-                    base.OnPropertyChanged("IsUpToDate");
-                    base.OnPropertyChanged("UpdateEnabled");
+                    base.OnPropertyChanged("IsUpdateAvailable");
+                }
+            }
+        }
+        /// <summary>
+        /// The version of an available update.
+        /// </summary>
+        public string UpdateVersion
+        {
+            get
+            {
+                return updateVersion;
+            }
+            set
+            {
+                if (this.updateVersion != value)
+                {
+                    this.updateVersion = value;
+                    base.OnPropertyChanged("UpdateVersion");
                 }
             }
         }
 
         /// <summary>
-        /// Gets and sets the title of the update view model.
+        /// The changes in the available update.
         /// </summary>
-        public string Title
+        public string UpdateChanges
         {
             get
             {
-                switch (this.state)
+                return updateChanges;
+            }
+            set
+            {
+                if (this.updateChanges != value)
                 {
-                    case UpdateState.Initializing:
-                        return "Initializing update detection...";
-
-                    case UpdateState.Checking:
-                        return "Checking for updates...";
-
-                    case UpdateState.Current:
-                        return "Up to date";
-
-                    case UpdateState.Available:
-                        return "Newer version available";
-
-                    case UpdateState.Failed:
-                        return "Failed to check for updates";
-
-                    case UpdateState.Unknown:
-                        return "Check for updates.";
-
-                    default:
-                        return "Unexpected state";
+                    this.updateChanges = value;
+                    base.OnPropertyChanged("UpdateChanges");
                 }
             }
         }
@@ -139,7 +160,7 @@ namespace WixToolset.UX
             if ((UpdateState.Failed != this.State) && (LaunchAction.Uninstall != WixBA.Model.Command.Action) && (Display.Full == WixBA.Model.Command.Display))
             {
                 this.State = UpdateState.Checking;
-                e.Result = Result.Ok;
+                e.Skip = false;
             }
         }
         
@@ -147,20 +168,22 @@ namespace WixToolset.UX
         {
             // The list of updates is sorted in descending version, so the first callback should be the largest update available.
             // This update should be either larger than ours (so we are out of date), the same as ours (so we are current)
-            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.Result alone and
+            // or smaller than ours (we have a private build). If we really wanted to, we could leave the e.StopProcessingUpdates alone and
             // enumerate all of the updates.
             WixBA.Model.Engine.Log(LogLevel.Verbose, String.Format("Potential update v{0} from '{1}'; current version: v{2}", e.Version, e.UpdateLocation, WixBA.Model.Version));
             if (e.Version > WixBA.Model.Version)
             {
                 WixBA.Model.Engine.SetUpdate(null, e.UpdateLocation, e.Size, UpdateHashType.None, null);
+                this.UpdateVersion = String.Concat("v", e.Version.ToString());
+                string changesFormat = @"<body style='overflow: auto;'>{0}</body>";
+                this.UpdateChanges = String.Format(changesFormat, e.Content);
                 this.State = UpdateState.Available;
-                e.Result = Result.Ok;
             }
-            else if (e.Version <= WixBA.Model.Version)
+            else
             {
                 this.State = UpdateState.Current;
-                e.Result = Result.Cancel;
             }
+            e.StopProcessingUpdates = true;
         }
 
         private void DetectUpdateComplete(object sender, Bootstrapper.DetectUpdateCompleteEventArgs e)
@@ -170,7 +193,7 @@ namespace WixToolset.UX
             {
                 this.State = UpdateState.Failed;
                 WixBA.Model.Engine.Log(LogLevel.Verbose, String.Format("Failed to locate an update, status of 0x{0:X8}, updates disabled.", e.Status));
-                e.Result = Result.Ok;
+                e.IgnoreError = true;
             }
             // If we are uninstalling, we don't want to check or show an update
             // If we are checking, then the feed didn't find any valid enclosures

@@ -176,6 +176,7 @@ namespace WixToolset.Bind.Bundles
                     writer.WriteStartElement("RollbackBoundary");
                     writer.WriteAttributeString("Id", rollbackBoundary.ChainPackageId);
                     writer.WriteAttributeString("Vital", YesNoType.Yes == rollbackBoundary.Vital ? "yes" : "no");
+                    writer.WriteAttributeString("Transaction", YesNoType.Yes == rollbackBoundary.Transaction ? "yes" : "no");
                     writer.WriteEndElement();
                 }
 

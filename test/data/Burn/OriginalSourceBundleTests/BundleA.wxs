@@ -11,7 +11,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
   <Bundle Name="~$(var.TestName) - Bundle A" Version="$(var.Version)" UpgradeCode="5161DC26-C1D4-4BDD-B562-CF57A58CB1F2">
     <Log Prefix="~$(var.TestName)_BundleA" />
     <Variable Name="TestName" Value="$(var.TestName)" />

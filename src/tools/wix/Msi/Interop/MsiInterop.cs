@@ -5,6 +5,7 @@ namespace WixToolset.Msi.Interop
     using System;
     using System.Text;
     using System.Runtime.InteropServices;
+    using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
     /// <summary>
     /// A callback function that the installer calls for progress notification and error messages.

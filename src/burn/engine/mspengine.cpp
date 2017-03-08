@@ -201,7 +201,6 @@ extern "C" HRESULT MspEngineDetectPackage(
     )
 {
     HRESULT hr = S_OK;
-    int nResult = IDOK;
     LPWSTR sczState = NULL;
 
     if (0 == pPackage->Msp.cTargetProductCodes)
@@ -253,9 +252,8 @@ extern "C" HRESULT MspEngineDetectPackage(
                 pPackage->currentState = pTargetProduct->patchPackageState;
             }
 
-            nResult = pUserExperience->pUserExperience->OnDetectTargetMsiPackage(pPackage->sczId, pTargetProduct->wzTargetProductCode, pTargetProduct->patchPackageState);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect target MSI package.");
+            hr = UserExperienceOnDetectTargetMsiPackage(pUserExperience, pPackage->sczId, pTargetProduct->wzTargetProductCode, pTargetProduct->patchPackageState);
+            ExitOnRootFailure(hr, "BA aborted detect target MSI package.");
         }
     }
 
@@ -285,9 +283,8 @@ extern "C" HRESULT MspEnginePlanCalculatePackage(
         BOOTSTRAPPER_ACTION_STATE execute = BOOTSTRAPPER_ACTION_STATE_NONE;
         BOOTSTRAPPER_ACTION_STATE rollback = BOOTSTRAPPER_ACTION_STATE_NONE;
 
-        int nResult = pUserExperience->pUserExperience->OnPlanTargetMsiPackage(pPackage->sczId, pTargetProduct->wzTargetProductCode, &requested);
-        hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted plan target MSI package.");
+        hr = UserExperienceOnPlanTargetMsiPackage(pUserExperience, pPackage->sczId, pTargetProduct->wzTargetProductCode, &requested);
+        ExitOnRootFailure(hr, "BA aborted plan target MSI package.");
 
         // Calculate the execute action.
         switch (pTargetProduct->patchPackageState)

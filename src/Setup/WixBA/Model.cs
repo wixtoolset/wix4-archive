@@ -4,11 +4,7 @@ namespace WixToolset.UX
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
     using System.Net;
-    using System.Reflection;
-    using System.Xml.Linq;
     using WixToolset.Bootstrapper;
 
     /// <summary>

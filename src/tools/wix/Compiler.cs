@@ -2919,7 +2919,8 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "DirectoryId", directoryId }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
 
@@ -12601,7 +12602,8 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "RegistryId", id.Id }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
 
@@ -12779,7 +12781,8 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "RegistryId", id.Id }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
 
@@ -18704,6 +18707,8 @@ namespace WixToolset
             Debug.Assert(ComplexReferenceChildType.Unknown == previousType || ComplexReferenceChildType.PayloadGroup == previousType || ComplexReferenceChildType.Payload == previousType);
 
             string id = ParsePayloadElementContent(node, parentType, parentId, previousType, previousId, true);
+            Dictionary<string, string> context = new Dictionary<string, string>();
+            context["Id"] = id;
 
             foreach (XElement child in node.Elements())
             {
@@ -18718,10 +18723,9 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
-
 
             return id;
         }
@@ -18744,6 +18748,10 @@ namespace WixToolset
             string sourceFile = null;
             string downloadUrl = null;
             Wix.RemotePayload remotePayload = null;
+
+            // This list lets us evaluate extension attributes *after* all core attributes
+            // have been parsed and dealt with, regardless of authoring order.
+            List<XAttribute> extensionAttributes = new List<XAttribute>();
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18776,7 +18784,7 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionAttribute(node, attrib);
+                    extensionAttributes.Add(attrib);
                 }
             }
 
@@ -18784,6 +18792,20 @@ namespace WixToolset
             {
                 // Nothing left to do!
                 return null;
+            }
+
+            if (null == id)
+            {
+                id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
+            }
+
+            // Now that the PayloadId is known, we can parse the extension attributes.
+            Dictionary<string, string> context = new Dictionary<string, string>();
+            context["Id"] = id.Id;
+
+            foreach (XAttribute extensionAttribute in extensionAttributes)
+            {
+                this.core.ParseExtensionAttribute(node, extensionAttribute, context);
             }
 
             // We only handle the elements we care about.  Let caller handle other children.
@@ -18831,11 +18853,6 @@ namespace WixToolset
                 }
 
                 compressed = YesNoDefaultType.Yes;
-            }
-
-            if (null == id)
-            {
-                id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
             }
 
             this.CreatePayloadRow(sourceLineNumbers, id, name, sourceFile, downloadUrl, parentType, parentId, previousType, previousId, compressed, enableSignatureVerification, null, null, remotePayload);
@@ -19202,7 +19219,7 @@ namespace WixToolset
             }
 
             // Ensure there is always a rollback boundary at the beginning of the chain.
-            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
+            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, YesNoType.No, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
 
             string previousId = "WixDefaultBoundary";
             ComplexReferenceChildType previousType = ComplexReferenceChildType.Package;
@@ -19334,6 +19351,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             Identifier id = null;
             YesNoType vital = YesNoType.Yes;
+            YesNoType transaction = YesNoType.No;
 
             // This list lets us evaluate extension attributes *after* all core attributes
             // have been parsed and dealt with, regardless of authoring order.
@@ -19351,6 +19369,9 @@ namespace WixToolset
                             break;
                         case "Vital":
                             vital = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Transaction":
+                            transaction = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             allowed = false;
@@ -19399,7 +19420,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, parentType, parentId, previousType, previousId);
+                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, transaction, parentType, parentId, previousType, previousId);
             }
 
             return id.Id;
@@ -20113,7 +20134,7 @@ namespace WixToolset
         /// <param name="parentId">Identifier of parent group.</param>
         /// <param name="previousType">Type of previous item, if any.</param>
         /// <param name="previousId">Identifier of previous item, if any.</param>
-        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, YesNoType transaction, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
         {
             WixChainItemRow row = (WixChainItemRow)this.core.CreateRow(sourceLineNumbers, "WixChainItem", id);
 
@@ -20122,6 +20143,10 @@ namespace WixToolset
             if (YesNoType.NotSet != vital)
             {
                 rollbackBoundary.Vital = vital;
+            }
+            if (YesNoType.NotSet != transaction)
+            {
+                rollbackBoundary.Transaction = transaction;
             }
 
             this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);

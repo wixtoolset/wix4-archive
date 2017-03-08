@@ -29,7 +29,7 @@
         <util:RegistrySearchRef Id="NETFRAMEWORK35_SP_LEVEL" />
 
         <Chain>
-            <PackageGroupRef Id='NetFx40WebAsPrereq' />
+            <PackageGroupRef Id='NetFx452RedistAsPrereq' />
             <PackageGroupRef Id='WixPackages' />
         </Chain>
     </Bundle>

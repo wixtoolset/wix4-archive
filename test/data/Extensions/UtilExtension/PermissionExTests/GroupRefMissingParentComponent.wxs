@@ -2,7 +2,7 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
   <Product Codepage="932" Id="000C1109-0000-0000-C000-550000000046" Name="TestSecureObjProduct" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{1B2C1E1E-8559-4694-892D-F44E3FE03BEF}">
     <Package Description="Test SecureObjects Custom Action" Comments="Test from: wix\examples\test\secureobjects\product.wxs" InstallerVersion="200" Compressed="yes" />
 

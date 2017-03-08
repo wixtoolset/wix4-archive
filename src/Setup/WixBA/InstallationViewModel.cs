@@ -5,6 +5,7 @@ namespace WixToolset.UX
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Linq;
     using System.Reflection;
     using System.Windows;
     using System.Windows.Input;
@@ -44,6 +45,7 @@ namespace WixToolset.UX
 
         private Dictionary<string, int> downloadRetries;
         private bool downgrade;
+        private string downgradeMessage;
 
         private ICommand licenseCommand;
         private ICommand launchHomePageCommand;
@@ -51,6 +53,8 @@ namespace WixToolset.UX
         private ICommand installCommand;
         private ICommand repairCommand;
         private ICommand uninstallCommand;
+        private ICommand openLogCommand;
+        private ICommand openLogFolderCommand;
         private ICommand tryAgainCommand;
 
         private string message;
@@ -86,22 +90,45 @@ namespace WixToolset.UX
         {
             if (("DetectState" == e.PropertyName) || ("InstallState" == e.PropertyName))
             {
-                base.OnPropertyChanged("Title");
-                base.OnPropertyChanged("CompleteEnabled");
-                base.OnPropertyChanged("ExitEnabled");
                 base.OnPropertyChanged("RepairEnabled");
                 base.OnPropertyChanged("InstallEnabled");
-                base.OnPropertyChanged("TryAgainEnabled");
+                base.OnPropertyChanged("IsComplete");
+                base.OnPropertyChanged("IsSuccessfulCompletion");
+                base.OnPropertyChanged("IsFailedCompletion");
+                base.OnPropertyChanged("StatusText");
                 base.OnPropertyChanged("UninstallEnabled");
             }
         }
 
         /// <summary>
-        /// Gets the title for the application.
+        /// Gets the version for the application.
         /// </summary>
         public string Version 
         {
             get { return String.Concat("v", WixBA.Model.Version.ToString()); }
+        }
+
+        /// <summary>
+        /// The Publisher of this bundle.
+        /// </summary>
+        public string Publisher
+        {
+            get
+            {
+                string company = "[AssemblyCompany]";
+                return WixDistribution.ReplacePlaceholders(company, typeof(WixBA).Assembly);
+            }
+        }
+
+        /// <summary>
+        /// The Publisher of this bundle.
+        /// </summary>
+        public string SupportUrl
+        {
+            get
+            {
+                return WixDistribution.SupportUrl;
+            }
         }
 
         public string Message
@@ -141,13 +168,29 @@ namespace WixToolset.UX
             }
         }
 
+        public string DowngradeMessage
+        {
+            get
+            {
+                return this.downgradeMessage;
+            }
+            set
+            {
+                if (this.downgradeMessage != value)
+                {
+                    this.downgradeMessage = value;
+                    base.OnPropertyChanged("DowngradeMessage");
+                }
+            }
+        }
+
         public ICommand LaunchHomePageCommand
         {
             get
             {
                 if (this.launchHomePageCommand == null)
                 {
-                    this.launchHomePageCommand = new RelayCommand(param => WixBA.LaunchUrl(WixDistribution.SupportUrl), param => true);
+                    this.launchHomePageCommand = new RelayCommand(param => WixBA.LaunchUrl(this.SupportUrl), param => true);
                 }
 
                 return this.launchHomePageCommand;
@@ -190,9 +233,19 @@ namespace WixToolset.UX
             get { return this.root.CloseCommand; }
         }
 
-        public bool ExitEnabled
+        public bool IsComplete
         {
-            get { return this.root.InstallState != InstallationState.Applying; }
+            get { return IsSuccessfulCompletion || IsFailedCompletion; }
+        }
+
+        public bool IsSuccessfulCompletion
+        {
+            get { return InstallationState.Applied == this.root.InstallState; }
+        }
+
+        public bool IsFailedCompletion
+        {
+            get { return InstallationState.Failed == this.root.InstallState; }
         }
 
         public ICommand InstallCommand
@@ -231,11 +284,6 @@ namespace WixToolset.UX
             get { return this.RepairCommand.CanExecute(this); }
         }
 
-        public bool CompleteEnabled
-        {
-            get { return this.root.InstallState == InstallationState.Applied; }
-        }
-
         public ICommand UninstallCommand
         {
             get
@@ -254,6 +302,31 @@ namespace WixToolset.UX
             get { return this.UninstallCommand.CanExecute(this); }
         }
 
+        public ICommand OpenLogCommand
+        {
+            get
+            {
+                if (this.openLogCommand == null)
+                {
+                    this.openLogCommand = new RelayCommand(param => WixBA.OpenLog(new Uri(WixBA.Model.Engine.StringVariables["WixBundleLog"])));
+                }
+                return this.openLogCommand;
+            }
+        }
+
+        public ICommand OpenLogFolderCommand
+        {
+            get
+            {
+                if (this.openLogFolderCommand == null)
+                {
+                    string logFolder = IO.Path.GetDirectoryName(WixBA.Model.Engine.StringVariables["WixBundleLog"]);
+                    this.openLogFolderCommand = new RelayCommand(param => WixBA.OpenLogFolder(logFolder));
+                }
+                return this.openLogFolderCommand;
+            }
+        }
+
         public ICommand TryAgainCommand
         {
             get
@@ -264,114 +337,25 @@ namespace WixToolset.UX
                         {
                             this.root.Canceled = false;
                             WixBA.Plan(WixBA.Model.PlannedAction);
-                        }, param => this.root.InstallState == InstallationState.Failed);
+                        }, param => IsFailedCompletion);
                 }
 
                 return this.tryAgainCommand;
             }
         }
 
-        public bool TryAgainEnabled
-        {
-            get { return this.TryAgainCommand.CanExecute(this); }
-        }
-
-        public string Title
+        public string StatusText
         {
             get
             {
-                switch (this.root.InstallState)
+                switch(this.root.InstallState)
                 {
-                    case InstallationState.Initializing:
-                        return "Initializing...";
-                    case InstallationState.Waiting:
-                        switch (this.root.DetectState)
-                        {
-
-                            case DetectionState.Present:
-                                return "Installed";
-
-                            case DetectionState.Newer:
-                                return "Newer version installed";
-
-                            case DetectionState.Absent:
-                                return "Not installed";
-                            default :
-                                return "Unexpected Detection state";
-                        }
-                    case InstallationState.Applying:
-                        switch (WixBA.Model.PlannedAction)
-                        {
-                            case LaunchAction.Install:
-                                return "Installing...";
-
-                            case LaunchAction.Repair:
-                                return "Repairing...";
-
-                            case LaunchAction.Uninstall:
-                                return "Uninstalling...";
-
-                            case LaunchAction.UpdateReplace:
-                            case LaunchAction.UpdateReplaceEmbedded:
-                                return "Updating...";
-
-                            default:
-                                return "Unexpected action state";
-                        }
-
                     case InstallationState.Applied:
-                        switch (WixBA.Model.PlannedAction)
-                        {
-                            case LaunchAction.Install:
-                                return "Successfully installed";
-
-                            case LaunchAction.Repair:
-                                return "Successfully repaired";
-
-                            case LaunchAction.Uninstall:
-                                return "Successfully uninstalled";
-
-                            case LaunchAction.UpdateReplace:
-                            case LaunchAction.UpdateReplaceEmbedded:
-                                return "Successfully updated";
-
-                            default:
-                                return "Unexpected action state";
-                        }
-
+                        return "Complete";
                     case InstallationState.Failed:
-                        if (this.root.Canceled)
-                        {
-                            return "Canceled";
-                        }
-                        else if (LaunchAction.Unknown != WixBA.Model.PlannedAction)
-                        {
-                            switch (WixBA.Model.PlannedAction)
-                            {
-                                case LaunchAction.Install:
-                                    return "Failed to install";
-
-                                case LaunchAction.Repair:
-                                    return "Failed to repair";
-
-                                case LaunchAction.Uninstall:
-                                    return "Failed to uninstall";
-
-                                case LaunchAction.UpdateReplace:
-                                case LaunchAction.UpdateReplaceEmbedded:
-                                    return "Failed to update";
-
-                                default:
-                                    return "Unexpected action state";
-                            }
-                        }
-                        else
-                        {
-                            return "Unexpected failure";
-                        }
-
+                        return this.root.Canceled ? "Cancelled" : "Failed";
                     default:
-                        return "Unknown view model state";
+                        return "Unknown"; // this shouldn't be shown in the UI.
                 }
             }
         }
@@ -410,15 +394,17 @@ namespace WixToolset.UX
             this.ParseCommandLine();
             this.root.InstallState = InstallationState.Waiting;
 
-            if (LaunchAction.Uninstall == WixBA.Model.Command.Action)
+            if (LaunchAction.Uninstall == WixBA.Model.Command.Action &&
+                ResumeType.Arp != WixBA.Model.Command.Resume) // MSI and WixStdBA require some kind of confirmation before proceeding so WixBA should, too.
             {
                 WixBA.Model.Engine.Log(LogLevel.Verbose, "Invoking automatic plan for uninstall");
                 WixBA.Plan(LaunchAction.Uninstall);
             }
             else if (Hresult.Succeeded(e.Status))
             {
+                // TODO: remove this when v4 really doesn't depend on .NET 3.5.
                 // block if CLR v2 isn't available; sorry, it's needed for the MSBuild tasks
-                if (WixBA.Model.Engine.EvaluateCondition("NETFRAMEWORK35_SP_LEVEL < 1"))
+                if (WixBA.Model.Engine.EvaluateCondition("NOT NETFRAMEWORK35_SP_LEVEL"))
                 {
                     string message = "WiX Toolset requires the .NET Framework 3.5.1 Windows feature to be enabled.";
                     WixBA.Model.Engine.Log(LogLevel.Verbose, message);
@@ -442,8 +428,17 @@ namespace WixToolset.UX
 
                 if (this.Downgrade)
                 {
-                    // TODO: What behavior do we want for downgrade?
                     this.root.DetectState = DetectionState.Newer;
+                    IEnumerable<PackageInfo> relatedPackages = WixBA.Model.Bootstrapper.BAManifest.Bundle.Packages.Values.Where(p => p.Type == PackageType.UpgradeBundle);
+                    Version installedVersion = relatedPackages.Any() ? new Version(relatedPackages.Max(p => p.Version)) : null;
+                    if (installedVersion != null && installedVersion < new Version(4, 1) && installedVersion.Build > 10)
+                    {
+                        this.DowngradeMessage = "You must uninstall WiX v" + installedVersion + " before you can install this.";
+                    }
+                    else
+                    {
+                        this.DowngradeMessage = "There is already a newer version of WiX installed on this machine.";
+                    }
                 }
 
                 if (LaunchAction.Layout == WixBA.Model.Command.Action)
@@ -461,11 +456,16 @@ namespace WixToolset.UX
             {
                 this.root.InstallState = InstallationState.Failed;
             }
+
+            // Force all commands to reevaluate CanExecute.
+            // InvalidateRequerySuggested must be run on the UI thread.
+            root.Dispatcher.Invoke(new Action(CommandManager.InvalidateRequerySuggested));
         }
 
         private void PlanPackageBegin(object sender, PlanPackageBeginEventArgs e)
         {
-            if (WixBA.Model.Engine.StringVariables.Contains("MbaNetfxPackageId") && e.PackageId.Equals(WixBA.Model.Engine.StringVariables["MbaNetfxPackageId"], StringComparison.Ordinal))
+            // If we're able to run our BA, we don't want to install the .NET Framework since the framework on the machine is already good enough.
+            if ( e.PackageId.StartsWith("NetFx4", StringComparison.OrdinalIgnoreCase))
             {
                 e.State = RequestState.None;
             }
@@ -502,15 +502,21 @@ namespace WixToolset.UX
 
         private void ExecutePackageBegin(object sender, ExecutePackageBeginEventArgs e)
         {
-            this.executePackageStart = e.ShouldExecute ? DateTime.Now : DateTime.MinValue;
+            lock (this)
+            {
+                this.executePackageStart = e.ShouldExecute ? DateTime.Now : DateTime.MinValue;
+            }
         }
 
         private void ExecutePackageComplete(object sender, ExecutePackageCompleteEventArgs e)
         {
-            if (DateTime.MinValue < this.executePackageStart)
+            lock (this)
             {
-                this.AddPackageTelemetry("Execute", e.PackageId ?? String.Empty, DateTime.Now.Subtract(this.executePackageStart).TotalMilliseconds, e.Status);
-                this.executePackageStart = DateTime.MinValue;
+                if (DateTime.MinValue < this.executePackageStart)
+                {
+                    this.AddPackageTelemetry("Execute", e.PackageId ?? String.Empty, DateTime.Now.Subtract(this.executePackageStart).TotalMilliseconds, e.Status);
+                    this.executePackageStart = DateTime.MinValue;
+                }
             }
         }
 
@@ -595,6 +601,13 @@ namespace WixToolset.UX
         {
             WixBA.Model.Result = e.Status; // remember the final result of the apply.
 
+            // Set the state to applied or failed unless the state has already been set back to the preapply state
+            // which means we need to show the UI as it was before the apply started.
+            if (this.root.InstallState != this.root.PreApplyState)
+            {
+                this.root.InstallState = Hresult.Succeeded(e.Status) ? InstallationState.Applied : InstallationState.Failed;
+            }
+
             // If we're not in Full UI mode, we need to alert the dispatcher to stop and close the window for passive.
             if (Bootstrapper.Display.Full != WixBA.Model.Command.Display)
             {
@@ -602,33 +615,30 @@ namespace WixToolset.UX
                 if (Bootstrapper.Display.Passive == WixBA.Model.Command.Display)
                 {
                     WixBA.Model.Engine.Log(LogLevel.Verbose, "Automatically closing the window for non-interactive install");
-                    WixBA.Dispatcher.BeginInvoke((Action)delegate()
-                    {
-                        WixBA.View.Close();
-                    }
-                    );
+                    WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
                 }
                 else
                 {
                     WixBA.Dispatcher.InvokeShutdown();
                 }
+                return;
             }
             else if (Hresult.Succeeded(e.Status) && LaunchAction.UpdateReplace == WixBA.Model.PlannedAction) // if we successfully applied an update close the window since the new Bundle should be running now.
             {
                 WixBA.Model.Engine.Log(LogLevel.Verbose, "Automatically closing the window since update successful.");
-                WixBA.Dispatcher.BeginInvoke((Action)delegate()
-                {
-                    WixBA.View.Close();
-                }
-                );
+                WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
+                return;
+            }
+            else if (root.AutoClose)
+            {
+                // Automatically closing since the user clicked the X button.
+                WixBA.Dispatcher.BeginInvoke(new Action(WixBA.View.Close));
+                return;
             }
 
-            // Set the state to applied or failed unless the state has already been set back to the preapply state
-            // which means we need to show the UI as it was before the apply started.
-            if (this.root.InstallState != this.root.PreApplyState)
-            {
-                this.root.InstallState = Hresult.Succeeded(e.Status) ? InstallationState.Applied : InstallationState.Failed;
-            }
+            // Force all commands to reevaluate CanExecute.
+            // InvalidateRequerySuggested must be run on the UI thread.
+            root.Dispatcher.Invoke(new Action(CommandManager.InvalidateRequerySuggested));
         }
 
         private void ParseCommandLine()

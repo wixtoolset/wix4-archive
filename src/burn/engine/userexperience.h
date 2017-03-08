@@ -1,6 +1,7 @@
 #pragma once
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
+#define BAAPI HRESULT __stdcall
 
 #if defined(__cplusplus)
 extern "C" {
@@ -98,22 +99,158 @@ void UserExperienceExecutePhaseComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrResult
     );
-HRESULT UserExperienceOnDetectBegin(
+BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
     __in DWORD cPackages
     );
-HRESULT UserExperienceOnDetectComplete(
+BAAPI UserExperienceOnDetectCompatibleMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId,
+    __in DWORD64 dw64CompatiblePackageVersion
+    );
+BAAPI UserExperienceOnDetectComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     );
-HRESULT UserExperienceOnPlanBegin(
+BAAPI UserExperienceOnDetectForwardCompatibleBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __inout BOOL* pfIgnoreBundle
+    );
+BAAPI UserExperienceOnDetectMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __in BOOTSTRAPPER_FEATURE_STATE state
+    );
+BAAPI UserExperienceOnDetectPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId
+    );
+BAAPI UserExperienceOnDetectPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state
+    );
+BAAPI UserExperienceOnDetectRelatedBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __in BOOTSTRAPPER_RELATION_TYPE relationType,
+    __in_z LPCWSTR wzBundleTag,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    );
+BAAPI UserExperienceOnDetectRelatedMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzUpgradeCode,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOL fPerMachine,
+    __in DWORD64 dw64Version,
+    __in BOOTSTRAPPER_RELATED_OPERATION operation
+    );
+BAAPI UserExperienceOnDetectTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __in BOOTSTRAPPER_PACKAGE_STATE patchState
+    );
+BAAPI UserExperienceOnDetectUpdate(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __in DWORD64 dw64Size,
+    __in DWORD64 dw64Version,
+    __in_z_opt LPCWSTR wzTitle,
+    __in_z_opt LPCWSTR wzSummary,
+    __in_z_opt LPCWSTR wzContentType,
+    __in_z_opt LPCWSTR wzContent,
+    __inout BOOL* pfStopProcessingUpdates
+    );
+BAAPI UserExperienceOnDetectUpdateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzUpdateLocation,
+    __inout BOOL* pfSkip
+    );
+BAAPI UserExperienceOnDetectUpdateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfIgnoreError
+    );
+BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
     );
-HRESULT UserExperienceOnPlanComplete(
+BAAPI UserExperienceOnPlanCompatibleMsiPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId,
+    __in DWORD64 dw64CompatiblePackageVersion,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    );
+BAAPI UserExperienceOnPlanCompatibleMsiPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzCompatiblePackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state,
+    __in BOOTSTRAPPER_REQUEST_STATE requested,
+    __in BOOTSTRAPPER_ACTION_STATE execute,
+    __in BOOTSTRAPPER_ACTION_STATE rollback
+    );
+BAAPI UserExperienceOnPlanComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
+    );
+BAAPI UserExperienceOnPlanMsiFeature(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzFeatureId,
+    __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState
+    );
+BAAPI UserExperienceOnPlanPackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    );
+BAAPI UserExperienceOnPlanPackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_PACKAGE_STATE state,
+    __in BOOTSTRAPPER_REQUEST_STATE requested,
+    __in BOOTSTRAPPER_ACTION_STATE execute,
+    __in BOOTSTRAPPER_ACTION_STATE rollback
+    );
+BAAPI UserExperienceOnPlanRelatedBundle(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzBundleId,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    );
+BAAPI UserExperienceOnPlanTargetMsiPackage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzProductCode,
+    __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    );
+BAAPI UserExperienceOnShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+    );
+BAAPI UserExperienceOnStartup(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+BAAPI UserExperienceOnSystemShutdown(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwEndSession,
+    __inout BOOL* pfCancel
     );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,

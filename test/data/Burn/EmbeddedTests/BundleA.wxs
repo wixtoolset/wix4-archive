@@ -7,7 +7,7 @@
 <?define Version = 1.0.0.0?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs">
   <Bundle Compressed="no" Name="~$(var.TestName) - Bundle A" Manufacturer="!(bind.packageManufacturer.PackageA)" Version="$(var.Version)" UpgradeCode="5802E2D0-AC39-4486-86FF-D4B7AD012EB5">
     <Log Prefix="~$(var.TestName)_BundleA" />
     <Variable Name="TestName" Value="$(var.TestName)" />

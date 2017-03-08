@@ -1,18 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
-
-
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
   <PropertyGroup>
     <ProjectGuid>{7C27518B-84AD-4679-8EF4-29DF552CF1AC}</ProjectGuid>
     <AssemblyName>WixBA</AssemblyName>
     <OutputType>Library</OutputType>
     <RootNamespace>WixToolset.UX</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="Hresult.cs" />
     <Compile Include="Model.cs" />
+    <Compile Include="BrowserProperties.cs" />
     <Compile Include="NewsItem.cs" />
     <Compile Include="ProgressViewModel.cs" />
     <Compile Include="RelayCommand.cs" />
@@ -31,6 +29,7 @@
     </Compile>
     <Compile Include="RootViewModel.cs" />
     <Compile Include="UpdateViewModel.cs" />
+    <Compile Include="WindowProperties.cs" />
     <Compile Include="WixBA.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="WixBA.BootstrapperCore.config">
@@ -38,21 +37,15 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Resources\exit.png" />
-    <Resource Include="Resources\gear.png" />
-    <Resource Include="Resources\legal.png" />
-    <Resource Include="Resources\news.png" />
-    <Resource Include="Resources\wrench.png" />
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -61,6 +54,11 @@
     <Reference Include="WindowsBase" />
     <ProjectReference Include="..\..\ext\BalExtension\mba\core\core.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Resource Include="Resources\logo-white-hollow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\logo-black-hollow.png" />
+  </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
 </Project>

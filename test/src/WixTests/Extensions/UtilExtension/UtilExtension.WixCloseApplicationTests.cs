@@ -27,8 +27,8 @@ namespace WixTest.Tests.Extensions.UtilExtension
             string msiFile = Builder.BuildPackage(sourceFile, "test.msi", "WixUtilExtension");
 
             Verifier.VerifyCustomActionTableData(msiFile,
-                new CustomActionTableData("WixCloseApplications", 65, "WixCA", "WixCloseApplications"),
-                new CustomActionTableData("WixCloseApplicationsDeferred", 3137, "WixCA", "WixCloseApplicationsDeferred"),
+                new CustomActionTableData("WixCloseApplications", 1, "WixCA", "WixCloseApplications"),
+                new CustomActionTableData("WixCloseApplicationsDeferred", 3073, "WixCA", "WixCloseApplicationsDeferred"),
                 new CustomActionTableData("WixCheckRebootRequired", 65, "WixCA", "WixCheckRebootRequired"));
 
             // Verify WixCloseApplication table contains the right data

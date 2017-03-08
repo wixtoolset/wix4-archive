@@ -7,6 +7,7 @@ namespace WixToolset.UX
     using System.Reflection;
     using System.Windows;
     using System.Windows.Input;
+    using System.Windows.Threading;
     using WixToolset.Bootstrapper;
 
     /// <summary>
@@ -42,7 +43,9 @@ namespace WixToolset.UX
         public InstallationViewModel InstallationViewModel { get; private set; }
         public ProgressViewModel ProgressViewModel { get; private set; }
         public UpdateViewModel UpdateViewModel { get; private set; }
+        public Dispatcher Dispatcher { get; set; }
         public IntPtr ViewWindowHandle { get; set; }
+        public bool AutoClose { get; set; }
 
         public ICommand CloseCommand
         {
@@ -65,21 +68,18 @@ namespace WixToolset.UX
                 {
                     this.cancelCommand = new RelayCommand(param =>
                     {
-                        lock (this)
-                        {
-                            this.Canceled = (MessageBoxResult.Yes == MessageBox.Show(WixBA.View, "Are you sure you want to cancel?", "WiX Toolset", MessageBoxButton.YesNo, MessageBoxImage.Error));
-                        }
+                        this.CancelButton_Click();
                     },
-                    param => this.InstallState == InstallationState.Applying);
+                    param => !this.Canceled);
                 }
 
                 return this.cancelCommand;
             }
         }
 
-        public bool CancelEnabled
+        public bool CancelAvailable
         {
-            get { return this.CancelCommand.CanExecute(this); }
+            get { return InstallationState.Applying == this.InstallState; }
         }
 
         public bool Canceled
@@ -117,7 +117,6 @@ namespace WixToolset.UX
 
                     // Notify all the properties derived from the state that the state changed.
                     base.OnPropertyChanged("DetectState");
-                    base.OnPropertyChanged("CancelEnabled");
                 }
             }
         }
@@ -140,7 +139,7 @@ namespace WixToolset.UX
 
                     // Notify all the properties derived from the state that the state changed.
                     base.OnPropertyChanged("InstallState");
-                    base.OnPropertyChanged("CancelEnabled");
+                    base.OnPropertyChanged("CancelAvailable");
                 }
             }
         }
@@ -167,6 +166,38 @@ namespace WixToolset.UX
                     WixBA.Model.InstallDirectory = value;
                     base.OnPropertyChanged("InstallDirectory");
                 }
+            }
+        }
+
+        /// <summary>
+        /// The Title of this bundle.
+        /// </summary>
+        public string Title
+        {
+            get
+            {
+                return WixDistribution.ShortProduct;
+            }
+        }
+
+        /// <summary>
+        /// Prompts the user to make sure they want to cancel.
+        /// This needs to run on the UI thread, use Dispatcher.Invoke to call this from a background thread.
+        /// </summary>
+        public void CancelButton_Click()
+        {
+            if (this.Canceled)
+            {
+                return;
+            }
+
+            if (Display.Full == WixBA.Model.Command.Display)
+            {
+                this.Canceled = (MessageBoxResult.Yes == MessageBox.Show(WixBA.View, "Are you sure you want to cancel?", "WiX Toolset", MessageBoxButton.YesNo, MessageBoxImage.Error));
+            }
+            else
+            {
+                this.Canceled = true;
             }
         }
     }

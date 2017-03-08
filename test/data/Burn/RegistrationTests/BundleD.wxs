@@ -11,7 +11,7 @@
 <?define TestName = Test?>
 <?endif?>
 
-<Wix xmlns="http://wixtoolset.org/schemas/wxs" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
     <Bundle Name="~$(var.TestName) - Bundle C"
             Version="$(var.Version)"
             UpgradeCode="D50EA698-404F-495C-8662-5EA6F5E9ECE8">

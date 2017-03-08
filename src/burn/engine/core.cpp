@@ -39,6 +39,10 @@ static HRESULT ParsePipeConnection(
     __in LPWSTR* rgArgs,
     __in BURN_PIPE_CONNECTION* pConnection
     );
+static HRESULT DetectPackage(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_PACKAGE* pPackage
+    );
 static HRESULT DetectPackagePayloadsCached(
     __in BURN_PACKAGE* pPackage
     );
@@ -104,6 +108,9 @@ extern "C" HRESULT CoreInitialize(
     hr = VariableSetNumeric(&pEngineState->variables, BURN_BUNDLE_ELEVATED, fElevated, TRUE);
     ExitOnFailure(hr, "Failed to overwrite the %ls built-in variable.", BURN_BUNDLE_ELEVATED);
 
+    hr = VariableSetNumeric(&pEngineState->variables, BURN_BUNDLE_UILEVEL, pEngineState->command.display, TRUE);
+    ExitOnFailure(hr, "Failed to overwrite the %ls built-in variable.", BURN_BUNDLE_UILEVEL);
+
     if (sczSourceProcessPath)
     {
         hr = VariableSetLiteralString(&pEngineState->variables, BURN_BUNDLE_SOURCE_PROCESS_PATH, sczSourceProcessPath, TRUE);
@@ -128,13 +135,6 @@ extern "C" HRESULT CoreInitialize(
     {
         hr = CacheInitialize(&pEngineState->registration, &pEngineState->variables, sczSourceProcessPath);
         ExitOnFailure(hr, "Failed to initialize internal cache functionality.");
-
-        BOOL fRunningFromCache = CacheBundleRunningFromCache();
-
-        if (BURN_MODE_UNTRUSTED == pEngineState->mode && fRunningFromCache)
-        {
-            pEngineState->mode = BURN_MODE_NORMAL;
-        }
     }
 
     // If we're not elevated then we'll be loading the bootstrapper application, so extract
@@ -232,7 +232,6 @@ extern "C" HRESULT CoreDetect(
     BOOL fDetectBegan = FALSE;
     BURN_PACKAGE* pPackage = NULL;
     HRESULT hrFirstPackageFailure = S_OK;
-    int nResult = IDNOACTION;
 
     LogId(REPORT_STANDARD, MSG_DETECT_BEGIN, pEngineState->packages.cPackages);
 
@@ -314,37 +313,7 @@ extern "C" HRESULT CoreDetect(
     {
         pPackage = pEngineState->packages.rgPackages + i;
 
-        nResult = pEngineState->userExperience.pUserExperience->OnDetectPackageBegin(pPackage->sczId);
-        hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted detect package begin.");
-
-        // Detect the cache state of the package.
-        hr = DetectPackagePayloadsCached(pPackage);
-        ExitOnFailure(hr, "Failed to detect if payloads are all cached for package: %ls", pPackage->sczId);
-
-        // Use the correct engine to detect the package.
-        switch (pPackage->type)
-        {
-        case BURN_PACKAGE_TYPE_EXE:
-            hr = ExeEngineDetectPackage(pPackage, &pEngineState->variables);
-            break;
-
-        case BURN_PACKAGE_TYPE_MSI:
-            hr = MsiEngineDetectPackage(pPackage, &pEngineState->userExperience);
-            break;
-
-        case BURN_PACKAGE_TYPE_MSP:
-            hr = MspEngineDetectPackage(pPackage, &pEngineState->userExperience);
-            break;
-
-        case BURN_PACKAGE_TYPE_MSU:
-            hr = MsuEngineDetectPackage(pPackage, &pEngineState->variables);
-            break;
-
-        default:
-            hr = E_NOTIMPL;
-            ExitOnRootFailure(hr, "Package type not supported by detect yet.");
-        }
+        hr = DetectPackage(pEngineState, pPackage);
 
         // If the package detection failed, ensure the package state is set to unknown.
         if (FAILED(hr))
@@ -355,15 +324,7 @@ extern "C" HRESULT CoreDetect(
             }
 
             pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_UNKNOWN;
-            LogErrorId(hr, MSG_FAILED_DETECT_PACKAGE, pPackage->sczId, NULL, NULL);
         }
-        // TODO: consider how to notify the UX that a package is cached.
-        //else if (BOOTSTRAPPER_PACKAGE_STATE_CACHED > pPackage->currentState && pPackage->fCached)
-        //{
-        //     pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_CACHED;
-        //}
-
-        pEngineState->userExperience.pUserExperience->OnDetectPackageComplete(pPackage->sczId, hr, pPackage->currentState);
     }
 
     // Log the detected states.
@@ -1013,7 +974,6 @@ extern "C" HRESULT CoreAppendFileHandleAttachedToCommandLine(
 {
     HRESULT hr = S_OK;
     HANDLE hExecutableFile = INVALID_HANDLE_VALUE;
-    LPWSTR sczCommandLine = NULL;
 
     *phExecutableFile = INVALID_HANDLE_VALUE;
 
@@ -1022,18 +982,13 @@ extern "C" HRESULT CoreAppendFileHandleAttachedToCommandLine(
         ExitWithLastError(hr, "Failed to duplicate file handle for attached container.");
     }
 
-    hr = StrAllocFormattedSecure(&sczCommandLine, L"-%ls=%u %ls", BURN_COMMANDLINE_SWITCH_FILEHANDLE_ATTACHED, hExecutableFile, *psczCommandLine);
+    hr = StrAllocFormattedSecure(psczCommandLine, L"%ls -%ls=%u", *psczCommandLine, BURN_COMMANDLINE_SWITCH_FILEHANDLE_ATTACHED, hExecutableFile);
     ExitOnFailure(hr, "Failed to append the file handle to the command line.");
-
-    StrSecureZeroFreeString(*psczCommandLine);
-    *psczCommandLine = sczCommandLine;
-    sczCommandLine = NULL;
 
     *phExecutableFile = hExecutableFile;
     hExecutableFile = INVALID_HANDLE_VALUE;
 
 LExit:
-    StrSecureZeroFreeString(sczCommandLine);
     ReleaseFileHandle(hExecutableFile);
 
     return hr;
@@ -1048,8 +1003,6 @@ extern "C" HRESULT CoreAppendFileHandleSelfToCommandLine(
 {
     HRESULT hr = S_OK;
     HANDLE hExecutableFile = INVALID_HANDLE_VALUE;
-    LPWSTR sczCommandLine = NULL;
-    LPWSTR sczObfuscatedCommandLine = NULL;
     SECURITY_ATTRIBUTES securityAttributes = { };
     securityAttributes.bInheritHandle = TRUE;
     *phExecutableFile = INVALID_HANDLE_VALUE;
@@ -1057,21 +1010,13 @@ extern "C" HRESULT CoreAppendFileHandleSelfToCommandLine(
     hExecutableFile = ::CreateFileW(wzExecutablePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_DELETE, &securityAttributes, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE != hExecutableFile)
     {
-        hr = StrAllocFormattedSecure(&sczCommandLine, L"-%ls=%u %ls", BURN_COMMANDLINE_SWITCH_FILEHANDLE_SELF, hExecutableFile, *psczCommandLine);
+        hr = StrAllocFormattedSecure(psczCommandLine, L"%ls -%ls=%u", *psczCommandLine, BURN_COMMANDLINE_SWITCH_FILEHANDLE_SELF, hExecutableFile);
         ExitOnFailure(hr, "Failed to append the file handle to the command line.");
-
-        StrSecureZeroFreeString(*psczCommandLine);
-        *psczCommandLine = sczCommandLine;
-        sczCommandLine = NULL;
 
         if (psczObfuscatedCommandLine)
         {
-            hr = StrAllocFormatted(&sczObfuscatedCommandLine, L"-%ls=%u %ls", BURN_COMMANDLINE_SWITCH_FILEHANDLE_SELF, hExecutableFile, *psczObfuscatedCommandLine);
+            hr = StrAllocFormatted(psczObfuscatedCommandLine, L"%ls -%ls=%u", *psczObfuscatedCommandLine, BURN_COMMANDLINE_SWITCH_FILEHANDLE_SELF, hExecutableFile);
             ExitOnFailure(hr, "Failed to append the file handle to the obfuscated command line.");
-
-            StrSecureZeroFreeString(*psczObfuscatedCommandLine);
-            *psczObfuscatedCommandLine = sczObfuscatedCommandLine;
-            sczObfuscatedCommandLine = NULL;
         }
 
         *phExecutableFile = hExecutableFile;
@@ -1079,8 +1024,6 @@ extern "C" HRESULT CoreAppendFileHandleSelfToCommandLine(
     }
 
 LExit:
-    StrSecureZeroFreeString(sczObfuscatedCommandLine);
-    StrSecureZeroFreeString(sczCommandLine);
     ReleaseFileHandle(hExecutableFile);
 
     return hr;
@@ -1328,12 +1271,20 @@ static HRESULT ParseCommandLine(
                     ExitOnRootFailure(hr = E_INVALIDARG, "Must specify the embedded name, token and parent process id.");
                 }
 
-                if (BURN_MODE_UNTRUSTED != *pMode)
+                switch (*pMode)
                 {
+                case BURN_MODE_UNTRUSTED:
+                    // Leave mode as UNTRUSTED to launch the clean room process.
+                    break;
+                case BURN_MODE_NORMAL:
+                    // The initialization code already assumes that the
+                    // clean room switch is at the beginning of the command line,
+                    // so it's safe to assume that the mode is NORMAL in the clean room.
+                    *pMode = BURN_MODE_EMBEDDED;
+                    break;
+                default:
                     ExitOnRootFailure(hr = E_INVALIDARG, "Multiple mode command-line switches were provided.");
                 }
-
-                *pMode = BURN_MODE_EMBEDDED;
 
                 ++i;
 
@@ -1520,6 +1471,66 @@ static HRESULT ParsePipeConnection(
     ExitOnFailure(hr, "Failed to copy parent process id from command line.");
 
 LExit:
+    return hr;
+}
+
+static HRESULT DetectPackage(
+    __in BURN_ENGINE_STATE* pEngineState,
+    __in BURN_PACKAGE* pPackage
+    )
+{
+    HRESULT hr = S_OK;
+    BOOL fBegan = FALSE;
+    
+    fBegan = TRUE;
+    hr = UserExperienceOnDetectPackageBegin(&pEngineState->userExperience, pPackage->sczId);
+    ExitOnRootFailure(hr, "BA aborted detect package begin.");
+
+    // Detect the cache state of the package.
+    hr = DetectPackagePayloadsCached(pPackage);
+    ExitOnFailure(hr, "Failed to detect if payloads are all cached for package: %ls", pPackage->sczId);
+
+    // Use the correct engine to detect the package.
+    switch (pPackage->type)
+    {
+    case BURN_PACKAGE_TYPE_EXE:
+        hr = ExeEngineDetectPackage(pPackage, &pEngineState->variables);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSI:
+        hr = MsiEngineDetectPackage(pPackage, &pEngineState->userExperience);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSP:
+        hr = MspEngineDetectPackage(pPackage, &pEngineState->userExperience);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSU:
+        hr = MsuEngineDetectPackage(pPackage, &pEngineState->variables);
+        break;
+
+    default:
+        hr = E_NOTIMPL;
+        ExitOnRootFailure(hr, "Package type not supported by detect yet.");
+    }
+
+    // TODO: consider how to notify the UX that a package is cached.
+    //else if (BOOTSTRAPPER_PACKAGE_STATE_CACHED > pPackage->currentState && pPackage->fCached)
+    //{
+    //     pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_CACHED;
+    //}
+
+LExit:
+    if (FAILED(hr))
+    {
+        LogErrorId(hr, MSG_FAILED_DETECT_PACKAGE, pPackage->sczId, NULL, NULL);
+    }
+
+    if (fBegan)
+    {
+        UserExperienceOnDetectPackageComplete(&pEngineState->userExperience, pPackage->sczId, hr, pPackage->currentState);
+    }
+
     return hr;
 }
 

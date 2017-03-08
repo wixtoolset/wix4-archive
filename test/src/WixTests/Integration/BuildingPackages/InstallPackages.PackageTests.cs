@@ -154,7 +154,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.InstallPackages
             Light light = new Light(candle);
             light.IgnoreExtraWixMessages = true;
             light.Run();
-            string wordcount = Verifier.GetMsiSummaryInformationProperty(light .OutputFile , Verifier.MsiSummaryInformationProperty.WordCount);
+            string wordcount = Verifier.GetMsiSummaryInformationProperty(light.OutputFile , Verifier.MsiSummaryInformationProperty.WordCount);
             byte adminImage;
             if (byte.TryParse(wordcount, out adminImage))
             {
@@ -169,7 +169,8 @@ namespace WixTest.Tests.Integration.BuildingPackages.InstallPackages
             }
         }
 
-        [NamedFact(Timeout = 3600000)]
+        [NamedFact]
+        //[NamedFact(Timeout = 3600000)]
         [Description("Verify that installer version can be set to any valid version")]
         [Priority(2)]
         [Trait("Bug Link", "https://sourceforge.net/tracker/?func=detail&aid=2990011&group_id=105970&atid=642714")]

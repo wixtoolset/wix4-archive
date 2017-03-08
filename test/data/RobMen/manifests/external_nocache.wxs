@@ -2,11 +2,11 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 
-<BurnManifest xmlns="http://schemas.microsoft.com/wix/2008/Burn">
-   <UX SourceFile="stdux.dll">
+<BurnManifest xmlns="http://wixtoolset.org/schemas/v4/2008/Burn">
+   <BootstrapperApplication SourceFile="stdux.dll">
        <Resource SourceFile="en-us.wxl" />
        <Resource SourceFile="thm.xml" />
-   </UX>
+   </BootstrapperApplication>
 
    <Registration Id="external_nocache" ExecutableName='b.exe' PerMachine='yes'>
 
