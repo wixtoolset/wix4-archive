@@ -62,6 +62,12 @@
         <Title>WiX v$(MajorMinorVersionDottedString) source and symbols for debugging purposes.</Title>
         <Protected>true</Protected>
       </ReleaseFile>
+      
+      <!-- Upload the Nuget package to the website, at least until it gets published to nuget.org -->
+      <ReleaseFile Include="$(OutputPath)WixToolset.Tools.$(FullBuildVersionString).nupkg">
+        <Title>WiX v$(MajorMinorVersionDottedString) WixToolset.Tools Nuget package.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
 
       <ReleaseFile Include="$(OutputPath)WixSettingsBrowser$(MajorMinorVersionString).exe">
         <Title>WiX v$(MajorMinorVersionDottedString) Toolset settings engine plus browser.</Title>
