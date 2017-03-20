@@ -50,6 +50,7 @@ namespace WixToolset.UX
         private ICommand licenseCommand;
         private ICommand launchHomePageCommand;
         private ICommand launchNewsCommand;
+        private ICommand launchVSExtensionPageCommand;
         private ICommand installCommand;
         private ICommand repairCommand;
         private ICommand uninstallCommand;
@@ -130,6 +131,13 @@ namespace WixToolset.UX
                 return WixDistribution.SupportUrl;
             }
         }
+        public string VSExtensionUrl
+        {
+            get
+            {
+                return WixDistribution.VSExtensionsLandingUrl;
+            }
+        }
 
         public string Message
         {
@@ -207,6 +215,19 @@ namespace WixToolset.UX
                 }
 
                 return this.launchNewsCommand;
+            }
+        }
+
+        public ICommand LaunchVSExtensionPageCommand
+        {
+            get
+            {
+                if (this.launchVSExtensionPageCommand == null)
+                {
+                    this.launchVSExtensionPageCommand = new RelayCommand(param => WixBA.LaunchUrl(WixDistribution.VSExtensionsLandingUrl), param => true);
+                }
+
+                return this.launchVSExtensionPageCommand;
             }
         }
 
