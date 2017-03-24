@@ -3,9 +3,9 @@
 #include "precomp.h"
 
 LPCWSTR vcsShortcutsQuery =
-    L"SELECT `Component_`, `Directory_`, `Name`, `Target`, `Attributes` "
+    L"SELECT `Component_`, `Directory_`, `Name`, `Target`, `Attributes`, `IconFile`, `IconIndex` "
     L"FROM `WixInternetShortcut`";
-enum eShortcutsQuery { esqComponent = 1, esqDirectory, esqFilename, esqTarget, esqAttributes };
+enum eShortcutsQuery { esqComponent = 1, esqDirectory, esqFilename, esqTarget, esqAttributes, esqIconFile, esqIconIndex };
 enum eShortcutsAttributes { esaLink = 0, esaURL = 1 };
 
 /******************************************************************
@@ -34,6 +34,8 @@ extern "C" UINT __stdcall WixSchedInternetShortcuts(
     LPWSTR pwzTarget = NULL;
     LPWSTR pwzShortcutPath = NULL;
     int iAttr = 0;
+    LPWSTR pwzIconFile = NULL; 
+    int iIconIndex = 0; 
     IUniformResourceLocatorW* piURL = NULL;
     IShellLinkW* piShellLink = NULL; 
     BOOL fInitializedCom = FALSE;
@@ -84,6 +86,10 @@ extern "C" UINT __stdcall WixSchedInternetShortcuts(
         ExitOnFailure(hr, "failed to get shortcut target");
         hr = WcaGetRecordInteger(hRec, esqAttributes, &iAttr);
         ExitOnFailure(hr, "failed to get shortcut attributes");
+        hr = WcaGetRecordFormattedString(hRec, esqIconFile, &pwzIconFile); 
+        ExitOnFailure(hr, "failed to get shortcut icon file"); 
+        hr = WcaGetRecordInteger(hRec, esqIconIndex, &iIconIndex); 
+        ExitOnFailure(hr, "failed to get shortcut icon index"); 
 
         // skip processing this WixInternetShortcut row if the component isn't being configured
         WCA_TODO todo = WcaGetComponentToDo(pwzComponent);
@@ -125,6 +131,10 @@ extern "C" UINT __stdcall WixSchedInternetShortcuts(
             ExitOnFailure(hr, "failed to write shortcut target to custom action data");
             hr = WcaWriteIntegerToCaData(iAttr, &pwzCustomActionData);
             ExitOnFailure(hr, "failed to write shortcut attributes to custom action data");
+            hr = WcaWriteStringToCaData(pwzIconFile, &pwzCustomActionData); 
+            ExitOnFailure(hr, "failed to write icon file to custom action data"); 
+            hr = WcaWriteIntegerToCaData(iIconIndex, &pwzCustomActionData); 
+            ExitOnFailure(hr, "failed to write icon index to custom action data"); 
 
             uiCost += COST_INTERNETSHORTCUT;
         }
@@ -242,8 +252,8 @@ static HRESULT CreateUrl(
 LExit:
     ReleaseObject(piPersistFile);
     ReleaseObject(piURL);
-	ReleaseObject(piStorage);
-	ReleaseObject(piProperties);
+    ReleaseObject(piStorage);
+    ReleaseObject(piProperties);
 
     return hr;
 }
