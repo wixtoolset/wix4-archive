@@ -7,6 +7,8 @@
   <Import Project="$(CustomBeforeWixCATargets)" Condition=" '$(CustomBeforeWixCATargets)' != '' and Exists('$(CustomBeforeWixCATargets)')" />
 
   <PropertyGroup>
+    <WixCATargetsImported>true</WixCATargetsImported>
+
     <TargetCAFileName Condition=" '$(TargetCAFileName)' == '' ">$(TargetName).CA$(TargetExt)</TargetCAFileName>
 
     <WixSdkPath Condition=" '$(WixSdkPath)' == '' ">$(MSBuildThisFileDirectory)</WixSdkPath>
