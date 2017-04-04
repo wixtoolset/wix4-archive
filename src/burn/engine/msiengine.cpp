@@ -1248,7 +1248,7 @@ extern "C" HRESULT MsiEngineExecutePackage(
         ExitOnFailure(hr, "Failed to add the list of dependencies to ignore to the properties.");
 
         hr = WiuInstallProduct(sczMsiPath, sczProperties, &restart);
-        ExitOnFailure(hr, "Failed to run maintanance mode for MSI package.");
+        ExitOnFailure(hr, "Failed to run maintenance mode for MSI package.");
         break;
 
     case BOOTSTRAPPER_ACTION_STATE_UNINSTALL:
