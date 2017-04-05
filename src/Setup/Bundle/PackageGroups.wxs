@@ -65,7 +65,9 @@
             <?endif?>
 
             <?ifdef VS2017Available ?>
-            <MsiPackage Name='data\nsdk2017.msi' SourceFile='data\'>
+            <MsiPackage Vital='yes' Name='data\nsdk2017.msi' SourceFile='data\nsdk2017.msi'
+                        DownloadUrl='http://wixtoolset.org/releases/$(var.WixVersion)/{2}'
+                        >
                 <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
             </MsiPackage>
             <?endif?>
