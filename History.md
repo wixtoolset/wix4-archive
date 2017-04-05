@@ -1,3 +1,7 @@
+## WixBuild: Version 4.0.0.5205
+
+* leshy84: WIXBUG:5548 - fix WiX Burn (mbahost) not to leave del*.tmp files in temp directory
+
 ## WixBuild: Version 4.0.0.5204
 
 * @Barnson: Add VS2017 native SDK to bundle.
