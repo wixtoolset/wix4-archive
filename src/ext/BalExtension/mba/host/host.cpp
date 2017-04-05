@@ -24,6 +24,7 @@ extern "C" typedef HRESULT(WINAPI *PFN_MBAPREQ_BOOTSTRAPPER_APPLICATION_CREATE)(
 
 static HINSTANCE vhInstance = NULL;
 static ICorRuntimeHost *vpCLRHost = NULL;
+static _AppDomain *vpAppDomain = NULL;
 static HMODULE vhMbapreqModule = NULL;
 
 
@@ -98,18 +99,17 @@ extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
 {
     HRESULT hr = S_OK; 
     HRESULT hrHostInitialization = S_OK;
-    _AppDomain* pAppDomain = NULL;
     IBootstrapperEngine* pEngine = NULL;
 
     hr = BalInitializeFromCreateArgs(pArgs, &pEngine);
     ExitOnFailure(hr, "Failed to initialize Bal.");
 
-    hr = GetAppDomain(&pAppDomain);
+    hr = GetAppDomain(&vpAppDomain);
     if (SUCCEEDED(hr))
     {
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Loading managed bootstrapper application.");
 
-        hr = CreateManagedBootstrapperApplication(pAppDomain, pEngine, pArgs, pResults);
+        hr = CreateManagedBootstrapperApplication(vpAppDomain, pEngine, pArgs, pResults);
         BalExitOnFailure(hr, "Failed to create the managed bootstrapper application.");
     }
     else // fallback to the prerequisite BA.
@@ -131,14 +131,27 @@ extern "C" HRESULT WINAPI BootstrapperApplicationCreate(
     }
 
 LExit:
-    ReleaseObject(pAppDomain);
-
     return hr;
 }
 
 extern "C" void WINAPI BootstrapperApplicationDestroy()
 {
-    ReleaseNullObject(vpCLRHost);
+    if (vpAppDomain)
+    {
+        HRESULT hr = vpCLRHost->UnloadDomain(vpAppDomain);
+        if (FAILED(hr))
+        {
+            BalLogError(hr, "Failed to unload app domain.");
+        }
+
+        vpAppDomain->Release();
+    }
+
+    if (vpCLRHost)
+    {
+        vpCLRHost->Stop();
+        vpCLRHost->Release();
+    }
 
     if (vhMbapreqModule)
     {
