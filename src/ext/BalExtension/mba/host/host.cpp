@@ -141,7 +141,7 @@ extern "C" void WINAPI BootstrapperApplicationDestroy()
         HRESULT hr = vpCLRHost->UnloadDomain(vpAppDomain);
         if (FAILED(hr))
         {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Failed to unload app domain, error: 0x%08x.", hr);
+            BalLogError(hr, "Failed to unload app domain.");
         }
 
         vpAppDomain->Release();
