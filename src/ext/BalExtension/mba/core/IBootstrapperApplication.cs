@@ -162,6 +162,7 @@ namespace WixToolset.Bootstrapper
         [return: MarshalAs(UnmanagedType.I4)]
         int OnPlanRelatedBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
             [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
@@ -170,6 +171,7 @@ namespace WixToolset.Bootstrapper
         [return: MarshalAs(UnmanagedType.I4)]
         int OnPlanPackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
             [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
@@ -180,6 +182,7 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
             [MarshalAs(UnmanagedType.U8)] long dw64CompatiblePackageVersion,
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
             [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
@@ -201,6 +204,7 @@ namespace WixToolset.Bootstrapper
         int OnPlanTargetMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
             [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
@@ -210,6 +214,7 @@ namespace WixToolset.Bootstrapper
         int OnPlanMsiFeature(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzFeatureId,
+            [MarshalAs(UnmanagedType.U4)] FeatureState recommendedState,
             [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );

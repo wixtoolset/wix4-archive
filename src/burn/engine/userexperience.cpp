@@ -726,6 +726,7 @@ EXTERN_C BAAPI UserExperienceOnPlanCompatibleMsiPackageBegin(
     args.wzPackageId = wzPackageId;
     args.wzCompatiblePackageId = wzCompatiblePackageId;
     args.dw64CompatiblePackageVersion = dw64CompatiblePackageVersion;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -790,6 +791,7 @@ EXTERN_C BAAPI UserExperienceOnPlanMsiFeature(
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
     args.wzFeatureId = wzFeatureId;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -840,6 +842,7 @@ EXTERN_C BAAPI UserExperienceOnPlanPackageBegin(
 
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -900,6 +903,7 @@ EXTERN_C BAAPI UserExperienceOnPlanRelatedBundle(
 
     args.cbSize = sizeof(args);
     args.wzBundleId = wzBundleId;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -931,6 +935,7 @@ EXTERN_C BAAPI UserExperienceOnPlanTargetMsiPackage(
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
     args.wzProductCode = wzProductCode;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;

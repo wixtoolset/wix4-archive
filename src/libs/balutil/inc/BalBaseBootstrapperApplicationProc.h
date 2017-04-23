@@ -177,7 +177,7 @@ static HRESULT BalBaseBAProcOnPlanRelatedBundle(
     __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults
     )
 {
-    return pBA->OnPlanRelatedBundle(pArgs->wzBundleId, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanRelatedBundle(pArgs->wzBundleId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanPackageBegin(
@@ -186,7 +186,7 @@ static HRESULT BalBaseBAProcOnPlanPackageBegin(
     __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults
     )
 {
-    return pBA->OnPlanPackageBegin(pArgs->wzPackageId, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanPackageBegin(pArgs->wzPackageId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageBegin(
@@ -195,7 +195,7 @@ static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageBegin(
     __inout BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS* pResults
     )
 {
-    return pBA->OnPlanCompatibleMsiPackageBegin(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->dw64CompatiblePackageVersion, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanCompatibleMsiPackageBegin(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->dw64CompatiblePackageVersion, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageComplete(
@@ -213,7 +213,7 @@ static HRESULT BalBaseBAProcOnPlanTargetMsiPackage(
     __inout BA_ONPLANTARGETMSIPACKAGE_RESULTS* pResults
     )
 {
-    return pBA->OnPlanTargetMsiPackage(pArgs->wzPackageId, pArgs->wzProductCode, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanTargetMsiPackage(pArgs->wzPackageId, pArgs->wzProductCode, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanMsiFeature(
@@ -222,7 +222,7 @@ static HRESULT BalBaseBAProcOnPlanMsiFeature(
     __inout BA_ONPLANMSIFEATURE_RESULTS* pResults
     )
 {
-    return pBA->OnPlanMsiFeature(pArgs->wzPackageId, pArgs->wzFeatureId, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanMsiFeature(pArgs->wzPackageId, pArgs->wzFeatureId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanPackageComplete(

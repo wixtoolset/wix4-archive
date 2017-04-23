@@ -139,6 +139,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnPlanRelatedBundle - called when the engine begins planning a related bundle.
     STDMETHOD(OnPlanRelatedBundle)(
         __in_z LPCWSTR wzBundleId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -146,6 +147,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnPlanPackageBegin - called when the engine begins planning a package.
     STDMETHOD(OnPlanPackageBegin)(
         __in_z LPCWSTR wzPackageId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -155,6 +157,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzCompatiblePackageId,
         __in DWORD64 dw64CompatiblePackageVersion,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -176,6 +179,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnPlanTargetMsiPackage)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzProductCode,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -185,6 +189,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnPlanMsiFeature)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzFeatureId,
+        __in BOOTSTRAPPER_FEATURE_STATE recommendedState,
         __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;

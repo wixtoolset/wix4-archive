@@ -361,6 +361,7 @@ public: // IBootstrapperApplication
 
     virtual STDMETHODIMP OnPlanRelatedBundle(
         __in_z LPCWSTR wzBundleId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         )
@@ -371,12 +372,13 @@ public: // IBootstrapperApplication
             *pRequestedState = BOOTSTRAPPER_REQUEST_STATE_NONE;
         }
 
-        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, pRequestedState, pfCancel);
+        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, recommendedState, pRequestedState, pfCancel);
     }
 
 
     virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR wzPackageId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState,
         __inout BOOL* pfCancel
         )
@@ -442,7 +444,7 @@ public: // IBootstrapperApplication
             }
         }
 
-        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, pRequestState, pfCancel);
+        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, recommendedState, pRequestState, pfCancel);
     }
 
 

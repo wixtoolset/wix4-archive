@@ -241,6 +241,7 @@ public: // IBootstrapperApplication
 
     virtual STDMETHODIMP OnPlanRelatedBundle(
         __in_z LPCWSTR /*wzBundleId*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* pfCancel
         )
@@ -250,7 +251,8 @@ public: // IBootstrapperApplication
     }
 
     virtual STDMETHODIMP OnPlanPackageBegin(
-        __in_z LPCWSTR /*wzPackageId*/, 
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestState*/,
         __inout BOOL* pfCancel
         )
@@ -263,6 +265,7 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzCompatiblePackageId*/,
         __in DWORD64 /*dw64CompatiblePackageVersion*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* pfCancel
         )
@@ -287,6 +290,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP OnPlanTargetMsiPackage(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzProductCode*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* pfCancel
         )
@@ -298,6 +302,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP OnPlanMsiFeature(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzFeatureId*/,
+        __in BOOTSTRAPPER_FEATURE_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_FEATURE_STATE* /*pRequestedState*/,
         __inout BOOL* pfCancel
         )

@@ -1239,9 +1239,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanRelatedBundleEventArgs args = new PlanRelatedBundleEventArgs(wzBundleId, pRequestedState, fCancel);
+            PlanRelatedBundleEventArgs args = new PlanRelatedBundleEventArgs(wzBundleId, recommendedState, pRequestedState, fCancel);
             this.OnPlanRelatedBundle(args);
 
             pRequestedState = args.State;
@@ -1249,9 +1249,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanPackageBeginEventArgs args = new PlanPackageBeginEventArgs(wzPackageId, pRequestedState, fCancel);
+            PlanPackageBeginEventArgs args = new PlanPackageBeginEventArgs(wzPackageId, recommendedState, pRequestedState, fCancel);
             this.OnPlanPackageBegin(args);
 
             pRequestedState = args.State;
@@ -1259,9 +1259,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanCompatibleMsiPackageBegin(string wzPackageId, string wzCompatiblePackageId, long dw64CompatiblePackageVersion, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanCompatibleMsiPackageBegin(string wzPackageId, string wzCompatiblePackageId, long dw64CompatiblePackageVersion, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanCompatibleMsiPackageBeginEventArgs args = new PlanCompatibleMsiPackageBeginEventArgs(wzPackageId, wzCompatiblePackageId, dw64CompatiblePackageVersion, pRequestedState, fCancel);
+            PlanCompatibleMsiPackageBeginEventArgs args = new PlanCompatibleMsiPackageBeginEventArgs(wzPackageId, wzCompatiblePackageId, dw64CompatiblePackageVersion, recommendedState, pRequestedState, fCancel);
             this.OnPlanCompatibleMsiPackageBegin(args);
 
             pRequestedState = args.State;
@@ -1277,9 +1277,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanTargetMsiPackage(string wzPackageId, string wzProductCode, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanTargetMsiPackage(string wzPackageId, string wzProductCode, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanTargetMsiPackageEventArgs args = new PlanTargetMsiPackageEventArgs(wzPackageId, wzProductCode, pRequestedState, fCancel);
+            PlanTargetMsiPackageEventArgs args = new PlanTargetMsiPackageEventArgs(wzPackageId, wzProductCode, recommendedState, pRequestedState, fCancel);
             this.OnPlanTargetMsiPackage(args);
 
             pRequestedState = args.State;
@@ -1287,9 +1287,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanMsiFeature(string wzPackageId, string wzFeatureId, ref FeatureState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanMsiFeature(string wzPackageId, string wzFeatureId, FeatureState recommendedState, ref FeatureState pRequestedState, ref bool fCancel)
         {
-            PlanMsiFeatureEventArgs args = new PlanMsiFeatureEventArgs(wzPackageId, wzFeatureId, pRequestedState, fCancel);
+            PlanMsiFeatureEventArgs args = new PlanMsiFeatureEventArgs(wzPackageId, wzFeatureId, recommendedState, pRequestedState, fCancel);
             this.OnPlanMsiFeature(args);
 
             pRequestedState = args.State;

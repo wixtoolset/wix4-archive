@@ -750,12 +750,14 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="PlanRelatedBundleEventArgs"/> class.
         /// </summary>
         /// <param name="bundleId">The identity of the bundle to plan for.</param>
+        /// <param name="recommendedState">The recommended requested state for the bundle.</param>
         /// <param name="state">The requested state for the bundle.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public PlanRelatedBundleEventArgs(string bundleId, RequestState state, bool cancelRecommendation)
+        public PlanRelatedBundleEventArgs(string bundleId, RequestState recommendedState, RequestState state, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.BundleId = bundleId;
+            this.RecommendedState = recommendedState;
             this.State = state;
         }
 
@@ -763,6 +765,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the identity of the bundle to plan for.
         /// </summary>
         public string BundleId { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended requested state for the bundle.
+        /// </summary>
+        public RequestState RecommendedState { get; private set; }
 
         /// <summary>
         /// Gets or sets the requested state for the bundle.
@@ -780,12 +787,14 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="PlanPackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to plan for.</param>
+        /// <param name="recommendedState">The recommended requested state for the package.</param>
         /// <param name="state">The requested state for the package.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public PlanPackageBeginEventArgs(string packageId, RequestState state, bool cancelRecommendation)
+        public PlanPackageBeginEventArgs(string packageId, RequestState recommendedState, RequestState state, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.PackageId = packageId;
+            this.RecommendedState = recommendedState;
             this.State = state;
         }
 
@@ -793,6 +802,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the identity of the package to plan for.
         /// </summary>
         public string PackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended requested state for the package.
+        /// </summary>
+        public RequestState RecommendedState { get; private set; }
 
         /// <summary>
         /// Gets or sets the requested state for the package.
@@ -812,14 +826,16 @@ namespace WixToolset.Bootstrapper
         /// <param name="packageId">The identity of the package that was not detected.</param>
         /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
         /// <param name="compatiblePackageVersion">The version of the compatible package that was detected.</param>
+        /// <param name="recommendedState">The recommended request state for the compatible package.</param>
         /// <param name="state">The requested state for the compatible package.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public PlanCompatibleMsiPackageBeginEventArgs(string packageId, string compatiblePackageId, long compatiblePackageVersion, RequestState state, bool cancelRecommendation)
+        public PlanCompatibleMsiPackageBeginEventArgs(string packageId, string compatiblePackageId, long compatiblePackageVersion, RequestState recommendedState, RequestState state, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.PackageId = packageId;
             this.CompatiblePackageId = compatiblePackageId;
             this.CompatiblePackageVersion = Engine.LongToVersion(compatiblePackageVersion);
+            this.RecommendedState = recommendedState;
             this.State = state;
         }
 
@@ -837,6 +853,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the version of the compatible package detected.
         /// </summary>
         public Version CompatiblePackageVersion { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended state to use for the compatible package for planning.
+        /// </summary>
+        public RequestState RecommendedState { get; private set; }
 
         /// <summary>
         /// Gets or sets the state to use for the compatible package for planning.
@@ -913,13 +934,15 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="packageId">Package identifier of the patch being planned.</param>
         /// <param name="productCode">Product code identifier being planned.</param>
+        /// <param name="recommendedState">Recommended package state of the patch being planned.</param>
         /// <param name="state">Package state of the patch being planned.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public PlanTargetMsiPackageEventArgs(string packageId, string productCode, RequestState state, bool cancelRecommendation)
+        public PlanTargetMsiPackageEventArgs(string packageId, string productCode, RequestState recommendedState, RequestState state, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.PackageId = packageId;
             this.ProductCode = productCode;
+            this.RecommendedState = recommendedState;
             this.State = state;
         }
 
@@ -932,6 +955,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the identity of the patch's target MSI to plan.
         /// </summary>
         public string ProductCode { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended state of the patch to use by planning.
+        /// </summary>
+        public RequestState RecommendedState { get; private set; }
 
         /// <summary>
         /// Gets or sets the state of the patch to use by planning.
@@ -950,13 +978,15 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="packageId">Package identifier being planned.</param>
         /// <param name="featureId">Feature identifier being planned.</param>
+        /// <param name="recommendedState">Recommended feature state being planned.</param>
         /// <param name="state">Feature state being planned.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public PlanMsiFeatureEventArgs(string packageId, string featureId, FeatureState state, bool cancelRecommendation)
+        public PlanMsiFeatureEventArgs(string packageId, string featureId, FeatureState recommendedState, FeatureState state, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.PackageId = packageId;
             this.FeatureId = featureId;
+            this.RecommendedState = recommendedState;
             this.State = state;
         }
 
@@ -969,6 +999,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the identity of the feature to plan.
         /// </summary>
         public string FeatureId { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended feature state to use by planning.
+        /// </summary>
+        public FeatureState RecommendedState { get; private set; }
 
         /// <summary>
         /// Gets or sets the feature state to use by planning.
