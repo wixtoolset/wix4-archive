@@ -99,6 +99,10 @@ void UserExperienceExecutePhaseComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrResult
     );
+BAAPI UserExperienceOnApplyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwPhaseCount
+);
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,

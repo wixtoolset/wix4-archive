@@ -317,11 +317,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnApplyBegin(
-        __in DWORD /*dwPhaseCount*/
+    virtual STDMETHODIMP OnApplyBegin(
+        __in DWORD /*dwPhaseCount*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnElevate()

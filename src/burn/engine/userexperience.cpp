@@ -290,6 +290,32 @@ extern "C" void UserExperienceExecutePhaseComplete(
     }
 }
 
+EXTERN_C BAAPI UserExperienceOnApplyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwPhaseCount
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONAPPLYBEGIN_ARGS args = { };
+    BA_ONAPPLYBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.dwPhaseCount = dwPhaseCount;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnApplyBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,

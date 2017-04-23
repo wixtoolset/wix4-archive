@@ -1082,24 +1082,24 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun installing the bundle.
     /// </summary>
     [Serializable]
-    public class ApplyBeginEventArgs : ResultEventArgs
+    public class ApplyBeginEventArgs : CancellableHResultEventArgs
     {
-        private int phaseCount;
-
-        public ApplyBeginEventArgs(int phaseCount)
-
+        /// <summary>
+        /// Creates a new instance of the <see cref="ApplyBeginEventArgs"/> class.
+        /// </summary>
+        /// <param name="phaseCount">The number of phases during apply.</param>
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ApplyBeginEventArgs(int phaseCount, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.phaseCount = phaseCount;
+            this.PhaseCount = phaseCount;
         }
 
         /// <summary>
         /// Gets the number of phases that the engine will go through in apply.
         /// There are currently two possible phases: cache and execute.
         /// </summary>
-        public int PhaseCount
-        {
-            get { return this.phaseCount; }
-        }
+        public int PhaseCount { get; private set; }
     }
 
     /// <summary>

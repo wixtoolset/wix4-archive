@@ -238,8 +238,9 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnApplyBegin(
-            [MarshalAs(UnmanagedType.U4)] int dwPhaseCount
+        int OnApplyBegin(
+            [MarshalAs(UnmanagedType.U4)] int dwPhaseCount,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

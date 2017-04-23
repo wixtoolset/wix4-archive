@@ -565,9 +565,8 @@ extern "C" HRESULT CoreApply(
         ++dwPhaseCount;
     }
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin(dwPhaseCount);
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted apply begin.");
+    hr = UserExperienceOnApplyBegin(&pEngineState->userExperience, dwPhaseCount);
+    ExitOnRootFailure(hr, "BA aborted apply begin.");
 
     // Abort if this bundle already requires a restart.
     if (BOOTSTRAPPER_RESUME_TYPE_REBOOT_PENDING == pEngineState->command.resumeType)
@@ -703,7 +702,7 @@ LExit:
 
     ReleaseHandle(hCacheThread);
 
-    nResult = pEngineState->userExperience.pUserExperience->OnApplyComplete(hr, restart);
+    int nResult = pEngineState->userExperience.pUserExperience->OnApplyComplete(hr, restart);
     if (IDRESTART == nResult)
     {
         pEngineState->fRestart = TRUE;

@@ -330,8 +330,9 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnApplyBegin(
-        __in DWORD /*dwPhaseCount*/
+    virtual STDMETHODIMP OnApplyBegin(
+        __in DWORD /*dwPhaseCount*/,
+        __inout BOOL* pfCancel
         )
     {
         m_fApplying = TRUE;
@@ -339,7 +340,8 @@ public: // IBootstrapperApplication
         m_dwProgressPercentage = 0;
         m_dwOverallProgressPercentage = 0;
 
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnElevate()

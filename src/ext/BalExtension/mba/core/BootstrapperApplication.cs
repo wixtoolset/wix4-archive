@@ -1313,14 +1313,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnApplyBegin(int dwPhaseCount)
+        int IBootstrapperApplication.OnApplyBegin(int dwPhaseCount, ref bool fCancel)
         {
             this.applying = true;
 
-            ApplyBeginEventArgs args = new ApplyBeginEventArgs(dwPhaseCount);
+            ApplyBeginEventArgs args = new ApplyBeginEventArgs(dwPhaseCount, fCancel);
             this.OnApplyBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnElevate()

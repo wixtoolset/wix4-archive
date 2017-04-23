@@ -213,12 +213,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnApplyBegin - called when the engine begins applying the plan.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnApplyBegin)(
-        __in DWORD dwPhaseCount
+    STDMETHOD(OnApplyBegin)(
+        __in DWORD dwPhaseCount,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnElevate - called before the engine displays an elevation prompt.
