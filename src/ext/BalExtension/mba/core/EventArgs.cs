@@ -1119,6 +1119,22 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
+    /// Additional arguments used when the engine has completed starting the elevated process.
+    /// </summary>
+    [Serializable]
+    public class ElevateCompleteEventArgs : StatusEventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ElevateCompleteEventArgs"/> class.
+        /// </summary>
+        /// <param name="status">The return code of the operation.</param>
+        public ElevateCompleteEventArgs(int status)
+            : base(status)
+        {
+        }
+    }
+
+    /// <summary>
     /// Additional arguments used when the engine has begun registering the location and visibility of the bundle.
     /// </summary>
     [Serializable]

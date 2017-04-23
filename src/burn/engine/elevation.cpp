@@ -312,6 +312,8 @@ LExit:
         PipeConnectionUninitialize(&pEngineState->companionConnection);
     }
 
+    UserExperienceOnElevateComplete(&pEngineState->userExperience, hr);
+
     return hr;
 }
 

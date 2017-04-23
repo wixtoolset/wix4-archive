@@ -332,6 +332,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnElevateComplete(
+        __in HRESULT /*hrStatus*/
+        )
+    {
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(int) OnRegisterBegin()
     {
         return IDNOACTION;

@@ -191,6 +191,10 @@ BAAPI UserExperienceOnDetectUpdateComplete(
 BAAPI UserExperienceOnElevateBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
+BAAPI UserExperienceOnElevateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

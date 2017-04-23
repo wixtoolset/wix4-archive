@@ -251,6 +251,12 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
+        int OnElevateComplete(
+            int hrStatus
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
         Result OnProgress(
             [MarshalAs(UnmanagedType.U4)] int dwProgressPercentage,
             [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage

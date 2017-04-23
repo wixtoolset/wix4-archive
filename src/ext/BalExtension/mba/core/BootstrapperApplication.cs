@@ -174,6 +174,11 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<ElevateBeginEventArgs> ElevateBegin;
 
         /// <summary>
+        /// Fired when the engine has completed starting the elevated process.
+        /// </summary>
+        public event EventHandler<ElevateCompleteEventArgs> ElevateComplete;
+
+        /// <summary>
         /// Fired when the engine has begun registering the location and visibility of the bundle.
         /// </summary>
         public event EventHandler<RegisterBeginEventArgs> RegisterBegin;
@@ -726,6 +731,19 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnElevateBegin(ElevateBeginEventArgs args)
         {
             EventHandler<ElevateBeginEventArgs> handler = this.ElevateBegin;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when the engine has completed starting the elevated process.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnElevateComplete(ElevateCompleteEventArgs args)
+        {
+            EventHandler<ElevateCompleteEventArgs> handler = this.ElevateComplete;
             if (null != handler)
             {
                 handler(this, args);
@@ -1330,6 +1348,14 @@ namespace WixToolset.Bootstrapper
             this.OnElevateBegin(args);
 
             fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnElevateComplete(int hrStatus)
+        {
+            ElevateCompleteEventArgs args = new ElevateCompleteEventArgs(hrStatus);
+            this.OnElevateComplete(args);
+
             return args.HResult;
         }
 

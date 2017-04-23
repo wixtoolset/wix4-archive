@@ -219,9 +219,16 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         ) = 0;
 
     // OnElevateBegin - called before the engine displays an elevation prompt.
-    //             Will only happen once per execution of the engine.
+    //                  Will only happen once per execution of the engine,
+    //                  assuming the elevation was successful.
     STDMETHOD(OnElevateBegin)(
         __inout BOOL* pfCancel
+        ) = 0;
+
+    // OnElevateComplete - called after the engine attempted to elevate.
+    //
+    STDMETHOD(OnElevateComplete)(
+        __in HRESULT hrStatus
         ) = 0;
 
     // OnProgress - called when the engine makes progress.
