@@ -102,7 +102,7 @@ void UserExperienceExecutePhaseComplete(
 BAAPI UserExperienceOnApplyBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwPhaseCount
-);
+    );
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
@@ -187,6 +187,9 @@ BAAPI UserExperienceOnDetectUpdateComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus,
     __inout BOOL* pfIgnoreError
+    );
+BAAPI UserExperienceOnElevateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
     );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,

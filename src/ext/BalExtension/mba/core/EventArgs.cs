@@ -1106,8 +1106,16 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine is about to start the elevated process.
     /// </summary>
     [Serializable]
-    public class ElevateEventArgs : ResultEventArgs
+    public class ElevateBeginEventArgs : CancellableHResultEventArgs
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ElevateBeginEventArgs"/> class.
+        /// </summary>
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ElevateBeginEventArgs(bool cancelRecommendation)
+            : base(cancelRecommendation)
+        {
+        }
     }
 
     /// <summary>

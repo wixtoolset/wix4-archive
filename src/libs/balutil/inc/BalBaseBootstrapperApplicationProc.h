@@ -243,6 +243,15 @@ static HRESULT BalBaseBAProcOnApplyBegin(
     return pBA->OnApplyBegin(pArgs->dwPhaseCount, &pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnElevateBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONELEVATEBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONELEVATEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnElevateBegin(&pResults->fCancel);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -340,6 +349,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN:
             hr = BalBaseBAProcOnApplyBegin(pBA, reinterpret_cast<BA_ONAPPLYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATEBEGIN:
+            hr = BalBaseBAProcOnElevateBegin(pBA, reinterpret_cast<BA_ONELEVATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATEBEGIN_RESULTS*>(pvResults));
             break;
         }
     }

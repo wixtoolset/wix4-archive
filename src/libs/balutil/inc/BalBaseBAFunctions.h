@@ -325,9 +325,11 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnElevate()
+    virtual STDMETHODIMP OnElevateBegin(
+        __inout BOOL* /*pfCancel*/
+        )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnRegisterBegin()

@@ -269,9 +269,8 @@ extern "C" HRESULT ElevationElevate(
     int nResult = IDOK;
     HANDLE hPipesCreatedEvent = INVALID_HANDLE_VALUE;
 
-    nResult = pEngineState->userExperience.pUserExperience->OnElevate();
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted elevation requirement.");
+    hr = UserExperienceOnElevateBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted elevation requirement.");
 
     hr = PipeCreateNameAndSecret(&pEngineState->companionConnection.sczName, &pEngineState->companionConnection.sczSecret);
     ExitOnFailure(hr, "Failed to create pipe name and client token.");
