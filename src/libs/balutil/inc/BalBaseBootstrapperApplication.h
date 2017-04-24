@@ -359,6 +359,29 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnProgress(
+        __in DWORD dwProgressPercentage,
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
+        )
+    {
+        HRESULT hr = S_OK;
+        int nResult = IDNOACTION;
+
+        m_dwProgressPercentage = dwProgressPercentage;
+        m_dwOverallProgressPercentage = dwOverallProgressPercentage;
+
+        if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_display)
+        {
+            hr = m_pEngine->SendEmbeddedProgress(m_dwProgressPercentage, m_dwOverallProgressPercentage, &nResult);
+            BalExitOnFailure(hr, "Failed to send embedded overall progress.");
+        }
+
+    LExit:
+        *pfCancel |= CheckCanceled();
+        return hr;
+    }
+
     virtual STDMETHODIMP_(int) OnRegisterBegin()
     {
         return CheckCanceled() ? IDCANCEL : IDNOACTION;
@@ -536,27 +559,6 @@ public: // IBootstrapperApplication
         }
 
         return CheckCanceled() ? IDCANCEL : nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(int) OnProgress(
-        __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
-        )
-    {
-        HRESULT hr = S_OK;
-        int nResult = IDNOACTION;
-
-        m_dwProgressPercentage = dwProgressPercentage;
-        m_dwOverallProgressPercentage = dwOverallProgressPercentage;
-
-        if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_display)
-        {
-            hr = m_pEngine->SendEmbeddedProgress(m_dwProgressPercentage, m_dwOverallProgressPercentage, &nResult);
-            BalExitOnFailure(hr, "Failed to send embedded overall progress.");
-        }
-
-    LExit:
-        return FAILED(hr) ? IDERROR : CheckCanceled() ? IDCANCEL : nResult;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteProgress(

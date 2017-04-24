@@ -670,9 +670,10 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnProgress(
+    virtual STDMETHODIMP OnProgress(
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
         )
     {
         WCHAR wzProgress[5] = { };
@@ -687,7 +688,7 @@ public: // IBootstrapperApplication
         ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_BAR, dwOverallProgressPercentage);
         SetTaskbarButtonProgress(dwOverallProgressPercentage);
 
-        return __super::OnProgress(dwProgressPercentage, dwOverallProgressPercentage);
+        return __super::OnProgress(dwProgressPercentage, dwOverallProgressPercentage, pfCancel);
     }
 
 
@@ -1039,6 +1040,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE:
             OnElevateCompleteFallback(reinterpret_cast<BA_ONELEVATECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATECOMPLETE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS:
+            OnProgressFallback(reinterpret_cast<BA_ONPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONPROGRESS_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1271,9 +1275,17 @@ private: // privates
     void OnElevateCompleteFallback(
         __in BA_ONELEVATECOMPLETE_ARGS* pArgs,
         __inout BA_ONELEVATECOMPLETE_RESULTS* pResults
-    )
+        )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONELEVATECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnProgressFallback(
+        __in BA_ONPROGRESS_ARGS* pArgs,
+        __inout BA_ONPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

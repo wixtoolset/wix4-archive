@@ -339,6 +339,15 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnProgress(
+        __in DWORD /*dwProgressPercentage*/,
+        __in DWORD /*dwOverallProgressPercentage*/,
+        __inout BOOL* /*pfCancel*/
+    )
+    {
+        return IDNOACTION;
+    }
+
     virtual STDMETHODIMP_(int) OnRegisterBegin()
     {
         return IDNOACTION;
@@ -481,14 +490,6 @@ public: // IBootstrapperApplication
         )
     {
         return nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(int) OnProgress(
-        __in DWORD /*dwProgressPercentage*/,
-        __in DWORD /*dwOverallProgressPercentage*/
-        )
-    {
-        return IDNOACTION;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteProgress(

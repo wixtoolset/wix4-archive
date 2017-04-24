@@ -251,6 +251,12 @@ BAAPI UserExperienceOnPlanTargetMsiPackage(
     __in_z LPCWSTR wzProductCode,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
     );
+BAAPI UserExperienceOnProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fRollback,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage
+    );
 BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction

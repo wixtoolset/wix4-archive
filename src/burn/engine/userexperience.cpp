@@ -9,6 +9,14 @@ static int FilterResult(
     __in int nResult
     );
 
+static HRESULT FilterExecuteResult(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOL fRollback,
+    __in BOOL fCancel,
+    __in LPCWSTR sczEventName
+    );
+
 
 // function definitions
 
@@ -1024,6 +1032,29 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fRollback,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPROGRESS_ARGS args = { };
+    BA_ONPROGRESS_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.dwProgressPercentage = dwProgressPercentage;
+    args.dwOverallPercentage = dwOverallPercentage;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS, &args, &results, pUserExperience->pvBAProcContext);
+    hr = FilterExecuteResult(pUserExperience, hr, fRollback, results.fCancel, L"OnProgress");
+
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
@@ -1303,4 +1334,46 @@ static int FilterResult(
     }
 
     return nResult;
+}
+
+// This filters the BA's responses to events during apply.
+// If an apply thread failed, then return its error so this thread will bail out.
+// During rollback, the BA can't cancel.
+static HRESULT FilterExecuteResult(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOL fRollback,
+    __in BOOL fCancel,
+    __in LPCWSTR sczEventName
+    )
+{
+    HRESULT hr = hrStatus;
+    HRESULT hrApplyError = pUserExperience->hrApplyError; // make sure to use the same value for the whole method, since it can be changed in other threads.
+
+    // If we failed return that error unless this is rollback which should roll on.
+    if (FAILED(hrApplyError) && !fRollback)
+    {
+        hr = hrApplyError;
+    }
+    else if (fRollback)
+    {
+        if (fCancel)
+        {
+            LogId(REPORT_STANDARD, MSG_APPLY_CANCEL_IGNORED_DURING_ROLLBACK, sczEventName);
+        }
+        // TODO: since cancel isn't allowed, should the BA's HRESULT be ignored as well?
+        // In the previous code, they could still alter rollback by returning IDERROR.
+    }
+    else
+    {
+        ExitOnFailure(hr, "BA %ls failed.", sczEventName);
+
+        if (fCancel)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+    }
+
+LExit:
+    return hr;
 }

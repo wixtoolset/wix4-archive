@@ -179,6 +179,11 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<ElevateCompleteEventArgs> ElevateComplete;
 
         /// <summary>
+        /// Fired when the engine has changed progress for the bundle installation.
+        /// </summary>
+        public event EventHandler<ProgressEventArgs> Progress;
+
+        /// <summary>
         /// Fired when the engine has begun registering the location and visibility of the bundle.
         /// </summary>
         public event EventHandler<RegisterBeginEventArgs> RegisterBegin;
@@ -268,11 +273,6 @@ namespace WixToolset.Bootstrapper
         /// Fired when the engine has encountered an error.
         /// </summary>
         public event EventHandler<ErrorEventArgs> Error;
-
-        /// <summary>
-        /// Fired when the engine has changed progress for the bundle installation.
-        /// </summary>
-        public event EventHandler<ProgressEventArgs> Progress;
 
         /// <summary>
         /// Fired when Windows Installer sends an installation message.
@@ -751,6 +751,19 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
+        /// Called when the engine has changed progress for the bundle installation.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnProgress(ProgressEventArgs args)
+        {
+            EventHandler<ProgressEventArgs> handler = this.Progress;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
         /// Called when the engine has begun registering the location and visibility of the bundle.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
@@ -979,19 +992,6 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnError(ErrorEventArgs args)
         {
             EventHandler<ErrorEventArgs> handler = this.Error;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called when the engine has changed progress for the bundle installation.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnProgress(ProgressEventArgs args)
-        {
-            EventHandler<ProgressEventArgs> handler = this.Progress;
             if (null != handler)
             {
                 handler(this, args);
@@ -1359,6 +1359,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnProgress(int dwProgressPercentage, int dwOverallPercentage, ref bool fCancel)
+        {
+            ProgressEventArgs args = new ProgressEventArgs(dwProgressPercentage, dwOverallPercentage, fCancel);
+            this.OnProgress(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
         Result IBootstrapperApplication.OnRegisterBegin()
         {
             RegisterBeginEventArgs args = new RegisterBeginEventArgs();
@@ -1487,14 +1496,6 @@ namespace WixToolset.Bootstrapper
         {
             ErrorEventArgs args = new ErrorEventArgs(errorType, wzPackageId, dwCode, wzError, dwUIHint, rgwzData, nRecommendation);
             this.OnError(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnProgress(int dwProgressPercentage, int dwOverallPercentage)
-        {
-            ProgressEventArgs args = new ProgressEventArgs(dwProgressPercentage, dwOverallPercentage);
-            this.OnProgress(args);
 
             return args.Result;
         }

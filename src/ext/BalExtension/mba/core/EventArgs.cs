@@ -1135,6 +1135,36 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
+    /// Additional arguments used when the engine has changed progress for the bundle installation.
+    /// </summary>
+    [Serializable]
+    public class ProgressEventArgs : CancellableHResultEventArgs
+    {
+        /// <summary>
+        /// Creates an new instance of the <see cref="ProgressEventArgs"/> class.
+        /// </summary>
+        /// <param name="progressPercentage">The percentage from 0 to 100 completed for a package.</param>
+        /// <param name="overallPercentage">The percentage from 0 to 100 completed for the bundle.</param>
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ProgressEventArgs(int progressPercentage, int overallPercentage, bool cancelRecommendation)
+            : base(cancelRecommendation)
+        {
+            this.ProgressPercentage = progressPercentage;
+            this.OverallPercentage = overallPercentage;
+        }
+
+        /// <summary>
+        /// Gets the percentage from 0 to 100 completed for a package.
+        /// </summary>
+        public int ProgressPercentage { get; private set; }
+
+        /// <summary>
+        /// Gets the percentage from 0 to 100 completed for the bundle.
+        /// </summary>
+        public int OverallPercentage { get; private set; }
+    }
+
+    /// <summary>
     /// Additional arguments used when the engine has begun registering the location and visibility of the bundle.
     /// </summary>
     [Serializable]
@@ -1613,43 +1643,6 @@ namespace WixToolset.Bootstrapper
         public IList<string> Data
         {
             get { return this.data; }
-        }
-    }
-
-    /// <summary>
-    /// Additional arguments used when the engine has changed progress for the bundle installation.
-    /// </summary>
-    [Serializable]
-    public class ProgressEventArgs : ResultEventArgs
-    {
-        private int progressPercentage;
-        private int overallPercentage;
-
-        /// <summary>
-        /// Creates an new instance of the <see cref="ProgressEventArgs"/> class.
-        /// </summary>
-        /// <param name="progressPercentage">The percentage from 0 to 100 completed for a package.</param>
-        /// <param name="overallPercentage">The percentage from 0 to 100 completed for the bundle.</param>
-        public ProgressEventArgs(int progressPercentage, int overallPercentage)
-        {
-            this.progressPercentage = progressPercentage;
-            this.overallPercentage = overallPercentage;
-        }
-
-        /// <summary>
-        /// Gets the percentage from 0 to 100 completed for a package.
-        /// </summary>
-        public int ProgressPercentage
-        {
-            get { return this.progressPercentage; }
-        }
-
-        /// <summary>
-        /// Gets the percentage from 0 to 100 completed for the bundle.
-        /// </summary>
-        public int OverallPercentage
-        {
-            get { return this.overallPercentage; }
         }
     }
 

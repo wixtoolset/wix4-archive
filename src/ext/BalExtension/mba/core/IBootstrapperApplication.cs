@@ -257,9 +257,10 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnProgress(
+        int OnProgress(
             [MarshalAs(UnmanagedType.U4)] int dwProgressPercentage,
-            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage
+            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
