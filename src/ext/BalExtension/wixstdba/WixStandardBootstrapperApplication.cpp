@@ -561,7 +561,7 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnError(
+    virtual STDMETHODIMP OnError(
         __in BOOTSTRAPPER_ERROR_TYPE errorType,
         __in LPCWSTR wzPackageId,
         __in DWORD dwCode,
@@ -569,15 +569,17 @@ public: // IBootstrapperApplication
         __in DWORD dwUIHint,
         __in DWORD /*cData*/,
         __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
+        __in int /*nRecommendation*/,
+        __inout int* pResult
         )
     {
-        int nResult = nRecommendation;
+        HRESULT hr = S_OK;
+        int nResult = *pResult;
         LPWSTR sczError = NULL;
 
         if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_command.display)
         {
-            HRESULT hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
+            hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
             if (FAILED(hr))
             {
                 nResult = IDERROR;
@@ -599,7 +601,7 @@ public: // IBootstrapperApplication
                     // If no error message was provided, use the error code to try and get an error message.
                     if (!wzError || !*wzError || BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER != errorType)
                     {
-                        HRESULT hr = StrAllocFromError(&sczError, dwCode, NULL);
+                        hr = StrAllocFromError(&sczError, dwCode, NULL);
                         if (FAILED(hr) || !sczError || !*sczError)
                         {
                             // special case for ERROR_FAIL_NOACTION_REBOOT: use loc string for Windows XP
@@ -621,6 +623,7 @@ public: // IBootstrapperApplication
                                 StrAllocFormatted(&sczError, L"0x%x", dwCode);
                             }
                         }
+                        hr = S_OK;
                     }
 
                     nResult = ::MessageBoxW(m_hWnd, sczError ? sczError : wzError, m_pTheme->sczCaption, dwUIHint);
@@ -635,7 +638,8 @@ public: // IBootstrapperApplication
         }
 
         ReleaseStr(sczError);
-        return nResult;
+        *pResult = nResult;
+        return hr;
     }
 
 
@@ -1043,6 +1047,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS:
             OnProgressFallback(reinterpret_cast<BA_ONPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONPROGRESS_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
+            OnErrorFallback(reinterpret_cast<BA_ONERROR_ARGS*>(pvArgs), reinterpret_cast<BA_ONERROR_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1286,6 +1293,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnErrorFallback(
+        __in BA_ONERROR_ARGS* pArgs,
+        __inout BA_ONERROR_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONERROR, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

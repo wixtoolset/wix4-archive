@@ -382,6 +382,35 @@ public: // IBootstrapperApplication
         return hr;
     }
 
+    virtual STDMETHODIMP OnError(
+        __in BOOTSTRAPPER_ERROR_TYPE errorType,
+        __in_z LPCWSTR wzPackageId,
+        __in DWORD dwCode,
+        __in_z LPCWSTR /*wzError*/,
+        __in DWORD /*dwUIHint*/,
+        __in DWORD /*cData*/,
+        __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
+        __in int /*nRecommendation*/,
+        __inout int* pResult
+        )
+    {
+        BalRetryErrorOccurred(wzPackageId, dwCode);
+
+        if (CheckCanceled())
+        {
+            *pResult = IDCANCEL;
+        }
+        else if (BOOTSTRAPPER_DISPLAY_FULL == m_display)
+        {
+            if (BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_SERVER == errorType || BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_PROXY == errorType)
+            {
+                *pResult = IDTRYAGAIN;
+            }
+        }
+
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(int) OnRegisterBegin()
     {
         return CheckCanceled() ? IDCANCEL : IDNOACTION;
@@ -535,30 +564,6 @@ public: // IBootstrapperApplication
         )
     {
         return CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnError(
-        __in BOOTSTRAPPER_ERROR_TYPE errorType,
-        __in_z LPCWSTR wzPackageId,
-        __in DWORD dwCode,
-        __in_z LPCWSTR /*wzError*/,
-        __in DWORD /*dwUIHint*/,
-        __in DWORD /*cData*/,
-        __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
-        )
-    {
-        BalRetryErrorOccurred(wzPackageId, dwCode);
-
-        if (BOOTSTRAPPER_DISPLAY_FULL == m_display)
-        {
-            if (BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_SERVER == errorType ||BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_PROXY == errorType)
-            {
-                nRecommendation = IDTRYAGAIN;
-            }
-        }
-
-        return CheckCanceled() ? IDCANCEL : nRecommendation;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteProgress(

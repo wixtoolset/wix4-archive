@@ -241,13 +241,13 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnError - called when the engine encounters an error.
     //
-    // Return:
+    // nResult:
     //  uiFlags is a combination of valid ID* return values appropriate for
     //          the error.
     //
     //  IDNOACTION instructs the engine to pass the error through to default
     //             handling which usually results in the apply failing.
-    STDMETHOD_(int, OnError)(
+    STDMETHOD(OnError)(
         __in BOOTSTRAPPER_ERROR_TYPE errorType,
         __in_z_opt LPCWSTR wzPackageId,
         __in DWORD dwCode,
@@ -255,7 +255,8 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in DWORD uiFlags,
         __in DWORD cData,
         __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-        __in int nRecommendation
+        __in int nRecommendation,
+        __inout int* pResult
         ) = 0;
 
     // OnRegisterBegin - called when the engine registers the bundle.

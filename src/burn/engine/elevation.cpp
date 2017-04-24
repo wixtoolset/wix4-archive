@@ -299,7 +299,7 @@ extern "C" HRESULT ElevationElevate(
         {
             // The user clicked "Cancel" on the elevation prompt or the elevation prompt timed out, provide the notification with the option to retry.
             hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-            nResult = UserExperienceSendError(pEngineState->userExperience.pUserExperience, BOOTSTRAPPER_ERROR_TYPE_ELEVATE, NULL, hr, NULL, MB_ICONERROR | MB_RETRYCANCEL, IDNOACTION);
+            nResult = UserExperienceSendError(&pEngineState->userExperience, BOOTSTRAPPER_ERROR_TYPE_ELEVATE, NULL, hr, NULL, MB_ICONERROR | MB_RETRYCANCEL, IDNOACTION);
         }
     } while (IDRETRY == nResult);
     ExitOnFailure(hr, "Failed to elevate.");

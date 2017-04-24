@@ -1165,6 +1165,76 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
+    /// Additional arguments used when the engine has encountered an error.
+    /// </summary>
+    [Serializable]
+    public class ErrorEventArgs : HResultEventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="ErrorEventArgs"/> class.
+        /// </summary>
+        /// <param name="errorType">The error type.</param>
+        /// <param name="packageId">The identity of the package that yielded the error.</param>
+        /// <param name="errorCode">The error code.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="uiHint">Recommended display flags for an error dialog.</param>
+        /// <param name="data">The exteded data for the error.</param>
+        /// <param name="recommendation">Recommended result from engine.</param>
+        /// <param name="result">The result to return to the engine.</param>
+        public ErrorEventArgs(ErrorType errorType, string packageId, int errorCode, string errorMessage, int uiHint, string[] data, int recommendation, int result)
+        {
+            this.ErrorType = errorType;
+            this.PackageId = packageId;
+            this.ErrorCode = errorCode;
+            this.ErrorMessage = errorMessage;
+            this.UIHint = uiHint;
+            this.Data = new ReadOnlyCollection<string>(data ?? new string[] { });
+            this.Recommendation = (Result)recommendation;
+            this.Result = (Result)result;
+        }
+
+        /// <summary>
+        /// Gets the type of error that occurred.
+        /// </summary>
+        public ErrorType ErrorType { get; private set; }
+
+        /// <summary>
+        /// Gets the identity of the package that yielded the error.
+        /// </summary>
+        public string PackageId { get; private set; }
+
+        /// <summary>
+        /// Gets the error code.
+        /// </summary>
+        public int ErrorCode { get; private set; }
+
+        /// <summary>
+        /// Gets the error message.
+        /// </summary>
+        public string ErrorMessage { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended display flags for an error dialog.
+        /// </summary>
+        public int UIHint { get; private set; }
+
+        /// <summary>
+        /// Gets the extended data for the error.
+        /// </summary>
+        public IList<string> Data { get; private set; }
+
+        /// <summary>
+        /// Gets the recommendation for the result.
+        /// </summary>
+        public Result Recommendation { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Result"/> of the operation. This is passed back to the engine.
+        /// </summary>
+        public Result Result { get; set; }
+    }
+
+    /// <summary>
     /// Additional arguments used when the engine has begun registering the location and visibility of the bundle.
     /// </summary>
     [Serializable]
@@ -1560,89 +1630,6 @@ namespace WixToolset.Bootstrapper
         public string TargetProductCode
         {
             get { return this.targetProductCode; }
-        }
-    }
-
-    /// <summary>
-    /// Additional arguments used when the engine has encountered an error.
-    /// </summary>
-    [Serializable]
-    public class ErrorEventArgs : ResultEventArgs
-    {
-        private ErrorType errorType;
-        private string packageId;
-        private int errorCode;
-        private string errorMessage;
-        private int uiHint;
-        private ReadOnlyCollection<string> data;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="ErrorEventArgs"/> class.
-        /// </summary>
-        /// <param name="errorType">The error type.</param>
-        /// <param name="packageId">The identity of the package that yielded the error.</param>
-        /// <param name="errorCode">The error code.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <param name="uiHint">Recommended display flags for an error dialog.</param>
-        /// <param name="data">The exteded data for the error.</param>
-        /// <param name="recommendation">Recommended result from engine.</param>
-        public ErrorEventArgs(ErrorType errorType, string packageId, int errorCode, string errorMessage, int uiHint, string[] data, int recommendation)
-            : base(recommendation)
-        {
-            this.errorType = errorType;
-            this.packageId = packageId;
-            this.errorCode = errorCode;
-            this.errorMessage = errorMessage;
-            this.uiHint = uiHint;
-            this.data = new ReadOnlyCollection<string>(data ?? new string [] { });
-        }
-
-        /// <summary>
-        /// Gets the type of error that occurred.
-        /// </summary>
-        public ErrorType ErrorType
-        {
-            get { return this.errorType; }
-        }
-
-        /// <summary>
-        /// Gets the identity of the package that yielded the error.
-        /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
-
-        /// <summary>
-        /// Gets the error code.
-        /// </summary>
-        public int ErrorCode
-        {
-            get { return this.errorCode; }
-        }
-
-        /// <summary>
-        /// Gets the error message.
-        /// </summary>
-        public string ErrorMessage
-        {
-            get { return this.errorMessage; }
-        }
-
-        /// <summary>
-        /// Gets the recommended display flags for an error dialog.
-        /// </summary>
-        public int UIHint
-        {
-            get { return this.uiHint; }
-        }
-
-        /// <summary>
-        /// Gets the extended data for the error.
-        /// </summary>
-        public IList<string> Data
-        {
-            get { return this.data; }
         }
     }
 

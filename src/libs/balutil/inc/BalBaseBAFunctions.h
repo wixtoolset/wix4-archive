@@ -343,9 +343,24 @@ public: // IBootstrapperApplication
         __in DWORD /*dwProgressPercentage*/,
         __in DWORD /*dwOverallProgressPercentage*/,
         __inout BOOL* /*pfCancel*/
-    )
+        )
     {
         return IDNOACTION;
+    }
+
+    virtual STDMETHODIMP OnError(
+        __in BOOTSTRAPPER_ERROR_TYPE /*errorType*/,
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in DWORD /*dwCode*/,
+        __in_z LPCWSTR /*wzError*/,
+        __in DWORD /*dwUIHint*/,
+        __in DWORD /*cData*/,
+        __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
+        __in int /*nRecommendation*/,
+        __inout int* /*pResult*/
+        )
+    {
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnRegisterBegin()
@@ -476,20 +491,6 @@ public: // IBootstrapperApplication
         )
     {
         return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnError(
-        __in BOOTSTRAPPER_ERROR_TYPE /*errorType*/,
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in DWORD /*dwCode*/,
-        __in_z LPCWSTR /*wzError*/,
-        __in DWORD /*dwUIHint*/,
-        __in DWORD /*cData*/,
-        __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
-        )
-    {
-        return nRecommendation;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteProgress(

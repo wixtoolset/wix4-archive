@@ -265,7 +265,7 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnError(
+        int OnError(
             [MarshalAs(UnmanagedType.U4)] ErrorType errorType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int dwCode,
@@ -273,7 +273,8 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] int uiFlags,
             [MarshalAs(UnmanagedType.U4)] int cData,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzData,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.I4)] int nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref int pResult
             );
 
         [PreserveSig]

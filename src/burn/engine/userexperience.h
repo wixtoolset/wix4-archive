@@ -74,7 +74,7 @@ HRESULT UserExperienceRemove(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
 int UserExperienceSendError(
-    __in IBootstrapperApplication* pUserExperience,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOTSTRAPPER_ERROR_TYPE errorType,
     __in_z_opt LPCWSTR wzPackageId,
     __in HRESULT hrCode,
@@ -194,6 +194,17 @@ BAAPI UserExperienceOnElevateBegin(
 BAAPI UserExperienceOnElevateComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
+    );
+BAAPI UserExperienceOnError(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOTSTRAPPER_ERROR_TYPE errorType,
+    __in_z_opt LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzError,
+    __in DWORD uiFlags,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* nResult
     );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,

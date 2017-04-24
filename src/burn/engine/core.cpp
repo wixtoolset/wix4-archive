@@ -574,7 +574,7 @@ extern "C" HRESULT CoreApply(
         restart = BOOTSTRAPPER_APPLY_RESTART_REQUIRED;
 
         hr = HRESULT_FROM_WIN32(ERROR_FAIL_NOACTION_REBOOT);
-        UserExperienceSendError(pEngineState->userExperience.pUserExperience, BOOTSTRAPPER_ERROR_TYPE_APPLY, NULL, hr, NULL, MB_ICONERROR | MB_OK, IDNOACTION);
+        UserExperienceSendError(&pEngineState->userExperience, BOOTSTRAPPER_ERROR_TYPE_APPLY, NULL, hr, NULL, MB_ICONERROR | MB_OK, IDNOACTION); // ignore return value.
         ExitFunction();
     }
 

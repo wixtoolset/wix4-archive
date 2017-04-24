@@ -184,6 +184,11 @@ namespace WixToolset.Bootstrapper
         public event EventHandler<ProgressEventArgs> Progress;
 
         /// <summary>
+        /// Fired when the engine has encountered an error.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
+
+        /// <summary>
         /// Fired when the engine has begun registering the location and visibility of the bundle.
         /// </summary>
         public event EventHandler<RegisterBeginEventArgs> RegisterBegin;
@@ -268,11 +273,6 @@ namespace WixToolset.Bootstrapper
         /// Fired when the engine executes one or more patches targeting a product.
         /// </summary>
         public event EventHandler<ExecutePatchTargetEventArgs> ExecutePatchTarget;
-
-        /// <summary>
-        /// Fired when the engine has encountered an error.
-        /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
         /// Fired when Windows Installer sends an installation message.
@@ -764,6 +764,19 @@ namespace WixToolset.Bootstrapper
         }
 
         /// <summary>
+        /// Called when the engine has encountered an error.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnError(ErrorEventArgs args)
+        {
+            EventHandler<ErrorEventArgs> handler = this.Error;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
         /// Called when the engine has begun registering the location and visibility of the bundle.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
@@ -979,19 +992,6 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnExecutePatchTarget(ExecutePatchTargetEventArgs args)
         {
             EventHandler<ExecutePatchTargetEventArgs> handler = this.ExecutePatchTarget;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called when the engine has encountered an error.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnError(ErrorEventArgs args)
-        {
-            EventHandler<ErrorEventArgs> handler = this.Error;
             if (null != handler)
             {
                 handler(this, args);
@@ -1368,6 +1368,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnError(ErrorType errorType, string wzPackageId, int dwCode, string wzError, int dwUIHint, int cData, string[] rgwzData, int nRecommendation, ref int pResult)
+        {
+            ErrorEventArgs args = new ErrorEventArgs(errorType, wzPackageId, dwCode, wzError, dwUIHint, rgwzData, nRecommendation, pResult);
+            this.OnError(args);
+
+            pResult = (int)args.Result;
+            return args.HResult;
+        }
+
         Result IBootstrapperApplication.OnRegisterBegin()
         {
             RegisterBeginEventArgs args = new RegisterBeginEventArgs();
@@ -1488,14 +1497,6 @@ namespace WixToolset.Bootstrapper
         {
             ExecutePatchTargetEventArgs args = new ExecutePatchTargetEventArgs(wzPackageId, wzTargetProductCode);
             this.OnExecutePatchTarget(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnError(ErrorType errorType, string wzPackageId, int dwCode, string wzError, int dwUIHint, int cData, string[] rgwzData, int nRecommendation)
-        {
-            ErrorEventArgs args = new ErrorEventArgs(errorType, wzPackageId, dwCode, wzError, dwUIHint, rgwzData, nRecommendation);
-            this.OnError(args);
 
             return args.Result;
         }

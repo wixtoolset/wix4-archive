@@ -198,7 +198,7 @@ extern "C" HRESULT UserExperienceRemove(
 }
 
 extern "C" int UserExperienceSendError(
-    __in IBootstrapperApplication* pUserExperience,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOTSTRAPPER_ERROR_TYPE errorType,
     __in_z_opt LPCWSTR wzPackageId,
     __in HRESULT hrCode,
@@ -207,7 +207,7 @@ extern "C" int UserExperienceSendError(
     __in int nRecommendation
     )
 {
-    int nResult = IDNOACTION;
+    int nResult = nRecommendation;
     DWORD dwCode = HRESULT_CODE(hrCode);
     LPWSTR sczError = NULL;
 
@@ -220,9 +220,8 @@ extern "C" int UserExperienceSendError(
         }
     }
 
-    nResult = pUserExperience->OnError(errorType, wzPackageId, dwCode, wzError, uiFlags, 0, NULL, nRecommendation);
+    UserExperienceOnError(pUserExperience, errorType, wzPackageId, dwCode, wzError, uiFlags, 0, NULL, &nResult); // ignore return value.
 
-//LExit:
     ReleaseStr(sczError);
     return nResult;
 }
@@ -758,6 +757,44 @@ EXTERN_C BAAPI UserExperienceOnElevateComplete(
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnElevateComplete failed.");
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnError(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOTSTRAPPER_ERROR_TYPE errorType,
+    __in_z_opt LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzError,
+    __in DWORD uiFlags,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* nResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONERROR_ARGS args = { };
+    BA_ONERROR_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.errorType = errorType;
+    args.wzPackageId = wzPackageId;
+    args.dwCode = dwCode;
+    args.wzError = wzError;
+    args.uiFlags = uiFlags;
+    args.cData = cData;
+    args.rgwzData = rgwzData;
+    args.nRecommendation = *nResult;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *nResult;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnError failed.");
+
+    *nResult = results.nResult;
 
 LExit:
     return hr;

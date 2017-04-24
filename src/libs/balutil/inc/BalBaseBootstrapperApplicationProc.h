@@ -270,6 +270,15 @@ static HRESULT BalBaseBAProcOnProgress(
     return pBA->OnProgress(pArgs->dwProgressPercentage, pArgs->dwOverallPercentage, &pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnError(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONERROR_ARGS* pArgs,
+    __inout BA_ONERROR_RESULTS* pResults
+    )
+{
+    return pBA->OnError(pArgs->errorType, pArgs->wzPackageId, pArgs->dwCode, pArgs->wzError, pArgs->uiFlags, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -376,6 +385,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS:
             hr = BalBaseBAProcOnProgress(pBA, reinterpret_cast<BA_ONPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
+            hr = BalBaseBAProcOnError(pBA, reinterpret_cast<BA_ONERROR_ARGS*>(pvArgs), reinterpret_cast<BA_ONERROR_RESULTS*>(pvResults));
             break;
         }
     }

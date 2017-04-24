@@ -1547,6 +1547,7 @@ static HRESULT WINAPI AuthenticationRequired(
     DWORD er = ERROR_SUCCESS;
     BOOTSTRAPPER_ERROR_TYPE errorType = (401 == lHttpCode) ? BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_SERVER : BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_PROXY;
     LPWSTR sczError = NULL;
+    int nResult = IDNOACTION;
 
     *pfRetrySend = FALSE;
     *pfRetry = FALSE;
@@ -1556,7 +1557,7 @@ static HRESULT WINAPI AuthenticationRequired(
 
     APPLY_AUTHENTICATION_REQUIRED_DATA* authenticationData = reinterpret_cast<APPLY_AUTHENTICATION_REQUIRED_DATA*>(pData);
 
-    int nResult = authenticationData->pUX->pUserExperience->OnError(errorType, authenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, IDNOACTION);
+    UserExperienceOnError(authenticationData->pUX, errorType, authenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, &nResult); // ignore return value;
     nResult = UserExperienceCheckExecuteResult(authenticationData->pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
     if (IDTRYAGAIN == nResult && authenticationData->pUX->hwndApply)
     {
@@ -2443,7 +2444,8 @@ static int GenericExecuteMessageHandler(
         break;
 
     case GENERIC_EXECUTE_MESSAGE_ERROR:
-        nResult = pContext->pUX->pUserExperience->OnError(BOOTSTRAPPER_ERROR_TYPE_EXE_PACKAGE, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, 0, NULL, IDNOACTION);
+        nResult = IDNOACTION;
+        UserExperienceOnError(pContext->pUX, BOOTSTRAPPER_ERROR_TYPE_EXE_PACKAGE, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, 0, NULL, &nResult); // ignore return value.
         break;
 
     case GENERIC_EXECUTE_MESSAGE_FILES_IN_USE:
@@ -2473,7 +2475,8 @@ static int MsiExecuteMessageHandler(
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_ERROR:
-        nResult = pContext->pUX->pUserExperience->OnError(BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, pMessage->cData, pMessage->rgwzData, pMessage->nResultRecommendation);
+        nResult = pMessage->nResultRecommendation;
+        UserExperienceOnError(pContext->pUX, BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, pMessage->cData, pMessage->rgwzData, &nResult); // ignore return value.
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_MSI_MESSAGE:
