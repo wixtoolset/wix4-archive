@@ -70,11 +70,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PotentialPlatformSdkInstallPath>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot10', null, RegistryView.Registry64, RegistryView.Registry32))</PotentialPlatformSdkInstallPath>
-    <PlatformSdkInstallPath Condition=" '$(PotentialPlatformSdkInstallPath)'!='' and Exists('$(PotentialPlatformSdkInstallPath)\include\10.0.14393.0\um') ">$(PotentialPlatformSdkInstallPath)</PlatformSdkInstallPath>
+    <PotentialPlatformSdkInstallPath>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots', 'KitsRoot10', null, RegistryView.Registry32))</PotentialPlatformSdkInstallPath>
+    <PlatformSdkBuildVersion Condition=" '$(PotentialPlatformSdkInstallPath)'!='' and Exists('$(PotentialPlatformSdkInstallPath)\include\10.0.14393.0\um') ">10.0.14393.0</PlatformSdkBuildVersion>
+    <PlatformSdkBuildVersion Condition=" '$(PotentialPlatformSdkInstallPath)'!='' and Exists('$(PotentialPlatformSdkInstallPath)\include\10.0.15063.0\um') ">10.0.15063.0</PlatformSdkBuildVersion>
+
+    <PlatformSdkInstallPath Condition=" '$(PotentialPlatformSdkInstallPath)'!='' and Exists('$(PotentialPlatformSdkInstallPath)\include\$(PlatformSdkBuildVersion)\um') ">$(PotentialPlatformSdkInstallPath)</PlatformSdkInstallPath>
     <PlatformSdkRegistryVersion Condition=" '$(PlatformSdkInstallPath)'!='' ">v10</PlatformSdkRegistryVersion>
-    <PlatformSdkIncludeRoot Condition=" '$(PlatformSdkIncludeRoot)'=='' and '$(PlatformSdkInstallPath)'!='' ">$(PlatformSdkInstallPath)\include\10.0.14393.0</PlatformSdkIncludeRoot>
-    <PlatformSdkArmLibraryRoot Condition=" '$(PlatformSdkArmLibraryRoot)'=='' and '$(PlatformSdkInstallPath)'!='' ">$(PlatformSdkInstallPath)lib\10.0.14393.0\um\arm</PlatformSdkArmLibraryRoot>
+    <PlatformSdkIncludeRoot Condition=" '$(PlatformSdkIncludeRoot)'=='' and '$(PlatformSdkInstallPath)'!='' ">$(PlatformSdkInstallPath)\include\$(PlatformSdkBuildVersion)</PlatformSdkIncludeRoot>
+    <PlatformSdkArmLibraryRoot Condition=" '$(PlatformSdkArmLibraryRoot)'=='' and '$(PlatformSdkInstallPath)'!='' ">$(PlatformSdkInstallPath)lib\$(PlatformSdkBuildVersion)\um\arm</PlatformSdkArmLibraryRoot>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PlatformSdkInstallPath)'=='' ">
@@ -105,7 +108,8 @@
     <PlatformSdkIncludePath Condition=" Exists('$(PlatformSdkIncludeRoot)\shared') ">$(PlatformSdkIncludePath);$(PlatformSdkIncludeRoot)\shared</PlatformSdkIncludePath>
     <PlatformSdkIncludePath Condition=" Exists('$(PlatformSdkIncludeRoot)\um') ">$(PlatformSdkIncludePath);$(PlatformSdkIncludeRoot)\um</PlatformSdkIncludePath>
     <PlatformSdkBinPath>$(PlatformSdkInstallPath)bin\</PlatformSdkBinPath>
-    <PlatformSdkBinPath Condition=" Exists('$(PlatformSdkBinPath)x86') ">$(PlatformSdkBinPath)x86\</PlatformSdkBinPath>
+    <PlatformSdkBinPath Condition=" Exists('$(PlatformSdkInstallPath)bin\x86') ">$(PlatformSdkInstallPath)bin\x86\</PlatformSdkBinPath>
+    <PlatformSdkBinPath Condition=" Exists('$(PlatformSdkInstallPath)bin\$(PlatformSdkBuildVersion)\x86') ">$(PlatformSdkInstallPath)bin\$(PlatformSdkBuildVersion)\x86\</PlatformSdkBinPath>
   </PropertyGroup>
 
   <PropertyGroup>
