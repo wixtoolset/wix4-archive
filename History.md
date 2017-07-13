@@ -1,3 +1,9 @@
+## WixBuild: Version 4.0.0.5512
+
+* RobMen: Standardize on .NET Framework v4.5
+
+* HeathS: WIXBUG:5597 - Check VS2017 product IDs against supported SKUs
+
 ## WixBuild: Version 4.0.0.5205
 
 * leshy84: WIXBUG:5548 - fix WiX Burn (mbahost) not to leave del*.tmp files in temp directory
