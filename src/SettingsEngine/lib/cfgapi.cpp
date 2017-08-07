@@ -2050,19 +2050,20 @@ extern "C" HRESULT CfgResolve(
     }
 
 LExit:
-    LegacySyncUninitializeSession(pcdb->pcdbLocal, &syncSession);
-
-    // Restore the previous AppIDs that were set before resolving began
-    if (fRevertProducts)
+    if (NULL != pcdb)
     {
-        if (NULL != pcdb)
-        {
-            pcdb->dwAppID = dwOriginalAppIDRemote;
-            if (NULL != pcdb->pcdbLocal)
+            LegacySyncUninitializeSession(pcdb->pcdbLocal, &syncSession); 
+
+            // Restore the previous AppIDs that were set before resolving began
+            if (fRevertProducts)
             {
-                pcdb->pcdbLocal->dwAppID = dwOriginalAppIDLocal;
+                pcdb->dwAppID = dwOriginalAppIDRemote;
+                if (NULL != pcdb->pcdbLocal)
+                {
+                    pcdb->pcdbLocal->dwAppID = dwOriginalAppIDLocal;
+                }
             }
-        }
+
     }
 
     if (fLocked)
