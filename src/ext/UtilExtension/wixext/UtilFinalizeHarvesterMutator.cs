@@ -1086,6 +1086,7 @@ namespace WixToolset.Extensions
 				if (0 == bufSize)
                 {
                     int err = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                    throw new System.Runtime.InteropServices.COMException(String.Concat("Failed to get short path buffer size for file: ", fullPath), err);
                 }
 				else
 				{
