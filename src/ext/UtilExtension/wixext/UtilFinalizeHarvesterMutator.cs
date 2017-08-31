@@ -1081,9 +1081,20 @@ namespace WixToolset.Extensions
             /// <returns>Short name for file.</returns>
             internal static string GetShortPathName(string fullPath)
             {
-                StringBuilder shortPath = new StringBuilder();
+                int bufSize = (Int32)GetShortPathName(fullPath, null, 0);
+				
+				if (0 == bufSize)
+                {
+                    int err = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                }
+				else
+				{
+					bufSize += 1;
+				}
+				
+				StringBuilder shortPath = new StringBuilder(bufSize);
 
-                uint result = GetShortPathName(fullPath, null, 0);
+                uint result = GetShortPathName(fullPath, shortPath, bufSize);
 
                 if (0 == result)
                 {
