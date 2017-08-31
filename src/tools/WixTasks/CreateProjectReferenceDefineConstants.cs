@@ -101,7 +101,7 @@ namespace WixToolset.Build.Tasks
                         targetDir = commonDir;
                     }
                 }
-                defineConstants[targetDirDefine] = targetDir;
+                defineConstants[targetDirDefine] = CreateProjectReferenceDefineConstants.EnsureEndsWithBackslash(targetDir);
 
                 defineConstants[String.Format(CultureInfo.InvariantCulture, "{0}.TargetExt", referenceName)] = targetExt;
                 defineConstants[String.Format(CultureInfo.InvariantCulture, "{0}.TargetFileName", referenceName)] = targetFileName;
@@ -112,9 +112,12 @@ namespace WixToolset.Build.Tasks
                 if (defineConstants.ContainsKey(targetPathDefine))
                 {
                     string oldTargetPath = defineConstants[targetPathDefine];
-                    defineConstants[targetPathDefine] += ";" + targetPath;
+                    if (!targetPath.Equals(oldTargetPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        defineConstants[targetPathDefine] += ";" + targetPath;
+                    }
 
-                    //If there was only one targetpath we need to create it's culture specific define
+                    //If there was only one targetpath we need to create its culture specific define
                     if (!oldTargetPath.Contains(";"))
                     {
                         string oldSubFolder = FindSubfolder(oldTargetPath, targetDir, targetFileName);
@@ -215,7 +218,7 @@ namespace WixToolset.Build.Tasks
             path1 = path1.TrimEnd(Path.DirectorySeparatorChar);
             path2 = path2.TrimEnd(Path.DirectorySeparatorChar);
 
-            while(!String.IsNullOrEmpty(path1))
+            while (!String.IsNullOrEmpty(path1))
             {
                 for (string searchPath = path2; !String.IsNullOrEmpty(searchPath); searchPath = Path.GetDirectoryName(searchPath))
                 {
@@ -252,6 +255,16 @@ namespace WixToolset.Build.Tasks
             }
 
             return String.Empty;
+        }
+
+        private static string EnsureEndsWithBackslash(string dir)
+        {
+            if (dir[dir.Length - 1] != Path.DirectorySeparatorChar)
+            {
+                dir += Path.DirectorySeparatorChar;
+            }
+
+            return dir;
         }
     }
 }

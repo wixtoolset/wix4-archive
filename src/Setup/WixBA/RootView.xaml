@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
 <Window x:Class="WixToolset.UX.RootView"
@@ -251,6 +251,8 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -339,6 +341,32 @@
                             <Hyperlink Command="{Binding LaunchHomePageCommand}"
                                        IsEnabled="True"
                                        KeyboardNavigation.IsTabStop="False"><Run FontSize="{DynamicResource FontSizeButton}" Text="{Binding SupportUrl, Mode=OneTime}" /></Hyperlink>
+                        </TextBlock>
+                    </Button>
+
+                    <TextBlock x:Name="SkuVSExtensionLabel1"
+                               Grid.Row="5"
+                               Grid.Column="0"
+                               Style="{DynamicResource LabelTextBlkStyle}"
+                               Text="Visual Studio" />
+                    <TextBlock x:Name="SkuVSExtensionLabel2"
+                               Grid.Row="6"
+                               Grid.Column="0"
+                               Style="{DynamicResource LabelTextBlkStyle}"
+                               Text="Extension:" />
+                    <Button x:Name="SkuVSExtensionBtn"
+                            Grid.Row="6"
+                            Grid.Column="1"
+                            HorizontalAlignment="Left"
+                            AutomationProperties.HelpText="View Releases Page for VS Extension"
+                            AutomationProperties.Name="Releases Page"
+                            Command="{Binding LaunchVSExtensionPageCommand}"
+                            KeyboardNavigation.IsTabStop="False"
+                            Style="{StaticResource HyperlinkedButtonStyle}">
+                        <TextBlock HorizontalAlignment="Left">
+                            <Hyperlink Command="{Binding LaunchVSExtensionPageCommand}"
+                                       IsEnabled="True"
+                                       KeyboardNavigation.IsTabStop="False"><Run FontSize="{DynamicResource FontSizeButton}" Text="{Binding VSExtensionUrl, Mode=OneTime}" /></Hyperlink>
                         </TextBlock>
                     </Button>
                 </Grid>

@@ -30,6 +30,12 @@ namespace WixToolset.Bind.Bundles
 
             foreach (WixBundlePayloadRow payload in this.Payloads)
             {
+                string normalizedPath = payload.Name.Replace('\\', '/');
+                if (normalizedPath.StartsWith("../", StringComparison.Ordinal) || normalizedPath.Contains("/../"))
+                {
+                    Messaging.Instance.OnMessage(WixErrors.PayloadMustBeRelativeToCache(payload.SourceLineNumbers, "Payload", "Name", payload.Name));
+                }
+
                 // Embedded files (aka: files from binary .wixlibs) are not content files (because they are hidden
                 // in the .wixlib).
                 ObjectField field = (ObjectField)payload.Fields[2];

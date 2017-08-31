@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\setup\Bundle" />
-    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\votive\Icons" />
+    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\Common" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@
 
 <?include WixVer.wxi ?>
 
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
     <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Core" Language="1033" Manufacturer="!(loc.Company)"
              Version="$(var.WixMsiProductVersion)" UpgradeCode="AB318522-BCCD-4091-8068-C5969054D2AB">
 
@@ -42,6 +42,11 @@
                 <RemoveFolder Id="CleanupShortcutFolder" Directory="ShortcutFolder" On="uninstall" />
             </Component>
 
+            <Component Directory="BinFolder">
+                <File Source="common\wixtoolset.org.ico" />
+                <util:InternetShortcut Id="wixtoolset.org" Directory="ShortcutFolder" Name="WiX Home Page" Target="http://wixtoolset.org/" IconFile="file://[#wixtoolset.org.ico]" />
+            </Component>
+
             <ComponentGroupRef Id="ToolsetComponents" />
             <ComponentGroupRef Id="SwixComponents" />
             <ComponentGroupRef Id="ExtensionComponents" />
@@ -50,5 +55,9 @@
         </Feature>
 
         <FeatureRef Id="Feature_MSBuild" />
+        <FeatureRef Id="Feature_Intellisense2010" />
+        <FeatureRef Id="Feature_Intellisense2012" />
+        <FeatureRef Id="Feature_Intellisense2013" />
+        <FeatureRef Id="Feature_Intellisense2015" />
     </Product>
 </Wix>

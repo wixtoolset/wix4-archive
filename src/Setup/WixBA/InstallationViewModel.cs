@@ -50,6 +50,7 @@ namespace WixToolset.UX
         private ICommand licenseCommand;
         private ICommand launchHomePageCommand;
         private ICommand launchNewsCommand;
+        private ICommand launchVSExtensionPageCommand;
         private ICommand installCommand;
         private ICommand repairCommand;
         private ICommand uninstallCommand;
@@ -103,7 +104,7 @@ namespace WixToolset.UX
         /// <summary>
         /// Gets the version for the application.
         /// </summary>
-        public string Version 
+        public string Version
         {
             get { return String.Concat("v", WixBA.Model.Version.ToString()); }
         }
@@ -128,6 +129,13 @@ namespace WixToolset.UX
             get
             {
                 return WixDistribution.SupportUrl;
+            }
+        }
+        public string VSExtensionUrl
+        {
+            get
+            {
+                return WixDistribution.VSExtensionsLandingUrl;
             }
         }
 
@@ -207,6 +215,19 @@ namespace WixToolset.UX
                 }
 
                 return this.launchNewsCommand;
+            }
+        }
+
+        public ICommand LaunchVSExtensionPageCommand
+        {
+            get
+            {
+                if (this.launchVSExtensionPageCommand == null)
+                {
+                    this.launchVSExtensionPageCommand = new RelayCommand(param => WixBA.LaunchUrl(WixDistribution.VSExtensionsLandingUrl), param => true);
+                }
+
+                return this.launchVSExtensionPageCommand;
             }
         }
 
@@ -333,7 +354,7 @@ namespace WixToolset.UX
             {
                 if (this.tryAgainCommand == null)
                 {
-                    this.tryAgainCommand = new RelayCommand(param => 
+                    this.tryAgainCommand = new RelayCommand(param =>
                         {
                             this.root.Canceled = false;
                             WixBA.Plan(WixBA.Model.PlannedAction);
@@ -402,30 +423,6 @@ namespace WixToolset.UX
             }
             else if (Hresult.Succeeded(e.Status))
             {
-                // TODO: remove this when v4 really doesn't depend on .NET 3.5.
-                // block if CLR v2 isn't available; sorry, it's needed for the MSBuild tasks
-                if (WixBA.Model.Engine.EvaluateCondition("NETFRAMEWORK35_SP_LEVEL < 1"))
-                {
-                    string message = "WiX Toolset requires the .NET Framework 3.5.1 Windows feature to be enabled.";
-                    WixBA.Model.Engine.Log(LogLevel.Verbose, message);
-
-                    if (Display.Full == WixBA.Model.Command.Display)
-                    {
-                        WixBA.Dispatcher.Invoke((Action)delegate()
-                            {
-                                MessageBox.Show(message, "WiX Toolset", MessageBoxButton.OK, MessageBoxImage.Error);
-                                if (null != WixBA.View)
-                                {
-                                    WixBA.View.Close();
-                                }
-                            }
-                        );
-                    }
-
-                    this.root.InstallState = InstallationState.Failed;
-                    return;
-                }
-
                 if (this.Downgrade)
                 {
                     this.root.DetectState = DetectionState.Newer;

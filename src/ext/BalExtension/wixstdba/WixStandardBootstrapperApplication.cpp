@@ -600,7 +600,24 @@ public: // IBootstrapperApplication
                         HRESULT hr = StrAllocFromError(&sczError, dwCode, NULL);
                         if (FAILED(hr) || !sczError || !*sczError)
                         {
-                            StrAllocFormatted(&sczError, L"0x%x", dwCode);
+                            // special case for ERROR_FAIL_NOACTION_REBOOT: use loc string for Windows XP
+                            if (ERROR_FAIL_NOACTION_REBOOT == dwCode)
+                            {
+                                LOC_STRING* pLocString = NULL;
+                                hr = LocGetString(m_pWixLoc, L"#(loc.ErrorFailNoActionReboot)", &pLocString);
+                                if (SUCCEEDED(hr))
+                                {
+                                    StrAllocString(&sczError, pLocString->wzText, 0);
+                                }
+                                else
+                                {
+                                    StrAllocFormatted(&sczError, L"0x%x", dwCode);
+                                }
+                            }
+                            else
+                            {
+                                StrAllocFormatted(&sczError, L"0x%x", dwCode);
+                            }
                         }
                     }
 
@@ -635,8 +652,11 @@ public: // IBootstrapperApplication
 #endif
         if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == mt || INSTALLMESSAGE_USER == mt))
         {
-            int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
-            return nResult;
+            if (!m_fShowingInternalUiThisPackage)
+            {
+                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
+                return nResult;
+            }
         }
 
         if (INSTALLMESSAGE_ACTIONSTART == mt)
@@ -713,7 +733,8 @@ public: // IBootstrapperApplication
                 wz = sczFormattedString ? sczFormattedString : pPackage->sczDisplayName ? pPackage->sczDisplayName : wzPackageId;
             }
 
-            m_fShowingInternalUiThisPackage = pPackage && pPackage->fDisplayInternalUI;
+            //Burn engine doesn't show internal UI for msi packages during uninstall or repair actions.
+            m_fShowingInternalUiThisPackage = pPackage && pPackage->fDisplayInternalUI && BOOTSTRAPPER_ACTION_UNINSTALL != m_plannedAction && BOOTSTRAPPER_ACTION_REPAIR != m_plannedAction;
 
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_PACKAGE_TEXT, wz);
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_PACKAGE_TEXT, wz);
@@ -2677,6 +2698,7 @@ private: // privates
         LPWSTR sczLaunchTargetElevatedId = NULL;
         LPWSTR sczUnformattedArguments = NULL;
         LPWSTR sczArguments = NULL;
+        LPWSTR sczUnformattedLaunchFolder = NULL;
         LPWSTR sczLaunchFolder = NULL;
         int nCmdShow = SW_SHOWNORMAL;
 
@@ -2705,7 +2727,7 @@ private: // privates
 
         if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER))
         {
-            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER, &sczLaunchFolder);
+            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER, &sczUnformattedLaunchFolder);
             BalExitOnFailure(hr, "Failed to get launch working directory variable '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER);
         }
 
@@ -2729,6 +2751,12 @@ private: // privates
                 BalExitOnFailure(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
             }
 
+            if (sczUnformattedLaunchFolder)
+            {
+                hr = BalFormatString(sczUnformattedLaunchFolder, &sczLaunchFolder);
+                BalExitOnFailure(hr, "Failed to format launch working directory variable: %ls", sczUnformattedLaunchFolder);
+            }
+
             hr = ShelExec(sczLaunchTarget, sczArguments, L"open", sczLaunchFolder, nCmdShow, m_hWnd, NULL);
             BalExitOnFailure(hr, "Failed to launch target: %ls", sczLaunchTarget);
 
@@ -2736,7 +2764,8 @@ private: // privates
         }
 
     LExit:
-        ReleaseStr(sczLaunchFolder);
+        StrSecureZeroFreeString(sczLaunchFolder);
+        ReleaseStr(sczUnformattedLaunchFolder);
         StrSecureZeroFreeString(sczArguments);
         ReleaseStr(sczUnformattedArguments);
         ReleaseStr(sczLaunchTargetElevatedId);
@@ -3040,7 +3069,7 @@ private: // privates
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBAFunctions() - BAFunctions DLL %ls", sczBafPath);
 
-        m_hBAFModule = ::LoadLibraryW(sczBafPath);
+        m_hBAFModule = ::LoadLibraryExW(sczBafPath, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
         BalExitOnNullWithLastError(m_hBAFModule, hr, "WIXSTDBA: LoadBAFunctions() - Failed to load DLL %ls", sczBafPath);
 
         PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));

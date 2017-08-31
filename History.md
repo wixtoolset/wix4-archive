@@ -1,3 +1,115 @@
+## WixBuild: Version 4.0.0.5512
+
+* RobMen: Standardize on .NET Framework v4.5
+
+* HeathS: WIXBUG:5597 - Check VS2017 product IDs against supported SKUs
+
+## WixBuild: Version 4.0.0.5205
+
+* leshy84: WIXBUG:5548 - fix WiX Burn (mbahost) not to leave del*.tmp files in temp directory
+
+## WixBuild: Version 4.0.0.5204
+
+* @Barnson: Add VS2017 native SDK to bundle.
+
+* @Barnson: Fix #5537 by ensuring TargetDir ends in a backslash.
+
+* @Barnson: Prevent TargetPath project reference preprocessor variable from 
+getting multiple identical items.
+
+* SeanHall: WIXFEAT:5510 - Point to WiX VS extensions in sidebar.
+
+* @barnson: Add WixStdBA/PreqBA loc string for ERROR_FAIL_NOACTION_REBOOT.
+
+* BMurri: WIXBUG:5285 - Add UserUILanguageID variable
+
+* jabo2: WIXFEAT:3163 - add ability to specify an icon for InternetShortcut
+
+* @Barnson: Fix util:InternetShortcut.
+  * Make icon optional.
+  * Add query of icon and index to immediate CA.
+  * Add wixtoolset.org shortcut with icon.
+
+* HeathS: WIXFEAT:5433 - Add detection properties for VS2017
+
+* SeanHall: WIXBUG:5521 - Add BOOTSTRAPPER_ERROR_TYPE_APPLY to managed IBootstrapperApplication definition.
+
+* SeanHall: WIXBUG:4929 - Fix infinite loop in PathCreateTimeBasedTempFile that caused Burn to hang if it didn't have rights to create the log file. Also, write entry in Application event log when Burn is unable to create the Failed log.
+
+* SeanHall: WIXFEAT:5435 - When loading the BA, include the BA's directory in the DLL search path.
+
+* RobMen: WIXBUG:4903 - Remove internal WixStandardBootstrapperApplication.Foundation from documentation.
+
+* RobMen: WIXBUG:5270 - Properly set WixMerge columns nullable.
+
+* RobMen: WIXBUG:4813 - Properly modularize IIsWebApplication Name column.
+
+* RobMen: WIXBUG:4812 - Properly modularize IIsAppPool Name column.
+
+* RobMen: WIXBUG:5265 - Prevent bad use of ".." in payload names in the Binder.
+
+* RobMen: WIXBUG:5307 - Correctly set and document SystemFolder and System64Folder in Burn.
+
+* Barnson: Fix null-check to check the right null. Fixes wixtoolset/issues/issues#5318.
+
+* Barnson: Add LICENSE.TXT to binaries .zip. Fixes wixtoolset/issues/issues#5474.
+
+* @barnson: Remove MS-RL references from MS-PL VS MPF sources.
+
+* Barnson: Add support for Visual Studio 2017 (current as of 15.0.26127.3).
+Adds C++ CA template but doesn't install it because templates are per-instance.
+Implements wixtoolset/issues/issues/5484.
+
+* Barnson: Correct condition to detect missing .NET 2.0/3.5.1.
+
+* Barnson: Correct `RemoveFolder` entry in shortcut how-to. Fixed wixtoolset/issues/issues#4869.
+
+* Barnson: Prevent use of SSE for old-old CPUs. Fixes wixtoolset/issues/issues#4876.
+
+* ujdhesa: Add sq-AL translation for Wix4.
+
+* MarcSch WIXBUG:4932 - Adding german localization for SqlExtension
+
+* @barnson: Implement wixtoolset/issues#5412: Add tooltips to ThmUtil
+  - New Tooltip element as a child of a control element.
+  - Add ThemeShowControlEx to make it easy to "poke" a control, to refresh its content based on variables and conditions.
+
+* nirbar: WIXFEAT:5386 - Add initial support for MSI transactions in Burn.
+
+* @barnson: Fix RPC_S_SERVER_UNAVAILABLE as HRESULT, which it is not.
+
+* fperin: Add es-es and fr-fr translations for WixUtilExtension.
+
+* zakred: Add es-es translation for WixFirewallExtension.
+
+* apmorton: Fix app.config name translation for DLL projects.
+
+* @barnson for @firegiantco: Update FileVersionFromStringEx to handle "vVersion" syntax like FileVersionFromString.
+
+* FRichter: WIXBUG:5277 - burn engine: Always use the bundle source path for all purposes. The original source path is needed in all cases: for copying the bundle to the layout directory as well as for checking whether we're layouting to the bundle location.
+
+* @barnson: Enable the WiX native SDK when the new Visual C++ Build Tools bundle is installed. Fixes WIXBUG:5279.
+
+RobMen: WIXBUG:5282 - reduce clean room security to successfully load BA's dependent on GDI+ (including WinForms).
+
+* @barnson: Fix WIXBUG:5293 - Document illegal MsiProperty names.
+
+* nathan-alden: WIXBUG:5370 - Support the newly-released .NET Framework 4.6.2
+
+* @barnson: WIXBUG:5360: Replace Markdown-style link with HTML-style link to make the Markdown processor happy.
+
+* SeanHall: WIXBUG:5301 - Fix bug where file handles weren't being passed to the clean room process.
+
+* SeanHall: WIXBUG:5302 - Fix bug where the command line for burn exe packages had the executable path in the middle.
+
+* SeanHall: WIXBUG:5308 - Make embedded bundles launch a clean room process so the BA runs in a consistent environment.
+
+* SeanHall: WIXFEAT:4950 - Specify BAFunctions DLL at compile time.
+
+* PhillHgl: WIXBUG:5331 - fix ConfigureSmbUninstall CA failures (on install) when util:FileShare/@Description was longer than 73 chars.  Increased to 255 chars, matching table definition.
+
+* @barnson removed license blurb from ThemeGen templates.
+
 ## WixBuild: Version 4.0.0.4506
 
 * SeanHall: WIXBUG:4164 - In WixBA, treat closing the window during apply as if the user clicked the Cancel button and then close the app automatically on ApplyComplete.

@@ -20,6 +20,7 @@
     <FooterText>&amp;lt%3bscript src=&amp;quot%3bhelplink.js&amp;quot%3b&amp;gt%3b&amp;lt%3b/script&amp;gt%3b</FooterText>
     <PresentationStyle>Prototype</PresentationStyle>
     <NamingMethod>MemberName</NamingMethod>
+    <FrameworkVersion>.NET Framework 3.5</FrameworkVersion>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />

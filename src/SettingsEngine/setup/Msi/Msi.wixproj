@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <BindInputPaths Include="$(OutputPath_x86)" />
-    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\votive\Icons" />
+    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\Common" />
   </ItemGroup>
 
   <ItemGroup>
