@@ -261,11 +261,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnRegisterBegin - called when the engine registers the bundle.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnRegisterBegin)() = 0;
+    STDMETHOD(OnRegisterBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnRegisterComplete - called when the engine registration is
     //                      complete.

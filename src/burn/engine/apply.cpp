@@ -328,9 +328,8 @@ extern "C" HRESULT ApplyRegister(
     HRESULT hr = S_OK;
     LPWSTR sczEngineWorkingPath = NULL;
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnRegisterBegin();
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, FALSE, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted register begin.");
+    hr = UserExperienceOnRegisterBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted register begin.");
 
     // If we have a resume mode that suggests the bundle is on the machine.
     if (BOOTSTRAPPER_RESUME_TYPE_REBOOT_PENDING < pEngineState->command.resumeType)

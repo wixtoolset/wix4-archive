@@ -268,6 +268,9 @@ BAAPI UserExperienceOnProgress(
     __in DWORD dwProgressPercentage,
     __in DWORD dwOverallPercentage
     );
+BAAPI UserExperienceOnRegisterBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
 BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction

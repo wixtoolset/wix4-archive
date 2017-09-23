@@ -1238,8 +1238,16 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun registering the location and visibility of the bundle.
     /// </summary>
     [Serializable]
-    public class RegisterBeginEventArgs : ResultEventArgs
+    public class RegisterBeginEventArgs : CancellableHResultEventArgs
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="RegisterBeginEventArgs"/> class.
+        /// </summary>
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public RegisterBeginEventArgs(bool cancelRecommendation)
+            : base(cancelRecommendation)
+        {
+        }
     }
 
     /// <summary>

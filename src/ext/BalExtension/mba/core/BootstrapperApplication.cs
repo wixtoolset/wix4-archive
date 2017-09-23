@@ -1377,12 +1377,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnRegisterBegin()
+        int IBootstrapperApplication.OnRegisterBegin(ref bool fCancel)
         {
-            RegisterBeginEventArgs args = new RegisterBeginEventArgs();
+            RegisterBeginEventArgs args = new RegisterBeginEventArgs(fCancel);
             this.OnRegisterBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         void IBootstrapperApplication.OnRegisterComplete(int hrStatus)

@@ -279,6 +279,15 @@ static HRESULT BalBaseBAProcOnError(
     return pBA->OnError(pArgs->errorType, pArgs->wzPackageId, pArgs->dwCode, pArgs->wzError, pArgs->uiFlags, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
 }
 
+static HRESULT BalBaseBAProcOnRegisterBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONREGISTERBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONREGISTERBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnRegisterBegin(&pResults->fCancel);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -388,6 +397,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
             hr = BalBaseBAProcOnError(pBA, reinterpret_cast<BA_ONERROR_ARGS*>(pvArgs), reinterpret_cast<BA_ONERROR_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN:
+            hr = BalBaseBAProcOnRegisterBegin(pBA, reinterpret_cast<BA_ONREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERBEGIN_RESULTS*>(pvResults));
             break;
         }
     }
