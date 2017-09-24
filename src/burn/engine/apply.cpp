@@ -452,7 +452,6 @@ extern "C" HRESULT ApplyCache(
     )
 {
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     DWORD dwCheckpoint = 0;
     BOOL fRetry = FALSE;
     DWORD iRetryAction = BURN_PLAN_INVALID_ACTION_INDEX;
@@ -474,12 +473,14 @@ extern "C" HRESULT ApplyCache(
         // Allow us to retry just a container or payload.
         LPCWSTR wzRetryId = NULL;
         DWORD iRetryContainerOrPayloadAction = BURN_PLAN_INVALID_ACTION_INDEX;
+        BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION cachePackageCompleteAction = BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE;
 
         // cache actions
         for (DWORD i = (BURN_PLAN_INVALID_ACTION_INDEX == iRetryAction) ? 0 : iRetryAction; SUCCEEDED(hr) && i < pPlan->cCacheActions; ++i)
         {
             BURN_CACHE_ACTION* pCacheAction = pPlan->rgCacheActions + i;
             BOOL fRetryContainerOrPayload = FALSE;
+            cachePackageCompleteAction = BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE;
 
             if (pCacheAction->fSkipUntilRetried)
             {
@@ -638,7 +639,7 @@ extern "C" HRESULT ApplyCache(
                 {
                     ++(*pcOverallProgressTicks);
 
-                    pUX->pUserExperience->OnCachePackageComplete(pStartedPackage->sczId, hr, IDNOACTION);
+                    UserExperienceOnCachePackageComplete(pUX, pStartedPackage->sczId, hr, &cachePackageCompleteAction);
 
                     pStartedPackage->hrCacheResult = hr;
 
@@ -675,26 +676,23 @@ extern "C" HRESULT ApplyCache(
             Assert(BURN_PLAN_INVALID_ACTION_INDEX != iPackageStartAction);
             Assert(BURN_PLAN_INVALID_ACTION_INDEX != iPackageCompleteAction);
 
-            nResult = pUX->pUserExperience->OnCachePackageComplete(pStartedPackage->sczId, hr, SUCCEEDED(hr) || pStartedPackage->fVital ? IDNOACTION : IDIGNORE);
-            nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_ABORTRETRYIGNORE, nResult);
-            if (FAILED(hr))
+            cachePackageCompleteAction = SUCCEEDED(hr) || pStartedPackage->fVital ? BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE : BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_IGNORE;
+            UserExperienceOnCachePackageComplete(pUX, pStartedPackage->sczId, hr, &cachePackageCompleteAction);
+            if (BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_RETRY == cachePackageCompleteAction)
             {
-                if (IDRETRY == nResult)
-                {
-                    LogErrorId(hr, MSG_APPLY_RETRYING_PACKAGE, pStartedPackage->sczId, NULL, NULL);
+                LogErrorId(hr, MSG_APPLY_RETRYING_PACKAGE, pStartedPackage->sczId, NULL, NULL);
 
-                    iRetryAction = iPackageStartAction;
-                    fRetry = TRUE;
-                }
-                else if (IDIGNORE == nResult && !pStartedPackage->fVital) // ignore non-vital download failures.
-                {
-                    LogId(REPORT_STANDARD, MSG_APPLY_CONTINUING_NONVITAL_PACKAGE, pStartedPackage->sczId, hr);
+                iRetryAction = iPackageStartAction;
+                fRetry = TRUE;
+            }
+            else if (BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_IGNORE == cachePackageCompleteAction && !pStartedPackage->fVital) // ignore non-vital download failures.
+            {
+                LogId(REPORT_STANDARD, MSG_APPLY_CONTINUING_NONVITAL_PACKAGE, pStartedPackage->sczId, hr);
 
-                    ++(*pcOverallProgressTicks); // add progress even though we didn't fully cache the package.
+                ++(*pcOverallProgressTicks); // add progress even though we didn't fully cache the package.
 
-                    iRetryAction = iPackageCompleteAction + 1;
-                    fRetry = TRUE;
-                }
+                iRetryAction = iPackageCompleteAction + 1;
+                fRetry = TRUE;
             }
 
             pStartedPackage->hrCacheResult = hr;

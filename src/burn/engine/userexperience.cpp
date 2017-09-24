@@ -475,6 +475,36 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnCachePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEPACKAGECOMPLETE_ARGS args = { };
+    BA_ONCACHEPACKAGECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCachePackageComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pAction = results.action;
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnCacheVerifyBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z_opt LPCWSTR wzPackageOrContainerId,

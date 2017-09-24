@@ -361,18 +361,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnCachePackageComplete - called after the engine attempts to copy or download all
     //                          payloads of a package into the package cache folder.
     //
-    // Return:
-    //  IDIGNORE instructs the engine to ignore non-vital package failures and continue with the
-    //           caching. Ignored if hrStatus is a success or the package is vital.
-    //
-    //  IDRETRY instructs the engine to try the acquisition and verification of the package
-    //          again. Ignored if hrStatus is a success.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnCachePackageComplete)(
+    STDMETHOD(OnCachePackageComplete)(
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* pAction
         )  = 0;
 
     // OnCacheComplete - called when the engine caching is complete.

@@ -458,31 +458,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnUnregisterBegin()
-    {
-    }
-
-    virtual STDMETHODIMP_(void) OnUnregisterComplete(
-        __in HRESULT /*hrStatus*/
-        )
-    {
-    }
-
-    virtual STDMETHODIMP_(int) OnApplyComplete(
-        __in HRESULT /*hrStatus*/,
-        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCachePackageComplete(
+    virtual STDMETHODIMP OnCachePackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* /*pAction*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnCacheComplete(
@@ -559,6 +541,24 @@ public: // IBootstrapperApplication
         __in HRESULT /*hrStatus*/
         )
     {
+    }
+
+    virtual STDMETHODIMP_(void) OnUnregisterBegin()
+    {
+    }
+
+    virtual STDMETHODIMP_(void) OnUnregisterComplete(
+        __in HRESULT /*hrStatus*/
+        )
+    {
+    }
+
+    virtual STDMETHODIMP_(int) OnApplyComplete(
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/
+        )
+    {
+        return IDNOACTION;
     }
 
     virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()

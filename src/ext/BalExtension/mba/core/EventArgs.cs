@@ -1902,142 +1902,30 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments passed by the engine when it has completed caching a specific package.
     /// </summary>
     [Serializable]
-    public class CachePackageCompleteEventArgs : ResultStatusEventArgs
+    public class CachePackageCompleteEventArgs : StatusEventArgs
     {
-        private string packageId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CachePackageCompleteEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that was cached.</param>
         /// <param name="status">The return code of the operation.</param>
-        /// <param name="recommendation">Recommended result from engine.</param>
-        public CachePackageCompleteEventArgs(string packageId, int status, int recommendation)
-            : base(status, recommendation)
+        /// <param name="action">Recommended action from engine.</param>
+        public CachePackageCompleteEventArgs(string packageId, int status, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
+            : base(status)
         {
-            this.packageId = packageId;
+            this.PackageId = packageId;
+            this.Action = action;
         }
 
         /// <summary>
         /// Gets the identity of the package that was cached.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
-    }
-
-    /// <summary>
-    /// Additional arguments passed by the engine when it has begun downloading a specific payload.
-    /// </summary>
-    [Serializable]
-    public class DownloadPayloadBeginEventArgs : ResultEventArgs
-    {
-        private string payloadId;
-        private string payloadFileName;
+        public string PackageId { get; private set; }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="DownloadPayloadBeginEventArgs"/> class.
+        /// Gets or sets the action to be performed. This is passed back to the engine.
         /// </summary>
-        /// <param name="payloadId">The identifier of the payload being downloaded.</param>
-        /// <param name="payloadFileName">The file name of the payload being downloaded.</param>
-        public DownloadPayloadBeginEventArgs(string payloadId, string payloadFileName)
-        {
-            this.payloadId = payloadId;
-            this.payloadFileName = payloadFileName;
-        }
-
-        /// <summary>
-        /// Gets the identifier of the payload being downloaded.
-        /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
-
-        /// <summary>
-        /// Gets the file name of the payload being downloaded.
-        /// </summary>
-        public string PayloadFileName
-        {
-            get { return this.payloadFileName; }
-        }
-    }
-
-    /// <summary>
-    /// Additional arguments passed by the engine when it has completed downloading a specific payload.
-    /// </summary>
-    [Serializable]
-    public class DownloadPayloadCompleteEventArgs : ResultStatusEventArgs
-    {
-        private string payloadId;
-        private string payloadFileName;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DownloadPayloadCompleteEventArgs"/> class.
-        /// </summary>
-        /// <param name="payloadId">The identifier of the payload that was downloaded.</param>
-        /// <param name="payloadFileName">The file name of the payload that was downloaded.</param>
-        /// <param name="status">The return code of the operation.</param>
-        public DownloadPayloadCompleteEventArgs(string payloadId, string payloadFileName, int status)
-            : base(status)
-        {
-            this.payloadId = payloadId;
-            this.payloadFileName = payloadFileName;
-        }
-
-        /// <summary>
-        /// Gets the identifier of the payload that was downloaded.
-        /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
-
-        /// <summary>
-        /// Gets the file name of the payload that was downloaded.
-        /// </summary>
-        public string PayloadFileName
-        {
-            get { return this.payloadFileName; }
-        }
-    }
-
-    /// <summary>
-    /// Additional arguments passed by the engine while downloading payload.
-    /// </summary>
-    [Serializable]
-    public class DownloadProgressEventArgs : ResultEventArgs
-    {
-        private int progressPercentage;
-        private int overallPercentage;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="DownloadProgressEventArgs"/> class.
-        /// </summary>
-        /// <param name="progressPercentage">The percentage from 0 to 100 of the download progress for a single payload.</param>
-        /// <param name="overallPercentage">The percentage from 0 to 100 of the download progress for all payload.</param>
-        public DownloadProgressEventArgs(int progressPercentage, int overallPercentage)
-        {
-            this.progressPercentage = progressPercentage;
-            this.overallPercentage = overallPercentage;
-        }
-
-        /// <summary>
-        /// Gets the percentage from 0 to 100 of the download progress for a single payload.
-        /// </summary>
-        public int ProgressPercentage
-        {
-            get { return this.progressPercentage; }
-        }
-
-        /// <summary>
-        /// Gets the percentage from 0 to 100 of the download progress for all payload.
-        /// </summary>
-        public int OverallPercentage
-        {
-            get { return this.overallPercentage; }
-        }
+        public BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION Action { get; set; }
     }
 
     /// <summary>

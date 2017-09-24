@@ -539,40 +539,29 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzPayloadId*/,
         __in HRESULT /*hrStatus*/,
-        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* /*pAction*/
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
         )
     {
+        if (CheckCanceled())
+        {
+            *pAction = BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_NONE;
+        }
+
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnUnregisterBegin()
-    {
-        return;
-    }
-
-    virtual STDMETHODIMP_(void) OnUnregisterComplete(
-        __in HRESULT /*hrStatus*/
-        )
-    {
-        return;
-    }
-
-    virtual STDMETHODIMP_(int) OnApplyComplete(
-        __in HRESULT /*hrStatus*/,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
-        )
-    {
-        m_fApplying = FALSE;
-        return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCachePackageComplete(
+    virtual STDMETHODIMP OnCachePackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* pAction
         )
     {
-        return CheckCanceled() ? IDCANCEL : nRecommendation;
+        if (CheckCanceled())
+        {
+            *pAction = BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE;
+        }
+
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnCacheComplete(
@@ -687,6 +676,27 @@ public: // IBootstrapperApplication
         __in HRESULT /*hrStatus*/
         )
     {
+    }
+
+    virtual STDMETHODIMP_(void) OnUnregisterBegin()
+    {
+        return;
+    }
+
+    virtual STDMETHODIMP_(void) OnUnregisterComplete(
+        __in HRESULT /*hrStatus*/
+        )
+    {
+        return;
+    }
+
+    virtual STDMETHODIMP_(int) OnApplyComplete(
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_APPLY_RESTART restart
+        )
+    {
+        m_fApplying = FALSE;
+        return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
     }
 
     virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()
