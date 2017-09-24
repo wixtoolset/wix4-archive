@@ -355,6 +355,40 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnCacheAcquireProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in DWORD64 dw64Progress,
+    __in DWORD64 dw64Total,
+    __in DWORD dwOverallPercentage
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEACQUIREPROGRESS_ARGS args = { };
+    BA_ONCACHEACQUIREPROGRESS_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.dw64Progress = dw64Progress;
+    args.dw64Total = dw64Total;
+    args.dwOverallPercentage = dwOverallPercentage;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheAcquireProgress failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnCacheBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     )

@@ -510,12 +510,13 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheAcquireProgress(
+    virtual STDMETHODIMP OnCacheAcquireProgress(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in DWORD64 dw64Progress,
         __in DWORD64 dw64Total,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         )
     {
 #ifdef DEBUG
@@ -524,7 +525,7 @@ public: // IBootstrapperApplication
 
         UpdateCacheProgress(dwOverallPercentage);
 
-        return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
+        return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage, pfCancel);
     }
 
 
@@ -1066,6 +1067,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREBEGIN:
             OnCacheAcquireBeginFallback(reinterpret_cast<BA_ONCACHEACQUIREBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREBEGIN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS:
+            OnCacheAcquireProgressFallback(reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1357,6 +1361,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireProgressFallback(
+        __in BA_ONCACHEACQUIREPROGRESS_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIREPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

@@ -1599,6 +1599,7 @@ static DWORD CALLBACK CacheProgressRoutine(
     __in_opt LPVOID lpData
     )
 {
+    HRESULT hr = S_OK;
     DWORD dwResult = PROGRESS_CONTINUE;
     BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT* pProgress = static_cast<BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT*>(lpData);
     LPCWSTR wzPackageOrContainerId = pProgress->pContainer ? pProgress->pContainer->sczId : pProgress->pPackage ? pProgress->pPackage->sczId : NULL;
@@ -1611,32 +1612,20 @@ static DWORD CALLBACK CacheProgressRoutine(
     }
     DWORD dwOverallPercentage = pProgress->qwTotalCacheSize ? static_cast<DWORD>(qwCacheProgress * 100 / pProgress->qwTotalCacheSize) : 0;
 
-    int nResult = pProgress->pUX->pUserExperience->OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, TotalBytesTransferred.QuadPart, TotalFileSize.QuadPart, dwOverallPercentage);
-    nResult = UserExperienceCheckExecuteResult(pProgress->pUX, FALSE, MB_OKCANCEL, nResult);
-    switch (nResult)
+    hr = UserExperienceOnCacheAcquireProgress(pProgress->pUX, wzPackageOrContainerId, wzPayloadId, TotalBytesTransferred.QuadPart, TotalFileSize.QuadPart, dwOverallPercentage);
+    if (HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hr)
     {
-    case IDOK: __fallthrough;
-    case IDNOACTION: __fallthrough;
-    case IDYES: __fallthrough;
-    case IDRETRY: __fallthrough;
-    case IDIGNORE: __fallthrough;
-    case IDTRYAGAIN: __fallthrough;
-    case IDCONTINUE:
-        dwResult = PROGRESS_CONTINUE;
-        break;
-
-    case IDCANCEL: __fallthrough;
-    case IDABORT: __fallthrough;
-    case IDNO:
         dwResult = PROGRESS_CANCEL;
         pProgress->fCancel = TRUE;
-        break;
-
-    case IDERROR: __fallthrough;
-    default:
+    }
+    else if (FAILED(hr))
+    {
         dwResult = PROGRESS_CANCEL;
         pProgress->fError = TRUE;
-        break;
+    }
+    else
+    {
+        dwResult = PROGRESS_CONTINUE;
     }
 
     return dwResult;

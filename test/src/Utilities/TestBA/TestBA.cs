@@ -231,7 +231,7 @@ namespace WixTest.BA
 
             if (this.cancelCacheAtProgress > 0 && this.cancelCacheAtProgress <= args.Progress)
             {
-                args.Result = Result.Cancel;
+                args.Cancel = true;
             }
             else if (this.sleepDuringCache > 0)
             {

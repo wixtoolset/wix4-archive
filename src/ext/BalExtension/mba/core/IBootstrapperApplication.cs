@@ -316,12 +316,13 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheAcquireProgress(
+        int OnCacheAcquireProgress(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.U8)] long dw64Progress,
             [MarshalAs(UnmanagedType.U8)] long dw64Total,
-            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage
+            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

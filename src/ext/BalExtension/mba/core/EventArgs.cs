@@ -1349,65 +1349,45 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine acquires some part of a container or payload.
     /// </summary>
     [Serializable]
-    public class CacheAcquireProgressEventArgs : ResultEventArgs
+    public class CacheAcquireProgressEventArgs : CancellableHResultEventArgs
     {
-        private string packageOrContainerId;
-        private string payloadId;
-        private long progress;
-        private long total;
-        private int overallPercentage;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CacheAcquireBeginEventArgs"/> class.
         /// </summary>
-        public CacheAcquireProgressEventArgs(string packageOrContainerId, string payloadId, long progress, long total, int overallPercentage)
+        public CacheAcquireProgressEventArgs(string packageOrContainerId, string payloadId, long progress, long total, int overallPercentage, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageOrContainerId = packageOrContainerId;
-            this.payloadId = payloadId;
-            this.progress = progress;
-            this.total = total;
-            this.overallPercentage = overallPercentage;
+            this.PackageOrContainerId = packageOrContainerId;
+            this.PayloadId = payloadId;
+            this.Progress = progress;
+            this.Total = total;
+            this.OverallPercentage = overallPercentage;
         }
 
         /// <summary>
         /// Gets the identifier of the container or package.
         /// </summary>
-        public string PackageOrContainerId
-        {
-            get { return this.packageOrContainerId; }
-        }
+        public string PackageOrContainerId { get; private set; }
 
         /// <summary>
         /// Gets the identifier of the payload (if acquiring a payload).
         /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
+        public string PayloadId { get; private set; }
 
         /// <summary>
         /// Gets the number of bytes cached thus far.
         /// </summary>
-        public long Progress
-        {
-            get { return this.progress; }
-        }
+        public long Progress { get; private set; }
 
         /// <summary>
         /// Gets the total bytes to cache.
         /// </summary>
-        public long Total
-        {
-            get { return this.total; }
-        }
+        public long Total { get; private set; }
 
         /// <summary>
         /// Gets the overall percentage of progress of caching.
         /// </summary>
-        public int OverallPercentage
-        {
-            get { return this.overallPercentage; }
-        }
+        public int OverallPercentage { get; private set; }
     }
 
     /// <summary>

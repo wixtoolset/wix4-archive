@@ -162,7 +162,7 @@ namespace WixToolset.UX
             {
                 this.cacheProgress = e.OverallPercentage;
                 this.Progress = (this.cacheProgress + this.executeProgress) / this.progressPhases;
-                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+                e.Cancel = this.root.Canceled;
             }
         }
 

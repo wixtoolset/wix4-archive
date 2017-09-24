@@ -458,6 +458,40 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnCacheAcquireProgress(
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in DWORD64 /*dw64Progress*/,
+        __in DWORD64 /*dw64Total*/,
+        __in DWORD /*dwOverallPercentage*/,
+        __inout BOOL* pfCancel
+        )
+    {
+        HRESULT hr = S_OK;
+        int nResult = IDNOACTION;
+
+        // Send progress even though we don't update the numbers to at least give the caller an opportunity
+        // to cancel.
+        if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_display)
+        {
+            hr = m_pEngine->SendEmbeddedProgress(m_dwProgressPercentage, m_dwOverallProgressPercentage, &nResult);
+            BalExitOnFailure(hr, "Failed to send embedded cache progress.");
+
+            if (IDERROR == nResult)
+            {
+                hr = E_FAIL;
+            }
+            else if (IDCANCEL == nResult)
+            {
+                *pfCancel = TRUE;
+            }
+        }
+
+    LExit:
+        *pfCancel |= CheckCanceled();
+        return hr;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
         return;
@@ -477,29 +511,6 @@ public: // IBootstrapperApplication
     {
         m_fApplying = FALSE;
         return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireProgress(
-        __in_z LPCWSTR /*wzPackageOrContainerId*/,
-        __in_z_opt LPCWSTR /*wzPayloadId*/,
-        __in DWORD64 /*dw64Progress*/,
-        __in DWORD64 /*dw64Total*/,
-        __in DWORD /*dwOverallPercentage*/
-        )
-    {
-        HRESULT hr = S_OK;
-        int nResult = IDNOACTION;
-
-        // Send progress even though we don't update the numbers to at least give the caller an opportunity
-        // to cancel.
-        if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_display)
-        {
-            hr = m_pEngine->SendEmbeddedProgress(m_dwProgressPercentage, m_dwOverallProgressPercentage, &nResult);
-            BalExitOnFailure(hr, "Failed to send embedded cache progress.");
-        }
-
-    LExit:
-        return FAILED(hr) ? IDERROR : CheckCanceled() ? IDCANCEL : nResult;
     }
 
     virtual STDMETHODIMP_(int) OnCacheAcquireComplete(

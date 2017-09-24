@@ -110,6 +110,14 @@ BAAPI UserExperienceOnCacheAcquireBegin(
     __in BOOTSTRAPPER_CACHE_OPERATION operation,
     __in_z LPCWSTR wzSource
     );
+BAAPI UserExperienceOnCacheAcquireProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in DWORD64 dw64Progress,
+    __in DWORD64 dw64Total,
+    __in DWORD dwOverallPercentage
+    );
 BAAPI UserExperienceOnCacheBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );

@@ -302,16 +302,13 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnCacheAcquireProgress - called when the engine makes progresss copying
     //                          or downloading a payload to the working folder.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheAcquireProgress)(
+    STDMETHOD(OnCacheAcquireProgress)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in DWORD64 dw64Progress,
         __in DWORD64 dw64Total,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnResolveSource - called when a payload or container cannot be found locally.

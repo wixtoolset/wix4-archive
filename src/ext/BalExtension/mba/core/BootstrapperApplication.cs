@@ -1421,6 +1421,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnCacheAcquireProgress(string wzPackageOrContainerId, string wzPayloadId, long dw64Progress, long dw64Total, int dwOverallPercentage, ref bool fCancel)
+        {
+            CacheAcquireProgressEventArgs args = new CacheAcquireProgressEventArgs(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage, fCancel);
+            this.OnCacheAcquireProgress(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
         void IBootstrapperApplication.OnUnregisterBegin()
         {
             this.OnUnregisterBegin(new UnregisterBeginEventArgs());
@@ -1429,14 +1438,6 @@ namespace WixToolset.Bootstrapper
         void IBootstrapperApplication.OnUnregisterComplete(int hrStatus)
         {
             this.OnUnregisterComplete(new UnregisterCompleteEventArgs(hrStatus));
-        }
-
-        Result IBootstrapperApplication.OnCacheAcquireProgress(string wzPackageOrContainerId, string wzPayloadId, long dw64Progress, long dw64Total, int dwOverallPercentage)
-        {
-            CacheAcquireProgressEventArgs args = new CacheAcquireProgressEventArgs(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
-            this.OnCacheAcquireProgress(args);
-
-            return args.Result;
         }
 
         Result IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource)
