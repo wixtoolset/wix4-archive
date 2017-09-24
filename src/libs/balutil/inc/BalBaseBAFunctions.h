@@ -384,6 +384,16 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnCachePackageBegin(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in DWORD /*cCachePayloads*/,
+        __in DWORD64 /*dw64PackageCacheSize*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
     }
@@ -397,15 +407,6 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP_(int) OnApplyComplete(
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_APPLY_RESTART /*restart*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCachePackageBegin(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in DWORD /*cCachePayloads*/,
-        __in DWORD64 /*dw64PackageCacheSize*/
         )
     {
         return IDNOACTION;

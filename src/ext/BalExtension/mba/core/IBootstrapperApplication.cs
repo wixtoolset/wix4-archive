@@ -297,10 +297,11 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCachePackageBegin(
+        int OnCachePackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int cCachePayloads,
-            [MarshalAs(UnmanagedType.U8)] long dw64PackageCacheSize
+            [MarshalAs(UnmanagedType.U8)] long dw64PackageCacheSize,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

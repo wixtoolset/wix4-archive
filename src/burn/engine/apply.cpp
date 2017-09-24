@@ -520,8 +520,7 @@ extern "C" HRESULT ApplyCache(
                 iPackageCompleteAction = pCacheAction->packageStart.iPackageCompleteAction; // if we ignore this package, we'll start after the complete action in the plan.
                 pStartedPackage = pCacheAction->packageStart.pPackage;
 
-                nResult = pUX->pUserExperience->OnCachePackageBegin(pStartedPackage->sczId, pCacheAction->packageStart.cCachePayloads, pCacheAction->packageStart.qwCachePayloadSizeTotal);
-                hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+                hr = UserExperienceOnCachePackageBegin(pUX, pStartedPackage->sczId, pCacheAction->packageStart.cCachePayloads, pCacheAction->packageStart.qwCachePayloadSizeTotal);
                 if (FAILED(hr))
                 {
                     LogErrorId(hr, MSG_USER_CANCELED, L"begin cache package", pStartedPackage->sczId, NULL);

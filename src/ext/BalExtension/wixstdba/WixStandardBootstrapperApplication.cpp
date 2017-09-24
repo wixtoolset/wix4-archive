@@ -484,10 +484,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnCachePackageBegin(
+    virtual STDMETHODIMP OnCachePackageBegin(
         __in_z LPCWSTR wzPackageId,
         __in DWORD cCachePayloads,
-        __in DWORD64 dw64PackageCacheSize
+        __in DWORD64 dw64PackageCacheSize,
+        __inout BOOL* pfCancel
         )
     {
         if (wzPackageId && *wzPackageId)
@@ -505,7 +506,7 @@ public: // IBootstrapperApplication
             }
         }
 
-        return __super::OnCachePackageBegin(wzPackageId, cCachePayloads, dw64PackageCacheSize);
+        return __super::OnCachePackageBegin(wzPackageId, cCachePayloads, dw64PackageCacheSize, pfCancel);
     }
 
 
@@ -1059,6 +1060,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEBEGIN:
             OnCacheBeginFallback(reinterpret_cast<BA_ONCACHEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEBEGIN_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN:
+            OnCachePackageBeginFallback(reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1334,6 +1338,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCachePackageBeginFallback(
+        __in BA_ONCACHEPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEPACKAGEBEGIN_RESULTS* pResults
+    )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

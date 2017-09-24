@@ -1906,47 +1906,37 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used by the engine when it has begun caching a specific package.
     /// </summary>
     [Serializable]
-    public class CachePackageBeginEventArgs : ResultEventArgs
+    public class CachePackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private int cachePayloads;
-        private long packageCacheSize;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CachePackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that is being cached.</param>
         /// <param name="cachePayloads">Number of payloads to be cached.</param>
         /// <param name="packageCacheSize">The size on disk required by the specific package.</param>
-        public CachePackageBeginEventArgs(string packageId, int cachePayloads, long packageCacheSize)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public CachePackageBeginEventArgs(string packageId, int cachePayloads, long packageCacheSize, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.cachePayloads = cachePayloads;
-            this.packageCacheSize = packageCacheSize;
+            this.PackageId = packageId;
+            this.CachePayloads = cachePayloads;
+            this.PackageCacheSize = packageCacheSize;
         }
 
         /// <summary>
         /// Gets the identity of the package that is being cached.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets number of payloads to be cached.
         /// </summary>
-        public long CachePayloads
-        {
-            get { return this.cachePayloads; }
-        }
+        public long CachePayloads { get; private set; }
+
         /// <summary>
         /// Gets the size on disk required by the specific package.
         /// </summary>
-        public long PackageCacheSize
-        {
-            get { return this.packageCacheSize; }
-        }
+        public long PackageCacheSize { get; private set; }
     }
 
     /// <summary>

@@ -106,6 +106,12 @@ BAAPI UserExperienceOnApplyBegin(
 BAAPI UserExperienceOnCacheBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
+BAAPI UserExperienceOnCachePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cCachePayloads,
+    __in DWORD64 dw64PackageCacheSize
+    );
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,

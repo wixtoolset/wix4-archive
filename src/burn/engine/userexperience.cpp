@@ -347,6 +347,36 @@ LExit:
     return hr;
 }
 
+BAAPI UserExperienceOnCachePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cCachePayloads,
+    __in DWORD64 dw64PackageCacheSize
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEPACKAGEBEGIN_ARGS args = { };
+    BA_ONCACHEPACKAGEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.cCachePayloads = cCachePayloads;
+    args.dw64PackageCacheSize = dw64PackageCacheSize;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCachePackageBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
