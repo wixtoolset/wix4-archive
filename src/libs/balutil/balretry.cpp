@@ -95,14 +95,15 @@ DAPI_(void) BalRetryErrorOccurred(
 }
 
 
-DAPI_(int) BalRetryEndPackage(
+DAPI_(HRESULT) BalRetryEndPackage(
     __in BALRETRY_TYPE type,
     __in_z_opt LPCWSTR wzPackageId,
     __in_z_opt LPCWSTR wzPayloadId,
-    __in HRESULT hrError
+    __in HRESULT hrError,
+    __inout BOOL* pfRetry
     )
 {
-    int nResult = IDNOACTION;
+    HRESULT hr = S_OK;
 
     if (!wzPackageId || !*wzPackageId)
     {
@@ -119,7 +120,7 @@ DAPI_(int) BalRetryEndPackage(
                 HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) != hrError &&
                 HRESULT_FROM_WIN32(ERROR_INTERNET_NAME_NOT_RESOLVED) != hrError)
             {
-                nResult = IDRETRY;
+                *pfRetry = TRUE;
             }
         }
         else if (BALRETRY_TYPE_EXECUTE == type)
@@ -127,7 +128,7 @@ DAPI_(int) BalRetryEndPackage(
             // If the service is out of whack, just try again.
             if (HRESULT_FROM_WIN32(ERROR_INSTALL_SERVICE_FAILURE) == hrError)
             {
-                nResult = IDRETRY;
+                *pfRetry = TRUE;
             }
             else if (HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE) == hrError)
             {
@@ -156,17 +157,17 @@ DAPI_(int) BalRetryEndPackage(
                     1923 == dwError ||
                     1931 == dwError)
                 {
-                    nResult = IDRETRY;
+                    *pfRetry = TRUE;
                 }
             }
             else if (HRESULT_FROM_WIN32(ERROR_INSTALL_ALREADY_RUNNING) == hrError)
             {
-                nResult = IDRETRY;
+                *pfRetry = TRUE;
             }
         }
     }
 
-    return nResult;
+    return hr;
 }
 
 

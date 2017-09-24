@@ -529,15 +529,15 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheAcquireComplete(
+    virtual STDMETHODIMP OnCacheAcquireComplete(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __inout BOOL* pfRetry
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, nRecommendation);
+        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, pfRetry);
     }
 
 
@@ -1076,6 +1076,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE:
             OnResolveSourceFallback(reinterpret_cast<BA_ONRESOLVESOURCE_ARGS*>(pvArgs), reinterpret_cast<BA_ONRESOLVESOURCE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE:
+            OnCacheAcquireCompleteFallback(reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1383,6 +1386,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONRESOLVESOURCE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireCompleteFallback(
+        __in BA_ONCACHEACQUIRECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIRECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIRECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

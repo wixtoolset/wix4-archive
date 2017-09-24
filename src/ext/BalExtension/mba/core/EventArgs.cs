@@ -102,6 +102,29 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
+    /// Base class for <see cref="EventArgs"/> classes that receive status from the engine and can be retried.
+    /// </summary>
+    [Serializable]
+    public abstract class RetriableStatusEventArgs : StatusEventArgs
+    {
+        /// <summary>
+        /// Creates a new instance of the <see cref="RetriableStatusEventArgs"/> class.
+        /// </summary>
+        /// <param name="status">The return code of the operation.</param>
+        /// <param name="retryRecommendation">The recommendation from the engine.</param>
+        public RetriableStatusEventArgs(int status, bool retryRecommendation)
+            : base(status)
+        {
+            this.Retry = retryRecommendation;
+        }
+
+        /// <summary>
+        /// Get or sets whether to retry the operation. This is passed back to the engine.
+        /// </summary>
+        public bool Retry { get; set; }
+    }
+
+    /// <summary>
     /// Base class for <see cref="EventArgs"/> classes that receive status from the engine and return a result.
     /// </summary>
     [Serializable]
@@ -1394,36 +1417,27 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine completes the acquisition of a container or payload.
     /// </summary>
     [Serializable]
-    public class CacheAcquireCompleteEventArgs : ResultStatusEventArgs
+    public class CacheAcquireCompleteEventArgs : RetriableStatusEventArgs
     {
-        private string packageOrContainerId;
-        private string payloadId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CacheAcquireCompleteEventArgs"/> class.
         /// </summary>
-        public CacheAcquireCompleteEventArgs(string packageOrContainerId, string payloadId, int status, int recommendation)
-            : base(status, recommendation)
+        public CacheAcquireCompleteEventArgs(string packageOrContainerId, string payloadId, int status, bool retryRecommendation)
+            : base(status, retryRecommendation)
         {
-            this.packageOrContainerId = packageOrContainerId;
-            this.payloadId = payloadId;
+            this.PackageOrContainerId = packageOrContainerId;
+            this.PayloadId = payloadId;
         }
 
         /// <summary>
         /// Gets the identifier of the container or package.
         /// </summary>
-        public string PackageOrContainerId
-        {
-            get { return this.packageOrContainerId; }
-        }
+        public string PackageOrContainerId { get; private set; }
 
         /// <summary>
         /// Gets the identifier of the payload (if acquiring a payload).
         /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
+        public string PayloadId { get; private set; }
     }
 
     /// <summary>

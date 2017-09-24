@@ -1053,6 +1053,7 @@ static HRESULT LayoutBundle(
     int nEquivalentPaths = 0;
     BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT progress = { };
     BOOL fRetry = FALSE;
+    BOOL fRetryAcquire = FALSE;
 
     hr = VariableGetString(pVariables, BURN_BUNDLE_SOURCE_PROCESS_PATH, &sczBundlePath);
     if (FAILED(hr))
@@ -1087,8 +1088,9 @@ static HRESULT LayoutBundle(
         hr = S_OK;
         fRetry = FALSE;
 
-        do
+        for (;;)
         {
+            fRetryAcquire = FALSE;
             progress.fCancel = FALSE;
 
             hr = UserExperienceOnCacheAcquireBegin(pUX, NULL, NULL, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczBundlePath);
@@ -1097,17 +1099,13 @@ static HRESULT LayoutBundle(
             hr = CopyPayload(&progress, sczBundlePath, wzUnverifiedPath);
             // Error handling happens after sending complete message to BA.
 
-            int nResult = pUX->pUserExperience->OnCacheAcquireComplete(NULL, NULL, hr, IDNOACTION);
-            nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYCANCEL, nResult);
-            if (FAILED(hr) && IDRETRY == nResult)
+            UserExperienceOnCacheAcquireComplete(pUX, NULL, NULL, hr, &fRetryAcquire);
+            if (fRetryAcquire)
             {
-                hr = S_FALSE;
+                continue;
             }
-            ExitOnFailure(hr, "Failed to copy bundle from: '%ls' to: '%ls'", sczBundlePath, wzUnverifiedPath);
-        } while (S_FALSE == hr);
 
-        if (FAILED(hr))
-        {
+            ExitOnFailure(hr, "Failed to copy bundle from: '%ls' to: '%ls'", sczBundlePath, wzUnverifiedPath);
             break;
         }
 
@@ -1249,11 +1247,9 @@ static HRESULT AcquireContainerOrPayload(
 
         if (fCopy || fDownload)
         {
-            int nResult = pUX->pUserExperience->OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hr, IDNOACTION);
-            nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYCANCEL, nResult);
-            if (FAILED(hr) && IDRETRY == nResult)
+            UserExperienceOnCacheAcquireComplete(pUX, wzPackageOrContainerId, wzPayloadId, hr, &fRetry);
+            if (fRetry)
             {
-                fRetry = TRUE;
                 hr = S_OK;
             }
         }

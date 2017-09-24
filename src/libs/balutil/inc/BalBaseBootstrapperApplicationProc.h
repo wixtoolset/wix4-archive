@@ -342,6 +342,15 @@ static HRESULT BalBaseBAProcOnResolveSource(
     return pBA->OnResolveSource(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->wzLocalSource, pArgs->wzDownloadSource, &pResults->action, &pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnCacheAcquireComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEACQUIRECOMPLETE_ARGS* pArgs,
+    __inout BA_ONCACHEACQUIRECOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheAcquireComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, &pResults->fRetry);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -472,6 +481,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE:
             hr = BalBaseBAProcOnResolveSource(pBA, reinterpret_cast<BA_ONRESOLVESOURCE_ARGS*>(pvArgs), reinterpret_cast<BA_ONRESOLVESOURCE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE:
+            hr = BalBaseBAProcOnCacheAcquireComplete(pBA, reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_RESULTS*>(pvResults));
             break;
         }
     }

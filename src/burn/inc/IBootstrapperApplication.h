@@ -332,15 +332,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnCacheAcquireComplete - called after the engine copied or downloaded
     //                          a payload to the working folder.
     //
-    // Return:
-    //  IDRETRY instructs the engine to try the copy or download of the payload again.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnCacheAcquireComplete)(
+    STDMETHOD(OnCacheAcquireComplete)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __inout BOOL* pfRetry
         ) = 0;
 
     // OnCacheVerifyBegin - called when the engine begins to verify then copy

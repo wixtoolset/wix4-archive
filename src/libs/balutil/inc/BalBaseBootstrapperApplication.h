@@ -505,6 +505,26 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnCacheAcquireComplete(
+        __in_z LPCWSTR wzPackageOrContainerId,
+        __in_z_opt LPCWSTR wzPayloadId,
+        __in HRESULT hrStatus,
+        __inout BOOL* pfRetry
+        )
+    {
+        HRESULT hr = S_OK;
+
+        if (CheckCanceled())
+        {
+            ExitFunction();
+        }
+
+        hr = BalRetryEndPackage(BALRETRY_TYPE_CACHE, wzPackageOrContainerId, wzPayloadId, hrStatus, pfRetry);
+
+    LExit:
+        return hr;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
         return;
@@ -524,17 +544,6 @@ public: // IBootstrapperApplication
     {
         m_fApplying = FALSE;
         return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireComplete(
-        __in_z LPCWSTR wzPackageOrContainerId,
-        __in_z_opt LPCWSTR wzPayloadId,
-        __in HRESULT hrStatus,
-        __in int nRecommendation
-        )
-    {
-        int nResult = CheckCanceled() ? IDCANCEL : BalRetryEndPackage(BALRETRY_TYPE_CACHE, wzPackageOrContainerId, wzPayloadId, hrStatus);
-        return IDNOACTION == nResult ? nRecommendation : nResult;
     }
 
     virtual STDMETHODIMP_(int) OnCacheVerifyBegin(
@@ -650,8 +659,26 @@ public: // IBootstrapperApplication
         __in int nRecommendation
         )
     {
-        int nResult = CheckCanceled() ? IDCANCEL : BalRetryEndPackage(BALRETRY_TYPE_EXECUTE, wzPackageId, NULL, hrExitCode);
-        return IDNOACTION == nResult ? nRecommendation : nResult;
+        HRESULT hr = S_OK;
+        BOOL fRetry = FALSE;
+        int nResult = nRecommendation;
+
+        if (CheckCanceled())
+        {
+            nResult = IDCANCEL;
+            ExitFunction();
+        }
+
+        hr = BalRetryEndPackage(BALRETRY_TYPE_EXECUTE, wzPackageId, NULL, hrExitCode, &fRetry);
+        ExitOnFailure(hr, "BalRetryEndPackage for execute failed");
+
+        if (fRetry)
+        {
+            nResult = IDRETRY;
+        }
+
+    LExit:
+        return nResult;
     }
 
     virtual STDMETHODIMP_(void) OnExecuteComplete(

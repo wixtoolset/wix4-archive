@@ -51,11 +51,12 @@ DAPI_(void) BalRetryErrorOccurred(
  BalRetryEndPackage - returns IDRETRY is a retry is recommended or 
                       IDNOACTION if a retry is not recommended.
 ********************************************************************/
-DAPI_(int) BalRetryEndPackage(
+DAPI_(HRESULT) BalRetryEndPackage(
     __in BALRETRY_TYPE type,
     __in_z_opt LPCWSTR wzPackageId,
     __in_z_opt LPCWSTR wzPayloadId,
-    __in HRESULT hrError
+    __in HRESULT hrError,
+    __inout BOOL* pfRetry
     );
 
 

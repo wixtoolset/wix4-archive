@@ -355,6 +355,38 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnCacheAcquireComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfRetry
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEACQUIRECOMPLETE_ARGS args = { };
+    BA_ONCACHEACQUIRECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+    results.fRetry = *pfRetry;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheAcquireComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pfRetry = results.fRetry;
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnCacheAcquireProgress(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z_opt LPCWSTR wzPackageOrContainerId,
@@ -831,7 +863,10 @@ EXTERN_C BAAPI UserExperienceOnDetectUpdateComplete(
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnDetectUpdateComplete failed.");
 
-    *pfIgnoreError = results.fIgnoreError;
+    if (FAILED(hrStatus))
+    {
+        *pfIgnoreError = results.fIgnoreError;
+    }
 
 LExit:
     return hr;
