@@ -452,6 +452,7 @@ extern "C" HRESULT ApplyCache(
     )
 {
     HRESULT hr = S_OK;
+    int nResult = IDNOACTION;
     DWORD dwCheckpoint = 0;
     BOOL fRetry = FALSE;
     DWORD iRetryAction = BURN_PLAN_INVALID_ACTION_INDEX;
@@ -462,9 +463,8 @@ extern "C" HRESULT ApplyCache(
     DWORD iPackageStartAction = BURN_PLAN_INVALID_ACTION_INDEX;
     DWORD iPackageCompleteAction = BURN_PLAN_INVALID_ACTION_INDEX;
 
-    int nResult = pUX->pUserExperience->OnCacheBegin();
-    hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted cache.");
+    hr = UserExperienceOnCacheBegin(pUX);
+    ExitOnRootFailure(hr, "BA aborted cache.");
 
     do
     {

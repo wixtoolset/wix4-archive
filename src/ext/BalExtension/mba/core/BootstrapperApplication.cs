@@ -1394,6 +1394,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnCacheBegin(ref bool fCancel)
+        {
+            CacheBeginEventArgs args = new CacheBeginEventArgs(fCancel);
+            this.OnCacheBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
         void IBootstrapperApplication.OnUnregisterBegin()
         {
             this.OnUnregisterBegin(new UnregisterBeginEventArgs());
@@ -1402,14 +1411,6 @@ namespace WixToolset.Bootstrapper
         void IBootstrapperApplication.OnUnregisterComplete(int hrStatus)
         {
             this.OnUnregisterComplete(new UnregisterCompleteEventArgs(hrStatus));
-        }
-
-        Result IBootstrapperApplication.OnCacheBegin()
-        {
-            CacheBeginEventArgs args = new CacheBeginEventArgs();
-            this.OnCacheBegin(args);
-
-            return args.Result;
         }
 
         Result IBootstrapperApplication.OnCachePackageBegin(string wzPackageId, int cCachePayloads, long dw64PackageCacheSize)

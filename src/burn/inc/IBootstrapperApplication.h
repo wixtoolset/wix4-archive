@@ -274,11 +274,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnCacheBegin - called when the engine begins caching.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheBegin)() = 0;
+    STDMETHOD(OnCacheBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnCachePackageBegin - called when the engine begins caching
     //                       a package.

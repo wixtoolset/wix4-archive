@@ -1294,8 +1294,16 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun caching the installation sources.
     /// </summary>
     [Serializable]
-    public class CacheBeginEventArgs : ResultEventArgs
+    public class CacheBeginEventArgs : CancellableHResultEventArgs
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="CacheBeginEventArgs"/> class.
+        /// </summary>
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public CacheBeginEventArgs(bool cancelRecommendation)
+            : base(cancelRecommendation)
+        {
+        }
     }
 
     /// <summary>

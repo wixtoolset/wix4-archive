@@ -291,7 +291,9 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheBegin();
+        int OnCacheBegin(
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]

@@ -103,6 +103,9 @@ BAAPI UserExperienceOnApplyBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwPhaseCount
     );
+BAAPI UserExperienceOnCacheBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
