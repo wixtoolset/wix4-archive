@@ -1459,48 +1459,45 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Gets the identifier of the package.
         /// </summary>
-        public string PackageId { get; set; }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identifier of the payload.
         /// </summary>
-        public string PayloadId { get; set; }
+        public string PayloadId { get; private set; }
     }
 
     /// <summary>
     /// Additional arguments used when the engine completes the verification of a payload.
     /// </summary>
     [Serializable]
-    public class CacheVerifyCompleteEventArgs : ResultStatusEventArgs
+    public class CacheVerifyCompleteEventArgs : StatusEventArgs
     {
-        private string packageId;
-        private string payloadId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CacheVerifyCompleteEventArgs"/> class.
         /// </summary>
-        public CacheVerifyCompleteEventArgs(string packageId, string payloadId, int status, int recommendation)
-            : base(status, recommendation)
+        public CacheVerifyCompleteEventArgs(string packageId, string payloadId, int status, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
+            : base(status)
         {
-            this.packageId = packageId;
-            this.payloadId = payloadId;
+            this.PackageId = packageId;
+            this.PayloadId = payloadId;
+            this.Action = action;
         }
 
         /// <summary>
         /// Gets the identifier of the package.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the identifier of the payload.
         /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
+        public string PayloadId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the action to be performed. This is passed back to the engine.
+        /// </summary>
+        public BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION Action { get; set; }
     }
 
     /// <summary>

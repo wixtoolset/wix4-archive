@@ -139,6 +139,13 @@ BAAPI UserExperienceOnCacheVerifyBegin(
     __in_z_opt LPCWSTR wzPackageOrContainerId,
     __in_z_opt LPCWSTR wzPayloadId
     );
+BAAPI UserExperienceOnCacheVerifyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
+    );
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,

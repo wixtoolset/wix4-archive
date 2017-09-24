@@ -351,19 +351,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnCacheVerifyComplete - called after the engine verifies and copies
     //                         a payload or container to the package cache folder.
     //
-    // Return:
-    //  IDRETRY instructs the engine to try the verification of the payload again.
-    //          Ignored if hrStatus is success.
-    //
-    //  IDTRYAGAIN instructs the engine to acquire the payload again. Ignored if
-    //             hrStatus is success.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnCacheVerifyComplete)(
+    STDMETHOD(OnCacheVerifyComplete)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnCachePackageComplete - called after the engine attempts to copy or download all

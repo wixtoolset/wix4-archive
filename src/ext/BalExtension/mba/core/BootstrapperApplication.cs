@@ -1458,6 +1458,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnCacheVerifyComplete(string wzPackageId, string wzPayloadId, int hrStatus, ref BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
+        {
+            CacheVerifyCompleteEventArgs args = new CacheVerifyCompleteEventArgs(wzPackageId, wzPayloadId, hrStatus, action);
+            this.OnCacheVerifyComplete(args);
+
+            action = args.Action;
+            return args.HResult;
+        }
+
         void IBootstrapperApplication.OnUnregisterBegin()
         {
             this.OnUnregisterBegin(new UnregisterBeginEventArgs());
@@ -1466,14 +1475,6 @@ namespace WixToolset.Bootstrapper
         void IBootstrapperApplication.OnUnregisterComplete(int hrStatus)
         {
             this.OnUnregisterComplete(new UnregisterCompleteEventArgs(hrStatus));
-        }
-
-        Result IBootstrapperApplication.OnCacheVerifyComplete(string wzPackageId, string wzPayloadId, int hrStatus, int nRecommendation)
-        {
-            CacheVerifyCompleteEventArgs args = new CacheVerifyCompleteEventArgs(wzPackageId, wzPayloadId, hrStatus, nRecommendation);
-            this.OnCacheVerifyComplete(args);
-
-            return args.Result;
         }
 
         Result IBootstrapperApplication.OnCachePackageComplete(string wzPackageId, int hrStatus, int nRecommendation)

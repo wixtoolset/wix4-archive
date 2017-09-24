@@ -1123,18 +1123,15 @@ static HRESULT LayoutBundle(
                 hr = CacheLayoutBundle(wzExecutableName, wzLayoutDirectory, wzUnverifiedPath);
             }
 
-            int nResult = pUX->pUserExperience->OnCacheVerifyComplete(NULL, NULL, hr, IDNOACTION);
-            if (FAILED(hr))
+            BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action = BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_NONE;
+            UserExperienceOnCacheVerifyComplete(pUX, NULL, NULL, hr, &action);
+            if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYVERIFICATION == action)
             {
-                nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
-                if (IDRETRY == nResult)
-                {
-                    hr = S_FALSE; // retry verify.
-                }
-                else if (IDTRYAGAIN == nResult)
-                {
-                    fRetry = TRUE; // go back and retry acquire.
-                }
+                hr = S_FALSE; // retry verify.
+            }
+            else if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION == action)
+            {
+                fRetry = TRUE; // go back and retry acquire.
             }
         } while (S_FALSE == hr);
     } while (fRetry);
@@ -1348,18 +1345,15 @@ static HRESULT LayoutOrCacheContainerOrPayload(
             ExitOnRootFailure(hr, "BA aborted verify of %hs: %ls", pContainer ? "container" : "payload", pContainer ? wzPackageOrContainerId : wzPayloadId);
         }
 
-        int nResult = pUX->pUserExperience->OnCacheVerifyComplete(wzPackageOrContainerId, wzPayloadId, hr, FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? IDTRYAGAIN : IDNOACTION);
-        nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
-        if (FAILED(hr))
+        BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action = FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION : BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_NONE;
+        UserExperienceOnCacheVerifyComplete(pUX, wzPackageOrContainerId, wzPayloadId, hr, &action);
+        if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYVERIFICATION == action)
         {
-            if (IDRETRY == nResult)
-            {
-                hr = S_FALSE; // retry verify.
-            }
-            else if (IDTRYAGAIN == nResult)
-            {
-                *pfRetry = TRUE; // go back and retry acquire.
-            }
+            hr = S_FALSE; // retry verify.
+        }
+        else if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION == action)
+        {
+            *pfRetry = TRUE; // go back and retry acquire.
         }
     } while (S_FALSE == hr);
 

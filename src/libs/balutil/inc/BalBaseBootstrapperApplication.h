@@ -535,6 +535,16 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnCacheVerifyComplete(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __in HRESULT /*hrStatus*/,
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
         return;
@@ -554,16 +564,6 @@ public: // IBootstrapperApplication
     {
         m_fApplying = FALSE;
         return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheVerifyComplete(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzPayloadId*/,
-        __in HRESULT /*hrStatus*/,
-        __in int nRecommendation
-        )
-    {
-        return CheckCanceled() ? IDCANCEL : nRecommendation;
     }
 
     virtual STDMETHODIMP_(int) OnCachePackageComplete(

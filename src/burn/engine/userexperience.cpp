@@ -503,6 +503,38 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnCacheVerifyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEVERIFYCOMPLETE_ARGS args = { };
+    BA_ONCACHEVERIFYCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheVerifyComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pAction = results.action;
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,
