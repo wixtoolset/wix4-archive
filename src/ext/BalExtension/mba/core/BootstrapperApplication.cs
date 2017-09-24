@@ -1386,9 +1386,12 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        void IBootstrapperApplication.OnRegisterComplete(int hrStatus)
+        int IBootstrapperApplication.OnRegisterComplete(int hrStatus)
         {
-            this.OnRegisterComplete(new RegisterCompleteEventArgs(hrStatus));
+            RegisterCompleteEventArgs args = new RegisterCompleteEventArgs(hrStatus);
+            this.OnRegisterComplete(args);
+
+            return args.HResult;
         }
 
         void IBootstrapperApplication.OnUnregisterBegin()

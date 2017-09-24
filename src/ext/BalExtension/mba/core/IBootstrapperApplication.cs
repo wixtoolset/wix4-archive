@@ -283,7 +283,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnRegisterComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnRegisterComplete(
             int hrStatus
             );
 

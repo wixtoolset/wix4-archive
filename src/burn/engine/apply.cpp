@@ -377,7 +377,7 @@ extern "C" HRESULT ApplyRegister(
     }
 
 LExit:
-    pEngineState->userExperience.pUserExperience->OnRegisterComplete(hr);
+    UserExperienceOnRegisterComplete(&pEngineState->userExperience, hr);
     ReleaseStr(sczEngineWorkingPath);
 
     return hr;

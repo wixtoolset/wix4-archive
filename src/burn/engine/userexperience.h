@@ -271,6 +271,10 @@ BAAPI UserExperienceOnProgress(
 BAAPI UserExperienceOnRegisterBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
+BAAPI UserExperienceOnRegisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    );
 BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction

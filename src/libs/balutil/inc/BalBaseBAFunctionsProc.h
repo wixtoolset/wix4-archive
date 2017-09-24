@@ -66,6 +66,7 @@ static HRESULT WINAPI BalBaseBAFunctionsProc(
         case BA_FUNCTIONS_MESSAGE_ONPROGRESS:
         case BA_FUNCTIONS_MESSAGE_ONERROR:
         case BA_FUNCTIONS_MESSAGE_ONREGISTERBEGIN:
+        case BA_FUNCTIONS_MESSAGE_ONREGISTERCOMPLETE:
             hr = BalBaseBootstrapperApplicationProc((BOOTSTRAPPER_APPLICATION_MESSAGE)message, pvArgs, pvResults, pvContext);
             break;
         case BA_FUNCTIONS_MESSAGE_ONTHEMELOADED:

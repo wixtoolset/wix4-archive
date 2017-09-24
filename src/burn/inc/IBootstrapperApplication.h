@@ -268,7 +268,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnRegisterComplete - called when the engine registration is
     //                      complete.
     //
-    STDMETHOD_(void, OnRegisterComplete)(
+    STDMETHOD(OnRegisterComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
