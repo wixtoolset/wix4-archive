@@ -309,7 +309,7 @@ namespace WixTest.BA
         {
             if (!String.IsNullOrEmpty(args.DownloadSource))
             {
-                args.Result = Result.Download;
+                args.Action = BOOTSTRAPPER_RESOLVESOURCE_ACTION.Download;
             }
         }
 

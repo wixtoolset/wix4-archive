@@ -1430,6 +1430,16 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource, ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action, ref bool fCancel)
+        {
+            ResolveSourceEventArgs args = new ResolveSourceEventArgs(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource, action, fCancel);
+            this.OnResolveSource(args);
+
+            action = args.Action;
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
         void IBootstrapperApplication.OnUnregisterBegin()
         {
             this.OnUnregisterBegin(new UnregisterBeginEventArgs());
@@ -1438,14 +1448,6 @@ namespace WixToolset.Bootstrapper
         void IBootstrapperApplication.OnUnregisterComplete(int hrStatus)
         {
             this.OnUnregisterComplete(new UnregisterCompleteEventArgs(hrStatus));
-        }
-
-        Result IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource)
-        {
-            ResolveSourceEventArgs args = new ResolveSourceEventArgs(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource);
-            this.OnResolveSource(args);
-
-            return args.Result;
         }
 
         Result IBootstrapperApplication.OnCacheAcquireComplete(string wzPackageOrContainerId, string wzPayloadId, int hrStatus, int nRecommendation)

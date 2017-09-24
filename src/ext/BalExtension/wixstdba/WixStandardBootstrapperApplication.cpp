@@ -828,20 +828,22 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnResolveSource(
+    virtual STDMETHODIMP OnResolveSource(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in_z LPCWSTR wzLocalSource,
-        __in_z_opt LPCWSTR wzDownloadSource
+        __in_z_opt LPCWSTR wzDownloadSource,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction,
+        __inout BOOL* pfCancel
         )
     {
-        int nResult = IDERROR; // assume we won't resolve source and that is unexpected.
+        HRESULT hr = S_OK;
 
         if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display)
         {
             if (wzDownloadSource)
             {
-                nResult = IDDOWNLOAD;
+                *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD;
             }
             else // prompt to change the source location.
             {
@@ -861,23 +863,24 @@ public: // IBootstrapperApplication
 
                 if (::GetOpenFileNameW(&ofn))
                 {
-                    HRESULT hr = m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, ofn.lpstrFile);
-                    nResult = SUCCEEDED(hr) ? IDRETRY : IDERROR;
+                    hr = m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, ofn.lpstrFile);
+                    *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY;
                 }
                 else
                 {
-                    nResult = IDCANCEL;
+                    *pfCancel = TRUE;
                 }
             }
         }
         else if (wzDownloadSource)
         {
             // If doing a non-interactive install and download source is available, let's try downloading the package silently
-            nResult = IDDOWNLOAD;
+            *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD;
         }
         // else there's nothing more we can do in non-interactive mode
 
-        return CheckCanceled() ? IDCANCEL : nResult;
+        *pfCancel |= CheckCanceled();
+        return hr;
     }
 
 
@@ -1069,6 +1072,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS:
             OnCacheAcquireProgressFallback(reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE:
+            OnResolveSourceFallback(reinterpret_cast<BA_ONRESOLVESOURCE_ARGS*>(pvArgs), reinterpret_cast<BA_ONRESOLVESOURCE_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1369,6 +1375,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnResolveSourceFallback(
+        __in BA_ONRESOLVESOURCE_ARGS* pArgs,
+        __inout BA_ONRESOLVESOURCE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONRESOLVESOURCE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

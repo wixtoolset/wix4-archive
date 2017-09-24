@@ -327,11 +327,13 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnResolveSource(
+        int OnResolveSource(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzLocalSource,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzDownloadSource
+            [MarshalAs(UnmanagedType.LPWStr)] string wzDownloadSource,
+            ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -537,8 +539,6 @@ namespace WixToolset.Bootstrapper
         Help,
         TryAgain,
         Continue,
-        Download = 101,
-        Restart,
         Suspend,
         Timeout = 32000,
     }
@@ -746,6 +746,44 @@ namespace WixToolset.Bootstrapper
         OnPlanComplete,
         OnStartup,
         OnShutdown,
+        OnSystemShutdown,
+        OnDetectForwardCompatibleBundle,
+        OnDetectUpdateBegin,
+        OnDetectUpdate,
+        OnDetectUpdateComplete,
+        OnDetectRelatedBundle,
+        OnDetectPackageBegin,
+        OnDetectCompatibleMsiPackage,
+        OnDetectRelatedMsiPackage,
+        OnDetectTargetMsiPackage,
+        OnDetectMsiFeature,
+        OnDetectPackageComplete,
+        OnPlanRelatedBundle,
+        OnPlanPackageBegin,
+        OnPlanCompatibleMsiPackageBegin,
+        OnPlanCompatibleMsiPackageComplete,
+        OnPlanTargetMsiPackage,
+        OnPlanMsiFeature,
+        OnPlanPackageComplete,
+        OnApplyBegin,
+        OnElevateBegin,
+        OnElevateComplete,
+        OnProgress,
+        OnError,
+        OnRegisterBegin,
+        OnRegisterComplete,
+        OnCacheBegin,
+        OnCachePackageBegin,
+        OnCacheAcquireBegin,
+        OnCacheAcquireProgress,
+        OnResolveSource,
+    }
+
+    public enum BOOTSTRAPPER_RESOLVESOURCE_ACTION
+    {
+        None,
+        Retry,
+        Download,
     }
 
     /// <summary>

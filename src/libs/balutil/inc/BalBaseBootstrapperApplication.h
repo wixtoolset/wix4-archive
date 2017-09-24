@@ -492,6 +492,19 @@ public: // IBootstrapperApplication
         return hr;
     }
 
+    virtual STDMETHODIMP OnResolveSource(
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in_z LPCWSTR /*wzLocalSource*/,
+        __in_z_opt LPCWSTR /*wzDownloadSource*/,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* /*pAction*/,
+        __inout BOOL* pfCancel
+        )
+    {
+        *pfCancel |= CheckCanceled();
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
         return;
@@ -645,16 +658,6 @@ public: // IBootstrapperApplication
         __in HRESULT /*hrStatus*/
         )
     {
-    }
-
-    virtual STDMETHODIMP_(int) OnResolveSource(
-        __in_z LPCWSTR /*wzPackageOrContainerId*/,
-        __in_z_opt LPCWSTR /*wzPayloadId*/,
-        __in_z LPCWSTR /*wzLocalSource*/,
-        __in_z_opt LPCWSTR /*wzDownloadSource*/
-        )
-    {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
     }
 
     virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()

@@ -1379,39 +1379,33 @@ static HRESULT PromptForSource(
     __in_z_opt LPCWSTR wzPayloadId,
     __in_z LPCWSTR wzLocalSource,
     __in_z_opt LPCWSTR wzDownloadSource,
-    __out BOOL* pfRetry,
-    __out BOOL* pfDownload
+    __inout BOOL* pfRetry,
+    __inout BOOL* pfDownload
     )
 {
     HRESULT hr = S_OK;
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION action = BOOTSTRAPPER_RESOLVESOURCE_ACTION_NONE;
 
     UserExperienceDeactivateEngine(pUX);
 
-    int nResult = pUX->pUserExperience->OnResolveSource(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource);
-    switch (nResult)
+    hr = UserExperienceOnResolveSource(pUX, wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource, &action);
+    if (FAILED(hr))
     {
-    case IDRETRY:
-        *pfRetry = TRUE;
-        break;
+        ExitFunction();
+    }
 
-    case IDDOWNLOAD:
-        *pfDownload = TRUE;
-        break;
-
-    case IDNOACTION: __fallthrough;
-    case IDOK: __fallthrough;
-    case IDYES:
+    switch (action)
+    {
+    case BOOTSTRAPPER_RESOLVESOURCE_ACTION_NONE:
         hr = E_FILENOTFOUND;
         break;
 
-    case IDABORT: __fallthrough;
-    case IDCANCEL: __fallthrough;
-    case IDNO:
-        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    case BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY:
+        *pfRetry = TRUE;
         break;
 
-    case IDERROR:
-        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
+    case BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD:
+        *pfDownload = TRUE;
         break;
 
     default:
@@ -1419,6 +1413,7 @@ static HRESULT PromptForSource(
         break;
     }
 
+LExit:
     UserExperienceActivateEngine(pUX, NULL);
     return hr;
 }

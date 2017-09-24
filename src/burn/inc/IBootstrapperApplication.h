@@ -317,21 +317,16 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //  wzPayloadId will be NULL when resolving a container.
     //  wzDownloadSource will be NULL if the container or payload does not provide a DownloadURL.
     //
-    // Return:
-    //  IDRETRY instructs the engine to try the local source again.
-    //
-    //  IDDOWNLOAD instructs the engine to try the download source.
-    //
-    //  All other return codes result in an error.
-    //
     // Notes:
-    //  It is expected the BA may call IBurnCore::SetLocalSource() or IBurnCore::SetDownloadSource()
-    //  to update the source location before returning IDRETRY or IDDOWNLOAD.
-    STDMETHOD_(int, OnResolveSource)(
+    //  It is expected the BA may call IBootstrapperEngine::SetLocalSource() or IBootstrapperEngine::SetDownloadSource()
+    //  to update the source location before returning BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY or BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD.
+    STDMETHOD(OnResolveSource)(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in_z LPCWSTR wzLocalSource,
-        __in_z_opt LPCWSTR wzDownloadSource
+        __in_z_opt LPCWSTR wzDownloadSource,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnCacheAcquireComplete - called after the engine copied or downloaded

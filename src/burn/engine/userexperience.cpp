@@ -1257,6 +1257,44 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnResolveSource(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzLocalSource,
+    __in_z_opt LPCWSTR wzDownloadSource,
+    __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONRESOLVESOURCE_ARGS args = { };
+    BA_ONRESOLVESOURCE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.wzLocalSource = wzLocalSource;
+    args.wzDownloadSource = wzDownloadSource;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnResolveSource failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    else
+    {
+        *pAction = results.action;
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction

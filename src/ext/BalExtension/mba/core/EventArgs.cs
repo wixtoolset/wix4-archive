@@ -1811,13 +1811,8 @@ namespace WixToolset.Bootstrapper
     /// using <see cref="Engine.SetLocalSource"/> or <see cref="Engine.SetDownloadSource"/>.
     /// </summary>
     [Serializable]
-    public class ResolveSourceEventArgs : ResultEventArgs
+    public class ResolveSourceEventArgs : CancellableHResultEventArgs
     {
-        private string packageOrContainerId;
-        private string payloadId;
-        private string localSource;
-        private string downloadSource;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ResolveSourceEventArgs"/> class.
         /// </summary>
@@ -1825,45 +1820,42 @@ namespace WixToolset.Bootstrapper
         /// <param name="payloadId">The identity of the payload that requires source.</param>
         /// <param name="localSource">The current path used for source resolution.</param>
         /// <param name="downloadSource">Optional URL to download container or payload.</param>
-        public ResolveSourceEventArgs(string packageOrContainerId, string payloadId, string localSource, string downloadSource)
+        /// <param name="action">The action to perform.</param>
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ResolveSourceEventArgs(string packageOrContainerId, string payloadId, string localSource, string downloadSource, BOOTSTRAPPER_RESOLVESOURCE_ACTION action, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageOrContainerId = packageOrContainerId;
-            this.payloadId = payloadId;
-            this.localSource = localSource;
-            this.downloadSource = downloadSource;
+            this.PackageOrContainerId = packageOrContainerId;
+            this.PayloadId = payloadId;
+            this.LocalSource = localSource;
+            this.DownloadSource = downloadSource;
+            this.Action = action;
         }
 
         /// <summary>
         /// Gets the identity of the package or container that requires source.
         /// </summary>
-        public string PackageOrContainerId
-        {
-            get { return this.packageOrContainerId; }
-        }
+        public string PackageOrContainerId { get; private set; }
 
         /// <summary>
         /// Gets the identity of the payload that requires source.
         /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
+        public string PayloadId { get; private set; }
 
         /// <summary>
         /// Gets the current path used for source resolution.
         /// </summary>
-        public string LocalSource
-        {
-            get { return this.localSource; }
-        }
+        public string LocalSource { get; private set; }
 
         /// <summary>
         /// Gets the optional URL to download container or payload.
         /// </summary>
-        public string DownloadSource
-        {
-            get { return this.downloadSource; }
-        }
+        public string DownloadSource { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the action to perform.
+        /// </summary>
+        public BOOTSTRAPPER_RESOLVESOURCE_ACTION Action { get; set; }
     }
 
     /// <summary>

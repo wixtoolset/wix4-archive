@@ -299,6 +299,14 @@ BAAPI UserExperienceOnRegisterComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrStatus
     );
+BAAPI UserExperienceOnResolveSource(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzLocalSource,
+    __in_z_opt LPCWSTR wzDownloadSource,
+    __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction
+    );
 BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
