@@ -1444,35 +1444,27 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine starts the verification of a payload.
     /// </summary>
     [Serializable]
-    public class CacheVerifyBeginEventArgs : ResultEventArgs
+    public class CacheVerifyBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string payloadId;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CacheVerifyBeginEventArgs"/> class.
         /// </summary>
-        public CacheVerifyBeginEventArgs(string packageId, string payloadId)
+        public CacheVerifyBeginEventArgs(string packageId, string payloadId, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.payloadId = payloadId;
+            this.PackageId = packageId;
+            this.PayloadId = payloadId;
         }
 
         /// <summary>
         /// Gets the identifier of the package.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; set; }
 
         /// <summary>
         /// Gets the identifier of the payload.
         /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
+        public string PayloadId { get; set; }
     }
 
     /// <summary>

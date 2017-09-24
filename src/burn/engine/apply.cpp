@@ -1111,9 +1111,8 @@ static HRESULT LayoutBundle(
 
         do
         {
-            int nResult = pUX->pUserExperience->OnCacheVerifyBegin(NULL, NULL);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted cache verify begin.");
+            hr = UserExperienceOnCacheVerifyBegin(pUX, NULL, NULL);
+            ExitOnRootFailure(hr, "BA aborted cache verify begin.");
 
             if (INVALID_HANDLE_VALUE != hPipe)
             {
@@ -1124,7 +1123,7 @@ static HRESULT LayoutBundle(
                 hr = CacheLayoutBundle(wzExecutableName, wzLayoutDirectory, wzUnverifiedPath);
             }
 
-            nResult = pUX->pUserExperience->OnCacheVerifyComplete(NULL, NULL, hr, IDNOACTION);
+            int nResult = pUX->pUserExperience->OnCacheVerifyComplete(NULL, NULL, hr, IDNOACTION);
             if (FAILED(hr))
             {
                 nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
@@ -1307,9 +1306,8 @@ static HRESULT LayoutOrCacheContainerOrPayload(
 
     do
     {
-        int nResult = pUX->pUserExperience->OnCacheVerifyBegin(wzPackageOrContainerId, wzPayloadId);
-        hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted cache verify begin.");
+        hr = UserExperienceOnCacheVerifyBegin(pUX, wzPackageOrContainerId, wzPayloadId);
+        ExitOnRootFailure(hr, "BA aborted cache verify begin.");
 
         if (INVALID_HANDLE_VALUE != hPipe) // pass the decision off to the elevated process.
         {
@@ -1350,7 +1348,7 @@ static HRESULT LayoutOrCacheContainerOrPayload(
             ExitOnRootFailure(hr, "BA aborted verify of %hs: %ls", pContainer ? "container" : "payload", pContainer ? wzPackageOrContainerId : wzPayloadId);
         }
 
-        nResult = pUX->pUserExperience->OnCacheVerifyComplete(wzPackageOrContainerId, wzPayloadId, hr, FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? IDTRYAGAIN : IDNOACTION);
+        int nResult = pUX->pUserExperience->OnCacheVerifyComplete(wzPackageOrContainerId, wzPayloadId, hr, FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? IDTRYAGAIN : IDNOACTION);
         nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
         if (FAILED(hr))
         {

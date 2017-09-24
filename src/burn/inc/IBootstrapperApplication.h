@@ -342,13 +342,10 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnCacheVerifyBegin - called when the engine begins to verify then copy
     //                      a payload or container to the package cache folder.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheVerifyBegin)(
+    STDMETHOD(OnCacheVerifyBegin)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
-        __in_z_opt LPCWSTR wzPayloadId
+        __in_z_opt LPCWSTR wzPayloadId,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnCacheVerifyComplete - called after the engine verifies and copies

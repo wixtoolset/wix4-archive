@@ -134,6 +134,11 @@ BAAPI UserExperienceOnCachePackageBegin(
     __in DWORD cCachePayloads,
     __in DWORD64 dw64PackageCacheSize
     );
+BAAPI UserExperienceOnCacheVerifyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId
+    );
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fInstalled,

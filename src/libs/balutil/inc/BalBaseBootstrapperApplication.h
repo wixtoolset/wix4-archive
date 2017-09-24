@@ -525,6 +525,16 @@ public: // IBootstrapperApplication
         return hr;
     }
 
+    virtual STDMETHODIMP OnCacheVerifyBegin(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __inout BOOL* pfCancel
+        )
+    {
+        *pfCancel |= CheckCanceled();
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
         return;
@@ -544,14 +554,6 @@ public: // IBootstrapperApplication
     {
         m_fApplying = FALSE;
         return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheVerifyBegin(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzPayloadId*/
-        )
-    {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
     }
 
     virtual STDMETHODIMP_(int) OnCacheVerifyComplete(

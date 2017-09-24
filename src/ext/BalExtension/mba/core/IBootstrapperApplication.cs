@@ -347,9 +347,10 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheVerifyBegin(
+        int OnCacheVerifyBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -778,6 +779,7 @@ namespace WixToolset.Bootstrapper
         OnCacheAcquireProgress,
         OnResolveSource,
         OnCacheAcquireComplete,
+        OnCacheVerifyBegin,
     }
 
     public enum BOOTSTRAPPER_RESOLVESOURCE_ACTION
