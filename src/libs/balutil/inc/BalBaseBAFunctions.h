@@ -394,6 +394,17 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnCacheAcquireBegin(
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in BOOTSTRAPPER_CACHE_OPERATION /*operation*/,
+        __in_z LPCWSTR /*wzSource*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
     }
@@ -407,16 +418,6 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP_(int) OnApplyComplete(
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_APPLY_RESTART /*restart*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireBegin(
-        __in_z LPCWSTR /*wzPackageOrContainerId*/,
-        __in_z_opt LPCWSTR /*wzPayloadId*/,
-        __in BOOTSTRAPPER_CACHE_OPERATION /*operation*/,
-        __in_z LPCWSTR /*wzSource*/
         )
     {
         return IDNOACTION;

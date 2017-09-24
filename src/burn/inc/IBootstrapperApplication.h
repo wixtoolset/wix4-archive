@@ -291,15 +291,12 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnCacheAcquireBegin - called when the engine begins copying or
     //                       downloading a payload to the working folder.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheAcquireBegin)(
+    STDMETHOD(OnCacheAcquireBegin)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in BOOTSTRAPPER_CACHE_OPERATION operation,
-        __in_z LPCWSTR wzSource
+        __in_z LPCWSTR wzSource,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnCacheAcquireProgress - called when the engine makes progresss copying

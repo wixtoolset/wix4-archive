@@ -445,6 +445,19 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
+    virtual STDMETHODIMP OnCacheAcquireBegin(
+        __in_z LPCWSTR wzPackageOrContainerId,
+        __in_z_opt LPCWSTR wzPayloadId,
+        __in BOOTSTRAPPER_CACHE_OPERATION /*operation*/,
+        __in_z LPCWSTR /*wzSource*/,
+        __inout BOOL* pfCancel
+        )
+    {
+        BalRetryStartPackage(BALRETRY_TYPE_CACHE, wzPackageOrContainerId, wzPayloadId);
+        *pfCancel |= CheckCanceled();
+        return S_OK;
+    }
+
     virtual STDMETHODIMP_(void) OnUnregisterBegin()
     {
         return;
@@ -464,17 +477,6 @@ public: // IBootstrapperApplication
     {
         m_fApplying = FALSE;
         return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireBegin(
-        __in_z LPCWSTR wzPackageOrContainerId,
-        __in_z_opt LPCWSTR wzPayloadId,
-        __in BOOTSTRAPPER_CACHE_OPERATION /*operation*/,
-        __in_z LPCWSTR /*wzSource*/
-        )
-    {
-        BalRetryStartPackage(BALRETRY_TYPE_CACHE, wzPackageOrContainerId, wzPayloadId);
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
     }
 
     virtual STDMETHODIMP_(int) OnCacheAcquireProgress(

@@ -306,11 +306,12 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheAcquireBegin(
+        int OnCacheAcquireBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.U4)] CacheOperation operation,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzSource
+            [MarshalAs(UnmanagedType.LPWStr)] string wzSource,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]

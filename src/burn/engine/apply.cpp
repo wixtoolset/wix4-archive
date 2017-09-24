@@ -1091,14 +1091,13 @@ static HRESULT LayoutBundle(
         {
             progress.fCancel = FALSE;
 
-            int nResult = pUX->pUserExperience->OnCacheAcquireBegin(NULL, NULL, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczBundlePath);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+            hr = UserExperienceOnCacheAcquireBegin(pUX, NULL, NULL, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczBundlePath);
             ExitOnRootFailure(hr, "BA aborted cache acquire begin.");
 
             hr = CopyPayload(&progress, sczBundlePath, wzUnverifiedPath);
             // Error handling happens after sending complete message to BA.
 
-            nResult = pUX->pUserExperience->OnCacheAcquireComplete(NULL, NULL, hr, IDNOACTION);
+            int nResult = pUX->pUserExperience->OnCacheAcquireComplete(NULL, NULL, hr, IDNOACTION);
             nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYCANCEL, nResult);
             if (FAILED(hr) && IDRETRY == nResult)
             {
@@ -1227,8 +1226,7 @@ static HRESULT AcquireContainerOrPayload(
 
         if (fCopy)
         {
-            int nResult = pUX->pUserExperience->OnCacheAcquireBegin(wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczSourceFullPath);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+            hr = UserExperienceOnCacheAcquireBegin(pUX, wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczSourceFullPath);
             ExitOnRootFailure(hr, "BA aborted cache acquire begin.");
 
             hr = CopyPayload(&progress, sczSourceFullPath, wzDestinationPath);
@@ -1242,8 +1240,7 @@ static HRESULT AcquireContainerOrPayload(
         }
         else if (fDownload)
         {
-            int nResult = pUX->pUserExperience->OnCacheAcquireBegin(wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_DOWNLOAD, wzDownloadUrl);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+            hr = UserExperienceOnCacheAcquireBegin(pUX, wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_DOWNLOAD, wzDownloadUrl);
             ExitOnRootFailure(hr, "BA aborted cache download payload begin.");
 
             hr = DownloadPayload(&progress, wzDestinationPath);

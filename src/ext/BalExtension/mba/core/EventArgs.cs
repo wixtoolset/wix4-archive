@@ -1310,55 +1310,39 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine begins to acquire containers or payloads.
     /// </summary>
     [Serializable]
-    public class CacheAcquireBeginEventArgs : ResultEventArgs
+    public class CacheAcquireBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageOrContainerId;
-        private string payloadId;
-        private CacheOperation operation;
-        private string source;
-
         /// <summary>
         /// Creates a new instance of the <see cref="CacheAcquireBeginEventArgs"/> class.
         /// </summary>
-        public CacheAcquireBeginEventArgs(string packageOrContainerId, string payloadId, CacheOperation operation, string source)
+        public CacheAcquireBeginEventArgs(string packageOrContainerId, string payloadId, CacheOperation operation, string source, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageOrContainerId = packageOrContainerId;
-            this.payloadId = payloadId;
-            this.operation = operation;
-            this.source = source;
+            this.PackageOrContainerId = packageOrContainerId;
+            this.PayloadId = payloadId;
+            this.Operation = operation;
+            this.Source = source;
         }
 
         /// <summary>
         /// Gets the identifier of the container or package.
         /// </summary>
-        public string PackageOrContainerId
-        {
-            get { return this.packageOrContainerId; }
-        }
+        public string PackageOrContainerId { get; private set; }
 
         /// <summary>
         /// Gets the identifier of the payload (if acquiring a payload).
         /// </summary>
-        public string PayloadId
-        {
-            get { return this.payloadId; }
-        }
+        public string PayloadId { get; private set; }
 
         /// <summary>
         /// Gets the cache acquire operation.
         /// </summary>
-        public CacheOperation Operation
-        {
-            get { return this.operation; }
-        }
+        public CacheOperation Operation { get; private set; }
 
         /// <summary>
         /// Gets the source of the container or payload.
         /// </summary>
-        public string Source
-        {
-            get { return this.source; }
-        }
+        public string Source { get; private set; }
     }
 
     /// <summary>
