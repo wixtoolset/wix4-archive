@@ -580,9 +580,10 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecutePackageBegin(
+    virtual STDMETHODIMP OnExecutePackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __in BOOL fExecute
+        __in BOOL fExecute,
+        __inout BOOL* pfCancel
         )
     {
         // Only track retry on execution (not rollback).
@@ -592,7 +593,8 @@ public: // IBootstrapperApplication
         }
 
         m_fRollingBack = !fExecute;
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecutePatchTarget(

@@ -482,12 +482,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecutePackageBegin(
+    virtual STDMETHODIMP OnExecutePackageBegin(
         __in_z LPCWSTR /*wzPackageId*/,
-        __in BOOL /*fExecute*/
+        __in BOOL /*fExecute*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecutePatchTarget(

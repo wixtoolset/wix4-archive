@@ -263,6 +263,11 @@ BAAPI UserExperienceOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cExecutingPackages
     );
+BAAPI UserExperienceOnExecutePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in BOOL fExecute
+    );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

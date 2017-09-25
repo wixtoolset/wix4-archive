@@ -131,7 +131,7 @@ namespace WixToolset.UX
             {
                 this.Package = WixBA.Model.GetPackageName(e.PackageId);
                 this.Message = String.Format("Processing: {0}", this.Package);
-                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+                e.Cancel = this.root.Canceled;
             }
         }
 

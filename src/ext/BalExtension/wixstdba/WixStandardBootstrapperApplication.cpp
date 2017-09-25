@@ -699,9 +699,10 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecutePackageBegin(
+    virtual STDMETHODIMP OnExecutePackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __in BOOL fExecute
+        __in BOOL fExecute,
+        __inout BOOL* pfCancel
         )
     {
         LPWSTR sczFormattedString = NULL;
@@ -755,7 +756,7 @@ public: // IBootstrapperApplication
         }
 
         ReleaseStr(sczFormattedString);
-        return __super::OnExecutePackageBegin(wzPackageId, fExecute);
+        return __super::OnExecutePackageBegin(wzPackageId, fExecute, pfCancel);
     }
 
 
@@ -1094,6 +1095,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN:
             OnExecuteBeginFallback(reinterpret_cast<BA_ONEXECUTEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGEBEGIN:
+            OnExecutePackageBeginFallback(reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1450,6 +1454,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePackageBeginFallback(
+        __in BA_ONEXECUTEPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONEXECUTEPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

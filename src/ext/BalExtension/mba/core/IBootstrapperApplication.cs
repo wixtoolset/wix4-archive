@@ -385,9 +385,10 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecutePackageBegin(
+        int OnExecutePackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.Bool)] bool fExecute
+            [MarshalAs(UnmanagedType.Bool)] bool fExecute,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -787,6 +788,7 @@ namespace WixToolset.Bootstrapper
         OnCachePackageComplete,
         OnCacheComplete,
         OnExecuteBegin,
+        OnExecutePackageBegin,
     }
 
     public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION

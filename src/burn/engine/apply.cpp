@@ -2062,10 +2062,9 @@ static HRESULT ExecuteExePackage(
     pContext->pExecutingPackage = pExecuteAction->exePackage.pPackage;
     fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->exePackage.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute EXE package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->exePackage.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute EXE package begin.");
 
     message.type = GENERIC_EXECUTE_MESSAGE_PROGRESS;
     message.dwAllowedResults = MB_OKCANCEL;
@@ -2120,7 +2119,6 @@ static HRESULT ExecuteMsiPackage(
 {
     HRESULT hr = S_OK;
     HRESULT hrExecute = S_OK;
-    int nResult = 0;
     BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->msiPackage.pPackage->hrCacheResult))
@@ -2133,10 +2131,9 @@ static HRESULT ExecuteMsiPackage(
     pContext->pExecutingPackage = pExecuteAction->msiPackage.pPackage;
     fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->msiPackage.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute MSI package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->msiPackage.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute MSI package begin.");
 
     // execute package
     if (pExecuteAction->msiPackage.pPackage->fPerMachine)
@@ -2190,10 +2187,9 @@ static HRESULT ExecuteMspPackage(
     pContext->pExecutingPackage = pExecuteAction->mspTarget.pPackage;
     fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->mspTarget.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute MSP package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->mspTarget.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute MSP package begin.");
 
     // Now send all the patches that target this product code.
     for (DWORD i = 0; i < pExecuteAction->mspTarget.cOrderedPatches; ++i)
@@ -2259,10 +2255,9 @@ static HRESULT ExecuteMsuPackage(
     pContext->pExecutingPackage = pExecuteAction->msuPackage.pPackage;
     fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->msuPackage.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute MSU package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->msuPackage.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute MSU package begin.");
 
     message.type = GENERIC_EXECUTE_MESSAGE_PROGRESS;
     message.dwAllowedResults = MB_OKCANCEL;

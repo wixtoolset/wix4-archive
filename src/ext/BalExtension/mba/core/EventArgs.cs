@@ -1543,37 +1543,30 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun installing a specific package.
     /// </summary>
     [Serializable]
-    public class ExecutePackageBeginEventArgs : ResultEventArgs
+    public class ExecutePackageBeginEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private bool shouldExecute;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecutePackageBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to act on.</param>
         /// <param name="shouldExecute">Whether the package should really be acted on.</param>
-        public ExecutePackageBeginEventArgs(string packageId, bool shouldExecute)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ExecutePackageBeginEventArgs(string packageId, bool shouldExecute, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.shouldExecute = shouldExecute;
+            this.PackageId = packageId;
+            this.ShouldExecute = shouldExecute;
         }
 
         /// <summary>
         /// Gets the identity of the package to act on.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets whether the package should really be acted on.
         /// </summary>
-        public bool ShouldExecute
-        {
-            get { return this.shouldExecute; }
-        }
+        public bool ShouldExecute { get; private set; }
     }
 
     /// <summary>
