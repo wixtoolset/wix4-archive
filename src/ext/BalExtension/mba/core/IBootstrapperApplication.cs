@@ -370,7 +370,9 @@ namespace WixToolset.Bootstrapper
             ref BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action
             );
 
-        void OnCacheComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnCacheComplete(
             int hrStatus
             );
 
@@ -782,6 +784,7 @@ namespace WixToolset.Bootstrapper
         OnCacheVerifyBegin,
         OnCacheVerifyComplete,
         OnCachePackageComplete,
+        OnCacheComplete,
     }
 
     public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION

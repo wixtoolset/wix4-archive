@@ -1476,9 +1476,12 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        void IBootstrapperApplication.OnCacheComplete(int hrStatus)
+        int IBootstrapperApplication.OnCacheComplete(int hrStatus)
         {
-            this.OnCacheComplete(new CacheCompleteEventArgs(hrStatus));
+            CacheCompleteEventArgs args = new CacheCompleteEventArgs(hrStatus);
+            this.OnCacheComplete(args);
+
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnExecuteBegin(int cExecutingPackages)

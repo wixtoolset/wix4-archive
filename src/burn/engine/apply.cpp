@@ -727,7 +727,7 @@ LExit:
 
     CacheCleanup(FALSE, pPlan->wzBundleId);
 
-    pUX->pUserExperience->OnCacheComplete(hr);
+    UserExperienceOnCacheComplete(pUX, hr);
     return hr;
 }
 

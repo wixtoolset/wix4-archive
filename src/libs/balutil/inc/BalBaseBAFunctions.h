@@ -467,10 +467,11 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnCacheComplete(
+    virtual STDMETHODIMP OnCacheComplete(
         __in HRESULT /*hrStatus*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteBegin(

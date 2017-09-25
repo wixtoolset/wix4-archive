@@ -369,7 +369,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnCacheComplete - called when the engine caching is complete.
     //
-    STDMETHOD_(void, OnCacheComplete)(
+    STDMETHOD(OnCacheComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
