@@ -1573,37 +1573,30 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine executes one or more patches targeting a product.
     /// </summary>
     [Serializable]
-    public class ExecutePatchTargetEventArgs : ResultEventArgs
+    public class ExecutePatchTargetEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private string targetProductCode;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecutePatchTargetEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package to act on.</param>
         /// <param name="targetProductCode">The product code of the target of the patch.</param>
-        public ExecutePatchTargetEventArgs(string packageId, string targetProductCode)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ExecutePatchTargetEventArgs(string packageId, string targetProductCode, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.targetProductCode = targetProductCode;
+            this.PackageId = packageId;
+            this.TargetProductCode = targetProductCode;
         }
 
         /// <summary>
         /// Gets the identity of the package to act on.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the product code being targeted.
         /// </summary>
-        public string TargetProductCode
-        {
-            get { return this.targetProductCode; }
-        }
+        public string TargetProductCode { get; private set; }
     }
 
     /// <summary>

@@ -1502,12 +1502,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecutePatchTarget(string wzPackageId, string wzTargetProductCode)
+        int IBootstrapperApplication.OnExecutePatchTarget(string wzPackageId, string wzTargetProductCode, ref bool fCancel)
         {
-            ExecutePatchTargetEventArgs args = new ExecutePatchTargetEventArgs(wzPackageId, wzTargetProductCode);
+            ExecutePatchTargetEventArgs args = new ExecutePatchTargetEventArgs(wzPackageId, wzTargetProductCode, fCancel);
             this.OnExecutePatchTarget(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnExecuteMsiMessage(string wzPackageId, InstallMessage mt, int uiFlags, string wzMessage, int cData, string[] rgwzData, int nRecommendation)

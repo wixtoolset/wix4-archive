@@ -597,12 +597,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecutePatchTarget(
+    virtual STDMETHODIMP OnExecutePatchTarget(
         __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzTargetProductCode*/
+        __in_z LPCWSTR /*wzTargetProductCode*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteProgress(

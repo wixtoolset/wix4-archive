@@ -2174,7 +2174,6 @@ static HRESULT ExecuteMspPackage(
 {
     HRESULT hr = S_OK;
     HRESULT hrExecute = S_OK;
-    int nResult = 0;
     BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->mspTarget.pPackage->hrCacheResult))
@@ -2196,8 +2195,7 @@ static HRESULT ExecuteMspPackage(
     {
         BURN_PACKAGE* pMspPackage = pExecuteAction->mspTarget.rgOrderedPatches[i].pPackage;
 
-        nResult = pEngineState->userExperience.pUserExperience->OnExecutePatchTarget(pMspPackage->sczId, pExecuteAction->mspTarget.sczTargetProductCode);
-        hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
+        hr = UserExperienceOnExecutePatchTarget(&pEngineState->userExperience, pMspPackage->sczId, pExecuteAction->mspTarget.sczTargetProductCode);
         ExitOnRootFailure(hr, "BA aborted execute MSP target.");
     }
 

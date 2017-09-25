@@ -388,16 +388,13 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __inout BOOL* pfCancel
         ) = 0;
 
-    // OnExecutePatchTarget - called when the engine executes one or more patches targeting
-    //                        a product.
+    // OnExecutePatchTarget - called for each patch in an MspPackage targeting the product
+    //                        when the engine begins executing the MspPackage.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecutePatchTarget)(
+    STDMETHOD(OnExecutePatchTarget)(
         __in_z LPCWSTR wzPackageId,
-        __in_z LPCWSTR wzTargetProductCode
+        __in_z LPCWSTR wzTargetProductCode,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnExecuteProgress - called when the engine makes progress executing a package.

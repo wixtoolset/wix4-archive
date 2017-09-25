@@ -1120,6 +1120,34 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnExecutePatchTarget(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzTargetProductCode
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPATCHTARGET_ARGS args = { };
+    BA_ONEXECUTEPATCHTARGET_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzTargetProductCode = wzTargetProductCode;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecutePatchTarget failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
