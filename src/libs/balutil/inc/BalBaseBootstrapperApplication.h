@@ -571,11 +571,13 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteBegin(
-        __in DWORD /*cExecutingPackages*/
+    virtual STDMETHODIMP OnExecuteBegin(
+        __in DWORD /*cExecutingPackages*/,
+        __inout BOOL* pfCancel
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecutePackageBegin(

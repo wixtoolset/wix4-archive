@@ -1092,6 +1092,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHECOMPLETE:
             OnCacheCompleteFallback(reinterpret_cast<BA_ONCACHECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHECOMPLETE_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN:
+            OnExecuteBeginFallback(reinterpret_cast<BA_ONEXECUTEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEBEGIN_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1439,6 +1442,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteBeginFallback(
+        __in BA_ONEXECUTEBEGIN_ARGS* pArgs,
+        __inout BA_ONEXECUTEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

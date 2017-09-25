@@ -1520,26 +1520,23 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has begun installing packages.
     /// </summary>
     [Serializable]
-    public class ExecuteBeginEventArgs : ResultEventArgs
+    public class ExecuteBeginEventArgs : CancellableHResultEventArgs
     {
-        private int packageCount;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecuteBeginEventArgs"/> class.
         /// </summary>
         /// <param name="packageCount">The number of packages to act on.</param>
-        public ExecuteBeginEventArgs(int packageCount)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ExecuteBeginEventArgs(int packageCount, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageCount = packageCount;
+            this.PackageCount = packageCount;
         }
 
         /// <summary>
         /// Gets the number of packages to act on.
         /// </summary>
-        public int PackageCount
-        {
-            get { return this.packageCount; }
-        }
+        public int PackageCount { get; private set; }
     }
 
     /// <summary>

@@ -474,11 +474,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteBegin(
-        __in DWORD /*cExecutingPackages*/
+    virtual STDMETHODIMP OnExecuteBegin(
+        __in DWORD /*cExecutingPackages*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecutePackageBegin(

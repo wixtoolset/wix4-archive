@@ -375,12 +375,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnExecuteBegin - called when the engine begins executing the plan.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecuteBegin)(
-        __in DWORD cExecutingPackages
+    STDMETHOD(OnExecuteBegin)(
+        __in DWORD cExecutingPackages,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnExecuteBegin - called when the engine begins executing a package.

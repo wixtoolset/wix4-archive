@@ -259,6 +259,10 @@ BAAPI UserExperienceOnError(
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
     __inout int* nResult
     );
+BAAPI UserExperienceOnExecuteBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD cExecutingPackages
+    );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

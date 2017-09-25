@@ -739,12 +739,11 @@ extern "C" HRESULT ApplyExecute(
     __out BOOL* pfRollback,
     __out BOOL* pfSuspend,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
-)
+    )
 {
     HRESULT hr = S_OK;
     DWORD dwCheckpoint = 0;
-    BURN_EXECUTE_CONTEXT context = {};
-    int nResult = 0;
+    BURN_EXECUTE_CONTEXT context = { };
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundary = NULL;
     BOOL fSeekNextRollbackBoundary = FALSE;
     BOOL fInTransaction = FALSE;
@@ -754,8 +753,7 @@ extern "C" HRESULT ApplyExecute(
     context.pcOverallProgressTicks = pcOverallProgressTicks;
 
     // Send execute begin to BA.
-    nResult = pEngineState->userExperience.pUserExperience->OnExecuteBegin(pEngineState->plan.cExecutePackagesTotal);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, FALSE, MB_OKCANCEL, nResult);
+    hr = UserExperienceOnExecuteBegin(&pEngineState->userExperience, pEngineState->plan.cExecutePackagesTotal);
     ExitOnRootFailure(hr, "BA aborted execute begin.");
 
     // Do execute actions.

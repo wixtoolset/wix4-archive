@@ -1484,12 +1484,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecuteBegin(int cExecutingPackages)
+        int IBootstrapperApplication.OnExecuteBegin(int cExecutingPackages, ref bool fCancel)
         {
-            ExecuteBeginEventArgs args = new ExecuteBeginEventArgs(cExecutingPackages);
+            ExecuteBeginEventArgs args = new ExecuteBeginEventArgs(cExecutingPackages, fCancel);
             this.OnExecuteBegin(args);
 
-            return args.Result;
+            args.Cancel = fCancel;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnExecutePackageBegin(string wzPackageId, bool fExecute)
