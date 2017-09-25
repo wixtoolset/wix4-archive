@@ -760,10 +760,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual int __stdcall OnExecuteProgress(
+    virtual STDMETHODIMP OnExecuteProgress(
         __in_z LPCWSTR wzPackageId,
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
         )
     {
         WCHAR wzProgress[5] = { };
@@ -782,7 +783,7 @@ public: // IBootstrapperApplication
 
         SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
 
-        return __super::OnExecuteProgress(wzPackageId, dwProgressPercentage, dwOverallProgressPercentage);
+        return __super::OnExecuteProgress(wzPackageId, dwProgressPercentage, dwOverallProgressPercentage, pfCancel);
     }
 
 
@@ -1101,6 +1102,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET:
             OnExecutePatchTargetFallback(reinterpret_cast<BA_ONEXECUTEPATCHTARGET_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPATCHTARGET_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS:
+            OnExecuteProgressFallback(reinterpret_cast<BA_ONEXECUTEPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPROGRESS_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1473,6 +1477,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPATCHTARGET, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteProgressFallback(
+        __in BA_ONEXECUTEPROGRESS_ARGS* pArgs,
+        __inout BA_ONEXECUTEPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

@@ -500,13 +500,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteProgress(
+    virtual STDMETHODIMP OnExecuteProgress(
         __in_z LPCWSTR /*wzPackageId*/,
         __in DWORD /*dwProgressPercentage*/,
-        __in DWORD /*dwOverallProgressPercentage*/
+        __in DWORD /*dwOverallProgressPercentage*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteMsiMessage(

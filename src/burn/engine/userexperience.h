@@ -257,7 +257,7 @@ BAAPI UserExperienceOnError(
     __in DWORD uiFlags,
     __in DWORD cData,
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-    __inout int* nResult
+    __inout int* pnResult
     );
 BAAPI UserExperienceOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
@@ -272,6 +272,13 @@ BAAPI UserExperienceOnExecutePatchTarget(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,
     __in_z LPCWSTR wzTargetProductCode
+    );
+BAAPI UserExperienceOnExecuteProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage,
+    __inout int* pnResult
     );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,

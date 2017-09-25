@@ -375,6 +375,15 @@ public: // IBootstrapperApplication
         {
             hr = m_pEngine->SendEmbeddedProgress(m_dwProgressPercentage, m_dwOverallProgressPercentage, &nResult);
             BalExitOnFailure(hr, "Failed to send embedded overall progress.");
+
+            if (IDERROR == nResult)
+            {
+                hr = E_FAIL;
+            }
+            else if (IDCANCEL == nResult)
+            {
+                *pfCancel = TRUE;
+            }
         }
 
     LExit:
@@ -607,10 +616,11 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteProgress(
+    virtual STDMETHODIMP OnExecuteProgress(
         __in_z LPCWSTR /*wzPackageId*/,
         __in DWORD /*dwProgressPercentage*/,
-        __in DWORD /*dwOverallProgressPercentage*/
+        __in DWORD /*dwOverallProgressPercentage*/,
+        __inout BOOL* pfCancel
         )
     {
         HRESULT hr = S_OK;
@@ -622,10 +632,20 @@ public: // IBootstrapperApplication
         {
             hr = m_pEngine->SendEmbeddedProgress(m_dwProgressPercentage, m_dwOverallProgressPercentage, &nResult);
             BalExitOnFailure(hr, "Failed to send embedded execute progress.");
+
+            if (IDERROR == nResult)
+            {
+                hr = E_FAIL;
+            }
+            else if (IDCANCEL == nResult)
+            {
+                *pfCancel = TRUE;
+            }
         }
 
     LExit:
-        return FAILED(hr) ? IDERROR : CheckCanceled() ? IDCANCEL : nResult;
+        *pfCancel |= CheckCanceled();
+        return hr;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteMsiMessage(

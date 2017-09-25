@@ -283,7 +283,7 @@ namespace WixTest.BA
 
             if (this.cancelExecuteAtProgress > 0 && this.cancelExecuteAtProgress <= args.ProgressPercentage)
             {
-                args.Result = Result.Cancel;
+                args.Cancel = true;
             }
             else if (this.sleepDuringExecute > 0)
             {

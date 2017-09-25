@@ -2395,7 +2395,7 @@ static int GenericExecuteMessageHandler(
     case GENERIC_EXECUTE_MESSAGE_PROGRESS:
         {
             DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? (pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) / (pContext->cExecutePackagesTotal) : 0;
-            nResult = pContext->pUX->pUserExperience->OnExecuteProgress(pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress);
+            UserExperienceOnExecuteProgress(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress, &nResult); // ignore return value.
         }
         break;
 
@@ -2426,7 +2426,7 @@ static int MsiExecuteMessageHandler(
     case WIU_MSI_EXECUTE_MESSAGE_PROGRESS:
         {
         DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? (pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) / (pContext->cExecutePackagesTotal) : 0;
-        nResult = pContext->pUX->pUserExperience->OnExecuteProgress(pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress);
+        UserExperienceOnExecuteProgress(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress, &nResult); // ignore return value.
         }
         break;
 

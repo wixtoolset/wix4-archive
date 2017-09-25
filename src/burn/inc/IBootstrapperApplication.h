@@ -399,14 +399,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnExecuteProgress - called when the engine makes progress executing a package.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecuteProgress)(
+    STDMETHOD(OnExecuteProgress)(
         __in_z LPCWSTR wzPackageId,
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnExecuteMsiMessage - called when the engine receives an MSI package message.

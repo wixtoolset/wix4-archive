@@ -1915,48 +1915,37 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments passed by the engine while executing on payload.
     /// </summary>
     [Serializable]
-    public class ExecuteProgressEventArgs : ResultEventArgs
+    public class ExecuteProgressEventArgs : CancellableHResultEventArgs
     {
-        private string packageId;
-        private int progressPercentage;
-        private int overallPercentage;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecuteProgressEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identifier of the package being executed.</param>
         /// <param name="progressPercentage">The percentage from 0 to 100 of the execution progress for a single payload.</param>
         /// <param name="overallPercentage">The percentage from 0 to 100 of the execution progress for all payload.</param>
-        public ExecuteProgressEventArgs(string packageId, int progressPercentage, int overallPercentage)
+        /// <param name="cancelRecommendation">The recommendation from the engine.</param>
+        public ExecuteProgressEventArgs(string packageId, int progressPercentage, int overallPercentage, bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
-            this.packageId = packageId;
-            this.progressPercentage = progressPercentage;
-            this.overallPercentage = overallPercentage;
+            this.PackageId = packageId;
+            this.ProgressPercentage = progressPercentage;
+            this.OverallPercentage = overallPercentage;
         }
 
         /// <summary>
         /// Gets the identity of the package that was executed.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the percentage from 0 to 100 of the execution progress for a single payload.
         /// </summary>
-        public int ProgressPercentage
-        {
-            get { return this.progressPercentage; }
-        }
+        public int ProgressPercentage { get; private set; }
 
         /// <summary>
-        /// Gets the percentage from 0 to 100 of the execution progress for all payload.
+        /// Gets the percentage from 0 to 100 of the execution progress for all payloads.
         /// </summary>
-        public int OverallPercentage
-        {
-            get { return this.overallPercentage; }
-        }
+        public int OverallPercentage { get; private set; }
     }
 
     /// <summary>

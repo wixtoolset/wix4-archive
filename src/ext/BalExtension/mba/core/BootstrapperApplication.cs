@@ -1511,6 +1511,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
+        int IBootstrapperApplication.OnExecuteProgress(string wzPackageId, int dwProgressPercentage, int dwOverallPercentage, ref bool fCancel)
+        {
+            ExecuteProgressEventArgs args = new ExecuteProgressEventArgs(wzPackageId, dwProgressPercentage, dwOverallPercentage, fCancel);
+            this.OnExecuteProgress(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
         Result IBootstrapperApplication.OnExecuteMsiMessage(string wzPackageId, InstallMessage mt, int uiFlags, string wzMessage, int cData, string[] rgwzData, int nRecommendation)
         {
             ExecuteMsiMessageEventArgs args = new ExecuteMsiMessageEventArgs(wzPackageId, mt, uiFlags, wzMessage, rgwzData, nRecommendation);
@@ -1556,14 +1565,6 @@ namespace WixToolset.Bootstrapper
             this.OnApplyComplete(args);
 
             this.applying = false;
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnExecuteProgress(string wzPackageId, int dwProgressPercentage, int dwOverallPercentage)
-        {
-            ExecuteProgressEventArgs args = new ExecuteProgressEventArgs(wzPackageId, dwProgressPercentage, dwOverallPercentage);
-            this.OnExecuteProgress(args);
 
             return args.Result;
         }

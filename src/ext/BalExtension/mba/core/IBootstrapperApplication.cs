@@ -401,10 +401,11 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteProgress(
+        int OnExecuteProgress(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int dwProgressPercentage,
-            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage
+            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
@@ -791,6 +792,7 @@ namespace WixToolset.Bootstrapper
         OnExecuteBegin,
         OnExecutePackageBegin,
         OnExecutePatchTarget,
+        OnExecuteProgress,
     }
 
     public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION

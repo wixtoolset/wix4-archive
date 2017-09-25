@@ -1037,7 +1037,7 @@ EXTERN_C BAAPI UserExperienceOnError(
     __in DWORD uiFlags,
     __in DWORD cData,
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-    __inout int* nResult
+    __inout int* pnResult
     )
 {
     HRESULT hr = S_OK;
@@ -1052,15 +1052,15 @@ EXTERN_C BAAPI UserExperienceOnError(
     args.uiFlags = uiFlags;
     args.cData = cData;
     args.rgwzData = rgwzData;
-    args.nRecommendation = *nResult;
+    args.nRecommendation = *pnResult;
 
     results.cbSize = sizeof(results);
-    results.nResult = *nResult;
+    results.nResult = *pnResult;
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnError failed.");
 
-    *nResult = results.nResult;
+    *pnResult = results.nResult;
 
 LExit:
     return hr;
@@ -1145,6 +1145,44 @@ EXTERN_C BAAPI UserExperienceOnExecutePatchTarget(
     }
 
 LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage,
+    __out int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPROGRESS_ARGS args = { };
+    BA_ONEXECUTEPROGRESS_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.dwProgressPercentage = dwProgressPercentage;
+    args.dwOverallPercentage = dwOverallPercentage;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteProgress failed.");
+
+LExit:
+    if (FAILED(hr))
+    {
+        *pnResult = IDERROR;
+    }
+    else if (results.fCancel)
+    {
+        *pnResult = IDCANCEL;
+    }
+    else
+    {
+        *pnResult = IDNOACTION;
+    }
     return hr;
 }
 
