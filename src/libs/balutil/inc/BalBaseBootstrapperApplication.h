@@ -667,13 +667,20 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteFilesInUse(
+    virtual STDMETHODIMP OnExecuteFilesInUse(
         __in_z LPCWSTR /*wzPackageId*/,
         __in DWORD /*cFiles*/,
-        __in_ecount_z(cFiles) LPCWSTR* /*rgwzFiles*/
+        __in_ecount_z(cFiles) LPCWSTR* /*rgwzFiles*/,
+        __in int /*nRecommendation*/,
+        __inout int* pResult
         )
     {
-        return CheckCanceled() ? IDCANCEL : IDNOACTION;
+        if (CheckCanceled())
+        {
+            *pResult = IDCANCEL;
+        }
+
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecutePackageComplete(

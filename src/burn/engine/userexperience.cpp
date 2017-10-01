@@ -1092,6 +1092,36 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnExecuteFilesInUse(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cFiles,
+    __in_ecount_z_opt(cFiles) LPCWSTR* rgwzFiles,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEFILESINUSE_ARGS args = { };
+    BA_ONEXECUTEFILESINUSE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.cFiles = cFiles;
+    args.rgwzFiles = rgwzFiles;
+    args.nRecommendation = *pnResult;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *pnResult;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteFilesInUse failed.");
+
+    *pnResult = results.nResult;
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnExecuteMsiMessage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

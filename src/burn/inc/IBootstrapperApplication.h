@@ -441,10 +441,12 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //
     //  IDNOACTION is equivalent to ignoring the running applications. A restart will be
     //             required.
-    STDMETHOD_(int, OnExecuteFilesInUse)(
+    STDMETHOD(OnExecuteFilesInUse)(
         __in_z LPCWSTR wzPackageId,
         __in DWORD cFiles,
-        __in_ecount_z(cFiles) LPCWSTR* rgwzFiles
+        __in_ecount_z(cFiles) LPCWSTR* rgwzFiles,
+        __in int nRecommendation,
+        __inout int* pResult
         ) = 0;
 
     // OnExecutePackageComplete - called when a package execution is complete.

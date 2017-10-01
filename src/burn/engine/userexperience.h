@@ -263,6 +263,13 @@ BAAPI UserExperienceOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cExecutingPackages
     );
+BAAPI UserExperienceOnExecuteFilesInUse(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cFiles,
+    __in_ecount_z_opt(cFiles) LPCWSTR* rgwzFiles,
+    __inout int* pnResult
+    );
 BAAPI UserExperienceOnExecuteMsiMessage(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

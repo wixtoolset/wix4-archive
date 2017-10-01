@@ -1529,12 +1529,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecuteFilesInUse(string wzPackageId, int cFiles, string[] rgwzFiles)
+        int IBootstrapperApplication.OnExecuteFilesInUse(string wzPackageId, int cFiles, string[] rgwzFiles, Result nRecommendation, ref Result pResult)
         {
-            ExecuteFilesInUseEventArgs args = new ExecuteFilesInUseEventArgs(wzPackageId, rgwzFiles);
+            ExecuteFilesInUseEventArgs args = new ExecuteFilesInUseEventArgs(wzPackageId, rgwzFiles, nRecommendation, pResult);
             this.OnExecuteFilesInUse(args);
 
-            return args.Result;
+            pResult = args.Result;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrExitCode, ApplyRestart restart, int nRecommendation)

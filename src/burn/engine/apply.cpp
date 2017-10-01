@@ -2400,12 +2400,11 @@ static int GenericExecuteMessageHandler(
         break;
 
     case GENERIC_EXECUTE_MESSAGE_ERROR:
-        nResult = IDNOACTION;
         UserExperienceOnError(pContext->pUX, BOOTSTRAPPER_ERROR_TYPE_EXE_PACKAGE, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, 0, NULL, &nResult); // ignore return value.
         break;
 
     case GENERIC_EXECUTE_MESSAGE_FILES_IN_USE:
-        nResult = pContext->pUX->pUserExperience->OnExecuteFilesInUse(pContext->pExecutingPackage->sczId, pMessage->filesInUse.cFiles, pMessage->filesInUse.rgwzFiles);
+        UserExperienceOnExecuteFilesInUse(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->filesInUse.cFiles, pMessage->filesInUse.rgwzFiles, &nResult); // ignore return value.
         break;
     }
 
@@ -2441,7 +2440,7 @@ static int MsiExecuteMessageHandler(
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_MSI_FILES_IN_USE:
-        nResult = pContext->pUX->pUserExperience->OnExecuteFilesInUse(pContext->pExecutingPackage->sczId, pMessage->msiFilesInUse.cFiles, pMessage->msiFilesInUse.rgwzFiles);
+        UserExperienceOnExecuteFilesInUse(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->msiFilesInUse.cFiles, pMessage->msiFilesInUse.rgwzFiles, &nResult); // ignore return value.
         break;
     }
 

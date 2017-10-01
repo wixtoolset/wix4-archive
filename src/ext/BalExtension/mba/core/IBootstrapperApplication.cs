@@ -423,10 +423,12 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteFilesInUse(
+        int OnExecuteFilesInUse(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int cFiles,
-            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzFiles
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzFiles,
+            [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref Result pAction
             );
 
         [PreserveSig]
@@ -795,6 +797,7 @@ namespace WixToolset.Bootstrapper
         OnExecutePatchTarget,
         OnExecuteProgress,
         OnExecuteMsiMessage,
+        OnExecuteFilesInUse,
     }
 
     public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION

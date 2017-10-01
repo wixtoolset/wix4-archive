@@ -1656,35 +1656,29 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class ExecuteFilesInUseEventArgs : ResultEventArgs
     {
-        private string packageId;
-        private ReadOnlyCollection<string> files;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecuteFilesInUseEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that yielded the files in use message.</param>
         /// <param name="files">The list of files in use.</param>
-        public ExecuteFilesInUseEventArgs(string packageId, string[] files)
+        /// <param name="recommendation">Recommended result from engine.</param>
+        /// <param name="result">The result to return to the engine.</param>
+        public ExecuteFilesInUseEventArgs(string packageId, string[] files, Result recommendation, Result result)
+            : base(recommendation, result)
         {
-            this.packageId = packageId;
-            this.files = new ReadOnlyCollection<string>(files ?? new string[] { });
+            this.PackageId = packageId;
+            this.Files = new ReadOnlyCollection<string>(files ?? new string[] { });
         }
 
         /// <summary>
         /// Gets the identity of the package that yielded the files in use message.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the list of files in use.
         /// </summary>
-        public IList<string> Files
-        {
-            get { return this.files; }
-        }
+        public IList<string> Files { get; private set; }
     }
 
     /// <summary>
