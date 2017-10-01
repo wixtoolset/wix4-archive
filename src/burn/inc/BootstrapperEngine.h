@@ -10,7 +10,6 @@ extern "C" {
 #define IDNOACTION 0
 
 #define IDRESTART  102
-#define IDSUSPEND  103
 
 // Note that ordering of the enumeration values is important.
 // Some code paths use < or > comparisions and simply reording values will break those comparisons.

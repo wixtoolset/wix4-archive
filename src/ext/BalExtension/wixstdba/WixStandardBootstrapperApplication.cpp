@@ -788,33 +788,34 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecutePackageComplete(
+    virtual STDMETHODIMP OnExecutePackageComplete(
         __in_z LPCWSTR wzPackageId,
-        __in HRESULT hrExitCode,
+        __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         )
     {
-        SetProgressState(hrExitCode);
+        HRESULT hr = S_OK;
+        SetProgressState(hrStatus);
 
-        int nResult = __super::OnExecutePackageComplete(wzPackageId, hrExitCode, restart, nRecommendation);
+        hr = __super::OnExecutePackageComplete(wzPackageId, hrStatus, restart, pAction);
 
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
         BAL_INFO_PACKAGE* pPackage;
-        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
-        if (SUCCEEDED(hr))
+        HRESULT hrPrereq = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
+        if (SUCCEEDED(hrPrereq))
         {
-            pPrereqPackage->fSuccessfullyInstalled = SUCCEEDED(hrExitCode);
+            pPrereqPackage->fSuccessfullyInstalled = SUCCEEDED(hrStatus);
 
             // If the prerequisite required a restart (any restart) then do an immediate
             // restart to ensure that the bundle will get launched again post reboot.
             if (BOOTSTRAPPER_APPLY_RESTART_NONE != restart)
             {
-                nResult = IDRESTART;
+                *pAction = BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART;
             }
         }
 
-        return nResult;
+        return hr;
     }
 
 
@@ -1112,6 +1113,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE:
             OnExecuteFilesInUseFallback(reinterpret_cast<BA_ONEXECUTEFILESINUSE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEFILESINUSE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE:
+            OnExecutePackageCompleteFallback(reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1508,6 +1512,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEFILESINUSE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePackageCompleteFallback(
+        __in BA_ONEXECUTEPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONEXECUTEPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

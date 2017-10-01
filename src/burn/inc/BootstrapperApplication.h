@@ -127,6 +127,7 @@ enum BOOTSTRAPPER_APPLICATION_MESSAGE
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS,
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE,
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE,
 };
 
 enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION
@@ -148,6 +149,24 @@ enum BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION
     BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYVERIFICATION,
     // Ignored if hrStatus is a success.
     BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION,
+};
+
+enum BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION
+{
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_NONE,
+    // Instructs the engine to ignore non-vital package failures and
+    // continue with the install.
+    // Ignored if hrStatus is a success or the package is vital.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_IGNORE,
+    // Instructs the engine to try the execution of the package again.
+    // Ignored if hrStatus is a success.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RETRY,
+    // Instructs the engine to stop processing the chain and restart.
+    // The engine will launch again after the machine is restarted.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART,
+    // Instructs the engine to stop processing the chain and
+    // suspend the current state.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_SUSPEND,
 };
 
 enum BOOTSTRAPPER_RESOLVESOURCE_ACTION
@@ -608,6 +627,21 @@ struct BA_ONEXECUTEPACKAGEBEGIN_RESULTS
 {
     DWORD cbSize;
     BOOL fCancel;
+};
+
+struct BA_ONEXECUTEPACKAGECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    HRESULT hrStatus;
+    // Indicates whether this package requires a reboot or initiated the reboot already.
+    BOOTSTRAPPER_APPLY_RESTART restart;
+};
+
+struct BA_ONEXECUTEPACKAGECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION action;
 };
 
 struct BA_ONEXECUTEPATCHTARGET_ARGS

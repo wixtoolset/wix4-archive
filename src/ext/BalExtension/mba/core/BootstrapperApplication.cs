@@ -1538,12 +1538,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrExitCode, ApplyRestart restart, int nRecommendation)
+        int IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrStatus, ApplyRestart restart, ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction)
         {
-            ExecutePackageCompleteEventArgs args = new ExecutePackageCompleteEventArgs(wzPackageId, hrExitCode, restart, nRecommendation);
+            ExecutePackageCompleteEventArgs args = new ExecutePackageCompleteEventArgs(wzPackageId, hrStatus, restart, pAction);
             this.OnExecutePackageComplete(args);
 
-            return args.Result;
+            pAction = args.Action;
+            return args.HResult;
         }
 
         void IBootstrapperApplication.OnExecuteComplete(int hrStatus)

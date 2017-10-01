@@ -451,27 +451,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnExecutePackageComplete - called when a package execution is complete.
     //
-    // Parameters:
-    //  restart will indicate whether this package requires a reboot or initiated the reboot already.
-    //
-    // Return:
-    //  IDIGNORE instructs the engine to ignore non-vital package failures and continue with the
-    //           install. Ignored if hrStatus is a success or the package is vital.
-    //
-    //  IDRETRY instructs the engine to try the execution of the package again. Ignored if hrStatus
-    //          is a success.
-    //
-    //  IDRESTART instructs the engine to stop processing the chain and restart. The engine will
-    //            launch again after the machine is restarted.
-    //
-    //  IDSUSPEND instructs the engine to stop processing the chain and suspend the current state.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnExecutePackageComplete)(
+    STDMETHOD(OnExecutePackageComplete)(
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnExecuteComplete - called when the engine execution is complete.

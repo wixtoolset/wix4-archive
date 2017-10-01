@@ -285,6 +285,13 @@ BAAPI UserExperienceOnExecutePackageBegin(
     __in_z LPCWSTR wzPackageId,
     __in BOOL fExecute
     );
+BAAPI UserExperienceOnExecutePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
+    );
 BAAPI UserExperienceOnExecutePatchTarget(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

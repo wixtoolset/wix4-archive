@@ -418,7 +418,7 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] int cData,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzData,
             [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
-            [MarshalAs(UnmanagedType.I4)] ref Result pAction
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
             );
 
         [PreserveSig]
@@ -428,16 +428,16 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] int cFiles,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzFiles,
             [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
-            [MarshalAs(UnmanagedType.I4)] ref Result pAction
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecutePackageComplete(
+        int OnExecutePackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            int hrExitCode,
+            int hrStatus,
             [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction
             );
 
         void OnExecuteComplete(
@@ -549,8 +549,6 @@ namespace WixToolset.Bootstrapper
         Help,
         TryAgain,
         Continue,
-        Suspend,
-        Timeout = 32000,
     }
 
     /// <summary>
@@ -798,8 +796,12 @@ namespace WixToolset.Bootstrapper
         OnExecuteProgress,
         OnExecuteMsiMessage,
         OnExecuteFilesInUse,
+        OnExecutePackageComplete,
     }
 
+    /// <summary>
+    /// The available actions for OnCachePackageComplete.
+    /// </summary>
     public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION
     {
         None,
@@ -807,6 +809,9 @@ namespace WixToolset.Bootstrapper
         Retry,
     }
 
+    /// <summary>
+    /// The available actions for OnCacheVerifyComplete.
+    /// </summary>
     public enum BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION
     {
         None,
@@ -814,6 +819,21 @@ namespace WixToolset.Bootstrapper
         RetryAcquisition,
     }
 
+    /// <summary>
+    /// The available actions for OnExecutePackageComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION
+    {
+        None,
+        Ignore,
+        Retry,
+        Restart,
+        Suspend,
+    }
+
+    /// <summary>
+    /// The available actions for OnResolveSource.
+    /// </summary>
     public enum BOOTSTRAPPER_RESOLVESOURCE_ACTION
     {
         None,

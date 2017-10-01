@@ -99,10 +99,10 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="StatusEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public StatusEventArgs(int status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public StatusEventArgs(int hrStatus)
         {
-            this.Status = status;
+            this.Status = hrStatus;
         }
 
         /// <summary>
@@ -120,10 +120,10 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="RetriableStatusEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="retryRecommendation">The recommendation from the engine.</param>
-        public RetriableStatusEventArgs(int status, bool retryRecommendation)
-            : base(status)
+        public RetriableStatusEventArgs(int hrStatus, bool retryRecommendation)
+            : base(hrStatus)
         {
             this.Retry = retryRecommendation;
         }
@@ -132,6 +132,27 @@ namespace WixToolset.Bootstrapper
         /// Get or sets whether to retry the operation. This is passed back to the engine.
         /// </summary>
         public bool Retry { get; set; }
+    }
+
+    /// <summary>
+    /// Base class for <see cref="EventArgs"/> classes that receive status from the engine and return an action.
+    /// </summary>
+    public abstract class ActionEventArgs<T> : StatusEventArgs
+    {
+        /// <summary>
+        /// </summary>
+        /// <param name="hrStatus">The return code of the operation.</param>
+        /// <param name="action">Recommended action from engine.</param>
+        public ActionEventArgs(int hrStatus, T action)
+            : base(hrStatus)
+        {
+            this.Action = action;
+        }
+
+        /// <summary>
+        /// Gets or sets the action to be performed. This is passed back to the engine.
+        /// </summary>
+        public T Action { get; set; }
     }
 
     /// <summary>
@@ -442,10 +463,10 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="DetectUpdateCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="ignoreRecommendation">The recommendation from the engine.</param>
-        public DetectUpdateCompleteEventArgs(int status, bool ignoreRecommendation)
-            : base(status)
+        public DetectUpdateCompleteEventArgs(int hrStatus, bool ignoreRecommendation)
+            : base(hrStatus)
         {
             this.IgnoreError = ignoreRecommendation;
         }
@@ -714,10 +735,10 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="DetectPackageCompleteEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package detected.</param>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="state">The state of the specified package.</param>
-        public DetectPackageCompleteEventArgs(string packageId, int status, PackageState state)
-            : base(status)
+        public DetectPackageCompleteEventArgs(string packageId, int hrStatus, PackageState state)
+            : base(hrStatus)
         {
             this.PackageId = packageId;
             this.State = state;
@@ -743,9 +764,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="DetectCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public DetectCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public DetectCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -909,13 +930,13 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="packageId">The identity of the package planned for.</param>
         /// <param name="compatiblePackageId">The identity of the compatible package that was detected.</param>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="state">The current state of the package.</param>
         /// <param name="requested">The requested state for the package</param>
         /// <param name="execute">The execution action to take.</param>
         /// <param name="rollback">The rollback action to take.</param>
-        public PlanCompatibleMsiPackageCompleteEventArgs(string packageId, string compatiblePackageId, int status, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
-            : base(status)
+        public PlanCompatibleMsiPackageCompleteEventArgs(string packageId, string compatiblePackageId, int hrStatus, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
+            : base(hrStatus)
         {
             this.PackageId = packageId;
             this.CompatiblePackageId = compatiblePackageId;
@@ -1054,13 +1075,13 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="PlanPackageCompleteEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package planned for.</param>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="state">The current state of the package.</param>
         /// <param name="requested">The requested state for the package</param>
         /// <param name="execute">The execution action to take.</param>
         /// <param name="rollback">The rollback action to take.</param>
-        public PlanPackageCompleteEventArgs(string packageId, int status, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
-            : base(status)
+        public PlanPackageCompleteEventArgs(string packageId, int hrStatus, PackageState state, RequestState requested, ActionState execute, ActionState rollback)
+            : base(hrStatus)
         {
             this.PackageId = packageId;
             this.State = state;
@@ -1104,9 +1125,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="PlanCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public PlanCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public PlanCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -1160,9 +1181,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="ElevateCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public ElevateCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public ElevateCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -1281,9 +1302,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="RegisterCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public RegisterCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public RegisterCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -1305,9 +1326,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="UnregisterCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public UnregisterCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public UnregisterCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -1421,8 +1442,8 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="CacheAcquireCompleteEventArgs"/> class.
         /// </summary>
-        public CacheAcquireCompleteEventArgs(string packageOrContainerId, string payloadId, int status, bool retryRecommendation)
-            : base(status, retryRecommendation)
+        public CacheAcquireCompleteEventArgs(string packageOrContainerId, string payloadId, int hrStatus, bool retryRecommendation)
+            : base(hrStatus, retryRecommendation)
         {
             this.PackageOrContainerId = packageOrContainerId;
             this.PayloadId = payloadId;
@@ -1470,17 +1491,16 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine completes the verification of a payload.
     /// </summary>
     [Serializable]
-    public class CacheVerifyCompleteEventArgs : StatusEventArgs
+    public class CacheVerifyCompleteEventArgs : ActionEventArgs<BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION>
     {
         /// <summary>
         /// Creates a new instance of the <see cref="CacheVerifyCompleteEventArgs"/> class.
         /// </summary>
-        public CacheVerifyCompleteEventArgs(string packageId, string payloadId, int status, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
-            : base(status)
+        public CacheVerifyCompleteEventArgs(string packageId, string payloadId, int hrStatus, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
+            : base(hrStatus, action)
         {
             this.PackageId = packageId;
             this.PayloadId = payloadId;
-            this.Action = action;
         }
 
         /// <summary>
@@ -1492,11 +1512,6 @@ namespace WixToolset.Bootstrapper
         /// Gets the identifier of the payload.
         /// </summary>
         public string PayloadId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the action to be performed. This is passed back to the engine.
-        /// </summary>
-        public BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION Action { get; set; }
     }
 
     /// <summary>
@@ -1508,9 +1523,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="CacheCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public CacheCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public CacheCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -1685,40 +1700,31 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has completed installing a specific package.
     /// </summary>
     [Serializable]
-    public class ExecutePackageCompleteEventArgs : ResultStatusEventArgs
+    public class ExecutePackageCompleteEventArgs : ActionEventArgs<BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION>
     {
-        private string packageId;
-        private ApplyRestart restart;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecutePackageCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="packageId">The identity of the packaged that was acted on.</param>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="packageId">The identity of the package that was acted on.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="restart">Whether a restart is required.</param>
-        /// <param name="recommendation">Recommended result from engine.</param>
-        public ExecutePackageCompleteEventArgs(string packageId, int status, ApplyRestart restart, int recommendation)
-            : base(status, recommendation)
+        /// <param name="action">Recommended action from engine.</param>
+        public ExecutePackageCompleteEventArgs(string packageId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION action)
+            : base(hrStatus, action)
         {
-            this.packageId = packageId;
-            this.restart = restart;
+            this.PackageId = packageId;
+            this.Restart = restart;
         }
 
         /// <summary>
         /// Gets the identity of the package that was acted on.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the package restart state after being applied.
         /// </summary>
-        public ApplyRestart Restart
-        {
-            get { return this.restart; }
-        }
+        public ApplyRestart Restart { get; private set; }
     }
 
     /// <summary>
@@ -1730,9 +1736,9 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="ExecuteCompleteEventArgs"/> class.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public ExecuteCompleteEventArgs(int status)
-            : base(status)
+        /// <param name="hrStatus">The return code of the operation.</param>
+        public ExecuteCompleteEventArgs(int hrStatus)
+            : base(hrStatus)
         {
         }
     }
@@ -1748,10 +1754,10 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyCompleteEventArgs"/> clas.
         /// </summary>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="restart">Whether a restart is required.</param>
-        public ApplyCompleteEventArgs(int status, ApplyRestart restart)
-            : base(status)
+        public ApplyCompleteEventArgs(int hrStatus, ApplyRestart restart)
+            : base(hrStatus)
         {
             this.restart = restart;
         }
@@ -1858,30 +1864,24 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments passed by the engine when it has completed caching a specific package.
     /// </summary>
     [Serializable]
-    public class CachePackageCompleteEventArgs : StatusEventArgs
+    public class CachePackageCompleteEventArgs : ActionEventArgs<BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION>
     {
         /// <summary>
         /// Creates a new instance of the <see cref="CachePackageCompleteEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that was cached.</param>
-        /// <param name="status">The return code of the operation.</param>
+        /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="action">Recommended action from engine.</param>
-        public CachePackageCompleteEventArgs(string packageId, int status, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
-            : base(status)
+        public CachePackageCompleteEventArgs(string packageId, int hrStatus, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
+            : base(hrStatus, action)
         {
             this.PackageId = packageId;
-            this.Action = action;
         }
 
         /// <summary>
         /// Gets the identity of the package that was cached.
         /// </summary>
         public string PackageId { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the action to be performed. This is passed back to the engine.
-        /// </summary>
-        public BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION Action { get; set; }
     }
 
     /// <summary>
@@ -1940,8 +1940,8 @@ namespace WixToolset.Bootstrapper
     {
         private int processId;
 
-        public LaunchApprovedExeCompleteArgs(int status, int processId)
-            : base(status)
+        public LaunchApprovedExeCompleteArgs(int hrStatus, int processId)
+            : base(hrStatus)
         {
             this.processId = processId;
         }

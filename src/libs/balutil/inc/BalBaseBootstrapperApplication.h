@@ -683,33 +683,31 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecutePackageComplete(
+    virtual STDMETHODIMP OnExecutePackageComplete(
         __in_z LPCWSTR wzPackageId,
-        __in HRESULT hrExitCode,
+        __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         )
     {
         HRESULT hr = S_OK;
         BOOL fRetry = FALSE;
-        int nResult = nRecommendation;
 
         if (CheckCanceled())
         {
-            nResult = IDCANCEL;
-            ExitFunction();
+            ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT));
         }
 
-        hr = BalRetryEndPackage(BALRETRY_TYPE_EXECUTE, wzPackageId, NULL, hrExitCode, &fRetry);
+        hr = BalRetryEndPackage(BALRETRY_TYPE_EXECUTE, wzPackageId, NULL, hrStatus, &fRetry);
         ExitOnFailure(hr, "BalRetryEndPackage for execute failed");
 
         if (fRetry)
         {
-            nResult = IDRETRY;
+            *pAction = BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RETRY;
         }
 
     LExit:
-        return nResult;
+        return hr;
     }
 
     virtual STDMETHODIMP_(void) OnExecuteComplete(

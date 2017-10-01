@@ -1186,6 +1186,38 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnExecutePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPACKAGECOMPLETE_ARGS args = { };
+    BA_ONEXECUTEPACKAGECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.hrStatus = hrStatus;
+    args.restart = restart;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecutePackageComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pAction = results.action;
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnExecutePatchTarget(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z LPCWSTR wzPackageId,

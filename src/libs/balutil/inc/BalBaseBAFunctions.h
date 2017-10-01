@@ -535,14 +535,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecutePackageComplete(
+    virtual STDMETHODIMP OnExecutePackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
-        __in HRESULT /*hrExitCode*/,
+        __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
-        __in int nRecommendation
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* /*pAction*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnExecuteComplete(

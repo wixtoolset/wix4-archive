@@ -2477,15 +2477,16 @@ static HRESULT ExecutePackageComplete(
     )
 {
     HRESULT hr = FAILED(hrOverall) ? hrOverall : hrExecute; // if the overall function failed use that otherwise use the execution result.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION executePackageCompleteAction = FAILED(hrOverall) || SUCCEEDED(hrExecute) || pPackage->fVital ? BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_NONE : BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_IGNORE;
 
-    // send package execute complete to UX
-    int nResult = pUX->pUserExperience->OnExecutePackageComplete(pPackage->sczId, hr, *pRestart, FAILED(hrOverall) || SUCCEEDED(hrExecute) || pPackage->fVital ? IDNOACTION : IDIGNORE);
-    if (IDRESTART == nResult)
+    // Send package execute complete to BA.
+    UserExperienceOnExecutePackageComplete(pUX, pPackage->sczId, hr, *pRestart, &executePackageCompleteAction);
+    if (BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART == executePackageCompleteAction)
     {
         *pRestart = BOOTSTRAPPER_APPLY_RESTART_INITIATED;
     }
-    *pfRetry = (FAILED(hrExecute) && IDRETRY == nResult); // allow retry only on failures.
-    *pfSuspend = (IDSUSPEND == nResult);
+    *pfRetry = (FAILED(hrExecute) && BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RETRY == executePackageCompleteAction); // allow retry only on failures.
+    *pfSuspend = (BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_SUSPEND == executePackageCompleteAction);
 
     // Remember this package as the package that initiated the forced restart.
     if (BOOTSTRAPPER_APPLY_RESTART_INITIATED == *pRestart)
@@ -2500,7 +2501,7 @@ static HRESULT ExecutePackageComplete(
         LogId(REPORT_STANDARD, MSG_APPLY_RETRYING_PACKAGE, pPackage->sczId, hrExecute);
         hr = S_OK;
     }
-    else if (SUCCEEDED(hrOverall) && FAILED(hrExecute) && IDIGNORE == nResult && !pPackage->fVital) // If we *only* failed to execute and the BA ignored this *not-vital* package, say everything is okay.
+    else if (SUCCEEDED(hrOverall) && FAILED(hrExecute) && BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_IGNORE == executePackageCompleteAction && !pPackage->fVital) // If we *only* failed to execute and the BA ignored this *not-vital* package, say everything is okay.
     {
         LogId(REPORT_STANDARD, MSG_APPLY_CONTINUING_NONVITAL_PACKAGE, pPackage->sczId, hrExecute);
         hr = S_OK;
