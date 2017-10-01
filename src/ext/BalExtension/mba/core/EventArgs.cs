@@ -142,12 +142,19 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// </summary>
         /// <param name="hrStatus">The return code of the operation.</param>
-        /// <param name="action">Recommended action from engine.</param>
-        public ActionEventArgs(int hrStatus, T action)
+        /// <param name="recommendation">Recommended action from engine.</param>
+        /// <param name="action">The action to perform.</param>
+        public ActionEventArgs(int hrStatus, T recommendation, T action)
             : base(hrStatus)
         {
+            this.Recommendation = recommendation;
             this.Action = action;
         }
+
+        /// <summary>
+        /// Gets the recommended action from the engine.
+        /// </summary>
+        public T Recommendation { get; private set; }
 
         /// <summary>
         /// Gets or sets the action to be performed. This is passed back to the engine.
@@ -1496,8 +1503,8 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="CacheVerifyCompleteEventArgs"/> class.
         /// </summary>
-        public CacheVerifyCompleteEventArgs(string packageId, string payloadId, int hrStatus, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
-            : base(hrStatus, action)
+        public CacheVerifyCompleteEventArgs(string packageId, string payloadId, int hrStatus, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
+            : base(hrStatus, recommendation, action)
         {
             this.PackageId = packageId;
             this.PayloadId = payloadId;
@@ -1708,9 +1715,10 @@ namespace WixToolset.Bootstrapper
         /// <param name="packageId">The identity of the package that was acted on.</param>
         /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="restart">Whether a restart is required.</param>
-        /// <param name="action">Recommended action from engine.</param>
-        public ExecutePackageCompleteEventArgs(string packageId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION action)
-            : base(hrStatus, action)
+        /// <param name="recommendation">Recommended action from engine.</param>
+        /// <param name="action">The action to perform.</param>
+        public ExecutePackageCompleteEventArgs(string packageId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation, BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION action)
+            : base(hrStatus, recommendation, action)
         {
             this.PackageId = packageId;
             this.Restart = restart;
@@ -1785,15 +1793,17 @@ namespace WixToolset.Bootstrapper
         /// <param name="payloadId">The identity of the payload that requires source.</param>
         /// <param name="localSource">The current path used for source resolution.</param>
         /// <param name="downloadSource">Optional URL to download container or payload.</param>
+        /// <param name="recommendation">The recommended action from the engine.</param>
         /// <param name="action">The action to perform.</param>
         /// <param name="cancelRecommendation">The recommendation from the engine.</param>
-        public ResolveSourceEventArgs(string packageOrContainerId, string payloadId, string localSource, string downloadSource, BOOTSTRAPPER_RESOLVESOURCE_ACTION action, bool cancelRecommendation)
+        public ResolveSourceEventArgs(string packageOrContainerId, string payloadId, string localSource, string downloadSource, BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation, BOOTSTRAPPER_RESOLVESOURCE_ACTION action, bool cancelRecommendation)
             : base(cancelRecommendation)
         {
             this.PackageOrContainerId = packageOrContainerId;
             this.PayloadId = payloadId;
             this.LocalSource = localSource;
             this.DownloadSource = downloadSource;
+            this.Recommendation = recommendation;
             this.Action = action;
         }
 
@@ -1816,6 +1826,11 @@ namespace WixToolset.Bootstrapper
         /// Gets the optional URL to download container or payload.
         /// </summary>
         public string DownloadSource { get; private set; }
+
+        /// <summary>
+        /// Gets the recommended action from the engine.
+        /// </summary>
+        public BOOTSTRAPPER_RESOLVESOURCE_ACTION Recommendation { get; private set; }
 
         /// <summary>
         /// Gets or sets the action to perform.
@@ -1871,9 +1886,10 @@ namespace WixToolset.Bootstrapper
         /// </summary>
         /// <param name="packageId">The identity of the package that was cached.</param>
         /// <param name="hrStatus">The return code of the operation.</param>
-        /// <param name="action">Recommended action from engine.</param>
-        public CachePackageCompleteEventArgs(string packageId, int hrStatus, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
-            : base(hrStatus, action)
+        /// <param name="recommendation">Recommended action from engine.</param>
+        /// <param name="action">The action to perform.</param>
+        public CachePackageCompleteEventArgs(string packageId, int hrStatus, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
+            : base(hrStatus, recommendation, action)
         {
             this.PackageId = packageId;
         }

@@ -1430,9 +1430,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource, ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action, ref bool fCancel)
+        int IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource, BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation, ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action, ref bool fCancel)
         {
-            ResolveSourceEventArgs args = new ResolveSourceEventArgs(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource, action, fCancel);
+            ResolveSourceEventArgs args = new ResolveSourceEventArgs(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource, action, recommendation, fCancel);
             this.OnResolveSource(args);
 
             action = args.Action;
@@ -1458,18 +1458,18 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnCacheVerifyComplete(string wzPackageId, string wzPayloadId, int hrStatus, ref BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
+        int IBootstrapperApplication.OnCacheVerifyComplete(string wzPackageId, string wzPayloadId, int hrStatus, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
         {
-            CacheVerifyCompleteEventArgs args = new CacheVerifyCompleteEventArgs(wzPackageId, wzPayloadId, hrStatus, action);
+            CacheVerifyCompleteEventArgs args = new CacheVerifyCompleteEventArgs(wzPackageId, wzPayloadId, hrStatus, recommendation, action);
             this.OnCacheVerifyComplete(args);
 
             action = args.Action;
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnCachePackageComplete(string wzPackageId, int hrStatus, ref BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
+        int IBootstrapperApplication.OnCachePackageComplete(string wzPackageId, int hrStatus, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
         {
-            CachePackageCompleteEventArgs args = new CachePackageCompleteEventArgs(wzPackageId, hrStatus, action);
+            CachePackageCompleteEventArgs args = new CachePackageCompleteEventArgs(wzPackageId, hrStatus, recommendation, action);
             this.OnCachePackageComplete(args);
 
             action = args.Action;
@@ -1538,9 +1538,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrStatus, ApplyRestart restart, ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction)
+        int IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction)
         {
-            ExecutePackageCompleteEventArgs args = new ExecutePackageCompleteEventArgs(wzPackageId, hrStatus, restart, pAction);
+            ExecutePackageCompleteEventArgs args = new ExecutePackageCompleteEventArgs(wzPackageId, hrStatus, restart, recommendation, pAction);
             this.OnExecutePackageComplete(args);
 
             pAction = args.Action;

@@ -309,6 +309,7 @@ struct BA_ONCACHEPACKAGECOMPLETE_ARGS
     DWORD cbSize;
     LPCWSTR wzPackageId;
     HRESULT hrStatus;
+    BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation;
 };
 
 struct BA_ONCACHEPACKAGECOMPLETE_RESULTS
@@ -336,6 +337,7 @@ struct BA_ONCACHEVERIFYCOMPLETE_ARGS
     LPCWSTR wzPackageOrContainerId;
     LPCWSTR wzPayloadId;
     HRESULT hrStatus;
+    BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation;
 };
 
 struct BA_ONCACHEVERIFYCOMPLETE_RESULTS
@@ -636,6 +638,7 @@ struct BA_ONEXECUTEPACKAGECOMPLETE_ARGS
     HRESULT hrStatus;
     // Indicates whether this package requires a reboot or initiated the reboot already.
     BOOTSTRAPPER_APPLY_RESTART restart;
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation;
 };
 
 struct BA_ONEXECUTEPACKAGECOMPLETE_RESULTS
@@ -843,6 +846,7 @@ struct BA_ONRESOLVESOURCE_ARGS
     LPCWSTR wzPayloadId;
     LPCWSTR wzLocalSource;
     LPCWSTR wzDownloadSource;
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation;
 };
 
 struct BA_ONRESOLVESOURCE_RESULTS

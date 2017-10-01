@@ -510,6 +510,7 @@ EXTERN_C BAAPI UserExperienceOnCachePackageComplete(
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
     args.hrStatus = hrStatus;
+    args.recommendation = *pAction;
 
     results.cbSize = sizeof(results);
     results.action = *pAction;
@@ -570,6 +571,7 @@ EXTERN_C BAAPI UserExperienceOnCacheVerifyComplete(
     args.wzPackageOrContainerId = wzPackageOrContainerId;
     args.wzPayloadId = wzPayloadId;
     args.hrStatus = hrStatus;
+    args.recommendation = *pAction;
 
     results.cbSize = sizeof(results);
     results.action = *pAction;
@@ -1202,6 +1204,7 @@ EXTERN_C BAAPI UserExperienceOnExecutePackageComplete(
     args.wzPackageId = wzPackageId;
     args.hrStatus = hrStatus;
     args.restart = restart;
+    args.recommendation = *pAction;
 
     results.cbSize = sizeof(results);
     results.action = *pAction;
@@ -1639,6 +1642,7 @@ EXTERN_C BAAPI UserExperienceOnResolveSource(
     args.wzPayloadId = wzPayloadId;
     args.wzLocalSource = wzLocalSource;
     args.wzDownloadSource = wzDownloadSource;
+    args.recommendation = *pAction;
 
     results.cbSize = sizeof(results);
     results.action = *pAction;

@@ -339,7 +339,7 @@ static HRESULT BalBaseBAProcOnResolveSource(
     __inout BA_ONRESOLVESOURCE_RESULTS* pResults
     )
 {
-    return pBA->OnResolveSource(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->wzLocalSource, pArgs->wzDownloadSource, &pResults->action, &pResults->fCancel);
+    return pBA->OnResolveSource(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->wzLocalSource, pArgs->wzDownloadSource, pArgs->recommendation, &pResults->action, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnCacheAcquireComplete(
@@ -366,7 +366,7 @@ static HRESULT BalBaseBAProcOnCacheVerifyComplete(
     __inout BA_ONCACHEVERIFYCOMPLETE_RESULTS* pResults
     )
 {
-    return pBA->OnCacheVerifyComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, &pResults->action);
+    return pBA->OnCacheVerifyComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
 }
 
 static HRESULT BalBaseBAProcOnCachePackageComplete(
@@ -375,7 +375,7 @@ static HRESULT BalBaseBAProcOnCachePackageComplete(
     __inout BA_ONCACHEPACKAGECOMPLETE_RESULTS* pResults
     )
 {
-    return pBA->OnCachePackageComplete(pArgs->wzPackageId, pArgs->hrStatus, &pResults->action);
+    return pBA->OnCachePackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
 }
 
 static HRESULT BalBaseBAProcOnCacheComplete(
@@ -447,7 +447,7 @@ static HRESULT BalBaseBAProcOnExecutePackageComplete(
     __inout BA_ONEXECUTEPACKAGECOMPLETE_RESULTS* pResults
     )
 {
-    return pBA->OnExecutePackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->restart, &pResults->action);
+    return pBA->OnExecutePackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->restart, pArgs->recommendation, &pResults->action);
 }
 
 /*******************************************************************

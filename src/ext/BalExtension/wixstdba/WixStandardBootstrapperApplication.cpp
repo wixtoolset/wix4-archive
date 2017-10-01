@@ -545,11 +545,12 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
+        __in BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation,
         __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheVerifyComplete(wzPackageId, wzPayloadId, hrStatus, pAction);
+        return __super::OnCacheVerifyComplete(wzPackageId, wzPayloadId, hrStatus, recommendation, pAction);
     }
 
 
@@ -792,13 +793,14 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation,
         __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         )
     {
         HRESULT hr = S_OK;
         SetProgressState(hrStatus);
 
-        hr = __super::OnExecutePackageComplete(wzPackageId, hrStatus, restart, pAction);
+        hr = __super::OnExecutePackageComplete(wzPackageId, hrStatus, restart, recommendation, pAction);
 
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
         BAL_INFO_PACKAGE* pPackage;
@@ -838,6 +840,7 @@ public: // IBootstrapperApplication
         __in_z_opt LPCWSTR wzPayloadId,
         __in_z LPCWSTR wzLocalSource,
         __in_z_opt LPCWSTR wzDownloadSource,
+        __in BOOTSTRAPPER_RESOLVESOURCE_ACTION /*recommendation*/,
         __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction,
         __inout BOOL* pfCancel
         )

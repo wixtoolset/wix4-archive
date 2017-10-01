@@ -422,6 +422,7 @@ public: // IBootstrapperApplication
         __in_z_opt LPCWSTR /*wzPayloadId*/,
         __in_z LPCWSTR /*wzLocalSource*/,
         __in_z_opt LPCWSTR /*wzDownloadSource*/,
+        __in BOOTSTRAPPER_RESOLVESOURCE_ACTION /*recommendation*/,
         __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* /*pAction*/,
         __inout BOOL* /*pfCancel*/
         )
@@ -452,6 +453,7 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzPayloadId*/,
         __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION /*recommendation*/,
         __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* /*pAction*/
         )
     {
@@ -461,6 +463,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP OnCachePackageComplete(
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION /*recommendation*/,
         __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* /*pAction*/
         )
     {
@@ -539,6 +542,7 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzPackageId*/,
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
+        __in BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION /*recommendation*/,
         __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* /*pAction*/
         )
     {

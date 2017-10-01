@@ -332,6 +332,7 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzLocalSource,
             [MarshalAs(UnmanagedType.LPWStr)] string wzDownloadSource,
+            BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation,
             ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action,
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
@@ -359,6 +360,7 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             int hrStatus,
+            BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation,
             ref BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action
             );
 
@@ -367,6 +369,7 @@ namespace WixToolset.Bootstrapper
         int OnCachePackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
+            BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation,
             ref BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action
             );
 
@@ -437,6 +440,7 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
+            [MarshalAs(UnmanagedType.I4)] BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation,
             [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction
             );
 
