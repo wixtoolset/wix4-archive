@@ -46,18 +46,16 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
-    /// Base class for <see cref="EventArgs"/> classes that must return a value.
+    /// Base class for <see cref="EventArgs"/> classes that must return a <see cref="Result"/>.
     /// </summary>
     [Serializable]
-    public abstract class ResultEventArgs : EventArgs
+    public abstract class ResultEventArgs : HResultEventArgs
     {
-        private Result result;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
         /// </summary>
         public ResultEventArgs()
-            : this(0)
+            : this(Result.None, Result.None)
         {
         }
 
@@ -65,19 +63,31 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
         /// </summary>
         /// <param name="recommendation">Recommended result from engine.</param>
-        public ResultEventArgs(int recommendation)
+        public ResultEventArgs(Result recommendation)
+            : this(recommendation, recommendation)
         {
-            this.result = (Result)recommendation;
         }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
+        /// </summary>
+        /// <param name="recommendation">Recommended result from engine.</param>
+        /// <param name="result">The result to return to the engine.</param>
+        public ResultEventArgs(Result recommendation, Result result)
+        {
+            this.Recommendation = recommendation;
+            this.Result = result;
+        }
+
+        /// <summary>
+        /// Gets the recommended <see cref="Result"/> of the operation.
+        /// </summary>
+        public Result Recommendation { get; private set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Result"/> of the operation. This is passed back to the engine.
         /// </summary>
-        public Result Result
-        {
-            get { return this.result; }
-            set { this.result = value; }
-        }
+        public Result Result { get; set; }
     }
 
     /// <summary>
@@ -147,7 +157,7 @@ namespace WixToolset.Bootstrapper
         /// <param name="status">The return code of the operation.</param>
         /// <param name="recommendation">The recommended result from the engine.</param>
         public ResultStatusEventArgs(int status, int recommendation)
-            : base(recommendation)
+            : base((Result)recommendation)
         {
             this.status = status;
         }
@@ -1191,7 +1201,7 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has encountered an error.
     /// </summary>
     [Serializable]
-    public class ErrorEventArgs : HResultEventArgs
+    public class ErrorEventArgs : ResultEventArgs
     {
         /// <summary>
         /// Creates a new instance of the <see cref="ErrorEventArgs"/> class.
@@ -1200,20 +1210,19 @@ namespace WixToolset.Bootstrapper
         /// <param name="packageId">The identity of the package that yielded the error.</param>
         /// <param name="errorCode">The error code.</param>
         /// <param name="errorMessage">The error message.</param>
-        /// <param name="uiHint">Recommended display flags for an error dialog.</param>
+        /// <param name="dwUIHint">Recommended display flags for an error dialog.</param>
         /// <param name="data">The exteded data for the error.</param>
         /// <param name="recommendation">Recommended result from engine.</param>
         /// <param name="result">The result to return to the engine.</param>
-        public ErrorEventArgs(ErrorType errorType, string packageId, int errorCode, string errorMessage, int uiHint, string[] data, int recommendation, int result)
+        public ErrorEventArgs(ErrorType errorType, string packageId, int errorCode, string errorMessage, int dwUIHint, string[] data, Result recommendation, Result result)
+            : base(recommendation, result)
         {
             this.ErrorType = errorType;
             this.PackageId = packageId;
             this.ErrorCode = errorCode;
             this.ErrorMessage = errorMessage;
-            this.UIHint = uiHint;
+            this.UIHint = dwUIHint;
             this.Data = new ReadOnlyCollection<string>(data ?? new string[] { });
-            this.Recommendation = (Result)recommendation;
-            this.Result = (Result)result;
         }
 
         /// <summary>
@@ -1245,16 +1254,6 @@ namespace WixToolset.Bootstrapper
         /// Gets the extended data for the error.
         /// </summary>
         public IList<string> Data { get; private set; }
-
-        /// <summary>
-        /// Gets the recommendation for the result.
-        /// </summary>
-        public Result Recommendation { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="Result"/> of the operation. This is passed back to the engine.
-        /// </summary>
-        public Result Result { get; set; }
     }
 
     /// <summary>
@@ -1605,70 +1604,50 @@ namespace WixToolset.Bootstrapper
     [Serializable]
     public class ExecuteMsiMessageEventArgs : ResultEventArgs
     {
-        private string packageId;
-        private InstallMessage messageType;
-        private int displayParameters;
-        private string message;
-        private ReadOnlyCollection<string> data;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ExecuteMsiMessageEventArgs"/> class.
         /// </summary>
         /// <param name="packageId">The identity of the package that yielded this message.</param>
         /// <param name="messageType">The type of this message.</param>
-        /// <param name="displayParameters">Recommended display flags for this message.</param>
+        /// <param name="dwUIHint">Recommended display flags for this message.</param>
         /// <param name="message">The message.</param>
         /// <param name="data">The extended data for the message.</param>
         /// <param name="recommendation">Recommended result from engine.</param>
-        public ExecuteMsiMessageEventArgs(string packageId, InstallMessage messageType, int displayParameters, string message, string[] data, int recommendation)
-            : base(recommendation)
+        /// <param name="result">The result to return to the engine.</param>
+        public ExecuteMsiMessageEventArgs(string packageId, InstallMessage messageType, int dwUIHint, string message, string[] data, Result recommendation, Result result)
+            : base(recommendation, result)
         {
-            this.packageId = packageId;
-            this.messageType = messageType;
-            this.displayParameters = displayParameters;
-            this.message = message;
-            this.data = new ReadOnlyCollection<string>(data ?? new string[] { });
+            this.PackageId = packageId;
+            this.MessageType = messageType;
+            this.UIHint = dwUIHint;
+            this.Message = message;
+            this.Data = new ReadOnlyCollection<string>(data ?? new string[] { });
         }
 
         /// <summary>
         /// Gets the identity of the package that yielded this message.
         /// </summary>
-        public string PackageId
-        {
-            get { return this.packageId; }
-        }
+        public string PackageId { get; private set; }
 
         /// <summary>
         /// Gets the type of this message.
         /// </summary>
-        public InstallMessage MessageType
-        {
-            get { return this.messageType; }
-        }
+        public InstallMessage MessageType { get; private set; }
 
         /// <summary>
         /// Gets the recommended display flags for this message.
         /// </summary>
-        public int DisplayParameters
-        {
-            get { return this.displayParameters; }
-        }
+        public int UIHint { get; private set; }
 
         /// <summary>
         /// Gets the message.
         /// </summary>
-        public string Message
-        {
-            get { return this.message; }
-        }
+        public string Message { get; private set; }
 
         /// <summary>
         /// Gets the extended data for the message.
         /// </summary>
-        public IList<string> Data
-        {
-            get { return this.data; }
-        }
+        public IList<string> Data { get; private set; }
     }
 
     /// <summary>

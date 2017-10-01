@@ -254,7 +254,7 @@ BAAPI UserExperienceOnError(
     __in_z_opt LPCWSTR wzPackageId,
     __in DWORD dwCode,
     __in_z_opt LPCWSTR wzError,
-    __in DWORD uiFlags,
+    __in DWORD dwUIHint,
     __in DWORD cData,
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
     __inout int* pnResult
@@ -262,6 +262,16 @@ BAAPI UserExperienceOnError(
 BAAPI UserExperienceOnExecuteBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cExecutingPackages
+    );
+BAAPI UserExperienceOnExecuteMsiMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in INSTALLMESSAGE messageType,
+    __in DWORD dwUIHint,
+    __in_z LPCWSTR wzMessage,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* pnResult
     );
 BAAPI UserExperienceOnExecutePackageBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,

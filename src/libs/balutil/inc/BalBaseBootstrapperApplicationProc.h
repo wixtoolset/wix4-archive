@@ -276,7 +276,7 @@ static HRESULT BalBaseBAProcOnError(
     __inout BA_ONERROR_RESULTS* pResults
     )
 {
-    return pBA->OnError(pArgs->errorType, pArgs->wzPackageId, pArgs->dwCode, pArgs->wzError, pArgs->uiFlags, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
+    return pBA->OnError(pArgs->errorType, pArgs->wzPackageId, pArgs->dwCode, pArgs->wzError, pArgs->dwUIHint, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
 }
 
 static HRESULT BalBaseBAProcOnRegisterBegin(
@@ -421,6 +421,15 @@ static HRESULT BalBaseBAProcOnExecuteProgress(
     )
 {
     return pBA->OnExecuteProgress(pArgs->wzPackageId, pArgs->dwProgressPercentage, pArgs->dwOverallPercentage, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnExecuteMsiMessage(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEMSIMESSAGE_ARGS* pArgs,
+    __inout BA_ONEXECUTEMSIMESSAGE_RESULTS* pResults
+    )
+{
+    return pBA->OnExecuteMsiMessage(pArgs->wzPackageId, pArgs->messageType, pArgs->dwUIHint, pArgs->wzMessage, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
 }
 
 /*******************************************************************
@@ -580,6 +589,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS:
             hr = BalBaseBAProcOnExecuteProgress(pBA, reinterpret_cast<BA_ONEXECUTEPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE:
+            hr = BalBaseBAProcOnExecuteMsiMessage(pBA, reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_RESULTS*>(pvResults));
             break;
         }
     }

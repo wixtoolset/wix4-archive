@@ -646,34 +646,35 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecuteMsiMessage(
+    virtual STDMETHODIMP OnExecuteMsiMessage(
         __in_z LPCWSTR wzPackageId,
-        __in INSTALLMESSAGE mt,
-        __in UINT uiFlags,
+        __in INSTALLMESSAGE messageType,
+        __in DWORD dwUIHint,
         __in_z LPCWSTR wzMessage,
         __in DWORD cData,
         __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-        __in int nRecommendation
+        __in int nRecommendation,
+        __inout int* pResult
         )
     {
 #ifdef DEBUG
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: OnExecuteMsiMessage() - package: %ls, message: %ls", wzPackageId, wzMessage);
 #endif
-        if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == mt || INSTALLMESSAGE_USER == mt))
+        if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == messageType || INSTALLMESSAGE_USER == messageType))
         {
             if (!m_fShowingInternalUiThisPackage)
             {
-                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
+                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, dwUIHint);
                 return nResult;
             }
         }
 
-        if (INSTALLMESSAGE_ACTIONSTART == mt)
+        if (INSTALLMESSAGE_ACTIONSTART == messageType)
         {
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_ACTIONDATA_TEXT, wzMessage);
         }
 
-        return __super::OnExecuteMsiMessage(wzPackageId, mt, uiFlags, wzMessage, cData, rgwzData, nRecommendation);
+        return __super::OnExecuteMsiMessage(wzPackageId, messageType, dwUIHint, wzMessage, cData, rgwzData, nRecommendation, pResult);
     }
 
 
@@ -1106,6 +1107,9 @@ public: // IBootstrapperApplication
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS:
             OnExecuteProgressFallback(reinterpret_cast<BA_ONEXECUTEPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPROGRESS_RESULTS*>(pvResults));
             break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE:
+            OnExecuteMsiMessageFallback(reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_RESULTS*>(pvResults));
+            break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
             m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
@@ -1485,6 +1489,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteMsiMessageFallback(
+        __in BA_ONEXECUTEMSIMESSAGE_ARGS* pArgs,
+        __inout BA_ONEXECUTEMSIMESSAGE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEMSIMESSAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

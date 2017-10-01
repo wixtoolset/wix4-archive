@@ -2436,7 +2436,8 @@ static int MsiExecuteMessageHandler(
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_MSI_MESSAGE:
-        nResult = pContext->pUX->pUserExperience->OnExecuteMsiMessage(pContext->pExecutingPackage->sczId, pMessage->msiMessage.mt, pMessage->dwAllowedResults, pMessage->msiMessage.wzMessage, pMessage->cData, pMessage->rgwzData, pMessage->nResultRecommendation);
+        nResult = pMessage->nResultRecommendation;
+        UserExperienceOnExecuteMsiMessage(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->msiMessage.mt, pMessage->dwAllowedResults, pMessage->msiMessage.wzMessage, pMessage->cData, pMessage->rgwzData, &nResult); // ignore return value.
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_MSI_FILES_IN_USE:

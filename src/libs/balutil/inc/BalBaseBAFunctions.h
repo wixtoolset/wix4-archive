@@ -510,17 +510,18 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteMsiMessage(
+    virtual STDMETHODIMP OnExecuteMsiMessage(
         __in_z LPCWSTR /*wzPackageId*/,
-        __in INSTALLMESSAGE /*mt*/,
-        __in UINT /*uiFlags*/,
+        __in INSTALLMESSAGE /*messageType*/,
+        __in DWORD /*dwUIHint*/,
         __in_z LPCWSTR /*wzMessage*/,
         __in DWORD /*cData*/,
         __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
+        __in int /*nRecommendation*/,
+        __inout int* /*pResult*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnExecuteFilesInUse(

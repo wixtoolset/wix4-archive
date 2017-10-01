@@ -1368,12 +1368,12 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnError(ErrorType errorType, string wzPackageId, int dwCode, string wzError, int dwUIHint, int cData, string[] rgwzData, int nRecommendation, ref int pResult)
+        int IBootstrapperApplication.OnError(ErrorType errorType, string wzPackageId, int dwCode, string wzError, int dwUIHint, int cData, string[] rgwzData, Result nRecommendation, ref Result pResult)
         {
             ErrorEventArgs args = new ErrorEventArgs(errorType, wzPackageId, dwCode, wzError, dwUIHint, rgwzData, nRecommendation, pResult);
             this.OnError(args);
 
-            pResult = (int)args.Result;
+            pResult = args.Result;
             return args.HResult;
         }
 
@@ -1520,12 +1520,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecuteMsiMessage(string wzPackageId, InstallMessage mt, int uiFlags, string wzMessage, int cData, string[] rgwzData, int nRecommendation)
+        int IBootstrapperApplication.OnExecuteMsiMessage(string wzPackageId, InstallMessage messageType, int dwUIHint, string wzMessage, int cData, string[] rgwzData, Result nRecommendation, ref Result pResult)
         {
-            ExecuteMsiMessageEventArgs args = new ExecuteMsiMessageEventArgs(wzPackageId, mt, uiFlags, wzMessage, rgwzData, nRecommendation);
+            ExecuteMsiMessageEventArgs args = new ExecuteMsiMessageEventArgs(wzPackageId, messageType, dwUIHint, wzMessage, rgwzData, nRecommendation, pResult);
             this.OnExecuteMsiMessage(args);
 
-            return args.Result;
+            pResult = args.Result;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnExecuteFilesInUse(string wzPackageId, int cFiles, string[] rgwzFiles)

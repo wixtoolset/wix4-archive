@@ -1034,7 +1034,7 @@ EXTERN_C BAAPI UserExperienceOnError(
     __in_z_opt LPCWSTR wzPackageId,
     __in DWORD dwCode,
     __in_z_opt LPCWSTR wzError,
-    __in DWORD uiFlags,
+    __in DWORD dwUIHint,
     __in DWORD cData,
     __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
     __inout int* pnResult
@@ -1049,7 +1049,7 @@ EXTERN_C BAAPI UserExperienceOnError(
     args.wzPackageId = wzPackageId;
     args.dwCode = dwCode;
     args.wzError = wzError;
-    args.uiFlags = uiFlags;
+    args.dwUIHint = dwUIHint;
     args.cData = cData;
     args.rgwzData = rgwzData;
     args.nRecommendation = *pnResult;
@@ -1087,6 +1087,42 @@ EXTERN_C BAAPI UserExperienceOnExecuteBegin(
     {
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteMsiMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in INSTALLMESSAGE messageType,
+    __in DWORD dwUIHint,
+    __in_z LPCWSTR wzMessage,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEMSIMESSAGE_ARGS args = { };
+    BA_ONEXECUTEMSIMESSAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.messageType = messageType;
+    args.dwUIHint = dwUIHint;
+    args.wzMessage = wzMessage;
+    args.cData = cData;
+    args.rgwzData = rgwzData;
+    args.nRecommendation = *pnResult;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *pnResult;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteMsiMessage failed.");
+
+    *pnResult = results.nResult;
 
 LExit:
     return hr;

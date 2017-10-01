@@ -270,11 +270,11 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int dwCode,
             [MarshalAs(UnmanagedType.LPWStr)] string wzError,
-            [MarshalAs(UnmanagedType.U4)] int uiFlags,
+            [MarshalAs(UnmanagedType.I4)] int dwUIHint,
             [MarshalAs(UnmanagedType.U4)] int cData,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzData,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation,
-            [MarshalAs(UnmanagedType.I4)] ref int pResult
+            [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
             );
 
         [PreserveSig]
@@ -410,14 +410,15 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteMsiMessage(
+        int OnExecuteMsiMessage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] InstallMessage mt,
-            [MarshalAs(UnmanagedType.U4)] int uiFlags,
+            [MarshalAs(UnmanagedType.U4)] InstallMessage messageType,
+            [MarshalAs(UnmanagedType.I4)] int dwUIHint,
             [MarshalAs(UnmanagedType.LPWStr)] string wzMessage,
             [MarshalAs(UnmanagedType.U4)] int cData,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzData,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref Result pAction
             );
 
         [PreserveSig]
@@ -793,6 +794,7 @@ namespace WixToolset.Bootstrapper
         OnExecutePackageBegin,
         OnExecutePatchTarget,
         OnExecuteProgress,
+        OnExecuteMsiMessage,
     }
 
     public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION
