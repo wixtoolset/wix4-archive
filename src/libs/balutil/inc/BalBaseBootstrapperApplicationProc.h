@@ -348,7 +348,7 @@ static HRESULT BalBaseBAProcOnCacheAcquireComplete(
     __inout BA_ONCACHEACQUIRECOMPLETE_RESULTS* pResults
     )
 {
-    return pBA->OnCacheAcquireComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, &pResults->fRetry);
+    return pBA->OnCacheAcquireComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
 }
 
 static HRESULT BalBaseBAProcOnCacheVerifyBegin(

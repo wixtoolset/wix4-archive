@@ -533,11 +533,12 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __inout BOOL* pfRetry
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* pAction
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, pfRetry);
+        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, recommendation, pAction);
     }
 
 

@@ -337,7 +337,8 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __inout BOOL* pfRetry
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnCacheVerifyBegin - called when the engine begins to verify then copy

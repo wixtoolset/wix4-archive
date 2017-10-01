@@ -112,29 +112,6 @@ namespace WixToolset.Bootstrapper
     }
 
     /// <summary>
-    /// Base class for <see cref="EventArgs"/> classes that receive status from the engine and can be retried.
-    /// </summary>
-    [Serializable]
-    public abstract class RetriableStatusEventArgs : StatusEventArgs
-    {
-        /// <summary>
-        /// Creates a new instance of the <see cref="RetriableStatusEventArgs"/> class.
-        /// </summary>
-        /// <param name="hrStatus">The return code of the operation.</param>
-        /// <param name="retryRecommendation">The recommendation from the engine.</param>
-        public RetriableStatusEventArgs(int hrStatus, bool retryRecommendation)
-            : base(hrStatus)
-        {
-            this.Retry = retryRecommendation;
-        }
-
-        /// <summary>
-        /// Get or sets whether to retry the operation. This is passed back to the engine.
-        /// </summary>
-        public bool Retry { get; set; }
-    }
-
-    /// <summary>
     /// Base class for <see cref="EventArgs"/> classes that receive status from the engine and return an action.
     /// </summary>
     public abstract class ActionEventArgs<T> : StatusEventArgs
@@ -1444,13 +1421,13 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine completes the acquisition of a container or payload.
     /// </summary>
     [Serializable]
-    public class CacheAcquireCompleteEventArgs : RetriableStatusEventArgs
+    public class CacheAcquireCompleteEventArgs : ActionEventArgs<BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION>
     {
         /// <summary>
         /// Creates a new instance of the <see cref="CacheAcquireCompleteEventArgs"/> class.
         /// </summary>
-        public CacheAcquireCompleteEventArgs(string packageOrContainerId, string payloadId, int hrStatus, bool retryRecommendation)
-            : base(hrStatus, retryRecommendation)
+        public CacheAcquireCompleteEventArgs(string packageOrContainerId, string payloadId, int hrStatus, BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation, BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION action)
+            : base(hrStatus, recommendation, action)
         {
             this.PackageOrContainerId = packageOrContainerId;
             this.PayloadId = payloadId;

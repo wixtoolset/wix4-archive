@@ -434,7 +434,8 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzPackageOrContainerId*/,
         __in_z_opt LPCWSTR /*wzPayloadId*/,
         __in HRESULT /*hrStatus*/,
-        __inout BOOL* /*pfRetry*/
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* /*pAction*/
         )
     {
         return S_OK;

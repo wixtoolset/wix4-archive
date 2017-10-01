@@ -519,17 +519,25 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __inout BOOL* pfRetry
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* pAction
         )
     {
         HRESULT hr = S_OK;
+        BOOL fRetry = FALSE;
 
         if (CheckCanceled())
         {
-            ExitFunction();
+            ExitFunction1(hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT));
         }
 
-        hr = BalRetryEndPackage(BALRETRY_TYPE_CACHE, wzPackageOrContainerId, wzPayloadId, hrStatus, pfRetry);
+        hr = BalRetryEndPackage(BALRETRY_TYPE_CACHE, wzPackageOrContainerId, wzPayloadId, hrStatus, &fRetry);
+        ExitOnFailure(hr, "BalRetryEndPackage for cache failed");
+
+        if (fRetry)
+        {
+            *pAction = BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_RETRY;
+        }
 
     LExit:
         return hr;

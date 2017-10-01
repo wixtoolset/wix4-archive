@@ -343,7 +343,8 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             int hrStatus,
-            [MarshalAs(UnmanagedType.Bool)] ref bool fRetry
+            BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+            ref BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION pAction
             );
 
         [PreserveSig]
@@ -801,6 +802,15 @@ namespace WixToolset.Bootstrapper
         OnExecuteMsiMessage,
         OnExecuteFilesInUse,
         OnExecutePackageComplete,
+    }
+
+    /// <summary>
+    /// The available actions for OnCacheAcquireComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION
+    {
+        None,
+        Retry,
     }
 
     /// <summary>

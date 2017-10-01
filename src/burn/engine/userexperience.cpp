@@ -371,16 +371,17 @@ EXTERN_C BAAPI UserExperienceOnCacheAcquireComplete(
     args.wzPackageOrContainerId = wzPackageOrContainerId;
     args.wzPayloadId = wzPayloadId;
     args.hrStatus = hrStatus;
+    args.recommendation = *pfRetry ? BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_RETRY : BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_NONE;
 
     results.cbSize = sizeof(results);
-    results.fRetry = *pfRetry;
+    results.action = args.recommendation;
 
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnCacheAcquireComplete failed.");
 
     if (FAILED(hrStatus))
     {
-        *pfRetry = results.fRetry;
+        *pfRetry = BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_RETRY == results.action;
     }
 
 LExit:
