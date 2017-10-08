@@ -9,10 +9,26 @@ static HRESULT BAEngineGetPackageCount(
     )
 {
     HRESULT hr = S_OK;
+    DWORD* pcPackages = &pResults->cPackages;
 
-    if (pResults)
+    *pcPackages = pContext->pEngineState->packages.cPackages;
+
+    return hr;
+}
+
+static HRESULT BAEngineGetVariableNumeric(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETVARIABLENUMERIC_ARGS* pArgs,
+    __in BAENGINE_GETVARIABLENUMERIC_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    LONGLONG* pllValue = &pResults->llValue;
+
+    if (wzVariable && *wzVariable && pllValue)
     {
-        pResults->cPackages = pContext->pEngineState->packages.cPackages;
+        hr = VariableGetNumeric(&pContext->pEngineState->variables, wzVariable, pllValue);
     }
     else
     {
@@ -100,24 +116,12 @@ public: // IBootstrapperEngine
         return E_NOTIMPL;
     }
 
-    // The contents of pllValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     virtual STDMETHODIMP GetVariableNumeric(
-        __in_z LPCWSTR wzVariable,
-        __out LONGLONG* pllValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __out LONGLONG* /*pllValue*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzVariable && *wzVariable && pllValue)
-        {
-            hr = VariableGetNumeric(&m_pEngineState->variables, wzVariable, pllValue);
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
     // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroFree.
@@ -1013,10 +1017,18 @@ HRESULT WINAPI EngineForApplicationProc(
     HRESULT hr = S_OK;
     BOOTSTRAPPER_ENGINE_CONTEXT* pContext = reinterpret_cast<BOOTSTRAPPER_ENGINE_CONTEXT*>(pvContext);
 
+    if (!pContext || !pvArgs || !pvResults)
+    {
+        ExitFunction1(hr = E_INVALIDARG);
+    }
+
     switch (message)
     {
     case BOOTSTRAPPER_ENGINE_MESSAGE_GETPACKAGECOUNT:
         hr = BAEngineGetPackageCount(pContext, reinterpret_cast<BAENGINE_GETPACKAGECOUNT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETPACKAGECOUNT_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLENUMERIC:
+        hr = BAEngineGetVariableNumeric(pContext, reinterpret_cast<BAENGINE_GETVARIABLENUMERIC_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLENUMERIC_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
@@ -1026,5 +1038,6 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     }
 
+LExit:
     return hr;
 }

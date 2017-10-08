@@ -84,7 +84,24 @@ public: // IBootstrapperEngine
         __out LONGLONG* pllValue
         )
     {
-        return m_pEngine->GetVariableNumeric(wzVariable, pllValue);
+        HRESULT hr = S_OK;
+        BAENGINE_GETVARIABLENUMERIC_ARGS args = { };
+        BAENGINE_GETVARIABLENUMERIC_RESULTS results = { };
+
+        ExitOnNull(pllValue, hr, E_INVALIDARG, "pllValue is required");
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLENUMERIC, &args, &results, m_pvBAEngineProcContext);
+
+        *pllValue = results.llValue;
+
+    LExit:
+        SecureZeroMemory(&results, sizeof(results));
+        return hr;
     }
 
     virtual STDMETHODIMP GetVariableString(
