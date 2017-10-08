@@ -773,11 +773,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+    virtual STDMETHODIMP OnLaunchApprovedExeComplete(
         __in HRESULT /*hrStatus*/,
         __in DWORD /*dwProcessId*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(HRESULT) BAProc(

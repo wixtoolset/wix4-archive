@@ -955,11 +955,13 @@ public: // IBootstrapperApplication
         return hr;
     }
 
-    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+    virtual STDMETHODIMP OnLaunchApprovedExeComplete(
         __in HRESULT hrStatus,
         __in DWORD /*processId*/
         )
     {
+        HRESULT hr = S_OK;
+
         if (HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hrStatus)
         {
             //try with ShelExec next time
@@ -969,6 +971,8 @@ public: // IBootstrapperApplication
         {
             ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
         }
+
+        return hr;
     }
 
     virtual STDMETHODIMP_(void) BAProcFallback(
@@ -1147,6 +1151,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN:
             OnLaunchApprovedExeBeginFallback(reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE:
+            OnLaunchApprovedExeCompleteFallback(reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1591,6 +1598,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnLaunchApprovedExeCompleteFallback(
+        __in BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS* pArgs,
+        __inout BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

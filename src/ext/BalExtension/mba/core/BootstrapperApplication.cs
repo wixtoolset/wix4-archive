@@ -1592,9 +1592,12 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        void IBootstrapperApplication.OnLaunchApprovedExeComplete(int hrStatus, int processId)
+        int IBootstrapperApplication.OnLaunchApprovedExeComplete(int hrStatus, int processId)
         {
-            this.OnLaunchApprovedExeComplete(new LaunchApprovedExeCompleteArgs(hrStatus, processId));
+            LaunchApprovedExeCompleteArgs args = new LaunchApprovedExeCompleteArgs(hrStatus, processId);
+            this.OnLaunchApprovedExeComplete(args);
+
+            return args.HResult;
         }
 
         int IBootstrapperApplication.BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults, IntPtr pvContext)

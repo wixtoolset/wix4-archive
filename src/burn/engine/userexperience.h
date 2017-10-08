@@ -317,6 +317,11 @@ BAAPI UserExperienceOnExecuteProgress(
 BAAPI UserExperienceOnLaunchApprovedExeBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
+BAAPI UserExperienceOnLaunchApprovedExeComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in DWORD dwProcessId
+    );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

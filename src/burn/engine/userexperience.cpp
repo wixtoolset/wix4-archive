@@ -1358,6 +1358,29 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnLaunchApprovedExeComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in DWORD dwProcessId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS args = { };
+    BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+    args.dwProcessId = dwProcessId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnLaunchApprovedExeComplete failed.");
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

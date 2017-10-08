@@ -744,7 +744,7 @@ LExit:
         UserExperienceDeactivateEngine(&pEngineState->userExperience);
     }
 
-    pEngineState->userExperience.pUserExperience->OnLaunchApprovedExeComplete(hr, dwProcessId);
+    UserExperienceOnLaunchApprovedExeComplete(&pEngineState->userExperience, hr, dwProcessId);
 
     LogId(REPORT_STANDARD, MSG_LAUNCH_APPROVED_EXE_COMPLETE, hr, dwProcessId);
 

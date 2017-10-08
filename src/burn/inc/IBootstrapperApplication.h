@@ -498,10 +498,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnLaunchApprovedExeComplete - called after trying to launch the preapproved executable.
     //
-    // Parameters:
-    //  dwProcessId is only valid if the operation succeeded.
-    //
-    STDMETHOD_(void, OnLaunchApprovedExeComplete)(
+    STDMETHOD(OnLaunchApprovedExeComplete)(
         __in HRESULT hrStatus,
         __in DWORD dwProcessId
         ) = 0;

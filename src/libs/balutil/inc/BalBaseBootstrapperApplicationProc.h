@@ -495,6 +495,15 @@ static HRESULT BalBaseBAProcOnLaunchApprovedExeBegin(
     return pBA->OnLaunchApprovedExeBegin(&pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnLaunchApprovedExeComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS* pArgs,
+    __inout BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnLaunchApprovedExeComplete(pArgs->hrStatus, pArgs->dwProcessId);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -676,6 +685,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN:
             hr = BalBaseBAProcOnLaunchApprovedExeBegin(pBA, reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE:
+            hr = BalBaseBAProcOnLaunchApprovedExeComplete(pBA, reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS*>(pvResults));
             break;
         }
     }

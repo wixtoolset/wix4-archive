@@ -478,7 +478,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnLaunchApprovedExeComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnLaunchApprovedExeComplete(
             int hrStatus,
             int processId
             );
@@ -819,6 +821,7 @@ namespace WixToolset.Bootstrapper
         OnUnregisterComplete,
         OnApplyComplete,
         OnLaunchApprovedExeBegin,
+        OnLaunchApprovedExeComplete,
     }
 
     /// <summary>
