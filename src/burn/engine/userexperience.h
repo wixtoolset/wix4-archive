@@ -400,6 +400,10 @@ BAAPI UserExperienceOnSystemShutdown(
 BAAPI UserExperienceOnUnregisterBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
+BAAPI UserExperienceOnUnregisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwAllowedResults,

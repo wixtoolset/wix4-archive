@@ -457,7 +457,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnUnregisterComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnUnregisterComplete(
             int hrStatus
             );
 
@@ -810,6 +812,7 @@ namespace WixToolset.Bootstrapper
         OnExecutePackageComplete,
         OnExecuteComplete,
         OnUnregisterBegin,
+        OnUnregisterComplete,
     }
 
     /// <summary>

@@ -468,6 +468,15 @@ static HRESULT BalBaseBAProcOnUnregisterBegin(
     return pBA->OnUnregisterBegin(&pResults->fCancel);
 }
 
+static HRESULT BalBaseBAProcOnUnregisterComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONUNREGISTERCOMPLETE_ARGS* pArgs,
+    __inout BA_ONUNREGISTERCOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnUnregisterComplete(pArgs->hrStatus);
+}
+
 /*******************************************************************
 BalBaseBootstrapperApplicationProc - requires pvContext to be of type IBootstrapperApplication.
                                      Provides a default mapping between the new message based BA interface and
@@ -640,6 +649,9 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERBEGIN:
             hr = BalBaseBAProcOnUnregisterBegin(pBA, reinterpret_cast<BA_ONUNREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE:
+            hr = BalBaseBAProcOnUnregisterComplete(pBA, reinterpret_cast<BA_ONUNREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERCOMPLETE_RESULTS*>(pvResults));
             break;
         }
     }

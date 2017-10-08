@@ -1776,6 +1776,27 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnUnregisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONUNREGISTERCOMPLETE_ARGS args = { };
+    BA_ONUNREGISTERCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnUnregisterComplete failed.");
+
+LExit:
+    return hr;
+}
+
 extern "C" int UserExperienceCheckExecuteResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOL fRollback,

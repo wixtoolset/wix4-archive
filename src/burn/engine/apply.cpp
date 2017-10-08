@@ -437,7 +437,7 @@ extern "C" HRESULT ApplyUnregister(
     pEngineState->resumeMode = resumeMode;
 
 LExit:
-    pEngineState->userExperience.pUserExperience->OnUnregisterComplete(hr);
+    UserExperienceOnUnregisterComplete(&pEngineState->userExperience, hr);
 
     return hr;
 }

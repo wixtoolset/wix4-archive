@@ -477,7 +477,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnUnregisterComplete - called when the engine unregistration is complete.
     //
-    STDMETHOD_(void, OnUnregisterComplete)(
+    STDMETHOD(OnUnregisterComplete)(
         __in HRESULT hrStatus
         ) = 0;
 

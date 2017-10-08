@@ -564,10 +564,11 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnUnregisterComplete(
+    virtual STDMETHODIMP OnUnregisterComplete(
         __in HRESULT /*hrStatus*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnApplyComplete(
