@@ -581,9 +581,11 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()
+    virtual STDMETHODIMP OnLaunchApprovedExeBegin(
+        __inout BOOL* /*pfCancel*/
+        )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(

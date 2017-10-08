@@ -728,9 +728,8 @@ extern "C" HRESULT CoreLaunchApprovedExe(
     hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
     ExitOnFailure(hr, "Engine cannot start LaunchApprovedExe because it is busy with another action.");
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnLaunchApprovedExeBegin();
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted LaunchApprovedExe begin.");
+    hr = UserExperienceOnLaunchApprovedExeBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted LaunchApprovedExe begin.");
 
     // Elevate.
     hr = CoreElevate(pEngineState, pLaunchApprovedExe->hwndParent);

@@ -54,14 +54,6 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
         /// </summary>
-        public ResultEventArgs()
-            : this(Result.None, Result.None)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
-        /// </summary>
         /// <param name="recommendation">Recommended result from engine.</param>
         /// <param name="result">The result to return to the engine.</param>
         public ResultEventArgs(Result recommendation, Result result)
@@ -1877,9 +1869,10 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments passed by the engine before it tries to launch the preapproved executable.
     /// </summary>
     [Serializable]
-    public class LaunchApprovedExeBeginArgs : ResultEventArgs
+    public class LaunchApprovedExeBeginArgs : CancellableHResultEventArgs
     {
-        public LaunchApprovedExeBeginArgs()
+        public LaunchApprovedExeBeginArgs(bool cancelRecommendation)
+            : base(cancelRecommendation)
         {
         }
     }

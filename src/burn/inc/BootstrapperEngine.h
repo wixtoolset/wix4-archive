@@ -9,8 +9,6 @@ extern "C" {
 #define IDERROR -1
 #define IDNOACTION 0
 
-#define IDRESTART  102
-
 // Note that ordering of the enumeration values is important.
 // Some code paths use < or > comparisions and simply reording values will break those comparisons.
 enum BOOTSTRAPPER_ACTION

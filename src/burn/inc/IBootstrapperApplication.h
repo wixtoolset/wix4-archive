@@ -492,8 +492,9 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnLaunchApprovedExeBegin - called before trying to launch the preapproved executable.
     // 
-    STDMETHOD_(int, OnLaunchApprovedExeBegin)() = 0;
-
+    STDMETHOD(OnLaunchApprovedExeBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnLaunchApprovedExeComplete - called after trying to launch the preapproved executable.
     //

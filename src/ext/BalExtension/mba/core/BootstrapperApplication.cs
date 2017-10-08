@@ -1583,12 +1583,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnLaunchApprovedExeBegin()
+        int IBootstrapperApplication.OnLaunchApprovedExeBegin(ref bool fCancel)
         {
-            LaunchApprovedExeBeginArgs args = new LaunchApprovedExeBeginArgs();
+            LaunchApprovedExeBeginArgs args = new LaunchApprovedExeBeginArgs(fCancel);
             this.OnLaunchApprovedExeBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         void IBootstrapperApplication.OnLaunchApprovedExeComplete(int hrStatus, int processId)

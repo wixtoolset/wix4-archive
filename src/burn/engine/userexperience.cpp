@@ -1334,6 +1334,30 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnLaunchApprovedExeBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS args = { };
+    BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnLaunchApprovedExeBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages

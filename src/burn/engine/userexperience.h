@@ -314,6 +314,9 @@ BAAPI UserExperienceOnExecuteProgress(
     __in DWORD dwOverallPercentage,
     __inout int* pnResult
     );
+BAAPI UserExperienceOnLaunchApprovedExeBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
