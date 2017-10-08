@@ -61,7 +61,22 @@ public: // IBootstrapperEngine
         __out DWORD* pcPackages
         )
     {
-        return m_pEngine->GetPackageCount(pcPackages);
+        HRESULT hr = S_OK;
+        BAENGINE_GETPACKAGECOUNT_ARGS args = { };
+        BAENGINE_GETPACKAGECOUNT_RESULTS results = { };
+
+        ExitOnNull(pcPackages, hr, E_INVALIDARG, "pcPackages is required");
+
+        args.cbSize = sizeof(args);
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETPACKAGECOUNT, &args, &results, m_pvBAEngineProcContext);
+
+        *pcPackages = results.cPackages;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP GetVariableNumeric(
@@ -210,10 +225,10 @@ public: // IBootstrapperEngine
         BAENGINE_DETECT_ARGS args = { };
         BAENGINE_DETECT_RESULTS results = { };
 
-        args.cbSize = sizeof(BAENGINE_DETECT_ARGS);
+        args.cbSize = sizeof(args);
         args.hwndParent = hwndParent;
 
-        results.cbSize = sizeof(BAENGINE_DETECT_RESULTS);
+        results.cbSize = sizeof(results);
 
         return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_DETECT, &args, &results, m_pvBAEngineProcContext);
     }

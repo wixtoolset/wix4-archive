@@ -2,6 +2,26 @@
 
 #include "precomp.h"
 
+static HRESULT BAEngineGetPackageCount(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETPACKAGECOUNT_ARGS* /*pArgs*/,
+    __in BAENGINE_GETPACKAGECOUNT_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (pResults)
+    {
+        pResults->cPackages = pContext->pEngineState->packages.cPackages;
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -74,20 +94,10 @@ public: // IUnknown
 
 public: // IBootstrapperEngine
     virtual STDMETHODIMP GetPackageCount(
-        __out DWORD* pcPackages
+        __out DWORD* /*pcPackages*/
         )
     {
-        HRESULT hr = S_OK;
-        if (pcPackages)
-        {
-            *pcPackages = m_pEngineState->packages.cPackages;
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
     // The contents of pllValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
@@ -1005,6 +1015,9 @@ HRESULT WINAPI EngineForApplicationProc(
 
     switch (message)
     {
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETPACKAGECOUNT:
+        hr = BAEngineGetPackageCount(pContext, reinterpret_cast<BAENGINE_GETPACKAGECOUNT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETPACKAGECOUNT_RESULTS*>(pvResults));
+        break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
         break;
