@@ -897,11 +897,17 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnApplyComplete(
+    virtual STDMETHODIMP OnApplyComplete(
         __in HRESULT hrStatus,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
         )
     {
+        HRESULT hr = S_OK;
+
+        __super::OnApplyComplete(hrStatus, restart, recommendation, pAction);
+
         m_restartResult = restart; // remember the restart result so we return the correct error code no matter what the user chooses to do in the UI.
 
         // If a restart was encountered and we are not suppressing restarts, then restart is required.
@@ -944,7 +950,9 @@ public: // IBootstrapperApplication
         SetState(WIXSTDBA_STATE_APPLIED, hrStatus);
         SetTaskbarButtonProgress(100); // show full progress bar, green, yellow, or red
 
-        return IDNOACTION;
+        *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
+
+        return hr;
     }
 
     virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
@@ -1133,6 +1141,9 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE:
             OnUnregisterCompleteFallback(reinterpret_cast<BA_ONUNREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE:
+            OnApplyCompleteFallback(reinterpret_cast<BA_ONAPPLYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYCOMPLETE_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1561,6 +1572,14 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONUNREGISTERCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnApplyCompleteFallback(
+        __in BA_ONAPPLYCOMPLETE_ARGS* pArgs,
+        __inout BA_ONAPPLYCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONAPPLYCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

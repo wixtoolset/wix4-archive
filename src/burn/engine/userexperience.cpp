@@ -323,6 +323,34 @@ LExit:
     return hr;
 }
 
+EXTERN_C BAAPI UserExperienceOnApplyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONAPPLYCOMPLETE_ARGS args = { };
+    BA_ONAPPLYCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+    args.restart = restart;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnApplyComplete failed.");
+
+    *pAction = results.action;
+
+LExit:
+    return hr;
+}
+
 EXTERN_C BAAPI UserExperienceOnCacheAcquireBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z_opt LPCWSTR wzPackageOrContainerId,
@@ -1234,10 +1262,7 @@ EXTERN_C BAAPI UserExperienceOnExecutePackageComplete(
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnExecutePackageComplete failed.");
 
-    if (FAILED(hrStatus))
-    {
-        *pAction = results.action;
-    }
+    *pAction = results.action;
 
 LExit:
     return hr;

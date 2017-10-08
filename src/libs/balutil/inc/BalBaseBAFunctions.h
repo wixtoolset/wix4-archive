@@ -571,12 +571,14 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnApplyComplete(
+    virtual STDMETHODIMP OnApplyComplete(
         __in HRESULT /*hrStatus*/,
-        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/
+        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* /*pAction*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()

@@ -1572,14 +1572,15 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnApplyComplete(int hrStatus, ApplyRestart restart)
+        int IBootstrapperApplication.OnApplyComplete(int hrStatus, ApplyRestart restart, BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_APPLYCOMPLETE_ACTION pAction)
         {
-            ApplyCompleteEventArgs args = new ApplyCompleteEventArgs(hrStatus, restart);
+            ApplyCompleteEventArgs args = new ApplyCompleteEventArgs(hrStatus, restart, recommendation, pAction);
             this.OnApplyComplete(args);
 
             this.applying = false;
 
-            return args.Result;
+            pAction = args.Action;
+            return args.HResult;
         }
 
         Result IBootstrapperApplication.OnLaunchApprovedExeBegin()

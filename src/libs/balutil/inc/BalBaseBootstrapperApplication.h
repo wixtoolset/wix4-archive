@@ -744,13 +744,25 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnApplyComplete(
+    virtual STDMETHODIMP OnApplyComplete(
         __in HRESULT /*hrStatus*/,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
         )
     {
+        HRESULT hr = S_OK;
+        BOOL fRestartRequired = BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart;
+        BOOL fShouldBlockRestart = BOOTSTRAPPER_DISPLAY_FULL <= m_display && BOOTSTRAPPER_RESTART_PROMPT >= m_restart;
+
+        if (fRestartRequired && !fShouldBlockRestart)
+        {
+            *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_RESTART;
+        }
+
         m_fApplying = FALSE;
-        return BOOTSTRAPPER_APPLY_RESTART_REQUIRED == restart ? IDRESTART : CheckCanceled() ? IDCANCEL : IDNOACTION;
+
+        return hr;
     }
 
     virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()

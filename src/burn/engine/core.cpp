@@ -547,6 +547,7 @@ extern "C" HRESULT CoreApply(
     BOOTSTRAPPER_APPLY_RESTART restart = BOOTSTRAPPER_APPLY_RESTART_NONE;
     BURN_CACHE_THREAD_CONTEXT cacheThreadContext = { };
     DWORD dwPhaseCount = 0;
+    BOOTSTRAPPER_APPLYCOMPLETE_ACTION applyCompleteAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
 
     LogId(REPORT_STANDARD, MSG_APPLY_BEGIN);
 
@@ -702,8 +703,8 @@ LExit:
 
     ReleaseHandle(hCacheThread);
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnApplyComplete(hr, restart);
-    if (IDRESTART == nResult)
+    UserExperienceOnApplyComplete(&pEngineState->userExperience, hr, restart, &applyCompleteAction);
+    if (BOOTSTRAPPER_APPLYCOMPLETE_ACTION_RESTART == applyCompleteAction)
     {
         pEngineState->fRestart = TRUE;
     }

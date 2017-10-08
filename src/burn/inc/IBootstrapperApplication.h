@@ -483,17 +483,11 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnApplyComplete - called after the plan has been applied.
     //
-    // Parameters:
-    //  restart will indicate whether any package required a reboot or initiated the reboot already.
-    //
-    // Return:
-    //  IDRESTART instructs the engine to restart. The engine will not launch again after the machine
-    //            is rebooted. Ignored if reboot was already initiated by OnExecutePackageComplete().
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnApplyComplete)(
+    STDMETHOD(OnApplyComplete)(
         __in HRESULT hrStatus,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnLaunchApprovedExeBegin - called before trying to launch the preapproved executable.

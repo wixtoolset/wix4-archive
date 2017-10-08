@@ -103,6 +103,12 @@ BAAPI UserExperienceOnApplyBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwPhaseCount
     );
+BAAPI UserExperienceOnApplyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
+);
 BAAPI UserExperienceOnCacheAcquireBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in_z_opt LPCWSTR wzPackageOrContainerId,

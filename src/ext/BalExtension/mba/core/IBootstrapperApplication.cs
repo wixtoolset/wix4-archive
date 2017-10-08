@@ -465,9 +465,11 @@ namespace WixToolset.Bootstrapper
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnApplyComplete(
+        int OnApplyComplete(
             int hrStatus,
-            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart
+            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
+            [MarshalAs(UnmanagedType.I4)] BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+            [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_APPLYCOMPLETE_ACTION pAction
             );
 
         [PreserveSig]
@@ -813,6 +815,16 @@ namespace WixToolset.Bootstrapper
         OnExecuteComplete,
         OnUnregisterBegin,
         OnUnregisterComplete,
+        OnApplyComplete,
+    }
+
+    /// <summary>
+    /// The available actions for OnApplyComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_APPLYCOMPLETE_ACTION
+    {
+        None,
+        Restart,
     }
 
     /// <summary>

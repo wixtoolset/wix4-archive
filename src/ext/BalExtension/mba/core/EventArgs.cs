@@ -63,15 +63,6 @@ namespace WixToolset.Bootstrapper
         /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
         /// </summary>
         /// <param name="recommendation">Recommended result from engine.</param>
-        public ResultEventArgs(Result recommendation)
-            : this(recommendation, recommendation)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="ResultEventArgs"/> class.
-        /// </summary>
-        /// <param name="recommendation">Recommended result from engine.</param>
         /// <param name="result">The result to return to the engine.</param>
         public ResultEventArgs(Result recommendation, Result result)
         {
@@ -137,43 +128,6 @@ namespace WixToolset.Bootstrapper
         /// Gets or sets the action to be performed. This is passed back to the engine.
         /// </summary>
         public T Action { get; set; }
-    }
-
-    /// <summary>
-    /// Base class for <see cref="EventArgs"/> classes that receive status from the engine and return a result.
-    /// </summary>
-    [Serializable]
-    public abstract class ResultStatusEventArgs : ResultEventArgs
-    {
-        private int status;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="ResultStatusEventArgs"/> class.
-        /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        public ResultStatusEventArgs(int status)
-            : this(status, 0)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="ResultStatusEventArgs"/> class.
-        /// </summary>
-        /// <param name="status">The return code of the operation.</param>
-        /// <param name="recommendation">The recommended result from the engine.</param>
-        public ResultStatusEventArgs(int status, int recommendation)
-            : base((Result)recommendation)
-        {
-            this.status = status;
-        }
-
-        /// <summary>
-        /// Gets the return code of the operation.
-        /// </summary>
-        public int Status
-        {
-            get { return this.status; }
-        }
     }
 
     /// <summary>
@@ -1740,28 +1694,25 @@ namespace WixToolset.Bootstrapper
     /// Additional arguments used when the engine has completed installing the bundle.
     /// </summary>
     [Serializable]
-    public class ApplyCompleteEventArgs : ResultStatusEventArgs
+    public class ApplyCompleteEventArgs : ActionEventArgs<BOOTSTRAPPER_APPLYCOMPLETE_ACTION>
     {
-        private ApplyRestart restart;
-
         /// <summary>
         /// Creates a new instance of the <see cref="ApplyCompleteEventArgs"/> clas.
         /// </summary>
         /// <param name="hrStatus">The return code of the operation.</param>
         /// <param name="restart">Whether a restart is required.</param>
-        public ApplyCompleteEventArgs(int hrStatus, ApplyRestart restart)
-            : base(hrStatus)
+        /// <param name="recommendation">Recommended action from engine.</param>
+        /// <param name="action">The action to perform.</param>
+        public ApplyCompleteEventArgs(int hrStatus, ApplyRestart restart, BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation, BOOTSTRAPPER_APPLYCOMPLETE_ACTION action)
+            : base(hrStatus, recommendation, action)
         {
-            this.restart = restart;
+            this.Restart = restart;
         }
 
         /// <summary>
         /// Gets the apply restart state when complete.
         /// </summary>
-        public ApplyRestart Restart
-        {
-            get { return this.restart; }
-        }
+        public ApplyRestart Restart { get; private set; }
     }
 
     /// <summary>
