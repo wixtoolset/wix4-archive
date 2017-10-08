@@ -465,7 +465,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnExecuteComplete - called when the engine execution is complete.
     //
-    STDMETHOD_(void, OnExecuteComplete)(
+    STDMETHOD(OnExecuteComplete)(
         __in HRESULT hrStatus
         ) = 0;
 

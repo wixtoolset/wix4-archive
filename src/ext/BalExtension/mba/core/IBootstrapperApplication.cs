@@ -445,7 +445,9 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction
             );
 
-        void OnExecuteComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnExecuteComplete(
             int hrStatus
             );
 
@@ -802,6 +804,7 @@ namespace WixToolset.Bootstrapper
         OnExecuteMsiMessage,
         OnExecuteFilesInUse,
         OnExecutePackageComplete,
+        OnExecuteComplete,
     }
 
     /// <summary>

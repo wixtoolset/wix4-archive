@@ -861,7 +861,7 @@ extern "C" HRESULT ApplyExecute(
 
 LExit:
     // Send execute complete to BA.
-    pEngineState->userExperience.pUserExperience->OnExecuteComplete(hr);
+    UserExperienceOnExecuteComplete(&pEngineState->userExperience, hr);
 
     return hr;
 }
