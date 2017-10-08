@@ -1555,9 +1555,13 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        void IBootstrapperApplication.OnUnregisterBegin()
+        int IBootstrapperApplication.OnUnregisterBegin(ref bool fCancel)
         {
-            this.OnUnregisterBegin(new UnregisterBeginEventArgs());
+            UnregisterBeginEventArgs args = new UnregisterBeginEventArgs(fCancel);
+            this.OnUnregisterBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
         void IBootstrapperApplication.OnUnregisterComplete(int hrStatus)

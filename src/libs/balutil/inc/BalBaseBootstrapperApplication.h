@@ -729,9 +729,12 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnUnregisterBegin()
+    virtual STDMETHODIMP OnUnregisterBegin(
+        __inout BOOL* pfCancel
+        )
     {
-        return;
+        *pfCancel |= CheckCanceled();
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(void) OnUnregisterComplete(

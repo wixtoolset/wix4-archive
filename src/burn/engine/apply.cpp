@@ -394,7 +394,8 @@ extern "C" HRESULT ApplyUnregister(
     HRESULT hr = S_OK;
     BURN_RESUME_MODE resumeMode = BURN_RESUME_MODE_NONE;
 
-    pEngineState->userExperience.pUserExperience->OnUnregisterBegin();
+    hr = UserExperienceOnUnregisterBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted unregister begin.");
 
     // Calculate the correct resume mode. If a restart has been initiated, that trumps all other
     // modes. If the user chose to suspend the install then we'll use that as the resume mode.

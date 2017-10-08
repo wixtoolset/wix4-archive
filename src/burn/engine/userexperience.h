@@ -397,6 +397,9 @@ BAAPI UserExperienceOnSystemShutdown(
     __in DWORD dwEndSession,
     __inout BOOL* pfCancel
     );
+BAAPI UserExperienceOnUnregisterBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwAllowedResults,
