@@ -110,7 +110,25 @@ public: // IBootstrapperEngine
         __inout DWORD* pcchValue
         )
     {
-        return m_pEngine->GetVariableString(wzVariable, wzValue, pcchValue);
+        HRESULT hr = S_OK;
+        BAENGINE_GETVARIABLESTRING_ARGS args = { };
+        BAENGINE_GETVARIABLESTRING_RESULTS results = { };
+
+        ExitOnNull(pcchValue, hr, E_INVALIDARG, "pcchValue is required");
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+
+        results.cbSize = sizeof(results);
+        results.wzValue = wzValue;
+        results.cchValue = *pcchValue;
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLESTRING, &args, &results, m_pvBAEngineProcContext);
+
+        *pcchValue = results.cchValue;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP GetVariableVersion(

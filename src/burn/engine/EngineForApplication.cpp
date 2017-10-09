@@ -26,7 +26,7 @@ static HRESULT BAEngineGetVariableNumeric(
     LPCWSTR wzVariable = pArgs->wzVariable;
     LONGLONG* pllValue = &pResults->llValue;
 
-    if (wzVariable && *wzVariable && pllValue)
+    if (wzVariable && *wzVariable)
     {
         hr = VariableGetNumeric(&pContext->pEngineState->variables, wzVariable, pllValue);
     }
@@ -35,6 +35,53 @@ static HRESULT BAEngineGetVariableNumeric(
         hr = E_INVALIDARG;
     }
 
+    return hr;
+}
+
+static HRESULT BAEngineGetVariableString(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETVARIABLESTRING_ARGS* pArgs,
+    __in BAENGINE_GETVARIABLESTRING_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczValue = NULL;
+    size_t cchRemaining = 0;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    LPWSTR wzValue = pResults->wzValue;
+    DWORD* pcchValue = &pResults->cchValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableGetString(&pContext->pEngineState->variables, wzVariable, &sczValue);
+        if (SUCCEEDED(hr))
+        {
+            if (wzValue)
+            {
+                hr = ::StringCchCopyExW(wzValue, *pcchValue, sczValue, NULL, &cchRemaining, STRSAFE_FILL_BEHIND_NULL);
+                if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
+                {
+                    hr = E_MOREDATA;
+
+                    ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
+                    *pcchValue = cchRemaining + 1;
+                }
+            }
+            else
+            {
+                hr = E_MOREDATA;
+
+                ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
+                *pcchValue = cchRemaining + 1;
+            }
+        }
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    StrSecureZeroFreeString(sczValue);
     return hr;
 }
 
@@ -124,49 +171,13 @@ public: // IBootstrapperEngine
         return E_NOTIMPL;
     }
 
-    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroFree.
     virtual STDMETHODIMP GetVariableString(
-        __in_z LPCWSTR wzVariable,
-        __out_ecount_opt(*pcchValue) LPWSTR wzValue,
-        __inout DWORD* pcchValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __out_ecount_opt(*pcchValue) LPWSTR /*wzValue*/,
+        __inout DWORD* /*pcchValue*/
         )
     {
-        HRESULT hr = S_OK;
-        LPWSTR sczValue = NULL;
-        size_t cchRemaining = 0;
-
-        if (wzVariable && *wzVariable && pcchValue)
-        {
-            hr = VariableGetString(&m_pEngineState->variables, wzVariable, &sczValue);
-            if (SUCCEEDED(hr))
-            {
-                if (wzValue)
-                {
-                    hr = ::StringCchCopyExW(wzValue, *pcchValue, sczValue, NULL, &cchRemaining, STRSAFE_FILL_BEHIND_NULL);
-                    if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
-                    {
-                        hr = E_MOREDATA;
-
-                        ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
-                        *pcchValue = cchRemaining + 1;
-                    }
-                }
-                else
-                {
-                    hr = E_MOREDATA;
-
-                    ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
-                    *pcchValue = cchRemaining + 1;
-                }
-            }
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        StrSecureZeroFreeString(sczValue);
-        return hr;
+        return E_NOTIMPL;
     }
 
     // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
@@ -1029,6 +1040,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLENUMERIC:
         hr = BAEngineGetVariableNumeric(pContext, reinterpret_cast<BAENGINE_GETVARIABLENUMERIC_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLENUMERIC_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLESTRING:
+        hr = BAEngineGetVariableString(pContext, reinterpret_cast<BAENGINE_GETVARIABLESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLESTRING_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));

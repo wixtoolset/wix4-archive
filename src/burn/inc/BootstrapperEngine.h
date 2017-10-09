@@ -97,6 +97,7 @@ enum BOOTSTRAPPER_ENGINE_MESSAGE
 {
     BOOTSTRAPPER_ENGINE_MESSAGE_GETPACKAGECOUNT,
     BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLENUMERIC,
+    BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLESTRING,
     BOOTSTRAPPER_ENGINE_MESSAGE_DETECT,
 };
 
@@ -134,6 +135,21 @@ typedef struct _BAENGINE_GETVARIABLENUMERIC_RESULTS
     // The contents of llValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     LONGLONG llValue;
 } BAENGINE_GETVARIABLENUMERIC_RESULTS;
+
+typedef struct _BAENGINE_GETVARIABLESTRING_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzVariable;
+} BAENGINE_GETVARIABLESTRING_ARGS;
+
+typedef struct _BAENGINE_GETVARIABLESTRING_RESULTS
+{
+    DWORD cbSize;
+    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroFree.
+    LPWSTR wzValue;
+    // Should be initialized to the size of wzValue.
+    DWORD cchValue;
+} BAENGINE_GETVARIABLESTRING_RESULTS;
 
 
 extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_ENGINE_PROC)(
