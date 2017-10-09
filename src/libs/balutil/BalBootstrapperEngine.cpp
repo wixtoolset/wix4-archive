@@ -136,7 +136,24 @@ public: // IBootstrapperEngine
         __out DWORD64* pqwValue
         )
     {
-        return m_pEngine->GetVariableVersion(wzVariable, pqwValue);
+        HRESULT hr = S_OK;
+        BAENGINE_GETVARIABLEVERSION_ARGS args = { };
+        BAENGINE_GETVARIABLEVERSION_RESULTS results = { };
+
+        ExitOnNull(pqwValue, hr, E_INVALIDARG, "pqwValue is required");
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLEVERSION, &args, &results, m_pvBAEngineProcContext);
+
+        *pqwValue = results.qwValue;
+
+    LExit:
+        SecureZeroMemory(&results, sizeof(results));
+        return hr;
     }
 
     virtual STDMETHODIMP FormatString(

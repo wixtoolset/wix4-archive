@@ -85,6 +85,28 @@ static HRESULT BAEngineGetVariableString(
     return hr;
 }
 
+static HRESULT BAEngineGetVariableVersion(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETVARIABLEVERSION_ARGS* pArgs,
+    __in BAENGINE_GETVARIABLEVERSION_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    DWORD64* pqwValue = &pResults->qwValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableGetVersion(&pContext->pEngineState->variables, wzVariable, pqwValue);
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -180,24 +202,12 @@ public: // IBootstrapperEngine
         return E_NOTIMPL;
     }
 
-    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     virtual STDMETHODIMP GetVariableVersion(
-        __in_z LPCWSTR wzVariable,
-        __out DWORD64* pqwValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __out DWORD64* /*pqwValue*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzVariable && *wzVariable && pqwValue)
-        {
-            hr = VariableGetVersion(&m_pEngineState->variables, wzVariable, pqwValue);
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
     // The contents of wzOut may be sensitive, should keep encrypted and SecureZeroFree.
@@ -1043,6 +1053,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLESTRING:
         hr = BAEngineGetVariableString(pContext, reinterpret_cast<BAENGINE_GETVARIABLESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLESTRING_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLEVERSION:
+        hr = BAEngineGetVariableVersion(pContext, reinterpret_cast<BAENGINE_GETVARIABLEVERSION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLEVERSION_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
