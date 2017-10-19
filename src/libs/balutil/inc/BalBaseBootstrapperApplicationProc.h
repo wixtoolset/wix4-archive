@@ -177,7 +177,7 @@ static HRESULT BalBaseBAProcOnPlanRelatedBundle(
     __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults
     )
 {
-    return pBA->OnPlanRelatedBundle(pArgs->wzBundleId, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanRelatedBundle(pArgs->wzBundleId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanPackageBegin(
@@ -186,7 +186,7 @@ static HRESULT BalBaseBAProcOnPlanPackageBegin(
     __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults
     )
 {
-    return pBA->OnPlanPackageBegin(pArgs->wzPackageId, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanPackageBegin(pArgs->wzPackageId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageBegin(
@@ -195,7 +195,7 @@ static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageBegin(
     __inout BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS* pResults
     )
 {
-    return pBA->OnPlanCompatibleMsiPackageBegin(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->dw64CompatiblePackageVersion, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanCompatibleMsiPackageBegin(pArgs->wzPackageId, pArgs->wzCompatiblePackageId, pArgs->dw64CompatiblePackageVersion, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanCompatibleMsiPackageComplete(
@@ -213,7 +213,7 @@ static HRESULT BalBaseBAProcOnPlanTargetMsiPackage(
     __inout BA_ONPLANTARGETMSIPACKAGE_RESULTS* pResults
     )
 {
-    return pBA->OnPlanTargetMsiPackage(pArgs->wzPackageId, pArgs->wzProductCode, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanTargetMsiPackage(pArgs->wzPackageId, pArgs->wzProductCode, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanMsiFeature(
@@ -222,7 +222,7 @@ static HRESULT BalBaseBAProcOnPlanMsiFeature(
     __inout BA_ONPLANMSIFEATURE_RESULTS* pResults
     )
 {
-    return pBA->OnPlanMsiFeature(pArgs->wzPackageId, pArgs->wzFeatureId, &pResults->requestedState, &pResults->fCancel);
+    return pBA->OnPlanMsiFeature(pArgs->wzPackageId, pArgs->wzFeatureId, pArgs->recommendedState, &pResults->requestedState, &pResults->fCancel);
 }
 
 static HRESULT BalBaseBAProcOnPlanPackageComplete(
@@ -232,6 +232,276 @@ static HRESULT BalBaseBAProcOnPlanPackageComplete(
     )
 {
     return pBA->OnPlanPackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->state, pArgs->requested, pArgs->execute, pArgs->rollback);
+}
+
+static HRESULT BalBaseBAProcOnApplyBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONAPPLYBEGIN_ARGS* pArgs,
+    __inout BA_ONAPPLYBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnApplyBegin(pArgs->dwPhaseCount, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnElevateBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONELEVATEBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONELEVATEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnElevateBegin(&pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnElevateComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONELEVATECOMPLETE_ARGS* pArgs,
+    __inout BA_ONELEVATECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnElevateComplete(pArgs->hrStatus);
+}
+
+static HRESULT BalBaseBAProcOnProgress(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONPROGRESS_ARGS* pArgs,
+    __inout BA_ONPROGRESS_RESULTS* pResults
+    )
+{
+    return pBA->OnProgress(pArgs->dwProgressPercentage, pArgs->dwOverallPercentage, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnError(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONERROR_ARGS* pArgs,
+    __inout BA_ONERROR_RESULTS* pResults
+    )
+{
+    return pBA->OnError(pArgs->errorType, pArgs->wzPackageId, pArgs->dwCode, pArgs->wzError, pArgs->dwUIHint, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
+}
+
+static HRESULT BalBaseBAProcOnRegisterBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONREGISTERBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONREGISTERBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnRegisterBegin(&pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnRegisterComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONREGISTERCOMPLETE_ARGS* pArgs,
+    __inout BA_ONREGISTERCOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnRegisterComplete(pArgs->hrStatus);
+}
+
+static HRESULT BalBaseBAProcOnCacheBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONCACHEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheBegin(&pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnCachePackageBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEPACKAGEBEGIN_ARGS* pArgs,
+    __inout BA_ONCACHEPACKAGEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnCachePackageBegin(pArgs->wzPackageId, pArgs->cCachePayloads, pArgs->dw64PackageCacheSize, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnCacheAcquireBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEACQUIREBEGIN_ARGS* pArgs,
+    __inout BA_ONCACHEACQUIREBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheAcquireBegin(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->operation, pArgs->wzSource, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnCacheAcquireProgress(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEACQUIREPROGRESS_ARGS* pArgs,
+    __inout BA_ONCACHEACQUIREPROGRESS_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheAcquireProgress(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->dw64Progress, pArgs->dw64Total, pArgs->dwOverallPercentage, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnResolveSource(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONRESOLVESOURCE_ARGS* pArgs,
+    __inout BA_ONRESOLVESOURCE_RESULTS* pResults
+    )
+{
+    return pBA->OnResolveSource(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->wzLocalSource, pArgs->wzDownloadSource, pArgs->recommendation, &pResults->action, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnCacheAcquireComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEACQUIRECOMPLETE_ARGS* pArgs,
+    __inout BA_ONCACHEACQUIRECOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheAcquireComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
+}
+
+static HRESULT BalBaseBAProcOnCacheVerifyBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEVERIFYBEGIN_ARGS* pArgs,
+    __inout BA_ONCACHEVERIFYBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheVerifyBegin(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnCacheVerifyComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEVERIFYCOMPLETE_ARGS* pArgs,
+    __inout BA_ONCACHEVERIFYCOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnCacheVerifyComplete(pArgs->wzPackageOrContainerId, pArgs->wzPayloadId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
+}
+
+static HRESULT BalBaseBAProcOnCachePackageComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHEPACKAGECOMPLETE_ARGS* pArgs,
+    __inout BA_ONCACHEPACKAGECOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnCachePackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->recommendation, &pResults->action);
+}
+
+static HRESULT BalBaseBAProcOnCacheComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONCACHECOMPLETE_ARGS* pArgs,
+    __inout BA_ONCACHECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnCacheComplete(pArgs->hrStatus);
+}
+
+static HRESULT BalBaseBAProcOnExecuteBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEBEGIN_ARGS* pArgs,
+    __inout BA_ONEXECUTEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnExecuteBegin(pArgs->cExecutingPackages, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnExecutePackageBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEPACKAGEBEGIN_ARGS* pArgs,
+    __inout BA_ONEXECUTEPACKAGEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnExecutePackageBegin(pArgs->wzPackageId, pArgs->fExecute, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnExecutePatchTarget(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEPATCHTARGET_ARGS* pArgs,
+    __inout BA_ONEXECUTEPATCHTARGET_RESULTS* pResults
+    )
+{
+    return pBA->OnExecutePatchTarget(pArgs->wzPackageId, pArgs->wzTargetProductCode, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnExecuteProgress(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEPROGRESS_ARGS* pArgs,
+    __inout BA_ONEXECUTEPROGRESS_RESULTS* pResults
+    )
+{
+    return pBA->OnExecuteProgress(pArgs->wzPackageId, pArgs->dwProgressPercentage, pArgs->dwOverallPercentage, &pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnExecuteMsiMessage(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEMSIMESSAGE_ARGS* pArgs,
+    __inout BA_ONEXECUTEMSIMESSAGE_RESULTS* pResults
+    )
+{
+    return pBA->OnExecuteMsiMessage(pArgs->wzPackageId, pArgs->messageType, pArgs->dwUIHint, pArgs->wzMessage, pArgs->cData, pArgs->rgwzData, pArgs->nRecommendation, &pResults->nResult);
+}
+
+static HRESULT BalBaseBAProcOnExecuteFilesInUse(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEFILESINUSE_ARGS* pArgs,
+    __inout BA_ONEXECUTEFILESINUSE_RESULTS* pResults
+    )
+{
+    return pBA->OnExecuteFilesInUse(pArgs->wzPackageId, pArgs->cFiles, pArgs->rgwzFiles, pArgs->nRecommendation, &pResults->nResult);
+}
+
+static HRESULT BalBaseBAProcOnExecutePackageComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTEPACKAGECOMPLETE_ARGS* pArgs,
+    __inout BA_ONEXECUTEPACKAGECOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnExecutePackageComplete(pArgs->wzPackageId, pArgs->hrStatus, pArgs->restart, pArgs->recommendation, &pResults->action);
+}
+
+static HRESULT BalBaseBAProcOnExecuteComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONEXECUTECOMPLETE_ARGS* pArgs,
+    __inout BA_ONEXECUTECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnExecuteComplete(pArgs->hrStatus);
+}
+
+static HRESULT BalBaseBAProcOnUnregisterBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONUNREGISTERBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONUNREGISTERBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnUnregisterBegin(&pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnUnregisterComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONUNREGISTERCOMPLETE_ARGS* pArgs,
+    __inout BA_ONUNREGISTERCOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnUnregisterComplete(pArgs->hrStatus);
+}
+
+static HRESULT BalBaseBAProcOnApplyComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONAPPLYCOMPLETE_ARGS* pArgs,
+    __inout BA_ONAPPLYCOMPLETE_RESULTS* pResults
+    )
+{
+    return pBA->OnApplyComplete(pArgs->hrStatus, pArgs->restart, pArgs->recommendation, &pResults->action);
+}
+
+static HRESULT BalBaseBAProcOnLaunchApprovedExeBegin(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS* /*pArgs*/,
+    __inout BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS* pResults
+    )
+{
+    return pBA->OnLaunchApprovedExeBegin(&pResults->fCancel);
+}
+
+static HRESULT BalBaseBAProcOnLaunchApprovedExeComplete(
+    __in IBootstrapperApplication* pBA,
+    __in BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS* pArgs,
+    __inout BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS* /*pResults*/
+    )
+{
+    return pBA->OnLaunchApprovedExeComplete(pArgs->hrStatus, pArgs->dwProcessId);
 }
 
 /*******************************************************************
@@ -328,6 +598,96 @@ static HRESULT WINAPI BalBaseBootstrapperApplicationProc(
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE:
             hr = BalBaseBAProcOnPlanPackageComplete(pBA, reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN:
+            hr = BalBaseBAProcOnApplyBegin(pBA, reinterpret_cast<BA_ONAPPLYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATEBEGIN:
+            hr = BalBaseBAProcOnElevateBegin(pBA, reinterpret_cast<BA_ONELEVATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE:
+            hr = BalBaseBAProcOnElevateComplete(pBA, reinterpret_cast<BA_ONELEVATECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS:
+            hr = BalBaseBAProcOnProgress(pBA, reinterpret_cast<BA_ONPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
+            hr = BalBaseBAProcOnError(pBA, reinterpret_cast<BA_ONERROR_ARGS*>(pvArgs), reinterpret_cast<BA_ONERROR_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN:
+            hr = BalBaseBAProcOnRegisterBegin(pBA, reinterpret_cast<BA_ONREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERCOMPLETE:
+            hr = BalBaseBAProcOnRegisterComplete(pBA, reinterpret_cast<BA_ONREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEBEGIN:
+            hr = BalBaseBAProcOnCacheBegin(pBA, reinterpret_cast<BA_ONCACHEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN:
+            hr = BalBaseBAProcOnCachePackageBegin(pBA, reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREBEGIN:
+            hr = BalBaseBAProcOnCacheAcquireBegin(pBA, reinterpret_cast<BA_ONCACHEACQUIREBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS:
+            hr = BalBaseBAProcOnCacheAcquireProgress(pBA, reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE:
+            hr = BalBaseBAProcOnResolveSource(pBA, reinterpret_cast<BA_ONRESOLVESOURCE_ARGS*>(pvArgs), reinterpret_cast<BA_ONRESOLVESOURCE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE:
+            hr = BalBaseBAProcOnCacheAcquireComplete(pBA, reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYBEGIN:
+            hr = BalBaseBAProcOnCacheVerifyBegin(pBA, reinterpret_cast<BA_ONCACHEVERIFYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEVERIFYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYCOMPLETE:
+            hr = BalBaseBAProcOnCacheVerifyComplete(pBA, reinterpret_cast<BA_ONCACHEVERIFYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEVERIFYCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGECOMPLETE:
+            hr = BalBaseBAProcOnCachePackageComplete(pBA, reinterpret_cast<BA_ONCACHEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHECOMPLETE:
+            hr = BalBaseBAProcOnCacheComplete(pBA, reinterpret_cast<BA_ONCACHECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN:
+            hr = BalBaseBAProcOnExecuteBegin(pBA, reinterpret_cast<BA_ONEXECUTEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGEBEGIN:
+            hr = BalBaseBAProcOnExecutePackageBegin(pBA, reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET:
+            hr = BalBaseBAProcOnExecutePatchTarget(pBA, reinterpret_cast<BA_ONEXECUTEPATCHTARGET_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPATCHTARGET_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS:
+            hr = BalBaseBAProcOnExecuteProgress(pBA, reinterpret_cast<BA_ONEXECUTEPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE:
+            hr = BalBaseBAProcOnExecuteMsiMessage(pBA, reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE:
+            hr = BalBaseBAProcOnExecuteFilesInUse(pBA, reinterpret_cast<BA_ONEXECUTEFILESINUSE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEFILESINUSE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE:
+            hr = BalBaseBAProcOnExecutePackageComplete(pBA, reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTECOMPLETE:
+            hr = BalBaseBAProcOnExecuteComplete(pBA, reinterpret_cast<BA_ONEXECUTECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERBEGIN:
+            hr = BalBaseBAProcOnUnregisterBegin(pBA, reinterpret_cast<BA_ONUNREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE:
+            hr = BalBaseBAProcOnUnregisterComplete(pBA, reinterpret_cast<BA_ONUNREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE:
+            hr = BalBaseBAProcOnApplyComplete(pBA, reinterpret_cast<BA_ONAPPLYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN:
+            hr = BalBaseBAProcOnLaunchApprovedExeBegin(pBA, reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE:
+            hr = BalBaseBAProcOnLaunchApprovedExeComplete(pBA, reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS*>(pvResults));
             break;
         }
     }

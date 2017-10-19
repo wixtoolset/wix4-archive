@@ -104,6 +104,102 @@ enum BOOTSTRAPPER_APPLICATION_MESSAGE
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANTARGETMSIPACKAGE,
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSIFEATURE,
     BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATEBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERCOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYCOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGEBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTECOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN,
+    BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE,
+};
+
+enum BOOTSTRAPPER_APPLYCOMPLETE_ACTION
+{
+    BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE,
+    // Instructs the engine to restart.
+    // The engine will not launch again after the machine is rebooted.
+    // Ignored if reboot was already initiated by OnExecutePackageComplete().
+    BOOTSTRAPPER_APPLYCOMPLETE_ACTION_RESTART,
+};
+
+enum BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION
+{
+    BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_NONE,
+    // Instructs the engine to try the acquisition of the package again.
+    // Ignored if hrStatus is a success.
+    BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_RETRY,
+};
+
+enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION
+{
+    BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE,
+    // Instructs the engine to ignore non-vital package failures and
+    // continue with the caching.
+    // Ignored if hrStatus is a success or the package is vital.
+    BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_IGNORE,
+    // Instructs the engine to try the acquisition and verification of the package again.
+    // Ignored if hrStatus is a success.
+    BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_RETRY,
+};
+
+enum BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION
+{
+    BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_NONE,
+    // Ignored if hrStatus is a success.
+    BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYVERIFICATION,
+    // Ignored if hrStatus is a success.
+    BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION,
+};
+
+enum BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION
+{
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_NONE,
+    // Instructs the engine to ignore non-vital package failures and
+    // continue with the install.
+    // Ignored if hrStatus is a success or the package is vital.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_IGNORE,
+    // Instructs the engine to try the execution of the package again.
+    // Ignored if hrStatus is a success.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RETRY,
+    // Instructs the engine to stop processing the chain and restart.
+    // The engine will launch again after the machine is restarted.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART,
+    // Instructs the engine to stop processing the chain and
+    // suspend the current state.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_SUSPEND,
+};
+
+enum BOOTSTRAPPER_RESOLVESOURCE_ACTION
+{
+    // Instructs the engine that the source can't be found.
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION_NONE,
+    // Instructs the engine to try the local source again.
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY,
+    // Instructs the engine to try the download source.
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD,
 };
 
 enum BOOTSTRAPPER_SHUTDOWN_ACTION
@@ -136,6 +232,157 @@ struct BOOTSTRAPPER_COMMAND
     BOOL fPassthrough;
 
     LPWSTR wzLayoutDirectory;
+};
+
+struct BA_ONAPPLYBEGIN_ARGS
+{
+    DWORD cbSize;
+    DWORD dwPhaseCount;
+};
+
+struct BA_ONAPPLYBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONAPPLYCOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+    // Indicates whether any package required a reboot or initiated the reboot already.
+    BOOTSTRAPPER_APPLY_RESTART restart;
+    BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation;
+};
+
+struct BA_ONAPPLYCOMPLETE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_APPLYCOMPLETE_ACTION action;
+};
+
+struct BA_ONCACHEACQUIREBEGIN_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageOrContainerId;
+    LPCWSTR wzPayloadId;
+    BOOTSTRAPPER_CACHE_OPERATION operation;
+    LPCWSTR wzSource;
+};
+
+struct BA_ONCACHEACQUIREBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONCACHEACQUIRECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageOrContainerId;
+    LPCWSTR wzPayloadId;
+    HRESULT hrStatus;
+    BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation;
+};
+
+struct BA_ONCACHEACQUIRECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION action;
+};
+
+struct BA_ONCACHEACQUIREPROGRESS_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageOrContainerId;
+    LPCWSTR wzPayloadId;
+    DWORD64 dw64Progress;
+    DWORD64 dw64Total;
+    DWORD dwOverallPercentage;
+};
+
+struct BA_ONCACHEACQUIREPROGRESS_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONCACHEBEGIN_ARGS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONCACHEBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONCACHECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+};
+
+struct BA_ONCACHECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONCACHEPACKAGEBEGIN_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    DWORD cCachePayloads;
+    DWORD64 dw64PackageCacheSize;
+};
+
+struct BA_ONCACHEPACKAGEBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONCACHEPACKAGECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    HRESULT hrStatus;
+    BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation;
+};
+
+struct BA_ONCACHEPACKAGECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action;
+};
+
+struct BA_ONCACHEVERIFYBEGIN_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageOrContainerId;
+    LPCWSTR wzPayloadId;
+};
+
+struct BA_ONCACHEVERIFYBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONCACHEVERIFYCOMPLETE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageOrContainerId;
+    LPCWSTR wzPayloadId;
+    HRESULT hrStatus;
+    BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation;
+};
+
+struct BA_ONCACHEVERIFYCOMPLETE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action;
 };
 
 struct BA_ONDETECTBEGIN_ARGS
@@ -324,6 +571,183 @@ struct BA_ONDETECTUPDATECOMPLETE_RESULTS
     BOOL fIgnoreError;
 };
 
+struct BA_ONELEVATEBEGIN_ARGS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONELEVATEBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONELEVATECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+};
+
+struct BA_ONELEVATECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONERROR_ARGS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_ERROR_TYPE errorType;
+    LPCWSTR wzPackageId;
+    DWORD dwCode;
+    LPCWSTR wzError;
+    DWORD dwUIHint;
+    DWORD cData;
+    LPCWSTR* rgwzData;
+    int nRecommendation;
+};
+
+struct BA_ONERROR_RESULTS
+{
+    DWORD cbSize;
+    int nResult;
+};
+
+struct BA_ONEXECUTEBEGIN_ARGS
+{
+    DWORD cbSize;
+    DWORD cExecutingPackages;
+};
+
+struct BA_ONEXECUTEBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONEXECUTECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+};
+
+struct BA_ONEXECUTECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONEXECUTEFILESINUSE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    DWORD cFiles;
+    LPCWSTR* rgwzFiles;
+    int nRecommendation;
+};
+
+struct BA_ONEXECUTEFILESINUSE_RESULTS
+{
+    DWORD cbSize;
+    int nResult;
+};
+
+struct BA_ONEXECUTEMSIMESSAGE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    INSTALLMESSAGE messageType;
+    DWORD dwUIHint;
+    LPCWSTR wzMessage;
+    DWORD cData;
+    LPCWSTR* rgwzData;
+    int nRecommendation;
+};
+
+struct BA_ONEXECUTEMSIMESSAGE_RESULTS
+{
+    DWORD cbSize;
+    int nResult;
+};
+
+struct BA_ONEXECUTEPACKAGEBEGIN_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    BOOL fExecute;
+};
+
+struct BA_ONEXECUTEPACKAGEBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONEXECUTEPACKAGECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    HRESULT hrStatus;
+    // Indicates whether this package requires a reboot or initiated the reboot already.
+    BOOTSTRAPPER_APPLY_RESTART restart;
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation;
+};
+
+struct BA_ONEXECUTEPACKAGECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION action;
+};
+
+struct BA_ONEXECUTEPATCHTARGET_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    LPCWSTR wzTargetProductCode;
+};
+
+struct BA_ONEXECUTEPATCHTARGET_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONEXECUTEPROGRESS_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageId;
+    DWORD dwProgressPercentage;
+    DWORD dwOverallPercentage;
+};
+
+struct BA_ONEXECUTEPROGRESS_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+    // Only valid if the operation succeeded.
+    DWORD dwProcessId;
+};
+
+struct BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS
+{
+    DWORD cbSize;
+};
+
 struct BA_ONPLANBEGIN_ARGS
 {
     DWORD cbSize;
@@ -342,6 +766,7 @@ struct BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS
     LPCWSTR wzPackageId;
     LPCWSTR wzCompatiblePackageId;
     DWORD64 dw64CompatiblePackageVersion;
+    BOOTSTRAPPER_REQUEST_STATE recommendedState;
 };
 
 struct BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS
@@ -384,6 +809,7 @@ struct BA_ONPLANMSIFEATURE_ARGS
     DWORD cbSize;
     LPCWSTR wzPackageId;
     LPCWSTR wzFeatureId;
+    BOOTSTRAPPER_FEATURE_STATE recommendedState;
 };
 
 struct BA_ONPLANMSIFEATURE_RESULTS
@@ -397,6 +823,7 @@ struct BA_ONPLANPACKAGEBEGIN_ARGS
 {
     DWORD cbSize;
     LPCWSTR wzPackageId;
+    BOOTSTRAPPER_REQUEST_STATE recommendedState;
 };
 
 struct BA_ONPLANPACKAGEBEGIN_RESULTS
@@ -426,6 +853,7 @@ struct BA_ONPLANRELATEDBUNDLE_ARGS
 {
     DWORD cbSize;
     LPCWSTR wzBundleId;
+    BOOTSTRAPPER_REQUEST_STATE recommendedState;
 };
 
 struct BA_ONPLANRELATEDBUNDLE_RESULTS
@@ -440,12 +868,65 @@ struct BA_ONPLANTARGETMSIPACKAGE_ARGS
     DWORD cbSize;
     LPCWSTR wzPackageId;
     LPCWSTR wzProductCode;
+    BOOTSTRAPPER_REQUEST_STATE recommendedState;
 };
 
 struct BA_ONPLANTARGETMSIPACKAGE_RESULTS
 {
     DWORD cbSize;
     BOOTSTRAPPER_REQUEST_STATE requestedState;
+    BOOL fCancel;
+};
+
+struct BA_ONPROGRESS_ARGS
+{
+    DWORD cbSize;
+    DWORD dwProgressPercentage;
+    DWORD dwOverallPercentage;
+};
+
+struct BA_ONPROGRESS_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONREGISTERBEGIN_ARGS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONREGISTERBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONREGISTERCOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+};
+
+struct BA_ONREGISTERCOMPLETE_RESULTS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONRESOLVESOURCE_ARGS
+{
+    DWORD cbSize;
+    LPCWSTR wzPackageOrContainerId;
+    LPCWSTR wzPayloadId;
+    LPCWSTR wzLocalSource;
+    LPCWSTR wzDownloadSource;
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation;
+};
+
+struct BA_ONRESOLVESOURCE_RESULTS
+{
+    DWORD cbSize;
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION action;
     BOOL fCancel;
 };
 
@@ -480,6 +961,28 @@ struct BA_ONSYSTEMSHUTDOWN_RESULTS
 {
     DWORD cbSize;
     BOOL fCancel;
+};
+
+struct BA_ONUNREGISTERBEGIN_ARGS
+{
+    DWORD cbSize;
+};
+
+struct BA_ONUNREGISTERBEGIN_RESULTS
+{
+    DWORD cbSize;
+    BOOL fCancel;
+};
+
+struct BA_ONUNREGISTERCOMPLETE_ARGS
+{
+    DWORD cbSize;
+    HRESULT hrStatus;
+};
+
+struct BA_ONUNREGISTERCOMPLETE_RESULTS
+{
+    DWORD cbSize;
 };
 
 

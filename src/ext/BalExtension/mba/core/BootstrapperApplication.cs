@@ -171,7 +171,22 @@ namespace WixToolset.Bootstrapper
         /// <summary>
         /// Fired when the engine is about to start the elevated process.
         /// </summary>
-        public event EventHandler<ElevateEventArgs> Elevate;
+        public event EventHandler<ElevateBeginEventArgs> ElevateBegin;
+
+        /// <summary>
+        /// Fired when the engine has completed starting the elevated process.
+        /// </summary>
+        public event EventHandler<ElevateCompleteEventArgs> ElevateComplete;
+
+        /// <summary>
+        /// Fired when the engine has changed progress for the bundle installation.
+        /// </summary>
+        public event EventHandler<ProgressEventArgs> Progress;
+
+        /// <summary>
+        /// Fired when the engine has encountered an error.
+        /// </summary>
+        public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>
         /// Fired when the engine has begun registering the location and visibility of the bundle.
@@ -258,16 +273,6 @@ namespace WixToolset.Bootstrapper
         /// Fired when the engine executes one or more patches targeting a product.
         /// </summary>
         public event EventHandler<ExecutePatchTargetEventArgs> ExecutePatchTarget;
-
-        /// <summary>
-        /// Fired when the engine has encountered an error.
-        /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
-
-        /// <summary>
-        /// Fired when the engine has changed progress for the bundle installation.
-        /// </summary>
-        public event EventHandler<ProgressEventArgs> Progress;
 
         /// <summary>
         /// Fired when Windows Installer sends an installation message.
@@ -723,9 +728,48 @@ namespace WixToolset.Bootstrapper
         /// Called when the engine is about to start the elevated process.
         /// </summary>
         /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnElevate(ElevateEventArgs args)
+        protected virtual void OnElevateBegin(ElevateBeginEventArgs args)
         {
-            EventHandler<ElevateEventArgs> handler = this.Elevate;
+            EventHandler<ElevateBeginEventArgs> handler = this.ElevateBegin;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when the engine has completed starting the elevated process.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnElevateComplete(ElevateCompleteEventArgs args)
+        {
+            EventHandler<ElevateCompleteEventArgs> handler = this.ElevateComplete;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when the engine has changed progress for the bundle installation.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnProgress(ProgressEventArgs args)
+        {
+            EventHandler<ProgressEventArgs> handler = this.Progress;
+            if (null != handler)
+            {
+                handler(this, args);
+            }
+        }
+
+        /// <summary>
+        /// Called when the engine has encountered an error.
+        /// </summary>
+        /// <param name="args">Additional arguments for this event.</param>
+        protected virtual void OnError(ErrorEventArgs args)
+        {
+            EventHandler<ErrorEventArgs> handler = this.Error;
             if (null != handler)
             {
                 handler(this, args);
@@ -948,32 +992,6 @@ namespace WixToolset.Bootstrapper
         protected virtual void OnExecutePatchTarget(ExecutePatchTargetEventArgs args)
         {
             EventHandler<ExecutePatchTargetEventArgs> handler = this.ExecutePatchTarget;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called when the engine has encountered an error.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnError(ErrorEventArgs args)
-        {
-            EventHandler<ErrorEventArgs> handler = this.Error;
-            if (null != handler)
-            {
-                handler(this, args);
-            }
-        }
-
-        /// <summary>
-        /// Called when the engine has changed progress for the bundle installation.
-        /// </summary>
-        /// <param name="args">Additional arguments for this event.</param>
-        protected virtual void OnProgress(ProgressEventArgs args)
-        {
-            EventHandler<ProgressEventArgs> handler = this.Progress;
             if (null != handler)
             {
                 handler(this, args);
@@ -1239,9 +1257,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanRelatedBundle(string wzBundleId, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanRelatedBundleEventArgs args = new PlanRelatedBundleEventArgs(wzBundleId, pRequestedState, fCancel);
+            PlanRelatedBundleEventArgs args = new PlanRelatedBundleEventArgs(wzBundleId, recommendedState, pRequestedState, fCancel);
             this.OnPlanRelatedBundle(args);
 
             pRequestedState = args.State;
@@ -1249,9 +1267,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanPackageBegin(string wzPackageId, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanPackageBeginEventArgs args = new PlanPackageBeginEventArgs(wzPackageId, pRequestedState, fCancel);
+            PlanPackageBeginEventArgs args = new PlanPackageBeginEventArgs(wzPackageId, recommendedState, pRequestedState, fCancel);
             this.OnPlanPackageBegin(args);
 
             pRequestedState = args.State;
@@ -1259,9 +1277,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanCompatibleMsiPackageBegin(string wzPackageId, string wzCompatiblePackageId, long dw64CompatiblePackageVersion, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanCompatibleMsiPackageBegin(string wzPackageId, string wzCompatiblePackageId, long dw64CompatiblePackageVersion, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanCompatibleMsiPackageBeginEventArgs args = new PlanCompatibleMsiPackageBeginEventArgs(wzPackageId, wzCompatiblePackageId, dw64CompatiblePackageVersion, pRequestedState, fCancel);
+            PlanCompatibleMsiPackageBeginEventArgs args = new PlanCompatibleMsiPackageBeginEventArgs(wzPackageId, wzCompatiblePackageId, dw64CompatiblePackageVersion, recommendedState, pRequestedState, fCancel);
             this.OnPlanCompatibleMsiPackageBegin(args);
 
             pRequestedState = args.State;
@@ -1277,9 +1295,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanTargetMsiPackage(string wzPackageId, string wzProductCode, ref RequestState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanTargetMsiPackage(string wzPackageId, string wzProductCode, RequestState recommendedState, ref RequestState pRequestedState, ref bool fCancel)
         {
-            PlanTargetMsiPackageEventArgs args = new PlanTargetMsiPackageEventArgs(wzPackageId, wzProductCode, pRequestedState, fCancel);
+            PlanTargetMsiPackageEventArgs args = new PlanTargetMsiPackageEventArgs(wzPackageId, wzProductCode, recommendedState, pRequestedState, fCancel);
             this.OnPlanTargetMsiPackage(args);
 
             pRequestedState = args.State;
@@ -1287,9 +1305,9 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        int IBootstrapperApplication.OnPlanMsiFeature(string wzPackageId, string wzFeatureId, ref FeatureState pRequestedState, ref bool fCancel)
+        int IBootstrapperApplication.OnPlanMsiFeature(string wzPackageId, string wzFeatureId, FeatureState recommendedState, ref FeatureState pRequestedState, ref bool fCancel)
         {
-            PlanMsiFeatureEventArgs args = new PlanMsiFeatureEventArgs(wzPackageId, wzFeatureId, pRequestedState, fCancel);
+            PlanMsiFeatureEventArgs args = new PlanMsiFeatureEventArgs(wzPackageId, wzFeatureId, recommendedState, pRequestedState, fCancel);
             this.OnPlanMsiFeature(args);
 
             pRequestedState = args.State;
@@ -1313,222 +1331,273 @@ namespace WixToolset.Bootstrapper
             return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnApplyBegin(int dwPhaseCount)
+        int IBootstrapperApplication.OnApplyBegin(int dwPhaseCount, ref bool fCancel)
         {
             this.applying = true;
 
-            ApplyBeginEventArgs args = new ApplyBeginEventArgs(dwPhaseCount);
+            ApplyBeginEventArgs args = new ApplyBeginEventArgs(dwPhaseCount, fCancel);
             this.OnApplyBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnElevate()
+        int IBootstrapperApplication.OnElevateBegin(ref bool fCancel)
         {
-            ElevateEventArgs args = new ElevateEventArgs();
-            this.OnElevate(args);
+            ElevateBeginEventArgs args = new ElevateBeginEventArgs(fCancel);
+            this.OnElevateBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnRegisterBegin()
+        int IBootstrapperApplication.OnElevateComplete(int hrStatus)
         {
-            RegisterBeginEventArgs args = new RegisterBeginEventArgs();
-            this.OnRegisterBegin(args);
+            ElevateCompleteEventArgs args = new ElevateCompleteEventArgs(hrStatus);
+            this.OnElevateComplete(args);
 
-            return args.Result;
+            return args.HResult;
         }
 
-        void IBootstrapperApplication.OnRegisterComplete(int hrStatus)
+        int IBootstrapperApplication.OnProgress(int dwProgressPercentage, int dwOverallPercentage, ref bool fCancel)
         {
-            this.OnRegisterComplete(new RegisterCompleteEventArgs(hrStatus));
-        }
-
-        void IBootstrapperApplication.OnUnregisterBegin()
-        {
-            this.OnUnregisterBegin(new UnregisterBeginEventArgs());
-        }
-
-        void IBootstrapperApplication.OnUnregisterComplete(int hrStatus)
-        {
-            this.OnUnregisterComplete(new UnregisterCompleteEventArgs(hrStatus));
-        }
-
-        Result IBootstrapperApplication.OnCacheBegin()
-        {
-            CacheBeginEventArgs args = new CacheBeginEventArgs();
-            this.OnCacheBegin(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCachePackageBegin(string wzPackageId, int cCachePayloads, long dw64PackageCacheSize)
-        {
-            CachePackageBeginEventArgs args = new CachePackageBeginEventArgs(wzPackageId, cCachePayloads, dw64PackageCacheSize);
-            this.OnCachePackageBegin(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCacheAcquireBegin(string wzPackageOrContainerId, string wzPayloadId, CacheOperation operation, string wzSource)
-        {
-            CacheAcquireBeginEventArgs args = new CacheAcquireBeginEventArgs(wzPackageOrContainerId, wzPayloadId, operation, wzSource);
-            this.OnCacheAcquireBegin(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCacheAcquireProgress(string wzPackageOrContainerId, string wzPayloadId, long dw64Progress, long dw64Total, int dwOverallPercentage)
-        {
-            CacheAcquireProgressEventArgs args = new CacheAcquireProgressEventArgs(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
-            this.OnCacheAcquireProgress(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource)
-        {
-            ResolveSourceEventArgs args = new ResolveSourceEventArgs(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource);
-            this.OnResolveSource(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCacheAcquireComplete(string wzPackageOrContainerId, string wzPayloadId, int hrStatus, int nRecommendation)
-        {
-            CacheAcquireCompleteEventArgs args = new CacheAcquireCompleteEventArgs(wzPackageOrContainerId, wzPayloadId, hrStatus, nRecommendation);
-            this.OnCacheAcquireComplete(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCacheVerifyBegin(string wzPackageId, string wzPayloadId)
-        {
-            CacheVerifyBeginEventArgs args = new CacheVerifyBeginEventArgs(wzPackageId, wzPayloadId);
-            this.OnCacheVerifyBegin(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCacheVerifyComplete(string wzPackageId, string wzPayloadId, int hrStatus, int nRecommendation)
-        {
-            CacheVerifyCompleteEventArgs args = new CacheVerifyCompleteEventArgs(wzPackageId, wzPayloadId, hrStatus, nRecommendation);
-            this.OnCacheVerifyComplete(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnCachePackageComplete(string wzPackageId, int hrStatus, int nRecommendation)
-        {
-            CachePackageCompleteEventArgs args = new CachePackageCompleteEventArgs(wzPackageId, hrStatus, nRecommendation);
-            this.OnCachePackageComplete(args);
-
-            return args.Result;
-        }
-
-        void IBootstrapperApplication.OnCacheComplete(int hrStatus)
-        {
-            this.OnCacheComplete(new CacheCompleteEventArgs(hrStatus));
-        }
-
-        Result IBootstrapperApplication.OnExecuteBegin(int cExecutingPackages)
-        {
-            ExecuteBeginEventArgs args = new ExecuteBeginEventArgs(cExecutingPackages);
-            this.OnExecuteBegin(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnExecutePackageBegin(string wzPackageId, bool fExecute)
-        {
-            ExecutePackageBeginEventArgs args = new ExecutePackageBeginEventArgs(wzPackageId, fExecute);
-            this.OnExecutePackageBegin(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnExecutePatchTarget(string wzPackageId, string wzTargetProductCode)
-        {
-            ExecutePatchTargetEventArgs args = new ExecutePatchTargetEventArgs(wzPackageId, wzTargetProductCode);
-            this.OnExecutePatchTarget(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnError(ErrorType errorType, string wzPackageId, int dwCode, string wzError, int dwUIHint, int cData, string[] rgwzData, int nRecommendation)
-        {
-            ErrorEventArgs args = new ErrorEventArgs(errorType, wzPackageId, dwCode, wzError, dwUIHint, rgwzData, nRecommendation);
-            this.OnError(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnProgress(int dwProgressPercentage, int dwOverallPercentage)
-        {
-            ProgressEventArgs args = new ProgressEventArgs(dwProgressPercentage, dwOverallPercentage);
+            ProgressEventArgs args = new ProgressEventArgs(dwProgressPercentage, dwOverallPercentage, fCancel);
             this.OnProgress(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecuteMsiMessage(string wzPackageId, InstallMessage mt, int uiFlags, string wzMessage, int cData, string[] rgwzData, int nRecommendation)
+        int IBootstrapperApplication.OnError(ErrorType errorType, string wzPackageId, int dwCode, string wzError, int dwUIHint, int cData, string[] rgwzData, Result nRecommendation, ref Result pResult)
         {
-            ExecuteMsiMessageEventArgs args = new ExecuteMsiMessageEventArgs(wzPackageId, mt, uiFlags, wzMessage, rgwzData, nRecommendation);
+            ErrorEventArgs args = new ErrorEventArgs(errorType, wzPackageId, dwCode, wzError, dwUIHint, rgwzData, nRecommendation, pResult);
+            this.OnError(args);
+
+            pResult = args.Result;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnRegisterBegin(ref bool fCancel)
+        {
+            RegisterBeginEventArgs args = new RegisterBeginEventArgs(fCancel);
+            this.OnRegisterBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnRegisterComplete(int hrStatus)
+        {
+            RegisterCompleteEventArgs args = new RegisterCompleteEventArgs(hrStatus);
+            this.OnRegisterComplete(args);
+
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheBegin(ref bool fCancel)
+        {
+            CacheBeginEventArgs args = new CacheBeginEventArgs(fCancel);
+            this.OnCacheBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCachePackageBegin(string wzPackageId, int cCachePayloads, long dw64PackageCacheSize, ref bool fCancel)
+        {
+            CachePackageBeginEventArgs args = new CachePackageBeginEventArgs(wzPackageId, cCachePayloads, dw64PackageCacheSize, fCancel);
+            this.OnCachePackageBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheAcquireBegin(string wzPackageOrContainerId, string wzPayloadId, CacheOperation operation, string wzSource, ref bool fCancel)
+        {
+            CacheAcquireBeginEventArgs args = new CacheAcquireBeginEventArgs(wzPackageOrContainerId, wzPayloadId, operation, wzSource, fCancel);
+            this.OnCacheAcquireBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheAcquireProgress(string wzPackageOrContainerId, string wzPayloadId, long dw64Progress, long dw64Total, int dwOverallPercentage, ref bool fCancel)
+        {
+            CacheAcquireProgressEventArgs args = new CacheAcquireProgressEventArgs(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage, fCancel);
+            this.OnCacheAcquireProgress(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnResolveSource(string wzPackageOrContainerId, string wzPayloadId, string wzLocalSource, string wzDownloadSource, BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation, ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action, ref bool fCancel)
+        {
+            ResolveSourceEventArgs args = new ResolveSourceEventArgs(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource, action, recommendation, fCancel);
+            this.OnResolveSource(args);
+
+            action = args.Action;
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheAcquireComplete(string wzPackageOrContainerId, string wzPayloadId, int hrStatus, BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION action)
+        {
+            CacheAcquireCompleteEventArgs args = new CacheAcquireCompleteEventArgs(wzPackageOrContainerId, wzPayloadId, hrStatus, recommendation, action);
+            this.OnCacheAcquireComplete(args);
+
+            action = args.Action;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheVerifyBegin(string wzPackageId, string wzPayloadId, ref bool fCancel)
+        {
+            CacheVerifyBeginEventArgs args = new CacheVerifyBeginEventArgs(wzPackageId, wzPayloadId, fCancel);
+            this.OnCacheVerifyBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheVerifyComplete(string wzPackageId, string wzPayloadId, int hrStatus, BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action)
+        {
+            CacheVerifyCompleteEventArgs args = new CacheVerifyCompleteEventArgs(wzPackageId, wzPayloadId, hrStatus, recommendation, action);
+            this.OnCacheVerifyComplete(args);
+
+            action = args.Action;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCachePackageComplete(string wzPackageId, int hrStatus, BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action)
+        {
+            CachePackageCompleteEventArgs args = new CachePackageCompleteEventArgs(wzPackageId, hrStatus, recommendation, action);
+            this.OnCachePackageComplete(args);
+
+            action = args.Action;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnCacheComplete(int hrStatus)
+        {
+            CacheCompleteEventArgs args = new CacheCompleteEventArgs(hrStatus);
+            this.OnCacheComplete(args);
+
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnExecuteBegin(int cExecutingPackages, ref bool fCancel)
+        {
+            ExecuteBeginEventArgs args = new ExecuteBeginEventArgs(cExecutingPackages, fCancel);
+            this.OnExecuteBegin(args);
+
+            args.Cancel = fCancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnExecutePackageBegin(string wzPackageId, bool fExecute, ref bool fCancel)
+        {
+            ExecutePackageBeginEventArgs args = new ExecutePackageBeginEventArgs(wzPackageId, fExecute, fCancel);
+            this.OnExecutePackageBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnExecutePatchTarget(string wzPackageId, string wzTargetProductCode, ref bool fCancel)
+        {
+            ExecutePatchTargetEventArgs args = new ExecutePatchTargetEventArgs(wzPackageId, wzTargetProductCode, fCancel);
+            this.OnExecutePatchTarget(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnExecuteProgress(string wzPackageId, int dwProgressPercentage, int dwOverallPercentage, ref bool fCancel)
+        {
+            ExecuteProgressEventArgs args = new ExecuteProgressEventArgs(wzPackageId, dwProgressPercentage, dwOverallPercentage, fCancel);
+            this.OnExecuteProgress(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnExecuteMsiMessage(string wzPackageId, InstallMessage messageType, int dwUIHint, string wzMessage, int cData, string[] rgwzData, Result nRecommendation, ref Result pResult)
+        {
+            ExecuteMsiMessageEventArgs args = new ExecuteMsiMessageEventArgs(wzPackageId, messageType, dwUIHint, wzMessage, rgwzData, nRecommendation, pResult);
             this.OnExecuteMsiMessage(args);
 
-            return args.Result;
+            pResult = args.Result;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecuteFilesInUse(string wzPackageId, int cFiles, string[] rgwzFiles)
+        int IBootstrapperApplication.OnExecuteFilesInUse(string wzPackageId, int cFiles, string[] rgwzFiles, Result nRecommendation, ref Result pResult)
         {
-            ExecuteFilesInUseEventArgs args = new ExecuteFilesInUseEventArgs(wzPackageId, rgwzFiles);
+            ExecuteFilesInUseEventArgs args = new ExecuteFilesInUseEventArgs(wzPackageId, rgwzFiles, nRecommendation, pResult);
             this.OnExecuteFilesInUse(args);
 
-            return args.Result;
+            pResult = args.Result;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrExitCode, ApplyRestart restart, int nRecommendation)
+        int IBootstrapperApplication.OnExecutePackageComplete(string wzPackageId, int hrStatus, ApplyRestart restart, BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction)
         {
-            ExecutePackageCompleteEventArgs args = new ExecutePackageCompleteEventArgs(wzPackageId, hrExitCode, restart, nRecommendation);
+            ExecutePackageCompleteEventArgs args = new ExecutePackageCompleteEventArgs(wzPackageId, hrStatus, restart, recommendation, pAction);
             this.OnExecutePackageComplete(args);
 
-            return args.Result;
+            pAction = args.Action;
+            return args.HResult;
         }
 
-        void IBootstrapperApplication.OnExecuteComplete(int hrStatus)
+        int IBootstrapperApplication.OnExecuteComplete(int hrStatus)
         {
-            this.OnExecuteComplete(new ExecuteCompleteEventArgs(hrStatus));
+            ExecuteCompleteEventArgs args = new ExecuteCompleteEventArgs(hrStatus);
+            this.OnExecuteComplete(args);
+
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnApplyComplete(int hrStatus, ApplyRestart restart)
+        int IBootstrapperApplication.OnUnregisterBegin(ref bool fCancel)
         {
-            ApplyCompleteEventArgs args = new ApplyCompleteEventArgs(hrStatus, restart);
+            UnregisterBeginEventArgs args = new UnregisterBeginEventArgs(fCancel);
+            this.OnUnregisterBegin(args);
+
+            fCancel = args.Cancel;
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnUnregisterComplete(int hrStatus)
+        {
+            UnregisterCompleteEventArgs args = new UnregisterCompleteEventArgs(hrStatus);
+            this.OnUnregisterComplete(args);
+
+            return args.HResult;
+        }
+
+        int IBootstrapperApplication.OnApplyComplete(int hrStatus, ApplyRestart restart, BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation, ref BOOTSTRAPPER_APPLYCOMPLETE_ACTION pAction)
+        {
+            ApplyCompleteEventArgs args = new ApplyCompleteEventArgs(hrStatus, restart, recommendation, pAction);
             this.OnApplyComplete(args);
 
             this.applying = false;
 
-            return args.Result;
+            pAction = args.Action;
+            return args.HResult;
         }
 
-        Result IBootstrapperApplication.OnExecuteProgress(string wzPackageId, int dwProgressPercentage, int dwOverallPercentage)
+        int IBootstrapperApplication.OnLaunchApprovedExeBegin(ref bool fCancel)
         {
-            ExecuteProgressEventArgs args = new ExecuteProgressEventArgs(wzPackageId, dwProgressPercentage, dwOverallPercentage);
-            this.OnExecuteProgress(args);
-
-            return args.Result;
-        }
-
-        Result IBootstrapperApplication.OnLaunchApprovedExeBegin()
-        {
-            LaunchApprovedExeBeginArgs args = new LaunchApprovedExeBeginArgs();
+            LaunchApprovedExeBeginArgs args = new LaunchApprovedExeBeginArgs(fCancel);
             this.OnLaunchApprovedExeBegin(args);
 
-            return args.Result;
+            fCancel = args.Cancel;
+            return args.HResult;
         }
 
-        void IBootstrapperApplication.OnLaunchApprovedExeComplete(int hrStatus, int processId)
+        int IBootstrapperApplication.OnLaunchApprovedExeComplete(int hrStatus, int processId)
         {
-            this.OnLaunchApprovedExeComplete(new LaunchApprovedExeCompleteArgs(hrStatus, processId));
+            LaunchApprovedExeCompleteArgs args = new LaunchApprovedExeCompleteArgs(hrStatus, processId);
+            this.OnLaunchApprovedExeComplete(args);
+
+            return args.HResult;
         }
 
         int IBootstrapperApplication.BAProc(BOOTSTRAPPER_APPLICATION_MESSAGE message, IntPtr pvArgs, IntPtr pvResults, IntPtr pvContext)

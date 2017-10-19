@@ -591,7 +591,7 @@ namespace WixToolset.UX
             this.downloadRetries.TryGetValue(e.PackageOrContainerId, out retries);
             this.downloadRetries[e.PackageOrContainerId] = retries + 1;
 
-            e.Result = retries < 3 && !String.IsNullOrEmpty(e.DownloadSource) ? Result.Download : Result.Ok;
+            e.Action = retries < 3 && !String.IsNullOrEmpty(e.DownloadSource) ? BOOTSTRAPPER_RESOLVESOURCE_ACTION.Download : BOOTSTRAPPER_RESOLVESOURCE_ACTION.None;
         }
 
         private void ApplyComplete(object sender, ApplyCompleteEventArgs e)

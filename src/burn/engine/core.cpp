@@ -547,6 +547,7 @@ extern "C" HRESULT CoreApply(
     BOOTSTRAPPER_APPLY_RESTART restart = BOOTSTRAPPER_APPLY_RESTART_NONE;
     BURN_CACHE_THREAD_CONTEXT cacheThreadContext = { };
     DWORD dwPhaseCount = 0;
+    BOOTSTRAPPER_APPLYCOMPLETE_ACTION applyCompleteAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
 
     LogId(REPORT_STANDARD, MSG_APPLY_BEGIN);
 
@@ -565,9 +566,8 @@ extern "C" HRESULT CoreApply(
         ++dwPhaseCount;
     }
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnApplyBegin(dwPhaseCount);
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted apply begin.");
+    hr = UserExperienceOnApplyBegin(&pEngineState->userExperience, dwPhaseCount);
+    ExitOnRootFailure(hr, "BA aborted apply begin.");
 
     // Abort if this bundle already requires a restart.
     if (BOOTSTRAPPER_RESUME_TYPE_REBOOT_PENDING == pEngineState->command.resumeType)
@@ -575,7 +575,7 @@ extern "C" HRESULT CoreApply(
         restart = BOOTSTRAPPER_APPLY_RESTART_REQUIRED;
 
         hr = HRESULT_FROM_WIN32(ERROR_FAIL_NOACTION_REBOOT);
-        UserExperienceSendError(pEngineState->userExperience.pUserExperience, BOOTSTRAPPER_ERROR_TYPE_APPLY, NULL, hr, NULL, MB_ICONERROR | MB_OK, IDNOACTION);
+        UserExperienceSendError(&pEngineState->userExperience, BOOTSTRAPPER_ERROR_TYPE_APPLY, NULL, hr, NULL, MB_ICONERROR | MB_OK, IDNOACTION); // ignore return value.
         ExitFunction();
     }
 
@@ -703,8 +703,8 @@ LExit:
 
     ReleaseHandle(hCacheThread);
 
-    nResult = pEngineState->userExperience.pUserExperience->OnApplyComplete(hr, restart);
-    if (IDRESTART == nResult)
+    UserExperienceOnApplyComplete(&pEngineState->userExperience, hr, restart, &applyCompleteAction);
+    if (BOOTSTRAPPER_APPLYCOMPLETE_ACTION_RESTART == applyCompleteAction)
     {
         pEngineState->fRestart = TRUE;
     }
@@ -728,9 +728,8 @@ extern "C" HRESULT CoreLaunchApprovedExe(
     hr = UserExperienceActivateEngine(&pEngineState->userExperience, &fActivated);
     ExitOnFailure(hr, "Engine cannot start LaunchApprovedExe because it is busy with another action.");
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnLaunchApprovedExeBegin();
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted LaunchApprovedExe begin.");
+    hr = UserExperienceOnLaunchApprovedExeBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted LaunchApprovedExe begin.");
 
     // Elevate.
     hr = CoreElevate(pEngineState, pLaunchApprovedExe->hwndParent);
@@ -745,7 +744,7 @@ LExit:
         UserExperienceDeactivateEngine(&pEngineState->userExperience);
     }
 
-    pEngineState->userExperience.pUserExperience->OnLaunchApprovedExeComplete(hr, dwProcessId);
+    UserExperienceOnLaunchApprovedExeComplete(&pEngineState->userExperience, hr, dwProcessId);
 
     LogId(REPORT_STANDARD, MSG_LAUNCH_APPROVED_EXE_COMPLETE, hr, dwProcessId);
 

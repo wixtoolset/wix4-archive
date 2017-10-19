@@ -808,6 +808,13 @@ Language=English
 Apply skipped, no planned actions
 .
 
+MessageId=381
+Severity=Warning
+SymbolicName=MSG_APPLY_CANCEL_IGNORED_DURING_ROLLBACK
+Language=English
+Ignoring application request to cancel from %1!ls! during rollback. 
+.
+
 MessageId=399
 Severity=Success
 SymbolicName=MSG_APPLY_COMPLETE

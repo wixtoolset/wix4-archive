@@ -61,7 +61,22 @@ public: // IBootstrapperEngine
         __out DWORD* pcPackages
         )
     {
-        return m_pEngine->GetPackageCount(pcPackages);
+        HRESULT hr = S_OK;
+        BAENGINE_GETPACKAGECOUNT_ARGS args = { };
+        BAENGINE_GETPACKAGECOUNT_RESULTS results = { };
+
+        ExitOnNull(pcPackages, hr, E_INVALIDARG, "pcPackages is required");
+
+        args.cbSize = sizeof(args);
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETPACKAGECOUNT, &args, &results, m_pvBAEngineProcContext);
+
+        *pcPackages = results.cPackages;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP GetVariableNumeric(
@@ -69,7 +84,24 @@ public: // IBootstrapperEngine
         __out LONGLONG* pllValue
         )
     {
-        return m_pEngine->GetVariableNumeric(wzVariable, pllValue);
+        HRESULT hr = S_OK;
+        BAENGINE_GETVARIABLENUMERIC_ARGS args = { };
+        BAENGINE_GETVARIABLENUMERIC_RESULTS results = { };
+
+        ExitOnNull(pllValue, hr, E_INVALIDARG, "pllValue is required");
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLENUMERIC, &args, &results, m_pvBAEngineProcContext);
+
+        *pllValue = results.llValue;
+
+    LExit:
+        SecureZeroMemory(&results, sizeof(results));
+        return hr;
     }
 
     virtual STDMETHODIMP GetVariableString(
@@ -78,7 +110,25 @@ public: // IBootstrapperEngine
         __inout DWORD* pcchValue
         )
     {
-        return m_pEngine->GetVariableString(wzVariable, wzValue, pcchValue);
+        HRESULT hr = S_OK;
+        BAENGINE_GETVARIABLESTRING_ARGS args = { };
+        BAENGINE_GETVARIABLESTRING_RESULTS results = { };
+
+        ExitOnNull(pcchValue, hr, E_INVALIDARG, "pcchValue is required");
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+
+        results.cbSize = sizeof(results);
+        results.wzValue = wzValue;
+        results.cchValue = *pcchValue;
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLESTRING, &args, &results, m_pvBAEngineProcContext);
+
+        *pcchValue = results.cchValue;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP GetVariableVersion(
@@ -86,7 +136,24 @@ public: // IBootstrapperEngine
         __out DWORD64* pqwValue
         )
     {
-        return m_pEngine->GetVariableVersion(wzVariable, pqwValue);
+        HRESULT hr = S_OK;
+        BAENGINE_GETVARIABLEVERSION_ARGS args = { };
+        BAENGINE_GETVARIABLEVERSION_RESULTS results = { };
+
+        ExitOnNull(pqwValue, hr, E_INVALIDARG, "pqwValue is required");
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLEVERSION, &args, &results, m_pvBAEngineProcContext);
+
+        *pqwValue = results.qwValue;
+
+    LExit:
+        SecureZeroMemory(&results, sizeof(results));
+        return hr;
     }
 
     virtual STDMETHODIMP FormatString(
@@ -210,10 +277,10 @@ public: // IBootstrapperEngine
         BAENGINE_DETECT_ARGS args = { };
         BAENGINE_DETECT_RESULTS results = { };
 
-        args.cbSize = sizeof(BAENGINE_DETECT_ARGS);
+        args.cbSize = sizeof(args);
         args.hwndParent = hwndParent;
 
-        results.cbSize = sizeof(BAENGINE_DETECT_RESULTS);
+        results.cbSize = sizeof(results);
 
         return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_DETECT, &args, &results, m_pvBAEngineProcContext);
     }

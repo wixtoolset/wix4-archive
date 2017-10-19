@@ -233,6 +233,7 @@ public: // IBootstrapperApplication
 
     virtual STDMETHODIMP OnPlanRelatedBundle(
         __in_z LPCWSTR /*wzBundleId*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* /*pfCancel*/
         )
@@ -242,6 +243,7 @@ public: // IBootstrapperApplication
 
     virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR /*wzPackageId*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestState*/,
         __inout BOOL* /*pfCancel*/
         )
@@ -253,6 +255,7 @@ public: // IBootstrapperApplication
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzCompatiblePackageId*/,
         __in DWORD64 /*dw64CompatiblePackageVersion*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* /*pfCancel*/
         )
@@ -276,6 +279,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP OnPlanTargetMsiPackage(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzProductCode*/,
+        __in BOOTSTRAPPER_REQUEST_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_REQUEST_STATE* /*pRequestedState*/,
         __inout BOOL* /*pfCancel*/
         )
@@ -286,6 +290,7 @@ public: // IBootstrapperApplication
     virtual STDMETHODIMP OnPlanMsiFeature(
         __in_z LPCWSTR /*wzPackageId*/,
         __in_z LPCWSTR /*wzFeatureId*/,
+        __in BOOTSTRAPPER_FEATURE_STATE /*recommendedState*/,
         __inout BOOTSTRAPPER_FEATURE_STATE* /*pRequestedState*/,
         __inout BOOL* /*pfCancel*/
         )
@@ -312,149 +317,38 @@ public: // IBootstrapperApplication
         return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnApplyBegin(
-        __in DWORD /*dwPhaseCount*/
+    virtual STDMETHODIMP OnApplyBegin(
+        __in DWORD /*dwPhaseCount*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnElevate()
+    virtual STDMETHODIMP OnElevateBegin(
+        __inout BOOL* /*pfCancel*/
+        )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnRegisterBegin()
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(void) OnRegisterComplete(
+    virtual STDMETHODIMP OnElevateComplete(
         __in HRESULT /*hrStatus*/
         )
     {
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnUnregisterBegin()
-    {
-    }
-
-    virtual STDMETHODIMP_(void) OnUnregisterComplete(
-        __in HRESULT /*hrStatus*/
-        )
-    {
-    }
-
-    virtual STDMETHODIMP_(int) OnApplyComplete(
-        __in HRESULT /*hrStatus*/,
-        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/
+    virtual STDMETHODIMP OnProgress(
+        __in DWORD /*dwProgressPercentage*/,
+        __in DWORD /*dwOverallProgressPercentage*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
         return IDNOACTION;
     }
 
-    virtual STDMETHODIMP_(int) OnCacheBegin()
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCachePackageBegin(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in DWORD /*cCachePayloads*/,
-        __in DWORD64 /*dw64PackageCacheSize*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireBegin(
-        __in_z LPCWSTR /*wzPackageOrContainerId*/,
-        __in_z_opt LPCWSTR /*wzPayloadId*/,
-        __in BOOTSTRAPPER_CACHE_OPERATION /*operation*/,
-        __in_z LPCWSTR /*wzSource*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireProgress(
-        __in_z LPCWSTR /*wzPackageOrContainerId*/,
-        __in_z_opt LPCWSTR /*wzPayloadId*/,
-        __in DWORD64 /*dw64Progress*/,
-        __in DWORD64 /*dw64Total*/,
-        __in DWORD /*dwOverallPercentage*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheAcquireComplete(
-        __in_z LPCWSTR /*wzPackageOrContainerId*/,
-        __in_z_opt LPCWSTR /*wzPayloadId*/,
-        __in HRESULT /*hrStatus*/,
-        __in int nRecommendation
-        )
-    {
-        return nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheVerifyBegin(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzPayloadId*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnCacheVerifyComplete(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzPayloadId*/,
-        __in HRESULT /*hrStatus*/,
-        __in int nRecommendation
-        )
-    {
-        return nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(int) OnCachePackageComplete(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in HRESULT /*hrStatus*/,
-        __in int nRecommendation
-        )
-    {
-        return nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(void) OnCacheComplete(
-        __in HRESULT /*hrStatus*/
-        )
-    {
-    }
-
-    virtual STDMETHODIMP_(int) OnExecuteBegin(
-        __in DWORD /*cExecutingPackages*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnExecutePackageBegin(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in BOOL /*fExecute*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnExecutePatchTarget(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in_z LPCWSTR /*wzTargetProductCode*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnError(
+    virtual STDMETHODIMP OnError(
         __in BOOTSTRAPPER_ERROR_TYPE /*errorType*/,
         __in_z LPCWSTR /*wzPackageId*/,
         __in DWORD /*dwCode*/,
@@ -462,87 +356,244 @@ public: // IBootstrapperApplication
         __in DWORD /*dwUIHint*/,
         __in DWORD /*cData*/,
         __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
+        __in int /*nRecommendation*/,
+        __inout int* /*pResult*/
         )
     {
-        return nRecommendation;
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnProgress(
-        __in DWORD /*dwProgressPercentage*/,
-        __in DWORD /*dwOverallProgressPercentage*/
+    virtual STDMETHODIMP OnRegisterBegin(
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnExecuteProgress(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in DWORD /*dwProgressPercentage*/,
-        __in DWORD /*dwOverallProgressPercentage*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnExecuteMsiMessage(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in INSTALLMESSAGE /*mt*/,
-        __in UINT /*uiFlags*/,
-        __in_z LPCWSTR /*wzMessage*/,
-        __in DWORD /*cData*/,
-        __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
-        )
-    {
-        return nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(int) OnExecuteFilesInUse(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in DWORD /*cFiles*/,
-        __in_ecount_z(cFiles) LPCWSTR* /*rgwzFiles*/
-        )
-    {
-        return IDNOACTION;
-    }
-
-    virtual STDMETHODIMP_(int) OnExecutePackageComplete(
-        __in_z LPCWSTR /*wzPackageId*/,
-        __in HRESULT /*hrExitCode*/,
-        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
-        __in int nRecommendation
-        )
-    {
-        return nRecommendation;
-    }
-
-    virtual STDMETHODIMP_(void) OnExecuteComplete(
+    virtual STDMETHODIMP OnRegisterComplete(
         __in HRESULT /*hrStatus*/
         )
     {
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnResolveSource(
+    virtual STDMETHODIMP OnCacheBegin(
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnCachePackageBegin(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in DWORD /*cCachePayloads*/,
+        __in DWORD64 /*dw64PackageCacheSize*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnCacheAcquireBegin(
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in BOOTSTRAPPER_CACHE_OPERATION /*operation*/,
+        __in_z LPCWSTR /*wzSource*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnCacheAcquireProgress(
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in DWORD64 /*dw64Progress*/,
+        __in DWORD64 /*dw64Total*/,
+        __in DWORD /*dwOverallPercentage*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnResolveSource(
         __in_z LPCWSTR /*wzPackageOrContainerId*/,
         __in_z_opt LPCWSTR /*wzPayloadId*/,
         __in_z LPCWSTR /*wzLocalSource*/,
-        __in_z_opt LPCWSTR /*wzDownloadSource*/
+        __in_z_opt LPCWSTR /*wzDownloadSource*/,
+        __in BOOTSTRAPPER_RESOLVESOURCE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* /*pAction*/,
+        __inout BOOL* /*pfCancel*/
         )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(int) OnLaunchApprovedExeBegin()
+    virtual STDMETHODIMP OnCacheAcquireComplete(
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* /*pAction*/
+        )
     {
-        return IDNOACTION;
+        return S_OK;
     }
 
-    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+    virtual STDMETHODIMP OnCacheVerifyBegin(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnCacheVerifyComplete(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzPayloadId*/,
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnCachePackageComplete(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnCacheComplete(
+        __in HRESULT /*hrStatus*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecuteBegin(
+        __in DWORD /*cExecutingPackages*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecutePackageBegin(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in BOOL /*fExecute*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecutePatchTarget(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in_z LPCWSTR /*wzTargetProductCode*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecuteProgress(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in DWORD /*dwProgressPercentage*/,
+        __in DWORD /*dwOverallProgressPercentage*/,
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecuteMsiMessage(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in INSTALLMESSAGE /*messageType*/,
+        __in DWORD /*dwUIHint*/,
+        __in_z LPCWSTR /*wzMessage*/,
+        __in DWORD /*cData*/,
+        __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
+        __in int /*nRecommendation*/,
+        __inout int* /*pResult*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecuteFilesInUse(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in DWORD /*cFiles*/,
+        __in_ecount_z(cFiles) LPCWSTR* /*rgwzFiles*/,
+        __in int /*nRecommendation*/,
+        __inout int* /*pResult*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecutePackageComplete(
+        __in_z LPCWSTR /*wzPackageId*/,
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
+        __in BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnExecuteComplete(
+        __in HRESULT /*hrStatus*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnUnregisterBegin(
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnUnregisterComplete(
+        __in HRESULT /*hrStatus*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnApplyComplete(
+        __in HRESULT /*hrStatus*/,
+        __in BOOTSTRAPPER_APPLY_RESTART /*restart*/,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* /*pAction*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnLaunchApprovedExeBegin(
+        __inout BOOL* /*pfCancel*/
+        )
+    {
+        return S_OK;
+    }
+
+    virtual STDMETHODIMP OnLaunchApprovedExeComplete(
         __in HRESULT /*hrStatus*/,
         __in DWORD /*dwProcessId*/
         )
     {
+        return S_OK;
     }
 
     virtual STDMETHODIMP_(HRESULT) BAProc(

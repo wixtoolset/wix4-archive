@@ -139,6 +139,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnPlanRelatedBundle - called when the engine begins planning a related bundle.
     STDMETHOD(OnPlanRelatedBundle)(
         __in_z LPCWSTR wzBundleId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -146,6 +147,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     // OnPlanPackageBegin - called when the engine begins planning a package.
     STDMETHOD(OnPlanPackageBegin)(
         __in_z LPCWSTR wzPackageId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -155,6 +157,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzCompatiblePackageId,
         __in DWORD64 dw64CompatiblePackageVersion,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -176,6 +179,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnPlanTargetMsiPackage)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzProductCode,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -185,6 +189,7 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     STDMETHOD(OnPlanMsiFeature)(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzFeatureId,
+        __in BOOTSTRAPPER_FEATURE_STATE recommendedState,
         __inout BOOTSTRAPPER_FEATURE_STATE* pRequestedState,
         __inout BOOL* pfCancel
         ) = 0;
@@ -208,116 +213,102 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
 
     // OnApplyBegin - called when the engine begins applying the plan.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnApplyBegin)(
-        __in DWORD dwPhaseCount
+    STDMETHOD(OnApplyBegin)(
+        __in DWORD dwPhaseCount,
+        __inout BOOL* pfCancel
         ) = 0;
 
-    // OnElevate - called before the engine displays an elevation prompt.
-    //             Will only happen once per execution of the engine.
+    // OnElevateBegin - called before the engine displays an elevation prompt.
+    //                  Will only happen once per execution of the engine,
+    //                  assuming the elevation was successful.
+    STDMETHOD(OnElevateBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
+
+    // OnElevateComplete - called after the engine attempted to elevate.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to abort elevation and stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnElevate)() = 0;
+    STDMETHOD(OnElevateComplete)(
+        __in HRESULT hrStatus
+        ) = 0;
 
     // OnProgress - called when the engine makes progress.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnProgress)(
+    STDMETHOD(OnProgress)(
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnError - called when the engine encounters an error.
     //
-    // Return:
+    // nResult:
     //  uiFlags is a combination of valid ID* return values appropriate for
     //          the error.
     //
     //  IDNOACTION instructs the engine to pass the error through to default
     //             handling which usually results in the apply failing.
-    STDMETHOD_(int, OnError)(
+    STDMETHOD(OnError)(
         __in BOOTSTRAPPER_ERROR_TYPE errorType,
         __in_z_opt LPCWSTR wzPackageId,
         __in DWORD dwCode,
         __in_z_opt LPCWSTR wzError,
-        __in DWORD uiFlags,
+        __in DWORD dwUIHint,
         __in DWORD cData,
         __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-        __in int nRecommendation
+        __in int nRecommendation,
+        __inout int* pResult
         ) = 0;
 
     // OnRegisterBegin - called when the engine registers the bundle.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnRegisterBegin)() = 0;
+    STDMETHOD(OnRegisterBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnRegisterComplete - called when the engine registration is
     //                      complete.
     //
-    STDMETHOD_(void, OnRegisterComplete)(
+    STDMETHOD(OnRegisterComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
     // OnCacheBegin - called when the engine begins caching.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheBegin)() = 0;
+    STDMETHOD(OnCacheBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnCachePackageBegin - called when the engine begins caching
     //                       a package.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCachePackageBegin)(
+    STDMETHOD(OnCachePackageBegin)(
         __in_z LPCWSTR wzPackageId,
         __in DWORD cCachePayloads,
-        __in DWORD64 dw64PackageCacheSize
+        __in DWORD64 dw64PackageCacheSize,
+        __inout BOOL* pfCancel
         )  = 0;
 
     // OnCacheAcquireBegin - called when the engine begins copying or
     //                       downloading a payload to the working folder.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheAcquireBegin)(
+    STDMETHOD(OnCacheAcquireBegin)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in BOOTSTRAPPER_CACHE_OPERATION operation,
-        __in_z LPCWSTR wzSource
+        __in_z LPCWSTR wzSource,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnCacheAcquireProgress - called when the engine makes progresss copying
     //                          or downloading a payload to the working folder.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheAcquireProgress)(
+    STDMETHOD(OnCacheAcquireProgress)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in DWORD64 dw64Progress,
         __in DWORD64 dw64Total,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnResolveSource - called when a payload or container cannot be found locally.
@@ -326,133 +317,97 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //  wzPayloadId will be NULL when resolving a container.
     //  wzDownloadSource will be NULL if the container or payload does not provide a DownloadURL.
     //
-    // Return:
-    //  IDRETRY instructs the engine to try the local source again.
-    //
-    //  IDDOWNLOAD instructs the engine to try the download source.
-    //
-    //  All other return codes result in an error.
-    //
     // Notes:
-    //  It is expected the BA may call IBurnCore::SetLocalSource() or IBurnCore::SetDownloadSource()
-    //  to update the source location before returning IDRETRY or IDDOWNLOAD.
-    STDMETHOD_(int, OnResolveSource)(
+    //  It is expected the BA may call IBootstrapperEngine::SetLocalSource() or IBootstrapperEngine::SetDownloadSource()
+    //  to update the source location before returning BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY or BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD.
+    STDMETHOD(OnResolveSource)(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in_z LPCWSTR wzLocalSource,
-        __in_z_opt LPCWSTR wzDownloadSource
+        __in_z_opt LPCWSTR wzDownloadSource,
+        __in BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnCacheAcquireComplete - called after the engine copied or downloaded
     //                          a payload to the working folder.
     //
-    // Return:
-    //  IDRETRY instructs the engine to try the copy or download of the payload again.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnCacheAcquireComplete)(
+    STDMETHOD(OnCacheAcquireComplete)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnCacheVerifyBegin - called when the engine begins to verify then copy
     //                      a payload or container to the package cache folder.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop caching.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnCacheVerifyBegin)(
+    STDMETHOD(OnCacheVerifyBegin)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
-        __in_z_opt LPCWSTR wzPayloadId
+        __in_z_opt LPCWSTR wzPayloadId,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnCacheVerifyComplete - called after the engine verifies and copies
     //                         a payload or container to the package cache folder.
     //
-    // Return:
-    //  IDRETRY instructs the engine to try the verification of the payload again.
-    //          Ignored if hrStatus is success.
-    //
-    //  IDTRYAGAIN instructs the engine to acquire the payload again. Ignored if
-    //             hrStatus is success.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnCacheVerifyComplete)(
+    STDMETHOD(OnCacheVerifyComplete)(
         __in_z_opt LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnCachePackageComplete - called after the engine attempts to copy or download all
     //                          payloads of a package into the package cache folder.
     //
-    // Return:
-    //  IDIGNORE instructs the engine to ignore non-vital package failures and continue with the
-    //           caching. Ignored if hrStatus is a success or the package is vital.
-    //
-    //  IDRETRY instructs the engine to try the acquisition and verification of the package
-    //          again. Ignored if hrStatus is a success.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnCachePackageComplete)(
+    STDMETHOD(OnCachePackageComplete)(
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* pAction
         )  = 0;
 
     // OnCacheComplete - called when the engine caching is complete.
     //
-    STDMETHOD_(void, OnCacheComplete)(
+    STDMETHOD(OnCacheComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
     // OnExecuteBegin - called when the engine begins executing the plan.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecuteBegin)(
-        __in DWORD cExecutingPackages
+    STDMETHOD(OnExecuteBegin)(
+        __in DWORD cExecutingPackages,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnExecuteBegin - called when the engine begins executing a package.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecutePackageBegin)(
+    STDMETHOD(OnExecutePackageBegin)(
         __in_z LPCWSTR wzPackageId,
-        __in BOOL fExecute
+        __in BOOL fExecute,
+        __inout BOOL* pfCancel
         ) = 0;
 
-    // OnExecutePatchTarget - called when the engine executes one or more patches targeting
-    //                        a product.
+    // OnExecutePatchTarget - called for each patch in an MspPackage targeting the product
+    //                        when the engine begins executing the MspPackage.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecutePatchTarget)(
+    STDMETHOD(OnExecutePatchTarget)(
         __in_z LPCWSTR wzPackageId,
-        __in_z LPCWSTR wzTargetProductCode
+        __in_z LPCWSTR wzTargetProductCode,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnExecuteProgress - called when the engine makes progress executing a package.
     //
-    // Return:
-    //  IDCANCEL instructs the engine to stop applying.
-    //
-    //  IDNOACTION instructs the engine to continue.
-    STDMETHOD_(int, OnExecuteProgress)(
+    STDMETHOD(OnExecuteProgress)(
         __in_z LPCWSTR wzPackageId,
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         ) = 0;
 
     // OnExecuteMsiMessage - called when the engine receives an MSI package message.
@@ -463,14 +418,15 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //
     //  IDNOACTION instructs the engine to pass the message through to default
     //             handling which usually results in the execution continuing.
-    STDMETHOD_(int, OnExecuteMsiMessage)(
+    STDMETHOD(OnExecuteMsiMessage)(
         __in_z LPCWSTR wzPackageId,
-        __in INSTALLMESSAGE mt,
-        __in UINT uiFlags,
+        __in INSTALLMESSAGE messageType,
+        __in DWORD dwUIHint,
         __in_z LPCWSTR wzMessage,
         __in DWORD cData,
         __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-        __in int nRecommendation
+        __in int nRecommendation,
+        __inout int* pResult
         ) = 0;
 
     // OnExecuteFilesInUse - called when the engine encounters files in use while
@@ -489,79 +445,60 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
     //
     //  IDNOACTION is equivalent to ignoring the running applications. A restart will be
     //             required.
-    STDMETHOD_(int, OnExecuteFilesInUse)(
+    STDMETHOD(OnExecuteFilesInUse)(
         __in_z LPCWSTR wzPackageId,
         __in DWORD cFiles,
-        __in_ecount_z(cFiles) LPCWSTR* rgwzFiles
+        __in_ecount_z(cFiles) LPCWSTR* rgwzFiles,
+        __in int nRecommendation,
+        __inout int* pResult
         ) = 0;
 
     // OnExecutePackageComplete - called when a package execution is complete.
     //
-    // Parameters:
-    //  restart will indicate whether this package requires a reboot or initiated the reboot already.
-    //
-    // Return:
-    //  IDIGNORE instructs the engine to ignore non-vital package failures and continue with the
-    //           install. Ignored if hrStatus is a success or the package is vital.
-    //
-    //  IDRETRY instructs the engine to try the execution of the package again. Ignored if hrStatus
-    //          is a success.
-    //
-    //  IDRESTART instructs the engine to stop processing the chain and restart. The engine will
-    //            launch again after the machine is restarted.
-    //
-    //  IDSUSPEND instructs the engine to stop processing the chain and suspend the current state.
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnExecutePackageComplete)(
+    STDMETHOD(OnExecutePackageComplete)(
         __in_z LPCWSTR wzPackageId,
         __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnExecuteComplete - called when the engine execution is complete.
     //
-    STDMETHOD_(void, OnExecuteComplete)(
+    STDMETHOD(OnExecuteComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
     // OnUnregisterBegin - called when the engine unregisters the bundle.
     //
-    STDMETHOD_(void, OnUnregisterBegin)() = 0;
+    STDMETHOD(OnUnregisterBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnUnregisterComplete - called when the engine unregistration is complete.
     //
-    STDMETHOD_(void, OnUnregisterComplete)(
+    STDMETHOD(OnUnregisterComplete)(
         __in HRESULT hrStatus
         ) = 0;
 
     // OnApplyComplete - called after the plan has been applied.
     //
-    // Parameters:
-    //  restart will indicate whether any package required a reboot or initiated the reboot already.
-    //
-    // Return:
-    //  IDRESTART instructs the engine to restart. The engine will not launch again after the machine
-    //            is rebooted. Ignored if reboot was already initiated by OnExecutePackageComplete().
-    //
-    //  All other return codes are ignored.
-    STDMETHOD_(int, OnApplyComplete)(
+    STDMETHOD(OnApplyComplete)(
         __in HRESULT hrStatus,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
         ) = 0;
 
     // OnLaunchApprovedExeBegin - called before trying to launch the preapproved executable.
     // 
-    STDMETHOD_(int, OnLaunchApprovedExeBegin)() = 0;
-
+    STDMETHOD(OnLaunchApprovedExeBegin)(
+        __inout BOOL* pfCancel
+        ) = 0;
 
     // OnLaunchApprovedExeComplete - called after trying to launch the preapproved executable.
     //
-    // Parameters:
-    //  dwProcessId is only valid if the operation succeeded.
-    //
-    STDMETHOD_(void, OnLaunchApprovedExeComplete)(
+    STDMETHOD(OnLaunchApprovedExeComplete)(
         __in HRESULT hrStatus,
         __in DWORD dwProcessId
         ) = 0;

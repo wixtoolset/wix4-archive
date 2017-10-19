@@ -9,6 +9,14 @@ static int FilterResult(
     __in int nResult
     );
 
+static HRESULT FilterExecuteResult(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOL fRollback,
+    __in BOOL fCancel,
+    __in LPCWSTR sczEventName
+    );
+
 
 // function definitions
 
@@ -190,7 +198,7 @@ extern "C" HRESULT UserExperienceRemove(
 }
 
 extern "C" int UserExperienceSendError(
-    __in IBootstrapperApplication* pUserExperience,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOTSTRAPPER_ERROR_TYPE errorType,
     __in_z_opt LPCWSTR wzPackageId,
     __in HRESULT hrCode,
@@ -199,7 +207,7 @@ extern "C" int UserExperienceSendError(
     __in int nRecommendation
     )
 {
-    int nResult = IDNOACTION;
+    int nResult = nRecommendation;
     DWORD dwCode = HRESULT_CODE(hrCode);
     LPWSTR sczError = NULL;
 
@@ -212,9 +220,8 @@ extern "C" int UserExperienceSendError(
         }
     }
 
-    nResult = pUserExperience->OnError(errorType, wzPackageId, dwCode, wzError, uiFlags, 0, NULL, nRecommendation);
+    UserExperienceOnError(pUserExperience, errorType, wzPackageId, dwCode, wzError, uiFlags, 0, NULL, &nResult); // ignore return value.
 
-//LExit:
     ReleaseStr(sczError);
     return nResult;
 }
@@ -288,6 +295,326 @@ extern "C" void UserExperienceExecutePhaseComplete(
     {
         pUserExperience->hrApplyError = hrResult;
     }
+}
+
+EXTERN_C BAAPI UserExperienceOnApplyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwPhaseCount
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONAPPLYBEGIN_ARGS args = { };
+    BA_ONAPPLYBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.dwPhaseCount = dwPhaseCount;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnApplyBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnApplyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONAPPLYCOMPLETE_ARGS args = { };
+    BA_ONAPPLYCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+    args.restart = restart;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnApplyComplete failed.");
+
+    *pAction = results.action;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheAcquireBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in BOOTSTRAPPER_CACHE_OPERATION operation,
+    __in_z LPCWSTR wzSource
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEACQUIREBEGIN_ARGS args = { };
+    BA_ONCACHEACQUIREBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.operation = operation;
+    args.wzSource = wzSource;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheAcquireBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheAcquireComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfRetry
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEACQUIRECOMPLETE_ARGS args = { };
+    BA_ONCACHEACQUIRECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.hrStatus = hrStatus;
+    args.recommendation = *pfRetry ? BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_RETRY : BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_NONE;
+
+    results.cbSize = sizeof(results);
+    results.action = args.recommendation;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheAcquireComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pfRetry = BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION_RETRY == results.action;
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheAcquireProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in DWORD64 dw64Progress,
+    __in DWORD64 dw64Total,
+    __in DWORD dwOverallPercentage
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEACQUIREPROGRESS_ARGS args = { };
+    BA_ONCACHEACQUIREPROGRESS_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.dw64Progress = dw64Progress;
+    args.dw64Total = dw64Total;
+    args.dwOverallPercentage = dwOverallPercentage;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheAcquireProgress failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEBEGIN_ARGS args = { };
+    BA_ONCACHEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHECOMPLETE_ARGS args = { };
+    BA_ONCACHECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheComplete failed.");
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCachePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cCachePayloads,
+    __in DWORD64 dw64PackageCacheSize
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEPACKAGEBEGIN_ARGS args = { };
+    BA_ONCACHEPACKAGEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.cCachePayloads = cCachePayloads;
+    args.dw64PackageCacheSize = dw64PackageCacheSize;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCachePackageBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCachePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEPACKAGECOMPLETE_ARGS args = { };
+    BA_ONCACHEPACKAGECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.hrStatus = hrStatus;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCachePackageComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pAction = results.action;
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheVerifyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEVERIFYBEGIN_ARGS args = { };
+    BA_ONCACHEVERIFYBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheVerifyBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnCacheVerifyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONCACHEVERIFYCOMPLETE_ARGS args = { };
+    BA_ONCACHEVERIFYCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.hrStatus = hrStatus;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnCacheVerifyComplete failed.");
+
+    if (FAILED(hrStatus))
+    {
+        *pAction = results.action;
+    }
+
+LExit:
+    return hr;
 }
 
 EXTERN_C BAAPI UserExperienceOnDetectBegin(
@@ -678,7 +1005,377 @@ EXTERN_C BAAPI UserExperienceOnDetectUpdateComplete(
     hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
     ExitOnFailure(hr, "BA OnDetectUpdateComplete failed.");
 
-    *pfIgnoreError = results.fIgnoreError;
+    if (FAILED(hrStatus))
+    {
+        *pfIgnoreError = results.fIgnoreError;
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnElevateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONELEVATEBEGIN_ARGS args = { };
+    BA_ONELEVATEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnElevateBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnElevateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONELEVATECOMPLETE_ARGS args = { };
+    BA_ONELEVATECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnElevateComplete failed.");
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnError(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOTSTRAPPER_ERROR_TYPE errorType,
+    __in_z_opt LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzError,
+    __in DWORD dwUIHint,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONERROR_ARGS args = { };
+    BA_ONERROR_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.errorType = errorType;
+    args.wzPackageId = wzPackageId;
+    args.dwCode = dwCode;
+    args.wzError = wzError;
+    args.dwUIHint = dwUIHint;
+    args.cData = cData;
+    args.rgwzData = rgwzData;
+    args.nRecommendation = *pnResult;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *pnResult;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnError failed.");
+
+    *pnResult = results.nResult;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD cExecutingPackages
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEBEGIN_ARGS args = { };
+    BA_ONEXECUTEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.cExecutingPackages = cExecutingPackages;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTECOMPLETE_ARGS args = { };
+    BA_ONEXECUTECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteComplete failed.");
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteFilesInUse(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cFiles,
+    __in_ecount_z_opt(cFiles) LPCWSTR* rgwzFiles,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEFILESINUSE_ARGS args = { };
+    BA_ONEXECUTEFILESINUSE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.cFiles = cFiles;
+    args.rgwzFiles = rgwzFiles;
+    args.nRecommendation = *pnResult;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *pnResult;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteFilesInUse failed.");
+
+    *pnResult = results.nResult;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteMsiMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in INSTALLMESSAGE messageType,
+    __in DWORD dwUIHint,
+    __in_z LPCWSTR wzMessage,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEMSIMESSAGE_ARGS args = { };
+    BA_ONEXECUTEMSIMESSAGE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.messageType = messageType;
+    args.dwUIHint = dwUIHint;
+    args.wzMessage = wzMessage;
+    args.cData = cData;
+    args.rgwzData = rgwzData;
+    args.nRecommendation = *pnResult;
+
+    results.cbSize = sizeof(results);
+    results.nResult = *pnResult;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteMsiMessage failed.");
+
+    *pnResult = results.nResult;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecutePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in BOOL fExecute
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPACKAGEBEGIN_ARGS args = { };
+    BA_ONEXECUTEPACKAGEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.fExecute = fExecute;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecutePackageBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecutePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPACKAGECOMPLETE_ARGS args = { };
+    BA_ONEXECUTEPACKAGECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.hrStatus = hrStatus;
+    args.restart = restart;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecutePackageComplete failed.");
+
+    *pAction = results.action;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecutePatchTarget(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzTargetProductCode
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPATCHTARGET_ARGS args = { };
+    BA_ONEXECUTEPATCHTARGET_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.wzTargetProductCode = wzTargetProductCode;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecutePatchTarget failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnExecuteProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage,
+    __out int* pnResult
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONEXECUTEPROGRESS_ARGS args = { };
+    BA_ONEXECUTEPROGRESS_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageId = wzPackageId;
+    args.dwProgressPercentage = dwProgressPercentage;
+    args.dwOverallPercentage = dwOverallPercentage;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnExecuteProgress failed.");
+
+LExit:
+    if (FAILED(hr))
+    {
+        *pnResult = IDERROR;
+    }
+    else if (results.fCancel)
+    {
+        *pnResult = IDCANCEL;
+    }
+    else
+    {
+        *pnResult = IDNOACTION;
+    }
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnLaunchApprovedExeBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS args = { };
+    BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnLaunchApprovedExeBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnLaunchApprovedExeComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in DWORD dwProcessId
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS args = { };
+    BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+    args.dwProcessId = dwProcessId;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnLaunchApprovedExeComplete failed.");
 
 LExit:
     return hr;
@@ -726,6 +1423,7 @@ EXTERN_C BAAPI UserExperienceOnPlanCompatibleMsiPackageBegin(
     args.wzPackageId = wzPackageId;
     args.wzCompatiblePackageId = wzCompatiblePackageId;
     args.dw64CompatiblePackageVersion = dw64CompatiblePackageVersion;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -790,6 +1488,7 @@ EXTERN_C BAAPI UserExperienceOnPlanMsiFeature(
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
     args.wzFeatureId = wzFeatureId;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -840,6 +1539,7 @@ EXTERN_C BAAPI UserExperienceOnPlanPackageBegin(
 
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -900,6 +1600,7 @@ EXTERN_C BAAPI UserExperienceOnPlanRelatedBundle(
 
     args.cbSize = sizeof(args);
     args.wzBundleId = wzBundleId;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -931,6 +1632,7 @@ EXTERN_C BAAPI UserExperienceOnPlanTargetMsiPackage(
     args.cbSize = sizeof(args);
     args.wzPackageId = wzPackageId;
     args.wzProductCode = wzProductCode;
+    args.recommendedState = *pRequestedState;
 
     results.cbSize = sizeof(results);
     results.requestedState = *pRequestedState;
@@ -943,6 +1645,113 @@ EXTERN_C BAAPI UserExperienceOnPlanTargetMsiPackage(
         hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     *pRequestedState = results.requestedState;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fRollback,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONPROGRESS_ARGS args = { };
+    BA_ONPROGRESS_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.dwProgressPercentage = dwProgressPercentage;
+    args.dwOverallPercentage = dwOverallPercentage;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS, &args, &results, pUserExperience->pvBAProcContext);
+    hr = FilterExecuteResult(pUserExperience, hr, fRollback, results.fCancel, L"OnProgress");
+
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnRegisterBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONREGISTERBEGIN_ARGS args = { };
+    BA_ONREGISTERBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnRegisterBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnRegisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONREGISTERCOMPLETE_ARGS args = { };
+    BA_ONREGISTERCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnRegisterComplete failed.");
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnResolveSource(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzLocalSource,
+    __in_z_opt LPCWSTR wzDownloadSource,
+    __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONRESOLVESOURCE_ARGS args = { };
+    BA_ONRESOLVESOURCE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.wzPackageOrContainerId = wzPackageOrContainerId;
+    args.wzPayloadId = wzPayloadId;
+    args.wzLocalSource = wzLocalSource;
+    args.wzDownloadSource = wzDownloadSource;
+    args.recommendation = *pAction;
+
+    results.cbSize = sizeof(results);
+    results.action = *pAction;
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnResolveSource failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    else
+    {
+        *pAction = results.action;
+    }
 
 LExit:
     return hr;
@@ -1010,6 +1819,51 @@ EXTERN_C BAAPI UserExperienceOnSystemShutdown(
     ExitOnFailure(hr, "BA OnSystemShutdown failed.");
     
     *pfCancel = results.fCancel;
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnUnregisterBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONUNREGISTERBEGIN_ARGS args = { };
+    BA_ONUNREGISTERBEGIN_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERBEGIN, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnUnregisterBegin failed.");
+
+    if (results.fCancel)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
+LExit:
+    return hr;
+}
+
+EXTERN_C BAAPI UserExperienceOnUnregisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    )
+{
+    HRESULT hr = S_OK;
+    BA_ONUNREGISTERCOMPLETE_ARGS args = { };
+    BA_ONUNREGISTERCOMPLETE_RESULTS results = { };
+
+    args.cbSize = sizeof(args);
+    args.hrStatus = hrStatus;
+
+    results.cbSize = sizeof(results);
+
+    hr = pUserExperience->pfnBAProc(BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE, &args, &results, pUserExperience->pvBAProcContext);
+    ExitOnFailure(hr, "BA OnUnregisterComplete failed.");
 
 LExit:
     return hr;
@@ -1227,4 +2081,46 @@ static int FilterResult(
     }
 
     return nResult;
+}
+
+// This filters the BA's responses to events during apply.
+// If an apply thread failed, then return its error so this thread will bail out.
+// During rollback, the BA can't cancel.
+static HRESULT FilterExecuteResult(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOL fRollback,
+    __in BOOL fCancel,
+    __in LPCWSTR sczEventName
+    )
+{
+    HRESULT hr = hrStatus;
+    HRESULT hrApplyError = pUserExperience->hrApplyError; // make sure to use the same value for the whole method, since it can be changed in other threads.
+
+    // If we failed return that error unless this is rollback which should roll on.
+    if (FAILED(hrApplyError) && !fRollback)
+    {
+        hr = hrApplyError;
+    }
+    else if (fRollback)
+    {
+        if (fCancel)
+        {
+            LogId(REPORT_STANDARD, MSG_APPLY_CANCEL_IGNORED_DURING_ROLLBACK, sczEventName);
+        }
+        // TODO: since cancel isn't allowed, should the BA's HRESULT be ignored as well?
+        // In the previous code, they could still alter rollback by returning IDERROR.
+    }
+    else
+    {
+        ExitOnFailure(hr, "BA %ls failed.", sczEventName);
+
+        if (fCancel)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+    }
+
+LExit:
+    return hr;
 }

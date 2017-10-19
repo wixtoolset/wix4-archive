@@ -361,6 +361,7 @@ public: // IBootstrapperApplication
 
     virtual STDMETHODIMP OnPlanRelatedBundle(
         __in_z LPCWSTR wzBundleId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
         __inout BOOL* pfCancel
         )
@@ -371,12 +372,13 @@ public: // IBootstrapperApplication
             *pRequestedState = BOOTSTRAPPER_REQUEST_STATE_NONE;
         }
 
-        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, pRequestedState, pfCancel);
+        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, recommendedState, pRequestedState, pfCancel);
     }
 
 
     virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR wzPackageId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
         __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState,
         __inout BOOL* pfCancel
         )
@@ -442,7 +444,7 @@ public: // IBootstrapperApplication
             }
         }
 
-        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, pRequestState, pfCancel);
+        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, recommendedState, pRequestState, pfCancel);
     }
 
 
@@ -482,10 +484,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnCachePackageBegin(
+    virtual STDMETHODIMP OnCachePackageBegin(
         __in_z LPCWSTR wzPackageId,
         __in DWORD cCachePayloads,
-        __in DWORD64 dw64PackageCacheSize
+        __in DWORD64 dw64PackageCacheSize,
+        __inout BOOL* pfCancel
         )
     {
         if (wzPackageId && *wzPackageId)
@@ -503,16 +506,17 @@ public: // IBootstrapperApplication
             }
         }
 
-        return __super::OnCachePackageBegin(wzPackageId, cCachePayloads, dw64PackageCacheSize);
+        return __super::OnCachePackageBegin(wzPackageId, cCachePayloads, dw64PackageCacheSize, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheAcquireProgress(
+    virtual STDMETHODIMP OnCacheAcquireProgress(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in DWORD64 dw64Progress,
         __in DWORD64 dw64Total,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         )
     {
 #ifdef DEBUG
@@ -521,45 +525,48 @@ public: // IBootstrapperApplication
 
         UpdateCacheProgress(dwOverallPercentage);
 
-        return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
+        return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheAcquireComplete(
+    virtual STDMETHODIMP OnCacheAcquireComplete(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* pAction
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, nRecommendation);
+        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, recommendation, pAction);
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheVerifyComplete(
+    virtual STDMETHODIMP OnCacheVerifyComplete(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheVerifyComplete(wzPackageId, wzPayloadId, hrStatus, nRecommendation);
+        return __super::OnCacheVerifyComplete(wzPackageId, wzPayloadId, hrStatus, recommendation, pAction);
     }
 
 
-    virtual STDMETHODIMP_(void) OnCacheComplete(
+    virtual STDMETHODIMP OnCacheComplete(
         __in HRESULT hrStatus
         )
     {
         UpdateCacheProgress(SUCCEEDED(hrStatus) ? 100 : 0);
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT, L"");
         SetState(WIXSTDBA_STATE_CACHED, S_OK); // we always return success here and let OnApplyComplete() deal with the error.
+        return __super::OnCacheComplete(hrStatus);
     }
 
 
-    virtual STDMETHODIMP_(int) OnError(
+    virtual STDMETHODIMP OnError(
         __in BOOTSTRAPPER_ERROR_TYPE errorType,
         __in LPCWSTR wzPackageId,
         __in DWORD dwCode,
@@ -567,15 +574,17 @@ public: // IBootstrapperApplication
         __in DWORD dwUIHint,
         __in DWORD /*cData*/,
         __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
+        __in int /*nRecommendation*/,
+        __inout int* pResult
         )
     {
-        int nResult = nRecommendation;
+        HRESULT hr = S_OK;
+        int nResult = *pResult;
         LPWSTR sczError = NULL;
 
         if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_command.display)
         {
-            HRESULT hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
+            hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
             if (FAILED(hr))
             {
                 nResult = IDERROR;
@@ -597,7 +606,7 @@ public: // IBootstrapperApplication
                     // If no error message was provided, use the error code to try and get an error message.
                     if (!wzError || !*wzError || BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER != errorType)
                     {
-                        HRESULT hr = StrAllocFromError(&sczError, dwCode, NULL);
+                        hr = StrAllocFromError(&sczError, dwCode, NULL);
                         if (FAILED(hr) || !sczError || !*sczError)
                         {
                             // special case for ERROR_FAIL_NOACTION_REBOOT: use loc string for Windows XP
@@ -619,6 +628,7 @@ public: // IBootstrapperApplication
                                 StrAllocFormatted(&sczError, L"0x%x", dwCode);
                             }
                         }
+                        hr = S_OK;
                     }
 
                     nResult = ::MessageBoxW(m_hWnd, sczError ? sczError : wzError, m_pTheme->sczCaption, dwUIHint);
@@ -633,44 +643,47 @@ public: // IBootstrapperApplication
         }
 
         ReleaseStr(sczError);
-        return nResult;
+        *pResult = nResult;
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecuteMsiMessage(
+    virtual STDMETHODIMP OnExecuteMsiMessage(
         __in_z LPCWSTR wzPackageId,
-        __in INSTALLMESSAGE mt,
-        __in UINT uiFlags,
+        __in INSTALLMESSAGE messageType,
+        __in DWORD dwUIHint,
         __in_z LPCWSTR wzMessage,
         __in DWORD cData,
         __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-        __in int nRecommendation
+        __in int nRecommendation,
+        __inout int* pResult
         )
     {
 #ifdef DEBUG
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: OnExecuteMsiMessage() - package: %ls, message: %ls", wzPackageId, wzMessage);
 #endif
-        if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == mt || INSTALLMESSAGE_USER == mt))
+        if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == messageType || INSTALLMESSAGE_USER == messageType))
         {
             if (!m_fShowingInternalUiThisPackage)
             {
-                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
+                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, dwUIHint);
                 return nResult;
             }
         }
 
-        if (INSTALLMESSAGE_ACTIONSTART == mt)
+        if (INSTALLMESSAGE_ACTIONSTART == messageType)
         {
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_ACTIONDATA_TEXT, wzMessage);
         }
 
-        return __super::OnExecuteMsiMessage(wzPackageId, mt, uiFlags, wzMessage, cData, rgwzData, nRecommendation);
+        return __super::OnExecuteMsiMessage(wzPackageId, messageType, dwUIHint, wzMessage, cData, rgwzData, nRecommendation, pResult);
     }
 
 
-    virtual STDMETHODIMP_(int) OnProgress(
+    virtual STDMETHODIMP OnProgress(
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
         )
     {
         WCHAR wzProgress[5] = { };
@@ -685,13 +698,14 @@ public: // IBootstrapperApplication
         ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_BAR, dwOverallProgressPercentage);
         SetTaskbarButtonProgress(dwOverallProgressPercentage);
 
-        return __super::OnProgress(dwProgressPercentage, dwOverallProgressPercentage);
+        return __super::OnProgress(dwProgressPercentage, dwOverallProgressPercentage, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecutePackageBegin(
+    virtual STDMETHODIMP OnExecutePackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __in BOOL fExecute
+        __in BOOL fExecute,
+        __inout BOOL* pfCancel
         )
     {
         LPWSTR sczFormattedString = NULL;
@@ -745,14 +759,15 @@ public: // IBootstrapperApplication
         }
 
         ReleaseStr(sczFormattedString);
-        return __super::OnExecutePackageBegin(wzPackageId, fExecute);
+        return __super::OnExecutePackageBegin(wzPackageId, fExecute, pfCancel);
     }
 
 
-    virtual int __stdcall OnExecuteProgress(
+    virtual STDMETHODIMP OnExecuteProgress(
         __in_z LPCWSTR wzPackageId,
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
         )
     {
         WCHAR wzProgress[5] = { };
@@ -771,44 +786,48 @@ public: // IBootstrapperApplication
 
         SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
 
-        return __super::OnExecuteProgress(wzPackageId, dwProgressPercentage, dwOverallProgressPercentage);
+        return __super::OnExecuteProgress(wzPackageId, dwProgressPercentage, dwOverallProgressPercentage, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecutePackageComplete(
+    virtual STDMETHODIMP OnExecutePackageComplete(
         __in_z LPCWSTR wzPackageId,
-        __in HRESULT hrExitCode,
+        __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         )
     {
-        SetProgressState(hrExitCode);
+        HRESULT hr = S_OK;
+        SetProgressState(hrStatus);
 
-        int nResult = __super::OnExecutePackageComplete(wzPackageId, hrExitCode, restart, nRecommendation);
+        hr = __super::OnExecutePackageComplete(wzPackageId, hrStatus, restart, recommendation, pAction);
 
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
         BAL_INFO_PACKAGE* pPackage;
-        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
-        if (SUCCEEDED(hr))
+        HRESULT hrPrereq = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
+        if (SUCCEEDED(hrPrereq))
         {
-            pPrereqPackage->fSuccessfullyInstalled = SUCCEEDED(hrExitCode);
+            pPrereqPackage->fSuccessfullyInstalled = SUCCEEDED(hrStatus);
 
             // If the prerequisite required a restart (any restart) then do an immediate
             // restart to ensure that the bundle will get launched again post reboot.
             if (BOOTSTRAPPER_APPLY_RESTART_NONE != restart)
             {
-                nResult = IDRESTART;
+                *pAction = BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART;
             }
         }
 
-        return nResult;
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(void) OnExecuteComplete(
+    virtual STDMETHODIMP OnExecuteComplete(
         __in HRESULT hrStatus
         )
     {
+        HRESULT hr = S_OK;
+
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_PACKAGE_TEXT, L"");
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_ACTIONDATA_TEXT, L"");
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_PACKAGE_TEXT, L"");
@@ -816,23 +835,28 @@ public: // IBootstrapperApplication
 
         SetState(WIXSTDBA_STATE_EXECUTED, S_OK); // we always return success here and let OnApplyComplete() deal with the error.
         SetProgressState(hrStatus);
+
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnResolveSource(
+    virtual STDMETHODIMP OnResolveSource(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in_z LPCWSTR wzLocalSource,
-        __in_z_opt LPCWSTR wzDownloadSource
+        __in_z_opt LPCWSTR wzDownloadSource,
+        __in BOOTSTRAPPER_RESOLVESOURCE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction,
+        __inout BOOL* pfCancel
         )
     {
-        int nResult = IDERROR; // assume we won't resolve source and that is unexpected.
+        HRESULT hr = S_OK;
 
         if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display)
         {
             if (wzDownloadSource)
             {
-                nResult = IDDOWNLOAD;
+                *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD;
             }
             else // prompt to change the source location.
             {
@@ -852,31 +876,38 @@ public: // IBootstrapperApplication
 
                 if (::GetOpenFileNameW(&ofn))
                 {
-                    HRESULT hr = m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, ofn.lpstrFile);
-                    nResult = SUCCEEDED(hr) ? IDRETRY : IDERROR;
+                    hr = m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, ofn.lpstrFile);
+                    *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY;
                 }
                 else
                 {
-                    nResult = IDCANCEL;
+                    *pfCancel = TRUE;
                 }
             }
         }
         else if (wzDownloadSource)
         {
             // If doing a non-interactive install and download source is available, let's try downloading the package silently
-            nResult = IDDOWNLOAD;
+            *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD;
         }
         // else there's nothing more we can do in non-interactive mode
 
-        return CheckCanceled() ? IDCANCEL : nResult;
+        *pfCancel |= CheckCanceled();
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnApplyComplete(
+    virtual STDMETHODIMP OnApplyComplete(
         __in HRESULT hrStatus,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
         )
     {
+        HRESULT hr = S_OK;
+
+        __super::OnApplyComplete(hrStatus, restart, recommendation, pAction);
+
         m_restartResult = restart; // remember the restart result so we return the correct error code no matter what the user chooses to do in the UI.
 
         // If a restart was encountered and we are not suppressing restarts, then restart is required.
@@ -919,14 +950,18 @@ public: // IBootstrapperApplication
         SetState(WIXSTDBA_STATE_APPLIED, hrStatus);
         SetTaskbarButtonProgress(100); // show full progress bar, green, yellow, or red
 
-        return IDNOACTION;
+        *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
+
+        return hr;
     }
 
-    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+    virtual STDMETHODIMP OnLaunchApprovedExeComplete(
         __in HRESULT hrStatus,
         __in DWORD /*processId*/
         )
     {
+        HRESULT hr = S_OK;
+
         if (HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hrStatus)
         {
             //try with ShelExec next time
@@ -936,6 +971,8 @@ public: // IBootstrapperApplication
         {
             ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
         }
+
+        return hr;
     }
 
     virtual STDMETHODIMP_(void) BAProcFallback(
@@ -1027,6 +1064,96 @@ public: // IBootstrapperApplication
             break;
         case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE:
             OnPlanPackageCompleteFallback(reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN:
+            OnApplyBeginFallback(reinterpret_cast<BA_ONAPPLYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATEBEGIN:
+            OnElevateBeginFallback(reinterpret_cast<BA_ONELEVATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE:
+            OnElevateCompleteFallback(reinterpret_cast<BA_ONELEVATECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS:
+            OnProgressFallback(reinterpret_cast<BA_ONPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
+            OnErrorFallback(reinterpret_cast<BA_ONERROR_ARGS*>(pvArgs), reinterpret_cast<BA_ONERROR_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN:
+            OnRegisterBeginFallback(reinterpret_cast<BA_ONREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERCOMPLETE:
+            OnRegisterCompleteFallback(reinterpret_cast<BA_ONREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEBEGIN:
+            OnCacheBeginFallback(reinterpret_cast<BA_ONCACHEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN:
+            OnCachePackageBeginFallback(reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREBEGIN:
+            OnCacheAcquireBeginFallback(reinterpret_cast<BA_ONCACHEACQUIREBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS:
+            OnCacheAcquireProgressFallback(reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE:
+            OnResolveSourceFallback(reinterpret_cast<BA_ONRESOLVESOURCE_ARGS*>(pvArgs), reinterpret_cast<BA_ONRESOLVESOURCE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE:
+            OnCacheAcquireCompleteFallback(reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYBEGIN:
+            OnCacheVerifyBeginFallback(reinterpret_cast<BA_ONCACHEVERIFYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEVERIFYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYCOMPLETE:
+            OnCacheVerifyCompleteFallback(reinterpret_cast<BA_ONCACHEVERIFYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEVERIFYCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGECOMPLETE:
+            OnCachePackageCompleteFallback(reinterpret_cast<BA_ONCACHEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHECOMPLETE:
+            OnCacheCompleteFallback(reinterpret_cast<BA_ONCACHECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN:
+            OnExecuteBeginFallback(reinterpret_cast<BA_ONEXECUTEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGEBEGIN:
+            OnExecutePackageBeginFallback(reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET:
+            OnExecutePatchTargetFallback(reinterpret_cast<BA_ONEXECUTEPATCHTARGET_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPATCHTARGET_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS:
+            OnExecuteProgressFallback(reinterpret_cast<BA_ONEXECUTEPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE:
+            OnExecuteMsiMessageFallback(reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE:
+            OnExecuteFilesInUseFallback(reinterpret_cast<BA_ONEXECUTEFILESINUSE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEFILESINUSE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE:
+            OnExecutePackageCompleteFallback(reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTECOMPLETE:
+            OnExecuteCompleteFallback(reinterpret_cast<BA_ONEXECUTECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERBEGIN:
+            OnUnregisterBeginFallback(reinterpret_cast<BA_ONUNREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE:
+            OnUnregisterCompleteFallback(reinterpret_cast<BA_ONUNREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE:
+            OnApplyCompleteFallback(reinterpret_cast<BA_ONAPPLYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN:
+            OnLaunchApprovedExeBeginFallback(reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE:
+            OnLaunchApprovedExeCompleteFallback(reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS*>(pvResults));
             break;
         default:
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
@@ -1239,6 +1366,246 @@ private: // privates
         )
     {
         m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnApplyBeginFallback(
+        __in BA_ONAPPLYBEGIN_ARGS* pArgs,
+        __inout BA_ONAPPLYBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONAPPLYBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnElevateBeginFallback(
+        __in BA_ONELEVATEBEGIN_ARGS* pArgs,
+        __inout BA_ONELEVATEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONELEVATEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnElevateCompleteFallback(
+        __in BA_ONELEVATECOMPLETE_ARGS* pArgs,
+        __inout BA_ONELEVATECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONELEVATECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnProgressFallback(
+        __in BA_ONPROGRESS_ARGS* pArgs,
+        __inout BA_ONPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnErrorFallback(
+        __in BA_ONERROR_ARGS* pArgs,
+        __inout BA_ONERROR_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONERROR, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnRegisterBeginFallback(
+        __in BA_ONREGISTERBEGIN_ARGS* pArgs,
+        __inout BA_ONREGISTERBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONREGISTERBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnRegisterCompleteFallback(
+        __in BA_ONREGISTERCOMPLETE_ARGS* pArgs,
+        __inout BA_ONREGISTERCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONREGISTERCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheBeginFallback(
+        __in BA_ONCACHEBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCachePackageBeginFallback(
+        __in BA_ONCACHEPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireBeginFallback(
+        __in BA_ONCACHEACQUIREBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIREBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireProgressFallback(
+        __in BA_ONCACHEACQUIREPROGRESS_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIREPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnResolveSourceFallback(
+        __in BA_ONRESOLVESOURCE_ARGS* pArgs,
+        __inout BA_ONRESOLVESOURCE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONRESOLVESOURCE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireCompleteFallback(
+        __in BA_ONCACHEACQUIRECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIRECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIRECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheVerifyBeginFallback(
+        __in BA_ONCACHEVERIFYBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEVERIFYBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEVERIFYBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheVerifyCompleteFallback(
+        __in BA_ONCACHEVERIFYCOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEVERIFYCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEVERIFYCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCachePackageCompleteFallback(
+        __in BA_ONCACHEPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheCompleteFallback(
+        __in BA_ONCACHECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteBeginFallback(
+        __in BA_ONEXECUTEBEGIN_ARGS* pArgs,
+        __inout BA_ONEXECUTEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePackageBeginFallback(
+        __in BA_ONEXECUTEPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONEXECUTEPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePatchTargetFallback(
+        __in BA_ONEXECUTEPATCHTARGET_ARGS* pArgs,
+        __inout BA_ONEXECUTEPATCHTARGET_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPATCHTARGET, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteProgressFallback(
+        __in BA_ONEXECUTEPROGRESS_ARGS* pArgs,
+        __inout BA_ONEXECUTEPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteMsiMessageFallback(
+        __in BA_ONEXECUTEMSIMESSAGE_ARGS* pArgs,
+        __inout BA_ONEXECUTEMSIMESSAGE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEMSIMESSAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteFilesInUseFallback(
+        __in BA_ONEXECUTEFILESINUSE_ARGS* pArgs,
+        __inout BA_ONEXECUTEFILESINUSE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEFILESINUSE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePackageCompleteFallback(
+        __in BA_ONEXECUTEPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONEXECUTEPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteCompleteFallback(
+        __in BA_ONEXECUTECOMPLETE_ARGS* pArgs,
+        __inout BA_ONEXECUTECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnUnregisterBeginFallback(
+        __in BA_ONUNREGISTERBEGIN_ARGS* pArgs,
+        __inout BA_ONUNREGISTERBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONUNREGISTERBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnUnregisterCompleteFallback(
+        __in BA_ONUNREGISTERCOMPLETE_ARGS* pArgs,
+        __inout BA_ONUNREGISTERCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONUNREGISTERCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnApplyCompleteFallback(
+        __in BA_ONAPPLYCOMPLETE_ARGS* pArgs,
+        __inout BA_ONAPPLYCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONAPPLYCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnLaunchApprovedExeBeginFallback(
+        __in BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS* pArgs,
+        __inout BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnLaunchApprovedExeCompleteFallback(
+        __in BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS* pArgs,
+        __inout BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
     }
 
     //

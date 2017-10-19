@@ -74,7 +74,7 @@ HRESULT UserExperienceRemove(
     __in BURN_USER_EXPERIENCE* pUserExperience
     );
 int UserExperienceSendError(
-    __in IBootstrapperApplication* pUserExperience,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BOOTSTRAPPER_ERROR_TYPE errorType,
     __in_z_opt LPCWSTR wzPackageId,
     __in HRESULT hrCode,
@@ -98,6 +98,69 @@ void UserExperienceExecuteReset(
 void UserExperienceExecutePhaseComplete(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in HRESULT hrResult
+    );
+BAAPI UserExperienceOnApplyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD dwPhaseCount
+    );
+BAAPI UserExperienceOnApplyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
+);
+BAAPI UserExperienceOnCacheAcquireBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in BOOTSTRAPPER_CACHE_OPERATION operation,
+    __in_z LPCWSTR wzSource
+    );
+BAAPI UserExperienceOnCacheAcquireComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOL* pfRetry
+    );
+BAAPI UserExperienceOnCacheAcquireProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in DWORD64 dw64Progress,
+    __in DWORD64 dw64Total,
+    __in DWORD dwOverallPercentage
+    );
+BAAPI UserExperienceOnCacheBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+BAAPI UserExperienceOnCacheComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    );
+BAAPI UserExperienceOnCachePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cCachePayloads,
+    __in DWORD64 dw64PackageCacheSize
+    );
+BAAPI UserExperienceOnCachePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION* pAction
+    );
+BAAPI UserExperienceOnCacheVerifyBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId
+    );
+BAAPI UserExperienceOnCacheVerifyComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z_opt LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in HRESULT hrStatus,
+    __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
     );
 BAAPI UserExperienceOnDetectBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
@@ -184,6 +247,81 @@ BAAPI UserExperienceOnDetectUpdateComplete(
     __in HRESULT hrStatus,
     __inout BOOL* pfIgnoreError
     );
+BAAPI UserExperienceOnElevateBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+BAAPI UserExperienceOnElevateComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    );
+BAAPI UserExperienceOnError(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOTSTRAPPER_ERROR_TYPE errorType,
+    __in_z_opt LPCWSTR wzPackageId,
+    __in DWORD dwCode,
+    __in_z_opt LPCWSTR wzError,
+    __in DWORD dwUIHint,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* pnResult
+    );
+BAAPI UserExperienceOnExecuteBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in DWORD cExecutingPackages
+    );
+BAAPI UserExperienceOnExecuteComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+);
+BAAPI UserExperienceOnExecuteFilesInUse(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD cFiles,
+    __in_ecount_z_opt(cFiles) LPCWSTR* rgwzFiles,
+    __inout int* pnResult
+    );
+BAAPI UserExperienceOnExecuteMsiMessage(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in INSTALLMESSAGE messageType,
+    __in DWORD dwUIHint,
+    __in_z LPCWSTR wzMessage,
+    __in DWORD cData,
+    __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
+    __inout int* pnResult
+    );
+BAAPI UserExperienceOnExecutePackageBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in BOOL fExecute
+    );
+BAAPI UserExperienceOnExecutePackageComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in HRESULT hrStatus,
+    __in BOOTSTRAPPER_APPLY_RESTART restart,
+    __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
+    );
+BAAPI UserExperienceOnExecutePatchTarget(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in_z LPCWSTR wzTargetProductCode
+    );
+BAAPI UserExperienceOnExecuteProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageId,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage,
+    __inout int* pnResult
+    );
+BAAPI UserExperienceOnLaunchApprovedExeBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+BAAPI UserExperienceOnLaunchApprovedExeComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus,
+    __in DWORD dwProcessId
+    );
 BAAPI UserExperienceOnPlanBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD cPackages
@@ -240,6 +378,27 @@ BAAPI UserExperienceOnPlanTargetMsiPackage(
     __in_z LPCWSTR wzProductCode,
     __inout BOOTSTRAPPER_REQUEST_STATE* pRequestedState
     );
+BAAPI UserExperienceOnProgress(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BOOL fRollback,
+    __in DWORD dwProgressPercentage,
+    __in DWORD dwOverallPercentage
+    );
+BAAPI UserExperienceOnRegisterBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+BAAPI UserExperienceOnRegisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
+    );
+BAAPI UserExperienceOnResolveSource(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in_z LPCWSTR wzPackageOrContainerId,
+    __in_z_opt LPCWSTR wzPayloadId,
+    __in_z LPCWSTR wzLocalSource,
+    __in_z_opt LPCWSTR wzDownloadSource,
+    __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction
+    );
 BAAPI UserExperienceOnShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
@@ -251,6 +410,13 @@ BAAPI UserExperienceOnSystemShutdown(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in DWORD dwEndSession,
     __inout BOOL* pfCancel
+    );
+BAAPI UserExperienceOnUnregisterBegin(
+    __in BURN_USER_EXPERIENCE* pUserExperience
+    );
+BAAPI UserExperienceOnUnregisterComplete(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in HRESULT hrStatus
     );
 HRESULT UserExperienceInterpretResult(
     __in BURN_USER_EXPERIENCE* pUserExperience,

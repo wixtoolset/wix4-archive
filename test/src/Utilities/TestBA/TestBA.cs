@@ -231,7 +231,7 @@ namespace WixTest.BA
 
             if (this.cancelCacheAtProgress > 0 && this.cancelCacheAtProgress <= args.Progress)
             {
-                args.Result = Result.Cancel;
+                args.Cancel = true;
             }
             else if (this.sleepDuringCache > 0)
             {
@@ -283,7 +283,7 @@ namespace WixTest.BA
 
             if (this.cancelExecuteAtProgress > 0 && this.cancelExecuteAtProgress <= args.ProgressPercentage)
             {
-                args.Result = Result.Cancel;
+                args.Cancel = true;
             }
             else if (this.sleepDuringExecute > 0)
             {
@@ -309,7 +309,7 @@ namespace WixTest.BA
         {
             if (!String.IsNullOrEmpty(args.DownloadSource))
             {
-                args.Result = Result.Download;
+                args.Action = BOOTSTRAPPER_RESOLVESOURCE_ACTION.Download;
             }
         }
 

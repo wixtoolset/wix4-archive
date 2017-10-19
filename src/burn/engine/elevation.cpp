@@ -269,9 +269,8 @@ extern "C" HRESULT ElevationElevate(
     int nResult = IDOK;
     HANDLE hPipesCreatedEvent = INVALID_HANDLE_VALUE;
 
-    nResult = pEngineState->userExperience.pUserExperience->OnElevate();
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted elevation requirement.");
+    hr = UserExperienceOnElevateBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted elevation requirement.");
 
     hr = PipeCreateNameAndSecret(&pEngineState->companionConnection.sczName, &pEngineState->companionConnection.sczSecret);
     ExitOnFailure(hr, "Failed to create pipe name and client token.");
@@ -300,7 +299,7 @@ extern "C" HRESULT ElevationElevate(
         {
             // The user clicked "Cancel" on the elevation prompt or the elevation prompt timed out, provide the notification with the option to retry.
             hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-            nResult = UserExperienceSendError(pEngineState->userExperience.pUserExperience, BOOTSTRAPPER_ERROR_TYPE_ELEVATE, NULL, hr, NULL, MB_ICONERROR | MB_RETRYCANCEL, IDNOACTION);
+            nResult = UserExperienceSendError(&pEngineState->userExperience, BOOTSTRAPPER_ERROR_TYPE_ELEVATE, NULL, hr, NULL, MB_ICONERROR | MB_RETRYCANCEL, IDNOACTION);
         }
     } while (IDRETRY == nResult);
     ExitOnFailure(hr, "Failed to elevate.");
@@ -312,6 +311,8 @@ LExit:
     {
         PipeConnectionUninitialize(&pEngineState->companionConnection);
     }
+
+    UserExperienceOnElevateComplete(&pEngineState->userExperience, hr);
 
     return hr;
 }

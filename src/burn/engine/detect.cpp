@@ -242,7 +242,8 @@ extern "C" HRESULT DetectUpdate(
 LExit:
     if (fBeginCalled)
     {
-        if (SUCCEEDED(UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError)) && fIgnoreError)
+        UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError);
+        if (fIgnoreError)
         {
             hr = S_OK;
         }
@@ -266,6 +267,7 @@ static HRESULT AuthenticationRequired(
     BOOTSTRAPPER_ERROR_TYPE errorType = (401 == lHttpCode) ? BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_SERVER : BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_PROXY;
     LPWSTR sczError = NULL;
     DETECT_AUTHENTICATION_REQUIRED_DATA* pAuthenticationData = reinterpret_cast<DETECT_AUTHENTICATION_REQUIRED_DATA*>(pData);
+    int nResult = IDNOACTION;
 
     *pfRetrySend = FALSE;
     *pfRetry = FALSE;
@@ -273,7 +275,7 @@ static HRESULT AuthenticationRequired(
     hr = StrAllocFromError(&sczError, HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED), NULL);
     ExitOnFailure(hr, "Failed to allocation error string.");
 
-    int nResult = pAuthenticationData->pUX->pUserExperience->OnError(errorType, pAuthenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, IDNOACTION);
+    UserExperienceOnError(pAuthenticationData->pUX, errorType, pAuthenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, &nResult); // ignore return value.
     nResult = UserExperienceCheckExecuteResult(pAuthenticationData->pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
     if (IDTRYAGAIN == nResult && pAuthenticationData->pUX->hwndDetect)
     {

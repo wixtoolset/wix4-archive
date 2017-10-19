@@ -2,6 +2,111 @@
 
 #include "precomp.h"
 
+static HRESULT BAEngineGetPackageCount(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETPACKAGECOUNT_ARGS* /*pArgs*/,
+    __in BAENGINE_GETPACKAGECOUNT_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD* pcPackages = &pResults->cPackages;
+
+    *pcPackages = pContext->pEngineState->packages.cPackages;
+
+    return hr;
+}
+
+static HRESULT BAEngineGetVariableNumeric(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETVARIABLENUMERIC_ARGS* pArgs,
+    __in BAENGINE_GETVARIABLENUMERIC_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    LONGLONG* pllValue = &pResults->llValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableGetNumeric(&pContext->pEngineState->variables, wzVariable, pllValue);
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    return hr;
+}
+
+static HRESULT BAEngineGetVariableString(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETVARIABLESTRING_ARGS* pArgs,
+    __in BAENGINE_GETVARIABLESTRING_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczValue = NULL;
+    size_t cchRemaining = 0;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    LPWSTR wzValue = pResults->wzValue;
+    DWORD* pcchValue = &pResults->cchValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableGetString(&pContext->pEngineState->variables, wzVariable, &sczValue);
+        if (SUCCEEDED(hr))
+        {
+            if (wzValue)
+            {
+                hr = ::StringCchCopyExW(wzValue, *pcchValue, sczValue, NULL, &cchRemaining, STRSAFE_FILL_BEHIND_NULL);
+                if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
+                {
+                    hr = E_MOREDATA;
+
+                    ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
+                    *pcchValue = cchRemaining + 1;
+                }
+            }
+            else
+            {
+                hr = E_MOREDATA;
+
+                ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
+                *pcchValue = cchRemaining + 1;
+            }
+        }
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    StrSecureZeroFreeString(sczValue);
+    return hr;
+}
+
+static HRESULT BAEngineGetVariableVersion(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_GETVARIABLEVERSION_ARGS* pArgs,
+    __in BAENGINE_GETVARIABLEVERSION_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    DWORD64* pqwValue = &pResults->qwValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableGetVersion(&pContext->pEngineState->variables, wzVariable, pqwValue);
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -74,105 +179,35 @@ public: // IUnknown
 
 public: // IBootstrapperEngine
     virtual STDMETHODIMP GetPackageCount(
-        __out DWORD* pcPackages
+        __out DWORD* /*pcPackages*/
         )
     {
-        HRESULT hr = S_OK;
-        if (pcPackages)
-        {
-            *pcPackages = m_pEngineState->packages.cPackages;
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
-    // The contents of pllValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     virtual STDMETHODIMP GetVariableNumeric(
-        __in_z LPCWSTR wzVariable,
-        __out LONGLONG* pllValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __out LONGLONG* /*pllValue*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzVariable && *wzVariable && pllValue)
-        {
-            hr = VariableGetNumeric(&m_pEngineState->variables, wzVariable, pllValue);
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
-    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroFree.
     virtual STDMETHODIMP GetVariableString(
-        __in_z LPCWSTR wzVariable,
-        __out_ecount_opt(*pcchValue) LPWSTR wzValue,
-        __inout DWORD* pcchValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __out_ecount_opt(*pcchValue) LPWSTR /*wzValue*/,
+        __inout DWORD* /*pcchValue*/
         )
     {
-        HRESULT hr = S_OK;
-        LPWSTR sczValue = NULL;
-        size_t cchRemaining = 0;
-
-        if (wzVariable && *wzVariable && pcchValue)
-        {
-            hr = VariableGetString(&m_pEngineState->variables, wzVariable, &sczValue);
-            if (SUCCEEDED(hr))
-            {
-                if (wzValue)
-                {
-                    hr = ::StringCchCopyExW(wzValue, *pcchValue, sczValue, NULL, &cchRemaining, STRSAFE_FILL_BEHIND_NULL);
-                    if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
-                    {
-                        hr = E_MOREDATA;
-
-                        ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
-                        *pcchValue = cchRemaining + 1;
-                    }
-                }
-                else
-                {
-                    hr = E_MOREDATA;
-
-                    ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
-                    *pcchValue = cchRemaining + 1;
-                }
-            }
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        StrSecureZeroFreeString(sczValue);
-        return hr;
+        return E_NOTIMPL;
     }
 
-    // The contents of wzValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     virtual STDMETHODIMP GetVariableVersion(
-        __in_z LPCWSTR wzVariable,
-        __out DWORD64* pqwValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __out DWORD64* /*pqwValue*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzVariable && *wzVariable && pqwValue)
-        {
-            hr = VariableGetVersion(&m_pEngineState->variables, wzVariable, pqwValue);
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
     // The contents of wzOut may be sensitive, should keep encrypted and SecureZeroFree.
@@ -1003,8 +1038,25 @@ HRESULT WINAPI EngineForApplicationProc(
     HRESULT hr = S_OK;
     BOOTSTRAPPER_ENGINE_CONTEXT* pContext = reinterpret_cast<BOOTSTRAPPER_ENGINE_CONTEXT*>(pvContext);
 
+    if (!pContext || !pvArgs || !pvResults)
+    {
+        ExitFunction1(hr = E_INVALIDARG);
+    }
+
     switch (message)
     {
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETPACKAGECOUNT:
+        hr = BAEngineGetPackageCount(pContext, reinterpret_cast<BAENGINE_GETPACKAGECOUNT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETPACKAGECOUNT_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLENUMERIC:
+        hr = BAEngineGetVariableNumeric(pContext, reinterpret_cast<BAENGINE_GETVARIABLENUMERIC_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLENUMERIC_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLESTRING:
+        hr = BAEngineGetVariableString(pContext, reinterpret_cast<BAENGINE_GETVARIABLESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLESTRING_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLEVERSION:
+        hr = BAEngineGetVariableVersion(pContext, reinterpret_cast<BAENGINE_GETVARIABLEVERSION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLEVERSION_RESULTS*>(pvResults));
+        break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
         break;
@@ -1013,5 +1065,6 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     }
 
+LExit:
     return hr;
 }
