@@ -1,3 +1,9 @@
+## WixBuild: Version 4.0.0.5918
+
+* RobMen - WIXBUG:5724 - fix DLL hijack of clean room when bundle launched elevated.
+
+*SeanHall: WIXFEAT:4572 - Add OnElevateComplete callback to Burn.
+
 ## WixBuild: Version 4.0.0.5512
 
 * RobMen: Standardize on .NET Framework v4.5
