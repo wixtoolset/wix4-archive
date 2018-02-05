@@ -170,6 +170,19 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="Direction">
+                <xs:annotation>
+                    <xs:documentation>
+                        Direction type for this firewall exception. Default is "in".
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:NMTOKEN">
+                        <xs:enumeration value="in" />
+                        <xs:enumeration value="out" />
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

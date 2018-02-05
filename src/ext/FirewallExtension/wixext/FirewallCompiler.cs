@@ -88,6 +88,8 @@ namespace WixToolset.Extensions
             string scope = null;
             string remoteAddresses = null;
             string description = null;
+            string directionValue = null;
+            int? direction = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -186,6 +188,21 @@ namespace WixToolset.Extensions
                             break;
                         default:
                             this.Core.UnexpectedAttribute(node, attrib);
+                            break;
+                        case "Direction":
+                            directionValue = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            switch (directionValue)
+                            {
+                                case "in":
+                                    direction = FirewallConstants.NET_FW_RULE_DIR_IN;
+                                    break;
+                                case "out":
+                                    direction = FirewallConstants.NET_FW_RULE_DIR_OUT;
+                                    break;
+                                default:
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeValue(sourceLineNumbers, node.Name.LocalName, "Direction", protocolValue, "in", "out"));
+                                    break;
+                            }
                             break;
                     }
                 }
@@ -303,6 +320,9 @@ namespace WixToolset.Extensions
                 row[8] = componentId;
 
                 row[9] = description;
+
+                // Default is "in"
+                row[10] = CompilerConstants.IntegerNotSet == direction ? FirewallConstants.NET_FW_RULE_DIR_IN : direction;
 
                 if (this.Core.CurrentPlatform == Platform.ARM)
                 {
