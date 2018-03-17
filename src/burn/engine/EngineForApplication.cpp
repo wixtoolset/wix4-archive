@@ -107,6 +107,52 @@ static HRESULT BAEngineGetVariableVersion(
     return hr;
 }
 
+static HRESULT BAEngineFormatString(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_FORMATSTRING_ARGS* pArgs,
+    __in BAENGINE_FORMATSTRING_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczValue = NULL;
+    DWORD cchValue = 0;
+    LPCWSTR wzIn = pArgs->wzIn;
+    LPWSTR wzOut = pResults->wzOut;
+    DWORD* pcchOut = &pResults->cchOut;
+
+    if (wzIn && *wzIn && pcchOut)
+    {
+        hr = VariableFormatString(&pContext->pEngineState->variables, wzIn, &sczValue, &cchValue);
+        if (SUCCEEDED(hr))
+        {
+            if (wzOut)
+            {
+                hr = ::StringCchCopyExW(wzOut, *pcchOut, sczValue, NULL, NULL, STRSAFE_FILL_BEHIND_NULL);
+                if (FAILED(hr))
+                {
+                    *pcchOut = cchValue;
+                    if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
+                    {
+                        hr = E_MOREDATA;
+                    }
+                }
+            }
+            else
+            {
+                hr = E_MOREDATA;
+                *pcchOut = cchValue;
+            }
+        }
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    StrSecureZeroFreeString(sczValue);
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -210,48 +256,13 @@ public: // IBootstrapperEngine
         return E_NOTIMPL;
     }
 
-    // The contents of wzOut may be sensitive, should keep encrypted and SecureZeroFree.
     virtual STDMETHODIMP FormatString(
-        __in_z LPCWSTR wzIn,
-        __out_ecount_opt(*pcchOut) LPWSTR wzOut,
-        __inout DWORD* pcchOut
+        __in_z LPCWSTR /*wzIn*/,
+        __out_ecount_opt(*pcchOut) LPWSTR /*wzOut*/,
+        __inout DWORD* /*pcchOut*/
         )
     {
-        HRESULT hr = S_OK;
-        LPWSTR sczValue = NULL;
-        DWORD cchValue = 0;
-
-        if (wzIn && *wzIn && pcchOut)
-        {
-            hr = VariableFormatString(&m_pEngineState->variables, wzIn, &sczValue, &cchValue);
-            if (SUCCEEDED(hr))
-            {
-                if (wzOut)
-                {
-                    hr = ::StringCchCopyExW(wzOut, *pcchOut, sczValue, NULL, NULL, STRSAFE_FILL_BEHIND_NULL);
-                    if (FAILED(hr))
-                    {
-                        *pcchOut = cchValue;
-                        if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
-                        {
-                            hr = E_MOREDATA;
-                        }
-                    }
-                }
-                else
-                {
-                    hr = E_MOREDATA;
-                    *pcchOut = cchValue;
-                }
-            }
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        StrSecureZeroFreeString(sczValue);
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP EscapeString(
@@ -1056,6 +1067,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_GETVARIABLEVERSION:
         hr = BAEngineGetVariableVersion(pContext, reinterpret_cast<BAENGINE_GETVARIABLEVERSION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_GETVARIABLEVERSION_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_FORMATSTRING:
+        hr = BAEngineFormatString(pContext, reinterpret_cast<BAENGINE_FORMATSTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_FORMATSTRING_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
