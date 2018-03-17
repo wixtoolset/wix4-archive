@@ -153,6 +153,50 @@ static HRESULT BAEngineFormatString(
     return hr;
 }
 
+static HRESULT BAEngineEscapeString(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* /*pContext*/,
+    __in BAENGINE_ESCAPESTRING_ARGS* pArgs,
+    __in BAENGINE_ESCAPESTRING_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczValue = NULL;
+    size_t cchRemaining = 0;
+    LPCWSTR wzIn = pArgs->wzIn;
+    LPWSTR wzOut = pResults->wzOut;
+    DWORD* pcchOut = &pResults->cchOut;
+
+    if (wzIn && *wzIn && pcchOut)
+    {
+        hr = VariableEscapeString(wzIn, &sczValue);
+        if (SUCCEEDED(hr))
+        {
+            if (wzOut)
+            {
+                hr = ::StringCchCopyExW(wzOut, *pcchOut, sczValue, NULL, &cchRemaining, STRSAFE_FILL_BEHIND_NULL);
+                if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
+                {
+                    hr = E_MOREDATA;
+                    ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
+                    *pcchOut = cchRemaining;
+                }
+            }
+            else
+            {
+                ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
+                *pcchOut = cchRemaining;
+            }
+        }
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+    StrSecureZeroFreeString(sczValue);
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -266,44 +310,12 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP EscapeString(
-        __in_z LPCWSTR wzIn,
-        __out_ecount_opt(*pcchOut) LPWSTR wzOut,
-        __inout DWORD* pcchOut
+        __in_z LPCWSTR /*wzIn*/,
+        __out_ecount_opt(*pcchOut) LPWSTR /*wzOut*/,
+        __inout DWORD* /*pcchOut*/
         )
     {
-        HRESULT hr = S_OK;
-        LPWSTR sczValue = NULL;
-        size_t cchRemaining = 0;
-
-        if (wzIn && *wzIn && pcchOut)
-        {
-            hr = VariableEscapeString(wzIn, &sczValue);
-            if (SUCCEEDED(hr))
-            {
-                if (wzOut)
-                {
-                    hr = ::StringCchCopyExW(wzOut, *pcchOut, sczValue, NULL, &cchRemaining, STRSAFE_FILL_BEHIND_NULL);
-                    if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
-                    {
-                        hr = E_MOREDATA;
-                        ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
-                        *pcchOut = cchRemaining;
-                    }
-                }
-                else
-                {
-                    ::StringCchLengthW(sczValue, STRSAFE_MAX_CCH, &cchRemaining);
-                    *pcchOut = cchRemaining;
-                }
-            }
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        StrSecureZeroFreeString(sczValue);
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP EvaluateCondition(
@@ -1070,6 +1082,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_FORMATSTRING:
         hr = BAEngineFormatString(pContext, reinterpret_cast<BAENGINE_FORMATSTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_FORMATSTRING_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_ESCAPESTRING:
+        hr = BAEngineEscapeString(pContext, reinterpret_cast<BAENGINE_ESCAPESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_ESCAPESTRING_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));

@@ -189,7 +189,25 @@ public: // IBootstrapperEngine
         __inout DWORD* pcchOut
         )
     {
-        return m_pEngine->EscapeString(wzIn, wzOut, pcchOut);
+        HRESULT hr = S_OK;
+        BAENGINE_ESCAPESTRING_ARGS args = { };
+        BAENGINE_ESCAPESTRING_RESULTS results = { };
+
+        ExitOnNull(pcchOut, hr, E_INVALIDARG, "pcchOut is required");
+
+        args.cbSize = sizeof(args);
+        args.wzIn = wzIn;
+
+        results.cbSize = sizeof(results);
+        results.wzOut = wzOut;
+        results.cchOut = *pcchOut;
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_ESCAPESTRING, &args, &results, m_pvBAEngineProcContext);
+
+        *pcchOut = results.cchOut;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP EvaluateCondition(
