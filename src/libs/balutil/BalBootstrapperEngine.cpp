@@ -377,7 +377,16 @@ public: // IBootstrapperEngine
         __in LONGLONG llValue
         )
     {
-        return m_pEngine->SetVariableNumeric(wzVariable, llValue);
+        BAENGINE_SETVARIABLENUMERIC_ARGS args = { };
+        BAENGINE_SETVARIABLENUMERIC_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+        args.llValue = llValue;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLENUMERIC, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetVariableString(
