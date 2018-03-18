@@ -95,10 +95,9 @@ extern "C" HRESULT UserExperienceLoad(
 
     args.cbSize = sizeof(BOOTSTRAPPER_CREATE_ARGS);
     args.pCommand = pCommand;
-    args.pEngine = pEngineContext->pEngineForApplication;
     args.pfnBootstrapperEngineProc = EngineForApplicationProc;
     args.pvBootstrapperEngineProcContext = pEngineContext;
-    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 4); // TODO: need to decide whether to keep this, and if so when to update it.
+    args.qwEngineAPIVersion = MAKEQWORDVERSION(0, 0, 0, 5); // TODO: need to decide whether to keep this, and if so when to update it.
 
     results.cbSize = sizeof(BOOTSTRAPPER_CREATE_RESULTS);
 
@@ -114,7 +113,6 @@ extern "C" HRESULT UserExperienceLoad(
     hr = pfnCreate(&args, &results);
     ExitOnFailure(hr, "Failed to create BA.");
 
-    pUserExperience->pUserExperience = results.pApplication;
     pUserExperience->pfnBAProc = results.pfnBootstrapperApplicationProc;
     pUserExperience->pvBAProcContext = results.pvBootstrapperApplicationProcContext;
 
@@ -131,8 +129,6 @@ extern "C" HRESULT UserExperienceUnload(
     )
 {
     HRESULT hr = S_OK;
-
-    ReleaseNullObject(pUserExperience->pUserExperience);
 
     if (pUserExperience->hUXModule)
     {

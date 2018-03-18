@@ -995,3 +995,26 @@ extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_PROC)(
     );
 
 extern "C" typedef void (WINAPI *PFN_BOOTSTRAPPER_APPLICATION_DESTROY)();
+
+
+
+struct BOOTSTRAPPER_CREATE_ARGS
+{
+    DWORD cbSize;
+    DWORD64 qwEngineAPIVersion;
+    PFN_BOOTSTRAPPER_ENGINE_PROC pfnBootstrapperEngineProc;
+    LPVOID pvBootstrapperEngineProcContext;
+    BOOTSTRAPPER_COMMAND* pCommand;
+};
+
+struct BOOTSTRAPPER_CREATE_RESULTS
+{
+    DWORD cbSize;
+    PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBootstrapperApplicationProc;
+    LPVOID pvBootstrapperApplicationProcContext;
+};
+
+extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_CREATE)(
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
+    );
