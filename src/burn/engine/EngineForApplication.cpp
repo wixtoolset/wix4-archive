@@ -580,6 +580,31 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSetVariableString(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_SETVARIABLESTRING_ARGS* pArgs,
+    __in BAENGINE_SETVARIABLESTRING_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    LPCWSTR wzValue = pArgs->wzValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableSetString(&pContext->pEngineState->variables, wzVariable, wzValue, FALSE);
+        ExitOnFailure(hr, "Failed to set numeric variable.");
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "BA did not provide variable name.");
+    }
+
+LExit:
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -777,25 +802,11 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP SetVariableString(
-        __in_z LPCWSTR wzVariable,
-        __in_z_opt LPCWSTR wzValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __in_z_opt LPCWSTR /*wzValue*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzVariable && *wzVariable)
-        {
-            hr = VariableSetString(&m_pEngineState->variables, wzVariable, wzValue, FALSE);
-            ExitOnFailure(hr, "Failed to set numeric variable.");
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-            ExitOnFailure(hr, "UX did not provide variable name.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP SetVariableVersion(
@@ -1208,6 +1219,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLENUMERIC:
         hr = BAEngineSetVariableNumeric(pContext, reinterpret_cast<BAENGINE_SETVARIABLENUMERIC_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETVARIABLENUMERIC_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLESTRING:
+        hr = BAEngineSetVariableString(pContext, reinterpret_cast<BAENGINE_SETVARIABLESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETVARIABLESTRING_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));

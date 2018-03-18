@@ -394,7 +394,16 @@ public: // IBootstrapperEngine
         __in_z_opt LPCWSTR wzValue
         )
     {
-        return m_pEngine->SetVariableString(wzVariable, wzValue);
+        BAENGINE_SETVARIABLESTRING_ARGS args = { };
+        BAENGINE_SETVARIABLESTRING_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+        args.wzValue = wzValue;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLESTRING, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetVariableVersion(
