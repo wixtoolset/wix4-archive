@@ -701,6 +701,23 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineApply(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_APPLY_ARGS* pArgs,
+    __in BAENGINE_APPLY_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!::PostThreadMessageW(pContext->dwThreadId, WM_BURN_APPLY, 0, reinterpret_cast<LPARAM>(pArgs->hwndParent)))
+    {
+        ExitWithLastError(hr, "Failed to post apply message.");
+    }
+
+LExit:
+    return hr;
+}
+
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
 public: // IUnknown
@@ -923,18 +940,10 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP Apply(
-        __in_opt HWND hwndParent
+        __in_opt HWND /*hwndParent*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (!::PostThreadMessageW(m_dwThreadId, WM_BURN_APPLY, 0, reinterpret_cast<LPARAM>(hwndParent)))
-        {
-            ExitWithLastError(hr, "Failed to post apply message.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP Quit(
@@ -1276,6 +1285,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_ELEVATE:
         hr = BAEngineElevate(pContext, reinterpret_cast<BAENGINE_ELEVATE_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_ELEVATE_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_APPLY:
+        hr = BAEngineApply(pContext, reinterpret_cast<BAENGINE_APPLY_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_APPLY_RESULTS*>(pvResults));
         break;
     default:
         hr = E_NOTIMPL;
