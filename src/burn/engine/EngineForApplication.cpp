@@ -259,6 +259,46 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSendEmbeddedError(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_SENDEMBEDDEDERROR_ARGS* pArgs,
+    __in BAENGINE_SENDEMBEDDEDERROR_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    BYTE* pbData = NULL;
+    DWORD cbData = 0;
+    DWORD dwResult = 0;
+    DWORD dwErrorCode = pArgs->dwErrorCode;
+    LPCWSTR wzMessage = pArgs->wzMessage;
+    DWORD dwUIHint = pArgs->dwUIHint;
+    int* pnResult = &pResults->nResult;
+
+    if (BURN_MODE_EMBEDDED != pContext->pEngineState->mode)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_STATE);
+        ExitOnRootFailure(hr, "BA requested to send embedded message when not in embedded mode.");
+    }
+
+    hr = BuffWriteNumber(&pbData, &cbData, dwErrorCode);
+    ExitOnFailure(hr, "Failed to write error code to message buffer.");
+
+    hr = BuffWriteString(&pbData, &cbData, wzMessage ? wzMessage : L"");
+    ExitOnFailure(hr, "Failed to write message string to message buffer.");
+
+    hr = BuffWriteNumber(&pbData, &cbData, dwUIHint);
+    ExitOnFailure(hr, "Failed to write UI hint to message buffer.");
+
+    hr = PipeSendMessage(pContext->pEngineState->embeddedConnection.hPipe, BURN_EMBEDDED_MESSAGE_TYPE_ERROR, pbData, cbData, NULL, NULL, &dwResult);
+    ExitOnFailure(hr, "Failed to send embedded message over pipe.");
+
+    *pnResult = static_cast<int>(dwResult);
+
+LExit:
+    ReleaseBuffer(pbData);
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -397,40 +437,13 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP SendEmbeddedError(
-        __in DWORD dwErrorCode,
-        __in_z_opt LPCWSTR wzMessage,
-        __in DWORD dwUIHint,
-        __out int* pnResult
+        __in DWORD /*dwErrorCode*/,
+        __in_z_opt LPCWSTR /*wzMessage*/,
+        __in DWORD /*dwUIHint*/,
+        __out int* /*pnResult*/
         )
     {
-        HRESULT hr = S_OK;
-        BYTE* pbData = NULL;
-        DWORD cbData = 0;
-        DWORD dwResult = 0;
-
-        if (BURN_MODE_EMBEDDED != m_pEngineState->mode)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_STATE);
-            ExitOnRootFailure(hr, "Application requested to send embedded message when not in embedded mode.");
-        }
-
-        hr = BuffWriteNumber(&pbData, &cbData, dwErrorCode);
-        ExitOnFailure(hr, "Failed to write error code to message buffer.");
-
-        hr = BuffWriteString(&pbData, &cbData, wzMessage ? wzMessage : L"");
-        ExitOnFailure(hr, "Failed to write message string to message buffer.");
-
-        hr = BuffWriteNumber(&pbData, &cbData, dwUIHint);
-        ExitOnFailure(hr, "Failed to write UI hint to message buffer.");
-
-        hr = PipeSendMessage(m_pEngineState->embeddedConnection.hPipe, BURN_EMBEDDED_MESSAGE_TYPE_ERROR, pbData, cbData, NULL, NULL, &dwResult);
-        ExitOnFailure(hr, "Failed to send embedded message over pipe.");
-
-        *pnResult = static_cast<int>(dwResult);
-
-    LExit:
-        ReleaseBuffer(pbData);
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP SendEmbeddedProgress(
@@ -1113,6 +1126,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_LOG:
         hr = BAEngineLog(pContext, reinterpret_cast<BAENGINE_LOG_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_LOG_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDERROR:
+        hr = BAEngineSendEmbeddedError(pContext, reinterpret_cast<BAENGINE_SENDEMBEDDEDERROR_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SENDEMBEDDEDERROR_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));

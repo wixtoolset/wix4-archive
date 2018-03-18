@@ -258,7 +258,25 @@ public: // IBootstrapperEngine
         __out int* pnResult
         )
     {
-        return m_pEngine->SendEmbeddedError(dwErrorCode, wzMessage, dwUIHint, pnResult);
+        HRESULT hr = S_OK;
+        BAENGINE_SENDEMBEDDEDERROR_ARGS args = { };
+        BAENGINE_SENDEMBEDDEDERROR_RESULTS results = { };
+
+        ExitOnNull(pnResult, hr, E_INVALIDARG, "pnResult is required");
+
+        args.cbSize = sizeof(args);
+        args.dwErrorCode = dwErrorCode;
+        args.wzMessage = wzMessage;
+        args.dwUIHint = dwUIHint;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDERROR, &args, &results, m_pvBAEngineProcContext);
+
+        *pnResult = results.nResult;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP SendEmbeddedProgress(
