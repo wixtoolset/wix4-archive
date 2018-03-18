@@ -285,7 +285,24 @@ public: // IBootstrapperEngine
         __out int* pnResult
         )
     {
-        return m_pEngine->SendEmbeddedProgress(dwProgressPercentage, dwOverallProgressPercentage, pnResult);
+        HRESULT hr = S_OK;
+        BAENGINE_SENDEMBEDDEDPROGRESS_ARGS args = { };
+        BAENGINE_SENDEMBEDDEDPROGRESS_RESULTS results = { };
+
+        ExitOnNull(pnResult, hr, E_INVALIDARG, "pnResult is required");
+
+        args.cbSize = sizeof(args);
+        args.dwProgressPercentage = dwProgressPercentage;
+        args.dwOverallProgressPercentage = dwOverallProgressPercentage;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDPROGRESS, &args, &results, m_pvBAEngineProcContext);
+
+        *pnResult = results.nResult;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP SetUpdate(
