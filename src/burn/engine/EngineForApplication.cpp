@@ -718,6 +718,23 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineQuit(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_QUIT_ARGS* pArgs,
+    __in BAENGINE_QUIT_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!::PostThreadMessageW(pContext->dwThreadId, WM_BURN_QUIT, static_cast<WPARAM>(pArgs->dwExitCode), 0))
+    {
+        ExitWithLastError(hr, "Failed to post shutdown message.");
+    }
+
+LExit:
+    return hr;
+}
+
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
 public: // IUnknown
@@ -947,18 +964,10 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP Quit(
-        __in DWORD dwExitCode
+        __in DWORD /*dwExitCode*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (!::PostThreadMessageW(m_dwThreadId, WM_BURN_QUIT, static_cast<WPARAM>(dwExitCode), 0))
-        {
-            ExitWithLastError(hr, "Failed to post shutdown message.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP LaunchApprovedExe(
@@ -1288,6 +1297,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_APPLY:
         hr = BAEngineApply(pContext, reinterpret_cast<BAENGINE_APPLY_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_APPLY_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_QUIT:
+        hr = BAEngineQuit(pContext, reinterpret_cast<BAENGINE_QUIT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_QUIT_RESULTS*>(pvResults));
         break;
     default:
         hr = E_NOTIMPL;
