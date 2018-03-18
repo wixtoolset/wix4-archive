@@ -684,7 +684,6 @@ public: // IMarshal
 
 public:
     CBalBootstrapperEngine(
-        __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
         __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
         __in_opt LPVOID pvBAEngineProcContext
         )
@@ -692,25 +691,15 @@ public:
         m_cReferences = 1;
         m_pfnBAEngineProc = pfnBAEngineProc;
         m_pvBAEngineProcContext = pvBAEngineProcContext;
-
-        pEngine->AddRef();
-        m_pEngine = pEngine;
-    }
-
-    virtual ~CBalBootstrapperEngine()
-    {
-        ReleaseNullObject(m_pEngine);
     }
 
 private:
     long m_cReferences;
-    IBootstrapperEngine* m_pEngine;
     PFN_BOOTSTRAPPER_ENGINE_PROC m_pfnBAEngineProc;
     LPVOID m_pvBAEngineProcContext;
 };
 
 HRESULT BalBootstrapperEngineCreate(
-    __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
     __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
     __in_opt LPVOID pvBAEngineProcContext,
     __out IBootstrapperEngine** ppBootstrapperEngine
@@ -719,7 +708,7 @@ HRESULT BalBootstrapperEngineCreate(
     HRESULT hr = S_OK;
     CBalBootstrapperEngine* pBootstrapperEngine = NULL;
 
-    pBootstrapperEngine = new CBalBootstrapperEngine(pEngine, pfnBAEngineProc, pvBAEngineProcContext);
+    pBootstrapperEngine = new CBalBootstrapperEngine(pfnBAEngineProc, pvBAEngineProcContext);
     ExitOnNull(pBootstrapperEngine, hr, E_OUTOFMEMORY, "Failed to allocate new BalBootstrapperEngine object.");
 
     hr = pBootstrapperEngine->QueryInterface(IID_PPV_ARGS(ppBootstrapperEngine));

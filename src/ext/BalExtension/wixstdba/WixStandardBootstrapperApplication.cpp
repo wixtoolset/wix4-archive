@@ -3695,7 +3695,6 @@ HRESULT CreateBootstrapperApplication(
 
     pResults->pfnBootstrapperApplicationProc = BalBaseBootstrapperApplicationProc;
     pResults->pvBootstrapperApplicationProcContext = pApplication;
-    pResults->pApplication = pApplication;
     pApplication = NULL;
 
 LExit:

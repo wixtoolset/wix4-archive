@@ -28,16 +28,9 @@ struct BOOTSTRAPPER_ENGINE_CONTEXT
 {
     BURN_ENGINE_STATE* pEngineState;
     DWORD dwThreadId;
-    IBootstrapperEngine* pEngineForApplication; // TODO: delete after moving IBootstrapperEngine out of the engine.
 };
 
 // function declarations
-
-HRESULT EngineForApplicationCreate(
-    __in BURN_ENGINE_STATE* pEngineState,
-    __in DWORD dwThreadId,
-    __out IBootstrapperEngine** ppEngineForApplication
-    );
 
 HRESULT WINAPI EngineForApplicationProc(
     __in BOOTSTRAPPER_ENGINE_MESSAGE message,

@@ -699,8 +699,6 @@ static HRESULT RunApplication(
     // Setup the bootstrapper engine.
     engineContext.dwThreadId = ::GetCurrentThreadId();
     engineContext.pEngineState = pEngineState;
-    hr = EngineForApplicationCreate(pEngineState, engineContext.dwThreadId, &engineContext.pEngineForApplication);
-    ExitOnFailure(hr, "Failed to create engine for BA.");
 
     // Load the bootstrapper application.
     hr = UserExperienceLoad(&pEngineState->userExperience, &engineContext, &pEngineState->command);
@@ -745,8 +743,6 @@ LExit:
 
     // Unload BA.
     UserExperienceUnload(&pEngineState->userExperience);
-
-    ReleaseObject(engineContext.pEngineForApplication);
 
     return hr;
 }

@@ -25,7 +25,7 @@ DAPI_(HRESULT) BalInitializeFromCreateArgs(
     HRESULT hr = S_OK;
     IBootstrapperEngine* pEngine = NULL;
 
-    hr = BalBootstrapperEngineCreate(pArgs->pEngine, pArgs->pfnBootstrapperEngineProc, pArgs->pvBootstrapperEngineProcContext, &pEngine);
+    hr = BalBootstrapperEngineCreate(pArgs->pfnBootstrapperEngineProc, pArgs->pvBootstrapperEngineProcContext, &pEngine);
     ExitOnFailure(hr, "Failed to create BalBootstrapperEngine.");
 
     BalInitialize(pEngine);
