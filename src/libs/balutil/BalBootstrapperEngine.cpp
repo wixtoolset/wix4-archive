@@ -314,7 +314,20 @@ public: // IBootstrapperEngine
         __in DWORD cbHash
         )
     {
-        return m_pEngine->SetUpdate(wzLocalSource, wzDownloadSource, qwSize, hashType, rgbHash, cbHash);
+        BAENGINE_SETUPDATE_ARGS args = { };
+        BAENGINE_SETUPDATE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzLocalSource = wzLocalSource;
+        args.wzDownloadSource = wzDownloadSource;
+        args.qwSize = qwSize;
+        args.hashType = hashType;
+        args.rgbHash = rgbHash;
+        args.cbHash = cbHash;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETUPDATE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetLocalSource(

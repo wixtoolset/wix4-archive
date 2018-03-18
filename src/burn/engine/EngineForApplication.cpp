@@ -335,6 +335,89 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSetUpdate(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_SETUPDATE_ARGS* pArgs,
+    __in BAENGINE_SETUPDATE_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR sczId = NULL;
+    LPWSTR sczLocalSource = NULL;
+    LPWSTR sczCommandline = NULL;
+    UUID guid = { };
+    WCHAR wzGuid[39];
+    RPC_STATUS rs = RPC_S_OK;
+    LPCWSTR wzLocalSource = pArgs->wzLocalSource;
+    LPCWSTR wzDownloadSource = pArgs->wzDownloadSource;
+    DWORD64 qwSize = pArgs->qwSize;
+    BOOTSTRAPPER_UPDATE_HASH_TYPE hashType = pArgs->hashType;
+    BYTE* rgbHash = pArgs->rgbHash;
+    DWORD cbHash = pArgs->cbHash;
+
+    ::EnterCriticalSection(&pContext->pEngineState->csActive);
+
+    if ((!wzLocalSource || !*wzLocalSource) && (!wzDownloadSource || !*wzDownloadSource))
+    {
+        UpdateUninitialize(&pContext->pEngineState->update);
+    }
+    else if (BOOTSTRAPPER_UPDATE_HASH_TYPE_NONE == hashType && (0 != cbHash || rgbHash))
+    {
+        hr = E_INVALIDARG;
+    }
+    else if (BOOTSTRAPPER_UPDATE_HASH_TYPE_SHA1 == hashType && (SHA1_HASH_LEN != cbHash || !rgbHash))
+    {
+        hr = E_INVALIDARG;
+    }
+    else
+    {
+        UpdateUninitialize(&pContext->pEngineState->update);
+
+        if (!wzLocalSource || !*wzLocalSource)
+        {
+            hr = StrAllocFormatted(&sczLocalSource, L"update\\%ls", pContext->pEngineState->registration.sczExecutableName);
+            ExitOnFailure(hr, "Failed to default local update source");
+        }
+
+        hr = CoreRecreateCommandLine(&sczCommandline, BOOTSTRAPPER_ACTION_INSTALL, pContext->pEngineState->command.display, pContext->pEngineState->command.restart, BOOTSTRAPPER_RELATION_NONE, FALSE, pContext->pEngineState->registration.sczActiveParent, pContext->pEngineState->registration.sczAncestors, NULL, pContext->pEngineState->command.wzCommandLine);
+        ExitOnFailure(hr, "Failed to recreate command-line for update bundle.");
+
+        // Per-user bundles would fail to use the downloaded update bundle, as the existing install would already be cached 
+        // at the registration id's location.  Here I am generating a random guid, but in the future it would be nice if the
+        // feed would provide the ID of the update.
+        if (!pContext->pEngineState->registration.fPerMachine)
+        {
+            rs = ::UuidCreate(&guid);
+            hr = HRESULT_FROM_RPC(rs);
+            ExitOnFailure(hr, "Failed to create bundle update guid.");
+
+            if (!::StringFromGUID2(guid, wzGuid, countof(wzGuid)))
+            {
+                hr = E_OUTOFMEMORY;
+                ExitOnRootFailure(hr, "Failed to convert bundle update guid into string.");
+            }
+
+            sczId = wzGuid;
+        }
+        else
+        {
+            sczId = pContext->pEngineState->registration.sczId;
+        }
+
+        hr = PseudoBundleInitialize(FILEMAKEVERSION(rmj, rmm, rup, 0), &pContext->pEngineState->update.package, FALSE, sczId, BOOTSTRAPPER_RELATION_UPDATE, BOOTSTRAPPER_PACKAGE_STATE_ABSENT, pContext->pEngineState->registration.sczExecutableName, sczLocalSource ? sczLocalSource : wzLocalSource, wzDownloadSource, qwSize, TRUE, sczCommandline, NULL, NULL, NULL, rgbHash, cbHash);
+        ExitOnFailure(hr, "Failed to set update bundle.");
+
+        pContext->pEngineState->update.fUpdateAvailable = TRUE;
+    }
+
+LExit:
+    ::LeaveCriticalSection(&pContext->pEngineState->csActive);
+
+    ReleaseStr(sczCommandline);
+    ReleaseStr(sczLocalSource);
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -492,83 +575,15 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP SetUpdate(
-        __in_z_opt LPCWSTR wzLocalSource,
-        __in_z_opt LPCWSTR wzDownloadSource,
-        __in DWORD64 qwSize,
-        __in BOOTSTRAPPER_UPDATE_HASH_TYPE hashType,
-        __in_bcount_opt(cbHash) BYTE* rgbHash,
-        __in DWORD cbHash
+        __in_z_opt LPCWSTR /*wzLocalSource*/,
+        __in_z_opt LPCWSTR /*wzDownloadSource*/,
+        __in DWORD64 /*qwSize*/,
+        __in BOOTSTRAPPER_UPDATE_HASH_TYPE /*hashType*/,
+        __in_bcount_opt(cbHash) BYTE* /*rgbHash*/,
+        __in DWORD /*cbHash*/
         )
     {
-        HRESULT hr = S_OK;
-        LPCWSTR sczId = NULL;
-        LPWSTR sczLocalSource = NULL;
-        LPWSTR sczCommandline = NULL;
-        UUID guid = { };
-        WCHAR wzGuid[39];
-        RPC_STATUS rs = RPC_S_OK;
-
-        ::EnterCriticalSection(&m_pEngineState->csActive);
-
-        if ((!wzLocalSource || !*wzLocalSource) && (!wzDownloadSource || !*wzDownloadSource))
-        {
-            UpdateUninitialize(&m_pEngineState->update);
-        }
-        else if (BOOTSTRAPPER_UPDATE_HASH_TYPE_NONE == hashType && (0 != cbHash || rgbHash))
-        {
-            hr = E_INVALIDARG;
-        }
-        else if (BOOTSTRAPPER_UPDATE_HASH_TYPE_SHA1 == hashType && (SHA1_HASH_LEN != cbHash || !rgbHash))
-        {
-            hr = E_INVALIDARG;
-        }
-        else
-        {
-            UpdateUninitialize(&m_pEngineState->update);
-
-            if (!wzLocalSource || !*wzLocalSource)
-            {
-                hr = StrAllocFormatted(&sczLocalSource, L"update\\%ls", m_pEngineState->registration.sczExecutableName);
-                ExitOnFailure(hr, "Failed to default local update source");
-            }
-
-            hr = CoreRecreateCommandLine(&sczCommandline, BOOTSTRAPPER_ACTION_INSTALL, m_pEngineState->command.display, m_pEngineState->command.restart, BOOTSTRAPPER_RELATION_NONE, FALSE, m_pEngineState->registration.sczActiveParent, m_pEngineState->registration.sczAncestors, NULL, m_pEngineState->command.wzCommandLine);
-            ExitOnFailure(hr, "Failed to recreate command-line for update bundle.");            
-
-            // Per-user bundles would fail to use the downloaded update bundle, as the existing install would already be cached 
-            // at the registration id's location.  Here I am generating a random guid, but in the future it would be nice if the
-            // feed would provide the ID of the update.
-            if (!m_pEngineState->registration.fPerMachine)
-            {
-                rs = ::UuidCreate(&guid);
-                hr = HRESULT_FROM_RPC(rs);
-                ExitOnFailure(hr, "Failed to create bundle update guid.");
-
-                if (!::StringFromGUID2(guid, wzGuid, countof(wzGuid)))
-                {
-                    hr = E_OUTOFMEMORY;
-                    ExitOnRootFailure(hr, "Failed to convert bundle update guid into string.");
-                }
-
-                sczId = wzGuid;
-            }
-            else
-            {
-                sczId = m_pEngineState->registration.sczId;
-            }
-            
-            hr = PseudoBundleInitialize(FILEMAKEVERSION(rmj, rmm, rup, 0), &m_pEngineState->update.package, FALSE, sczId, BOOTSTRAPPER_RELATION_UPDATE, BOOTSTRAPPER_PACKAGE_STATE_ABSENT, m_pEngineState->registration.sczExecutableName, sczLocalSource ? sczLocalSource : wzLocalSource, wzDownloadSource, qwSize, TRUE, sczCommandline, NULL, NULL, NULL, rgbHash, cbHash);
-            ExitOnFailure(hr, "Failed to set update bundle.");
-
-            m_pEngineState->update.fUpdateAvailable = TRUE;
-        }
-
-    LExit:
-        ::LeaveCriticalSection(&m_pEngineState->csActive);
-
-        ReleaseStr(sczCommandline);
-        ReleaseStr(sczLocalSource);
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP SetLocalSource(
@@ -1144,6 +1159,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDPROGRESS:
         hr = BAEngineSendEmbeddedProgress(pContext, reinterpret_cast<BAENGINE_SENDEMBEDDEDPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SENDEMBEDDEDPROGRESS_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SETUPDATE:
+        hr = BAEngineSetUpdate(pContext, reinterpret_cast<BAENGINE_SETUPDATE_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETUPDATE_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
