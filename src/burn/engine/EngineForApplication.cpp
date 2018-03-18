@@ -662,6 +662,24 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEnginePlan(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_PLAN_ARGS* pArgs,
+    __in BAENGINE_PLAN_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    BOOTSTRAPPER_ACTION action = pArgs->action;
+
+    if (!::PostThreadMessageW(pContext->dwThreadId, WM_BURN_PLAN, 0, action))
+    {
+        ExitWithLastError(hr, "Failed to post plan message.");
+    }
+
+LExit:
+    return hr;
+}
+
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
 public: // IUnknown
@@ -870,18 +888,10 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP Plan(
-        __in BOOTSTRAPPER_ACTION action
+        __in BOOTSTRAPPER_ACTION /*action*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (!::PostThreadMessageW(m_dwThreadId, WM_BURN_PLAN, 0, action))
-        {
-            ExitWithLastError(hr, "Failed to post plan message.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP Elevate(
@@ -1251,6 +1261,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_PLAN:
+        hr = BAEnginePlan(pContext, reinterpret_cast<BAENGINE_PLAN_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_PLAN_RESULTS*>(pvResults));
         break;
     default:
         hr = E_NOTIMPL;
