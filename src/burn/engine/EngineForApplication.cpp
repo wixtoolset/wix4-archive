@@ -680,6 +680,27 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineElevate(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_ELEVATE_ARGS* pArgs,
+    __in BAENGINE_ELEVATE_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (INVALID_HANDLE_VALUE != pContext->pEngineState->companionConnection.hPipe)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
+    }
+    else if (!::PostThreadMessageW(pContext->dwThreadId, WM_BURN_ELEVATE, 0, reinterpret_cast<LPARAM>(pArgs->hwndParent)))
+    {
+        ExitWithLastError(hr, "Failed to post elevate message.");
+    }
+
+LExit:
+    return hr;
+}
+
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
 public: // IUnknown
@@ -895,22 +916,10 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP Elevate(
-        __in_opt HWND hwndParent
+        __in_opt HWND /*hwndParent*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (INVALID_HANDLE_VALUE != m_pEngineState->companionConnection.hPipe)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
-        }
-        else if (!::PostThreadMessageW(m_dwThreadId, WM_BURN_ELEVATE, 0, reinterpret_cast<LPARAM>(hwndParent)))
-        {
-            ExitWithLastError(hr, "Failed to post elevate message.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP Apply(
@@ -1264,6 +1273,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_PLAN:
         hr = BAEnginePlan(pContext, reinterpret_cast<BAENGINE_PLAN_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_PLAN_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_ELEVATE:
+        hr = BAEngineElevate(pContext, reinterpret_cast<BAENGINE_ELEVATE_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_ELEVATE_RESULTS*>(pvResults));
         break;
     default:
         hr = E_NOTIMPL;

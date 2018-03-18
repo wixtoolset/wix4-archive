@@ -469,7 +469,15 @@ public: // IBootstrapperEngine
         __in_opt HWND hwndParent
         )
     {
-        return m_pEngine->Elevate(hwndParent);
+        BAENGINE_ELEVATE_ARGS args = { };
+        BAENGINE_ELEVATE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.hwndParent = hwndParent;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_ELEVATE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Apply(
