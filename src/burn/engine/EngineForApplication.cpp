@@ -219,6 +219,46 @@ static HRESULT BAEngineEvaluateCondition(
     return hr;
 }
 
+static HRESULT BAEngineLog(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* /*pContext*/,
+    __in BAENGINE_LOG_ARGS* pArgs,
+    __in BAENGINE_LOG_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    REPORT_LEVEL rl = REPORT_NONE;
+    BOOTSTRAPPER_LOG_LEVEL level = pArgs->level;
+    LPCWSTR wzMessage = pArgs->wzMessage;
+
+    switch (level)
+    {
+    case BOOTSTRAPPER_LOG_LEVEL_STANDARD:
+        rl = REPORT_STANDARD;
+        break;
+
+    case BOOTSTRAPPER_LOG_LEVEL_VERBOSE:
+        rl = REPORT_VERBOSE;
+        break;
+
+    case BOOTSTRAPPER_LOG_LEVEL_DEBUG:
+        rl = REPORT_DEBUG;
+        break;
+
+    case BOOTSTRAPPER_LOG_LEVEL_ERROR:
+        rl = REPORT_ERROR;
+        break;
+
+    default:
+        ExitFunction1(hr = E_INVALIDARG);
+    }
+
+    hr = LogStringLine(rl, "%ls", wzMessage);
+    ExitOnFailure(hr, "Failed to log BA message.");
+
+LExit:
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -349,40 +389,11 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP Log(
-        __in BOOTSTRAPPER_LOG_LEVEL level,
-        __in_z LPCWSTR wzMessage
+        __in BOOTSTRAPPER_LOG_LEVEL /*level*/,
+        __in_z LPCWSTR /*wzMessage*/
         )
     {
-        HRESULT hr = S_OK;
-        REPORT_LEVEL rl = REPORT_NONE;
-
-        switch (level)
-        {
-        case BOOTSTRAPPER_LOG_LEVEL_STANDARD:
-            rl = REPORT_STANDARD;
-            break;
-
-        case BOOTSTRAPPER_LOG_LEVEL_VERBOSE:
-            rl = REPORT_VERBOSE;
-            break;
-
-        case BOOTSTRAPPER_LOG_LEVEL_DEBUG:
-            rl = REPORT_DEBUG;
-            break;
-
-        case BOOTSTRAPPER_LOG_LEVEL_ERROR:
-            rl = REPORT_ERROR;
-            break;
-
-        default:
-            ExitFunction1(hr = E_INVALIDARG);
-        }
-
-        hr = LogStringLine(rl, "%ls", wzMessage);
-        ExitOnFailure(hr, "Failed to log UX message.");
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP SendEmbeddedError(
@@ -1099,6 +1110,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_EVALUATECONDITION:
         hr = BAEngineEvaluateCondition(pContext, reinterpret_cast<BAENGINE_EVALUATECONDITION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_EVALUATECONDITION_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_LOG:
+        hr = BAEngineLog(pContext, reinterpret_cast<BAENGINE_LOG_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_LOG_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));

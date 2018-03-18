@@ -239,7 +239,16 @@ public: // IBootstrapperEngine
         __in_z LPCWSTR wzMessage
         )
     {
-        return m_pEngine->Log(level, wzMessage);
+        BAENGINE_LOG_ARGS args = { };
+        BAENGINE_LOG_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.level = level;
+        args.wzMessage = wzMessage;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_LOG, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SendEmbeddedError(
