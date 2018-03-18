@@ -425,7 +425,14 @@ public: // IBootstrapperEngine
 
     virtual STDMETHODIMP CloseSplashScreen()
     {
-        return m_pEngine->CloseSplashScreen();
+        BAENGINE_CLOSESPLASHSCREEN_ARGS args = { };
+        BAENGINE_CLOSESPLASHSCREEN_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_CLOSESPLASHSCREEN, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Detect(

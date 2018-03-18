@@ -630,6 +630,21 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineCloseSplashScreen(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_CLOSESPLASHSCREEN_ARGS* /*pArgs*/,
+    __in BAENGINE_CLOSESPLASHSCREEN_RESULTS* /*pResults*/
+    )
+{
+    // If the splash screen is still around, close it.
+    if (::IsWindow(pContext->pEngineState->command.hwndSplashScreen))
+    {
+        ::PostMessageW(pContext->pEngineState->command.hwndSplashScreen, WM_CLOSE, 0, 0);
+    }
+
+    return S_OK;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -844,13 +859,7 @@ public: // IBootstrapperEngine
 
     virtual STDMETHODIMP CloseSplashScreen()
     {
-        // If the splash screen is still around, close it.
-        if (::IsWindow(m_pEngineState->command.hwndSplashScreen))
-        {
-            ::PostMessageW(m_pEngineState->command.hwndSplashScreen, WM_CLOSE, 0, 0);
-        }
-
-        return S_OK;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP Detect(
@@ -1236,6 +1245,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLEVERSION:
         hr = BAEngineSetVariableVersion(pContext, reinterpret_cast<BAENGINE_SETVARIABLEVERSION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETVARIABLEVERSION_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_CLOSESPLASHSCREEN:
+        hr = BAEngineCloseSplashScreen(pContext, reinterpret_cast<BAENGINE_CLOSESPLASHSCREEN_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_CLOSESPLASHSCREEN_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
