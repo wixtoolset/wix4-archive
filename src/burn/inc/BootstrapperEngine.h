@@ -117,6 +117,7 @@ enum BOOTSTRAPPER_ENGINE_MESSAGE
     BOOTSTRAPPER_ENGINE_MESSAGE_ELEVATE,
     BOOTSTRAPPER_ENGINE_MESSAGE_APPLY,
     BOOTSTRAPPER_ENGINE_MESSAGE_QUIT,
+    BOOTSTRAPPER_ENGINE_MESSAGE_LAUNCHAPPROVEDEXE,
 };
 
 typedef struct _BAENGINE_APPLY_ARGS
@@ -254,6 +255,20 @@ typedef struct _BAENGINE_GETVARIABLEVERSION_RESULTS
     // The contents of qwValue may be sensitive, if variable is hidden should keep value encrypted and SecureZeroMemory.
     DWORD64 qwValue;
 } BAENGINE_GETVARIABLEVERSION_RESULTS;
+
+typedef struct _BAENGINE_LAUNCHAPPROVEDEXE_ARGS
+{
+    DWORD cbSize;
+    HWND hwndParent;
+    LPCWSTR wzApprovedExeForElevationId;
+    LPCWSTR wzArguments;
+    DWORD dwWaitForInputIdleTimeout;
+} BAENGINE_LAUNCHAPPROVEDEXE_ARGS;
+
+typedef struct _BAENGINE_LAUNCHAPPROVEDEXE_RESULTS
+{
+    DWORD cbSize;
+} BAENGINE_LAUNCHAPPROVEDEXE_RESULTS;
 
 typedef struct _BAENGINE_LOG_ARGS
 {

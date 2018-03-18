@@ -735,6 +735,69 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineLaunchApprovedExe(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_LAUNCHAPPROVEDEXE_ARGS* pArgs,
+    __in BAENGINE_LAUNCHAPPROVEDEXE_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    BURN_APPROVED_EXE* pApprovedExe = NULL;
+    BOOL fLeaveCriticalSection = FALSE;
+    BURN_LAUNCH_APPROVED_EXE* pLaunchApprovedExe = (BURN_LAUNCH_APPROVED_EXE*)MemAlloc(sizeof(BURN_LAUNCH_APPROVED_EXE), TRUE);
+    HWND hwndParent = pArgs->hwndParent;
+    LPCWSTR wzApprovedExeForElevationId = pArgs->wzApprovedExeForElevationId;
+    LPCWSTR wzArguments = pArgs->wzArguments;
+    DWORD dwWaitForInputIdleTimeout = pArgs->dwWaitForInputIdleTimeout;
+
+    ::EnterCriticalSection(&pContext->pEngineState->csActive);
+    fLeaveCriticalSection = TRUE;
+    hr = UserExperienceEnsureEngineInactive(&pContext->pEngineState->userExperience);
+    ExitOnFailure(hr, "Engine is active, cannot change engine state.");
+
+    if (!wzApprovedExeForElevationId || !*wzApprovedExeForElevationId)
+    {
+        ExitFunction1(hr = E_INVALIDARG);
+    }
+
+    hr = ApprovedExesFindById(&pContext->pEngineState->approvedExes, wzApprovedExeForElevationId, &pApprovedExe);
+    ExitOnFailure(hr, "BA requested unknown approved exe with id: %ls", wzApprovedExeForElevationId);
+
+    ::LeaveCriticalSection(&pContext->pEngineState->csActive);
+    fLeaveCriticalSection = FALSE;
+
+    hr = StrAllocString(&pLaunchApprovedExe->sczId, wzApprovedExeForElevationId, NULL);
+    ExitOnFailure(hr, "Failed to copy the id.");
+
+    if (wzArguments)
+    {
+        hr = StrAllocString(&pLaunchApprovedExe->sczArguments, wzArguments, NULL);
+        ExitOnFailure(hr, "Failed to copy the arguments.");
+    }
+
+    pLaunchApprovedExe->dwWaitForInputIdleTimeout = dwWaitForInputIdleTimeout;
+
+    pLaunchApprovedExe->hwndParent = hwndParent;
+
+    if (!::PostThreadMessageW(pContext->dwThreadId, WM_BURN_LAUNCH_APPROVED_EXE, 0, reinterpret_cast<LPARAM>(pLaunchApprovedExe)))
+    {
+        ExitWithLastError(hr, "Failed to post launch approved exe message.");
+    }
+
+LExit:
+    if (fLeaveCriticalSection)
+    {
+        ::LeaveCriticalSection(&pContext->pEngineState->csActive);
+    }
+
+    if (FAILED(hr))
+    {
+        ApprovedExesUninitializeLaunch(pLaunchApprovedExe);
+    }
+
+    return hr;
+}
+
 class CEngineForApplication : public IBootstrapperEngine, public IMarshal
 {
 public: // IUnknown
@@ -971,63 +1034,13 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP LaunchApprovedExe(
-        __in_opt HWND hwndParent,
-        __in_z LPCWSTR wzApprovedExeForElevationId,
-        __in_z_opt LPCWSTR wzArguments,
-        __in DWORD dwWaitForInputIdleTimeout
+        __in_opt HWND /*hwndParent*/,
+        __in_z LPCWSTR /*wzApprovedExeForElevationId*/,
+        __in_z_opt LPCWSTR /*wzArguments*/,
+        __in DWORD /*dwWaitForInputIdleTimeout*/
         )
     {
-        HRESULT hr = S_OK;
-        BURN_APPROVED_EXE* pApprovedExe = NULL;
-        BOOL fLeaveCriticalSection = FALSE;
-        BURN_LAUNCH_APPROVED_EXE* pLaunchApprovedExe = (BURN_LAUNCH_APPROVED_EXE*)MemAlloc(sizeof(BURN_LAUNCH_APPROVED_EXE), TRUE);
-
-        ::EnterCriticalSection(&m_pEngineState->csActive);
-        fLeaveCriticalSection = TRUE;
-        hr = UserExperienceEnsureEngineInactive(&m_pEngineState->userExperience);
-        ExitOnFailure(hr, "Engine is active, cannot change engine state.");
-
-        if (!wzApprovedExeForElevationId || !*wzApprovedExeForElevationId)
-        {
-            ExitFunction1(hr = E_INVALIDARG);
-        }
-
-        hr = ApprovedExesFindById(&m_pEngineState->approvedExes, wzApprovedExeForElevationId, &pApprovedExe);
-        ExitOnFailure(hr, "UX requested unknown approved exe with id: %ls", wzApprovedExeForElevationId);
-
-        ::LeaveCriticalSection(&m_pEngineState->csActive);
-        fLeaveCriticalSection = FALSE;
-
-        hr = StrAllocString(&pLaunchApprovedExe->sczId, wzApprovedExeForElevationId, NULL);
-        ExitOnFailure(hr, "Failed to copy the id.");
-
-        if (wzArguments)
-        {
-            hr = StrAllocString(&pLaunchApprovedExe->sczArguments, wzArguments, NULL);
-            ExitOnFailure(hr, "Failed to copy the arguments.");
-        }
-
-        pLaunchApprovedExe->dwWaitForInputIdleTimeout = dwWaitForInputIdleTimeout;
-
-        pLaunchApprovedExe->hwndParent = hwndParent;
-
-        if (!::PostThreadMessageW(m_dwThreadId, WM_BURN_LAUNCH_APPROVED_EXE, 0, reinterpret_cast<LPARAM>(pLaunchApprovedExe)))
-        {
-            ExitWithLastError(hr, "Failed to post launch approved exe message.");
-        }
-
-    LExit:
-        if (fLeaveCriticalSection)
-        {
-            ::LeaveCriticalSection(&m_pEngineState->csActive);
-        }
-
-        if (FAILED(hr))
-        {
-            ApprovedExesUninitializeLaunch(pLaunchApprovedExe);
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
 public: // IMarshal
@@ -1300,6 +1313,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_QUIT:
         hr = BAEngineQuit(pContext, reinterpret_cast<BAENGINE_QUIT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_QUIT_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_LAUNCHAPPROVEDEXE:
+        hr = BAEngineLaunchApprovedExe(pContext, reinterpret_cast<BAENGINE_LAUNCHAPPROVEDEXE_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_LAUNCHAPPROVEDEXE_RESULTS*>(pvResults));
         break;
     default:
         hr = E_NOTIMPL;

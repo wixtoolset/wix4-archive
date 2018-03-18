@@ -517,7 +517,18 @@ public: // IBootstrapperEngine
         __in DWORD dwWaitForInputIdleTimeout
         )
     {
-        return m_pEngine->LaunchApprovedExe(hwndParent, wzApprovedExeForElevationId, wzArguments, dwWaitForInputIdleTimeout);
+        BAENGINE_LAUNCHAPPROVEDEXE_ARGS args = { };
+        BAENGINE_LAUNCHAPPROVEDEXE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.hwndParent = hwndParent;
+        args.wzApprovedExeForElevationId = wzApprovedExeForElevationId;
+        args.wzArguments = wzArguments;
+        args.dwWaitForInputIdleTimeout = dwWaitForInputIdleTimeout;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_LAUNCHAPPROVEDEXE, &args, &results, m_pvBAEngineProcContext);
     }
 
 public: // IMarshal
