@@ -120,7 +120,7 @@ static HRESULT BAEngineFormatString(
     LPWSTR wzOut = pResults->wzOut;
     DWORD* pcchOut = &pResults->cchOut;
 
-    if (wzIn && *wzIn && pcchOut)
+    if (wzIn && *wzIn)
     {
         hr = VariableFormatString(&pContext->pEngineState->variables, wzIn, &sczValue, &cchValue);
         if (SUCCEEDED(hr))
@@ -166,7 +166,7 @@ static HRESULT BAEngineEscapeString(
     LPWSTR wzOut = pResults->wzOut;
     DWORD* pcchOut = &pResults->cchOut;
 
-    if (wzIn && *wzIn && pcchOut)
+    if (wzIn && *wzIn)
     {
         hr = VariableEscapeString(wzIn, &sczValue);
         if (SUCCEEDED(hr))
@@ -194,6 +194,28 @@ static HRESULT BAEngineEscapeString(
     }
 
     StrSecureZeroFreeString(sczValue);
+    return hr;
+}
+
+static HRESULT BAEngineEvaluateCondition(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_EVALUATECONDITION_ARGS* pArgs,
+    __in BAENGINE_EVALUATECONDITION_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzCondition = pArgs->wzCondition;
+    BOOL* pf = &pResults->f;
+
+    if (wzCondition && *wzCondition)
+    {
+        hr = ConditionEvaluate(&pContext->pEngineState->variables, wzCondition, pf);
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
     return hr;
 }
 
@@ -319,22 +341,11 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP EvaluateCondition(
-        __in_z LPCWSTR wzCondition,
-        __out BOOL* pf
+        __in_z LPCWSTR /*wzCondition*/,
+        __out BOOL* /*pf*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzCondition && *wzCondition && pf)
-        {
-            hr = ConditionEvaluate(&m_pEngineState->variables, wzCondition, pf);
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP Log(
@@ -1085,6 +1096,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_ESCAPESTRING:
         hr = BAEngineEscapeString(pContext, reinterpret_cast<BAENGINE_ESCAPESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_ESCAPESTRING_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_EVALUATECONDITION:
+        hr = BAEngineEvaluateCondition(pContext, reinterpret_cast<BAENGINE_EVALUATECONDITION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_EVALUATECONDITION_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
