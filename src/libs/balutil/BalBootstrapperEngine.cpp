@@ -499,7 +499,15 @@ public: // IBootstrapperEngine
         __in DWORD dwExitCode
         )
     {
-        return m_pEngine->Quit(dwExitCode);
+        BAENGINE_QUIT_ARGS args = { };
+        BAENGINE_QUIT_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.dwExitCode = dwExitCode;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_QUIT, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP LaunchApprovedExe(
