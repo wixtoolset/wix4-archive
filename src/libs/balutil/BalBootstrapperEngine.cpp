@@ -357,7 +357,19 @@ public: // IBootstrapperEngine
         __in_z_opt LPCWSTR wzPassword
         )
     {
-        return m_pEngine->SetDownloadSource(wzPackageOrContainerId, wzPayloadId, wzUrl, wzUser, wzPassword);
+        BAENGINE_SETDOWNLOADSOURCE_ARGS args = { };
+        BAENGINE_SETDOWNLOADSOURCE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzPackageOrContainerId = wzPackageOrContainerId;
+        args.wzPayloadId = wzPayloadId;
+        args.wzUrl = wzUrl;
+        args.wzUser = wzUser;
+        args.wzPassword = wzPassword;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETDOWNLOADSOURCE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetVariableNumeric(
