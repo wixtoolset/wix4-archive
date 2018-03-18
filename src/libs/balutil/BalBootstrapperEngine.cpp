@@ -454,7 +454,15 @@ public: // IBootstrapperEngine
         __in BOOTSTRAPPER_ACTION action
         )
     {
-        return m_pEngine->Plan(action);
+        BAENGINE_PLAN_ARGS args = { };
+        BAENGINE_PLAN_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.action = action;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_PLAN, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Elevate(
