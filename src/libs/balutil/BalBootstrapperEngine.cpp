@@ -411,7 +411,16 @@ public: // IBootstrapperEngine
         __in DWORD64 qwValue
         )
     {
-        return m_pEngine->SetVariableVersion(wzVariable, qwValue);
+        BAENGINE_SETVARIABLEVERSION_ARGS args = { };
+        BAENGINE_SETVARIABLEVERSION_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+        args.qwValue = qwValue;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLEVERSION, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP CloseSplashScreen()

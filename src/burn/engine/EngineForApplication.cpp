@@ -605,6 +605,31 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSetVariableVersion(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in const BAENGINE_SETVARIABLEVERSION_ARGS* pArgs,
+    __in BAENGINE_SETVARIABLEVERSION_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    LPCWSTR wzVariable = pArgs->wzVariable;
+    DWORD64 qwValue = pArgs->qwValue;
+
+    if (wzVariable && *wzVariable)
+    {
+        hr = VariableSetVersion(&pContext->pEngineState->variables, wzVariable, qwValue, FALSE);
+        ExitOnFailure(hr, "Failed to set version variable.");
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+        ExitOnFailure(hr, "BA did not provide variable name.");
+    }
+
+LExit:
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -810,25 +835,11 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP SetVariableVersion(
-        __in_z LPCWSTR wzVariable,
-        __in DWORD64 qwValue
+        __in_z LPCWSTR /*wzVariable*/,
+        __in DWORD64 /*qwValue*/
         )
     {
-        HRESULT hr = S_OK;
-
-        if (wzVariable && *wzVariable)
-        {
-            hr = VariableSetVersion(&m_pEngineState->variables, wzVariable, qwValue, FALSE);
-            ExitOnFailure(hr, "Failed to set version variable.");
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-            ExitOnFailure(hr, "UX did not provide variable name.");
-        }
-
-    LExit:
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP CloseSplashScreen()
@@ -1222,6 +1233,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLESTRING:
         hr = BAEngineSetVariableString(pContext, reinterpret_cast<BAENGINE_SETVARIABLESTRING_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETVARIABLESTRING_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLEVERSION:
+        hr = BAEngineSetVariableVersion(pContext, reinterpret_cast<BAENGINE_SETVARIABLEVERSION_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETVARIABLEVERSION_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
