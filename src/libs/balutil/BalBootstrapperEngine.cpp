@@ -215,7 +215,23 @@ public: // IBootstrapperEngine
         __out BOOL* pf
         )
     {
-        return m_pEngine->EvaluateCondition(wzCondition, pf);
+        HRESULT hr = S_OK;
+        BAENGINE_EVALUATECONDITION_ARGS args = { };
+        BAENGINE_EVALUATECONDITION_RESULTS results = { };
+
+        ExitOnNull(pf, hr, E_INVALIDARG, "pf is required");
+
+        args.cbSize = sizeof(args);
+        args.wzCondition = wzCondition;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_EVALUATECONDITION, &args, &results, m_pvBAEngineProcContext);
+
+        *pf = results.f;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP Log(
