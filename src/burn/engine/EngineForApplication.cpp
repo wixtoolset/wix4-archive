@@ -418,6 +418,59 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSetLocalSource(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_SETLOCALSOURCE_ARGS* pArgs,
+    __in BAENGINE_SETLOCALSOURCE_RESULTS* /*pResults*/
+    )
+{
+    HRESULT hr = S_OK;
+    BURN_CONTAINER* pContainer = NULL;
+    BURN_PAYLOAD* pPayload = NULL;
+    LPCWSTR wzPackageOrContainerId = pArgs->wzPackageOrContainerId;
+    LPCWSTR wzPayloadId = pArgs->wzPayloadId;
+    LPCWSTR wzPath = pArgs->wzPath;
+
+    ::EnterCriticalSection(&pContext->pEngineState->csActive);
+    hr = UserExperienceEnsureEngineInactive(&pContext->pEngineState->userExperience);
+    ExitOnFailure(hr, "Engine is active, cannot change engine state.");
+
+    if (!wzPath || !*wzPath)
+    {
+        hr = E_INVALIDARG;
+    }
+    else if (wzPayloadId && * wzPayloadId)
+    {
+        hr = PayloadFindById(&pContext->pEngineState->payloads, wzPayloadId, &pPayload);
+        ExitOnFailure(hr, "BA requested unknown payload with id: %ls", wzPayloadId);
+
+        if (BURN_PAYLOAD_PACKAGING_EMBEDDED == pPayload->packaging)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION);
+            ExitOnFailure(hr, "BA denied while trying to set source on embedded payload: %ls", wzPayloadId);
+        }
+
+        hr = StrAllocString(&pPayload->sczSourcePath, wzPath, 0);
+        ExitOnFailure(hr, "Failed to set source path for payload.");
+    }
+    else if (wzPackageOrContainerId && *wzPackageOrContainerId)
+    {
+        hr = ContainerFindById(&pContext->pEngineState->containers, wzPackageOrContainerId, &pContainer);
+        ExitOnFailure(hr, "BA requested unknown container with id: %ls", wzPackageOrContainerId);
+
+        hr = StrAllocString(&pContainer->sczSourcePath, wzPath, 0);
+        ExitOnFailure(hr, "Failed to set source path for container.");
+    }
+    else
+    {
+        hr = E_INVALIDARG;
+    }
+
+LExit:
+    ::LeaveCriticalSection(&pContext->pEngineState->csActive);
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -587,53 +640,12 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP SetLocalSource(
-        __in_z LPCWSTR wzPackageOrContainerId,
-        __in_z_opt LPCWSTR wzPayloadId,
-        __in_z LPCWSTR wzPath
+        __in_z LPCWSTR /*wzPackageOrContainerId*/,
+        __in_z_opt LPCWSTR /*wzPayloadId*/,
+        __in_z LPCWSTR /*wzPath*/
         )
     {
-        HRESULT hr = S_OK;
-        BURN_CONTAINER* pContainer = NULL;
-        BURN_PAYLOAD* pPayload = NULL;
-
-        ::EnterCriticalSection(&m_pEngineState->csActive);
-        hr = UserExperienceEnsureEngineInactive(&m_pEngineState->userExperience);
-        ExitOnFailure(hr, "Engine is active, cannot change engine state.");
-
-        if (!wzPath || !*wzPath)
-        {
-            hr = E_INVALIDARG;
-        }
-        else if (wzPayloadId && * wzPayloadId)
-        {
-            hr = PayloadFindById(&m_pEngineState->payloads, wzPayloadId, &pPayload);
-            ExitOnFailure(hr, "UX requested unknown payload with id: %ls", wzPayloadId);
-
-            if (BURN_PAYLOAD_PACKAGING_EMBEDDED == pPayload->packaging)
-            {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION);
-                ExitOnFailure(hr, "UX denied while trying to set source on embedded payload: %ls", wzPayloadId);
-            }
-
-            hr = StrAllocString(&pPayload->sczSourcePath, wzPath, 0);
-            ExitOnFailure(hr, "Failed to set source path for payload.");
-        }
-        else if (wzPackageOrContainerId && *wzPackageOrContainerId)
-        {
-            hr = ContainerFindById(&m_pEngineState->containers, wzPackageOrContainerId, &pContainer);
-            ExitOnFailure(hr, "UX requested unknown container with id: %ls", wzPackageOrContainerId);
-
-            hr = StrAllocString(&pContainer->sczSourcePath, wzPath, 0);
-            ExitOnFailure(hr, "Failed to set source path for container.");
-        }
-        else
-        {
-            hr = E_INVALIDARG;
-        }
-
-    LExit:
-        ::LeaveCriticalSection(&m_pEngineState->csActive);
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP SetDownloadSource(
@@ -1162,6 +1174,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SETUPDATE:
         hr = BAEngineSetUpdate(pContext, reinterpret_cast<BAENGINE_SETUPDATE_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETUPDATE_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SETLOCALSOURCE:
+        hr = BAEngineSetLocalSource(pContext, reinterpret_cast<BAENGINE_SETLOCALSOURCE_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SETLOCALSOURCE_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
