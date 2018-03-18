@@ -336,7 +336,17 @@ public: // IBootstrapperEngine
         __in_z LPCWSTR wzPath
         )
     {
-        return m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, wzPath);
+        BAENGINE_SETLOCALSOURCE_ARGS args = { };
+        BAENGINE_SETLOCALSOURCE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzPackageOrContainerId = wzPackageOrContainerId;
+        args.wzPayloadId = wzPayloadId;
+        args.wzPath = wzPath;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETLOCALSOURCE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetDownloadSource(
