@@ -299,6 +299,42 @@ LExit:
     return hr;
 }
 
+static HRESULT BAEngineSendEmbeddedProgress(
+    __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
+    __in BAENGINE_SENDEMBEDDEDPROGRESS_ARGS* pArgs,
+    __in BAENGINE_SENDEMBEDDEDPROGRESS_RESULTS* pResults
+    )
+{
+    HRESULT hr = S_OK;
+    BYTE* pbData = NULL;
+    DWORD cbData = 0;
+    DWORD dwResult = 0;
+    DWORD dwProgressPercentage = pArgs->dwProgressPercentage;
+    DWORD dwOverallProgressPercentage = pArgs->dwOverallProgressPercentage;
+    int* pnResult = &pResults->nResult;
+
+    if (BURN_MODE_EMBEDDED != pContext->pEngineState->mode)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_STATE);
+        ExitOnRootFailure(hr, "BA requested to send embedded progress message when not in embedded mode.");
+    }
+
+    hr = BuffWriteNumber(&pbData, &cbData, dwProgressPercentage);
+    ExitOnFailure(hr, "Failed to write progress percentage to message buffer.");
+
+    hr = BuffWriteNumber(&pbData, &cbData, dwOverallProgressPercentage);
+    ExitOnFailure(hr, "Failed to write overall progress percentage to message buffer.");
+
+    hr = PipeSendMessage(pContext->pEngineState->embeddedConnection.hPipe, BURN_EMBEDDED_MESSAGE_TYPE_PROGRESS, pbData, cbData, NULL, NULL, &dwResult);
+    ExitOnFailure(hr, "Failed to send embedded progress message over pipe.");
+
+    *pnResult = static_cast<int>(dwResult);
+
+LExit:
+    ReleaseBuffer(pbData);
+    return hr;
+}
+
 static HRESULT BAEngineDetect(
     __in BOOTSTRAPPER_ENGINE_CONTEXT* pContext,
     __in BAENGINE_DETECT_ARGS* pArgs,
@@ -447,36 +483,12 @@ public: // IBootstrapperEngine
     }
 
     virtual STDMETHODIMP SendEmbeddedProgress(
-        __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage,
-        __out int* pnResult
+        __in DWORD /*dwProgressPercentage*/,
+        __in DWORD /*dwOverallProgressPercentage*/,
+        __out int* /*pnResult*/
         )
     {
-        HRESULT hr = S_OK;
-        BYTE* pbData = NULL;
-        DWORD cbData = 0;
-        DWORD dwResult = 0;
-
-        if (BURN_MODE_EMBEDDED != m_pEngineState->mode)
-        {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_STATE);
-            ExitOnRootFailure(hr, "Application requested to send embedded progress message when not in embedded mode.");
-        }
-
-        hr = BuffWriteNumber(&pbData, &cbData, dwProgressPercentage);
-        ExitOnFailure(hr, "Failed to write progress percentage to message buffer.");
-
-        hr = BuffWriteNumber(&pbData, &cbData, dwOverallProgressPercentage);
-        ExitOnFailure(hr, "Failed to write overall progress percentage to message buffer.");
-
-        hr = PipeSendMessage(m_pEngineState->embeddedConnection.hPipe, BURN_EMBEDDED_MESSAGE_TYPE_PROGRESS, pbData, cbData, NULL, NULL, &dwResult);
-        ExitOnFailure(hr, "Failed to send embedded progress message over pipe.");
-
-        *pnResult = static_cast<int>(dwResult);
-
-    LExit:
-        ReleaseBuffer(pbData);
-        return hr;
+        return E_NOTIMPL;
     }
 
     virtual STDMETHODIMP SetUpdate(
@@ -1129,6 +1141,9 @@ HRESULT WINAPI EngineForApplicationProc(
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDERROR:
         hr = BAEngineSendEmbeddedError(pContext, reinterpret_cast<BAENGINE_SENDEMBEDDEDERROR_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SENDEMBEDDEDERROR_RESULTS*>(pvResults));
+        break;
+    case BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDPROGRESS:
+        hr = BAEngineSendEmbeddedProgress(pContext, reinterpret_cast<BAENGINE_SENDEMBEDDEDPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_SENDEMBEDDEDPROGRESS_RESULTS*>(pvResults));
         break;
     case BOOTSTRAPPER_ENGINE_MESSAGE_DETECT:
         hr = BAEngineDetect(pContext, reinterpret_cast<BAENGINE_DETECT_ARGS*>(pvArgs), reinterpret_cast<BAENGINE_DETECT_RESULTS*>(pvResults));
