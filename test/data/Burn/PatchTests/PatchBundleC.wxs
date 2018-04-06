@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
+  <Bundle Name="~$(var.TestName) - Patch Bundle C" Version="$(var.Version)" UpgradeCode="D5706E81-BE87-42A2-B0E7-F73D8215F1A4">
+    <Log Prefix="~$(var.TestName)_PatchBundleC"/>
+
+    <swid:Tag Regid="regid.1995-08.com.example" Type="patch" />
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+
+    <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
+      <Payload Name='BootstrapperCore.config' SourceFile='!(bindpath.build)\TestBA.BootstrapperCore.config' />
+
+      <Payload SourceFile='!(bindpath.build)\TestBA.dll' />
+    </BootstrapperApplicationRef>
+    <WixVariable Id='WixMbaPrereqPackageId' Value='ignored' />
+    <WixVariable Id='WixMbaPrereqLicenseUrl' Value='ignored' />
+
+    <Chain>
+      <MspPackage Id="PatchA" Name="~$(var.TestName)_PatchA.msp" Compressed="yes" SourceFile="!(bindpath.patchA)" Vital="yes" PerMachine="yes" />
+      <MspPackage Id="PatchB" Name="~$(var.TestName)_PatchB.msp" Compressed="yes" SourceFile="!(bindpath.patchB)" Vital="yes" PerMachine="yes" />
+      <MspPackage Id="PatchC" Name="~$(var.TestName)_PatchC.msp" Compressed="yes" SourceFile="!(bindpath.patchC)" Vital="yes" PerMachine="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Capitalism_2">
+        <Detect>
+            <Arp DisplayName="Capitalism 2"/>
+        </Detect>
+
+        <Data>
+            <!-- This game doesn't appear to have per-machine data, such as resolution,
+              and its main config file (CONFIG.DAT) is a binary blob, so we'll just include it. -->
+            <Directory Namespace="Data" Location="MyGamesFolder:\Capitalism 2\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Capitalism 2</DisplayName>
+    </Product>
+</LegacySettings>

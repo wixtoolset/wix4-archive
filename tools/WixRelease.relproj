@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\wix.proj">
+      <Properties>Configuration=$(Configuration)</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="release\WixHistory.proj">
+      <Properties>Configuration=$(Configuration)</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+
+    <ProjectReference Include="..\src\setup\zip\binaries.zipproj">
+      <Properties>Configuration=$(Configuration)</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\src\setup\zip\debug.zipproj">
+      <Properties>Configuration=$(Configuration)</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\src\SettingsEngine\setup\Zip\udms.zipproj">
+      <Properties>Configuration=$(Configuration)</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!--
+  ================================================================================================
+  CalculateReleaseFiles
+
+    Determines what ReleaseFile items to create after the project references are built. This allows
+    the use of wildcards to include items that exist only when the build is complete.
+
+  ================================================================================================
+  -->
+  <Target Name="CalculateReleaseFiles">
+    <ItemGroup>
+      <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString).exe">
+        <Title>WiX v$(MajorMinorVersionDottedString) Toolset install.</Title>
+        <Promoted>true</Promoted>
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)data\*.msi" Condition=" '$(WixBundleCompressed)'!='yes' ">
+        <RelativeFolder>data\</RelativeFolder>
+      </ReleaseFile>
+      <ReleaseFile Include="$(OutputPath)data\*.cab" Condition=" '$(WixBundleCompressed)'!='yes' ">
+        <RelativeFolder>data\</RelativeFolder>
+      </ReleaseFile>
+      <ReleaseFile Include="$(OutputPath)\*.nupkg">
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString)-binaries.zip">
+        <Title>WiX v$(MajorMinorVersionDottedString) binaries for situations where install cannot be used.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString)-debug.zip">
+        <Title>WiX v$(MajorMinorVersionDottedString) source and symbols for debugging purposes.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)WixSettingsBrowser$(MajorMinorVersionString).exe">
+        <Title>WiX v$(MajorMinorVersionDottedString) Toolset settings engine plus browser.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
+
+      <ReleaseFile Include="$(OutputPath)wix$(MajorMinorVersionString)-udms.zip">
+        <Title>WiX v$(MajorMinorVersionDottedString) settings definitions.</Title>
+        <Protected>true</Protected>
+      </ReleaseFile>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ================================================================================================
+  CalculateReleaseDocuments
+
+    Determines what ReleaseDocuments items to create after the project references are built. This allows
+    the use of wildcards to include items that exist only when the build is complete.
+
+  ================================================================================================
+  -->
+  <Target Name="CalculateReleaseDocuments">
+    <ItemGroup>
+      <ReleaseDocuments Include="$(IntermediateDocumentsFolder)**" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

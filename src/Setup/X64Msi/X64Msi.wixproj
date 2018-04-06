@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.9</ProductVersion>
+    <ProjectGuid>{43FE9EC8-264B-4706-94CF-9DEA3E160D85}</ProjectGuid>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <OutputName>wix64</OutputName>
+    <OutputType>Package</OutputType>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="X64Msi.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommonLib\CommonLib.wixproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixTagExtension">
+      <HintPath>$(OutputPath_x86)WixTagExtension.dll</HintPath>
+    </WixExtension>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Patrician_4">
+        <Detect>
+            <Arp DisplayName="Patrician IV"/>
+            <Arp DisplayName="Patrician IV: Steam Special Edition"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\Kalypso Media\Patrician 4\savegames\" />
+        </Data>
+
+        <DisplayName LCID="1033">Patrician IV</DisplayName>
+    </Product>
+</LegacySettings>

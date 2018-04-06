@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Messages Namespace="WixToolset.Lux" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+  <Class Name="LuxErrors" ContainerName="LuxErrorEventArgs" BaseContainerName="WixErrorEventArgs" Level="Error">
+    <Message Id="MalfunctionNeedInput" Number="8001" SourceLineNumbers="no">
+      <Instance>
+        Need one or more input files and one output file to be specified.
+      </Instance>
+    </Message>
+    <Message Id="CouldntLoadInput" Number="8002" SourceLineNumbers="no">
+      <Instance>
+        Failed to load input file '{0}'. Valid formats are WiX object (.wixobj) and WiX library (.wixlib) files.
+        <Parameter Type="System.String" Name="file" />
+      </Instance>
+    </Message>
+  </Class>
+
+  <Class Name="LuxWarnings" ContainerName="LuxWarningEventArgs" BaseContainerName="WixWarningEventArgs" Level="Warning">
+  </Class>
+
+  <Class Name="LuxVerboses" ContainerName="LuxVerboseEventArgs" BaseContainerName="WixVerboseEventArgs" Level="Information">
+    <Message Id="FoundSimpleTest" Number="8201" SourceLineNumbers="no">
+      <Instance>
+        Found test for custom action {0}, testing property {1} against value '{2}'.
+        <Parameter Type="System.String" Name="customAction" />
+        <Parameter Type="System.String" Name="property" />
+        <Parameter Type="System.String" Name="value" />
+      </Instance>
+    </Message>
+    <Message Id="FoundExpressionTest" Number="8202" SourceLineNumbers="no">
+      <Instance>
+        Found test for custom action {0}, testing expression '{1}'.
+        <Parameter Type="System.String" Name="customAction" />
+        <Parameter Type="System.String" Name="expression" />
+      </Instance>
+    </Message>
+    <Message Id="FoundMultiValueTest" Number="8203" SourceLineNumbers="no">
+      <Instance>
+        Found test for custom action {0}, testing multi-value property {1} at index '{2}' against value '{3}'.
+        <Parameter Type="System.String" Name="customAction" />
+        <Parameter Type="System.String" Name="property" />
+        <Parameter Type="System.String" Name="index" />
+        <Parameter Type="System.String" Name="value" />
+      </Instance>
+    </Message>
+    <Message Id="GeneratingConsumer" Number="8204" SourceLineNumbers="no">
+      <Instance>
+        Generating project '{0}' to consume {1} tests.
+        <Parameter Type="System.String" Name="testSource" />
+        <Parameter Type="System.Int32" Name="testCount" />
+      </Instance>
+    </Message>
+  </Class>
+</Messages>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<tableDefinitions xmlns="http://wixtoolset.org/schemas/v4/wi/tables">
+    <tableDefinition name="WixGameExplorer">
+        <columnDefinition name="InstanceId" type="string" length="38" primaryKey="yes"
+                category="guid" description="The instance ID of the game executable to be registered in Game Explorer."/>
+        <columnDefinition name="File_" type="string" length="72" modularize="column"
+            keyTable="File" keyColumn="1" category="identifier" description="The file representing the game executable."/>
+    </tableDefinition>
+</tableDefinitions>

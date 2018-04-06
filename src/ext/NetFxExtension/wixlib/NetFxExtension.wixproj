@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{45e4a6ac-3190-4e17-83f0-9935ffa5dc2b}</ProjectGuid>
+    <OutputName>netfx</OutputName>
+    <OutputType>Library</OutputType>
+    <BindFiles>true</BindFiles>
+    <Pedantic>true</Pedantic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="NetFxExtension.wxs" />
+    <Compile Include="NetFx1.wxs" />
+    <Compile Include="NetFx1.1.wxs" />
+    <Compile Include="NetFx2.wxs" />
+    <Compile Include="NetFx3.wxs" />
+    <Compile Include="NetFx3.5.wxs" />
+    <Compile Include="NetFx4.wxs" />
+    <Compile Include="NetFx4.5.wxs" />
+    <Compile Include="NetFx451.wxs" />
+    <Compile Include="NetFx452.wxs" />
+    <Compile Include="NetFx46.wxs" />
+    <Compile Include="NetFx461.wxs" />
+    <Compile Include="NetFx462.wxs" />
+    <Compile Include="NetFxExtension_x86.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ca\netfxca.vcxproj" />
+    <ProjectReference Include="..\..\UtilExtension\wixext\WixUtilExtension.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <Private>False</Private>
+      <HintPath>$(OutputPath_x86)WixUtilExtension.dll</HintPath>
+    </WixExtension>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

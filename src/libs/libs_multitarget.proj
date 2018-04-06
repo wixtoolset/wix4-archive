@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup Condition=" $(VS2010Available) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v100</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v100</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v100</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v100</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2012Available) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v110_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v110_xp</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v110_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v110_xp</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2013Available) and !$(StaticAnalysisEnabled) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v120_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v120_xp</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v120_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v120_xp</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2013Available) and $(StaticAnalysisEnabled) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v120</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v120</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v120</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v120</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2015Available) and !$(StaticAnalysisEnabled) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v140_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v140_xp</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v140_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v140_xp</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2015Available) and $(StaticAnalysisEnabled) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v140</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v140</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v140</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v140</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2017Available) and !$(StaticAnalysisEnabled) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v141_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v141_xp</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v141_xp</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v141_xp</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(VS2017Available) and $(StaticAnalysisEnabled) ">
+    <ProjectReference Include="dutil\dutil.vcxproj">
+      <Properties>PlatformToolset=v141</Properties>
+    </ProjectReference>
+    <ProjectReference Include="wcautil\wcautil.vcxproj">
+      <Properties>PlatformToolset=v141</Properties>
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="balutil\balutil.vcxproj" Condition=" '$(Platform)'!='x64' ">
+      <Properties>PlatformToolset=v141</Properties>
+    </ProjectReference>
+    <ProjectReference Include="deputil\deputil.vcxproj">
+      <Properties>PlatformToolset=v141</Properties>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

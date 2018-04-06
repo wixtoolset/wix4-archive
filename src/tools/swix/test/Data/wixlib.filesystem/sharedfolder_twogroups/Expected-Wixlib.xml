@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<wixLibrary version="3.0.2002.0" xmlns="http://wixtoolset.org/schemas/v4/wixlib">
+  <section id="ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Directory">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*6">
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+        <field>ExternalFolder_enu</field>
+        <field>6ck6qr_q|childFolder</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*4">
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*5">
+        <field>Directory</field>
+        <field>ExternalFolder_enu</field>
+      </row>
+    </table>
+  </section>
+  <section id="test_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixComplexReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*12">
+        <field>test_enu</field>
+        <field>2</field>
+        <field />
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+        <field>1</field>
+        <field>0</field>
+      </row>
+    </table>
+    <table name="WixComponentGroup">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*11">
+        <field>test_enu</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*10">
+        <field>test_enu</field>
+      </row>
+    </table>
+    <table name="WixGroup">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*12">
+        <field>test_enu</field>
+        <field>ComponentGroup</field>
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+        <field>Component</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*12">
+        <field>Component</field>
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+      </row>
+    </table>
+  </section>
+  <section id="a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*17">
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+        <field>*</field>
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+        <field>0</field>
+        <field />
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*18">
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+        <field>a.txt</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*18">
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+        <field>1</field>
+        <field>a.txt</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*16">
+        <field>a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*17">
+        <field>Directory</field>
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*18">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="test2_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixComplexReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*24">
+        <field>test2_enu</field>
+        <field>2</field>
+        <field />
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+        <field>1</field>
+        <field>0</field>
+      </row>
+    </table>
+    <table name="WixComponentGroup">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*23">
+        <field>test2_enu</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*22">
+        <field>test2_enu</field>
+      </row>
+    </table>
+    <table name="WixGroup">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*24">
+        <field>test2_enu</field>
+        <field>ComponentGroup</field>
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+        <field>Component</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*24">
+        <field>Component</field>
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+      </row>
+    </table>
+  </section>
+  <section id="b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*29">
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+        <field>*</field>
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+        <field>0</field>
+        <field />
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*30">
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+        <field>b.txt</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*30">
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+        <field>1</field>
+        <field>b.txt</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*28">
+        <field>b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*29">
+        <field>Directory</field>
+        <field>ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.wxs*30">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+</wixLibrary>

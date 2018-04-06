@@ -1,0 +1,22 @@
+; Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
+
+EXPORTS
+    ConfigureIIs
+    ConfigureIIsExec
+    ConfigureIIs7Exec
+    InstallSqlData
+    UninstallSqlData
+    InstallCertificates
+    UninstallCertificates
+    ConfigurePerfmonInstall
+    ConfigurePerfmonUninstall
+    ConfigureSmbInstall
+    ConfigureSmbUninstall
+    ConfigureUsers
+    InstallPerfCounterData
+    UninstallPerfCounterData
+    ConfigurePerfmonManifestRegister
+    ConfigurePerfmonManifestUnregister
+    ConfigureEventManifestRegister
+    ConfigureEventManifestUnregister

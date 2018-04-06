@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Bundle Name="~Bundle enu"
+        Manufacturer="Microsoft Corporation"
+        Version="1.0.1.0"
+        UpgradeCode="71AE4C4F-66D3-4A1D-8A1F-5C67142079C7"
+        Tag="enu"
+        DisableRemove="yes">
+   <BootstrapperApplicationRef Id='WixStandardBootstrapperApplication.RtfLicense' />
+
+   <Chain>
+      <MsiPackage Vital='yes' SourceFile='Package5-en-US.msi' />
+   </Chain>
+</Bundle>
+</Wix>

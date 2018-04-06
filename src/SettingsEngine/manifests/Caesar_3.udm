@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Caesar_3">
+        <Detect>
+            <Arp DisplayName="Caesar 3" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- Caesar 3 doesn't put its save games in their own directory,
+                 they're all right next to the main EXE, so we'll use filters to only pickup *.sav -->
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".sav"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Caesar 3</DisplayName>
+    </Product>
+</LegacySettings>

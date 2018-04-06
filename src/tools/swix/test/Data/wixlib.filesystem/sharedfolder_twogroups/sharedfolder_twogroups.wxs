@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+<Fragment Id="ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu">
+    <DirectoryRef Id="ExternalFolder_enu">
+        <Directory Id="ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu" Name="childFolder" />
+    </DirectoryRef>
+</Fragment>
+
+<Fragment Id="test_enu">
+    <ComponentGroup Id="test_enu">
+        <ComponentRef Id="a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu"/>
+    </ComponentGroup>
+</Fragment>
+
+<Fragment Id="a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu">
+    <Component Directory="ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu">
+        <File Id="a.txt_bowIE4.J0MYcc_.z0Wq20Hge4_4_enu" Name="a.txt" />
+    </Component>
+</Fragment>
+
+<Fragment Id="test2_enu">
+    <ComponentGroup Id="test2_enu">
+        <ComponentRef Id="b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu"/>
+    </ComponentGroup>
+</Fragment>
+
+<Fragment Id="b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu">
+    <Component Directory="ExternalFolder.childFolder_zIedfbxXAE2mP7Elhk1RcI9sONc_enu">
+        <File Id="b.txt_HSMBVCrhswXJo7SWmmCLMRxqDiM_enu" Name="b.txt" />
+    </Component>
+</Fragment>
+
+</Wix>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Risk_of_Rain">
+        <Detect>
+            <Arp DisplayName="Risk of Rain" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: do something with Save_backup.ini? -->
+            <!-- TODO: need fixes in IniUtil to support brackets in value names to pick this up as an INI -->
+            <File Name="Save.ini" Location="InstallDir:\Save.ini"/>
+            <!-- TODO: need fixes in IniUtil to support brackets in value names to pick Prefs.ini up at all -->
+        </Data>
+        <DisplayName LCID="1033">Risk of Rain</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ProjectReference Include="..\libs\libs.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+
+    <ProjectReference Include="stub\Stub.vcxproj" />
+
+    <ProjectReference Include="Samples\ManagedBundleRunner\ManagedBundleRunner.csproj" />
+    <ProjectReference Include="Samples\runbundle\runbundle.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

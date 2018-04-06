@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <OriginalOutputPath>$(OutputPath)</OriginalOutputPath>
+    <OutputPath Condition=" '$(OutputType)'=='Package' ">$(OutputPath)data\</OutputPath>
+    <SignOutput Condition=" '$(OutputType)'=='Bundle' and '$(SignServiceUrl)'!='' ">true</SignOutput>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Cultures>neutral</Cultures>
+    <LinkerVerboseOutput>true</LinkerVerboseOutput>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OFFICIAL_WIX_BUILD)'!='' ">
+    <DefaultCompressionLevel>high</DefaultCompressionLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);WixBundleCompressed=$(WixBundleCompressed)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BuildIA64=$(BuildIA64)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BuildSandcastleDocumentation=$(BuildSandcastleDocumentation)</DefineConstants>
+    <DefineConstants Condition="$(VS2010Available)">$(DefineConstants);VS2010Available=true</DefineConstants>
+    <DefineConstants Condition="$(VS2012Available)">$(DefineConstants);VS2012Available=true</DefineConstants>
+    <DefineConstants Condition="$(VS2013Available)">$(DefineConstants);VS2013Available=true</DefineConstants>
+    <DefineConstants Condition="$(VS2015Available)">$(DefineConstants);VS2015Available=true</DefineConstants>
+    <DefineConstants Condition="$(VS2017Available)">$(DefineConstants);VS2017Available=true</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IncludeSearchPaths>$(IncludeSearchPaths);$(BuiltIncludePath);$(WixRoot)\src\ext\ca\inc;$(WixVersionPath)</IncludeSearchPaths>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(WixRoot)src\common\WixDistribution.wxl">
+      <Link>Properties\WixDistribution.wxl</Link>
+      <Visible>false</Visible>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <BindInputPaths Include="$(OriginalOutputPath)" />
+    <BindInputPaths Include="$(OutputPath_x86)">
+        <BindName>x86</BindName>
+    </BindInputPaths>
+    <BindInputPaths Include="$(OutputPath_x64)">
+        <BindName>x64</BindName>
+    </BindInputPaths>
+    <BindInputPaths Include="$(OutputPath_arm)">
+        <BindName>arm</BindName>
+    </BindInputPaths>
+    <BindInputPaths Include="$(BindInputPaths)" />
+  </ItemGroup>
+
+</Project>

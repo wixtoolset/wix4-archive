@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util='http://wixtoolset.org/schemas/v4/wxs/util'>
+<Bundle Name="Parent Bundle" Version="0.1.0.0" UpgradeCode="e29e43e3-e61d-4435-aa90-2e34e93cd54b">
+   <BootstrapperApplication SourceFile="stdux.dll">
+       <Payload SourceFile="en-us.wxl" />
+       <Payload SourceFile="thm.xml" />
+   </BootstrapperApplication>
+
+   <util:RegistrySearch Root="HKCU" Key="SOFTWARE\Microsoft\WiX_Burn" Value="Test3" Variable="FoundPackage3" />
+
+   <Chain>
+      <ExePackage DetectCondition='FoundPackage3' UninstallCommand="-uninstall" PerMachine='no' Protocol='burn' Vital="yes" SourceFile='child.exe'/>
+   </Chain>
+</Bundle>
+</Wix>

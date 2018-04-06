@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{461A7BEA-0E83-4F38-9885-B81EF90C7D2F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Simplified.UnitTest.Swcore</RootNamespace>
+    <AssemblyName>WixToolset.Simplified.UnitTest.Swcore</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="XmlStatementNodeTests.cs" />
+    <Compile Include="XmlStatementParserTests.cs" />
+    <Compile Include="XmlLexerTests.cs" />
+    <Compile Include="RtypeLexerTests.cs" />
+    <Compile Include="RtypeStatementParserTests.cs" />
+    <Compile Include="RtypeStatementNodeTests.cs" />
+    <Compile Include="TokenComparer.cs" />
+    <Compile Include="TokenListBuilder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\swcore\swcore.csproj">
+      <Project>{724901A4-16FF-4759-87A8-FDF85F2C3304}</Project>
+      <Name>swcore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

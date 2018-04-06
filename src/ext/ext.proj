@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ProjectReference Include="..\tools\tools.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="..\libs\libs.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+
+    <ProjectReference Include="BalExtension\bal.proj" />
+    <ProjectReference Include="ComPlusExtension\complus.proj" />
+    <ProjectReference Include="DependencyExtension\dependency.proj" />
+    <ProjectReference Include="DifxAppExtension\difxapp.proj" />
+    <ProjectReference Include="DirectXExtension\directx.proj" />
+    <ProjectReference Include="FirewallExtension\firewall.proj" />
+    <ProjectReference Include="GamingExtension\gaming.proj" />
+    <ProjectReference Include="HttpExtension\http.proj" />
+    <ProjectReference Include="IIsExtension\iis.proj" />
+    <ProjectReference Include="lux\lux.proj" />
+    <ProjectReference Include="MsmqExtension\msmq.proj" />
+    <ProjectReference Include="NetFxExtension\netfx.proj" />
+    <ProjectReference Include="PSExtension\ps.proj" />
+    <ProjectReference Include="SettingsEngineExtension\settingsengine.proj" Condition=" Exists('$(SqlCESdkIncludePath)') " />
+    <ProjectReference Include="SqlExtension\sql.proj" />
+    <ProjectReference Include="TagExtension\tag.proj" />
+    <ProjectReference Include="UIExtension\ui.proj" />
+    <ProjectReference Include="UtilExtension\util.proj" />
+    <ProjectReference Include="VSExtension\vs.proj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?include WixVer.wxi ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <ComponentGroup Id="LuxComponents" Directory="BinFolder">
+            <Component>
+                <File Source="lux.exe" />
+                <File Source="lux.exe.config" />
+            </Component>
+
+            <Component>
+              <File Source="LuxTasks.dll" />
+            </Component>
+
+            <Component>
+                <File Source="nit.exe" />
+            </Component>
+
+            <Component>
+                <File Source="WixLuxExtension.dll" />
+            </Component>
+
+            <ComponentRef Id="lux.xsd" />
+            <ComponentGroupRef Id="LuxMsbuildComponents" />
+        </ComponentGroup>
+
+        <Component Id="private lux.xsd" Directory="DocFolder">
+            <File Source="lux\wixext\Xsd\lux.xsd" />
+        </Component>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="LuxMsbuildComponents"  Directory="MSBuildWixVersionedFolder">
+            <Component>
+                <File Source="lux.targets" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

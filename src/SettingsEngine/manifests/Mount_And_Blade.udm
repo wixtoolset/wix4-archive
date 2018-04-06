@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Mount_And_Blade">
+
+        <Detect>
+            <Arp DisplayName="Mount &amp; Blade"/>
+        </Detect>
+
+        <Data>
+            <!-- HKCU\Software\MountAndBladeKeys exists, but doesn't appear to be useful for our purposes -->
+            <Directory Namespace="AppData" Location="AppDataFolder:\Mount&amp;Blade\"/>
+
+            <Directory Namespace="Save" Location="MyDocumentsFolder:\Mount&amp;Blade Savegames\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="AppData:\"/>
+            <!-- TODO: AppData:\rgl_config.txt is mostly graphical settings but has a couple of useful things such as first_time and cheat_mode.
+                Unfortunately, it doesn't gracefully handle missing settings (it doesn't re-add them), so we need to wait until manifests can specify defaults. -->
+
+            <!-- picking up options.dat, which is a blob. Not exactly sure what it contains, but since
+                 graphical settings are clearly in rgl_config.txt, it's probably a good thing to pick up. -->
+            <Normal Name="AppData:\options.dat"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Mount &amp; Blade</DisplayName>
+    </Product>
+</LegacySettings>

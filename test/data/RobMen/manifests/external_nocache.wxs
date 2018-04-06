@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<BurnManifest xmlns="http://wixtoolset.org/schemas/v4/2008/Burn">
+   <BootstrapperApplication SourceFile="stdux.dll">
+       <Resource SourceFile="en-us.wxl" />
+       <Resource SourceFile="thm.xml" />
+   </BootstrapperApplication>
+
+   <Registration Id="external_nocache" ExecutableName='b.exe' PerMachine='yes'>
+
+   </Registration>
+   <Chain>
+      <MsiPackage Id='Package1' Vital='yes' Packaging='external' SourceFile='Package1.msi' FileName='Package1.msi' Cache='no'>
+         <MsiProperty Id="TARGETDIR" Value="[PACKAGE1TARGETDIR]" />
+      </MsiPackage>
+   </Chain>
+</BurnManifest>

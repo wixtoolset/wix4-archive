@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="King_of_Dragon_Pass">
+        <Detect>
+            <Arp DisplayName="King of Dragon Pass" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".Opal"/>
+            <Normal Prefix="Data:\" Postfix=".Opal.txt"/>
+        </Filter>
+
+        <DisplayName LCID="1033">King of Dragon Pass</DisplayName>
+    </Product>
+</LegacySettings>

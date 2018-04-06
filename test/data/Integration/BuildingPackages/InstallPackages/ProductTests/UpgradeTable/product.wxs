@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="Wix Test Product" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" >
+    <Package InstallerVersion="200" />
+    <Upgrade Id ="d99fe599-c948-436a-829c-f8dd26ce1665">
+      <UpgradeVersion Maximum ="12.1.1" Minimum ="2.1.0" Property ="UPGRADEID"/>
+    </Upgrade>
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallInitialize"/>
+    </InstallExecuteSequence>
+    <Media Id="1" />
+  </Product>
+</Wix>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:iis="http://wixtoolset.org/schemas/v4/wxs/iis">
+  <Product Id="64D5FE9E-9094-431d-A90D-C686CADF4A03" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{2CC50D99-A630-4040-AEBA-F86B5BFC9C0B}">
+    <Package Description="Test for: IIs5IsolationMode" Comments="Test for: IIs5IsolationMode" InstallerVersion="200" Compressed="yes" />
+
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+        <Directory Id="TestWebSiteProductDirectory" ShortName="testassm" Name="Test File">
+
+          <Component Id="TestWebPropertyComponent" Guid="53609C93-7BE2-4715-AA2F-B2D1DD9465D4" DiskId="1" KeyPath="yes">
+            <CreateFolder />
+            <File Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt"/>
+            <iis:WebProperty Id="IIs5IsolationMode" />
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder" Name="ProgMenu" />
+    </Directory>
+
+    <Feature Id="TestWebSiteProductFeature" Title="Test File Product Feature" Level="1">
+      <ComponentRef Id="TestWebPropertyComponent" />
+    </Feature>
+
+    <iis:WebDirProperties Id="ReadAndExecute" Read="yes" Write="no" Script="yes" Execute="yes" AnonymousAccess="no" />
+
+  </Product>
+</Wix>

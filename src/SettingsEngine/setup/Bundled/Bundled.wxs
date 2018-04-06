@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+<?include WixVer.wxi ?>
+
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'
+     xmlns:bal='http://wixtoolset.org/schemas/v4/wxs/bal'
+     xmlns:util='http://wixtoolset.org/schemas/v4/wxs/util'>
+
+    <Bundle Name='WiX Settings Browser v$(var.WixMajorMinor)' Manufacturer='.NET Foundation'
+            Version='$(var.WixVersion)' UpgradeCode='FDCCE136-4E10-40c0-AC67-319D2ACA5147'
+            IconSourceFile='ProjectFile.ico' SplashScreenSourceFile='SplashScreen.bmp'
+            AboutUrl='http://wixtoolset.org' UpdateUrl='http://wixtoolset.org/releases/feed/v4.0'
+            Compressed='yes'>
+
+        <BootstrapperApplicationRef Id='WixStandardBootstrapperApplication.HyperlinkLicense'>
+            <bal:WixStandardBootstrapperApplication
+                LicenseUrl="http://wix.codeplex.com/license" />
+        </BootstrapperApplicationRef>
+
+        <Variable Name='InstallFolder' Type='string' Value='[ProgramFilesFolder]WiX Settings Browser v$(var.WixMajorMinor)' />
+
+        <Chain>
+          <MsiPackage Id='WixCfgBrowser' Vital='yes' Name='data\Browse.msi' SourceFile='data\Browse.msi'>
+                <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
+          </MsiPackage>
+        </Chain>
+    </Bundle>
+</Wix>

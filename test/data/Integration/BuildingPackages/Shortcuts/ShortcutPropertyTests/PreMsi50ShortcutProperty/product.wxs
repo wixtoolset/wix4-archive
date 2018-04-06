@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="{0158AA58-CFCE-40a1-AC0B-204A1A369473}" Name="Wix Test: PreMsi50" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{B16CB6DF-5FEE-46e8-820E-FB4880DD246B}">
+
+    <!--Set the InstallerVersion from a pre-processor variable that is set on the command line-->
+    <Package InstallerVersion="$(var.InstallerVersion)" />
+
+    <Media Id="1" />
+
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\directories.wxi?>
+
+    <Property Id="KEY4" Value="Key4" />
+
+    <DirectoryRef Id="WixTestFolder">
+      <Component Id="Component1" Guid="*">
+        <File DiskId="1" KeyPath="yes" Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt">
+          <Shortcut Id="TextFile1" Name="TextFile1Shortcut" Directory="WixTestFolder">
+            <ShortcutProperty Id="ShortcutProperty1" Key="Key1" Value="Value1" />
+          </Shortcut>
+        </File>
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="Feature1" Level="1">
+      <ComponentRef Id="Component1" />
+    </Feature>
+
+  </Product>
+</Wix>

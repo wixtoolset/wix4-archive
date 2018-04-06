@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Elder_Scrolls_Arena">
+        <Detect>
+            <Arp RegKeyName="ArenaSetup_is1" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <DisplayName LCID="1033">The Elder Scrolls I: Arena</DisplayName>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".00"/>
+            <Normal Prefix="Data:\" Postfix=".01"/>
+            <Normal Prefix="Data:\" Postfix=".02"/>
+            <Normal Prefix="Data:\" Postfix=".03"/>
+            <Normal Prefix="Data:\" Postfix=".04"/>
+            <Normal Prefix="Data:\" Postfix=".05"/>
+            <Normal Prefix="Data:\" Postfix=".06"/>
+            <Normal Prefix="Data:\" Postfix=".07"/>
+            <Normal Prefix="Data:\" Postfix=".08"/>
+            <Normal Prefix="Data:\" Postfix=".09"/>
+        </Filter>
+
+    </Product>
+</LegacySettings>

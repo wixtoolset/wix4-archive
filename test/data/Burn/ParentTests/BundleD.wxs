@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Bundle Name="~$(var.TestName) - Bundle D" Manufacturer="!(bind.packageManufacturer.PackageD)" Version="$(var.Version)" UpgradeCode="41F8DB2F-C9E7-440F-8664-3CFA66BD8B47">
+    <Log Prefix="~$(var.TestName)_BundleD"/>
+
+    <RelatedBundle Id='89C818B9-6B03-480D-BD35-F5012CED7FC6' Action='Addon' />
+    <RelatedBundle Id='2F01987E-D9CE-40B5-AD38-90AB5719D16F' Action='Addon' />
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+
+    <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
+      <Payload Name='BootstrapperCore.config' SourceFile='!(bindpath.build)\TestBA.BootstrapperCore.config' />
+
+      <Payload SourceFile='!(bindpath.build)\TestBA.dll' />
+    </BootstrapperApplicationRef>
+    <WixVariable Id='WixMbaPrereqPackageId' Value='ignored' />
+    <WixVariable Id='WixMbaPrereqLicenseUrl' Value='ignored' />
+
+    <Chain>
+      <MsiPackage Id="PackageD" Name="~$(var.TestName)_PackageD.msi" Compressed="yes" SourceFile="!(bindpath.packageD)" Vital="yes" Visible="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

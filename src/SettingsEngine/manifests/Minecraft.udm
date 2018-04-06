@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Minecraft">
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\.minecraft">
+                <CfgFile Namespace="Options.txt" Location="Options.txt" Encoding="UTF8NoBOM">
+                    <Value Separator=":"/>
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <DisplayName LCID="1033">Minecraft</DisplayName>
+
+        <Filter>
+            <!-- Minecraft throws a ton of things including all the game assets that were downloaded, so just pickup Options.txt and saves\ directory -->
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\saves\"/>
+
+            <!-- Ignore session lock -->
+            <Ignore Prefix="Data:\" Postfix="\session.lock"/>
+
+            <!-- Minecraft locks these files for extended periods of time -->
+            <Normal Prefix="Data:\saves\" Postfix=".mca" ShareWrite="yes"/>
+        </Filter>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask AssemblyFile="$(OutputPath_x86)WixBuild.dll" TaskName="GenerateReleaseInfo" />
+  <UsingTask AssemblyFile="$(ExtensionPackPath)MSBuild.ExtensionPack.dll" TaskName="Zip" />
+
+  <PropertyGroup>
+    <HistoryFile>$(WixRoot)History.md</HistoryFile>
+
+    <IntermediateDocumentsFolder>$(BaseIntermediateOutputPath)chm\intermediate\</IntermediateDocumentsFolder>
+    <ReleasesContainerFolder>$(BaseOutputPath)upload\releases\</ReleasesContainerFolder>
+    <StagedContainerFolder>$(BaseOutputPath)upload\staged\</StagedContainerFolder>
+
+    <ReleaseFolder>$(ReleasesContainerFolder)v$(FullBuildVersionString)\</ReleaseFolder>
+    <ReleaseMetadataFolder>$(StagedContainerFolder)</ReleaseMetadataFolder>
+    <ReleaseDocumentsFolder>$(StagedContainerFolder)</ReleaseDocumentsFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <BuildInParallel>$(BuildInParallel)</BuildInParallel>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+  <!--
+  ================================================================================================
+  BuildProjectReferences
+
+    Build the project references.
+
+  ================================================================================================
+  -->
+  <Target Name="BuildProjectReferences"
+          DependsOnTargets="_GroupProjectReferencesByParallelization">
+    <MSBuild Projects="@(_NonParallelProjects)" BuildInParallel="false" />
+    <MSBuild Projects="@(_ParallelProjects)" BuildInParallel="true" />
+  </Target>
+
+  <Target Name="_GroupProjectReferencesByParallelization">
+    <ItemGroup>
+      <_NonParallelProjects Include="@(ProjectReference)" Condition=" '%(BuildInParallel)'!='true' " />
+      <_ParallelProjects Include="@(ProjectReference)" Condition=" '%(BuildInParallel)'=='true' " />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ================================================================================================
+  ReleaseFiles
+
+    Copy the release files to the release folder.
+
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <ReleaseFilesDependsOn>
+      CalculateReleaseFiles;
+      CalculateReleaseDocuments;
+      PrepareReleaseFiles
+    </ReleaseFilesDependsOn>
+  </PropertyGroup>
+  <Target Name="ReleaseFiles"
+          DependsOnTargets="$(ReleaseFilesDependsOn)"
+          Inputs="@(CopyReleaseFiles)"
+          Outputs="@(CopyReleaseFiles -> '%(CopyTo)')">
+    <Message Importance="low" Text="CopyReleaseFiles = @(CopyReleaseFiles) -> %(CopyReleaseFiles.CopyTo) " />
+
+    <Copy SourceFiles="@(CopyReleaseFiles)" DestinationFiles="%(CopyReleaseFiles.CopyTo)"
+          SkipUnchangedFiles="true" UseHardlinksIfPossible="true" />
+  </Target>
+
+  <Target Name="PrepareReleaseFiles">
+    <ItemGroup>
+      <CopyReleaseFiles Include="@(ReleaseFile)">
+        <CopyTo>$(ReleaseFolder)%(ReleaseFile.RelativeFolder)%(ReleaseFile.Filename)%(ReleaseFile.Extension)</CopyTo>
+      </CopyReleaseFiles>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ================================================================================================
+  ReleaseDocumentation
+
+    Copy the built documentation files to the release folder.
+
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <ReleaseDocumentationDependsOn>
+    </ReleaseDocumentationDependsOn>
+    <ReleaseDocumentationZipFile>$(ReleaseDocumentsFolder)v$(MajorBuildNumber)manual.zip</ReleaseDocumentationZipFile>
+  </PropertyGroup>
+  <Target Name="ReleaseDocumentation"
+          DependsOnTargets="$(ReleaseDocumentationDependsOn)"
+          Inputs="@(ReleaseDocuments)"
+          Outputs="$(ReleaseDocumentationZipFile)">
+
+    <MakeDir Directories="$(ReleaseDocumentsFolder)" />
+
+    <Zip TaskAction="Create"
+         CompressPath="$(IntermediateDocumentsFolder)"
+         RemoveRoot="$(IntermediateDocumentsFolder)"
+         ZipFileName="$(ReleaseDocumentationZipFile)" />
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  GenerateReleaseMetadata
+
+    Generates a .json class file from input files to be Released.
+
+    [IN]
+    $(HistoryFile) - The history.md file in the root.
+    @(ReleaseFile) - The items to add to the metadata.
+
+    [OUT]
+    @(ReleaseMetadata) - The generated .md metadata file.
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <GenerateReleaseMetadataDependsOn>
+      ReleaseFiles
+    </GenerateReleaseMetadataDependsOn>
+    <ReleaseInfoFile>$(ReleaseMetadataFolder)v$(FullBuildVersionStringDashed).html.md</ReleaseInfoFile>
+  </PropertyGroup>
+  <Target
+    Name="GenerateReleaseMetadata"
+    DependsOnTargets="$(GenerateReleaseMetadataDependsOn)"
+    Inputs="@(ReleaseFile)"
+    Outputs="$(ReleaseInfoFile)">
+
+    <GenerateReleaseInfo
+      HistoryFile="$(HistoryFile)"
+      UploadFiles="@(ReleaseFile)"
+      Version="$(FullBuildVersionString)"
+      OutputFile="$(ReleaseInfoFile)">
+
+      <Output TaskParameter="OutputFile" ItemName="FileWrites" /> <!-- This will tell MSBuild to clean up the file during a Clean build -->
+    </GenerateReleaseInfo>
+  </Target>
+
+  <!--
+  ================================================================================================
+  Build
+
+    Does the release.
+
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      BuildProjectReferences;
+      ReleaseFiles;
+      ReleaseDocumentation;
+      GenerateReleaseMetadata
+    </BuildDependsOn>
+  </PropertyGroup>
+  <Target Name="Build"
+          DependsOnTargets="$(BuildDependsOn)" />
+
+  <Target Name="Clean">
+    <MSBuild Projects="@(ProjectReference)" Targets="Clean" BuildInParallel="true" />
+  </Target>
+
+  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
+
+  <!--
+  ================================================================================================
+  GetReleasedFiles
+
+    Gets the files that are built and released. It expects the build is already completed.
+
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <GetReleasedFilesDependsOn>
+    </GetReleasedFilesDependsOn>
+  </PropertyGroup>
+  <Target Name="GetReleasedFiles"
+          DependsOnTargets="$(GetReleasedFilesDependsOn)"
+          Returns="@(ReleasedFiles)">
+    <ItemGroup>
+      <_ScannedReleaseFiles Include="$(ReleasesContainerFolder)**" />
+      <_ScannedStagedFiles Include="$(StagedContainerFolder)**" />
+      <ReleasedFiles Include="@(_ScannedReleaseFiles)">
+        <Container>releases</Container>
+        <RelativeUploadFolder>%(RecursiveDir)</RelativeUploadFolder>
+      </ReleasedFiles>
+      <ReleasedFiles Include="@(_ScannedStagedFiles)">
+        <Container>staged</Container>
+        <RelativeUploadFolder>%(RecursiveDir)</RelativeUploadFolder>
+      </ReleasedFiles>
+    </ItemGroup>
+  </Target>
+</Project>

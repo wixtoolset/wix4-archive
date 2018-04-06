@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Atom_Zombie_Smasher">
+        <Detect>
+            <Arp DisplayName="Atom Zombie Smasher"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\AtomZombieData\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Atom Zombie Smasher</DisplayName>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\profiles\"/>
+        </Filter>
+    </Product>
+</LegacySettings>

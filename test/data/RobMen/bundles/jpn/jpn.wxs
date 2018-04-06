@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Bundle Name="~Bundle jpn"
+        Manufacturer="Microsoft Corporation"
+        Version="1.0.1.0"
+        UpgradeCode="B4A1F768-C74F-4E52-BF08-7C750FD61EFE"
+        Tag="jpn"
+        DisableRemove="yes">
+   <BootstrapperApplicationRef Id='WixStandardBootstrapperApplication.RtfLicense' />
+
+   <Chain>
+      <MsiPackage Vital='yes' SourceFile='Package5-ja-JP.msi' />
+   </Chain>
+</Bundle>
+</Wix>

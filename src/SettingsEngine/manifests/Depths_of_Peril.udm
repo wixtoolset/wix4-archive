@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Depths_of_Peril">
+        <Detect>
+            <Arp DisplayName="Depths of Peril" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="User" Location="InstallDir:\User\">
+                <CfgFile Namespace="User.cfg" Location="user.cfg" Encoding="UTF8NoBOM">
+                    <Value Separator=" ">
+                       <SeparatorException Prefix="VirtualKey "/>
+                    </Value>
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <Filter>
+            <Ignore Name="User:\build.cfg"/>
+            <!-- Does default.cfg mean we have defaults and can just transfer certain settings in user.cfg? Need to explore this idea -->
+            <Ignore Name="User:\default.cfg"/>
+            <Ignore Name="User:\log.txt"/>
+
+            <!-- Ignore a bunch of machine-specific settings from the user.cfg.
+                Not all games can do this, but luckily Depths of Peril gracefully handles missing config values. -->
+            <Ignore Prefix="User.cfg:\r_"/>
+            <Ignore Prefix="User.cfg:\s_"/>
+            <Ignore Name="User.cfg:\autoBuildTextures"/>
+            <Ignore Name="User.cfg:\compressedTextures"/>
+            <Ignore Name="User.cfg:\filteringQuality"/>
+            <Ignore Name="User.cfg:\fps"/>
+            <Ignore Name="User.cfg:\maxFps"/>
+            <Ignore Name="User.cfg:\monitorSync"/>
+            <Ignore Name="User.cfg:\ShowCombatEffects"/>
+            <Ignore Name="User.cfg:\smoothfps"/>
+            <Ignore Name="User.cfg:\textureQuality"/>
+            <Ignore Name="User.cfg:\ui_hardwareCursor"/>
+            <Ignore Name="User.cfg:\ui_maxTextEventsShown"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Depths of Peril</DisplayName>
+    </Product>
+</LegacySettings>

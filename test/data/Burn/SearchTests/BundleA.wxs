@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef TestName?>
+<?define TestName = Test?>
+<?endif?>
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Bundle Name="~$(var.TestName) - Bundle A" Version="$(var.Version)" UpgradeCode="D321DBBF-0CD7-4FC4-978D-B90A72AE7581">
+    <Log Prefix="~$(var.TestName)_BundleA"/>
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+
+    <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
+      <Payload Name='BootstrapperCore.config' SourceFile='!(bindpath.build)\TestBA.BootstrapperCore.config' />
+      <Payload SourceFile='!(bindpath.build)\TestBA.dll' />
+    </BootstrapperApplicationRef>
+
+    <WixVariable Id='WixMbaPrereqPackageId' Value='ignored' />
+    <WixVariable Id='WixMbaPrereqLicenseUrl' Value='ignored' />
+
+    <Chain DisableSystemRestore="yes">
+      <MsiPackage Id="PackageA" Name="~$(var.TestName)_PackageA.msi" Compressed="yes" SourceFile="!(bindpath.packageA)" Vital="yes" Visible="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

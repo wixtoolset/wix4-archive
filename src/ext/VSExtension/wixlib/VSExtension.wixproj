@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{14345C9D-8AF8-435A-BB1B-E067CE7EB321}</ProjectGuid>
+    <OutputName>vs</OutputName>
+    <OutputType>Library</OutputType>
+    <BindFiles>true</BindFiles>
+    <Pedantic>true</Pedantic>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="HTML_Help_Registration__RTL_X86.wxs" />
+    <Compile Include="Vs2003.wxs" />
+    <Compile Include="Vs2005.wxs" />
+    <Compile Include="Vs2008.wxs" />
+    <Compile Include="Vs2010.wxs" />
+    <Compile Include="Vs11.wxs" />
+    <Compile Include="Vs2012.wxs" />
+    <Compile Include="Vs2013.wxs" />
+    <Compile Include="VS14.wxs" />
+    <Compile Include="VS2015.wxs" />
+    <Compile Include="VS2017.wxs" />
+    <Compile Include="VSExtension_x86.wxs" />
+    <Compile Include="VsixPackage.wxs" />
+    <Compile Include="vs2005\vs2005_VSIPCC_Collection_Files_RTL.wxs" />
+    <Compile Include="vs2008\vs2008_VSIPCC_Collection_Files_RTL.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="vs2005\" />
+    <Folder Include="vs2008\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ca\vsca.vcxproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

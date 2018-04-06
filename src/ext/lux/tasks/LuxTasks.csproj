@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{43BD7580-2DAC-4C80-AA9A-C10603917572}</ProjectGuid>
+    <AssemblyName>LuxTasks</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Lux</RootNamespace>
+    <CreateDocumentationFile>true</CreateDocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="GenerateTestConsumer.cs" />
+    <Compile Include="..\lux\Generator.cs">
+      <Link>Generator.cs</Link>
+    </Compile>
+    <Compile Include="Nit.cs" />
+    <MsgGenSource Include="..\lux\Data\messages.xml">
+      <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
+    </MsgGenSource>
+    <Content Include="lux.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
+    <ProjectReference Include="..\..\..\tools\WixTasks\WixTasks.csproj" />
+    <ProjectReference Include="..\wixext\WixLuxExtension.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

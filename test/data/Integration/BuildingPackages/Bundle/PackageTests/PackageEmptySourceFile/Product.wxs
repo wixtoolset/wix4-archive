@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <?define TestDataDirectory="$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files"?>
+
+  <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
+
+    <BootstrapperApplication Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
+    </BootstrapperApplication>
+
+    <Chain>
+      <MsiPackage SourceFile=""/>
+      <MspPackage SourceFile=""/>
+      <MsuPackage SourceFile=""/>
+      <ExePackage SourceFile=""/>
+    </Chain>
+
+  </Bundle>
+</Wix>

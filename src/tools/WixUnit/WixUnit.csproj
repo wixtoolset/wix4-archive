@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{EAFD5281-D9AE-4680-AEB5-90AAAF4DBD9D}</ProjectGuid>
+    <AssemblyName>WixUnit</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WixToolset.Unit</RootNamespace>
+    <NoWarn>618</NoWarn>
+    <PlatformTarget>x86</PlatformTarget>
+    <FxCopEnabled>false</FxCopEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CandleUnit.cs" />
+    <Compile Include="CompareUnit.cs" />
+    <Compile Include="DarkUnit.cs" />
+    <Compile Include="HeatUnit.cs" />
+    <Compile Include="ICommandArgs.cs" />
+    <Compile Include="InsigniaUnit.cs" />
+    <Compile Include="LightUnit.cs" />
+    <Compile Include="LitUnit.cs" />
+    <Compile Include="ProcessUnit.cs" />
+    <Compile Include="PyroUnit.cs" />
+    <Compile Include="SmokeUnit.cs" />
+    <Compile Include="ToolUtility.cs" />
+    <Compile Include="TorchUnit.cs" />
+    <Compile Include="UnitResults.cs" />
+    <Compile Include="WixProjUnit.cs" />
+    <Compile Include="WixUnit.cs" />
+    <EmbeddedFlattenedResource Include="unitTests.xsd" />
+    <EmbeddedNativeResource Include="wixunit.rc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WixCop.settings.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\wconsole\wconsole.csproj" />
+    <ProjectReference Include="..\Wix\Wix.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <CustomActionRef Id="WixBroadcastEnvironmentChange" />
+
+        <ComponentGroup Id="ToolsetComponents" Directory="BinFolder">
+            <Component>
+                <File Source="candle.exe" />
+                <File Source="candle.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="darice.cub" />
+            </Component>
+
+            <Component>
+                <File Source="dark.exe" />
+                <File Source="dark.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="heat.exe" />
+                <File Source="heat.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="insignia.exe" />
+                <File Source="insignia.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="light.exe" />
+                <File Source="light.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="lit.exe" />
+                <File Source="lit.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="melt.exe" />
+                <File Source="melt.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="mergemod.cub" />
+            </Component>
+
+            <Component>
+                <File Source="mergemod.dll" />
+            </Component>
+
+            <Component>
+                <File Source="mspatchc.dll" />
+            </Component>
+
+            <Component>
+                <File Source="pyro.exe" />
+                <File Source="pyro.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="shine.exe" />
+                <File Source="shine.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="smoke.exe" />
+                <File Source="smoke.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="torch.exe" />
+                <File Source="torch.exe.config" />
+            </Component>
+
+            <Component>
+                <File Source="wconsole.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Data.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Extensibility.dll" />
+            </Component>
+
+            <Component>
+                <File Source="wix.dll" />
+                <Environment Id="WIXenv" Name="WIX" Action="set" System="yes" Value="[INSTALLFOLDER]" />
+            </Component>
+
+            <Component>
+                <File Source="winterop.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixCop.exe" />
+            </Component>
+
+            <Component>
+              <File Source="WixTasks.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Dtf.Compression.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Dtf.Compression.Cab.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Dtf.Resources.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Dtf.WindowsInstaller.dll" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Dtf.WindowsInstaller.Package.dll" />
+            </Component>
+
+            <Component>
+                <File Source="ThmViewer.exe" />
+            </Component>
+
+            <Component>
+                <File Source="ThmGen.exe" />
+            </Component>
+
+            <ComponentGroupRef Id="BurnComponents" />
+        </ComponentGroup>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="BurnComponents">
+            <Component Directory="BurnX86Folder">
+                <File Source="!(bindpath.x86)\x86\burn.exe" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

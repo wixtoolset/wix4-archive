@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Heroes_of_Might_and_Magic">
+        <Detect>
+            <Arp DisplayName="Heroes of Might and Magic" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Games" Location="InstallDir:\Games\"/>
+            <File Name="Heroes.cfg" Location="InstallDir:\HEROES.CFG"/>
+            
+            <!-- Older GOG installation used these names -->
+            <File Name="DDataCampaign.hs" Location="InstallDir:\DDATA\CAMPAIGN.HS"/>
+            <File Name="DDataStandard.hs" Location="InstallDir:\DDATA\STANDARD.HS"/>
+
+            <!-- Newer GOG installation uses these names -->
+            <File Name="DataCampaign.hs" Location="InstallDir:\DATA\CAMPAIGN.HS"/>
+            <File Name="DataStandard.hs" Location="InstallDir:\DATA\STANDARD.HS"/>
+        </Data>
+
+        <DisplayName LCID="1033">Heroes of Might and Magic</DisplayName>
+    </Product>
+</LegacySettings>

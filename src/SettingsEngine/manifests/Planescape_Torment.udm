@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Planescape_Torment">
+        <Detect>
+            <Arp DisplayName="Planescape Torment" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- TODO: Get settings out of Torment.ini (which also contains some non-user-setting-data) -->
+            <Directory Namespace="Save" Location="InstallDir:\Save\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Planescape Torment</DisplayName>
+    </Product>
+</LegacySettings>

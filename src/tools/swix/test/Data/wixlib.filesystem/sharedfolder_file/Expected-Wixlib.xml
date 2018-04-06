@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<wixLibrary version="3.0.2002.0" xmlns="http://wixtoolset.org/schemas/v4/wixlib">
+  <section id="test_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixComplexReference">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*6">
+        <field>test_enu</field>
+        <field>2</field>
+        <field />
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+        <field>1</field>
+        <field>0</field>
+      </row>
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*7">
+        <field>test_enu</field>
+        <field>2</field>
+        <field />
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+        <field>1</field>
+        <field>0</field>
+      </row>
+    </table>
+    <table name="WixComponentGroup">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*5">
+        <field>test_enu</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*4">
+        <field>test_enu</field>
+      </row>
+    </table>
+    <table name="WixGroup">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*6">
+        <field>test_enu</field>
+        <field>ComponentGroup</field>
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+        <field>Component</field>
+      </row>
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*7">
+        <field>test_enu</field>
+        <field>ComponentGroup</field>
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+        <field>Component</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*6">
+        <field>Component</field>
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+      </row>
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*7">
+        <field>Component</field>
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+      </row>
+    </table>
+  </section>
+  <section id="JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Directory">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*13">
+        <field>JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu</field>
+        <field>JavaScriptProjTemp_enu</field>
+        <field>blankwj</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*11">
+        <field>JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*12">
+        <field>Directory</field>
+        <field>JavaScriptProjTemp_enu</field>
+      </row>
+    </table>
+  </section>
+  <section id="JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Directory">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*19">
+        <field>JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu</field>
+        <field>JavaScriptProjTemp_enu</field>
+        <field>splitwj</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*17">
+        <field>JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*18">
+        <field>Directory</field>
+        <field>JavaScriptProjTemp_enu</field>
+      </row>
+    </table>
+  </section>
+  <section id="default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*24">
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+        <field>*</field>
+        <field>JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu</field>
+        <field>0</field>
+        <field />
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*25">
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+        <field>hlc4me-v.htm|default.html</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*25">
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu</field>
+        <field>1</field>
+        <field>blankwj\default.html</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*23">
+        <field>default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*24">
+        <field>Directory</field>
+        <field>JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu</field>
+      </row>
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*25">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*30">
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+        <field>*</field>
+        <field>JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu</field>
+        <field>0</field>
+        <field />
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*31">
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+        <field>amgt3ela.htm|default.html</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*31">
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu</field>
+        <field>1</field>
+        <field>splitwj\default.html</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*29">
+        <field>default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*30">
+        <field>Directory</field>
+        <field>JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu</field>
+      </row>
+      <row sourceLineNumber="C:\hg\swix\src\test\Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.wxs*31">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+</wixLibrary>

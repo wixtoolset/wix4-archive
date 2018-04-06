@@ -1,0 +1,1092 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<wixLibrary version="3.0.2002.0" xmlns="http://wixtoolset.org/schemas/v4/wixlib">
+  <section id="CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*10">
+        <field>CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*10">
+        <field>CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*10">
+        <field>CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86</field>
+        <field>CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86</field>
+        <field>9krdxkrt.dll|Microsoft.IntelliTrace.11.0.0.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*10">
+        <field>CB4F47CB1BE1C72465FDDD94DEDD9B46BD3B032A_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.11.0.0.dll</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*10">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*10">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*11">
+        <field>6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*11">
+        <field>6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*11">
+        <field>6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86</field>
+        <field>6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86</field>
+        <field>xnexp6-x.dll|Microsoft.IntelliTrace.ConfigUI.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*11">
+        <field>6DCFA184C6F32F85880BB24916B34AD8B2662FFD_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.ConfigUI.dll</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*11">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*11">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*12">
+        <field>BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*12">
+        <field>BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*12">
+        <field>BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86</field>
+        <field>BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86</field>
+        <field>lkg51bob.dll|Microsoft.IntelliTrace.DataQueries.11.0.0.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*12">
+        <field>BCA0ED9FFFC9D9B9E507847EC2BB8CD6F9486971_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.DataQueries.11.0.0.dll</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*12">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*12">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="6987FEC00413301F852841AF13A69E36A75C184D_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*13">
+        <field>6987FEC00413301F852841AF13A69E36A75C184D_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*13">
+        <field>6987FEC00413301F852841AF13A69E36A75C184D_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>6987FEC00413301F852841AF13A69E36A75C184D_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*13">
+        <field>6987FEC00413301F852841AF13A69E36A75C184D_x86</field>
+        <field>6987FEC00413301F852841AF13A69E36A75C184D_x86</field>
+        <field>hs6ul5gs.0|Microsoft.IntelliTrace.Debugger.11.0.0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*13">
+        <field>6987FEC00413301F852841AF13A69E36A75C184D_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.Debugger.11.0.0</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*13">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*13">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*14">
+        <field>D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*14">
+        <field>D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*14">
+        <field>D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86</field>
+        <field>D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86</field>
+        <field>cwkcqsvr.0|Microsoft.IntelliTrace.DebuggerMargin.11.0.0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*14">
+        <field>D9B8569BD403DEFCEB4AC2EA112A7928E3C5A6F6_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.DebuggerMargin.11.0.0</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*14">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*14">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="6401534612EF190431BCD8900CC7F38B22F8875E_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*15">
+        <field>6401534612EF190431BCD8900CC7F38B22F8875E_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*15">
+        <field>6401534612EF190431BCD8900CC7F38B22F8875E_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>6401534612EF190431BCD8900CC7F38B22F8875E_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*15">
+        <field>6401534612EF190431BCD8900CC7F38B22F8875E_x86</field>
+        <field>6401534612EF190431BCD8900CC7F38B22F8875E_x86</field>
+        <field>tv28ciij.0|Microsoft.IntelliTrace.Package.11.0.0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*15">
+        <field>6401534612EF190431BCD8900CC7F38B22F8875E_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.Package.11.0.0</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*15">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*15">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*16">
+        <field>55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*16">
+        <field>55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*16">
+        <field>55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86</field>
+        <field>55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86</field>
+        <field>ln_xdi8j.dll|Microsoft.IntelliTrace.SearchMargin.11.0.0.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*16">
+        <field>55A0F9D1FA7FDFF367267C7080BC045B16D11E7D_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.SearchMargin.11.0.0.dll</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*16">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*16">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*17">
+        <field>B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*17">
+        <field>B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*17">
+        <field>B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86</field>
+        <field>B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86</field>
+        <field>zowt0x7s.exe|IntelliTrace.exe</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*17">
+        <field>B4F84FA0534179758B47BABEDB6BBBEB28A6F405_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>IntelliTrace.exe</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*17">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*17">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*18">
+        <field>38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*18">
+        <field>38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*18">
+        <field>38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86</field>
+        <field>38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86</field>
+        <field>sa0qgo0x.con|IntelliTrace.exe.config</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*18">
+        <field>38D8FE2EF009DFB12A954A77AAEC9A23D69704CC_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>IntelliTrace.exe.config</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*18">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*18">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="BBBF43125B21639EEE107D31697F4F46BA1DF083_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*19">
+        <field>BBBF43125B21639EEE107D31697F4F46BA1DF083_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*19">
+        <field>BBBF43125B21639EEE107D31697F4F46BA1DF083_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>BBBF43125B21639EEE107D31697F4F46BA1DF083_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*19">
+        <field>BBBF43125B21639EEE107D31697F4F46BA1DF083_x86</field>
+        <field>BBBF43125B21639EEE107D31697F4F46BA1DF083_x86</field>
+        <field>hvyyskd3.dll|Microsoft.VisualStudio.VIL.NotifyPointInProcHost.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*19">
+        <field>BBBF43125B21639EEE107D31697F4F46BA1DF083_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>!(bindpath.binaries.x86)bin\i386</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*19">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*19">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="150175D633E83EE568398896140874467B79C5B6_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*20">
+        <field>150175D633E83EE568398896140874467B79C5B6_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*20">
+        <field>150175D633E83EE568398896140874467B79C5B6_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>150175D633E83EE568398896140874467B79C5B6_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*20">
+        <field>150175D633E83EE568398896140874467B79C5B6_x86</field>
+        <field>150175D633E83EE568398896140874467B79C5B6_x86</field>
+        <field>0mkbhfus.xml|collectionplan.xml</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*20">
+        <field>150175D633E83EE568398896140874467B79C5B6_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>collectionplan.xml</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*20">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*20">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*21">
+        <field>1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*21">
+        <field>1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*21">
+        <field>1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86</field>
+        <field>1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86</field>
+        <field>rsyf-gap.pkg|IntelliTrace.pkgdef</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*21">
+        <field>1D0F4C21B0E01D02DDD4AFB214DB66BD6D1F4D60_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>!(bindpath.binaries.x86)bin\i386\IntelliTrace\Vsix\11.0.0</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*21">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*21">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="920471CBD0E12FB89D2B99913400E40768E3D4F4_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*22">
+        <field>920471CBD0E12FB89D2B99913400E40768E3D4F4_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*22">
+        <field>920471CBD0E12FB89D2B99913400E40768E3D4F4_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>920471CBD0E12FB89D2B99913400E40768E3D4F4_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*22">
+        <field>920471CBD0E12FB89D2B99913400E40768E3D4F4_x86</field>
+        <field>920471CBD0E12FB89D2B99913400E40768E3D4F4_x86</field>
+        <field>pkludaph.dll|Microsoft.IntelliTrace.Profiler.11.0.0.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*22">
+        <field>920471CBD0E12FB89D2B99913400E40768E3D4F4_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.Profiler.11.0.0.dll</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*22">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*22">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="6420405229A3665AF586995BBCF814F8880D9145_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*23">
+        <field>6420405229A3665AF586995BBCF814F8880D9145_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*23">
+        <field>6420405229A3665AF586995BBCF814F8880D9145_x86</field>
+        <field>*</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>0</field>
+        <field />
+        <field>6420405229A3665AF586995BBCF814F8880D9145_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*23">
+        <field>6420405229A3665AF586995BBCF814F8880D9145_x86</field>
+        <field>6420405229A3665AF586995BBCF814F8880D9145_x86</field>
+        <field>5rs0khln.dll|Microsoft.IntelliTrace.Profiler.11.0.0ui.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*23">
+        <field>6420405229A3665AF586995BBCF814F8880D9145_x86</field>
+        <field />
+        <field />
+        <field />
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>1</field>
+        <field>\1033</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*23">
+        <field>Directory</field>
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*23">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="08124CFDA98F3660265B8B3D55D2867F98BAD195_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>6C5F415509198F2CC8D14E5BAB33D44899D0643A_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>08124CFDA98F3660265B8B3D55D2867F98BAD195_x86</field>
+        <field>6C5F415509198F2CC8D14E5BAB33D44899D0643A_x86</field>
+        <field>s_71gxvl|11.0.0</field>
+      </row>
+    </table>
+  </section>
+  <section id="83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+        <field>*</field>
+        <field>GacFolder_x86</field>
+        <field>0</field>
+        <field />
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+        <field>mfrysckv.dll|Microsoft.IntelliTrace.11.0.0.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>GacFolder_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.11.0.0.dll</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="MsiAssembly">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>83C79334FBA20BCE1C1E418E587BC87BCF4665B1_x86</field>
+        <field>{00000000-0000-0000-0000-000000000000}</field>
+        <field />
+        <field />
+        <field>0</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>Directory</field>
+        <field>GacFolder_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*25">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+        <field>*</field>
+        <field>GacFolder_x86</field>
+        <field>0</field>
+        <field />
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+        <field>yz_lq6pq.0|Microsoft.IntelliTrace.Debugger.11.0.0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>GacFolder_x86</field>
+        <field>1</field>
+        <field>Microsoft.IntelliTrace.Debugger.11.0.0</field>
+        <field />
+        <field>-1</field>
+        <field>1</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="MsiAssembly">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>5A1704B76D5FAADC9C74421B7C0FA54B6A0720F5_x86</field>
+        <field>{00000000-0000-0000-0000-000000000000}</field>
+        <field />
+        <field />
+        <field>0</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>Directory</field>
+        <field>GacFolder_x86</field>
+      </row>
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*26">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="E7022A84C5E51223731E15E7FC736719168F995F_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>E7022A84C5E51223731E15E7FC736719168F995F_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>ProgramFilesFolder_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>E7022A84C5E51223731E15E7FC736719168F995F_x86</field>
+        <field>ProgramFilesFolder_x86</field>
+        <field>8hbnjx8c|Microsoft Visual Studio 11.0</field>
+      </row>
+    </table>
+  </section>
+  <section id="AD602531069681419F4D2DC384E7FFC462A80E81_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>AD602531069681419F4D2DC384E7FFC462A80E81_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>E7022A84C5E51223731E15E7FC736719168F995F_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>AD602531069681419F4D2DC384E7FFC462A80E81_x86</field>
+        <field>E7022A84C5E51223731E15E7FC736719168F995F_x86</field>
+        <field>Common7</field>
+      </row>
+    </table>
+  </section>
+  <section id="1D883EB7219BA47D5AA843E4AA16B6DBCDDCFD4A_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>1D883EB7219BA47D5AA843E4AA16B6DBCDDCFD4A_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>AD602531069681419F4D2DC384E7FFC462A80E81_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>1D883EB7219BA47D5AA843E4AA16B6DBCDDCFD4A_x86</field>
+        <field>AD602531069681419F4D2DC384E7FFC462A80E81_x86</field>
+        <field>IDE</field>
+      </row>
+    </table>
+  </section>
+  <section id="5B3B71A217619C263A716F86AE46DEC4A6FC4C16_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>5B3B71A217619C263A716F86AE46DEC4A6FC4C16_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>1D883EB7219BA47D5AA843E4AA16B6DBCDDCFD4A_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>5B3B71A217619C263A716F86AE46DEC4A6FC4C16_x86</field>
+        <field>1D883EB7219BA47D5AA843E4AA16B6DBCDDCFD4A_x86</field>
+        <field>874whywy|CommonExtensions</field>
+      </row>
+    </table>
+  </section>
+  <section id="509E298D2166989C6BD0072314547101FD6C1E54_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>509E298D2166989C6BD0072314547101FD6C1E54_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>5B3B71A217619C263A716F86AE46DEC4A6FC4C16_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>509E298D2166989C6BD0072314547101FD6C1E54_x86</field>
+        <field>5B3B71A217619C263A716F86AE46DEC4A6FC4C16_x86</field>
+        <field>5eiwq_fj|Microsoft</field>
+      </row>
+    </table>
+  </section>
+  <section id="6C5F415509198F2CC8D14E5BAB33D44899D0643A_x86" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>6C5F415509198F2CC8D14E5BAB33D44899D0643A_x86</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>Directory</field>
+        <field>509E298D2166989C6BD0072314547101FD6C1E54_x86</field>
+      </row>
+    </table>
+    <table name="Directory">
+      <row sourceLineNumber="E:\denv\Dev\wixlabs\swix\test\intellitrace\IntelliTrace.swr*9">
+        <field>6C5F415509198F2CC8D14E5BAB33D44899D0643A_x86</field>
+        <field>509E298D2166989C6BD0072314547101FD6C1E54_x86</field>
+        <field>0c2coey9|IntelliTrace</field>
+      </row>
+    </table>
+  </section>
+</wixLibrary>

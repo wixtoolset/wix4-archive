@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <TargetName>SettingsEngineTest</TargetName>
+    <ProjectTypes>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</ProjectTypes>
+    <ProjectGUID>{0808C9BC-B0FF-4B13-8A40-40C225D3FEAD}</ProjectGUID>
+    <RootNamespace>SettingsEngineTest</RootNamespace>
+    <Keyword>ManagedCProj</Keyword>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>true</CLRSupport>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
+  <PropertyGroup>
+    <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\SettingsEngine\lib\inc;$(WixRoot)src\SettingsEngine\lib</ProjectAdditionalIncludeDirectories>
+    <ProjectAdditionalLinkLibraries>cabinet.lib;crypt32.lib;dutil.lib;cfg.lib;msi.lib;Rpcrt4.lib;Mpr.lib;Ws2_32.lib</ProjectAdditionalLinkLibraries>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="xunit">
+      <HintPath>$(XunitPath)\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdminBasicTest.cpp" />
+    <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="SettingsEngineTest.cpp" />
+    <ClCompile Include="EnumPastValuesTest.cpp" />
+    <ClCompile Include="LegacyDetectDirectoryTest.cpp" />
+    <ClCompile Include="LegacyDetectExeTest.cpp" />
+    <ClCompile Include="LegacyRegistrySpecialsTest.cpp" />
+    <ClCompile Include="LegacySyncTest.cpp" />
+    <ClCompile Include="PerUserProductTest.cpp" />
+    <ClCompile Include="ReadWriteTest.cpp" />
+    <ClCompile Include="EnumValuesTest.cpp" />
+    <ClCompile Include="RemoteSyncResolveTest.cpp" />
+    <ClCompile Include="ValueMatchTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CfgTest.h" />
+    <ClInclude Include="error.h" />
+    <ClInclude Include="precomp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="detectdirectory.udm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="detectexe.udm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="legacyspecialstest.udm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samplelegacy.udm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\SettingsEngine\lib\cfglib.vcxproj" />
+    <ProjectReference Include="..\..\..\src\libs\dutil\dutil.vcxproj" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

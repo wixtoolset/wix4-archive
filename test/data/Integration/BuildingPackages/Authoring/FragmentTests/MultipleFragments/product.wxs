@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="Wix Test Product" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\packageelement.wxi?>
+    <Media Id="1" />
+
+    <FeatureRef Id="Feature1" />
+
+    <Feature Id="Feature2" Level="1">
+      <ComponentRef Id="Component2"/>
+    </Feature>
+    
+  </Product>
+  
+  <!--This fragment references a component in another fragment to test multiple levels of fragment referencing-->
+  <!--This fragment does not have an Id-->
+  <Fragment>
+    <Feature Id="Feature1" Level="1">
+      <ComponentRef Id="Component1"/>
+    </Feature>
+  </Fragment>
+
+  <!--This fragment gets referenced twice - once from Feature1 and once from Feature2-->
+  <!--This fragment has an Id-->
+  <Fragment Id="Fragment1">
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\component1.wxi?>
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\component2.wxi?>
+  </Fragment>
+  
+</Wix>

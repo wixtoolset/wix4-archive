@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Caesar_4">
+        <Detect>
+            <Arp InstallLocation="InstallDir" DisplayName="Caesar IV"/>
+            <Arp InstallLocation="InstallDir" DisplayName="Caesar™ IV"/>
+        </Detect>
+
+        <Data>
+            <File Name="CaesarIV.ini" Location="InstallDir:\CaesarIV.ini">
+                <CfgFile Namespace="Game.ini" Encoding="UTF16">
+                    <Value Separator="&#009;"/>
+                </CfgFile>
+            </File>
+            <File Name="loadbar2.dat" Location="InstallDir:\loadbar2.dat" />
+            <File Name="loadbar4.dat" Location="InstallDir:\loadbar4.dat" />
+            <File Name="Locked.dat" Location="InstallDir:\locked.dat" />
+            <Directory Namespace="Users" Location="InstallDir:\Users\" />
+            <Directory Namespace="SavedGames" Location="InstallDir:\Data\Saved Games\" />
+            <Directory Namespace="OnlineSavedGames" Location="InstallDir:\Data\Online Saved Games\" />
+            <Directory Namespace="Tutorials" Location="InstallDir:\Data\Tutorials\" />
+        </Data>
+
+        <Filter>
+            <Ignore Name="Game.ini:\Ambient Sprite LOD"/>
+            <Ignore Name="Game.ini:\Animation Smoothing"/>
+            <Ignore Name="Game.ini:\Attachment Clipping Distance"/>
+            <Ignore Name="Game.ini:\Display Shadows"/>
+            <Ignore Name="Game.ini:\Display Sky Detail"/>
+            <Ignore Name="Game.ini:\Editor Bit Depth"/>
+            <Ignore Name="Game.ini:\Editor Window Height"/>
+            <Ignore Name="Game.ini:\Editor Window Width"/>
+            <Ignore Name="Game.ini:\Effect Detail"/>
+            <Ignore Name="Game.ini:\Figure Clipping Distance"/>
+            <Ignore Name="Game.ini:\Full Screen Mode"/>
+            <Ignore Name="Game.ini:\FullScreenAntialiasQuality"/>
+            <Ignore Name="Game.ini:\FullScreenAntialiasType"/>
+            <Ignore Name="Game.ini:\Game Bit Depth"/>
+            <Ignore Name="Game.ini:\Game Bit Depth"/>
+            <Ignore Name="Game.ini:\Game Window Height"/>
+            <Ignore Name="Game.ini:\Game Window Width"/>
+            <Ignore Name="Game.ini:\Gamma"/>
+            <Ignore Name="Game.ini:\Installed From Directory"/>
+            <Ignore Name="Game.ini:\Installed From Volume"/>
+            <Ignore Name="Game.ini:\LOD Index Modifier"/>
+            <Ignore Name="Game.ini:\Master Quality"/>
+            <Ignore Name="Game.ini:\MasterParticleDensity"/>
+            <Ignore Name="Game.ini:\Max Number of Sounds (percent)"/>
+            <Ignore Name="Game.ini:\PostGlareEnabled"/>
+            <Ignore Name="Game.ini:\Rear Clipping Plane"/>
+            <Ignore Name="Game.ini:\Reflections"/>
+            <Ignore Name="Game.ini:\Screen ID"/>
+            <Ignore Name="Game.ini:\Shadow Support"/>
+            <Ignore Name="Game.ini:\Specular Enabled"/>
+            <Ignore Name="Game.ini:\Texture Bit Depth"/>
+            <Ignore Name="Game.ini:\Texture Filter Mode"/>
+            <Ignore Name="Game.ini:\Unit Lighting"/>
+            <Ignore Name="Game.ini:\Unit Scale Factor"/>
+            <Ignore Name="Game.ini:\Use default graphics quality"/>
+            <Ignore Name="Game.ini:\Wait for VSync"/>
+            <Ignore Name="Game.ini:\Water Shader Detail"/>
+            <Ignore Name="Game.ini:\WaterAnimationEnabled"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Caesar IV</DisplayName>
+    </Product>
+</LegacySettings>

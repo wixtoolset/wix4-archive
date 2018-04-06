@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="CfgTestSpecials" Manufacturer="CfgTestManufacturer" >
+        <Detect>
+            <Arp DisplayName="Cfg Test Specials"/>
+        </Detect>
+
+        <Data>
+            <RegistryKey Namespace="Main" Root="HKCU" Key="Software\CfgRegTestSpecials">
+                <!-- Optional attribute here to proceed with normal processing, default to false -->
+                <Binary ValueName="FlagsValue">
+                    <Flag Name="Flag00" Offset="0"/>
+                    <Flag Name="Flag01" Offset="1"/>
+                    <Flag Name="Flag02" Offset="2"/>
+                    <Flag Name="Flag03" Offset="3"/>
+                    <Flag Name="Flag04" Offset="4"/>
+                    <Flag Name="Flag05" Offset="5"/>
+                </Binary>
+            </RegistryKey>
+        </Data>
+
+        <Filter>
+            <!-- Mark this to be ignored -->
+            <Ignore Name="Main:\IgnoreMe"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Cfg Test Specials</DisplayName>
+    </Product>
+</LegacySettings>

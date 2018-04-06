@@ -1,0 +1,92 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
+namespace WixTest.Tests
+{
+    using System;
+    using System.Threading;
+    using WixTest;
+
+    /// <summary>
+    /// Contains variables and methods used by this test assembly.
+    /// </summary>
+    public abstract class WixTests : WixTestBase
+    {
+        private static readonly string envFlavor = "Flavor";
+
+        private static string originalWixValue;
+        private static int references = 0;
+
+        /// <summary>
+        /// The full path to BasicProduct.msi, which is a shared test file
+        /// </summary>
+        public static readonly string BasicProductMsi = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\SharedData\Baselines\BasicProduct.msi");
+
+        /// <summary>
+        /// The full path to BasicProduct.wxs, which is a shared test file
+        /// </summary>
+        public static readonly string BasicProductWxs = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\SharedData\Authoring\BasicProduct.wxs");
+
+        /// <summary>
+        /// The full path to PropertyFragment.wxs, which is a shared test file
+        /// </summary>
+        public static readonly string PropertyFragmentWxs = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\SharedData\Authoring\PropertyFragment.wxs");
+
+        /// <summary>
+        /// The location of the shared WiX authoring
+        /// </summary>
+        public static readonly string SharedAuthoringDirectory = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\SharedData\Authoring");
+
+        /// <summary>
+        /// The location of the baseline files
+        /// </summary>
+        public static readonly string SharedBaselinesDirectory = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\SharedData\Baselines");
+
+        /// <summary>
+        /// The location of the shared files
+        /// </summary>
+        public static readonly string SharedFilesDirectory = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\SharedData\Files");
+
+        static WixTests()
+        {
+            WixTests.SetTestFlavor();
+        }
+
+        /// <summary>
+        /// Initializes a WiX unit test class.
+        /// </summary>
+        public WixTests()
+        {
+            // Set the WIX environment variables.
+            if (1 == Interlocked.Increment(ref WixTests.references))
+            {
+                WixTests.originalWixValue = Environment.GetEnvironmentVariable("WIX");
+
+                string wixRoot = Environment.GetEnvironmentVariable("WIX_ROOT");
+                if (!String.IsNullOrEmpty(wixRoot))
+                {
+                    Environment.SetEnvironmentVariable("WIX", wixRoot);
+                }
+            }
+        }
+
+        ~WixTests()
+        {
+            if (0 == Interlocked.Decrement(ref WixTests.references))
+            {
+                Environment.SetEnvironmentVariable("WIX", WixTests.originalWixValue);
+            }
+        }
+
+        private static void SetTestFlavor()
+        {
+            string flavor = Environment.GetEnvironmentVariable(WixTests.envFlavor);
+            if (String.IsNullOrEmpty(flavor))
+            {
+                flavor = "debug";
+                Console.WriteLine("The environment variable '{0}' was not set. Using the default build flavor '{1}' to run tests aginst.", WixTests.envFlavor, flavor);
+            }
+
+            Settings.Flavor = flavor;
+        }
+    }
+}

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Space_Pirates_and_Zombies">
+        <Detect>
+            <Arp DisplayName="Space Pirates and Zombies"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\minmaxgames\spacepiratesandzombies"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+
+            <!-- Just pick up saves for now, to avoid picking up resolution and/or other computer-specific settings -->
+            <Normal Prefix="Data:\b_save\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Space Pirates and Zombies</DisplayName>
+    </Product>
+</LegacySettings>

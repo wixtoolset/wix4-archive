@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <UsingTask AssemblyFile="$(NugetPackageFolder)\xunit.1.9.2\lib\net20\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit"/>
+
+  <ItemGroup>
+    <ProjectReference Include="$(WixSrcFolder)\libs\libs.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="$(WixSrcFolder)\burn\burn.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+    <ProjectReference Include="$(WixSrcFolder)\tools\tools.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+
+    <ProjectReference Include="src\Utilities\TestBA\TestBA.csproj" />
+    <ProjectReference Include="src\UnitTests\Burn\BurnUnitTest.vcxproj" />
+    <ProjectReference Include="src\UnitTests\dutil\DUtilUnitTest.vcxproj" />
+    <ProjectReference Include="src\IntegrationTests\Burn\BurnIntegrationTests.csproj" />
+    <ProjectReference Include="src\IntegrationTests\MsbuildIntegrationTests\MsbuildIntegrationTests.csproj" />
+    <ProjectReference Include="src\SettingsEngineTests\SettingsEngineTest.vcxproj" Condition=" Exists('$(SqlCESdkIncludePath)') " />
+    <ProjectReference Include="src\WixTests\WixTests.csproj" />
+    <ProjectReference Include="src\WixTestTools\WixTestTools.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TestAssemblies Include="$(OutputPath_x86)BurnUnitTest.dll" />
+    <TestAssemblies Include="$(OutputPath_x86)DUtilUnitTest.dll" />
+    <TestAssemblies Include="$(OutputPath_x86)WixTests.dll" />
+    <TestAssemblies Include="$(OutputPath_x86)WixTest.BurnIntegrationTests.dll" Condition=" '$(EnableIntegrationTests)' == 'true' " />
+    <TestAssemblies Include="$(OutputPath_x86)WixTest.MsbuildIntegrationTests.dll" Condition=" '$(EnableIntegrationTests)' == 'true' " />
+  </ItemGroup>
+
+  <Target Name="Test" DependsOnTargets="Build">
+    <xunit Assemblies="@(TestAssemblies)" Html="$(MSBuildProjectDirectory)\test_results.html" Xml="$(MSBuildProjectDirectory)\test_results.xml" />
+  </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

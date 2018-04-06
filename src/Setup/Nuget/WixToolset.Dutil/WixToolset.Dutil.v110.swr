@@ -1,0 +1,3 @@
+folder native:\v110
+  file x86\dutil.lib source=x86\2012\dutil.lib
+  file x64\dutil.lib source=x64\2012\dutil.lib

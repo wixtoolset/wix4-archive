@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <ProjectGuid>{3F986AAC-50E2-4BEB-A439-2528BB885CA2}</ProjectGuid>
+    <AssemblyName>WixOfficeExtension</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Extensions.OfficeAddin</RootNamespace>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <FxCopEnabled>false</FxCopEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BrowsePathStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BrowsePathStep.Designer.cs">
+      <DependentUpon>BrowsePathStep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BuildStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BuildStep.Designer.cs">
+      <DependentUpon>BuildStep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FeedStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FeedStep.Designer.cs">
+      <DependentUpon>FeedStep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OfficeAddinClickThroughConsole.cs" />
+    <Compile Include="OfficeAddinClickThroughUI.cs" />
+    <Compile Include="NativeMethods.cs" />
+    <Compile Include="OfficeAddinMsiBuilder.cs" />
+    <Compile Include="OfficeAddinFabricator.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="OfficeShimBuilder.cs" />
+    <Compile Include="PackageInfoStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PackageInfoStep.Designer.cs">
+      <DependentUpon>PackageInfoStep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PickEntryStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PickEntryStep.Designer.cs">
+      <DependentUpon>PickEntryStep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PickOfficeAppsStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PickOfficeAppsStep.Designer.cs">
+      <DependentUpon>PickOfficeAppsStep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UpdateInfoStep.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UpdateInfoStep.Designer.cs">
+      <DependentUpon>UpdateInfoStep.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="BrowsePathStep.resx">
+      <DependentUpon>BrowsePathStep.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BuildStep.resx">
+      <DependentUpon>BuildStep.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FeedStep.resx">
+      <DependentUpon>FeedStep.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PackageInfoStep.resx">
+      <DependentUpon>PackageInfoStep.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PickEntryStep.resx">
+      <DependentUpon>PickEntryStep.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PickOfficeAppsStep.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PickOfficeAppsStep.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UpdateInfoStep.resx">
+      <DependentUpon>UpdateInfoStep.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <MsgGenSource Include="Data\Messages.xml">
+      <ResourcesLogicalName>$(RootNamespace).Data.messages.resources</ResourcesLogicalName>
+    </MsgGenSource>
+    <EmbeddedFlattenedResource Include="Xsd\OfficeAddin.xsd">
+      <LogicalName>$(RootNamespace).Xsd.officeaddin.xsd</LogicalName>
+    </EmbeddedFlattenedResource>
+    <XsdGenSource Include="Xsd\OfficeAddin.xsd">
+      <SubType>Designer</SubType>
+      <Namespace>WixToolset.Extensions.Serialize.OfficeAddin</Namespace>
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+    </XsdGenSource>
+    <EmbeddedResource Include="$(OutputPath)\OfficeAddin.wixlib">
+      <Link>Data\OfficeAddin.wixlib</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Import Project="..\..\..\..\WixBuild.Common.targets" />
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\..\..\heat\heat.csproj" />
+    <ProjectReference Include="..\..\..\WixTasks\WixTasks.csproj" />
+    <ProjectReference Include="..\..\..\Wix\Wix.csproj" />
+    <ProjectReference Include="..\..\..\wconsole\wconsole.csproj" />
+    <ProjectReference Include="..\..\UtilExtension\wixext\WixUtilExtension.csproj" />
+    <ProjectReference Include="..\..\..\wui\Wui.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Capitalism">
+        <!-- This was tested with Capitalism Plus and may require some changes to support regular Capitalism -->
+        <Detect>
+            <Arp DisplayName="Capitalism Plus" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".SAV"/>
+            <!-- Pickup CAPITAL.CFG, CAPITAL.HOF, CAPITAL.SND -->
+            <Normal Prefix="Data:\CAPITAL."/>
+        </Filter>
+
+        <DisplayName LCID="1033">Capitalism</DisplayName>
+    </Product>
+</LegacySettings>

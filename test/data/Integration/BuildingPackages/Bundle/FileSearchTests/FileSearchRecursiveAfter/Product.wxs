@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <?define TestDataDirectory="$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files"?>
+
+  <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
+
+    <BootstrapperApplication Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe"/>
+
+    <Chain>
+      <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
+    </Chain>
+
+    <Variable Name="variable1" Value="Variable1Value"/>
+    <Variable Name="variable2" Value="Variable2Value"/>
+
+    <util:FileSearch Id="FileSearch1" Variable="variable1" Path="%windir%\System32\mscoree.dll" After="FileSearch2"/>
+    <util:FileSearch Id="FileSearch2" Variable="variable2" Path="%windir%\System\mscoree.dll" After="FileSearch1"/>
+
+  </Bundle>
+</Wix>

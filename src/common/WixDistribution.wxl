@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl">
+    <String Id="Company" Overridable="yes">.NET Foundation</String>
+    <String Id="Copyright" Overridable="yes">Copyright (c) .NET Foundation and contributors. All rights reserved.</String>
+    <String Id="ShortProduct" Overridable="yes">WiX Toolset</String>
+    <String Id="SupportUrl" Overridable="yes">http://wixtoolset.org</String>
+    <String Id="UpdateUrl" Overridable="yes">http://wixtoolset.org/releases/feed/v4.0</String>
+</WixLocalization>

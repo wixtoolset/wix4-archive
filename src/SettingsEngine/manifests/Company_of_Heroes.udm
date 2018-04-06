@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Company_of_Heroes">
+        <Detect>
+            <Arp DisplayName="Company of Heroes"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyGamesFolder:\Company of Heroes"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\Savegames\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Company of Heroes</DisplayName>
+    </Product>
+</LegacySettings>

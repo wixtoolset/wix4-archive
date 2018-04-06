@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{B8D8ECE7-DE54-4827-A420-BF34C1D61C1A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Simplified.Test</RootNamespace>
+    <AssemblyName>WixToolset.Simplified.Test</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AppxTests.cs" />
+    <Content Include="Data\wixlib.filesystem\sharedfolder_twogroups\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_parent\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_ref\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\filesearch\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_file\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\condition\condition.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\inproc\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\ngen\ngen.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="WixlibFilesystemTests.cs" />
+    <Compile Include="WixlibTests.cs" />
+    <Compile Include="GeneralTests.cs" />
+    <Compile Include="Utility\AppxVerifier.cs" />
+    <Compile Include="Utility\VsixVerifier.cs" />
+    <Compile Include="Utility\OpcVerifier.cs" />
+    <Compile Include="Utility\SwcTool.cs" />
+    <Compile Include="Utility\ToolUtility.cs" />
+    <Compile Include="Utility\WixLibUtility.cs" />
+    <Compile Include="Utility\XmlUtility.cs" />
+    <Compile Include="VsixTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\appx\backgroundtask\Expected-AppxManifest.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\backgroundtask\Expected-Files.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\backgroundtask\Test.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\charms\Expected-AppxManifest.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Data\appx\charms\Expected-Files.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\version_with_insignificant_zeros\Expected-AppxManifest.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\version_with_insignificant_zeros\Expected-Files.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\version_with_insignificant_zeros\Test.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\wwa\Expected-AppxManifest.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Data\appx\wwa\Expected-Files.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\appx\wwa\Test.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\barLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\bt.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\contoso.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\ContosoCalculator.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\example.dll" />
+    <Content Include="Data\content\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\lockscreenimage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\Logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\WixToolset.Simplified.LanguageService.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\WixToolset.Simplified.LanguageService.pkgdef">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\SmallLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\taxCalc-small.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\taxCalc.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\content\WideLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\vsix\swix\Expected-extension.vsixmanifest" />
+    <Content Include="Data\vsix\swix\Expected-Files.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\vsix\swix\Expected-[Content_Types].xml" />
+    <Content Include="Data\vsix\swix\Test.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\condition\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\ngen\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\simple\Expected-Wixlib.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WixToolset.Dtf.Compression">
+      <HintPath>..\..\bin\dtf\WixToolset.Dtf.Compression.dll</HintPath>
+    </Reference>
+    <Reference Include="WixToolset.Dtf.Compression.Zip">
+      <HintPath>..\..\bin\dtf\WixToolset.Dtf.Compression.Zip.dll</HintPath>
+    </Reference>
+    <ProjectReference Include="..\swc\swc.csproj">
+      <Project>{28886709-2988-45B3-8A0F-A419CEE75540}</Project>
+      <Name>swc</Name>
+    </ProjectReference>
+    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\appx\charms\package.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Data\appx\charms\app.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="Data\wixlib\filesearch\filesearch.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_file\sharedfolder_file.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_ref\sharedfolder_ref.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_parent\sharedfolder_parent.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib.filesystem\sharedfolder_twogroups\sharedfolder_twogroups.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Data\wixlib\inproc\inproc.swr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

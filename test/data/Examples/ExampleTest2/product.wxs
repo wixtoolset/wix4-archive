@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Product Id="DE5392AD-E6E7-4DC6-8E82-64C1A629C116" Name="ExtraICE.0.Product" Language="1033" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="8CF0FFED-0116-4A64-B658-38713E3D3362">
+        <Package InstallerVersion="200" Compressed="yes" />
+
+        <Media Id="1" Cabinet="product.cab" />
+
+    </Product>
+</Wix>

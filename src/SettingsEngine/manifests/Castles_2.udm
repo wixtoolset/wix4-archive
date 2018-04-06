@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Castles_2">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both Castles 1 & 2.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Castles and Castles 2 - Siege and Conquest" InstallLocation="ComboInstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="ComboInstallDir:\Castles 2\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\" Postfix=".GAM"/>
+            <Normal Name="Data:\OPTIONS.DAT"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Castles</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
+  <!-- Fonts section -->
+  <Font Id="0" Height="14" Weight="30" Background="F0F0F0">Arial</Font>
+
+  <!-- Main application -->
+  <Window IconResource="MainIcon" Width="800" Height="600" AutoResize="yes" MinimumWidth="800" MinimumHeight="600" FontId="0" HexStyle="000f0000" Caption="#(loc.AppTitle)">
+    <!-- ImageList section -->
+    <ImageList Name="InstallState">
+      <Image ImageResource="3" />
+      <Image ImageResource="4" />
+    </ImageList>
+
+    <Tabs Name="MainTabControl" X="0" Y="0" Width="-1" Height="-1" FontId="0" HexStyle="10000008">
+      <Tab>#(loc.MainSettingsTab)</Tab>
+      <Tab>#(loc.OtherDatabasesTab)</Tab>
+    </Tabs>
+
+    <!-- Product list screen -->
+    <Page Name="ProductList">
+      <Label Name="ProductListDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
+      <Label X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.ProductListHeader)</Label>
+      <ListView Name="ProductListView" TabStop="yes" X="10" Y="55" Width="-210" Height="-35" FontId="0" ImageListSmall="InstallState" HexStyle="0000000D" HexExtendedStyle="00000021">
+        <Column Width="549" Expands="yes">#(loc.ProductName)</Column>
+      </ListView>
+      <Checkbox Name="ShowUninstalledProductsCheckBox" FontId="0" TabStop="yes" X="10" Y="-10" Width="200" Height="20">#(loc.ShowUninstalledProducts)</Checkbox>
+      <Button Name="ProductListBackButton" X="-10" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
+      <Button Name="ForgetProductButton" X="-10" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ProductForgetButton)</Button>
+      <Button Name="ReadLegacySettingsButton" X="-10" Y="-30" Width="150" Height="20" FontId="0" TabStop="yes" HexStyle="00000000">#(loc.ReadLegacySettings)</Button>
+      <Button Name="ImportLegacyManifestButton" X="-10" Y="-10" Width="150" Height="20" FontId="0" TabStop="yes" HexStyle="00000000">#(loc.ImportLegacyManifest)</Button>
+    </Page>
+
+    <!-- Single product view screen (local database) -->
+    <Page Name="SingleProduct">
+      <Label Name="SingleProductDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
+      <Label Name="SingleProductNameText" FontId="0" X="10" Y="40" Width="-210" Height="15" />
+      <Label X="10" Y="55" Width="185" Height="15" FontId="0">#(loc.SingleProductValuesHeader)</Label>
+
+      <!-- Value display / buttons -->
+      <ListView Name="ValueListView" TabStop="yes" X="10" Y="70" Width="-210" Height="-35" FontId="0" HexStyle="00000009" HexExtendedStyle="00000021">
+        <Column Width="260" Expands="yes">#(loc.ValueNameColumn)</Column>
+        <Column Width="60">#(loc.ValueTypeColumn)</Column>
+        <Column Width="120" Expands="yes">#(loc.ValueColumn)</Column>
+        <Column Width="150">#(loc.WhenColumn)</Column>
+      </ListView>
+      <Checkbox Name="ShowDeletedValuesCheckBox" FontId="0" TabStop="yes" X="10" Y="-10" Width="200" Height="20">#(loc.ShowDeletedValues)</Checkbox>
+      <Button Name="SingleProductBackButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
+      <Button Name="NewValueButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.NewValueButton)</Button>
+      <Button Name="SetValueButton" X="-20" Y="100" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.SetValueButton)</Button>
+      <Button Name="DeleteSettingsButton" X="-20" Y="125" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.DeleteSettingsButton)</Button>
+      <Button Name="ViewValueHistoryButton" X="-20" Y="150" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ViewValueHistoryButton)</Button>
+      <Button Name="ExportFileButton" X="-20" Y="175" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ExportFileButton)</Button>
+    </Page>
+
+    <!-- Write value screen -->
+    <Page Name="SetValue">
+      <Label Name="SetValueDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
+      <Label X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.SetValueHeader)</Label>
+      <Label Name="SetValueName" FontId="0" X="10" Y="57" Width="390" Height="15">#(loc.ValueName)</Label>
+      <Editbox Name="SetValueNameEditBox" FontId="0" TabStop="yes" X="100" Y="55" Width="500" Height="20" />
+      <Button Name="SetValueCancelButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.CancelButton)</Button>
+      <Button Name="SetValueSaveButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.SaveValueButton)</Button>
+
+      <Button Name="SetValueFileType" X="10" TabStop="yes" Y="80" Width="100" Height="20" FontId="0" HexStyle="00000004">#(loc.FileTypeRadioButton)</Button>
+      <Label Name="SetValuePathText" FontId="0" X="10" Y="105" Width="80" Height="15">#(loc.SetFilePath)</Label>
+      <Editbox Name="SetValuePathEditBox" FontId="0" TabStop="yes" X="100" Y="105" Width="325" Height="20" FileSystemAutoComplete="yes" />
+      <Button Name="SetValueBrowseButton" FontId="0" TabStop="yes" X="450" Y="105" Width="150" Height="20">#(loc.BrowseButton)</Button>
+
+      <Button Name="SetValueDwordType" X="110" TabStop="yes" Y="80" Width="100" Height="20" FontId="0" HexStyle="00000004">#(loc.DwordTypeRadioButton)</Button>
+      <Button Name="SetValueQwordType" X="210" TabStop="yes" Y="80" Width="100" Height="20" FontId="0" HexStyle="00000004">#(loc.QwordTypeRadioButton)</Button>
+      <Button Name="SetValueStringType" X="310" TabStop="yes" Y="80" Width="100" Height="20" FontId="0" HexStyle="00000004">#(loc.StringTypeRadioButton)</Button>
+      <Button Name="SetValueBoolType" X="410" TabStop="yes" Y="80" Width="100" Height="20" FontId="0" HexStyle="00000004">#(loc.BoolTypeRadioButton)</Button>
+      <Editbox Name="SetValueEditBox" FontId="0" TabStop="yes" X="10" Y="105" Width="-210" Height="20" />
+      <Checkbox Name="SetValueCheckBox" FontId="0" TabStop="yes" X="10" Y="105" Width="20" Height="20" />
+      <Label Name="SetValueErrorText" FontId="0" X="10" Y="125" Width="390" Height="15" />
+    </Page>
+
+    <!-- Value history view screen (multi-purpose) -->
+    <Page Name="SingleValueHistory">
+      <Label Name="SingleValueHistoryDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
+      <Label X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.SingleValueHistoryHeader)</Label>
+      <Label Name="SingleValueHistoryProductName" FontId="0" X="10" Y="55" Width="-210" Height="15" />
+      <Label Name="SingleValueHistoryValueName" FontId="0" X="10" Y="70" Width="-210" Height="15" />
+      <ListView Name="SingleValueHistoryView" TabStop="yes" X="10" Y="85" Width="-210" Height="-10" FontId="0" HexStyle="00000009" HexExtendedStyle="00000021">
+        <Column Width="60">#(loc.ValueTypeColumn)</Column>
+        <Column Width="115" Expands="yes">#(loc.ValueColumn)</Column>
+        <Column Width="70">#(loc.ReferencedColumn)</Column>
+        <Column Width="190">#(loc.WhoColumn)</Column>
+        <Column Width="150">#(loc.WhenColumn)</Column>
+      </ListView>
+      <Button Name="SingleValueHistoryBackButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
+      <Button Name="SingleFileHistoryExportFileButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ExportFileButton)</Button>
+    </Page>
+
+    <!-- Other databases main screen (database list) -->
+    <Page Name="OtherDatabaseList">
+      <Label FontId="0" X="10" Y="25" Width="-210" Height="15">#(loc.OtherDatabasesHeader)</Label>
+      <ListView Name="OtherDatabasesMainScreenView" TabStop="yes" X="10" Y="50" Width="-210" Height="-10" FontId="0" HexStyle="0000001D" HexExtendedStyle="00000025">
+        <Column Width="350" Expands="yes">#(loc.NameText)</Column>
+        <Column Width="90">#(loc.ResolutionColumn)</Column>
+        <Column Width="115">#(loc.StatusText)</Column>
+      </ListView>
+      <Button Name="OtherDatabasesMainScreenSyncButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.SyncResolveButton)</Button>
+      <Button Name="OtherDatabasesMainScreenViewConflicts" X="-20" Y="100" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ViewDatabaseConflictsButton)</Button>
+      <Button Name="OtherDatabasesMainScreenAddExternalButton" X="-20" Y="125" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.AddExternalDatabase)</Button>
+      <Button Name="OtherDatabasesMainScreenModifyExternalButton" X="-20" Y="150" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ModifyExternalDatabase)</Button>
+    </Page>
+
+    <!-- Add external database screen -->
+    <Page Name="SetExternalDatabase">
+      <Label FontId="0" X="10" Y="25" Width="-210" Height="15">#(loc.SetExternalHeader)</Label>
+      <Label FontId="0" X="10" Y="50" Width="30" Height="15">#(loc.PathColonText)</Label>
+      <Editbox Name="SetExternalDatabasePathEditbox" TabStop="yes" X="50" Y="50" Width="350" Height="20" FontId="0" FileSystemAutoComplete="yes"/>
+      <Label FontId="0" X="10" Y="75" Width="30" Height="15">#(loc.NameColonText)</Label>
+      <Editbox Name="SetExternalDatabaseNameEditbox" TabStop="yes" X="50" Y="75" Width="350" Height="20" FontId="0" FileSystemAutoComplete="yes"/>
+      <Checkbox Name="SetExternalDatabaseCreateNewCheckBox" FontId="0" TabStop="yes" X="10" Y="100" Width="150" Height="20">#(loc.CreateNewCheckbox)</Checkbox>
+      <Checkbox Name="SetExternalDatabaseSyncByDefaultCheckBox" FontId="0" TabStop="yes" X="10" Y="125" Width="250" Height="20">#(loc.SyncByDefaultCheckbox)</Checkbox>
+      <Checkbox Name="SetExternalDatabaseRememberCheckBox" FontId="0" TabStop="yes" X="10" Y="150" Width="250" Height="20">#(loc.RememberCheckbox)</Checkbox>
+      <Button Name="SetExternalDatabaseBrowseButton" X="425" Y="50" Width="100" Height="20" FontId="0" TabStop="yes">#(loc.BrowseButton)</Button>
+      <Button Name="SetExternalDatabaseCancelButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.CancelButton)</Button>
+      <Button Name="SetExternalDatabaseOKButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.OKButton)</Button>
+      <Button Name="SetExternalDatabaseReconnectButton" X="-20" Y="100" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ReconnectButton)</Button>
+      <Button Name="SetExternalDatabaseDisconnectButton" X="-20" Y="100" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.DisconnectButton)</Button>
+    </Page>
+
+    <!-- Conflicting product list -->
+    <Page Name="ConflictsProductList">
+      <Label Name="SingleDbConflictsDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
+      <Label X="10" Y="40" Width="200" Height="15" FontId="0">#(loc.ConflictsHeader)</Label>
+      <ListView Name="SingleDbConflictsView" TabStop="yes" X="10" Y="65" Width="-210" Height="-40" FontId="0" HexStyle="00000019" HexExtendedStyle="00000021">
+        <Column Width="455" Expands="yes">#(loc.ProductName)</Column>
+        <Column Width="110">#(loc.ResolutionColumn)</Column>
+      </ListView>
+      <Button Name="SingleDbConflictsBackButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
+      <Button Name="SingleDbConflictsSyncButton" X="-20" Y="75" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.SyncResolveButton)</Button>
+      <Button Name="SingleDbConflictsAcceptMine" X="75" Y="-10" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.AcceptLocal)</Button>
+      <Button Name="SingleDbConflictsAcceptOther" X="325" Y="-10" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.AcceptRemote)</Button>
+    </Page>
+
+    <!-- Single product conflict view screen -->
+    <Page Name="SingleProductConflicts">
+      <Label Name="SingleProductConflictsDatabaseName" X="10" Y="25" Width="200" Height="15" FontId="0" />
+      <Label Name="SingleProductConflictsNameText" FontId="0" X="10" Y="40" Width="-210" Height="15" />
+      <ListView Name="SingleProductConflictsValuesView" TabStop="yes" X="10" Y="65" Width="-210" Height="-70" FontId="0" HexStyle="00000019" HexExtendedStyle="00000021">
+        <Column Width="325" Expands="yes">#(loc.ValueName)</Column>
+        <Column Width="125">#(loc.ResolutionColumn)</Column>
+      </ListView>
+      <Button Name="SingleProductConflictsMyValueHistoryButton" X="75" Y="-40" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ViewLocalConflictsButton)</Button>
+      <Button Name="SingleProductConflictsOtherValueHistoryButton" X="325" Y="-40" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.ViewRemoteConflictsButton)</Button>
+      <Button Name="SingleProductConflictsAcceptMine" X="75" Y="-10" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.AcceptLocal)</Button>
+      <Button Name="SingleProductConflictsAcceptOther" X="325" Y="-10" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.AcceptRemote)</Button>
+      <Button Name="SingleProductConflictsCancelButton" X="-20" Y="50" Width="150" Height="20" FontId="0" TabStop="yes">#(loc.BackButton)</Button>
+    </Page>
+  </Window>
+</Theme>

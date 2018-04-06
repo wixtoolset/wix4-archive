@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:iis="http://wixtoolset.org/schemas/v4/wxs/iis">
+  <Product Id="DCCE3521-FB10-4ef7-90AC-5529C0A8C232" Name="TestWebSDirProduct_64" Language="1033" Version="0.0.0.0" UpgradeCode="{955D321E-A24D-47aa-9652-ADACCB955EDB}" Manufacturer="Microsoft Corporation" >
+    <Package Description="Test Web dir Product" Comments="Test Web dir Product" InstallerVersion="200" Compressed="yes" Platform="x64" />
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+    <Property Id="PORT" Value="1024" />
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder" Name="PFiles">
+        <Directory Id="TestWebSiteProductDirectory" ShortName="testassm" Name="Test File">
+          <Component Id="TestWebSiteProductComponent" Guid="00030829-0000-0000-C000-000000000046" DiskId="1" KeyPath="yes" Win64="yes">
+            <CreateFolder />
+            <File Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt" />
+            <iis:WebSite Id="Test" Description="Test web server" Directory="TestWebSiteProductDirectory" StartOnInstall="yes" DirProperties="ReadAndExecute" ConfigureIfExists="no">
+              <iis:WebAddress Id="TestAddress" Port="[PORT]" Secure="no" />
+            </iis:WebSite>
+            <iis:WebDir Id="testwebdir" Path="webdir" WebSite="Test" DirProperties="ReadAndExecute"/>
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder" Name="ProgMenu" />
+    </Directory>
+    <Feature Id="TestWebSiteProductFeature" Title="Test File Product Feature" Level="1">
+      <ComponentRef Id="TestWebSiteProductComponent" />
+    </Feature>
+    <iis:WebDirProperties Id="ReadAndExecute" Read="yes" Write="no" Script="yes" Execute="yes" AnonymousAccess="no" />
+  </Product>
+</Wix>

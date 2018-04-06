@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Product Id="00000000-0000-0000-0005-000000000006" Name="PerfCounter" Language="1033" Version="1.0.0.0" UpgradeCode="{D3C08DD4-A77E-43e8-8969-DB3D6CB0BEC2}" Manufacturer="Microsoft Corporation">
+    <Package Description="Test from: PerfCounter" Comments="Test from: PerfCounter" InstallerVersion="200" Compressed="yes" />
+
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\directories.wxi ?>
+
+    <DirectoryRef Id="WixTestFolder">
+      <Component Id="TestPerfmonProductComponent" Guid="00030829-0000-0000-C000-000000000046" DiskId="1">
+        <RegistryValue Id="reg1" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\MyApplication\Performance" Name="Open" Type="string" Value="PrfData_Open" KeyPath="yes" />
+        <RegistryValue Id="reg2" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\MyApplication\Performance" Name="Close" Type="string" Value="PrfData_Close" />
+        <RegistryValue Id="reg3" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\MyApplication\Performance" Name="Collect" Type="string" Value="PrfData_Collect" />
+        <File Id="TestPerfmonProductFile" Name="ReadMe.txt" Source="$(env.WIX_ROOT)\test\data\Extensions\UtilExtension\PerfCounterTests\ReadMe.txt" />
+        <File Id="SymFile.h" Name="SymFile.h" Source="$(env.WIX_ROOT)\test\data\Extensions\UtilExtension\PerfCounterTests\SymFile.h" />
+        <File Id="SymFile.ini" Name="SymFile.ini" Source="$(env.WIX_ROOT)\test\data\Extensions\UtilExtension\PerfCounterTests\SymFile.ini">
+          <util:PerfCounter Name="MyApplication" />
+        </File>
+      </Component>
+    </DirectoryRef>
+
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\FailureCustomAction.wxi?>
+    
+    <Feature Id="Feature1" Level="1">
+      <ComponentRef Id="TestPerfmonProductComponent" />
+      <ComponentRef Id="FailureCustomActionComponent" />
+    </Feature>
+
+    <InstallExecuteSequence>
+      <Custom Action="CaFail"  After="ConfigurePerfmonInstall"/>
+    </InstallExecuteSequence>
+    
+  </Product>
+</Wix>

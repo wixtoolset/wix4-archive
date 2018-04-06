@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+<Fragment Id="fsC">
+    <Property Id="FSC">
+        <ComponentSearch Id="fsC" Guid="{C00D5A59-1BD1-4F6B-9B2B-27E0AE64020B}" Type="file" />
+    </Property>
+</Fragment>
+
+<Fragment Id="fsRK">
+    <Property Id="FSRK">
+        <RegistrySearch Id="fsRK" Root="HKLM" Key="Search\Registry\Key" Type="raw" />
+    </Property>
+</Fragment>
+
+<Fragment Id="fsRV">
+    <Property Id="FSRV">
+        <RegistrySearch Id="fsRV" Root="HKLM" Key="Search\Registry\Key" Name="Name" Type="raw" />
+    </Property>
+</Fragment>
+
+</Wix>

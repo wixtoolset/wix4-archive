@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:iis="http://wixtoolset.org/schemas/v4/wxs/iis">
+  <Product Id="ADB4951E-E43B-4f52-BCC7-EE5704D39FF5" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{5D723308-6305-4b9c-AF7C-92AA5334A37B}">
+    <Package Description="Test for: Etag Property" Comments="Test for: Etag Property" InstallerVersion="200" Compressed="yes" />
+
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+        <Directory Id="TestWebSiteProductDirectory" ShortName="testassm" Name="Test File">
+
+          <Component Id="TestWebPropertyComponent" Guid="1F2F3797-C8FD-4960-908D-7FCA3059D0C8" DiskId="1" KeyPath="yes">
+            <CreateFolder />
+            <File Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt"/>
+            <iis:WebProperty Id="ETagChangeNumber" Value="1234" />
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder" Name="ProgMenu" />
+    </Directory>
+
+    <Feature Id="TestWebSiteProductFeature" Title="Test File Product Feature" Level="1">
+      <ComponentRef Id="TestWebPropertyComponent" />
+    </Feature>
+
+    <iis:WebDirProperties Id="ReadAndExecute" Read="yes" Write="no" Script="yes" Execute="yes" AnonymousAccess="no" />
+
+  </Product>
+</Wix>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Product Id="!(loc.productcode)" Name="TestLocalization" Language="!(loc.language)" Version="0.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="!(loc.upgradecode)">
+        <Package Languages="!(loc.languages)" Description="Test Localization" Comments="WiX Test" InstallerVersion="200" Compressed="yes" SummaryCodepage="!(loc.SummaryCodepage)" />
+
+        <Media Id="1" Cabinet="test.cab" />
+
+        <Feature Id="MyFeature" Level="1" Description="!(loc.hello), this is a localized description.">
+            <ComponentRef Id="MyComponent" />
+        </Feature>
+
+      <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\directories.wxi?>
+      
+      <DirectoryRef Id="WixTestFolder">
+        <Component Id="MyComponent" DiskId="1" Guid="!(wix.componentguid)">
+          <File Source="$(env.WIX_ROOT)\examples\data\test.txt" KeyPath="yes" />
+        </Component>
+      </DirectoryRef>
+
+      <WixVariable Id="componentguid" Value="{5AF41D32-A304-4A2A-A32E-2D491E866177}" />
+    </Product>
+</Wix>

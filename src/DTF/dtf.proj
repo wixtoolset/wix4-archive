@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ProjectReference Include="Libraries\Compression\Compression.csproj" />
+    <ProjectReference Include="Libraries\Compression.Cab\Compression.Cab.csproj" />
+    <ProjectReference Include="Libraries\Compression.Zip\Compression.Zip.csproj" />
+    <ProjectReference Include="Libraries\Resources\Resources.csproj" />
+    <ProjectReference Include="Libraries\WindowsInstaller\WindowsInstaller.csproj" />
+    <ProjectReference Include="Libraries\WindowsInstaller.Linq\WindowsInstaller.Linq.csproj" />
+    <ProjectReference Include="Libraries\WindowsInstaller.Package\WindowsInstaller.Package.csproj" />
+    <ProjectReference Include="Tools\Tools.proj" />
+    <ProjectReference Include="Tests\Tests.proj" />
+    <ProjectReference Include="Samples\Samples.proj" />
+    <ProjectReference Include="Documents\Guide\dtfguide.helpproj" Condition="$(BuildSandcastleDocumentation)"/>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

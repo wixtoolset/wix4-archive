@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <?define TestDataDirectory="$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files"?>
+
+  <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
+
+    <BootstrapperApplication Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe"/>
+
+    <Chain>
+      <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>
+    </Chain>
+
+    <Variable Name="Variable1" Value="Variable1Value"/>
+    <Variable Name="Variable2" Value="2"/>
+    <Variable Name="Variable # 3" Value="Variable3Value"/>
+    <Variable Name="Variable4" Value="Variable3Value"/>
+
+    <util:RegistrySearch Id="RegistrySearch1" Variable="Variable1" Root="HKLM" Key="SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client" Value="InstallPath" Result="Exists" Format="Compatible" After="RegistrySearch3"/>
+    <util:RegistrySearch Id="RegistrySearch2" Variable="Variable2" Root="HKLM" Key="SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client" Condition="1 &amp; 2 &lt; 3" After="RegistrySearch4"/>
+    <util:RegistrySearch Id="RegistrySearch4" Variable="Variable4" Root="HKCR" Key="TypeLib\{859D8CF5-7ADE-4DAB-8F7D-AF171643B934}\1.0\0" ExpandEnvironmentVariables="no" Format="Compatible"/>
+    <util:RegistrySearch Id="RegistrySearch3" Variable="Variable # 3" Root="HKU" Key="Software\Microsoft\Microsoft SDKs\Windows\v6.1\WinSDKInterop" ExpandEnvironmentVariables="yes" After="RegistrySearch4"/>
+
+  </Bundle>
+</Wix>

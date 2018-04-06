@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Torchlight">
+        <Detect>
+            <Arp DisplayName="Torchlight"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\runic games\torchlight\">
+                <!-- Ignoring local_settings.txt for now, because it appears to be all machine-specific stuff -->
+                <CfgFile Namespace="Settings.txt" Location="settings.txt" Encoding="UTF16">
+                    <Value Separator=" :"/>
+                </CfgFile>
+            </Directory>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\backup\"/>
+            <Ignore Prefix="Data:\mods\"/>
+            <Ignore Prefix="Data:\savebackup\"/>
+            <Ignore Prefix="Data:\savesbeforecloud\"/>
+            <Ignore Prefix="Data:\torched\"/>
+            <Ignore Name="Data:\local_settings.txt"/>
+            <Ignore Name="Data:\Ogre.log"/>
+            <Ignore Name="Data:\resourceconfig.dat"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Torchlight</DisplayName>
+    </Product>
+</LegacySettings>

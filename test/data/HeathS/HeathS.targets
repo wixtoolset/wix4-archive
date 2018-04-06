@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <BuildPath>$(MSBuildThisFileDirectory)Build\</BuildPath>
+        <BindInputPaths>$(BuildPath)</BindInputPaths>
+        <OutDir>$(BuildPath)</OutDir>
+        <OutputPath>$(BuildPath)</OutputPath>
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <SuppressValidation>True</SuppressValidation>
+    </PropertyGroup>
+    <Import Project="$(WIX_ROOT)\WixBuild.Common.targets" />
+    <ItemGroup>
+        <WixExtension Include="WixBalExtension">
+            <HintPath>$(OutputPath_x86)WixBalExtension.dll</HintPath>
+        </WixExtension>
+        <WixExtension Include="WixDependencyExtension">
+            <HintPath>$(OutputPath_x86)WixDependencyExtension.dll</HintPath>
+        </WixExtension>
+        <WixExtension Include="WixUtilExtension">
+            <HintPath>$(OutputPath_x86)WixUtilExtension.dll</HintPath>
+        </WixExtension>
+    </ItemGroup>
+</Project>

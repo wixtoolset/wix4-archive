@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Unity_of_Command">
+        <Detect>
+            <Arp DisplayName="Unity of Command"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="AppDataFolder:\Unity of Command\" />
+        </Data>
+
+        <Filter>
+            <!-- TODO: this contains some settings, but some things that are not. Need to specifically support working with JSON files in the future -->
+            <Ignore Name="Data:\config.json"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Unity of Command</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef ProductCode?>
+<?define ProductCode = *?>
+<?endif?>
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="$(var.ProductCode)" Name="~$(var.TestName) - B" Language="1033" Version="$(var.Version)" 
+           Manufacturer="Microsoft Corporation"
+           UpgradeCode="C5571EFD-5247-4B59-920F-47B416D0613A">
+    <Package Compressed="yes" InstallerVersion="300" InstallScope="perUser"/>
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+
+    <Property Id="MsiLogging" Value="voicewarmup"/>
+    <PropertyRef Id="TestVersion"/>
+
+    <Feature Id="Complete" Level="1">
+      <ComponentRef Id="FileComponent"/>
+      <ComponentRef Id="RegistryComponent"/>
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="WixDir" Name="~Test WiX">
+          <Directory Id="TestDir" Name="$(var.TestName)">
+            <Directory Id="INSTALLFOLDER" Name="B"/>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <Component Id="FileComponent" Directory="INSTALLFOLDER">
+      <File Source="$(sys.SOURCEFILEPATH)"/>
+    </Component>
+  </Fragment>
+
+  <Fragment>
+    <Component Id="RegistryComponent" Directory="INSTALLFOLDER">
+      <RegistryValue Root="HKCU" Key="Software\WiX\Tests\$(var.TestName)" Name="B" Value="!(bind.Property.TestVersion)" Type="string" />
+    </Component>
+  </Fragment>
+
+  <Fragment>
+    <Property Id="TestVersion" Value="$(var.Version)"/>
+  </Fragment>
+</Wix>

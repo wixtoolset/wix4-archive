@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Tyrian_2000">
+        <Detect>
+            <Arp DisplayName="Tyrian 2000" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <File Name="Tyrian.sav" Location="InstallDir:\Tyrian.sav"/>
+            <File Name="Tyrian.cfg" Location="InstallDir:\Tyrian.cfg"/>
+        </Data>
+
+        <DisplayName LCID="1033">Tyrian 2000</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="A_Valley_Without_Wind_2">
+        <Detect>
+            <Arp DisplayName="A Valley Without Wind 2" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- We could pick up "HKCU\Software\Chris\Valley 2" - except that it seems to be all
+                 resolution and other per-machine settings -->
+            <Directory Namespace="Worlds" Location="InstallDir:\RuntimeData\Worlds\" />
+            <!-- TODO: pickup and parse InstallDir:\RuntimeData\settings.dat as a CfgFile -->
+        </Data>
+
+        <DisplayName LCID="1033">A Valley Without Wind 2</DisplayName>
+    </Product>
+</LegacySettings>

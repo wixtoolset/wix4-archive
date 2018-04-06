@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="CfgTestDetectExe" Manufacturer="CfgTestManufacturer" >
+        <Detect>
+            <Exe Name="Test.exe" FileDir="InstallDir" />
+        </Detect>
+
+        <Data>
+            <File Name="IniFile" Location="InstallDir:\Test.ini" />
+        </Data>
+
+        <DisplayName LCID="1033">Cfg Test Detect Exe Displayname</DisplayName>
+    </Product>
+</LegacySettings>

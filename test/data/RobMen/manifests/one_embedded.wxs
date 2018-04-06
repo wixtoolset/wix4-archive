@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Bundle Version="0.1.0.0" Name="Test Embedded Bundle"
+        IconSourceFile="$(env.WIX_ROOT)\src\Votive\votive2010\Templates\Projects\WixProject\WixProject.ico"
+        SplashScreenSourceFile="logo.bmp">
+   <Log />
+   <BootstrapperApplication SourceFile="stdux.dll">
+       <Payload SourceFile="en-us.wxl" />
+       <Payload SourceFile="thm.xml" />
+   </BootstrapperApplication>
+
+    <PayloadGroup Id="LayoutOnlyPayloads">
+        <Payload SourceFile="$(sys.SOURCEFILEDIR)\readme.html" />
+    </PayloadGroup>
+
+   <Chain>
+      <MsuPackage DetectCondition='A > v0' KB="1234" Id="MsuPackage1" Vital="yes" Name="test\foo.msu" SourceFile='$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files\Packages\MsuPackage.msu'/>
+      <!-- MsiPackage Id='Package2' Vital='yes' SourceFile='Package2.msi' Name='Package2.msi'>
+         <MsiProperty Name="TARGETDIR" Value="[PACKAGE2TARGETDIR]" />
+      </MsiPackage-->
+   </Chain>
+</Bundle>
+</Wix>

@@ -1,0 +1,15 @@
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
+#define VER_APP
+#define VER_ORIGINAL_FILENAME "thmviewer.exe"
+#define VER_INTERNAL_NAME "thmviewer"
+#define VER_FILE_DESCRIPTION "Theme viewer"
+#include "wix.rc"
+#include "resource.h"
+
+//#define MANIFEST_RESOURCE_ID 1
+//MANIFEST_RESOURCE_ID RT_MANIFEST "thmviewer.manifest"
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+THMVWR_RES_THEME_FILE RCDATA "Resources\\thm.xml"
+THMVWR_RES_RICHEDIT_FILE RCDATA "Resources\\LoremIpsum.rtf"

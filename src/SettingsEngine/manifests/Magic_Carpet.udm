@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Magic_Carpet">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207658935_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Magic Carpet" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Magic Carpet Plus" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="SAVE" Location="InstallDir:\CARPET.CD\SAVE\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Magic Carpet</DisplayName>
+    </Product>
+</LegacySettings>

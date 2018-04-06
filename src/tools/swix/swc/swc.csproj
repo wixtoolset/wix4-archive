@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{28886709-2988-45B3-8A0F-A419CEE75540}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WixToolset</RootNamespace>
+    <AssemblyName>swc</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CommandLine.cs" />
+    <Compile Include="FilePathTaskItem.cs" />
+    <Compile Include="Messaging.cs" />
+    <Compile Include="SimplifiedWixCompiler.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimplifiedWiX.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\swcore\swcore.csproj">
+      <Project>{724901A4-16FF-4759-87A8-FDF85F2C3304}</Project>
+      <Name>swcore</Name>
+    </ProjectReference>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

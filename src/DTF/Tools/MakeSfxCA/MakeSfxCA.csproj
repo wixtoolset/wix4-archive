@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{3F246CE0-153D-4AC3-B6AC-5EAD8E2AD04B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WixToolset.Dtf.Tools.MakeSfxCA</RootNamespace>
+    <AssemblyName>MakeSfxCA</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="MakeSfxCA.cs" />
+    <None Include="app.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <ProjectReference Include="..\..\Libraries\Compression.Cab\Compression.Cab.csproj" />
+    <ProjectReference Include="..\..\Libraries\Compression\Compression.csproj" />
+    <ProjectReference Include="..\..\Libraries\Resources\Resources.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

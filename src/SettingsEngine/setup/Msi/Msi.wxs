@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+<?include WixVer.wxi ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+    <Product Id="*" Name="WiX Settings Browser v$(var.WixMajorMinor)" Language="1033" Manufacturer=".NET Foundation" Version="$(var.WixVersion)" UpgradeCode="96C172A6-C1D9-44B0-9069-2397A7F238E6">
+        <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
+
+        <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
+
+        <Media Id="1" Cabinet="browse.cab" CompressionLevel="high" />
+
+        <Property Id="ARPSYSTEMCOMPONENT" Value="1" />
+        <Property Id="DISABLEADVTSHORTCUTS" Value="1" />
+
+        <Icon Id="ProjectFile.ico" SourceFile="ProjectFile.ico" />
+
+        <util:CloseApplication Id="CloseBrowser" CloseMessage="yes" Target="CfgBrowser.exe" TerminateProcess="1" Timeout="10" RebootPrompt="no"/>
+
+        <Property Id="WixUnelevatedShellExecTarget" Value="[#CfgBrowser.exe]" />
+        <CustomAction Id="LaunchBrowser" BinaryKey="WixCA" DllEntry="WixUnelevatedShellExec" Impersonate="yes"/>
+
+        <InstallExecuteSequence>
+            <!-- If we're not uninstalling, launch browser afterward. Yes, during repair we want to restart browser. -->
+            <Custom Action="LaunchBrowser" After="InstallFinalize">NOT REMOVE~=&quot;ALL&quot;</Custom>
+        </InstallExecuteSequence>
+
+        <Feature Id="Feature_Browser" Title="Cfg Browser" Level="1">
+            <Component Id="CfgBrowserExe" Directory="INSTALLFOLDER">
+                <File Id="private CfgBrowser.exe" Source="CfgBrowser.exe" KeyPath="yes" />
+                <Shortcut Id="BrowserShortcut" Directory="ShortcutFolder" Name="Settings Browser" Advertise="yes" Icon="ProjectFile.ico"/>
+
+                <File Id="private ProjectFile.ico" Source="ProjectFile.ico" />
+                <ProgId Id="WindowsInstallerXml.legacymanifestfile.4.0" Description="WiX Cfg Legacy Manifest" Icon="ProjectFile.ico">
+                    <Extension Id="udm" ContentType="text/plain" Advertise="no">
+                        <Verb Id="Open" Command="Open in WiX Settings Browser" TargetFile="CfgBrowser.exe" Argument="/manifest &quot;%1&quot;"/>
+                    </Extension>
+                </ProgId>
+
+                <RemoveFolder Id="CleanupShortcutFolder" Directory="ShortcutFolder" On="uninstall" />
+
+                <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run">
+                    <RegistryValue Type="string" Name="CfgBrowserExe" Value="&quot;[#CfgBrowser.exe]&quot;"/>
+                </RegistryKey>
+            </Component>
+
+            <!-- Install SQL CE dlls next to browser app for now 
+                 later we'll deploy them to a standard directory
+                 next to main cfg API dll -->
+            <Component Id="sqlceca40_dll" Directory="INSTALLFOLDER">
+                <File Source="sqlceca40.dll" KeyPath="yes" />
+            </Component>
+            <Component Id="sqlcecompact40_dll" Directory="INSTALLFOLDER">
+                <File Source="sqlcecompact40.dll" KeyPath="yes" />
+            </Component>
+            <Component Id="sqlceer40EN_dll" Directory="INSTALLFOLDER">
+                <File Source="sqlceer40EN.dll" KeyPath="yes" />
+            </Component>
+            <Component Id="sqlceoledb40_dll" Directory="INSTALLFOLDER">
+                <File Source="sqlceoledb40.dll" KeyPath="yes" />
+            </Component>
+            <Component Id="sqlceqp40_dll" Directory="INSTALLFOLDER">
+                <File Source="sqlceqp40.dll" KeyPath="yes" />
+            </Component>
+            <Component Id="sqlcese40_dll" Directory="INSTALLFOLDER">
+                <File Source="sqlcese40.dll" KeyPath="yes" />
+            </Component>
+        </Feature>
+
+    </Product>
+
+    <Fragment>
+        <Directory Id="TARGETDIR" Name="SourceDir" />
+    </Fragment>
+
+    <Fragment>
+        <DirectoryRef Id="TARGETDIR">
+            <Directory Id="ProgramFilesFolder" >
+                <Directory Id="INSTALLFOLDER" Name="WiX Settings Browser v$(var.WixMajorMinor)" />
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+
+    <Fragment>
+        <DirectoryRef Id="TARGETDIR">
+            <Directory Id="ProgramMenuFolder" Name="ProgMenu">
+                <Directory Id="ShortcutFolder" Name="WiX Settings Browser v$(var.WixMajorMinor)" />
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+
+</Wix>

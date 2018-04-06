@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{1322CEF9-7D80-4F7D-8D1D-ABF46977D631}</ProjectGuid>
+    <OutputName>firewall</OutputName>
+    <OutputType>Library</OutputType>
+    <BindFiles>true</BindFiles>
+    <Pedantic>true</Pedantic>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="FirewallExtension.wxs" />
+    <Compile Include="FirewallExtension_x86.wxs" />
+    <EmbeddedResource Include="en-us.wxl" />
+    <EmbeddedResource Include="es-es.wxl" />
+    <EmbeddedResource Include="ja-jp.wxl" />
+    <EmbeddedResource Include="pl-pl.wxl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ca\firewall.vcxproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

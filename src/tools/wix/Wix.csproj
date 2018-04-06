@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{9E03A94C-C70E-45C6-A269-E737BBD8B319}</ProjectGuid>
+    <AssemblyName>wix</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset</RootNamespace>
+    <NoWarn>618</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Binder.cs" />
+    <Compile Include="BinderCore.cs" />
+    <Compile Include="BinderFileManagerCore.cs" />
+    <Compile Include="BinderFileManager.cs" />
+    <Compile Include="Bind\Databases\CreateDeltaPatchesCommand.cs" />
+    <Compile Include="Bind\Databases\CreateSpecialPropertiesCommand.cs" />
+    <Compile Include="Bind\Databases\MergeModulesCommand.cs" />
+    <Compile Include="Bind\Databases\UpdateFileFacadesCommand.cs" />
+    <Compile Include="Bind\Databases\FileFacade.cs" />
+    <Compile Include="Bind\Databases\ExtractMergeModuleFilesCommand.cs" />
+    <Compile Include="Bind\Databases\GetFileFacadesCommand.cs" />
+    <Compile Include="CommandLine.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="Compiler.cs" />
+    <Compile Include="CompilerCore.cs" />
+    <Compile Include="Converter.cs" />
+    <Compile Include="Differ.cs" />
+    <Compile Include="ExtensionManager.cs" />
+    <Compile Include="IfDefEventHandler.cs" />
+    <Compile Include="Inscriber.cs" />
+    <Compile Include="InspectorCore.cs" />
+    <Compile Include="ICommand.cs" />
+    <Compile Include="Localizer.cs" />
+    <Compile Include="Patch.cs" />
+    <Compile Include="PatchTransform.cs" />
+    <Compile Include="ResolvedVariableEventHandler.cs" />
+    <Compile Include="Uuid.cs" />
+    <Compile Include="Bind\BindBundleCommand.cs" />
+    <Compile Include="Bind\BindDatabaseCommand.cs" />
+    <Compile Include="Bind\BindTransformCommand.cs" />
+    <Compile Include="Bind\DelayedField.cs" />
+    <Compile Include="Bind\ExtractEmbeddedFiles.cs" />
+    <Compile Include="Bind\ExtractEmbeddedFilesCommand.cs" />
+    <Compile Include="Bind\FileTransfer.cs" />
+    <Compile Include="Bind\GenerateDatabaseCommand.cs" />
+    <Compile Include="Bind\ResolveDelayedFieldsCommand.cs" />
+    <Compile Include="Bind\ResolveFieldsCommand.cs" />
+    <Compile Include="Bind\TransferFilesCommand.cs" />
+    <Compile Include="Bind\Bundles\AutomaticallySlipstreamPatchesCommand.cs" />
+    <Compile Include="Bind\Bundles\BurnCommon.cs" />
+    <Compile Include="Bind\Bundles\BurnReader.cs" />
+    <Compile Include="Bind\Bundles\BurnWriter.cs" />
+    <Compile Include="Bind\Bundles\PackageFacade.cs" />
+    <Compile Include="Bind\Bundles\CreateBootstrapperApplicationManifestCommand.cs" />
+    <Compile Include="Bind\Bundles\CreateBurnManifestCommand.cs" />
+    <Compile Include="Bind\Bundles\CreateContainerCommand.cs" />
+    <Compile Include="Bind\Bundles\GetPackageFacadesCommand.cs" />
+    <Compile Include="Bind\Bundles\OrderPackagesAndRollbackBoundariesCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessMspPackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessMsuPackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessExePackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessMsiPackageCommand.cs" />
+    <Compile Include="Bind\Bundles\ProcessPayloadsCommand.cs" />
+    <Compile Include="Bind\Bundles\VerifyPayloadsWithCatalogCommand.cs" />
+    <Compile Include="Bind\Databases\AssignMediaCommand.cs" />
+    <Compile Include="Bind\Databases\BindSummaryInfoCommand.cs" />
+    <Compile Include="Bind\Databases\CabinetBuilder.cs" />
+    <Compile Include="Bind\Databases\CabinetWorkItem.cs" />
+    <Compile Include="Bind\Databases\CreateCabinetsCommand.cs" />
+    <Compile Include="Bind\Databases\ConfigurationCallback.cs" />
+    <Compile Include="Bind\Databases\CopyTransformDataCommand.cs" />
+    <Compile Include="Bind\Databases\ProcessUncompressedFilesCommand.cs" />
+    <Compile Include="Bind\Databases\UpdateControlTextCommand.cs" />
+    <Compile Include="Cab\CabinetFileInfo.cs" />
+    <Compile Include="Cab\Interop\CabInterop.cs" />
+    <Compile Include="Cab\WixCreateCab.cs" />
+    <Compile Include="Cab\WixEnumerateCab.cs" />
+    <Compile Include="Cab\WixExtractCab.cs" />
+    <Compile Include="Clr\Interop\ClrInterop.cs" />
+    <Compile Include="Extensibility\AssemblyDefaultHeatExtensionAttribute.cs" />
+    <Compile Include="Extensibility\HarvesterExtension.cs" />
+    <Compile Include="Extensibility\HeatExtension.cs" />
+    <Compile Include="Extensibility\IHarvesterCore.cs" />
+    <Compile Include="Extensibility\IHeatCore.cs" />
+    <Compile Include="Extensibility\MutatorExtension.cs" />
+    <Compile Include="Extensibility\ValidatorExtension.cs" />
+    <Compile Include="Link\FindEntrySectionAndLoadSymbolsCommand.cs" />
+    <Compile Include="Link\ReportConflictingSymbolsCommand.cs" />
+    <Compile Include="Link\ResolveReferencesCommand.cs" />
+    <Compile Include="PatchAPI\PatchInterop.cs" />
+    <Compile Include="Ole32\Storage.cs" />
+    <Compile Include="WixDistributionSpecificStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WixDistributionSpecificStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Link\ConnectToFeature.cs" />
+    <Compile Include="Link\ConnectToFeatureCollection.cs" />
+    <Compile Include="Link\ConnectToModule.cs" />
+    <Compile Include="Link\ConnectToModuleCollection.cs" />
+    <Compile Include="Decompiler.cs" />
+    <Compile Include="DecompilerCore.cs" />
+    <Compile Include="Exceptions\WixFileNotFoundException.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Harvester.cs" />
+    <Compile Include="HarvesterCore.cs" />
+    <Compile Include="HeatCore.cs" />
+    <Compile Include="Preprocess\IfContext.cs" />
+    <Compile Include="IncludedFileEventHandler.cs" />
+    <Compile Include="Librarian.cs" />
+    <Compile Include="Linker.cs" />
+    <Compile Include="Melter.cs" />
+    <Compile Include="MelterCore.cs" />
+    <Compile Include="MergeMod\NativeMethods.cs" />
+    <Compile Include="Msi\Database.cs" />
+    <Compile Include="Msi\Installer.cs" />
+    <Compile Include="Msi\Interop\MsiInterop.cs" />
+    <Compile Include="Msi\MsiException.cs" />
+    <Compile Include="Msi\MsiHandle.cs" />
+    <Compile Include="Msi\Record.cs" />
+    <Compile Include="Msi\Session.cs" />
+    <Compile Include="Msi\SummaryInformation.cs" />
+    <Compile Include="Msi\View.cs" />
+    <Compile Include="Mutator.cs" />
+    <Compile Include="Preprocessor.cs" />
+    <Compile Include="PreprocessorCore.cs" />
+    <Compile Include="ProcessedStreamEventHandler.cs" />
+    <Compile Include="Unbinder.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="Validator.cs" />
+    <Compile Include="VerifyInterop.cs" />
+    <Compile Include="AppCommon.cs" />
+    <Compile Include="WixGenericMessageEventArgs.cs" />
+    <Compile Include="Link\WixGroupingOrdering.cs" />
+    <Compile Include="WixStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WixStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="WixVariableResolver.cs" />
+    <Compile Include="ProvidesDependency.cs" />
+    <Compile Include="ProvidesDependencyCollection.cs" />
+    <Compile Include="Bind\ResolvedDirectory.cs" />
+    <Compile Include="WixComponentSearchInfo.cs" />
+    <Compile Include="WixFileSearchInfo.cs" />
+    <Compile Include="WixProductSearchInfo.cs" />
+    <Compile Include="WixRegistrySearchInfo.cs" />
+    <Compile Include="WixSearchInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedNativeResource Include="wixdll.rc" />
+    <MsgGenSource Include="Data\messages.xml">
+      <ResourcesLogicalName>$(RootNamespace).Data.messages.resources</ResourcesLogicalName>
+      <SubType>Designer</SubType>
+    </MsgGenSource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="WixDistributionSpecificStrings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>WixDistributionSpecificStrings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WixStrings.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>WixStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DTF\Libraries\Resources\Resources.csproj">
+      <Project>{44931ECB-8D6F-4C12-A872-64E261B6A98E}</Project>
+      <Name>Resources</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DTF\Libraries\WindowsInstaller\WindowsInstaller.csproj">
+      <Project>{24121677-0ED0-41B5-833F-1B9A18E87BF4}</Project>
+      <Name>WindowsInstaller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj">
+      <Project>{eee88c2a-45a0-4e48-a40a-431a4ba458d8}</Project>
+      <Name>WixToolset.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\winterop\winterop.vcxproj">
+      <Private>False</Private>
+      <Project>{26D45E58-E703-431D-B67E-493C72C9DA0B}</Project>
+      <Name>winterop</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

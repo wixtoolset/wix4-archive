@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{E4E8ABBE-1FA6-44F5-BA99-B840C6779A04}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
+    <AssemblyName>LuxCustomActions</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="CustomAction.cs" />
+    <Content Include="CustomAction.config" />
+    <Compile Include="..\shared\Constants.cs">
+      <Link>Constants.cs</Link>
+    </Compile>
+    <Compile Include="..\shared\operatortypes.cs">
+      <Link>operatortypes.cs</Link>
+    </Compile>
+    <Compile Include="LuxUnitTestFactory.cs" />
+    <Compile Include="LuxLogger.cs" />
+    <Compile Include="LuxUnitTest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\DTF\Libraries\WindowsInstaller\WindowsInstaller.csproj" />
+    <ProjectReference Include="..\..\..\DTF\Tools\MakeSfxCA\MakeSfxCA.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+  <Import Project="$(WixCATargetsPath)" />
+</Project>

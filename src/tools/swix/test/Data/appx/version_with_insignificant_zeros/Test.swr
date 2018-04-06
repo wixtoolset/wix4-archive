@@ -1,0 +1,12 @@
+﻿use appx
+
+package name=Contoso.BT displayName="Contoso BT" description="Contoso's BT"
+        manufacturer="Contoso Corporation" version="01.001.00001.000001"
+        publisher="CN=Contoso, O=Contoso Corporation, L=Redmond, S=Washington, C=US"
+        image=images\Logo.png
+        framework=true
+
+prerequisite version=6.2 maxVersion=6.2.00
+
+folder images
+    file Logo.png

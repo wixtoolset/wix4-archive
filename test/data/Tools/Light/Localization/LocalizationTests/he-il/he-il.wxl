@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<WixLocalization Culture="he-il" Codepage="Windows-1255" xmlns="http://wixtoolset.org/schemas/wxl">
+    <String Id="language">1037</String>
+    <String Id="languages">1037</String>
+    <String Id="SummaryCodepage">1255</String>
+    <String Id="productcode" Localizable="no">{000C1109-1037-0000-D000-000000000046}</String>
+    <String Id="upgradecode" Localizable="no">{84108EA9-1037-4A62-9BB4-7093DD4CDC89}</String>
+    <String Id="hello">שלום</String>
+</WixLocalization>

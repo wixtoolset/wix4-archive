@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Patch Id="8FE377A5-C5A1-45D9-A642-FB4FAE6EE4F6" AllowRemoval="yes" Classification="Update" ClientPatchId="KB2" Codepage="1252" Description="Update (KB2)" DisplayName="Update (KB2)" Manufacturer="My Company" MoreInfoURL="http://support.MyCompany.com/kb/2">
+
+		<PatchProperty Company="My Company" Name="Branch" Value="LDR" />
+		<PatchProperty Company="My Company" Name="Baseline" Value="0" />
+
+        <Media Id="3" Cabinet="ldr2.cab" EmbedCab="yes">
+            <PatchBaseline Id="rtmldr" />
+        </Media>
+
+        <PatchFamily Id="Patch" Version="1.0.1.2" Supersede="no">
+            <ComponentRef Id="C_Patch" />
+        </PatchFamily>
+    </Patch>
+</Wix>

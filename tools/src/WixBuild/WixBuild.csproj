@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{EB323B05-8822-4645-A0E6-ACF401ED92F7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.WixBuild</RootNamespace>
+    <AssemblyName>WixBuild</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="GenerateReleaseInfo.cs" />
+    <Compile Include="TransformHistoryEntries.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="LibGit2Sharp">
+      <HintPath>$(LibGit2SharpPath)LibGit2Sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+  <Import Project="$(LibGit2SharpPropsFilePath)" />
+
+  <!-- LibGit2Sharp is not strong named, so this assembly can't be strong named either. -->
+  <PropertyGroup>
+    <DelaySign>false</DelaySign>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+</Project>

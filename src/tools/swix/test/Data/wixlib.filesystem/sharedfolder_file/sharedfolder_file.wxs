@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+<Fragment Id="test_enu">
+    <ComponentGroup Id="test_enu">
+        <ComponentRef Id="default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu"/>
+        <ComponentRef Id="default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu"/>
+    </ComponentGroup>
+</Fragment>
+
+<Fragment Id="JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu">
+    <DirectoryRef Id="JavaScriptProjTemp_enu">
+        <Directory Id="JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu" Name="blankwj" />
+    </DirectoryRef>
+</Fragment>
+
+<Fragment Id="JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu">
+    <DirectoryRef Id="JavaScriptProjTemp_enu">
+        <Directory Id="JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu" Name="splitwj" />
+    </DirectoryRef>
+</Fragment>
+
+<Fragment Id="default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu">
+    <Component Directory="JavaScriptProjTemp.blankwj_FSti9nmaEloivuy0eSFPF7p9mYM_enu">
+        <File Id="default.html_Oe6DJabFqfSiwIuEaWbgkXOHMAI_enu" Name="default.html" Source="blankwj\default.html" />
+    </Component>
+</Fragment>
+
+<Fragment Id="default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu">
+    <Component Directory="JavaScriptProjTemp.splitwj_8OmNQXLFkpNOTWtT3MREKdMJtYo_enu">
+        <File Id="default.html_.yk_8G7rz_XyduX3XgxYtfNdeVo_enu" Name="default.html" Source="splitwj\default.html" />
+    </Component>
+</Fragment>
+
+</Wix>

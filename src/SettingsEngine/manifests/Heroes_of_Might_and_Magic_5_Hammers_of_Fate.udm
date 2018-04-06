@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Heroes_of_Might_and_Magic_5_Hammers_of_Fate">
+        <Detect>
+            <Arp DisplayName="Heroes of Might and Magic V: Hammers of Fate"/>
+
+            <!-- GOG Galaxy version which includes base game and this expansion -->
+            <Arp RegKeyName="1207661143_is1"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Profiles" Location="MyGamesFolder:\Heroes of Might and Magic V\Hammers of Fate\Profiles\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Profiles:\" Postfix="\user_a1.cfg"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Heroes of Might and Magic V: Hammers of Fate</DisplayName>
+    </Product>
+</LegacySettings>

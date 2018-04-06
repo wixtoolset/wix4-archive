@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Empire_Earth_The_Art_of_Conquest">
+        <Detect>
+            <!-- In the GOG installer, this product name installs both empire earth and art of conquest.
+                 TODO: support regular installers of the game as well. -->
+            <Arp DisplayName="Empire Earth Gold Edition" InstallLocation="GoldInstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Users" Location="GoldInstallDir:\Empire Earth - The Art of Conquest\Users\"/>
+            <Directory Namespace="SavedGames" Location="GoldInstallDir:\Empire Earth - The Art of Conquest\Data\Saved Games\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Empire Earth: The Art of Conquest</DisplayName>
+    </Product>
+</LegacySettings>

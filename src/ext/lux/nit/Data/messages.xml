@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Messages Namespace="WixToolset.Lux" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+  <Class Name="NitErrors" ContainerName="NitErrorEventArgs" BaseContainerName="MessageEventArgs" Level="Error">
+    <Message Id="MalfunctionNeedInput" Number="8101" SourceLineNumbers="no">
+      <Instance>
+        Need one or more input files to be specified.
+      </Instance>
+    </Message>
+    <Message Id="TotalTestFailures" Number="8102" SourceLineNumbers="no">
+      <Instance>
+        {0} tests failed. {1} tests passed.
+        <Parameter Type="System.Int32" Name="failureCount" />
+        <Parameter Type="System.Int32" Name="passCount" />
+      </Instance>
+    </Message>
+    <Message Id="TestFailed" Number="8103" SourceLineNumbers="no">
+      <Instance>
+        {0}
+        <Parameter Type="System.String" Name="message" />
+      </Instance>
+    </Message>
+    <Message Id="PackageFailed" Number="8104" SourceLineNumbers="no">
+      <Instance>
+        Package failed: {0}
+        <Parameter Type="System.String" Name="message" />
+      </Instance>
+    </Message>
+  </Class>
+
+  <Class Name="NitWarnings" ContainerName="LuxWarningEventArgs" BaseContainerName="MessageEventArgs" Level="Warning">
+  </Class>
+
+  <Class Name="NitVerboses" ContainerName="LuxVerboseEventArgs" BaseContainerName="MessageEventArgs" Level="Information">
+    <Message Id="OneHundredPercent" Number="8301" SourceLineNumbers="no">
+      <Instance>
+        All {0} tests passed.
+        <Parameter Type="System.Int32" Name="passCount" />
+      </Instance>
+    </Message>
+    <Message Id="TestPassed" Number="8302" SourceLineNumbers="no">
+      <Instance>
+        {0}
+        <Parameter Type="System.String" Name="message" />
+      </Instance>
+    </Message>
+    <Message Id="RunningMutation" Number="8303" SourceLineNumbers="no">
+      <Instance>
+        Running test mutation {0}
+        <Parameter Type="System.String" Name="mutation" />
+      </Instance>
+    </Message>
+  </Class>
+</Messages>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<wixLibrary version="3.0.2002.0" xmlns="http://wixtoolset.org/schemas/v4/wixlib">
+  <section id="example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*1">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+    </table>
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*1">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>*</field>
+        <field>ApplicationFolder</field>
+        <field>0</field>
+        <field />
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*1">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>example.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*1">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ApplicationFolder</field>
+        <field>1</field>
+        <field>example.dll</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*1">
+        <field>Directory</field>
+        <field>ApplicationFolder</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*1">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+    <table name="Registry">
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*2">
+        <field>HKCR.CLSID._8EDA329E_E_B2C9E_.InprocServer32_mZQMzbSrlZ7h9gOtC.0CMzn7Lag</field>
+        <field>0</field>
+        <field>CLSID\{8EDA329E-EBAF-494A-8D24-45DBCD3B2C9E}\InprocServer32</field>
+        <field />
+        <field>[#example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu]</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*2">
+        <field>HKCR.CLSID._8EDA329E_E_erver32ThreadingModel_5mYRbhIBcyzkHfgPKT.CXECnCnk</field>
+        <field>0</field>
+        <field>CLSID\{8EDA329E-EBAF-494A-8D24-45DBCD3B2C9E}\InprocServer32</field>
+        <field>ThreadingModel</field>
+        <field>Neutral</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*2">
+        <field>HKCR.CLSID._8EDA329E_E__45DBCD3B2C9E_.ProgID_cjOCXDBHe4ZHeDtfX9rgxc5YIEI</field>
+        <field>0</field>
+        <field>CLSID\{8EDA329E-EBAF-494A-8D24-45DBCD3B2C9E}\ProgID</field>
+        <field />
+        <field>Contoso.Example.InprocServer.1.0</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\build\Debug\Data\wixlib\inproc\inproc.swr*2">
+        <field>HKCR.Contoso.Example.InprocServer.1.0.CLSID_1wVmPSEqTZoNEo9buyvu5dt7oVI</field>
+        <field>0</field>
+        <field>Contoso.Example.InprocServer.1.0\CLSID</field>
+        <field />
+        <field>{8EDA329E-EBAF-494A-8D24-45DBCD3B2C9E}</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+    </table>
+  </section>
+</wixLibrary>

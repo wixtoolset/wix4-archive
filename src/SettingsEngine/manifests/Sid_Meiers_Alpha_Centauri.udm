@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Sid_Meiers_Alpha_Centauri">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207658936_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Sid Meier&apos;s Alpha Centauri Planetary Pack" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Sid Meiers Alpha Centauri Planetary Pack" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Sid Meier&apos;s Alpha Centauri" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Sid Meiers Alpha Centauri" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- InstallDir:\Alpha Centauri.Ini appears to be a regular INI file,
+                 but some values should be excluded from syncing -->
+            <Directory Namespace="Saves" Location="InstallDir:\Saves\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Sid Meier&apos;s Alpha Centauri</DisplayName>
+    </Product>
+</LegacySettings>

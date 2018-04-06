@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{B4271B16-88B7-499A-881B-2813C1DB6285}</ProjectGuid>
+    <AssemblyName>lit</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WixToolset.Tools</RootNamespace>
+    <PlatformTarget>x86</PlatformTarget>
+    <FxCopEnabled>false</FxCopEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="LitCommandLine.cs" />
+    <Compile Include="lit.cs" />
+    <Compile Include="LitStrings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LitStrings.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="LitStrings.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>LitStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedNativeResource Include="lit.rc" />
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\..\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj">
+      <Project>{eee88c2a-45a0-4e48-a40a-431a4ba458d8}</Project>
+      <Name>WixToolset.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\wconsole\wconsole.csproj">
+      <Project>{4B2BD779-59F7-4BF1-871C-A75952BCA749}</Project>
+      <Name>wconsole</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\wix\Wix.csproj">
+      <Project>{9E03A94C-C70E-45C6-A269-E737BBD8B319}</Project>
+      <Name>Wix</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

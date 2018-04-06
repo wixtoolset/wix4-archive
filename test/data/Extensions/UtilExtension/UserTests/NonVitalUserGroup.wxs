@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Product Id="ECE4ABA2-1253-480C-A4A3-B0433A296756" Name="UserGroup" Language="1033" Version="1.0.0.0" UpgradeCode="0419D0E1-2467-4DCB-B45D-08F903F34A80" Manufacturer="Microsoft Corporation">
+    <Package Description="Test from: User" Comments="Test from: User" InstallerVersion="200" Compressed="yes" />
+
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\directories.wxi ?>
+
+    <util:Group Id="ShouldNotExist" Name="Should Not Exist" />
+
+    <DirectoryRef Id="WixTestFolder">
+      <Component Id="Component1" Guid="00030829-0000-0000-C000-000000000046" DiskId="1">
+        <File Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt" KeyPath="yes"/>
+
+        <util:User Id="CurrentUser" Name="[LogonUser]" Domain="[%USERDOMAIN]" RemoveOnUninstall="no" Vital="no">
+          <util:GroupRef Id="ShouldNotExist" />
+        </util:User>
+
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="Feature1" Level="1">
+      <ComponentRef Id="Component1" />
+    </Feature>
+
+  </Product>
+</Wix>

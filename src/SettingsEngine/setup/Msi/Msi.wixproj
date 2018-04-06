@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>4.0</ProductVersion>
+    <ProjectGuid>{03472692-F6FD-4C27-AAB4-3260192084C6}</ProjectGuid>
+    <OutputName>browse</OutputName>
+    <OutputType>Package</OutputType>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Msi.wxs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BindInputPaths Include="$(OutputPath_x86)" />
+    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(OutputPath_x86)WixUtilExtension.dll</HintPath>
+    </WixExtension>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\browse\browse.vcxproj" />
+    <ProjectReference Include="..\..\..\ext\UtilExtension\wixext\WixUtilExtension.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

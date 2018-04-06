@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Eador_Genesis">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207659147_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Eador -  Genesis" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Eador - Genesis" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Eador: Genesis" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- This game may not have any per-machine settings? I can't find resolution settings, for example. TODO: investigate & confirm. -->
+            <Directory Namespace="Save" Location="InstallDir:\Save"/>
+        </Data>
+
+        <DisplayName LCID="1033">Eador: Genesis</DisplayName>
+    </Product>
+</LegacySettings>

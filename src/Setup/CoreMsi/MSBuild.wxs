@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <Feature Id="Feature_MSBuild" Title="MSBuild Support" Level="1">
+            <ComponentGroupRef Id="MSBuildComponents" />
+            <ComponentGroupRef Id="MSBuildBinComponents" />
+        </Feature>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="MSBuildComponents" Directory="MSBuildWixVersionedFolder">
+            <Component>
+                <File Id="redirect.wix.targets" Name="wix.targets" Source="redirect.wix.targets"/>
+            </Component>
+
+            <Component>
+                <File Id="redirect.wix.ca.targets" Name="wix.ca.targets" Source="redirect.wix.ca.targets" />
+            </Component>
+
+        </ComponentGroup>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="MSBuildBinComponents" Directory="BinFolder">
+            <Component>
+                <File Source="wix.targets" />
+            </Component>
+
+            <Component>
+                <File Source="wix.ca.targets" />
+            </Component>
+
+            <Component>
+                <File Source="wix.harvest.targets" />
+            </Component>
+
+            <Component>
+                <File Source="wix.signing.targets" />
+            </Component>
+
+        </ComponentGroup>
+    </Fragment>
+</Wix>

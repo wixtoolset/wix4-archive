@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+
+<Fragment Id="contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu">
+    <Component Directory="ApplicationFolder">
+        <File Id="contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu" Name="contoso.exe">
+            <netfx:NativeImage Id="contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu" Platform="all" Priority="0" Dependencies="no" />
+        </File>
+    </Component>
+</Fragment>
+
+<Fragment Id="foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu">
+    <Component Directory="ApplicationFolder">
+        <File Id="foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu" Name="foo.dll">
+            <netfx:NativeImage Id="foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu" AssemblyApplication="contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu" Platform="all" Priority="3" Dependencies="no" />
+        </File>
+    </Component>
+</Fragment>
+
+<Fragment Id="bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu">
+    <Component Directory="ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu">
+        <File Id="bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu" Name="bar.dll">
+            <netfx:NativeImage Id="bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu" AppBaseDirectory="ApplicationFolder" Platform="all" Priority="1" Dependencies="no" />
+        </File>
+    </Component>
+</Fragment>
+
+<Fragment Id="ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu">
+    <DirectoryRef Id="ApplicationFolder">
+        <Directory Id="ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu" Name="bin" />
+    </DirectoryRef>
+</Fragment>
+
+<Fragment Id="example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu">
+    <PropertyRef Id="SOME_FILE_SEARCH" />
+
+    <Component Directory="ApplicationFolder">
+        <File Id="example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu" Name="example.dll">
+            <netfx:NativeImage Id="example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu" AssemblyApplication="[SOME_FILE_SEARCH]" Platform="all" Priority="3" Dependencies="no" />
+        </File>
+    </Component>
+</Fragment>
+
+</Wix>

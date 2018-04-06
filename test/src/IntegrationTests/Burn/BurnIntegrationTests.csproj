@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{81854E28-5975-4972-A2E9-D695A570D1A7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixTest.BurnIntegrationTests</RootNamespace>
+    <AssemblyName>WixTest.BurnIntegrationTests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="BasicTests.cs" />
+    <Compile Include="BurnTestBase.cs" />
+    <Compile Include="RestartTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit, Version=1.9.2.1705, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(XunitPath)\xunit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(OutputPath)BootstrapperCore.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.dll" />
+    <Reference Include="$(OutputPath)WixToolset.Dtf.WindowsInstaller.Package.dll" />
+    <ProjectReference Include="..\..\WixTestTools\WixTestTools.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\data\Integration\BurnIntegrationTests\BasicTests\A.wxs">
+      <Link>BasicTests\A.wxs</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\data\Integration\BurnIntegrationTests\BasicTests\B.wxs">
+      <Link>BasicTests\B.wxs</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\data\Integration\BurnIntegrationTests\BasicTests\BundleA.wxs">
+      <Link>BasicTests\BundleA.wxs</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\data\Integration\BurnIntegrationTests\BasicTests\BundleB.wxs">
+      <Link>BasicTests\BundleB.wxs</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

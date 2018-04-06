@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="WixBuild.props" Condition=" '$(WixBuildPropertiesDefined)'!='true' " />
+  <Import Project="WixBuild$(MSBuildProjectExtension).targets" Condition=" Exists('WixBuild$(MSBuildProjectExtension).targets') " />
+  <Import Project="WixBuild.Tools.targets" />
+  <Import Project="WixBuild.VisualStudioSdk.targets" Condition=" '$(TargetVisualStudio)'!='' " />
+
+  <!-- Add the CleanVersionFiles to common clean dependencies. -->
+  <PropertyGroup>
+    <CoreCleanDependsOn>
+      $(CoreCleanDependsOn);
+      CleanVersionFiles
+    </CoreCleanDependsOn>
+  </PropertyGroup>
+
+  <!-- Generic after build target that projects can add targets using AfterBuildDependsOn property. -->
+  <Target Name="AfterBuild"
+          DependsOnTargets="$(AfterBuildDependsOn)" />
+</Project>

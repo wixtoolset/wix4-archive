@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <TestAssembly Include="$(WixToolPath)\WixTest.BurnIntegrationTests.dll" />
+    <TestAssembly Include="$(WixToolPath)\WixTest.MsbuildIntegrationTests.dll" />
+    <TestAssembly Include="$(WixToolPath)\SettingsEngineTest.dll" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IntegrationTests)' == '' ">
+    <TestAssembly Include="$(WixToolPath)\BurnUnitTest.dll" />
+    <TestAssembly Include="$(WixToolPath)\DUtilUnitTest.dll" />
+    <TestAssembly Include="$(WixToolPath)\WixTests.dll" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

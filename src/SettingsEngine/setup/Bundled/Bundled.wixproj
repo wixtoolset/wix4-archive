@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.8</ProductVersion>
+    <ProjectGuid>{0D0802D8-67F7-4636-8B21-E3F6D3E2D6A9}</ProjectGuid>
+    <OutputName>WixSettingsBrowser40</OutputName>
+    <OutputType>Bundle</OutputType>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Bundled.wxs" />
+    <Content Include="License.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SplashScreen.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\setup\Bundle" />
+    <BindInputPaths Include="$(MSBuildProjectDirectory)\..\..\..\Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Msi\Msi.wixproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WixExtension Include="WixBalExtension">
+      <HintPath>$(OutputPath_x86)WixBalExtension.dll</HintPath>
+    </WixExtension>
+    <WixExtension Include="WixNetFxExtension">
+      <HintPath>$(OutputPath_x86)WixNetFxExtension.dll</HintPath>
+    </WixExtension>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(OutputPath_x86)WixUtilExtension.dll</HintPath>
+    </WixExtension>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+  <PropertyGroup>
+    <ProjectGuid>{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}</ProjectGuid>
+    <AssemblyName>WixToolset.Extensibility</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Extensibility</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="BinderExtension.cs" />
+    <Compile Include="BindFileWithPath.cs" />
+    <Compile Include="BindPath.cs" />
+    <Compile Include="BindStage.cs" />
+    <Compile Include="CabinetBuildOption.cs" />
+    <Compile Include="CompilerConstants.cs" />
+    <Compile Include="CompilerExtension.cs" />
+    <Compile Include="ComponentKeyPath.cs" />
+    <Compile Include="DecompilerConstants.cs" />
+    <Compile Include="DecompilerExtension.cs" />
+    <Compile Include="ExtensionData.cs" />
+    <Compile Include="ExtensionHelper.cs" />
+    <Compile Include="IBinderCore.cs" />
+    <Compile Include="IBinderExtension.cs" />
+    <Compile Include="IBinderFileManager.cs" />
+    <Compile Include="IBinderFileManagerCore.cs" />
+    <Compile Include="ICompilerCore.cs" />
+    <Compile Include="ICompilerExtension.cs" />
+    <Compile Include="IDecompilerCore.cs" />
+    <Compile Include="IDecompilerExtension.cs" />
+    <Compile Include="Identifier.cs" />
+    <Compile Include="IExtensionCommandLine.cs" />
+    <Compile Include="IExtensionData.cs" />
+    <Compile Include="IInspectorCore.cs" />
+    <Compile Include="IInspectorExtension.cs" />
+    <Compile Include="InspectorExtension.cs" />
+    <Compile Include="IPreprocessorCore.cs" />
+    <Compile Include="IPreprocessorExtension.cs" />
+    <Compile Include="IUnbinderExtension.cs" />
+    <Compile Include="PreprocessorExtension.cs" />
+    <Compile Include="ResolvedCabinet.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

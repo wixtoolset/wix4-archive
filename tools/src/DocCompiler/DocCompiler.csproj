@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{232C8D2F-F845-452F-A8B8-017E28A35377}</ProjectGuid>
+    <AssemblyName>DocCompiler</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WixBuild.Tools.DocCompiler</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Win32'">
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CommandLine.cs" />
+    <Compile Include="DocCompiler.cs" />
+    <Compile Include="Document.cs" />
+    <Compile Include="IndexedDocument.cs" />
+    <Compile Include="Markdown.cs" />
+    <Compile Include="VariableSubstitutions.cs" />
+    <EmbeddedResource Include="Xsd\docCompiler.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

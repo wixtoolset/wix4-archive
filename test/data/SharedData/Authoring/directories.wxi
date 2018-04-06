@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <!--Only include these directories once-->
+  <?ifndef directories_wxi?>
+
+    <?define directories_wxi=""?>
+    
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+        <Directory Id="WixTestFolder" Name="WixTestFolder">
+        </Directory>
+      </Directory>
+    </Directory>
+
+  <?endif?>
+
+</Include>

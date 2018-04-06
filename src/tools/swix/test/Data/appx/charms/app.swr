@@ -1,0 +1,26 @@
+use appx
+
+application name=Contoso.App displayName="Contoso Application" description="Description of Contoso Application."
+    file=contoso.exe Implementation=Executable
+    appx.tile foreground=light background="#9756B0" image=images\Logo.png smallImage=images\SmallLogo.png wideImage=images\WideLogo.png shortName="Contoso"
+    appx.splashScreen background="#9756B0" image=images\WideLogo.png
+    appx.shareTarget implementation=MyActivateableClassId.baz
+        appx.dataFormat name=foo
+
+    appx.search implementation=MyActivateableClassId.baz
+
+    appx.fileOpenPicker implementation=MyActivateableClassId.baz
+        appx.fileExtension name=*
+
+    appx.fileSavePicker implementation=MyActivateableClassId.baz
+        appx.fileExtension name=*
+
+    appx.contactPicker implementation=MyActivateableClassId.baz
+
+    protocol name=appdata
+
+file contoso.exe
+folder images
+    file Logo.png
+    file SmallLogo.png
+    file WideLogo.png

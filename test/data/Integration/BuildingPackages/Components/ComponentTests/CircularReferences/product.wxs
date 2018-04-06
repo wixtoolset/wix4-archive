@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="Wix Test Product" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
+    <Package InstallerVersion="200"/>
+    <Media Id="1" />
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\directories.wxi?>
+
+    <Feature Id="Feature1" Level="1">
+      <ComponentRef Id ="Component1"/>
+    </Feature>
+
+    <ComponentGroup Id="ComponentGroup1">
+      <Component Id="Component1" Guid="{D08E3558-5958-4c64-926D-2695DE223D28}" Directory="WixTestFolder">
+        <CreateFolder Directory="WixTestFolder"/>
+      </Component>
+      <Component Id="Component2" Guid="{18F60E93-91AA-45de-A2CE-1D1A7929F8CA}" Directory="WixTestFolder">
+        <CreateFolder Directory="WixTestFolder"/>
+      </Component>
+
+      <!--Create a circular reference by having ComponentGroup1 reference itself-->
+      <ComponentGroupRef Id="ComponentGroup1"/>
+
+    </ComponentGroup>
+  </Product>
+</Wix>

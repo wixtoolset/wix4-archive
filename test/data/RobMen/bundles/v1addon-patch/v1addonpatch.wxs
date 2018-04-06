@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Bundle Name="Bundle Test v1 Addon (1) Patch" Version="0.1.0.0"
+        UpgradeCode="A902BDA4-BCBD-4365-8F96-226271C51A5D" Tag="v1addonpatch">
+   <BootstrapperApplicationRef Id='WixStandardBootstrapperApplication.RtfLicense' />
+
+   <RelatedBundle Id="D6A2F566-3B6C-45BE-906C-B5360FFBC4FD" Action="Patch"/>
+
+   <Chain>
+      <MspPackage Id='Dv1' Vital='yes' SourceFile='Dv1-Patch.msp'/>
+   </Chain>
+</Bundle>
+</Wix>

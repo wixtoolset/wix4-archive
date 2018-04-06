@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <DirectoryRef Id="Wix">
+      <Component Id="Component2" Guid="*">
+        <File Id="Test_txt2" Name="TextFile2.txt" DiskId="1" KeyPath="yes" Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

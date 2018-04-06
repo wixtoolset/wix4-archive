@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Endless_Space">
+        <Detect>
+            <Arp DisplayName="Endless Space"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Endless Space"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\Save\"/>
+            <Normal Prefix="Data:\Disharmony\"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Endless Space</DisplayName>
+    </Product>
+</LegacySettings>

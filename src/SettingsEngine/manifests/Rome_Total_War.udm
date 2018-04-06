@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Rome_Total_War">
+        <Detect>
+            <Arp DisplayName="Rome: Total War Gold Edition" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Rome: Total War" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <File Name="Descr_Strat.txt" Location="InstallDir:\data\world\maps\campaign\imperial_campaign\descr_strat.txt" />
+            <Directory Namespace="Save" Location="InstallDir:\saves\" />
+        </Data>
+
+        <DisplayName LCID="1033">Rome: Total War</DisplayName>
+    </Product>
+</LegacySettings>

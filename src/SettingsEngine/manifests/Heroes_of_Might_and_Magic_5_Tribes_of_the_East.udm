@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Heroes_of_Might_and_Magic_5_Tribes_of_the_East">
+        <Detect>
+            <Arp DisplayName="Heroes of Might and Magic V: Tribes of the East"/>
+            <Arp RegKeyName="1207661193_is1"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Profiles" Location="MyGamesFolder:\Heroes of Might and Magic V - Tribes of the East\Profiles\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Profiles:\" Postfix="\user_a2.cfg"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Heroes of Might and Magic V: Tribes of the East</DisplayName>
+    </Product>
+</LegacySettings>

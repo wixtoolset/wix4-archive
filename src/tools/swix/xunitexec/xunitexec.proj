@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\unittests\swcoreTests\swcoreTests.csproj" />
+    <ProjectReference Include="..\test\test.csproj" />
+  </ItemGroup>
+
+  <UsingTask
+    AssemblyFile="..\..\bin\xUnit\xunit.runner.msbuild.dll"
+    TaskName="Xunit.Runner.MSBuild.xunit"/>
+
+  <Target Name="Test" DependsOnTargets="BuildProjectReferences">
+    <xunit Assembly="$(OutputPath)\WixToolset.Simplified.UnitTest.Swcore.dll" />
+    <xunit Assembly="$(OutputPath)\WixToolset.Simplified.Test.dll" />
+  </Target>
+
+  <Target Name="BuildProjectReferences">
+    <MSBuild Projects="@(ProjectReference)" Properties="Configuration=$(Configuration);Platform=$(Platform)" />
+  </Target>
+
+</Project>

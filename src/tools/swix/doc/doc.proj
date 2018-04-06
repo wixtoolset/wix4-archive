@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project InitialTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="..\..\bin\version.targets"/>
+
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+
+        <MarkdownHeader>header.html</MarkdownHeader>
+        <MarkdownFooter>footer.html</MarkdownFooter>
+        <MarkdownDefines>Title="Simplified WiX Documentation v$(FullBuildVersionString)";Version=$(FullBuildVersionString)</MarkdownDefines>
+        <OutputName>SimplifiedWix.html</OutputName>
+        <OutputPath>..\..\build\$(Configuration)\doc\</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <MarkdownFile Include="SimplifiedWix.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <DataFile Include="images\wixlogo.jpg" />
+    </ItemGroup>
+
+    <Target Name="Build"
+            Inputs="$(MarkdownHeader);$(MarkdownFooter);@(MarkdownFile);@(DataFile)"
+            Outputs="$(OutputPath)$(OutputName);@(DataFile->'$(OutputPath)\%(Identity)')">
+        <ItemGroup>
+            <_MarkdownDefine Include="$(MarkdownDefines)" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <_MarkdownHeader Condition=" '$(MarkdownHeader)'!='' ">-header $(MarkdownHeader)</_MarkdownHeader>
+            <_MarkdownFooter Condition=" '$(MarkdownFooter)'!='' ">-footer $(MarkdownFooter)</_MarkdownFooter>
+            <_MarkdownDefines Condition=" '@(_MarkdownDefine)'!='' ">-d @(_MarkdownDefine, ' -d ')</_MarkdownDefines>
+            <_Output Condition=" '$(OutputName)'!='' ">-o $(OutputPath)$(OutputName)</_Output>
+        </PropertyGroup>
+
+        <Exec Command="..\..\bin\md2html.exe @(MarkdownFile, ' ') $(_MarkdownHeader) $(_MarkdownFooter) $(_MarkdownDefines) $(_Output)" />
+        <Copy SourceFiles="@(DataFile)" DestinationFiles="@(DataFile->'$(OutputPath)\%(Identity)')" />
+    </Target>
+</Project>

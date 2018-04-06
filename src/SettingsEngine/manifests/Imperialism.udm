@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Imperialism">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207659139_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Imperialism" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\Save"/>
+            <RegistryKey Namespace="Reg" Root="HKCU" Key="Software\SSI\Imperialism II\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Imperialism</DisplayName>
+
+        <Filter>
+            <!-- Pref2 is sound effects volume (0-100), Pref3 is music volume (0-255) -->
+            <Ignore Name="Reg:\Settings\Pref2"/>
+            <Ignore Name="Reg:\Settings\Pref3"/>
+        </Filter>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ProjectReference Include="DocCompiler\DocCompiler.csproj" />
+    <ProjectReference Include="DocFromXsd\DocFromXsd.csproj" />
+    <ProjectReference Include="FlattenXml\FlattenXml.csproj" />
+    <ProjectReference Include="GenerateWixInclude\GenerateWixInclude.csproj" />
+    <ProjectReference Include="Md2html\Md2html.csproj" />
+    <ProjectReference Include="MdCompiler\MdCompiler.csproj" />
+    <ProjectReference Include="MsgGen\MsgGen.csproj" />
+    <ProjectReference Include="TildeToRelative\TildeToRelative.csproj" />
+    <ProjectReference Include="XsdGen\XsdGen.csproj" />
+    <ProjectReference Include="XsdStitch\XsdStitch.csproj" />
+    <ProjectReference Include="WixBuild\WixBuild.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

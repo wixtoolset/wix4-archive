@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{ADED15A0-D661-43CD-BDE9-B2F1AAF22250}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WixToolset.Test.Frost</RootNamespace>
+    <AssemblyName>frost</AssemblyName>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\..\..\inc\WixDistribution.cs">
+      <Link>Properties\WixDistribution.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\..\inc\wixver.cs">
+      <Link>Properties\wixver.cs</Link>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="..\..\..\...\..\WixBuild.Common.targets" />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{4545CF90-3D80-463A-91F1-8373E5C72C15}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Shim\Shim.vcproj">
+      <Project>{9268FB86-AF53-4A05-9FA9-5231FAC65055}</Project>
+      <Name>Shim</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\..\src\wix\Wix.csproj">
+      <Name>Wix</Name>
+      <Project>{9E03A94C-C70E-45C6-A269-E737BBD8B319}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

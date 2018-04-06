@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{21E8F2D3-EF19-49C8-88CA-A22C5B91DFDC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>WixTasks</AssemblyName>
+    <RootNamespace>WixToolset.Build.Tasks</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <CreateDocumentationFile>true</CreateDocumentationFile>
+    <NoWarn>1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\wconsole\CommandLineResponseFile.cs">
+      <Link>CommandLineResponseFile.cs</Link>
+    </Compile>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Candle.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="ConvertReferences.cs" />
+    <Compile Include="CreateItemAvoidingInference.cs" />
+    <Compile Include="CreateProjectReferenceDefineConstants.cs" />
+    <Compile Include="FileSearchHelperMethods.cs" />
+    <Compile Include="GenerateCompileWithObjectPath.cs" />
+    <Compile Include="GetCabList.cs" />
+    <Compile Include="GetLooseFileList.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Insignia.cs" />
+    <Compile Include="Light.cs" />
+    <Compile Include="Lit.cs" />
+    <Compile Include="heatdirectory.cs" />
+    <Compile Include="heatfile.cs" />
+    <Compile Include="heatproject.cs" />
+    <Compile Include="HeatTask.cs" />
+    <Compile Include="Pyro.cs" />
+    <Compile Include="RefreshBundleGeneratedFile.cs" />
+    <Compile Include="RefreshGeneratedFile.cs" />
+    <Compile Include="ReplaceString.cs" />
+    <Compile Include="ResolveWixReferences.cs" />
+    <Compile Include="ReadRegistry.cs" />
+    <Compile Include="RegistryBase.cs" />
+    <Compile Include="Torch.cs" />
+    <Compile Include="WixAssignCulture.cs" />
+    <Compile Include="WixCommandLineBuilder.cs" />
+    <Compile Include="WixToolTask.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="redirect.wix.nuget.props">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="redirect.wix.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="redirect.wix.ca.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wix.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wix.ca.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wix.harvest.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wix.signing.targets">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\..\DTF\Libraries\WindowsInstaller\WindowsInstaller.csproj">
+      <Project>{24121677-0ED0-41B5-833F-1B9A18E87BF4}</Project>
+      <Name>WindowsInstaller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj">
+      <Project>{eee88c2a-45a0-4e48-a40a-431a4ba458d8}</Project>
+      <Name>WixToolset.Extensibility</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\wix\Wix.csproj">
+      <Project>{9E03A94C-C70E-45C6-A269-E737BBD8B319}</Project>
+      <Name>Wix</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

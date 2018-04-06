@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Syndicate">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207658992_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Syndicate" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Syndicate Plus" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\SAVE\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Syndicate</DisplayName>
+    </Product>
+</LegacySettings>

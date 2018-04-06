@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="~Sign Msi Project !(loc.Suffix)" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="EB0FEF31-E494-43C3-AC1F-137675FACBF5">
+    <Package InstallerVersion="200" Compressed="yes" />
+
+    <MediaTemplate CabinetTemplate="cab{0}.cab" EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+        <Directory Id="ProgramFilesFolder" Name="PFiles">
+            <Directory Id="InstallFolder" Name="!(bind.Property.ProductName)" />
+        </Directory>
+    </Directory>
+
+    <Feature Id="MainFeature" Level="1">
+        <Component Directory="InstallFolder">
+            <File Source="$(sys.SOURCEFILEPATH)" />
+        </Component>
+    </Feature>
+
+  </Product>
+</Wix>

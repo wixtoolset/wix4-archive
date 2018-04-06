@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+<?include WixVer.wxi ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
+    <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Native $(var.VisualStudioTargetVersion) SDK" Language="1033" Manufacturer="!(loc.Company)"
+             Version="$(var.WixMsiProductVersion)" UpgradeCode="FF074F5B-41DC-4D48-902D-05F389DFEA0B">
+
+        <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
+        <swid:Tag Regid="regid.2008-09.org.wixtoolset" Type="component" />
+
+        <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
+
+        <MediaTemplate CabinetTemplate="n$(var.VisualStudioTargetVersion){0}.cab" />
+
+        <Feature Id="NativeSdkFeature" Title="Native $(var.VisualStudioTargetVersion) SDK" Level="1">
+            <ComponentGroupRef Id="HeaderComponents" />
+            <ComponentGroupRef Id="LibComponents" />
+        </Feature>
+    </Product>
+
+    <Fragment>
+        <DirectoryRef Id="SdkFolder">
+            <Directory Id="VisualStudioTargetSdkFolder" Name="VS$(var.VisualStudioTargetVersion)">
+                <Directory Id="SdkIncFolder" Name="inc" />
+                <Directory Id="SdkLibFolder" Name="lib">
+                    <Directory Id="SdkX86LibFolder" Name="x86" />
+                    <Directory Id="SdkX64LibFolder" Name="x64" />
+                </Directory>
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+
+</Wix>

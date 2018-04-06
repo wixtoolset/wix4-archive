@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{F717806C-10CD-4459-A7A2-4D6473683DDA}</ProjectGuid>
+    <AssemblyName>MsgGen</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WixBuild.Tools.MsgGen</RootNamespace>
+    <NoWarn>618</NoWarn>
+    <FxCopEnabled>false</FxCopEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="App.ico" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="GenerateMessageFiles.cs" />
+    <Compile Include="MsgGen.cs" />
+    <EmbeddedResource Include="Xsd\messages.xsd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

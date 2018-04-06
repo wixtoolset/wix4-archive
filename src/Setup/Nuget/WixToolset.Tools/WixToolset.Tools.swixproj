@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>4.0</ProductVersion>
+    <ProjectGuid>{B61C24EE-26A2-4663-B12A-49EB7E6F9531}</ProjectGuid>
+    <OutputName>WixToolset.Tools</OutputName>
+    <OutputType>Nuget</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Package Include="WixToolset.Tools.swr" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

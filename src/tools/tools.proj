@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <ItemGroup>
+    <ProjectReference Include="..\libs\libs.proj">
+      <BuildInParallel>false</BuildInParallel>
+    </ProjectReference>
+
+    <ProjectReference Include="winterop\winterop.vcxproj" />
+    <ProjectReference Include="wix\wix.csproj" />
+    <ProjectReference Include="candle\candle.csproj" />
+    <ProjectReference Include="light\light.csproj" />
+    <ProjectReference Include="insignia\insignia.csproj" />
+    <ProjectReference Include="lit\lit.csproj" />
+    <ProjectReference Include="torch\torch.csproj" />
+    <ProjectReference Include="WixTasks\WixTasks.csproj" />
+    <ProjectReference Include="dark\dark.csproj" />
+    <ProjectReference Include="heat\heat.csproj" />
+    <ProjectReference Include="melt\melt.csproj" />
+    <ProjectReference Include="pyro\pyro.csproj" />
+    <ProjectReference Include="retina\retina.csproj" />
+
+    <ProjectReference Include="shine\shine.csproj" />
+    <ProjectReference Include="smoke\smoke.csproj" />
+    <ProjectReference Include="wixcop\wixcop.csproj" />
+
+    <ProjectReference Include="swix\swix.proj" />
+
+    <ProjectReference Include="thmviewer\thmviewer.vcxproj" />
+    <ProjectReference Include="thmgen\thmgen.csproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\Traversal.targets" />
+</Project>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Total_Annihilation">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207658880_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Total Annihilation - Commander Pack" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Total Annihilation Commander Pack" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="SaveGame" Location="InstallDir:\SAVEGAME\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Total Annihilation</DisplayName>
+    </Product>
+</LegacySettings>

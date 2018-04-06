@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Titan_Quest">
+        <Detect>
+            <Arp DisplayName="Titan Quest"/>
+            <Arp DisplayName="Titan Quest: Immortal Throne"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="TQData" Location="MyGamesFolder:\Titan Quest\" />
+            <Directory Namespace="ITData" Location="MyGamesFolder:\Titan Quest - Immortal Throne\" />
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="TQData:\"/>
+            <Normal Prefix="TQData:\SaveData\"/>
+            <!-- This file tracks whether one has seen (and thus can skip) the opening intro. -->
+            <Normal Name="TQData:\TQ.dhl"/>
+            <!-- TODO: add options.txt support, which is a simple config file (but contains per-machine settings as well) -->
+
+            <Ignore Prefix="ITData:\"/>
+            <Normal Prefix="ITData:\SaveData\"/>
+            <!-- This file tracks whether one has seen (and thus can skip) the opening intro. -->
+            <Normal Name="ITData:\TQ.dhl"/>
+            <!-- TODO: add options.txt support, which is a simple config file (but contains per-machine settings as well) -->
+        </Filter>
+
+        <DisplayName LCID="1033">Titan Quest</DisplayName>
+    </Product>
+</LegacySettings>

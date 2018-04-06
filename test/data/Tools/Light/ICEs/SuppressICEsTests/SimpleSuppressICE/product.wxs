@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="*" Name="Wix Test Product" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{5EFDEC39-A2E0-4834-BC8B-DEFC406DEEF2}">
+    <Package InstallerVersion="200" />
+    <Media Id="1" />
+
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\directories.wxi?>
+
+    <Feature Id="Feature1" Level="1">
+      <ComponentRef Id="Component1"/>
+    </Feature>
+
+    <DirectoryRef Id="WixTestFolder">
+      <Component Id="Component1" DiskId="1" Guid="{2BB48811-7821-476f-97A8-2469741C1DDE}">
+      </Component>
+    </DirectoryRef>
+    
+  </Product>
+</Wix>

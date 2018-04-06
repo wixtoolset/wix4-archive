@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{724901A4-16FF-4759-87A8-FDF85F2C3304}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Simplified</RootNamespace>
+    <AssemblyName>swcore</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\ParserCore\Error.cs">
+      <Link>CompilerFrontend\Parser\Error.cs</Link>
+    </Compile>
+    <Compile Include="..\ParserCore\Position.cs">
+      <Link>CompilerFrontend\Parser\Position.cs</Link>
+    </Compile>
+    <Compile Include="..\ParserCore\Statement.cs">
+      <Link>CompilerFrontend\Parser\Statement.cs</Link>
+    </Compile>
+    <Compile Include="..\ParserCore\StatementBuilder.cs">
+      <Link>CompilerFrontend\Parser\StatementBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\ParserCore\Token.cs">
+      <Link>CompilerFrontend\Parser\Token.cs</Link>
+    </Compile>
+    <Compile Include="..\ParserCore\TokenBuffer.cs">
+      <Link>CompilerFrontend\Parser\TokenBuffer.cs</Link>
+    </Compile>
+    <Compile Include="CompilerBackend\Appx\AppxBackendCompiler.cs" />
+    <Compile Include="CompilerBackend\Appx\AppxManifest.cs" />
+    <Compile Include="CompilerBackend\Appx\IAppxManifest.cs" />
+    <Compile Include="CompilerBackend\Appx\ManifestItem.cs" />
+    <Compile Include="CompilerBackend\Appx\ManifestApplicationItem.cs" />
+    <Compile Include="CompilerBackend\Appx\ManifestPackageItem.cs" />
+    <Compile Include="CompilerBackend\Appx\AppxPackage.cs" />
+    <Compile Include="CompilerBackend\Nuget\NugetBackendCompiler.cs" />
+    <Compile Include="CompilerBackend\Nuget\NugetManifest.cs" />
+    <Compile Include="CompilerBackend\Wix\MurmurHash3.cs" />
+    <Compile Include="CompilerBackend\Wix\WixClassId.cs" />
+    <Compile Include="CompilerBackend\Wix\WixFileSearch.cs" />
+    <Compile Include="CompilerBackend\Wix\WixNativeImage.cs" />
+    <Compile Include="CompilerBackend\Wix\WixProperty.cs" />
+    <Compile Include="CompilerFrontend\AttachedPropertySetterType.cs" />
+    <Compile Include="CompilerFrontend\AttachedPropertyObjectType.cs" />
+    <Compile Include="CompilerFrontend\Parser\ParserLanguage.cs" />
+    <Compile Include="CompilerFrontend\Parser\XmlLexer.cs" />
+    <Compile Include="CompilerFrontend\Parser\XmlParser.cs" />
+    <Compile Include="CompilerFrontend\Parser\XmlStatementParser.cs" />
+    <Compile Include="CompilerFrontend\ObjectInstanceType.cs" />
+    <Compile Include="CompilerFrontend\ObjectInstanceTypeCache.cs" />
+    <Compile Include="CompilerFrontend\ObjectInstantiator.cs" />
+    <Compile Include="CompilerFrontend\PropertyInstanceType.cs" />
+    <Compile Include="CompilerFrontend\PropertyTypeBase.cs" />
+    <Compile Include="CompilerFrontend\TypeConverterContext.cs" />
+    <Compile Include="CompilerFrontend\QualifiedFileTypeConverter.cs" />
+    <Compile Include="CompilerMessage.Generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CompilerMessage.msgs</DependentUpon>
+    </Compile>
+    <Compile Include="Lexicon\Appx\AccountPictureProvider.cs" />
+    <Compile Include="Lexicon\Appx\FileSavePicker.cs" />
+    <Compile Include="Lexicon\Appx\FileOpenPicker.cs" />
+    <Compile Include="Lexicon\Appx\InitialRotation.cs" />
+    <Compile Include="CompilerBackend\Appx\Zip.cs" />
+    <Compile Include="CompilerBackend\Appx\ZipCompressionMethod.cs" />
+    <Compile Include="CompilerBackend\Appx\ZipCrc.cs" />
+    <Compile Include="CompilerBackend\Appx\ZipEndOfCentralDirectory.cs" />
+    <Compile Include="CompilerBackend\Appx\ZipExtraFileField.cs" />
+    <Compile Include="CompilerBackend\Appx\ZipFileHeader.cs" />
+    <Compile Include="CompilerBackend\BackendCompiler.cs" />
+    <Compile Include="CompilerBackend\FileTransfer.cs" />
+    <Compile Include="CompilerBackend\PackageFile.cs" />
+    <Compile Include="CompilerBackend\Vsix\VsixBackendCompiler.cs" />
+    <Compile Include="CompilerBackend\Vsix\VsixManifest.cs" />
+    <Compile Include="CompilerException.cs" />
+    <Compile Include="CompilerExtension.cs" />
+    <Compile Include="CompilerFileManager.cs" />
+    <Compile Include="CompilerBackend\Wix\WixBackendCompiler.cs" />
+    <Compile Include="CompilerBackend\Wix\WixBackendCompilerServices.cs" />
+    <Compile Include="CompilerBackend\Wix\WixFile.cs" />
+    <Compile Include="CompilerBackend\Wix\WixFolder.cs" />
+    <Compile Include="CompilerBackend\Wix\WixFolderReference.cs" />
+    <Compile Include="CompilerBackend\Wix\WixGroup.cs" />
+    <Compile Include="CompilerBackend\Wix\WixItem.cs" />
+    <Compile Include="CompilerBackend\Wix\WixReference.cs" />
+    <Compile Include="CompilerBackend\Wix\WixSection.cs" />
+    <Compile Include="CompilerFrontend\DelayedItemLookup.cs" />
+    <Compile Include="CompilerFrontend\FileSystemResourceManager.cs" />
+    <Compile Include="CompilerFrontend\IdTypeConverter.cs" />
+    <Compile Include="CompilerFrontend\Parser\RtypeLexer.cs" />
+    <Compile Include="CompilerFrontend\Parser\RtypeParser.cs" />
+    <Compile Include="CompilerFrontend\Parser\RtypeStatementParser.cs" />
+    <Compile Include="DefaultCompilerExtensionAttribute.cs" />
+    <Compile Include="FileLineNumber.cs" />
+    <Compile Include="Intermediate.cs" />
+    <Compile Include="Lexicon\Application.cs" />
+    <Compile Include="Lexicon\Appx\Application.cs" />
+    <Compile Include="Lexicon\Appx\ApplicationExtensionItem.cs" />
+    <Compile Include="Lexicon\Appx\BackgroundTask.cs" />
+    <Compile Include="Lexicon\Appx\CameraSettings.cs" />
+    <Compile Include="Lexicon\Appx\Capability.cs" />
+    <Compile Include="Lexicon\Appx\ContentUri.cs" />
+    <Compile Include="Lexicon\Appx\ContactPicker.cs" />
+    <Compile Include="Lexicon\Appx\DataFormat.cs" />
+    <Compile Include="Lexicon\Appx\DigitalRightsManagement.cs" />
+    <Compile Include="Lexicon\Appx\PrinterSettings.cs" />
+    <Compile Include="Lexicon\Appx\Search.cs" />
+    <Compile Include="Lexicon\Appx\DeviceCapability.cs" />
+    <Compile Include="Lexicon\Appx\FileExtension.cs" />
+    <Compile Include="Lexicon\Appx\SupportedDataFormat.cs" />
+    <Compile Include="Lexicon\Appx\LockScreen.cs" />
+    <Compile Include="CompilerMessageEventArgs.cs" />
+    <Compile Include="CompilerFrontend\FrontendCompiler.cs" />
+    <Compile Include="CompilerFrontend\VersionTypeConverter.cs" />
+    <Compile Include="Lexicon\Appx\ShareTarget.cs" />
+    <Compile Include="Lexicon\Appx\SplashScreen.cs" />
+    <Compile Include="Lexicon\Appx\AdditionalTask.cs" />
+    <Compile Include="Lexicon\Appx\Tile.cs" />
+    <Compile Include="Lexicon\Class.cs" />
+    <Compile Include="Lexicon\ClassAttribute.cs" />
+    <Compile Include="Lexicon\ClassAttributeType.cs" />
+    <Compile Include="Lexicon\DefaultCollectionAttribute.cs" />
+    <Compile Include="Lexicon\DefaultPropertyAttribute.cs" />
+    <Compile Include="Lexicon\Dependency.cs" />
+    <Compile Include="Lexicon\FileAssociation.cs" />
+    <Compile Include="Lexicon\GameExplorer.cs" />
+    <Compile Include="Lexicon\File.cs" />
+    <Compile Include="Lexicon\FileType.cs" />
+    <Compile Include="Lexicon\FileSystemResource.cs" />
+    <Compile Include="Lexicon\Folder.cs" />
+    <Compile Include="Lexicon\Group.cs" />
+    <Compile Include="Lexicon\IFileReference.cs" />
+    <Compile Include="Lexicon\IHarvestResource.cs" />
+    <Compile Include="Lexicon\InprocServer.cs" />
+    <Compile Include="Lexicon\Interface.cs" />
+    <Compile Include="Lexicon\IPackageItem.cs" />
+    <Compile Include="Lexicon\IParentItem.cs" />
+    <Compile Include="Lexicon\ITargetFile.cs" />
+    <Compile Include="Lexicon\Msi\FileSearch.cs" />
+    <Compile Include="Lexicon\Msi\Install.cs" />
+    <Compile Include="Lexicon\Msi\Ngen.cs" />
+    <Compile Include="Lexicon\Msi\NgenPackageItem.cs" />
+    <Compile Include="Lexicon\Msi\Property.cs" />
+    <Compile Include="Lexicon\Nuget\Metadata.cs" />
+    <Compile Include="Lexicon\Nuget\Target.cs" />
+    <Compile Include="Lexicon\OutprocServer.cs" />
+    <Compile Include="Lexicon\Package.cs" />
+    <Compile Include="Lexicon\PackageItem.cs" />
+    <Compile Include="Lexicon\PackageItemCollection.cs" />
+    <Compile Include="Lexicon\PackageItemTargetsFile.cs" />
+    <Compile Include="Lexicon\Prerequisite.cs" />
+    <Compile Include="Lexicon\Protocol.cs" />
+    <Compile Include="Lexicon\ProxyStub.cs" />
+    <Compile Include="Lexicon\QualifiedFile.cs" />
+    <Compile Include="Lexicon\Resource.cs" />
+    <Compile Include="Lexicon\Swix.cs" />
+    <Compile Include="Lexicon\ThreadingModelType.cs" />
+    <Compile Include="Lexicon\Vsix\Product.cs" />
+    <Compile Include="Lexicon\Vsix\Vspackage.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="PackageArchitecture.cs" />
+    <Compile Include="PackageType.cs" />
+    <Compile Include="SimplifiedCompiler.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CompilerBackend\Nuget\schema\nuget.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="CompilerMessage.msgs">
+      <Generator>TypedMessageGenerator</Generator>
+      <LastGenOutput>CompilerMessage.Generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CompilerMessage.Generated.resx">
+      <DependentUpon>CompilerMessage.msgs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CompilerBackend\Appx\schema\AppxManifestSchema.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CompilerBackend\Vsix\schema\VsixManifestSchema.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlockDeflateStream\BlockDeflateStream.vcxproj">
+      <Project>{FA4862F1-BA70-4F42-82D7-8D298E6006FB}</Project>
+      <Name>WixToolset.BlockDeflateStream</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\DTF\Libraries\Compression.Zip\Compression.Zip.csproj">
+      <Project>{261F2857-B521-42A4-A3E0-B5165F225E50}</Project>
+      <Name>Compression.Zip</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

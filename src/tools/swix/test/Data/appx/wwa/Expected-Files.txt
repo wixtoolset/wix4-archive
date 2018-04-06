@@ -1,0 +1,7 @@
+﻿barLogo.png
+ContosoCalculator.jpg
+images\lockscreenimage.png
+images\Logo.png
+images\taxCalc-small.png
+images\taxCalc.png
+taxcalculator\index.html

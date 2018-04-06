@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Dark_Reign_The_Future_of_War">
+        <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207658904_is1" InstallLocation="InstallDir"/>
+
+            <Arp DisplayName="Dark Reign - The Future of War + The Rise of the Shadowhand" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Dark Reign + The Rise of the Shadowhand" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Dark Reign - The Future of War" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Dark Reign" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\Save\"/>
+        </Data>
+
+        <DisplayName LCID="1033">Dark Reign: The Future of War</DisplayName>
+    </Product>
+</LegacySettings>

@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<wixLibrary version="3.0.2002.0" xmlns="http://wixtoolset.org/schemas/v4/wixlib">
+  <section id="contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*5">
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field>*</field>
+        <field>ApplicationFolder</field>
+        <field>0</field>
+        <field />
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*6">
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field>contoso.exe</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="NetFxNativeImage">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*7">
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field>0</field>
+        <field>26</field>
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*6">
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ApplicationFolder</field>
+        <field>1</field>
+        <field>contoso.exe</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*4">
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*5">
+        <field>Directory</field>
+        <field>ApplicationFolder</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*7">
+        <field>CustomAction</field>
+        <field>NetFxScheduleNativeImage</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*6">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*13">
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+        <field>*</field>
+        <field>ApplicationFolder</field>
+        <field>0</field>
+        <field />
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*14">
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+        <field>foo.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="NetFxNativeImage">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*15">
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+        <field>3</field>
+        <field>26</field>
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*14">
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ApplicationFolder</field>
+        <field>1</field>
+        <field>foo.dll</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*12">
+        <field>foo.dll_OXWCPelMLfMfHbH6uV50LBd6iwM_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*13">
+        <field>Directory</field>
+        <field>ApplicationFolder</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*15">
+        <field>File</field>
+        <field>contoso.exe_bO1Nv3PmZE2aL5OvcnomCZk5CNM_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*15">
+        <field>CustomAction</field>
+        <field>NetFxScheduleNativeImage</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*14">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*21">
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+        <field>*</field>
+        <field>ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu</field>
+        <field>0</field>
+        <field />
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*22">
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+        <field>bar.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="NetFxNativeImage">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*23">
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+        <field>1</field>
+        <field>26</field>
+        <field />
+        <field>ApplicationFolder</field>
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*22">
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu</field>
+        <field>1</field>
+        <field>bar.dll</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*20">
+        <field>bar.dll_JWjxKIh_7WHH2RVwXRZiJs7yHIc_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*21">
+        <field>Directory</field>
+        <field>ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*23">
+        <field>Directory</field>
+        <field>ApplicationFolder</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*23">
+        <field>CustomAction</field>
+        <field>NetFxScheduleNativeImage</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*22">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+  <section id="ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Directory">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*30">
+        <field>ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu</field>
+        <field>ApplicationFolder</field>
+        <field>bin</field>
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*28">
+        <field>ApplicationFolder.bin_jo79c8diU4LBk3dzn8koARdtVE4_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*29">
+        <field>Directory</field>
+        <field>ApplicationFolder</field>
+      </row>
+    </table>
+  </section>
+  <section id="example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu" type="fragment" xmlns="http://wixtoolset.org/schemas/v4/wixobj">
+    <table name="Component">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*37">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>*</field>
+        <field>ApplicationFolder</field>
+        <field>0</field>
+        <field />
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+    </table>
+    <table name="File">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*38">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>example.dll</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field>512</field>
+        <field />
+      </row>
+    </table>
+    <table name="NetFxNativeImage">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*39">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field>3</field>
+        <field>26</field>
+        <field>[SOME_FILE_SEARCH]</field>
+        <field />
+      </row>
+    </table>
+    <table name="WixFile">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*38">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+        <field />
+        <field />
+        <field />
+        <field>ApplicationFolder</field>
+        <field>1</field>
+        <field>example.dll</field>
+        <field />
+        <field>-1</field>
+        <field>0</field>
+        <field>0</field>
+        <field />
+        <field />
+        <field />
+        <field />
+      </row>
+    </table>
+    <table name="WixFragment">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*34">
+        <field>example.dll_OtIUJaWR.L_ygY8m6XElvom2PMw_enu</field>
+      </row>
+    </table>
+    <table name="WixSimpleReference">
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*35">
+        <field>Property</field>
+        <field>SOME_FILE_SEARCH</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*37">
+        <field>Directory</field>
+        <field>ApplicationFolder</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*39">
+        <field>CustomAction</field>
+        <field>NetFxScheduleNativeImage</field>
+      </row>
+      <row sourceLineNumber="C:\denv\swix\src\test\Data\wixlib\ngen\ngen.wxs*38">
+        <field>Media</field>
+        <field>1</field>
+      </row>
+    </table>
+  </section>
+</wixLibrary>

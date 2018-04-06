@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Patch Id="*" AllowRemoval="yes" Classification="Security Rollup" ClientPatchId="PatchABv1011" Codepage="1252" Description="Prods A and B patch v 1.0.1.1" DisplayName="Prods A and B patch v 1.0.1.1" Manufacturer="My Company" MoreInfoURL="http://support.MyCompany.com/kb/1">
+
+		<PatchProperty Company="My Company" Name="Branch" Value="GDR" />
+		<PatchProperty Company="My Company" Name="Baseline" Value="0" />
+
+        <Media Id="2" Cabinet="A.cab" EmbedCab="yes">
+            <PatchBaseline Id="rtmA" />
+        </Media>
+
+        <Media Id="3" Cabinet="B.cab" EmbedCab="yes">
+            <PatchBaseline Id="rtmB" />
+        </Media>
+
+        <PatchFamily Id="Source" Version="1.0.1.1" Supersede="yes">
+            <ComponentRef Id="C_Source" />
+        </PatchFamily>
+
+        <PatchFamily Id="Patch" Version="1.0.1.1" Supersede="yes">
+            <ComponentRef Id="C_Patch" />
+        </PatchFamily>
+    </Patch>
+</Wix>

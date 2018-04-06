@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <!-- Global -->
+  <String Id="MainSettingsTab" Overridable="yes">Settings Database</String>
+  <String Id="OtherDatabasesTab" Overridable="yes">Other Databases</String>
+  <String Id="AppTitle" Overridable="yes">Settings Browser</String>
+  
+  <!-- Product List screen -->
+  <String Id="ProductListHeader" Overridable="yes">Product List:</String>
+  <String Id="ProductName" Overridable="yes">Product Name</String>
+  <String Id="ProductVersion" Overridable="yes">Version</String>
+  <String Id="ShowUninstalledProducts" Overridable="yes">Show Uninstalled Products</String>
+  <String Id="ResolutionColumn" Overridable="yes">Resolution</String>
+  <String Id="ProductForgetButton" Overridable="yes">Forget Product</String>
+  <String Id="ReadLegacySettings" Overridable="yes">Read Legacy Settings</String>
+  <String Id="ImportLegacyManifest" Overridable="yes">Import Legacy Manifest</String>
+
+  <!-- Single product screen -->
+  <String Id="SingleProductValuesHeader" Overridable="yes">Settings for Product:</String>
+  <String Id="ValueNameColumn" Overridable="yes">Name</String>
+  <String Id="ValueTypeColumn" Overridable="yes">Type</String>
+  <String Id="ValueColumn" Overridable="yes">Value</String>
+  <String Id="ReferencedColumn" Overridable="yes">Referenced</String>
+  <String Id="ShowDeletedValues" Overridable="yes">Show Deleted Values</String>
+  <String Id="BackButton" Overridable="yes">&lt;&lt; Back</String>
+  <String Id="NewValueButton" Overridable="yes">New Value</String>
+  <String Id="SetValueButton" Overridable="yes">Set Value</String>
+  <String Id="DeleteSettingsButton" Overridable="yes">Delete Settings</String>
+  <String Id="ViewValueHistoryButton" Overridable="yes">View Value History</String>
+  <String Id="ExportFileButton" Overridable="yes">Export File</String>
+
+  <!-- Set value screen -->
+  <String Id="SetValueHeader" Overridable="yes">Set Value:</String>
+  <String Id="ValueName" Overridable="yes">Value Name:</String>
+  <String Id="SaveValueButton" Overridable="yes">Save Value</String>
+  <String Id="FileTypeRadioButton" Overridable="yes">File</String>
+  <String Id="SetFilePath" Overridable="yes">Path To Import:</String>
+  <String Id="DwordTypeRadioButton" Overridable="yes">Dword</String>
+  <String Id="QwordTypeRadioButton" Overridable="yes">Qword</String>
+  <String Id="StringTypeRadioButton" Overridable="yes">String</String>
+  <String Id="BoolTypeRadioButton" Overridable="yes">Boolean</String>
+
+  <!-- Set external database screen -->
+  <String Id="SetExternalHeader" Overridable="yes">Set External Database</String>
+  <String Id="CreateNewCheckbox" Overridable="yes">Create New</String>
+  <String Id="SyncByDefaultCheckbox" Overridable="yes">Sync By Default</String>
+  <String Id="RememberCheckbox" Overridable="yes">Remember In Future Sessions</String>
+  <String Id="ReconnectButton" Overridable="yes">Reconnect</String>
+  <String Id="DisconnectButton" Overridable="yes">Disconnect</String>
+
+  <!-- General -->
+  <String Id="ConflictsHeader" Overridable="yes">Conflicts:</String>
+  <String Id="SyncResolveButton" Overridable="yes">Sync &amp;&amp; Resolve Conflicts</String>
+  <String Id="AcceptLocal" Overridable="yes">&lt;&lt; Accept Mine</String>
+  <String Id="AcceptRemote" Overridable="yes">Accept Remote &gt;&gt;</String>
+  <String Id="SingleValueHistoryHeader" Overridable="yes">Single Value History</String>
+  <String Id="ValueTypeColumn" Overridable="yes">Type</String>
+  <String Id="WhoColumn" Overridable="yes">Who</String>
+  <String Id="WhenColumn" Overridable="yes">When</String>
+  <String Id="FileSizeColumn" Overridable="yes">Size</String>
+  <String Id="ViewLocalConflictsButton" Overridable="yes">View My Conflicts</String>
+  <String Id="ViewRemoteConflictsButton" Overridable="yes">View Remote Conflicts</String>
+  <String Id="OtherDatabasesHeader" Overridable="yes">Other Databases:</String>
+  <String Id="NameText" Overridable="yes">Name</String>
+  <String Id="StatusText" Overridable="yes">Status</String>
+  <String Id="PathColonText" Overridable="yes">Path:</String>
+  <String Id="NameColonText" Overridable="yes">Name:</String>
+  <String Id="ViewDatabaseConflictsButton" Overridable="yes">View Conflicts</String>
+  <String Id="BrowseButton" Overridable="yes">Browse...</String>
+  <String Id="AddExternalDatabase" Overridable="yes">Add External Database</String>
+  <String Id="ModifyExternalDatabase" Overridable="yes">Modify External Database</String>
+  <String Id="CancelButton" Overridable="yes">Cancel</String>
+  <String Id="OKButton" Overridable="yes">OK</String>
+</WixLocalization>

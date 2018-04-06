@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{4E633314-DF9D-4828-BCB4-D959EBBBF114}</ProjectGuid>
+    <AssemblyName>WixLuxExtension</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixToolset.Extensions</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="LuxCompiler.cs" />
+    <Compile Include="LuxExtensionData.cs" />
+    <MsgGenSource Include="Data\messages.xml">
+      <ResourcesLogicalName>$(RootNamespace).Data.Messages.resources</ResourcesLogicalName>
+    </MsgGenSource>
+    <EmbeddedFlattenedResource Include="Data\tables.xml">
+      <LogicalName>$(RootNamespace).Data.tables.xml</LogicalName>
+    </EmbeddedFlattenedResource>
+    <EmbeddedFlattenedResource Include="Xsd\Lux.xsd">
+      <LogicalName>$(RootNamespace).Xsd.Lux.xsd</LogicalName>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedFlattenedResource>
+    <XsdGenSource Include="Xsd\Lux.xsd">
+      <CommonNamespace>WixToolset.Data.Serialize</CommonNamespace>
+      <Namespace>WixToolset.Extensions.Serialize.Lux</Namespace>
+    </XsdGenSource>
+    <EmbeddedResource Include="$(OutputPath)\LuxLib.wixlib">
+      <Link>Data\LuxLib.wixlib</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Data\WixToolset.Data.csproj" />
+    <ProjectReference Include="..\..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\tools\wix\Wix.csproj" />
+    <ProjectReference Include="..\wixlib\LuxLib.wixproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

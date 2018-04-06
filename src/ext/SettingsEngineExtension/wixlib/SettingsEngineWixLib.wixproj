@@ -1,0 +1,33 @@
+
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{1322cef9-7d80-4f7d-8d1d-abf46977d631}</ProjectGuid>
+    <OutputName>SettingsEngine</OutputName>
+    <OutputType>Library</OutputType>
+    <BindFiles>True</BindFiles>
+    <Pedantic>True</Pedantic>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <Cultures>en-us</Cultures>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CfgExtension.wxs" />
+    <EmbeddedResource Include="en-us.wxl" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DefineConstants>
+      $(DefineConstants);
+      caerrwxi=$(OutputPath)caerr.wxi;
+      cfgcaDll=$(OutputPath)cfgca.dll;
+    </DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ca\SettingsEngineCa.vcxproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

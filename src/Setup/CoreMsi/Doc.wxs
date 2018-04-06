@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <Icon Id="WixSetupIcons.ico" SourceFile="wixsetupicons.dll" />
+
+        <ComponentGroup Id="DocComponents" Directory="DocFolder">
+            <Component>
+                <File Source="WiX.chm" />
+                <Shortcut Id="WixChmShortcut" Directory="ShortcutFolder" Name="WiX Documentation" Icon="WixSetupIcons.ico" IconIndex="0" Advertise="yes" />
+
+                <RemoveFile Id="RemoveWixChw" Name="WiX.chw" On="uninstall" />
+            </Component>
+
+            <Component>
+                <File Source="msi.chm" />
+                <Shortcut Id="MsiChmShortcut" Directory="ShortcutFolder" Name="MSI SDK Documentation" Icon="WixSetupIcons.ico" IconIndex="0" Advertise="yes" />
+
+                <RemoveFile Id="RemoveMsiChw" Name="msi.chw" On="uninstall" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Data\Xsd\wix.xsd" />
+            </Component>
+
+            <Component>
+                <File Source="WixToolset.Data\Xsd\wixloc.xsd" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

@@ -1,0 +1,83 @@
+use nuget
+
+package name=WixToolset.Tools
+        manufacturer=".NET Foundation"
+        version=$(version)
+        description="WiX Toolset tools that create MSI, MSP and MSM packages from XML source code."
+        about=http://wixtoolset.org/
+        license=http://wixtoolset.org/about/license/
+
+nuget.metadata developmentDependency=true
+
+folder build\
+  file WixToolset.Tools.props source=redirect.wix.nuget.props
+
+folder tools\
+  file candle.exe
+  file candle.exe.config
+  file dark.exe
+  file dark.exe.config
+  file heat.exe
+  file heat.exe.config
+  file insignia.exe
+  file insignia.exe.config
+  file light.exe
+  file light.exe.config
+  file lit.exe
+  file lit.exe.config
+  file melt.exe
+  file melt.exe.config
+  file pyro.exe
+  file pyro.exe.config
+  file retina.exe
+  file retina.exe.config
+  file shine.exe
+  file shine.exe.config
+  file smoke.exe
+  file smoke.exe.config
+  file torch.exe
+  file torch.exe.config
+  file wconsole.dll
+  file winterop.dll
+  file wix.dll
+  file WixCop.exe
+
+  file darice.cub
+  file mergemod.cub
+  file mergemod.dll
+  file mspatchc.dll
+  file x86\burn.exe
+
+  file WixTasks.dll
+  file wix.targets
+  file wix.harvest.targets
+  file wix.signing.targets
+
+  file WixToolset.Data.dll
+  file WixToolset.Extensibility.dll
+
+  file WixToolset.Dtf.Compression.dll
+  file WixToolset.Dtf.Compression.Cab.dll
+  file WixToolset.Dtf.Resources.dll
+  file WixToolset.Dtf.WindowsInstaller.dll
+  file WixToolset.Dtf.WindowsInstaller.Package.dll
+
+  file WixBalExtension.dll
+  file WixComPlusExtension.dll
+  file WixDifxAppExtension.dll
+  file WixDependencyExtension.dll
+  file WixDirectXExtension.dll
+  file WixFirewallExtension.dll
+  file WixGamingExtension.dll
+  file WixIIsExtension.dll
+  file WixMsmqExtension.dll 
+  file WixNetFxExtension.dll
+  file WixPSExtension.dll
+  file WixSqlExtension.dll
+  file WixTagExtension.dll
+  file WixUIExtension.dll
+  file WixUtilExtension.dll
+  file WixVSExtension.dll
+
+  file difxapp_x86.wixlib
+  file difxapp_x64.wixlib

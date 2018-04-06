@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <ComponentGroup Id="LibComponents">
+            <ComponentGroupRef Id="LibX86Components" />
+            <ComponentGroupRef Id="LibX64Components" />
+        </ComponentGroup>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="LibX86Components" Directory="SdkX86LibFolder">
+            <Component>
+                <File Source="!(bindpath.x86)\$(var.VisualStudioTargetVersion)\dutil.lib"/>
+            </Component>
+            <Component>
+                <File Source="!(bindpath.x86)\$(var.VisualStudioTargetVersion)\wcautil.lib"/>
+            </Component>
+
+            <Component>
+                <File Source="!(bindpath.x86)\$(var.VisualStudioTargetVersion)\balutil.lib"/>
+            </Component>
+            <Component>
+                <File Source="!(bindpath.x86)\$(var.VisualStudioTargetVersion)\deputil.lib"/>
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+
+    <Fragment>
+        <ComponentGroup Id="LibX64Components" Directory="SdkX64LibFolder">
+            <Component>
+                <File Id="dutil_x64.lib" Source="!(bindpath.x64)\$(var.VisualStudioTargetVersion)\dutil.lib"/>
+            </Component>
+            <Component>
+                <File Id="wcautil_x64.lib" Source="!(bindpath.x64)\$(var.VisualStudioTargetVersion)\wcautil.lib"/>
+            </Component>
+            <Component>
+                <File Id="deputil_x64.lib" Source="!(bindpath.x64)\$(var.VisualStudioTargetVersion)\deputil.lib"/>
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

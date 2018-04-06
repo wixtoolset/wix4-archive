@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+  <Class Name="FrostErrors" ContainerName="FrostErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+    <Message Id="UnhandledError" Number="7000">
+      <Instance>
+        An unhandle error has occured. {0}
+        <Parameter Type="System.String" Name="errorMessage" />
+      </Instance>
+    </Message>
+    <Message Id="FileNotFound" Number="7001">
+      <Instance>
+        The file '{0}' cannot be found.
+        <Parameter Type="System.String" Name="filePath" />
+      </Instance>
+    </Message>
+  </Class>
+ <Class Name="FrostWarnings" ContainerName="FrostWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+    <Message Id="UseDefaultFile" Number="7100" SourceLineNumbers="no">
+      <Instance>
+        Could not load file '{0}'. Using default file.
+        <Parameter Type="System.String" Name="file" />
+      </Instance>
+    </Message>
+  </Class>
+  <Class Name="FrostVerboses" ContainerName="FrostVerboseEventArgs" BaseContainerName="WixVerboseEventArgs">
+    <Message Id="ChangedTestCase" Number="7150" SourceLineNumbers="no">
+      <Instance>
+        Changed to new test with ID '{0}'.
+        <Parameter Type="System.String" Name="testCaseId" />
+      </Instance>
+    </Message>
+  </Class>
+</Messages>

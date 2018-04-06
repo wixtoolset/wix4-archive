@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Patrician_3_Rise_Of_The_Hanse">
+        <Detect>
+            <Arp DisplayName="Patrician III" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Save" Location="InstallDir:\Save\" />
+        </Data>
+
+        <DisplayName LCID="1033">Patrician III</DisplayName>
+    </Product>
+</LegacySettings>

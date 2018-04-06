@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?include WixVer.wxi ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
+    <Product Id="*" Name="!(loc.ShortProduct) v$(var.WixMajorMinor) Managed SDK" Language="1033" Manufacturer="!(loc.Company)"
+             Version="$(var.WixMsiProductVersion)" UpgradeCode="CB11585D-80A4-4A56-A070-FE863BA37413">
+
+        <Package Compressed="yes" InstallerVersion="200" SummaryCodepage="1252" InstallScope="perMachine" />
+        <swid:Tag Regid="regid.2008-09.org.wixtoolset" Type="component" />
+
+        <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
+
+        <MediaTemplate CabinetTemplate="msdk{0}.cab" />
+
+        <Feature Id="ManagedSdkFeature" Title="Managed SDK" Level="1">
+            <Component Directory="SdkFolder">
+                <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\.NETFramework\AssemblyFolders\WiX $(var.WixMajorMinor)">
+                    <RegistryValue Type="string" Value="[SdkFolder]" />
+                </RegistryKey>
+            </Component>
+
+            <Component Directory="SdkFolder">
+                <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\.NETFramework\v2.0.50727\AssemblyFoldersEx\WiX $(var.WixMajorMinor)">
+                    <RegistryValue Type="string" Value="[SdkFolder]" />
+                </RegistryKey>
+            </Component>
+
+            <ComponentGroupRef Id="BurnSdkComponents" />
+            <ComponentGroupRef Id="DtfComponents" />
+            <ComponentGroupRef Id="ExtensionSdkComponents" />
+        </Feature>
+    </Product>
+</Wix>

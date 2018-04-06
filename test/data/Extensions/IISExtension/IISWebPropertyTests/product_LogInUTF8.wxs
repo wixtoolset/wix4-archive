@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:iis="http://wixtoolset.org/schemas/v4/wxs/iis">
+  <Product Id="3246E75A-4BE3-48ac-B999-20F3E287D7EF" Name="TestWebSiteProduct" Language="1033" Version="0.0.0.0"  Manufacturer="Microsoft Corporation" UpgradeCode="{C7372F7F-78A6-4c15-B667-EA21AAB021B2}">
+    <Package Description="Test for: LogInUTF8" Comments="Test for: LogInUTF8" InstallerVersion="200" Compressed="yes" />
+
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder" Name="PFiles">
+        <Directory Id="TestWebSiteProductDirectory" ShortName="testassm" Name="Test File">
+
+          <Component Id="TestWebPropertyComponent" Guid="48D0A54E-9411-4093-8B37-D1DB90287DC8" DiskId="1" KeyPath="yes">
+            <CreateFolder />
+            <File Source="$(env.WIX_ROOT)\test\data\SharedData\Files\TextFile1.txt"/>
+            <iis:WebProperty Id="LogInUTF8" />
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder" Name="ProgMenu" />
+    </Directory>
+
+    <Feature Id="TestWebSiteProductFeature" Title="Test File Product Feature" Level="1">
+      <ComponentRef Id="TestWebPropertyComponent" />
+    </Feature>
+
+    <iis:WebDirProperties Id="ReadAndExecute" Read="yes" Write="no" Script="yes" Execute="yes" AnonymousAccess="no" />
+
+  </Product>
+</Wix>

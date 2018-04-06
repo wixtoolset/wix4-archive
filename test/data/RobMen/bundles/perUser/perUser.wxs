@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Bundle Name="~Bundle perUser"
+        Manufacturer="Microsoft Corporation"
+        Version="0.1.0.0"
+        Tag="PerUser"
+        UpgradeCode='742E0480-BEB3-421B-89F6-234F904441B5'>
+
+   <BootstrapperApplicationRef Id='WixStandardBootstrapperApplication.RtfLicense' />
+
+   <Chain>
+      <MsiPackage Vital='yes' SourceFile='Cv1.msi' />
+   </Chain>
+</Bundle>
+</Wix>

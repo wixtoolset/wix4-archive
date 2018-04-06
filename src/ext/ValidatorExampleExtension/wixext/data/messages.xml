@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Messages Namespace="WixToolset.Extensions" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
+    <Class Name="ValidationErrors" ContainerName="ValidationErrorEventArgs" BaseContainerName="WixErrorEventArgs">
+        <Message Id="ExampleError" Number="6501" SourceLineNumbers="no">
+            <Instance>
+                Example validation error.
+            </Instance>
+        </Message>
+    </Class>
+    <Class Name="ValidationWarnings" ContainerName="ValidationWarningEventArgs" BaseContainerName="WixWarningEventArgs">
+        <Message Id="ExampleWarning" Number="6599">
+            <Instance>
+                Example validation warning.
+            </Instance>
+        </Message>
+        <Message Id="AnotherExampleWarning" Number="6598">
+            <Instance>
+                Another example validation warning.
+            </Instance>
+        </Message>
+    </Class>
+</Messages>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
+  <Bundle Name="~$(var.TestName) - Patch Bundle A2" Version="$(var.Version)" UpgradeCode="091710F7-06FD-41DC-945E-E8C5A54BA509">
+    <Log Prefix="~$(var.TestName)_PatchBundleA2"/>
+
+    <swid:Tag Regid="regid.1995-08.com.example" Type="patch" />
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+
+    <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
+      <Payload Name='BootstrapperCore.config' SourceFile='!(bindpath.build)\TestBA.BootstrapperCore.config' />
+
+      <Payload SourceFile='!(bindpath.build)\TestBA.dll' />
+    </BootstrapperApplicationRef>
+    <WixVariable Id='WixMbaPrereqPackageId' Value='ignored' />
+    <WixVariable Id='WixMbaPrereqLicenseUrl' Value='ignored' />
+
+    <Chain>
+      <MspPackage Id="PatchA" Name="~$(var.TestName)_PatchA.msp" SourceFile="!(bindpath.patchA)" PerMachine="yes" />
+      <MspPackage Id="PatchA2" Name="~$(var.TestName)_PatchA2.msp" SourceFile="!(bindpath.patchA2)" PerMachine="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

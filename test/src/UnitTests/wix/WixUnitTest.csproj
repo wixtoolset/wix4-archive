@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{D91B33CA-8F85-4759-B8BF-1B50FDECC91C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>WixTest.WixUnitTest</RootNamespace>
+    <AssemblyName>WixTest.WixUnitTest</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="CollapseDuplicateDirectoriesFixture.cs" />
+    <Compile Include="CompilerFixture.cs" />
+    <Compile Include="ConverterFixture.cs" />
+    <Compile Include="ExtensionManagerFixture.cs" />
+    <Compile Include="IdentifierAccessModifiersFixture.cs" />
+    <Compile Include="InlineDirectorySyntaxFixture.cs" />
+    <Compile Include="PreprocessorFixture.cs" />
+    <Compile Include="SourceLineNumberFixture.cs" />
+    <Compile Include="WixUnitTestBaseFixture.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="testdata\simple.wxs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\parent.wxs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\double_fragment.wxs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="testdata\include.wxi">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+    <Content Include="testdata\func_autoversion.wxs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit">
+      <HintPath>$(XunitPath)\xunit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\libs\WixToolset.Data\WixToolset.Data.csproj">
+      <Project>{6a98499e-40ec-4335-9c31-96a2511d47c6}</Project>
+      <Name>WixToolset.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\src\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj" />
+    <ProjectReference Include="..\..\..\..\src\tools\wix\Wix.csproj">
+      <Project>{9e03a94c-c70e-45c6-a269-e737bbd8b319}</Project>
+      <Name>Wix</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.targets" />
+</Project>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Conquest_of_Elysium_3">
+        <Detect>
+            <Arp DisplayName="Conquest of Elysium 3"/>
+        </Detect>
+
+        <Data>
+            <!-- This picks up coe3config, a blob -->
+            <Directory Namespace="Data" Location="AppDataFolder:\coe3"/>
+        </Data>
+
+        <DisplayName LCID="1033">Conquest of Elysium 3</DisplayName>
+    </Product>
+</LegacySettings>

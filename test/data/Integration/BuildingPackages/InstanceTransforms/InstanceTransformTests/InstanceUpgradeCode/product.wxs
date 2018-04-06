@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Product Id="{4014E041-A968-4de3-B43C-322DF9A19359}" Name="Wix Test Product" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{F907C172-70B8-4654-8D23-49FB3AE2ECB7}">
+    <Package InstallerVersion="200" />
+    <Media Id="1" />
+
+    <Property Id="Instance" Value="Instance0"/>
+    
+    <InstanceTransforms Property="Instance">
+      <Instance Id="Instance1.mst" ProductCode="*" UpgradeCode="{E8441024-BBDA-4D08-B8B1-039C269CD374}" />
+    </InstanceTransforms>
+    
+    <?include $(env.WIX_ROOT)\test\data\SharedData\Authoring\feature1.wxi?>
+
+  </Product>
+</Wix>
