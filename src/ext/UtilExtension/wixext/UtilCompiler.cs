@@ -665,7 +665,7 @@ namespace WixToolset.Extensions
 
             this.Core.ParseForExtensionElements(node);
 
-            int registryRoot = 2; // MsiInterop.MsidbRegistryRootLocalMachine 
+            int registryRoot = 2; // MsiInterop.MsidbRegistryRootLocalMachine
             string eventSourceKey = String.Format(@"SYSTEM\CurrentControlSet\Services\EventLog\{0}\{1}", logName, sourceName);
             Identifier id = this.Core.CreateRegistryRow(sourceLineNumbers, registryRoot, eventSourceKey, "EventMessageFile", String.Concat("#%", eventMessageFile), componentId);
 
@@ -1115,7 +1115,7 @@ namespace WixToolset.Extensions
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="sourceLineNumbers">Source line number for the parent element.</param>
         /// <param name="id">Identifier of the search (key into the WixSearch table)</param>
@@ -2682,8 +2682,7 @@ namespace WixToolset.Extensions
                     attributes |= WixProductSearchAttributes.UpgradeCode;
                 }
 
-                Row row = this.Core.CreateRow(sourceLineNumbers, "WixProductSearch");
-                row[0] = id;
+                Row row = this.Core.CreateRow(sourceLineNumbers, "WixProductSearch", id);
                 row[1] = (productCode == null ? upgradeCode : productCode);
                 row[2] = (int)attributes;
             }
