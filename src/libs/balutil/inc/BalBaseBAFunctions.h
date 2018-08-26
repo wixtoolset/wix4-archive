@@ -636,6 +636,22 @@ public: // IBAFunctions
         return hr;
     }
 
+    virtual STDMETHODIMP WndProc(
+        __in THEME* pTheme,
+        __in HWND hWnd,
+        __in UINT uMsg,
+        __in WPARAM wParam,
+        __in LPARAM lParam,
+        __inout LRESULT* plRes
+        )
+    {
+        HRESULT hr = S_OK;
+
+        *plRes = ThemeDefWindowProc(pTheme, hWnd, uMsg, wParam, lParam);
+
+        return hr;
+    }
+
     virtual STDMETHODIMP BAFunctionsProc(
         __in BA_FUNCTIONS_MESSAGE /*message*/,
         __in const LPVOID /*pvArgs*/,

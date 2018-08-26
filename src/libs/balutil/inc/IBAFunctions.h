@@ -11,6 +11,18 @@ DECLARE_INTERFACE_IID_(IBAFunctions, IBootstrapperApplication, "0FB445ED-17BD-49
         WIX_LOCALIZATION* pWixLoc
         ) = 0;
 
+    // WndProc - Called if the BA hasn't handled the message.
+    //           The implementation must either return E_NOTIMPL or call ThemeDefWindowProc for unhandled messages.
+    //
+    STDMETHOD(WndProc)(
+        __in THEME* pTheme,
+        __in HWND hWnd,
+        __in UINT uMsg,
+        __in WPARAM wParam,
+        __in LPARAM lParam,
+        __inout LRESULT* plRes
+        ) = 0;
+
     // BAFunctionsProc - The PFN_BA_FUNCTIONS_PROC can call this method to give the BAFunctions raw access to the callback from WixStdBA.
     //                   This might be used to help the BAFunctions support more than one version of the engine/WixStdBA.
     STDMETHOD(BAFunctionsProc)(

@@ -2352,6 +2352,48 @@ private: // privates
         }
     }
 
+    static LRESULT CallDefaultWndProc(
+        __in CWixStandardBootstrapperApplication* pBA,
+        __in HWND hWnd,
+        __in UINT uMsg,
+        __in WPARAM wParam,
+        __in LPARAM lParam
+        )
+    {
+        LRESULT lres = NULL;
+        THEME* pTheme = NULL;
+        HRESULT hr = S_OK;
+        BA_FUNCTIONS_WNDPROC_ARGS wndProcArgs = { };
+        BA_FUNCTIONS_WNDPROC_RESULTS wndProcResults = { };
+
+        if (pBA)
+        {
+            pTheme = pBA->m_pTheme;
+
+            if (pBA->m_pfnBAFunctionsProc)
+            {
+                wndProcArgs.cbSize = sizeof(wndProcArgs);
+                wndProcArgs.pTheme = pTheme;
+                wndProcArgs.hWnd = hWnd;
+                wndProcArgs.uMsg = uMsg;
+                wndProcArgs.wParam = wParam;
+                wndProcArgs.lParam = lParam;
+                wndProcResults.cbSize = sizeof(wndProcResults);
+
+                hr = pBA->m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_WNDPROC, &wndProcArgs, &wndProcResults, pBA->m_pvBAFunctionsProcContext);
+                if (E_NOTIMPL != hr)
+                {
+                    lres = wndProcResults.lres;
+                    ExitFunction();
+                }
+            }
+        }
+
+        lres = ThemeDefWindowProc(pTheme, hWnd, uMsg, wParam, lParam);
+
+    LExit:
+        return lres;
+    }
 
     //
     // WndProc - standard windows message handler.
@@ -2380,7 +2422,7 @@ private: // privates
 
         case WM_NCDESTROY:
             {
-            LRESULT lres = ThemeDefWindowProc(pBA ? pBA->m_pTheme : NULL, hWnd, uMsg, wParam, lParam);
+            LRESULT lres = CallDefaultWndProc(pBA, hWnd, uMsg, wParam, lParam);
             ::SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
             ::PostQuitMessage(0);
             return lres;
@@ -2497,7 +2539,7 @@ private: // privates
             return 0;
         }
 
-        return ThemeDefWindowProc(pBA ? pBA->m_pTheme : NULL, hWnd, uMsg, wParam, lParam);
+        return CallDefaultWndProc(pBA, hWnd, uMsg, wParam, lParam);
     }
 
 
