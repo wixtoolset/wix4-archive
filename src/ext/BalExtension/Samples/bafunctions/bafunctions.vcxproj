@@ -33,7 +33,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), wix.proj))\tools\WixBuild.props" />
   <PropertyGroup>
     <ProjectAdditionalIncludeDirectories>$(WixRoot)src\libs\dutil\inc;$(WixRoot)src\burn\inc;$(WixRoot)src\libs\balutil\inc</ProjectAdditionalIncludeDirectories>
-    <ProjectAdditionalLinkLibraries>dutil.lib;balutil.lib;comctl32.lib;gdiplus.lib;shlwapi.lib;wininet.lib;version.lib</ProjectAdditionalLinkLibraries>
+    <ProjectAdditionalLinkLibraries>comctl32.lib;gdiplus.lib;msimg32.lib;shlwapi.lib;wininet.lib;dutil.lib;balutil.lib;version.lib</ProjectAdditionalLinkLibraries>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="WixSampleBAFunctions.cpp" />
