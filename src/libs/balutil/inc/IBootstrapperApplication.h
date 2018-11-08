@@ -523,28 +523,3 @@ DECLARE_INTERFACE_IID_(IBootstrapperApplication, IUnknown, "53C31D56-49C0-426B-A
         __in_opt LPVOID pvContext
         ) = 0;
 };
-
-
-// TODO: Move into BootstrapperApplication.h once IBootstrapperEngine and IBootstrapperApplication have been moved out of the engine.
-struct BOOTSTRAPPER_CREATE_ARGS
-{
-    DWORD cbSize;
-    DWORD64 qwEngineAPIVersion;
-    IBootstrapperEngine* pEngine; // TODO: remove once IBootstrapperEngine is moved out of the engine.
-    PFN_BOOTSTRAPPER_ENGINE_PROC pfnBootstrapperEngineProc;
-    LPVOID pvBootstrapperEngineProcContext;
-    BOOTSTRAPPER_COMMAND* pCommand;
-};
-
-struct BOOTSTRAPPER_CREATE_RESULTS
-{
-    DWORD cbSize;
-    IBootstrapperApplication* pApplication; // TODO: remove once IBootstrapperApplication is moved out of the engine.
-    PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBootstrapperApplicationProc;
-    LPVOID pvBootstrapperApplicationProcContext;
-};
-
-extern "C" typedef HRESULT(WINAPI *PFN_BOOTSTRAPPER_APPLICATION_CREATE)(
-    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
-    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
-    );

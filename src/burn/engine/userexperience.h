@@ -23,7 +23,6 @@ typedef struct _BURN_USER_EXPERIENCE
     BURN_PAYLOADS payloads;
 
     HMODULE hUXModule;
-    IBootstrapperApplication* pUserExperience;
     PFN_BOOTSTRAPPER_APPLICATION_PROC pfnBAProc;
     LPVOID pvBAProcContext;
     LPWSTR sczTempDirectory;

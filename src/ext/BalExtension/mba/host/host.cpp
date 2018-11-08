@@ -531,7 +531,6 @@ static HRESULT CreateManagedBootstrapperApplication(
 
     pResults->pfnBootstrapperApplicationProc = BalBaseBootstrapperApplicationProc;
     pResults->pvBootstrapperApplicationProcContext = pApp;
-    pResults->pApplication = pApp;
     pApp = NULL;
 
 LExit:

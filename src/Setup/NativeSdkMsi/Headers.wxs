@@ -58,19 +58,19 @@
             </Component>
 
             <Component>
+                <File Source="libs\balutil\inc\IBootstrapperApplication.h" />
+            </Component>
+
+            <Component>
+                <File Source="libs\balutil\inc\IBootstrapperEngine.h" />
+            </Component>
+
+            <Component>
                 <File Source="BootstrapperApplication.h" />
             </Component>
 
             <Component>
                 <File Source="BootstrapperEngine.h" />
-            </Component>
-
-            <Component>
-                <File Source="IBootstrapperApplication.h" />
-            </Component>
-
-            <Component>
-                <File Source="IBootstrapperEngine.h" />
             </Component>
 
             <Component>

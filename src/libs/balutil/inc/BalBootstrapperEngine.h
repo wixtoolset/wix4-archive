@@ -7,7 +7,6 @@ extern "C" {
 // function declarations
 
 HRESULT BalBootstrapperEngineCreate(
-    __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
     __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
     __in_opt LPVOID pvBAEngineProcContext,
     __out IBootstrapperEngine** ppEngineForApplication

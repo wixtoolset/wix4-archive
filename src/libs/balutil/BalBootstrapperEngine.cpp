@@ -162,7 +162,25 @@ public: // IBootstrapperEngine
         __inout DWORD* pcchOut
         )
     {
-        return m_pEngine->FormatString(wzIn, wzOut, pcchOut);
+        HRESULT hr = S_OK;
+        BAENGINE_FORMATSTRING_ARGS args = { };
+        BAENGINE_FORMATSTRING_RESULTS results = { };
+
+        ExitOnNull(pcchOut, hr, E_INVALIDARG, "pcchOut is required");
+
+        args.cbSize = sizeof(args);
+        args.wzIn = wzIn;
+
+        results.cbSize = sizeof(results);
+        results.wzOut = wzOut;
+        results.cchOut = *pcchOut;
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_FORMATSTRING, &args, &results, m_pvBAEngineProcContext);
+
+        *pcchOut = results.cchOut;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP EscapeString(
@@ -171,7 +189,25 @@ public: // IBootstrapperEngine
         __inout DWORD* pcchOut
         )
     {
-        return m_pEngine->EscapeString(wzIn, wzOut, pcchOut);
+        HRESULT hr = S_OK;
+        BAENGINE_ESCAPESTRING_ARGS args = { };
+        BAENGINE_ESCAPESTRING_RESULTS results = { };
+
+        ExitOnNull(pcchOut, hr, E_INVALIDARG, "pcchOut is required");
+
+        args.cbSize = sizeof(args);
+        args.wzIn = wzIn;
+
+        results.cbSize = sizeof(results);
+        results.wzOut = wzOut;
+        results.cchOut = *pcchOut;
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_ESCAPESTRING, &args, &results, m_pvBAEngineProcContext);
+
+        *pcchOut = results.cchOut;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP EvaluateCondition(
@@ -179,7 +215,23 @@ public: // IBootstrapperEngine
         __out BOOL* pf
         )
     {
-        return m_pEngine->EvaluateCondition(wzCondition, pf);
+        HRESULT hr = S_OK;
+        BAENGINE_EVALUATECONDITION_ARGS args = { };
+        BAENGINE_EVALUATECONDITION_RESULTS results = { };
+
+        ExitOnNull(pf, hr, E_INVALIDARG, "pf is required");
+
+        args.cbSize = sizeof(args);
+        args.wzCondition = wzCondition;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_EVALUATECONDITION, &args, &results, m_pvBAEngineProcContext);
+
+        *pf = results.f;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP Log(
@@ -187,7 +239,16 @@ public: // IBootstrapperEngine
         __in_z LPCWSTR wzMessage
         )
     {
-        return m_pEngine->Log(level, wzMessage);
+        BAENGINE_LOG_ARGS args = { };
+        BAENGINE_LOG_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.level = level;
+        args.wzMessage = wzMessage;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_LOG, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SendEmbeddedError(
@@ -197,7 +258,25 @@ public: // IBootstrapperEngine
         __out int* pnResult
         )
     {
-        return m_pEngine->SendEmbeddedError(dwErrorCode, wzMessage, dwUIHint, pnResult);
+        HRESULT hr = S_OK;
+        BAENGINE_SENDEMBEDDEDERROR_ARGS args = { };
+        BAENGINE_SENDEMBEDDEDERROR_RESULTS results = { };
+
+        ExitOnNull(pnResult, hr, E_INVALIDARG, "pnResult is required");
+
+        args.cbSize = sizeof(args);
+        args.dwErrorCode = dwErrorCode;
+        args.wzMessage = wzMessage;
+        args.dwUIHint = dwUIHint;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDERROR, &args, &results, m_pvBAEngineProcContext);
+
+        *pnResult = results.nResult;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP SendEmbeddedProgress(
@@ -206,7 +285,24 @@ public: // IBootstrapperEngine
         __out int* pnResult
         )
     {
-        return m_pEngine->SendEmbeddedProgress(dwProgressPercentage, dwOverallProgressPercentage, pnResult);
+        HRESULT hr = S_OK;
+        BAENGINE_SENDEMBEDDEDPROGRESS_ARGS args = { };
+        BAENGINE_SENDEMBEDDEDPROGRESS_RESULTS results = { };
+
+        ExitOnNull(pnResult, hr, E_INVALIDARG, "pnResult is required");
+
+        args.cbSize = sizeof(args);
+        args.dwProgressPercentage = dwProgressPercentage;
+        args.dwOverallProgressPercentage = dwOverallProgressPercentage;
+
+        results.cbSize = sizeof(results);
+
+        hr = m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SENDEMBEDDEDPROGRESS, &args, &results, m_pvBAEngineProcContext);
+
+        *pnResult = results.nResult;
+
+    LExit:
+        return hr;
     }
 
     virtual STDMETHODIMP SetUpdate(
@@ -218,7 +314,20 @@ public: // IBootstrapperEngine
         __in DWORD cbHash
         )
     {
-        return m_pEngine->SetUpdate(wzLocalSource, wzDownloadSource, qwSize, hashType, rgbHash, cbHash);
+        BAENGINE_SETUPDATE_ARGS args = { };
+        BAENGINE_SETUPDATE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzLocalSource = wzLocalSource;
+        args.wzDownloadSource = wzDownloadSource;
+        args.qwSize = qwSize;
+        args.hashType = hashType;
+        args.rgbHash = rgbHash;
+        args.cbHash = cbHash;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETUPDATE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetLocalSource(
@@ -227,7 +336,17 @@ public: // IBootstrapperEngine
         __in_z LPCWSTR wzPath
         )
     {
-        return m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, wzPath);
+        BAENGINE_SETLOCALSOURCE_ARGS args = { };
+        BAENGINE_SETLOCALSOURCE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzPackageOrContainerId = wzPackageOrContainerId;
+        args.wzPayloadId = wzPayloadId;
+        args.wzPath = wzPath;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETLOCALSOURCE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetDownloadSource(
@@ -238,7 +357,19 @@ public: // IBootstrapperEngine
         __in_z_opt LPCWSTR wzPassword
         )
     {
-        return m_pEngine->SetDownloadSource(wzPackageOrContainerId, wzPayloadId, wzUrl, wzUser, wzPassword);
+        BAENGINE_SETDOWNLOADSOURCE_ARGS args = { };
+        BAENGINE_SETDOWNLOADSOURCE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzPackageOrContainerId = wzPackageOrContainerId;
+        args.wzPayloadId = wzPayloadId;
+        args.wzUrl = wzUrl;
+        args.wzUser = wzUser;
+        args.wzPassword = wzPassword;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETDOWNLOADSOURCE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetVariableNumeric(
@@ -246,7 +377,16 @@ public: // IBootstrapperEngine
         __in LONGLONG llValue
         )
     {
-        return m_pEngine->SetVariableNumeric(wzVariable, llValue);
+        BAENGINE_SETVARIABLENUMERIC_ARGS args = { };
+        BAENGINE_SETVARIABLENUMERIC_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+        args.llValue = llValue;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLENUMERIC, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetVariableString(
@@ -254,7 +394,16 @@ public: // IBootstrapperEngine
         __in_z_opt LPCWSTR wzValue
         )
     {
-        return m_pEngine->SetVariableString(wzVariable, wzValue);
+        BAENGINE_SETVARIABLESTRING_ARGS args = { };
+        BAENGINE_SETVARIABLESTRING_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+        args.wzValue = wzValue;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLESTRING, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP SetVariableVersion(
@@ -262,12 +411,28 @@ public: // IBootstrapperEngine
         __in DWORD64 qwValue
         )
     {
-        return m_pEngine->SetVariableVersion(wzVariable, qwValue);
+        BAENGINE_SETVARIABLEVERSION_ARGS args = { };
+        BAENGINE_SETVARIABLEVERSION_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.wzVariable = wzVariable;
+        args.qwValue = qwValue;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_SETVARIABLEVERSION, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP CloseSplashScreen()
     {
-        return m_pEngine->CloseSplashScreen();
+        BAENGINE_CLOSESPLASHSCREEN_ARGS args = { };
+        BAENGINE_CLOSESPLASHSCREEN_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_CLOSESPLASHSCREEN, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Detect(
@@ -289,28 +454,60 @@ public: // IBootstrapperEngine
         __in BOOTSTRAPPER_ACTION action
         )
     {
-        return m_pEngine->Plan(action);
+        BAENGINE_PLAN_ARGS args = { };
+        BAENGINE_PLAN_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.action = action;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_PLAN, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Elevate(
         __in_opt HWND hwndParent
         )
     {
-        return m_pEngine->Elevate(hwndParent);
+        BAENGINE_ELEVATE_ARGS args = { };
+        BAENGINE_ELEVATE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.hwndParent = hwndParent;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_ELEVATE, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Apply(
         __in_opt HWND hwndParent
         )
     {
-        return m_pEngine->Apply(hwndParent);
+        BAENGINE_APPLY_ARGS args = { };
+        BAENGINE_APPLY_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.hwndParent = hwndParent;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_APPLY, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP Quit(
         __in DWORD dwExitCode
         )
     {
-        return m_pEngine->Quit(dwExitCode);
+        BAENGINE_QUIT_ARGS args = { };
+        BAENGINE_QUIT_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.dwExitCode = dwExitCode;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_QUIT, &args, &results, m_pvBAEngineProcContext);
     }
 
     virtual STDMETHODIMP LaunchApprovedExe(
@@ -320,7 +517,18 @@ public: // IBootstrapperEngine
         __in DWORD dwWaitForInputIdleTimeout
         )
     {
-        return m_pEngine->LaunchApprovedExe(hwndParent, wzApprovedExeForElevationId, wzArguments, dwWaitForInputIdleTimeout);
+        BAENGINE_LAUNCHAPPROVEDEXE_ARGS args = { };
+        BAENGINE_LAUNCHAPPROVEDEXE_RESULTS results = { };
+
+        args.cbSize = sizeof(args);
+        args.hwndParent = hwndParent;
+        args.wzApprovedExeForElevationId = wzApprovedExeForElevationId;
+        args.wzArguments = wzArguments;
+        args.dwWaitForInputIdleTimeout = dwWaitForInputIdleTimeout;
+
+        results.cbSize = sizeof(results);
+
+        return m_pfnBAEngineProc(BOOTSTRAPPER_ENGINE_MESSAGE_LAUNCHAPPROVEDEXE, &args, &results, m_pvBAEngineProcContext);
     }
 
 public: // IMarshal
@@ -476,7 +684,6 @@ public: // IMarshal
 
 public:
     CBalBootstrapperEngine(
-        __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
         __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
         __in_opt LPVOID pvBAEngineProcContext
         )
@@ -484,25 +691,15 @@ public:
         m_cReferences = 1;
         m_pfnBAEngineProc = pfnBAEngineProc;
         m_pvBAEngineProcContext = pvBAEngineProcContext;
-
-        pEngine->AddRef();
-        m_pEngine = pEngine;
-    }
-
-    virtual ~CBalBootstrapperEngine()
-    {
-        ReleaseNullObject(m_pEngine);
     }
 
 private:
     long m_cReferences;
-    IBootstrapperEngine* m_pEngine;
     PFN_BOOTSTRAPPER_ENGINE_PROC m_pfnBAEngineProc;
     LPVOID m_pvBAEngineProcContext;
 };
 
 HRESULT BalBootstrapperEngineCreate(
-    __in IBootstrapperEngine* pEngine, // TODO: remove after IBootstrapperEngine is moved out of the engine.
     __in PFN_BOOTSTRAPPER_ENGINE_PROC pfnBAEngineProc,
     __in_opt LPVOID pvBAEngineProcContext,
     __out IBootstrapperEngine** ppBootstrapperEngine
@@ -511,7 +708,7 @@ HRESULT BalBootstrapperEngineCreate(
     HRESULT hr = S_OK;
     CBalBootstrapperEngine* pBootstrapperEngine = NULL;
 
-    pBootstrapperEngine = new CBalBootstrapperEngine(pEngine, pfnBAEngineProc, pvBAEngineProcContext);
+    pBootstrapperEngine = new CBalBootstrapperEngine(pfnBAEngineProc, pvBAEngineProcContext);
     ExitOnNull(pBootstrapperEngine, hr, E_OUTOFMEMORY, "Failed to allocate new BalBootstrapperEngine object.");
 
     hr = pBootstrapperEngine->QueryInterface(IID_PPV_ARGS(ppBootstrapperEngine));
