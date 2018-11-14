@@ -42,8 +42,8 @@
         </Feature>
 
         <!--CustomAction Id="PerMachineDirectory" Property="ApplicationsFolder" Value="[ProgramFilesFolder]" />
-        <CustomAction Id="PerUserDirectory" Property="ApplicationsFolder" Value="[LocalAppDataFolder]..\Apps" />
-        <CustomAction Id="SetCacheDirectory" Property="ApplicationsCacheFolder" Value="[LocalAppDataFolder]..\Apps\Cache" /-->
+        <CustomAction Id="PerUserDirectory" Property="ApplicationsFolder" Value="[AppDataFolder]..\Apps" />
+        <CustomAction Id="SetCacheDirectory" Property="ApplicationsCacheFolder" Value="[AppDataFolder]..\Apps\Cache" /-->
 
         <InstallExecuteSequence>
             <!--Custom Action="PerMachineDirectory" After="CostInitialize">Not Installed AND (ALLUSERS=1 OR (Privileged AND ALLUSERS=2))</Custom>

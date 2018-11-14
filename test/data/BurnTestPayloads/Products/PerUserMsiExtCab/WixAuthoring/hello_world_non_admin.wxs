@@ -37,7 +37,7 @@
     <!-- This is a list of directories that are used by this product as installation locations or custom -->
     <!-- action file search locations.                                                                   -->
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="LocalAppDataFolder" Name="AppData">
+      <Directory Id="AppDataFolder" Name="AppData">
         <Directory Id="AppRootDirectory" Name="HelloWorldNonAdmin_Readme_External"/>
       </Directory>
     </Directory>

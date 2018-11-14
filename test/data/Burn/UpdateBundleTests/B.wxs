@@ -31,7 +31,7 @@
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="LocalAppDataFolder">
+      <Directory Id="AppDataFolder">
         <Directory Id="WixDir" Name="~Test WiX">
           <Directory Id="TestDir" Name="$(var.TestName)">
             <Directory Id="INSTALLFOLDER" Name="B"/>

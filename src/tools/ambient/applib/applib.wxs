@@ -9,7 +9,7 @@
         <Media Id="1" Cabinet="cta.cab" EmbedCab="yes" />
 
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="LocalAppDataFolder" Name="AppData">
+            <Directory Id="AppDataFolder" Name="AppData">
                 <Directory Id="ApplicationsFolder" Name="Applications">
                     <Component Id="ThisApplicationVersionRegistryKeyComponent" Guid="ed6b3460-7774-4917-9619-2e7ca0ca8453">
                         <CreateFolder />
@@ -79,7 +79,7 @@
 
         <CustomAction Id="SpecifiedA" Property="ApplicationFolder" Value="[A]" Execute="immediate" />
         <CustomAction Id="PerMachineInstall" Property="ApplicationFolder" Value="[ProgramFilesFolder]\[ApplicationFolderName]" Execute="immediate" />
-        <CustomAction Id="PerUserInstall" Property="ApplicationFolder" Value="[LocalAppDataFolder]\Apps\[ApplicationFolderName]" Execute="immediate" />
+        <CustomAction Id="PerUserInstall" Property="ApplicationFolder" Value="[AppDataFolder]\Apps\[ApplicationFolderName]" Execute="immediate" />
 
         <InstallUISequence>
             <Custom Action="SpecifiedA" Before="LaunchConditions">NOT Installed</Custom>

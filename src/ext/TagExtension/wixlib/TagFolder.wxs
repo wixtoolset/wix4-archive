@@ -12,7 +12,7 @@
             </Directory>
         </DirectoryRef>
 
-        <SetProperty Action="SetWixTagFolderPerUser" Id="WixTagFolder" Value="[LocalAppDataFolder]" Sequence="both" Before="CostFinalize">NOT ALLUSERS</SetProperty>
+        <SetProperty Action="SetWixTagFolderPerUser" Id="WixTagFolder" Value="[AppDataFolder]" Sequence="both" Before="CostFinalize">NOT ALLUSERS</SetProperty>
         <SetProperty Action="SetWixTagFolderPerMachine" Id="WixTagFolder" Value="[CommonAppDataFolder]" Sequence="both" Before="CostFinalize">ALLUSERS</SetProperty>
     </Fragment>
 </Wix>

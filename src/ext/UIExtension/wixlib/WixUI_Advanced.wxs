@@ -29,7 +29,7 @@ Todo:
 
         <PropertyRef Id="ApplicationFolderName" />
 
-        <CustomAction Id="WixSetDefaultPerUserFolder" Property="WixPerUserFolder" Value="[LocalAppDataFolder]Apps\[ApplicationFolderName]" Execute="immediate" />
+        <CustomAction Id="WixSetDefaultPerUserFolder" Property="WixPerUserFolder" Value="[AppDataFolder]Apps\[ApplicationFolderName]" Execute="immediate" />
         <CustomAction Id="WixSetDefaultPerMachineFolder" Property="WixPerMachineFolder" Value="[ProgramFilesFolder][ApplicationFolderName]" Execute="immediate" />
         <CustomAction Id="WixSetPerUserFolder" Property="APPLICATIONFOLDER" Value="[WixPerUserFolder]" Execute="immediate" />
         <CustomAction Id="WixSetPerMachineFolder" Property="APPLICATIONFOLDER" Value="[WixPerMachineFolder]" Execute="immediate" />

@@ -6,7 +6,7 @@
         </Detect>
 
         <Data>
-            <Directory Namespace="Data" Location="LocalAppDataFolder:\Zachtronics Industries\SpaceChem"/>
+            <Directory Namespace="Data" Location="AppDataFolder:\Zachtronics Industries\SpaceChem"/>
         </Data>
 
         <Filter>

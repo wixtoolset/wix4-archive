@@ -24,7 +24,7 @@ To use WixUI_Advanced, you must include the following information in your setup 
   
 1. A property with an Id named <b>ApplicationFolderName</b> and a value set to a string that represents the default folder name. This property is used to form the default installation location.
 
-    For a per-machine installation, the default installation location will be [ProgramFilesFolder][ApplicationFolderName] and the user will be able to change it in the setup UI. For a per-user installation, the default installation location will be [LocalAppDataFolder]Apps\[ApplicationFolderName] and the user will not be able to change it in the setup UI.
+    For a per-machine installation, the default installation location will be [ProgramFilesFolder][ApplicationFolderName] and the user will be able to change it in the setup UI. For a per-user installation, the default installation location will be [AppDataFolder]Apps\[ApplicationFolderName] and the user will not be able to change it in the setup UI.
 
     For example:
 

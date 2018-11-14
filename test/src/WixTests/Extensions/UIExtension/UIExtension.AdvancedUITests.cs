@@ -26,7 +26,7 @@ namespace WixTest.Tests.Extensions.UIExtension
             Verifier.VerifyCustomActionTableData(msiFile,
                 new CustomActionTableData("WixUIValidatePath", 65, "WixUIWixca", "ValidatePath"),
                 new CustomActionTableData("WixUIPrintEula", 65, "WixUIWixca", "PrintEula"),
-                new CustomActionTableData("WixSetDefaultPerUserFolder", 51, "WixPerUserFolder", @"[LocalAppDataFolder]Apps\[ApplicationFolderName]"),
+                new CustomActionTableData("WixSetDefaultPerUserFolder", 51, "WixPerUserFolder", @"[AppDataFolder]Apps\[ApplicationFolderName]"),
                 new CustomActionTableData("WixSetDefaultPerMachineFolder", 51, "WixPerMachineFolder", "[ProgramFilesFolder][ApplicationFolderName]"),
                 new CustomActionTableData("WixSetPerUserFolder", 51, "APPLICATIONFOLDER", "[WixPerUserFolder]"),
                 new CustomActionTableData("WixSetPerMachineFolder", 51, "APPLICATIONFOLDER", "[WixPerMachineFolder]"));

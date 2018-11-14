@@ -8,7 +8,7 @@
         </Detect>
 
         <Data>
-            <Directory Namespace="Data" Location="LocalAppDataFolder:\DroxOperative">
+            <Directory Namespace="Data" Location="AppDataFolder:\DroxOperative">
                 <CfgFile Namespace="User.cfg" Location="User\user.cfg" Encoding="UTF8NoBOM">
                     <Value Separator=" ">
                        <SeparatorException Prefix="VirtualKey "/>

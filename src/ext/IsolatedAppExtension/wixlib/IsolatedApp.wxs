@@ -11,7 +11,7 @@
         <Property Id="TargetComponentId" Value="!(wix.TargetComponentId)"/>
 
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="LocalAppDataFolder" Name="AppData">
+            <Directory Id="AppDataFolder" Name="AppData">
                 <Directory Id="ApplicationsFolder" Name="Apps">
                     <!--Component Id="ThisApplicationVersionRegistryKeyComponent" Guid="{00000000-0000-0000-0000-000000000000}">
                         <CreateFolder />
@@ -62,10 +62,10 @@
             <ComponentRef Id="SystemApplicationUpdateExeComponent" />
         </Feature>
 
-        <!--CustomAction Id="SetCacheDirectory" Property="ApplicationsCacheFolder" Value="[LocalAppDataFolder]..\Apps\Cache" />
-        <CustomAction Id="SetSystemDirectory" Property="SystemApplicationsFolder" Value="[LocalAppDataFolder]..\Apps\System" />
+        <!--CustomAction Id="SetCacheDirectory" Property="ApplicationsCacheFolder" Value="[AppDataFolder]..\Apps\Cache" />
+        <CustomAction Id="SetSystemDirectory" Property="SystemApplicationsFolder" Value="[AppDataFolder]..\Apps\System" />
         <CustomAction Id="PerMachineDirectory" Property="ApplicationsFolder" Value="[ProgramFilesFolder]" />
-        <CustomAction Id="PerUserDirectory" Property="ApplicationsFolder" Value="[LocalAppDataFolder]..\Apps" /-->
+        <CustomAction Id="PerUserDirectory" Property="ApplicationsFolder" Value="[AppDataFolder]..\Apps" /-->
 
         <CustomAction Id="LaunchNewlyInstalledApp" FileKey="SystemApplicationUpdateExeFile" ExeCommand="-ac [ProductCode]" Return="asyncNoWait" Execute="oncePerProcess" />
 
