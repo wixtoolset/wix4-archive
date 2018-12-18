@@ -13,8 +13,6 @@ extern "C" {
 #define BalExitOnRootFailure(x, f, ...) if (FAILED(x)) { BalLogError(x, f, __VA_ARGS__); Dutil_RootFailure(__FILE__, __LINE__, x); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
 #define BalExitOnNullWithLastError(p, x, f, ...) if (NULL == p) { DWORD Dutil_er = ::GetLastError(); x = HRESULT_FROM_WIN32(Dutil_er); if (!FAILED(x)) { x = E_FAIL; } BalLogError(x, f, __VA_ARGS__); ExitTrace(x, f, __VA_ARGS__); goto LExit; }
 
-#define FACILITY_WIX 500
-
 const LPCWSTR BAL_MANIFEST_FILENAME = L"BootstrapperApplicationData.xml";
 
 static const HRESULT E_WIXSTDBA_CONDITION_FAILED = MAKE_HRESULT(SEVERITY_ERROR, FACILITY_WIX, 1);
