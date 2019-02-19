@@ -234,6 +234,7 @@ namespace WixToolset.Bind
                     case WixBundlePackageType.Msu:
                         {
                             ProcessMsuPackageCommand command = new ProcessMsuPackageCommand();
+                            command.AuthoredPayloads = payloads;
                             command.Facade = facade;
                             command.Execute();
                         }
