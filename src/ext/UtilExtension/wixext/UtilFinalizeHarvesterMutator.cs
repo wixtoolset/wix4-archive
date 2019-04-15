@@ -1038,6 +1038,32 @@ namespace WixToolset.Extensions
         /// </summary>
         private void MutateRegistryValues()
         {
+            if (SuppressVB6COMElements && SuppressCOMElements)
+            {
+                ArrayList vb6RegistryValues = new ArrayList();
+                foreach (Wix.RegistryValue registryValue in this.registryValues)
+                {
+                    if (IsVb6RegistryValue(registryValue))
+                    {
+                        if (!vb6RegistryValues.Contains(registryValue))
+                        {
+                            vb6RegistryValues.Add(registryValue);
+                        }
+                    }
+                }
+
+                // Remove all the VB6 specific COM registry values
+                foreach (Object entry in vb6RegistryValues)
+                {
+                    var reg = (Wix.RegistryValue)entry;
+                    if (reg.ParentElement is Microsoft.Tools.WindowsInstallerXml.Serialize.Component)
+                    {
+                        ((Microsoft.Tools.WindowsInstallerXml.Serialize.Component)reg.ParentElement).RemoveChild(reg);
+                    }
+                    registryValues.Remove((Wix.RegistryValue)entry);
+                }
+            }
+
             ArrayList reversedDirectoryPaths = new ArrayList();
 
             // reverse the indexed directory paths to ensure the longest paths are found first
@@ -1069,6 +1095,52 @@ namespace WixToolset.Extensions
             }
         }
 
+        private static bool IsVb6RegistryValue(Wix.RegistryValue registryValue)
+        {
+            if (Wix.RegistryValue.ActionType.write == registryValue.Action && Wix.RegistryRootType.HKCR == registryValue.Root)
+            {
+                string[] parts = registryValue.Key.Split('\\');
+                if (String.Equals(parts[0], "CLSID", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Search for the VB6 CLSID {D5DE8D20-5BB8-11D1-A1E3-00A0C90F2731}
+                    if (2 <= parts.Length)
+                    {
+                        if (String.Equals(parts[1], "{D5DE8D20-5BB8-11D1-A1E3-00A0C90F2731}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else if (String.Equals(parts[0], "TypeLib", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Search for the VB6 TypeLibs {EA544A21-C82D-11D1-A3E4-00A0C90AEA82} or {000204EF-0000-0000-C000-000000000046}
+                    if (2 <= parts.Length)
+                    {
+                        if (String.Equals(parts[1], "{EA544A21-C82D-11D1-A3E4-00A0C90AEA82}", StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(parts[1], "{000204EF-0000-0000-C000-000000000046}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else if (String.Equals(parts[0], "Interface", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Search for any Interfaces that reference the VB6 TypeLibs {EA544A21-C82D-11D1-A3E4-00A0C90AEA82} or {000204EF-0000-0000-C000-000000000046}
+                    if (3 <= parts.Length)
+                    {
+                        if (String.Equals(parts[2], "TypeLib", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (String.Equals(registryValue.Value, "{EA544A21-C82D-11D1-A3E4-00A0C90AEA82}", StringComparison.OrdinalIgnoreCase) ||
+                                String.Equals(registryValue.Value, "{000204EF-0000-0000-C000-000000000046}", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
         /// <summary>
         /// The native methods for grabbing machine-specific short file paths.
         /// </summary>
