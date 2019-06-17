@@ -491,6 +491,7 @@ namespace WixToolset.Bind
                 command.Output = this.Output;
                 command.OutputPath = tempDatabaseFile;
                 command.SuppressedTableNames = suppressedTableNames;
+                command.TempFilesLocation = this.TempFilesLocation;
                 command.Execute();
 
                 // stop processing if an error previously occurred
