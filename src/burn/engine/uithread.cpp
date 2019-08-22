@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="uithread.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Message handler window
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -203,6 +192,7 @@ static LRESULT CALLBACK WndProc(
         {
         DWORD dwEndSession = static_cast<DWORD>(lParam);
         BOOL fCritical = ENDSESSION_CRITICAL & dwEndSession;
+        BOOL fCancel = TRUE;
         BOOL fRet = FALSE;
 
         // Always block shutdown in the elevated process, but ask the BA in the non-elevated.
@@ -211,9 +201,12 @@ static LRESULT CALLBACK WndProc(
         {
             // TODO: instead of recommending canceling all non-critical shutdowns, maybe we should only recommend cancel
             //       when the engine is doing work?
-            fRet = IDCANCEL != pInfo->pUserExperience->pUserExperience->OnSystemShutdown(dwEndSession, fCritical ? IDNOACTION : IDCANCEL);
+            fCancel = !fCritical;
+            // TODO: There's a race condition here where the BA may not have been loaded, or already was unloaded.
+            UserExperienceOnSystemShutdown(pInfo->pUserExperience, dwEndSession, &fCancel);
         }
 
+        fRet = !fCancel;
         LogId(REPORT_STANDARD, MSG_SYSTEM_SHUTDOWN, LoggingBoolToString(fCritical), LoggingBoolToString(pInfo->fElevated), LoggingBoolToString(fRet));
         return fRet;
         }

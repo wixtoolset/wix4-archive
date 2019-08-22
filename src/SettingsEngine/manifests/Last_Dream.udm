@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Last_Dream">
+        <Detect>
+            <Arp DisplayName="Last Dream" InstallLocation="InstallDir"/>
+        </Detect>
+
+        <Data>
+            <!-- Last Dream doesn't put its save games in their own directory,
+                 they're all right next to the main EXE, so we'll use filters to only pickup *.sav -->
+            <Directory Namespace="Data" Location="InstallDir:\"/>
+        </Data>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\save" Postfix=".rvdata"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Last Dream</DisplayName>
+    </Product>
+</LegacySettings>

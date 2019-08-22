@@ -1,12 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!--
-  <copyright file="cfglib.vcxproj" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
--->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -62,10 +57,12 @@
     <ClCompile Include="database.cpp" />
     <ClCompile Include="dblist.cpp" />
     <ClCompile Include="detect.cpp" />
+    <ClCompile Include="dispname.cpp" />
     <ClCompile Include="drdfault.cpp" />
     <ClCompile Include="drspcial.cpp" />
     <ClCompile Include="enum.cpp" />
     <ClCompile Include="filter.cpp" />
+    <ClCompile Include="guidlist.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="legsync.cpp" />
@@ -88,6 +85,7 @@
     <ClInclude Include="database.h" />
     <ClInclude Include="dblist.h" />
     <ClInclude Include="detect.h" />
+    <ClInclude Include="dispname.h" />
     <ClInclude Include="drdfault.h" />
     <ClInclude Include="drspcial.h" />
     <ClInclude Include="enum.h" />

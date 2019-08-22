@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="OrderPackagesAndRollbackBoundariesCommand.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind.Bundles
 {
@@ -41,6 +34,8 @@ namespace WixToolset.Bind.Bundles
             // we get these install/repair (aka: forward) rollback boundaries
             // defined.
             WixBundleRollbackBoundaryRow previousRollbackBoundary = null;
+            WixBundleRollbackBoundaryRow lastRollbackBoundary = null;
+            bool boundaryHadX86Package = false;
 
             foreach (WixGroupRow row in this.WixGroupTable.Rows)
             {
@@ -52,10 +47,20 @@ namespace WixToolset.Bind.Bundles
                         if (null != previousRollbackBoundary)
                         {
                             usedBoundaries.Add(previousRollbackBoundary);
-
                             facade.Package.RollbackBoundary = previousRollbackBoundary.ChainPackageId;
                             previousRollbackBoundary = null;
+
+                            boundaryHadX86Package = (facade.Package.x64 == YesNoType.Yes);
                         }
+
+                        // Error if MSI transaction has x86 package preceding x64 packages
+                        if ((lastRollbackBoundary != null) && (lastRollbackBoundary.Transaction == YesNoType.Yes) 
+                            && boundaryHadX86Package 
+                            && (facade.Package.x64 == YesNoType.Yes))
+                        {
+                            Messaging.Instance.OnMessage(WixErrors.MsiTransactionX86BeforeX64(lastRollbackBoundary.SourceLineNumbers));
+                        }
+                        boundaryHadX86Package = boundaryHadX86Package || (facade.Package.x64 == YesNoType.No);
 
                         orderedFacades.Add(facade);
                     }
@@ -70,6 +75,7 @@ namespace WixToolset.Bind.Bundles
                         else
                         {
                             previousRollbackBoundary = nextRollbackBoundary;
+                            lastRollbackBoundary = nextRollbackBoundary;
                         }
                     }
                 }

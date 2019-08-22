@@ -1,16 +1,6 @@
 #pragma once
-//-------------------------------------------------------------------------------------------------
-// <copyright file="memutil.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Header for memory helper functions.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,6 +26,17 @@ HRESULT DAPI MemReAllocSecure(
     __in SIZE_T cbSize,
     __in BOOL fZero,
     __deref_out LPVOID* ppvNew
+    );
+HRESULT DAPI MemAllocArray(
+    __inout LPVOID* ppvArray,
+    __in SIZE_T cbArrayType,
+    __in DWORD dwItemCount
+    );
+HRESULT DAPI MemReAllocArray(
+    __inout LPVOID* ppvArray,
+    __in DWORD cArray,
+    __in SIZE_T cbArrayType,
+    __in DWORD dwNewItemCount
     );
 HRESULT DAPI MemEnsureArraySize(
     __deref_out_bcount(cArray * cbArrayType) LPVOID* ppvArray,

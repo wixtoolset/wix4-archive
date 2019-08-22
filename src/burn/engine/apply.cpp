@@ -1,17 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="apply.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: Core
-//
-//    Apply phase functions.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -60,18 +47,20 @@ static HRESULT ExecuteDependentRegistrationActions(
     __in DWORD cActions
     );
 static HRESULT ExtractContainer(
-    __in HANDLE hEngineFile,
-    __in BURN_USER_EXPERIENCE* pUX,
+    __in HANDLE hSourceEngineFile,
     __in BURN_CONTAINER* pContainer,
     __in_z LPCWSTR wzContainerPath,
     __in_ecount(cExtractPayloads) BURN_EXTRACT_PAYLOAD* rgExtractPayloads,
     __in DWORD cExtractPayloads
     );
-static DWORD64 GetCacheActionSuccessProgress(
-    __in BURN_CACHE_ACTION* pCacheAction
+static void UpdateCacheSuccessProgress(
+    __in BURN_PLAN* pPlan,
+    __in BURN_CACHE_ACTION* pCacheAction,
+    __inout DWORD64* pqwSuccessfulCachedProgress
     );
 static HRESULT LayoutBundle(
     __in BURN_USER_EXPERIENCE* pUX,
+    __in BURN_VARIABLES* pVariables,
     __in HANDLE hPipe,
     __in_z LPCWSTR wzExecutableName,
     __in_z LPCWSTR wzLayoutDirectory,
@@ -95,6 +84,7 @@ static HRESULT LayoutOrCacheContainerOrPayload(
     __in_opt BURN_CONTAINER* pContainer,
     __in_opt BURN_PACKAGE* pPackage,
     __in_opt BURN_PAYLOAD* pPayload,
+    __in BOOL fAlreadyProvidedProgress,
     __in DWORD64 qwSuccessfullyCacheProgress,
     __in DWORD64 qwTotalCacheSize,
     __in_z_opt LPCWSTR wzLayoutDirectory,
@@ -153,6 +143,7 @@ static HRESULT DoRollbackActions(
     __in BURN_ENGINE_STATE* pEngineState,
     __in BURN_EXECUTE_CONTEXT* pContext,
     __in DWORD dwCheckpoint,
+    __in BOOL fInTransaction,
     __out BOOL* pfKeepRegistration,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
     );
@@ -237,6 +228,30 @@ static HRESULT ExecutePackageComplete(
     __out BOOL* pfSuspend
     );
 
+static HRESULT DoMsiBeginTransaction(
+    __in BURN_EXECUTE_CONTEXT *context
+    , __in BURN_ENGINE_STATE* pEngineState
+);
+static HRESULT DoMsiCommitTransaction(
+    __in BURN_EXECUTE_CONTEXT *context
+    , __in BURN_ENGINE_STATE* pEngineState
+);
+static HRESULT DoMsiRollbackTransaction(
+    __in BURN_EXECUTE_CONTEXT *context
+    , __in BURN_ENGINE_STATE* pEngineState
+);
+static HRESULT ExecuteMsiBeginTransaction(
+    __in BURN_EXECUTE_CONTEXT* pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+);
+static HRESULT ExecuteMsiCommitTransaction(
+    __in BURN_EXECUTE_CONTEXT* pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+);
+static HRESULT ExecuteMsiRollbackTransaction(
+    __in BURN_EXECUTE_CONTEXT* pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+);
 
 // function definitions
 
@@ -313,9 +328,8 @@ extern "C" HRESULT ApplyRegister(
     HRESULT hr = S_OK;
     LPWSTR sczEngineWorkingPath = NULL;
 
-    int nResult = pEngineState->userExperience.pUserExperience->OnRegisterBegin();
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, FALSE, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted register begin.");
+    hr = UserExperienceOnRegisterBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted register begin.");
 
     // If we have a resume mode that suggests the bundle is on the machine.
     if (BOOTSTRAPPER_RESUME_TYPE_REBOOT_PENDING < pEngineState->command.resumeType)
@@ -323,12 +337,12 @@ extern "C" HRESULT ApplyRegister(
         // resume previous session
         if (pEngineState->registration.fPerMachine)
         {
-            hr = ElevationSessionResume(pEngineState->companionConnection.hPipe, pEngineState->registration.sczResumeCommandLine, pEngineState->registration.fDisableResume);
+            hr = ElevationSessionResume(pEngineState->companionConnection.hPipe, pEngineState->registration.sczResumeCommandLine, pEngineState->registration.fDisableResume, &pEngineState->variables);
             ExitOnFailure(hr, "Failed to resume registration session in per-machine process.");
         }
         else
         {
-            hr =  RegistrationSessionResume(&pEngineState->registration);
+            hr = RegistrationSessionResume(&pEngineState->registration, &pEngineState->variables);
             ExitOnFailure(hr, "Failed to resume registration session.");
         }
     }
@@ -363,7 +377,7 @@ extern "C" HRESULT ApplyRegister(
     }
 
 LExit:
-    pEngineState->userExperience.pUserExperience->OnRegisterComplete(hr);
+    UserExperienceOnRegisterComplete(&pEngineState->userExperience, hr);
     ReleaseStr(sczEngineWorkingPath);
 
     return hr;
@@ -380,7 +394,8 @@ extern "C" HRESULT ApplyUnregister(
     HRESULT hr = S_OK;
     BURN_RESUME_MODE resumeMode = BURN_RESUME_MODE_NONE;
 
-    pEngineState->userExperience.pUserExperience->OnUnregisterBegin();
+    hr = UserExperienceOnUnregisterBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted unregister begin.");
 
     // Calculate the correct resume mode. If a restart has been initiated, that trumps all other
     // modes. If the user chose to suspend the install then we'll use that as the resume mode.
@@ -422,13 +437,13 @@ extern "C" HRESULT ApplyUnregister(
     pEngineState->resumeMode = resumeMode;
 
 LExit:
-    pEngineState->userExperience.pUserExperience->OnUnregisterComplete(hr);
+    UserExperienceOnUnregisterComplete(&pEngineState->userExperience, hr);
 
     return hr;
 }
 
 extern "C" HRESULT ApplyCache(
-    __in HANDLE hEngineFile,
+    __in HANDLE hSourceEngineFile,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_VARIABLES* pVariables,
     __in BURN_PLAN* pPlan,
@@ -448,9 +463,8 @@ extern "C" HRESULT ApplyCache(
     DWORD iPackageStartAction = BURN_PLAN_INVALID_ACTION_INDEX;
     DWORD iPackageCompleteAction = BURN_PLAN_INVALID_ACTION_INDEX;
 
-    int nResult = pUX->pUserExperience->OnCacheBegin();
-    hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted cache.");
+    hr = UserExperienceOnCacheBegin(pUX);
+    ExitOnRootFailure(hr, "BA aborted cache.");
 
     do
     {
@@ -460,12 +474,14 @@ extern "C" HRESULT ApplyCache(
         // Allow us to retry just a container or payload.
         LPCWSTR wzRetryId = NULL;
         DWORD iRetryContainerOrPayloadAction = BURN_PLAN_INVALID_ACTION_INDEX;
+        BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION cachePackageCompleteAction = BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE;
 
         // cache actions
         for (DWORD i = (BURN_PLAN_INVALID_ACTION_INDEX == iRetryAction) ? 0 : iRetryAction; SUCCEEDED(hr) && i < pPlan->cCacheActions; ++i)
         {
             BURN_CACHE_ACTION* pCacheAction = pPlan->rgCacheActions + i;
             BOOL fRetryContainerOrPayload = FALSE;
+            cachePackageCompleteAction = BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE;
 
             if (pCacheAction->fSkipUntilRetried)
             {
@@ -476,8 +492,6 @@ extern "C" HRESULT ApplyCache(
                 }
                 else // skip the action.
                 {
-                    // If we skipped it, we can assume it was successful so add the action's progress now.
-                    qwSuccessfulCachedProgress += GetCacheActionSuccessProgress(pCacheAction);
                     continue;
                 }
             }
@@ -489,10 +503,10 @@ extern "C" HRESULT ApplyCache(
                 break;
 
             case BURN_CACHE_ACTION_TYPE_LAYOUT_BUNDLE:
-                hr = LayoutBundle(pUX, hPipe, pCacheAction->bundleLayout.sczExecutableName, pCacheAction->bundleLayout.sczLayoutDirectory, pCacheAction->bundleLayout.sczUnverifiedPath, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal);
+                hr = LayoutBundle(pUX, pVariables, hPipe, pCacheAction->bundleLayout.sczExecutableName, pCacheAction->bundleLayout.sczLayoutDirectory, pCacheAction->bundleLayout.sczUnverifiedPath, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal);
                 if (SUCCEEDED(hr))
                 {
-                    qwSuccessfulCachedProgress += pCacheAction->bundleLayout.qwBundleSize;
+                    UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
                     ++(*pcOverallProgressTicks);
 
                     hr = ReportOverallProgressTicks(pUX, FALSE, pPlan->cOverallProgressTicksTotal, *pcOverallProgressTicks);
@@ -508,8 +522,7 @@ extern "C" HRESULT ApplyCache(
                 iPackageCompleteAction = pCacheAction->packageStart.iPackageCompleteAction; // if we ignore this package, we'll start after the complete action in the plan.
                 pStartedPackage = pCacheAction->packageStart.pPackage;
 
-                nResult = pUX->pUserExperience->OnCachePackageBegin(pStartedPackage->sczId, pCacheAction->packageStart.cCachePayloads, pCacheAction->packageStart.qwCachePayloadSizeTotal);
-                hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+                hr = UserExperienceOnCachePackageBegin(pUX, pStartedPackage->sczId, pCacheAction->packageStart.cCachePayloads, pCacheAction->packageStart.qwCachePayloadSizeTotal);
                 if (FAILED(hr))
                 {
                     LogErrorId(hr, MSG_USER_CANCELED, L"begin cache package", pStartedPackage->sczId, NULL);
@@ -520,7 +533,7 @@ extern "C" HRESULT ApplyCache(
                 hr = AcquireContainerOrPayload(pUX, pVariables, pCacheAction->resolveContainer.pContainer, NULL, NULL, pCacheAction->resolveContainer.sczUnverifiedPath, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal);
                 if (SUCCEEDED(hr))
                 {
-                    qwSuccessfulCachedProgress += pCacheAction->resolveContainer.pContainer->qwFileSize;
+                    UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
                 }
                 else
                 {
@@ -533,25 +546,23 @@ extern "C" HRESULT ApplyCache(
                 // action is still being skipped then skip this action.
                 if (BURN_PLAN_INVALID_ACTION_INDEX != pCacheAction->extractContainer.iSkipUntilAcquiredByAction && pPlan->rgCacheActions[pCacheAction->extractContainer.iSkipUntilAcquiredByAction].fSkipUntilRetried)
                 {
-                    // TODO: Note there is a potential bug here where retry can cause this cost to be added multiple times.
-                    qwSuccessfulCachedProgress += pCacheAction->extractContainer.qwTotalExtractSize;
                     break;
                 }
 
-                hr = ExtractContainer(hEngineFile, pUX, pCacheAction->extractContainer.pContainer, pCacheAction->extractContainer.sczContainerUnverifiedPath, pCacheAction->extractContainer.rgPayloads, pCacheAction->extractContainer.cPayloads);
-                if (SUCCEEDED(hr))
-                {
-                    qwSuccessfulCachedProgress += pCacheAction->extractContainer.qwTotalExtractSize;
-                }
-                else
+                hr = ExtractContainer(hSourceEngineFile, pCacheAction->extractContainer.pContainer, pCacheAction->extractContainer.sczContainerUnverifiedPath, pCacheAction->extractContainer.rgPayloads, pCacheAction->extractContainer.cPayloads);
+                if (FAILED(hr))
                 {
                     LogErrorId(hr, MSG_FAILED_EXTRACT_CONTAINER, pCacheAction->extractContainer.pContainer->sczId, pCacheAction->extractContainer.sczContainerUnverifiedPath, NULL);
                 }
                 break;
 
             case BURN_CACHE_ACTION_TYPE_LAYOUT_CONTAINER:
-                hr = LayoutOrCacheContainerOrPayload(pUX, hPipe, pCacheAction->layoutContainer.pContainer, pCacheAction->layoutContainer.pPackage, NULL, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal, pCacheAction->layoutContainer.sczLayoutDirectory, pCacheAction->layoutContainer.sczUnverifiedPath, pCacheAction->layoutContainer.fMove, pCacheAction->layoutContainer.cTryAgainAttempts, &fRetryContainerOrPayload);
-                if (FAILED(hr))
+                hr = LayoutOrCacheContainerOrPayload(pUX, hPipe, pCacheAction->layoutContainer.pContainer, pCacheAction->layoutContainer.pPackage, NULL, pPlan->rgContainerProgress[pCacheAction->layoutContainer.iProgress].fCachedDuringApply, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal, pCacheAction->layoutContainer.sczLayoutDirectory, pCacheAction->layoutContainer.sczUnverifiedPath, pCacheAction->layoutContainer.fMove, pCacheAction->layoutContainer.cTryAgainAttempts, &fRetryContainerOrPayload);
+                if (SUCCEEDED(hr))
+                {
+                    UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
+                }
+                else
                 {
                     LogErrorId(hr, MSG_FAILED_LAYOUT_CONTAINER, pCacheAction->layoutContainer.pContainer->sczId, pCacheAction->layoutContainer.sczLayoutDirectory, pCacheAction->layoutContainer.sczUnverifiedPath);
 
@@ -569,7 +580,7 @@ extern "C" HRESULT ApplyCache(
                 hr = AcquireContainerOrPayload(pUX, pVariables, NULL, pCacheAction->resolvePayload.pPackage, pCacheAction->resolvePayload.pPayload, pCacheAction->resolvePayload.sczUnverifiedPath, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal);
                 if (SUCCEEDED(hr))
                 {
-                    qwSuccessfulCachedProgress += pCacheAction->resolvePayload.pPayload->qwFileSize;
+                    UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
                 }
                 else
                 {
@@ -578,8 +589,12 @@ extern "C" HRESULT ApplyCache(
                 break;
 
             case BURN_CACHE_ACTION_TYPE_CACHE_PAYLOAD:
-                hr = LayoutOrCacheContainerOrPayload(pUX, pCacheAction->cachePayload.pPackage->fPerMachine ? hPipe : INVALID_HANDLE_VALUE, NULL, pCacheAction->cachePayload.pPackage, pCacheAction->cachePayload.pPayload, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal, NULL, pCacheAction->cachePayload.sczUnverifiedPath, pCacheAction->cachePayload.fMove, pCacheAction->cachePayload.cTryAgainAttempts, &fRetryContainerOrPayload);
-                if (FAILED(hr))
+                hr = LayoutOrCacheContainerOrPayload(pUX, pCacheAction->cachePayload.pPackage->fPerMachine ? hPipe : INVALID_HANDLE_VALUE, NULL, pCacheAction->cachePayload.pPackage, pCacheAction->cachePayload.pPayload, pPlan->rgPayloadProgress[pCacheAction->cachePayload.iProgress].fCachedDuringApply, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal, NULL, pCacheAction->cachePayload.sczUnverifiedPath, pCacheAction->cachePayload.fMove, pCacheAction->cachePayload.cTryAgainAttempts, &fRetryContainerOrPayload);
+                if (SUCCEEDED(hr))
+                {
+                    UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
+                }
+                else
                 {
                     LogErrorId(hr, MSG_FAILED_CACHE_PAYLOAD, pCacheAction->cachePayload.pPayload->sczKey, pCacheAction->cachePayload.sczUnverifiedPath, NULL);
 
@@ -594,8 +609,12 @@ extern "C" HRESULT ApplyCache(
                 break;
 
             case BURN_CACHE_ACTION_TYPE_LAYOUT_PAYLOAD:
-                hr = LayoutOrCacheContainerOrPayload(pUX, hPipe, NULL, pCacheAction->layoutPayload.pPackage, pCacheAction->layoutPayload.pPayload, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal, pCacheAction->layoutPayload.sczLayoutDirectory, pCacheAction->layoutPayload.sczUnverifiedPath, pCacheAction->layoutPayload.fMove, pCacheAction->layoutPayload.cTryAgainAttempts, &fRetryContainerOrPayload);
-                if (FAILED(hr))
+                hr = LayoutOrCacheContainerOrPayload(pUX, hPipe, NULL, pCacheAction->layoutPayload.pPackage, pCacheAction->layoutPayload.pPayload, pPlan->rgPayloadProgress[pCacheAction->layoutPayload.iProgress].fCachedDuringApply, qwSuccessfulCachedProgress, pPlan->qwCacheSizeTotal, pCacheAction->layoutPayload.sczLayoutDirectory, pCacheAction->layoutPayload.sczUnverifiedPath, pCacheAction->layoutPayload.fMove, pCacheAction->layoutPayload.cTryAgainAttempts, &fRetryContainerOrPayload);
+                if (SUCCEEDED(hr))
+                {
+                    UpdateCacheSuccessProgress(pPlan, pCacheAction, &qwSuccessfulCachedProgress);
+                }
+                else
                 {
                     LogErrorId(hr, MSG_FAILED_LAYOUT_PAYLOAD, pCacheAction->layoutPayload.pPayload->sczKey, pCacheAction->layoutPayload.sczLayoutDirectory, pCacheAction->layoutPayload.sczUnverifiedPath);
 
@@ -621,7 +640,7 @@ extern "C" HRESULT ApplyCache(
                 {
                     ++(*pcOverallProgressTicks);
 
-                    pUX->pUserExperience->OnCachePackageComplete(pStartedPackage->sczId, hr, IDNOACTION);
+                    UserExperienceOnCachePackageComplete(pUX, pStartedPackage->sczId, hr, &cachePackageCompleteAction);
 
                     pStartedPackage->hrCacheResult = hr;
 
@@ -650,12 +669,6 @@ extern "C" HRESULT ApplyCache(
 
             LogErrorId(hr, MSG_APPLY_RETRYING_PAYLOAD, wzRetryId, NULL, NULL);
 
-            // Reduce the successful progress since we're retrying the payload.
-            BURN_CACHE_ACTION* pRetryCacheAction = pPlan->rgCacheActions + iRetryContainerOrPayloadAction;
-            DWORD64 qwRetryCacheActionSuccessProgress = GetCacheActionSuccessProgress(pRetryCacheAction);
-            Assert(qwSuccessfulCachedProgress >= qwRetryCacheActionSuccessProgress);
-            qwSuccessfulCachedProgress -= qwRetryCacheActionSuccessProgress;
-
             iRetryAction = iRetryContainerOrPayloadAction;
             fRetry = TRUE;
         }
@@ -664,26 +677,23 @@ extern "C" HRESULT ApplyCache(
             Assert(BURN_PLAN_INVALID_ACTION_INDEX != iPackageStartAction);
             Assert(BURN_PLAN_INVALID_ACTION_INDEX != iPackageCompleteAction);
 
-            nResult = pUX->pUserExperience->OnCachePackageComplete(pStartedPackage->sczId, hr, SUCCEEDED(hr) || pStartedPackage->fVital ? IDNOACTION : IDIGNORE);
-            nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_ABORTRETRYIGNORE, nResult);
-            if (FAILED(hr))
+            cachePackageCompleteAction = SUCCEEDED(hr) || pStartedPackage->fVital ? BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_NONE : BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_IGNORE;
+            UserExperienceOnCachePackageComplete(pUX, pStartedPackage->sczId, hr, &cachePackageCompleteAction);
+            if (BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_RETRY == cachePackageCompleteAction)
             {
-                if (IDRETRY == nResult)
-                {
-                    LogErrorId(hr, MSG_APPLY_RETRYING_PACKAGE, pStartedPackage->sczId, NULL, NULL);
+                LogErrorId(hr, MSG_APPLY_RETRYING_PACKAGE, pStartedPackage->sczId, NULL, NULL);
 
-                    iRetryAction = iPackageStartAction;
-                    fRetry = TRUE;
-                }
-                else if (IDIGNORE == nResult && !pStartedPackage->fVital) // ignore non-vital download failures.
-                {
-                    LogId(REPORT_STANDARD, MSG_APPLY_CONTINUING_NONVITAL_PACKAGE, pStartedPackage->sczId, hr);
+                iRetryAction = iPackageStartAction;
+                fRetry = TRUE;
+            }
+            else if (BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION_IGNORE == cachePackageCompleteAction && !pStartedPackage->fVital) // ignore non-vital download failures.
+            {
+                LogId(REPORT_STANDARD, MSG_APPLY_CONTINUING_NONVITAL_PACKAGE, pStartedPackage->sczId, hr);
 
-                    ++(*pcOverallProgressTicks); // add progress even though we didn't fully cache the package.
+                ++(*pcOverallProgressTicks); // add progress even though we didn't fully cache the package.
 
-                    iRetryAction = iPackageCompleteAction + 1;
-                    fRetry = TRUE;
-                }
+                iRetryAction = iPackageCompleteAction + 1;
+                fRetry = TRUE;
             }
 
             pStartedPackage->hrCacheResult = hr;
@@ -718,7 +728,7 @@ LExit:
 
     CacheCleanup(FALSE, pPlan->wzBundleId);
 
-    pUX->pUserExperience->OnCacheComplete(hr);
+    UserExperienceOnCacheComplete(pUX, hr);
     return hr;
 }
 
@@ -735,17 +745,16 @@ extern "C" HRESULT ApplyExecute(
     HRESULT hr = S_OK;
     DWORD dwCheckpoint = 0;
     BURN_EXECUTE_CONTEXT context = { };
-    int nResult = 0;
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundary = NULL;
     BOOL fSeekNextRollbackBoundary = FALSE;
+    BOOL fInTransaction = FALSE;
 
     context.pUX = &pEngineState->userExperience;
     context.cExecutePackagesTotal = pEngineState->plan.cExecutePackagesTotal;
     context.pcOverallProgressTicks = pcOverallProgressTicks;
 
     // Send execute begin to BA.
-    nResult = pEngineState->userExperience.pUserExperience->OnExecuteBegin(pEngineState->plan.cExecutePackagesTotal);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, FALSE, MB_OKCANCEL, nResult);
+    hr = UserExperienceOnExecuteBegin(&pEngineState->userExperience, pEngineState->plan.cExecutePackagesTotal);
     ExitOnRootFailure(hr, "BA aborted execute begin.");
 
     // Do execute actions.
@@ -755,6 +764,36 @@ extern "C" HRESULT ApplyExecute(
         if (pExecuteAction->fDeleted)
         {
             continue;
+        }
+
+        // Transaction end/start
+        if (BURN_EXECUTE_ACTION_TYPE_ROLLBACK_BOUNDARY == pExecuteAction->type)
+        {
+            // End previous transaction
+            if (fInTransaction)
+            {
+                LogString(REPORT_STANDARD, "Committing MSI transaction\n");
+                hr = DoMsiCommitTransaction(&context, pEngineState);
+                ExitOnFailure(hr, "Failed committing an MSI transaction");
+                fInTransaction = FALSE;
+            }
+
+            // Start New transaction
+            if (!fInTransaction && pExecuteAction->rollbackBoundary.pRollbackBoundary && pExecuteAction->rollbackBoundary.pRollbackBoundary->fTransaction)
+            {
+                // Transactions don't go together with DisableRollback.
+                if (pEngineState->fDisableRollback)
+                {
+                    LogString(REPORT_STANDARD, "Ignoring Transaction flag due to DisableRollback flag\n");
+                }
+                else
+                {
+                    LogString(REPORT_STANDARD, "Starting a new MSI transaction\n");
+                    hr = DoMsiBeginTransaction(&context, pEngineState);
+                    ExitOnFailure(hr, "Failed beginning an MSI transaction");
+                    fInTransaction = TRUE;
+                }
+            }
         }
 
         // If we are seeking the next rollback boundary, skip if this action wasn't it.
@@ -775,7 +814,15 @@ extern "C" HRESULT ApplyExecute(
 
         if (*pfSuspend || BOOTSTRAPPER_APPLY_RESTART_INITIATED == *pRestart)
         {
-            ExitFunction();
+            if (fInTransaction)
+            {
+                hr = E_INVALIDSTATE;
+                LogString(REPORT_ERROR, "Ilegal state: Reboot requested within an MSI transaction. Transaction will rollback.");
+            }
+            else
+            {
+                ExitFunction();
+            }
         }
 
         if (FAILED(hr))
@@ -788,8 +835,9 @@ extern "C" HRESULT ApplyExecute(
             }
             else // the action failed, roll back to previous rollback boundary.
             {
-                HRESULT hrRollback = DoRollbackActions(pEngineState, &context, dwCheckpoint, pfKeepRegistration, pRestart);
+                HRESULT hrRollback = DoRollbackActions(pEngineState, &context, dwCheckpoint, fInTransaction, pfKeepRegistration, pRestart);
                 UNREFERENCED_PARAMETER(hrRollback);
+                fInTransaction = FALSE;
 
                 // If the rollback boundary is vital, end execution here.
                 if (pRollbackBoundary && pRollbackBoundary->fVital)
@@ -804,9 +852,17 @@ extern "C" HRESULT ApplyExecute(
         }
     }
 
+    if (fInTransaction)
+    {
+        LogString(REPORT_STANDARD, "Committing an MSI transaction\n");
+        hr = DoMsiCommitTransaction(&context, pEngineState);
+        ExitOnFailure(hr, "Failed committing an MSI transaction");
+        fInTransaction = FALSE;
+    }
+
 LExit:
     // Send execute complete to BA.
-    pEngineState->userExperience.pUserExperience->OnExecuteComplete(hr);
+    UserExperienceOnExecuteComplete(&pEngineState->userExperience, hr);
 
     return hr;
 }
@@ -860,8 +916,7 @@ LExit:
 }
 
 static HRESULT ExtractContainer(
-    __in HANDLE hEngineFile,
-    __in BURN_USER_EXPERIENCE* /*pUX*/,
+    __in HANDLE hSourceEngineFile,
     __in BURN_CONTAINER* pContainer,
     __in_z LPCWSTR wzContainerPath,
     __in_ecount(cExtractPayloads) BURN_EXTRACT_PAYLOAD* rgExtractPayloads,
@@ -871,26 +926,12 @@ static HRESULT ExtractContainer(
     HRESULT hr = S_OK;
     BURN_CONTAINER_CONTEXT context = { };
     HANDLE hContainerHandle = INVALID_HANDLE_VALUE;
-    LPWSTR sczCurrentProcessPath = NULL;
-    int nContainerPathIsCurrentPath = 0;
     LPWSTR sczExtractPayloadId = NULL;
 
-    // If the container is attached to the executable and the container path points
-    // at our currently running executable then use the engine file handle since
-    // that is faster/better than opening a new file handle.
-    if (pContainer->fPrimary)
+    // If the container is actually attached, then it was planned to be acquired through hSourceEngineFile.
+    if (pContainer->fActuallyAttached)
     {
-        // This is all "best effort" since in the worst case scenario we open a new
-        // handle to the container.
-        hr = PathForCurrentProcess(&sczCurrentProcessPath, NULL);
-        if (SUCCEEDED(hr))
-        {
-            hr = PathCompare(sczCurrentProcessPath, wzContainerPath, &nContainerPathIsCurrentPath);
-            if (SUCCEEDED(hr) && CSTR_EQUAL == nContainerPathIsCurrentPath)
-            {
-                hContainerHandle = hEngineFile;
-            }
-        }
+        hContainerHandle = hSourceEngineFile;
     }
 
     hr = ContainerOpen(&context, pContainer, hContainerHandle, wzContainerPath);
@@ -929,36 +970,72 @@ static HRESULT ExtractContainer(
 
 LExit:
     ReleaseStr(sczExtractPayloadId);
-    ReleaseStr(sczCurrentProcessPath);
     ContainerClose(&context);
 
     return hr;
 }
 
-static DWORD64 GetCacheActionSuccessProgress(
-    __in BURN_CACHE_ACTION* pCacheAction
+static void UpdateCacheSuccessProgress(
+    __in BURN_PLAN* pPlan,
+    __in BURN_CACHE_ACTION* pCacheAction,
+    __inout DWORD64* pqwSuccessfulCachedProgress
     )
 {
     switch (pCacheAction->type)
     {
     case BURN_CACHE_ACTION_TYPE_LAYOUT_BUNDLE:
-        return pCacheAction->bundleLayout.qwBundleSize;
-
-    case BURN_CACHE_ACTION_TYPE_EXTRACT_CONTAINER:
-        return pCacheAction->extractContainer.qwTotalExtractSize;
+        *pqwSuccessfulCachedProgress += pCacheAction->bundleLayout.qwBundleSize;
+        break;
 
     case BURN_CACHE_ACTION_TYPE_ACQUIRE_CONTAINER:
-        return pCacheAction->resolveContainer.pContainer->qwFileSize;
+        if (!pPlan->rgContainerProgress[pCacheAction->resolveContainer.iProgress].fCachedDuringApply)
+        {
+            pPlan->rgContainerProgress[pCacheAction->resolveContainer.iProgress].fCachedDuringApply = TRUE;
+            *pqwSuccessfulCachedProgress += pCacheAction->resolveContainer.pContainer->qwFileSize;
+        }
+        break;
+
+    case BURN_CACHE_ACTION_TYPE_LAYOUT_CONTAINER:
+        if (!pPlan->rgContainerProgress[pCacheAction->layoutContainer.iProgress].fCachedDuringApply)
+        {
+            pPlan->rgContainerProgress[pCacheAction->layoutContainer.iProgress].fCachedDuringApply = TRUE;
+            *pqwSuccessfulCachedProgress += pCacheAction->layoutContainer.pContainer->qwFileSize;
+        }
+        break;
 
     case BURN_CACHE_ACTION_TYPE_ACQUIRE_PAYLOAD:
-        return pCacheAction->resolvePayload.pPayload->qwFileSize;
-    }
+        if (!pPlan->rgPayloadProgress[pCacheAction->resolvePayload.iProgress].fCachedDuringApply)
+        {
+            pPlan->rgPayloadProgress[pCacheAction->resolvePayload.iProgress].fCachedDuringApply = TRUE;
+            *pqwSuccessfulCachedProgress += pCacheAction->resolvePayload.pPayload->qwFileSize;
+        }
+        break;
 
-    return 0;
+    case BURN_CACHE_ACTION_TYPE_CACHE_PAYLOAD:
+        if (!pPlan->rgPayloadProgress[pCacheAction->cachePayload.iProgress].fCachedDuringApply)
+        {
+            pPlan->rgPayloadProgress[pCacheAction->cachePayload.iProgress].fCachedDuringApply = TRUE;
+            *pqwSuccessfulCachedProgress += pCacheAction->cachePayload.pPayload->qwFileSize;
+        }
+        break;
+
+    case BURN_CACHE_ACTION_TYPE_LAYOUT_PAYLOAD:
+        if (!pPlan->rgPayloadProgress[pCacheAction->layoutPayload.iProgress].fCachedDuringApply)
+        {
+            pPlan->rgPayloadProgress[pCacheAction->layoutPayload.iProgress].fCachedDuringApply = TRUE;
+            *pqwSuccessfulCachedProgress += pCacheAction->layoutPayload.pPayload->qwFileSize;
+        }
+        break;
+
+    default:
+        AssertSz(FALSE, "Unexpected cache action type.");
+        break;
+    }
 }
 
 static HRESULT LayoutBundle(
     __in BURN_USER_EXPERIENCE* pUX,
+    __in BURN_VARIABLES* pVariables,
     __in HANDLE hPipe,
     __in_z LPCWSTR wzExecutableName,
     __in_z LPCWSTR wzLayoutDirectory,
@@ -973,9 +1050,19 @@ static HRESULT LayoutBundle(
     int nEquivalentPaths = 0;
     BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT progress = { };
     BOOL fRetry = FALSE;
+    BOOL fRetryAcquire = FALSE;
 
-    hr = PathForCurrentProcess(&sczBundlePath, NULL);
-    ExitOnFailure(hr, "Failed to get path to bundle to layout.");
+    hr = VariableGetString(pVariables, BURN_BUNDLE_SOURCE_PROCESS_PATH, &sczBundlePath);
+    if (FAILED(hr))
+    {
+        if  (E_NOTFOUND != hr)
+        {
+            ExitOnFailure(hr, "Failed to get path to bundle source process path to layout.");
+        }
+
+        hr = PathForCurrentProcess(&sczBundlePath, NULL);
+        ExitOnFailure(hr, "Failed to get path to bundle to layout.");
+    }
 
     hr = PathConcat(wzLayoutDirectory, wzExecutableName, &sczDestinationPath);
     ExitOnFailure(hr, "Failed to concat layout path for bundle.");
@@ -998,36 +1085,31 @@ static HRESULT LayoutBundle(
         hr = S_OK;
         fRetry = FALSE;
 
-        do
+        for (;;)
         {
+            fRetryAcquire = FALSE;
             progress.fCancel = FALSE;
 
-            int nResult = pUX->pUserExperience->OnCacheAcquireBegin(NULL, NULL, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczBundlePath);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+            hr = UserExperienceOnCacheAcquireBegin(pUX, NULL, NULL, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczBundlePath);
             ExitOnRootFailure(hr, "BA aborted cache acquire begin.");
 
             hr = CopyPayload(&progress, sczBundlePath, wzUnverifiedPath);
             // Error handling happens after sending complete message to BA.
 
-            nResult = pUX->pUserExperience->OnCacheAcquireComplete(NULL, NULL, hr, IDNOACTION);
-            nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYCANCEL, nResult);
-            if (FAILED(hr) && IDRETRY == nResult)
+            UserExperienceOnCacheAcquireComplete(pUX, NULL, NULL, hr, &fRetryAcquire);
+            if (fRetryAcquire)
             {
-                hr = S_FALSE;
+                continue;
             }
-            ExitOnFailure(hr, "Failed to copy bundle from: '%ls' to: '%ls'", sczBundlePath, wzUnverifiedPath);
-        } while (S_FALSE == hr);
 
-        if (FAILED(hr))
-        {
+            ExitOnFailure(hr, "Failed to copy bundle from: '%ls' to: '%ls'", sczBundlePath, wzUnverifiedPath);
             break;
         }
 
         do
         {
-            int nResult = pUX->pUserExperience->OnCacheVerifyBegin(NULL, NULL);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted cache verify begin.");
+            hr = UserExperienceOnCacheVerifyBegin(pUX, NULL, NULL);
+            ExitOnRootFailure(hr, "BA aborted cache verify begin.");
 
             if (INVALID_HANDLE_VALUE != hPipe)
             {
@@ -1038,18 +1120,15 @@ static HRESULT LayoutBundle(
                 hr = CacheLayoutBundle(wzExecutableName, wzLayoutDirectory, wzUnverifiedPath);
             }
 
-            nResult = pUX->pUserExperience->OnCacheVerifyComplete(NULL, NULL, hr, IDNOACTION);
-            if (FAILED(hr))
+            BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action = BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_NONE;
+            UserExperienceOnCacheVerifyComplete(pUX, NULL, NULL, hr, &action);
+            if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYVERIFICATION == action)
             {
-                nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
-                if (IDRETRY == nResult)
-                {
-                    hr = S_FALSE; // retry verify.
-                }
-                else if (IDTRYAGAIN == nResult)
-                {
-                    fRetry = TRUE; // go back and retry acquire.
-                }
+                hr = S_FALSE; // retry verify.
+            }
+            else if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION == action)
+            {
+                fRetry = TRUE; // go back and retry acquire.
             }
         } while (S_FALSE == hr);
     } while (fRetry);
@@ -1105,9 +1184,8 @@ static HRESULT AcquireContainerOrPayload(
 
         hr = CacheFindLocalSource(wzSourcePath, pVariables, &fFoundLocal, &sczSourceFullPath);
         ExitOnFailure(hr, "Failed to search local source.");
-
-        // If the file exists locally, copy it.
-        if (fFoundLocal)
+        
+        if (fFoundLocal) // the file exists locally, so copy it.
         {
             // If the source path and destination path are different, do the copy (otherwise there's no point).
             hr = PathCompare(sczSourceFullPath, wzDestinationPath, &nEquivalentPaths);
@@ -1115,7 +1193,7 @@ static HRESULT AcquireContainerOrPayload(
 
             fCopy = (CSTR_EQUAL != nEquivalentPaths);
         }
-        else // can't find the file locally so prompt for source.
+        else // can't find the file locally, so prompt for source.
         {
             DWORD dwLogId = pContainer ? (wzPayloadId ? MSG_PROMPT_CONTAINER_PAYLOAD_SOURCE : MSG_PROMPT_CONTAINER_SOURCE) : pPackage ? MSG_PROMPT_PACKAGE_PAYLOAD_SOURCE : MSG_PROMPT_BUNDLE_PAYLOAD_SOURCE;
             LogId(REPORT_STANDARD, dwLogId, wzPackageOrContainerId ? wzPackageOrContainerId : L"", wzPayloadId ? wzPayloadId : L"", sczSourceFullPath);
@@ -1139,8 +1217,7 @@ static HRESULT AcquireContainerOrPayload(
 
         if (fCopy)
         {
-            int nResult = pUX->pUserExperience->OnCacheAcquireBegin(wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczSourceFullPath);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+            hr = UserExperienceOnCacheAcquireBegin(pUX, wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_COPY, sczSourceFullPath);
             ExitOnRootFailure(hr, "BA aborted cache acquire begin.");
 
             hr = CopyPayload(&progress, sczSourceFullPath, wzDestinationPath);
@@ -1154,8 +1231,7 @@ static HRESULT AcquireContainerOrPayload(
         }
         else if (fDownload)
         {
-            int nResult = pUX->pUserExperience->OnCacheAcquireBegin(wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_DOWNLOAD, wzDownloadUrl);
-            hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
+            hr = UserExperienceOnCacheAcquireBegin(pUX, wzPackageOrContainerId, wzPayloadId, BOOTSTRAPPER_CACHE_OPERATION_DOWNLOAD, wzDownloadUrl);
             ExitOnRootFailure(hr, "BA aborted cache download payload begin.");
 
             hr = DownloadPayload(&progress, wzDestinationPath);
@@ -1164,11 +1240,9 @@ static HRESULT AcquireContainerOrPayload(
 
         if (fCopy || fDownload)
         {
-            int nResult = pUX->pUserExperience->OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hr, IDNOACTION);
-            nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYCANCEL, nResult);
-            if (FAILED(hr) && IDRETRY == nResult)
+            UserExperienceOnCacheAcquireComplete(pUX, wzPackageOrContainerId, wzPayloadId, hr, &fRetry);
+            if (fRetry)
             {
-                fRetry = TRUE;
                 hr = S_OK;
             }
         }
@@ -1188,6 +1262,7 @@ static HRESULT LayoutOrCacheContainerOrPayload(
     __in_opt BURN_CONTAINER* pContainer,
     __in_opt BURN_PACKAGE* pPackage,
     __in_opt BURN_PAYLOAD* pPayload,
+    __in BOOL fAlreadyProvidedProgress,
     __in DWORD64 qwSuccessfulCachedProgress,
     __in DWORD64 qwTotalCacheSize,
     __in_z_opt LPCWSTR wzLayoutDirectory,
@@ -1206,22 +1281,27 @@ static HRESULT LayoutOrCacheContainerOrPayload(
 
     liContainerOrPayloadSize.QuadPart = pContainer ? pContainer->qwFileSize : pPayload->qwFileSize;
 
-    Assert(qwSuccessfulCachedProgress >= static_cast<DWORD64>(liContainerOrPayloadSize.QuadPart));
-
     progress.pContainer = pContainer;
     progress.pPackage = pPackage;
     progress.pPayload = pPayload;
     progress.pUX = pUX;
-    progress.qwCacheProgress = qwSuccessfulCachedProgress - liContainerOrPayloadSize.QuadPart; // remove the payload size, since it was marked successful thus included in the successful size already.
     progress.qwTotalCacheSize = qwTotalCacheSize;
+    if (fAlreadyProvidedProgress)
+    {
+        Assert(qwSuccessfulCachedProgress >= static_cast<DWORD64>(liContainerOrPayloadSize.QuadPart));
+        progress.qwCacheProgress = qwSuccessfulCachedProgress - liContainerOrPayloadSize.QuadPart; // remove the payload size, since it was marked successful thus included in the successful size already.
+    }
+    else
+    {
+        progress.qwCacheProgress = qwSuccessfulCachedProgress;
+    }
 
     *pfRetry = FALSE;
 
     do
     {
-        int nResult = pUX->pUserExperience->OnCacheVerifyBegin(wzPackageOrContainerId, wzPayloadId);
-        hr = UserExperienceInterpretExecuteResult(pUX, FALSE, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted cache verify begin.");
+        hr = UserExperienceOnCacheVerifyBegin(pUX, wzPackageOrContainerId, wzPayloadId);
+        ExitOnRootFailure(hr, "BA aborted cache verify begin.");
 
         if (INVALID_HANDLE_VALUE != hPipe) // pass the decision off to the elevated process.
         {
@@ -1262,18 +1342,15 @@ static HRESULT LayoutOrCacheContainerOrPayload(
             ExitOnRootFailure(hr, "BA aborted verify of %hs: %ls", pContainer ? "container" : "payload", pContainer ? wzPackageOrContainerId : wzPayloadId);
         }
 
-        nResult = pUX->pUserExperience->OnCacheVerifyComplete(wzPackageOrContainerId, wzPayloadId, hr, FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? IDTRYAGAIN : IDNOACTION);
-        nResult = UserExperienceCheckExecuteResult(pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
-        if (FAILED(hr))
+        BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action = FAILED(hr) && cTryAgainAttempts < BURN_CACHE_MAX_RECOMMENDED_VERIFY_TRYAGAIN_ATTEMPTS ? BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION : BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_NONE;
+        UserExperienceOnCacheVerifyComplete(pUX, wzPackageOrContainerId, wzPayloadId, hr, &action);
+        if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYVERIFICATION == action)
         {
-            if (IDRETRY == nResult)
-            {
-                hr = S_FALSE; // retry verify.
-            }
-            else if (IDTRYAGAIN == nResult)
-            {
-                *pfRetry = TRUE; // go back and retry acquire.
-            }
+            hr = S_FALSE; // retry verify.
+        }
+        else if (BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION_RETRYACQUISITION == action)
+        {
+            *pfRetry = TRUE; // go back and retry acquire.
         }
     } while (S_FALSE == hr);
 
@@ -1287,39 +1364,33 @@ static HRESULT PromptForSource(
     __in_z_opt LPCWSTR wzPayloadId,
     __in_z LPCWSTR wzLocalSource,
     __in_z_opt LPCWSTR wzDownloadSource,
-    __out BOOL* pfRetry,
-    __out BOOL* pfDownload
+    __inout BOOL* pfRetry,
+    __inout BOOL* pfDownload
     )
 {
     HRESULT hr = S_OK;
+    BOOTSTRAPPER_RESOLVESOURCE_ACTION action = BOOTSTRAPPER_RESOLVESOURCE_ACTION_NONE;
 
     UserExperienceDeactivateEngine(pUX);
 
-    int nResult = pUX->pUserExperience->OnResolveSource(wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource);
-    switch (nResult)
+    hr = UserExperienceOnResolveSource(pUX, wzPackageOrContainerId, wzPayloadId, wzLocalSource, wzDownloadSource, &action);
+    if (FAILED(hr))
     {
-    case IDRETRY:
-        *pfRetry = TRUE;
-        break;
+        ExitFunction();
+    }
 
-    case IDDOWNLOAD:
-        *pfDownload = TRUE;
-        break;
-
-    case IDNOACTION: __fallthrough;
-    case IDOK: __fallthrough;
-    case IDYES:
+    switch (action)
+    {
+    case BOOTSTRAPPER_RESOLVESOURCE_ACTION_NONE:
         hr = E_FILENOTFOUND;
         break;
 
-    case IDABORT: __fallthrough;
-    case IDCANCEL: __fallthrough;
-    case IDNO:
-        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    case BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY:
+        *pfRetry = TRUE;
         break;
 
-    case IDERROR:
-        hr = HRESULT_FROM_WIN32(ERROR_INSTALL_FAILURE);
+    case BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD:
+        *pfDownload = TRUE;
         break;
 
     default:
@@ -1327,6 +1398,7 @@ static HRESULT PromptForSource(
         break;
     }
 
+LExit:
     UserExperienceActivateEngine(pUX, NULL);
     return hr;
 }
@@ -1450,6 +1522,7 @@ static HRESULT WINAPI AuthenticationRequired(
     DWORD er = ERROR_SUCCESS;
     BOOTSTRAPPER_ERROR_TYPE errorType = (401 == lHttpCode) ? BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_SERVER : BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_PROXY;
     LPWSTR sczError = NULL;
+    int nResult = IDNOACTION;
 
     *pfRetrySend = FALSE;
     *pfRetry = FALSE;
@@ -1459,7 +1532,7 @@ static HRESULT WINAPI AuthenticationRequired(
 
     APPLY_AUTHENTICATION_REQUIRED_DATA* authenticationData = reinterpret_cast<APPLY_AUTHENTICATION_REQUIRED_DATA*>(pData);
 
-    int nResult = authenticationData->pUX->pUserExperience->OnError(errorType, authenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, IDNOACTION);
+    UserExperienceOnError(authenticationData->pUX, errorType, authenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, &nResult); // ignore return value;
     nResult = UserExperienceCheckExecuteResult(authenticationData->pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
     if (IDTRYAGAIN == nResult && authenticationData->pUX->hwndApply)
     {
@@ -1506,6 +1579,7 @@ static DWORD CALLBACK CacheProgressRoutine(
     __in_opt LPVOID lpData
     )
 {
+    HRESULT hr = S_OK;
     DWORD dwResult = PROGRESS_CONTINUE;
     BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT* pProgress = static_cast<BURN_CACHE_ACQUIRE_PROGRESS_CONTEXT*>(lpData);
     LPCWSTR wzPackageOrContainerId = pProgress->pContainer ? pProgress->pContainer->sczId : pProgress->pPackage ? pProgress->pPackage->sczId : NULL;
@@ -1513,36 +1587,25 @@ static DWORD CALLBACK CacheProgressRoutine(
     DWORD64 qwCacheProgress = pProgress->qwCacheProgress + TotalBytesTransferred.QuadPart;
     if (qwCacheProgress > pProgress->qwTotalCacheSize)
     {
+        AssertSz(FALSE, "Apply has cached more than Plan envisioned.");
         qwCacheProgress = pProgress->qwTotalCacheSize;
     }
     DWORD dwOverallPercentage = pProgress->qwTotalCacheSize ? static_cast<DWORD>(qwCacheProgress * 100 / pProgress->qwTotalCacheSize) : 0;
 
-    int nResult = pProgress->pUX->pUserExperience->OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, TotalBytesTransferred.QuadPart, TotalFileSize.QuadPart, dwOverallPercentage);
-    nResult = UserExperienceCheckExecuteResult(pProgress->pUX, FALSE, MB_OKCANCEL, nResult);
-    switch (nResult)
+    hr = UserExperienceOnCacheAcquireProgress(pProgress->pUX, wzPackageOrContainerId, wzPayloadId, TotalBytesTransferred.QuadPart, TotalFileSize.QuadPart, dwOverallPercentage);
+    if (HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT) == hr)
     {
-    case IDOK: __fallthrough;
-    case IDNOACTION: __fallthrough;
-    case IDYES: __fallthrough;
-    case IDRETRY: __fallthrough;
-    case IDIGNORE: __fallthrough;
-    case IDTRYAGAIN: __fallthrough;
-    case IDCONTINUE:
-        dwResult = PROGRESS_CONTINUE;
-        break;
-
-    case IDCANCEL: __fallthrough;
-    case IDABORT: __fallthrough;
-    case IDNO:
         dwResult = PROGRESS_CANCEL;
         pProgress->fCancel = TRUE;
-        break;
-
-    case IDERROR: __fallthrough;
-    default:
+    }
+    else if (FAILED(hr))
+    {
         dwResult = PROGRESS_CANCEL;
         pProgress->fError = TRUE;
-        break;
+    }
+    else
+    {
+        dwResult = PROGRESS_CONTINUE;
     }
 
     return dwResult;
@@ -1594,6 +1657,127 @@ static void DoRollbackCache(
         }
     }
 }
+
+/* MSI Transactions:
+ * All MSI/MSP/MSU packages wrapped in MsiBeginTranasaction-MsiEndTransaction pair are installed or uninstalled together.
+*/
+static HRESULT ExecuteMsiBeginTransaction(
+    __in BURN_EXECUTE_CONTEXT* pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+)
+{
+    HRESULT hr = S_OK;
+    UINT uResult = ERROR_SUCCESS;
+
+    // Per user/machine context
+    if (pEngineState->plan.fPerMachine)
+    {
+        hr = ElevationMsiBeginTransaction(pEngineState->companionConnection.hPipe, pEngineState->userExperience.hwndApply, pContext);
+        ExitOnFailure(hr, "Failed to begin an MSI transaction.");
+    }
+    else
+    {
+        MSIHANDLE hMsiTrns = NULL;
+        HANDLE hMsiTrnsEvent = NULL;
+        uResult = MsiBeginTransaction(L"WiX", 0, &hMsiTrns, &hMsiTrnsEvent);
+        ExitOnWin32Error(uResult, hr, "Failed beginning an MSI transaction");
+    }
+
+LExit:
+    return hr;
+}
+
+static HRESULT ExecuteMsiCommitTransaction(
+    __in BURN_EXECUTE_CONTEXT* pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+)
+{
+    HRESULT hr = S_OK;
+    UINT uResult = ERROR_SUCCESS;
+
+    // Per user/machine context
+    if (pEngineState->plan.fPerMachine)
+    {
+        hr = ElevationMsiCommitTransaction(pEngineState->companionConnection.hPipe, pEngineState->userExperience.hwndApply, pContext);
+        ExitOnFailure(hr, "Failed to commit an MSI transaction.");
+    }
+    else
+    {
+        uResult = MsiEndTransaction(MSITRANSACTIONSTATE_COMMIT);
+        ExitOnWin32Error(uResult, hr, "Failed beginning an MSI transaction");
+    }
+
+LExit:
+    return hr;
+}
+
+static HRESULT ExecuteMsiRollbackTransaction(
+    __in BURN_EXECUTE_CONTEXT* pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+)
+{
+    HRESULT hr = S_OK;
+    UINT uResult = ERROR_SUCCESS;
+
+    // Per user/machine context
+    if (pEngineState->plan.fPerMachine)
+    {
+        hr = ElevationMsiRollbackTransaction(pEngineState->companionConnection.hPipe, pEngineState->userExperience.hwndApply, pContext);
+        ExitOnFailure(hr, "Failed to rollback an MSI transaction.");
+    }
+    else
+    {
+        uResult = MsiEndTransaction(MSITRANSACTIONSTATE_ROLLBACK);
+        ExitOnWin32Error(uResult, hr, "Failed beginning an MSI transaction");
+    }
+
+LExit:
+    return hr;
+}
+
+// Currently, supporting only elevated transactions.
+static HRESULT DoMsiBeginTransaction(
+    __in BURN_EXECUTE_CONTEXT *pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+)
+{
+    HRESULT hr = S_OK;
+
+    hr = ExecuteMsiBeginTransaction(pContext, pEngineState);
+    ExitOnFailure(hr, "Failed to execute EXE package.");
+
+LExit:
+    return hr;
+}
+
+static HRESULT DoMsiCommitTransaction(
+    __in BURN_EXECUTE_CONTEXT *pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+)
+{
+    HRESULT hr = S_OK;
+
+    hr = ExecuteMsiCommitTransaction(pContext, pEngineState);
+    ExitOnFailure(hr, "Failed to execute EXE package.");
+
+LExit:
+    return hr;
+}
+
+static HRESULT DoMsiRollbackTransaction(
+    __in BURN_EXECUTE_CONTEXT *pContext
+    , __in BURN_ENGINE_STATE* pEngineState
+)
+{
+    HRESULT hr = S_OK;
+
+    hr = ExecuteMsiRollbackTransaction(pContext, pEngineState);
+    ExitOnFailure(hr, "Failed to execute EXE package.");
+
+LExit:
+    return hr;
+}
+
 
 static HRESULT DoExecuteAction(
     __in BURN_ENGINE_STATE* pEngineState,
@@ -1717,9 +1901,10 @@ static HRESULT DoRollbackActions(
     __in BURN_ENGINE_STATE* pEngineState,
     __in BURN_EXECUTE_CONTEXT* pContext,
     __in DWORD dwCheckpoint,
+    __in BOOL fInTransaction,
     __out BOOL* pfKeepRegistration,
     __out BOOTSTRAPPER_APPLY_RESTART* pRestart
-    )
+)
 {
     HRESULT hr = S_OK;
     DWORD iCheckpoint = 0;
@@ -1727,6 +1912,13 @@ static HRESULT DoRollbackActions(
     BOOL fSuspendIgnored = FALSE;
 
     pContext->fRollback = TRUE;
+
+    // Rollback MSI transaction
+    if (fInTransaction)
+    {
+        hr = DoMsiRollbackTransaction(pContext, pEngineState);
+        ExitOnFailure(hr, "Failed rolling back transaction");
+    }
 
     // scan to last checkpoint
     for (DWORD i = 0; i < pEngineState->plan.cRollbackActions; ++i)
@@ -1772,18 +1964,33 @@ static HRESULT DoRollbackActions(
                 break;
 
             case BURN_EXECUTE_ACTION_TYPE_MSI_PACKAGE:
+                if (fInTransaction)
+                {
+                    LogString(REPORT_STANDARD, "Skipping rolling back an MSI package- already done in transaction rollback\n");
+                    break;
+                }
                 hr = ExecuteMsiPackage(pEngineState, pRollbackAction, pContext, TRUE, &fRetryIgnored, &fSuspendIgnored, &restart);
                 TraceError(hr, "Failed to rollback MSI package.");
                 hr = S_OK;
                 break;
 
             case BURN_EXECUTE_ACTION_TYPE_MSP_TARGET:
+                if (fInTransaction)
+                {
+                    LogString(REPORT_STANDARD, "Skipping rolling back an MSP package- already done in transaction rollback\n");
+                    break;
+                }
                 hr = ExecuteMspPackage(pEngineState, pRollbackAction, pContext, TRUE, &fRetryIgnored, &fSuspendIgnored, &restart);
                 TraceError(hr, "Failed to rollback MSP package.");
                 hr = S_OK;
                 break;
 
             case BURN_EXECUTE_ACTION_TYPE_MSU_PACKAGE:
+                if (fInTransaction)
+                {
+                    LogString(REPORT_STANDARD, "Skipping rolling back an MSU package- already done in transaction rollback\n");
+                    break;
+                }
                 hr = ExecuteMsuPackage(pEngineState, pRollbackAction, pContext, TRUE, FALSE, &fRetryIgnored, &fSuspendIgnored, &restart);
                 TraceError(hr, "Failed to rollback MSU package.");
                 hr = S_OK;
@@ -1844,6 +2051,7 @@ static HRESULT ExecuteExePackage(
     HRESULT hrExecute = S_OK;
     GENERIC_EXECUTE_MESSAGE message = { };
     int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->exePackage.pPackage->hrCacheResult))
     {
@@ -1853,11 +2061,11 @@ static HRESULT ExecuteExePackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->exePackage.pPackage;
+    fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->exePackage.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute EXE package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->exePackage.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute EXE package begin.");
 
     message.type = GENERIC_EXECUTE_MESSAGE_PROGRESS;
     message.dwAllowedResults = MB_OKCANCEL;
@@ -1892,7 +2100,11 @@ static HRESULT ExecuteExePackage(
     ExitOnRootFailure(hr, "UX aborted EXE package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->exePackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->exePackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -1908,7 +2120,7 @@ static HRESULT ExecuteMsiPackage(
 {
     HRESULT hr = S_OK;
     HRESULT hrExecute = S_OK;
-    int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->msiPackage.pPackage->hrCacheResult))
     {
@@ -1918,11 +2130,11 @@ static HRESULT ExecuteMsiPackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->msiPackage.pPackage;
+    fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->msiPackage.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute MSI package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->msiPackage.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute MSI package begin.");
 
     // execute package
     if (pExecuteAction->msiPackage.pPackage->fPerMachine)
@@ -1943,7 +2155,11 @@ static HRESULT ExecuteMsiPackage(
     ExitOnRootFailure(hr, "UX aborted MSI package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msiPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msiPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -1959,7 +2175,7 @@ static HRESULT ExecuteMspPackage(
 {
     HRESULT hr = S_OK;
     HRESULT hrExecute = S_OK;
-    int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->mspTarget.pPackage->hrCacheResult))
     {
@@ -1969,19 +2185,18 @@ static HRESULT ExecuteMspPackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->mspTarget.pPackage;
+    fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->mspTarget.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute MSP package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->mspTarget.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute MSP package begin.");
 
     // Now send all the patches that target this product code.
     for (DWORD i = 0; i < pExecuteAction->mspTarget.cOrderedPatches; ++i)
     {
         BURN_PACKAGE* pMspPackage = pExecuteAction->mspTarget.rgOrderedPatches[i].pPackage;
 
-        nResult = pEngineState->userExperience.pUserExperience->OnExecutePatchTarget(pMspPackage->sczId, pExecuteAction->mspTarget.sczTargetProductCode);
-        hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
+        hr = UserExperienceOnExecutePatchTarget(&pEngineState->userExperience, pMspPackage->sczId, pExecuteAction->mspTarget.sczTargetProductCode);
         ExitOnRootFailure(hr, "BA aborted execute MSP target.");
     }
 
@@ -2004,7 +2219,11 @@ static HRESULT ExecuteMspPackage(
     ExitOnRootFailure(hr, "UX aborted MSP package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->mspTarget.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->mspTarget.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -2023,6 +2242,7 @@ static HRESULT ExecuteMsuPackage(
     HRESULT hrExecute = S_OK;
     GENERIC_EXECUTE_MESSAGE message = { };
     int nResult = 0;
+    BOOL fBeginCalled = FALSE;
 
     if (FAILED(pExecuteAction->msuPackage.pPackage->hrCacheResult))
     {
@@ -2032,11 +2252,11 @@ static HRESULT ExecuteMsuPackage(
 
     Assert(pContext->fRollback == fRollback);
     pContext->pExecutingPackage = pExecuteAction->msuPackage.pPackage;
+    fBeginCalled = TRUE;
 
-    // send package execute begin to UX
-    nResult = pEngineState->userExperience.pUserExperience->OnExecutePackageBegin(pExecuteAction->msuPackage.pPackage->sczId, !fRollback);
-    hr = UserExperienceInterpretExecuteResult(&pEngineState->userExperience, fRollback, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted execute MSU package begin.");
+    // Send package execute begin to BA.
+    hr = UserExperienceOnExecutePackageBegin(&pEngineState->userExperience, pExecuteAction->msuPackage.pPackage->sczId, !fRollback);
+    ExitOnRootFailure(hr, "BA aborted execute MSU package begin.");
 
     message.type = GENERIC_EXECUTE_MESSAGE_PROGRESS;
     message.dwAllowedResults = MB_OKCANCEL;
@@ -2071,7 +2291,11 @@ static HRESULT ExecuteMsuPackage(
     ExitOnRootFailure(hr, "UX aborted MSU package execute progress.");
 
 LExit:
-    hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msuPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    if (fBeginCalled)
+    {
+        hr = ExecutePackageComplete(&pEngineState->userExperience, &pEngineState->variables, pExecuteAction->msuPackage.pPackage, hr, hrExecute, fRollback, pRestart, pfRetry, pfSuspend);
+    }
+
     return hr;
 }
 
@@ -2172,16 +2396,16 @@ static int GenericExecuteMessageHandler(
     case GENERIC_EXECUTE_MESSAGE_PROGRESS:
         {
             DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? (pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) / (pContext->cExecutePackagesTotal) : 0;
-            nResult = pContext->pUX->pUserExperience->OnExecuteProgress(pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress);
+            UserExperienceOnExecuteProgress(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress, &nResult); // ignore return value.
         }
         break;
 
     case GENERIC_EXECUTE_MESSAGE_ERROR:
-        nResult = pContext->pUX->pUserExperience->OnError(BOOTSTRAPPER_ERROR_TYPE_EXE_PACKAGE, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, 0, NULL, IDNOACTION);
+        UserExperienceOnError(pContext->pUX, BOOTSTRAPPER_ERROR_TYPE_EXE_PACKAGE, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, 0, NULL, &nResult); // ignore return value.
         break;
 
     case GENERIC_EXECUTE_MESSAGE_FILES_IN_USE:
-        nResult = pContext->pUX->pUserExperience->OnExecuteFilesInUse(pContext->pExecutingPackage->sczId, pMessage->filesInUse.cFiles, pMessage->filesInUse.rgwzFiles);
+        UserExperienceOnExecuteFilesInUse(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->filesInUse.cFiles, pMessage->filesInUse.rgwzFiles, &nResult); // ignore return value.
         break;
     }
 
@@ -2202,20 +2426,22 @@ static int MsiExecuteMessageHandler(
     case WIU_MSI_EXECUTE_MESSAGE_PROGRESS:
         {
         DWORD dwOverallProgress = pContext->cExecutePackagesTotal ? (pContext->cExecutedPackages * 100 + pMessage->progress.dwPercentage) / (pContext->cExecutePackagesTotal) : 0;
-        nResult = pContext->pUX->pUserExperience->OnExecuteProgress(pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress);
+        UserExperienceOnExecuteProgress(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->progress.dwPercentage, dwOverallProgress, &nResult); // ignore return value.
         }
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_ERROR:
-        nResult = pContext->pUX->pUserExperience->OnError(BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, pMessage->cData, pMessage->rgwzData, pMessage->nResultRecommendation);
+        nResult = pMessage->nResultRecommendation;
+        UserExperienceOnError(pContext->pUX, BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER, pContext->pExecutingPackage->sczId, pMessage->error.dwErrorCode, pMessage->error.wzMessage, pMessage->dwAllowedResults, pMessage->cData, pMessage->rgwzData, &nResult); // ignore return value.
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_MSI_MESSAGE:
-        nResult = pContext->pUX->pUserExperience->OnExecuteMsiMessage(pContext->pExecutingPackage->sczId, pMessage->msiMessage.mt, pMessage->dwAllowedResults, pMessage->msiMessage.wzMessage, pMessage->cData, pMessage->rgwzData, pMessage->nResultRecommendation);
+        nResult = pMessage->nResultRecommendation;
+        UserExperienceOnExecuteMsiMessage(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->msiMessage.mt, pMessage->dwAllowedResults, pMessage->msiMessage.wzMessage, pMessage->cData, pMessage->rgwzData, &nResult); // ignore return value.
         break;
 
     case WIU_MSI_EXECUTE_MESSAGE_MSI_FILES_IN_USE:
-        nResult = pContext->pUX->pUserExperience->OnExecuteFilesInUse(pContext->pExecutingPackage->sczId, pMessage->msiFilesInUse.cFiles, pMessage->msiFilesInUse.rgwzFiles);
+        UserExperienceOnExecuteFilesInUse(pContext->pUX, pContext->pExecutingPackage->sczId, pMessage->msiFilesInUse.cFiles, pMessage->msiFilesInUse.rgwzFiles, &nResult); // ignore return value.
         break;
     }
 
@@ -2233,8 +2459,8 @@ static HRESULT ReportOverallProgressTicks(
     HRESULT hr = S_OK;
     DWORD dwProgress = cOverallProgressTicksTotal ? (cOverallProgressTicks * 100 / cOverallProgressTicksTotal) : 0;
 
-    int nResult = pUX->pUserExperience->OnProgress(dwProgress, dwProgress); // TODO: consider sending different progress numbers in the future.
-    hr = UserExperienceInterpretExecuteResult(pUX, fRollback, MB_OKCANCEL, nResult);
+    // TODO: consider sending different progress numbers in the future.
+    hr = UserExperienceOnProgress(pUX, fRollback, dwProgress, dwProgress);
 
     return hr;
 }
@@ -2252,15 +2478,16 @@ static HRESULT ExecutePackageComplete(
     )
 {
     HRESULT hr = FAILED(hrOverall) ? hrOverall : hrExecute; // if the overall function failed use that otherwise use the execution result.
+    BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION executePackageCompleteAction = FAILED(hrOverall) || SUCCEEDED(hrExecute) || pPackage->fVital ? BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_NONE : BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_IGNORE;
 
-    // send package execute complete to UX
-    int nResult = pUX->pUserExperience->OnExecutePackageComplete(pPackage->sczId, hr, *pRestart, FAILED(hrOverall) || SUCCEEDED(hrExecute) || pPackage->fVital ? IDNOACTION : IDIGNORE);
-    if (IDRESTART == nResult)
+    // Send package execute complete to BA.
+    UserExperienceOnExecutePackageComplete(pUX, pPackage->sczId, hr, *pRestart, &executePackageCompleteAction);
+    if (BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART == executePackageCompleteAction)
     {
         *pRestart = BOOTSTRAPPER_APPLY_RESTART_INITIATED;
     }
-    *pfRetry = (FAILED(hrExecute) && IDRETRY == nResult); // allow retry only on failures.
-    *pfSuspend = (IDSUSPEND == nResult);
+    *pfRetry = (FAILED(hrExecute) && BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RETRY == executePackageCompleteAction); // allow retry only on failures.
+    *pfSuspend = (BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_SUSPEND == executePackageCompleteAction);
 
     // Remember this package as the package that initiated the forced restart.
     if (BOOTSTRAPPER_APPLY_RESTART_INITIATED == *pRestart)
@@ -2275,7 +2502,7 @@ static HRESULT ExecutePackageComplete(
         LogId(REPORT_STANDARD, MSG_APPLY_RETRYING_PACKAGE, pPackage->sczId, hrExecute);
         hr = S_OK;
     }
-    else if (SUCCEEDED(hrOverall) && FAILED(hrExecute) && IDIGNORE == nResult && !pPackage->fVital) // If we *only* failed to execute and the BA ignored this *not-vital* package, say everything is okay.
+    else if (SUCCEEDED(hrOverall) && FAILED(hrExecute) && BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_IGNORE == executePackageCompleteAction && !pPackage->fVital) // If we *only* failed to execute and the BA ignored this *not-vital* package, say everything is okay.
     {
         LogId(REPORT_STANDARD, MSG_APPLY_CONTINUING_NONVITAL_PACKAGE, pPackage->sczId, hrExecute);
         hr = S_OK;

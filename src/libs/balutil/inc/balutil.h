@@ -1,16 +1,6 @@
 #pragma once
-//-------------------------------------------------------------------------------------------------
-// <copyright file="balutil.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Burn utility library.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #include "dutil.h"
 
@@ -42,6 +32,16 @@ DAPI_(void) BalInitialize(
     );
 
 /*******************************************************************
+ BalInitializeFromCreateArgs - convenience function to call BalBootstrapperEngineCreate
+                               then pass it along to BalInitialize.
+
+********************************************************************/
+DAPI_(HRESULT) BalInitializeFromCreateArgs(
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __out IBootstrapperEngine** ppEngine
+    );
+
+/*******************************************************************
  BalUninitialize - cleans up utility layer internals.
 
 ********************************************************************/
@@ -54,6 +54,15 @@ DAPI_(void) BalUninitialize();
 DAPI_(HRESULT) BalManifestLoad(
     __in HMODULE hUXModule,
     __out IXMLDOMDocument** ppixdManifest
+    );
+
+/*******************************************************************
+BalEvaluateCondition - evaluates a condition using variables in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalEvaluateCondition(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
     );
 
 /*******************************************************************
@@ -77,6 +86,15 @@ DAPI_(HRESULT) BalGetNumericVariable(
     );
 
 /*******************************************************************
+BalSetNumericVariable - sets a numeric variable in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalSetNumericVariable(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue
+    );
+
+/*******************************************************************
 BalStringVariableExists - checks if a string variable exists in the engine.
 
 ********************************************************************/
@@ -92,6 +110,15 @@ BalGetStringVariable - gets a string from a variable in the engine.
 DAPI_(HRESULT) BalGetStringVariable(
     __in_z LPCWSTR wzVariable,
     __inout LPWSTR* psczValue
+    );
+
+/*******************************************************************
+BalSetStringVariable - sets a string variable in the engine.
+
+********************************************************************/
+DAPI_(HRESULT) BalSetStringVariable(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
     );
 
 /*******************************************************************
@@ -112,6 +139,25 @@ DAPIV_(HRESULT) BalLogError(
     __in HRESULT hr,
     __in_z __format_string LPCSTR szFormat,
     ...
+    );
+
+/*******************************************************************
+BalLogId - logs a message with the engine with a string embedded in a 
+           MESSAGETABLE resource.
+
+********************************************************************/
+DAPIV_(HRESULT) BalLogId(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    ...
+    );
+
+DAPI_(HRESULT) BalLogIdArgs(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    __in va_list args
     );
 
 #ifdef __cplusplus

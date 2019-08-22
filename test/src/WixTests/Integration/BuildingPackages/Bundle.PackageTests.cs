@@ -1,14 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Bundle.PackageTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>
-//     Tests for Bundle *Package elements (MsiPackage, MspPackage, MsuPackage and ExePackage)
-// </summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 {
@@ -470,14 +460,14 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         /// <param name="expectedUninstallCommmand">Expected @UninstallCommand value.</param>
         /// <param name="expectedRepairCommand">Expected @RepairCommand value.</param>
         /// <param name="expectedDownloadURL">Expected Package @DownloadURL value.</param>
-        /// <param name="acctualFilePath">Path to the acctual file for comparison.</param>
+        /// <param name="actualFilePath">Path to the acctual file for comparison.</param>
         private static void VerifyPackageInformation(string embededResourcesDirectoryPath, string expectedPackageName, PackageType expectedPackageType, string expectedId,
                                                      string expectedInstallCondition, string expectedProductCode, bool expecteVital, bool expectedPermanent, string expectedCacheId,
                                                      string expectedInstallCommmand, string expectedUninstallCommmand, string expectedRepairCommand, string expectedDownloadURL,
-                                                     string acctualFilePath)
+                                                     string actualFilePath)
         {
-            string expectedFileSize = new FileInfo(acctualFilePath).Length.ToString();
-            string expectedHash = FileVerifier.ComputeFileSHA1Hash(acctualFilePath);
+            string expectedFileSize = new FileInfo(actualFilePath).Length.ToString();
+            string expectedHash = FileVerifier.ComputeFileSHA1Hash(actualFilePath);
             string expectedProductSize = expectedFileSize;
 
             // verify the Burn_Manifest has the correct information 
@@ -506,33 +496,41 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             }
 
             // verify payload information
-            PackageTests.VerifyPackagePayloadInformation(embededResourcesDirectoryPath, expectedPackageType, expectedPackageName, expectedId, expectedPackageName, expectedDownloadURL, acctualFilePath);
+            PackageTests.VerifyPackagePayloadInformation(embededResourcesDirectoryPath, expectedPackageType, expectedPackageName, expectedId, expectedPackageName, expectedDownloadURL, actualFilePath);
 
             // verify the Burn-UxManifest has the correct information
             string expectedProductName = null;
-            string expectedDiscription = null;
+            string expectedDescription = null;
 
             if (expectedPackageType == PackageType.EXE)
             {
-                FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(acctualFilePath);
+                FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(actualFilePath);
                 expectedProductName = string.IsNullOrEmpty(fileInfo.ProductName) ? null : fileInfo.ProductName;
-                expectedDiscription = string.IsNullOrEmpty(fileInfo.FileDescription) ? null : fileInfo.FileDescription;
+                expectedDescription = string.IsNullOrEmpty(fileInfo.FileDescription) ? null : fileInfo.FileDescription;
             }
             else if (expectedPackageType == PackageType.MSI)
             {
-                string subject = Verifier.GetMsiSummaryInformationProperty(acctualFilePath, Verifier.MsiSummaryInformationProperty.Subject);
+                string subject = Verifier.GetMsiSummaryInformationProperty(actualFilePath, Verifier.MsiSummaryInformationProperty.Subject);
                 expectedProductName = string.IsNullOrEmpty(subject) ? null : subject;
+            }
+            else if (expectedPackageType == PackageType.MSP)
+            {
+                string title = Verifier.GetMsiSummaryInformationProperty(actualFilePath, Verifier.MsiSummaryInformationProperty.Title);
+                expectedProductName = string.IsNullOrEmpty(title) ? null : title;
+                string subject = Verifier.GetMsiSummaryInformationProperty(actualFilePath, Verifier.MsiSummaryInformationProperty.Subject);
+                expectedDescription = string.IsNullOrEmpty(subject) ? null : subject;
             }
 
             string burnUxManifestXPath = string.Format(@"//burnUx:WixPackageProperties[@Package='{0}']", expectedId);
             XmlNodeList burnUxManifestNodes = BundleTests.QueryBurnUxManifest(embededResourcesDirectoryPath, burnUxManifestXPath);
-            Assert.True(1 == burnUxManifestNodes.Count, String.Format("No WixPackageProperties for Package: '{0}' was found in Burn-UxManifest.xml.", expectedId));
+            Assert.True(1 == burnUxManifestNodes.Count, String.Format("No WixPackageProperties for Package: '{0}' was found in BootstrapperApplicationData.xml.", expectedId));
             BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "Vital", expecteVital ? "yes" : "no");
             BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "DownloadSize", expectedFileSize);
             BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "PackageSize", expectedFileSize);
-            BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "InstalledSize", expectedFileSize);
+            // TODO: Verify this is obsolete. Appears in tables.xml and nowhere else.
+            // BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "InstalledSize", expectedFileSize);
             BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "DisplayName", expectedProductName);
-            BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "Description", expectedDiscription);
+            BundleTests.VerifyAttributeValue(burnUxManifestNodes[0], "Description", expectedDescription);
         }
 
         /// <summary>
@@ -581,7 +579,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             XmlNodeList payloadNodes = BundleTests.QueryBurnManifest(embededResourcesDirectoryPath, payloadXPath);
             Assert.True(1 == payloadNodes.Count, String.Format("No Package payload with the name: '{0}' was found in Burn_Manifest.xml.", expectedFileName));
             BundleTests.VerifyAttributeValue(payloadNodes[0], "FileSize", expectedFileSize);
-            BundleTests.VerifyAttributeValue(payloadNodes[0], "Sha1Hash", expectedHash);
+            BundleTests.VerifyAttributeValue(payloadNodes[0], "Hash", expectedHash);
             BundleTests.VerifyAttributeValue(payloadNodes[0], "DownloadUrl", expectedDownloadURL);
 
             // make sure the payload is added to the package

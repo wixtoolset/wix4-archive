@@ -1,0 +1,72 @@
+use nuget
+
+package name=WixToolset.Dutil
+        manufacturer=".NET Foundation"
+        version=$(version)
+        description="Common utility functions used by the WiX toolset."
+        about=http://wixtoolset.org/
+        license=http://wixtoolset.org/about/license/
+
+nuget.metadata developmentDependency=true
+
+file build\native\WixToolset.Dutil.targets source=WixToolset.Dutil.targets
+
+folder lib
+  folder native id=native
+    folder include
+      file aclutil.h source=aclutil.h
+      file apputil.h source=apputil.h
+      file apuputil.h source=apuputil.h
+      file atomutil.h source=atomutil.h
+      file buffutil.h source=buffutil.h
+      file butil.h source=butil.h
+      file cabcutil.h source=cabcutil.h
+      file cabutil.h source=cabutil.h
+      file certutil.h source=certutil.h
+      file condutil.h source=condutil.h
+      file conutil.h source=conutil.h
+      file cryputil.h source=cryputil.h
+      file dictutil.h source=dictutil.h
+      file dirutil.h source=dirutil.h
+      file dlutil.h source=dlutil.h
+      file dutil.h source=dutil.h
+      file eseutil.h source=eseutil.h
+      file fileutil.h source=fileutil.h
+      file gdiputil.h source=gdiputil.h
+      file guidutil.h source=guidutil.h
+      file iis7util.h source=iis7util.h
+      file inetutil.h source=inetutil.h
+      file iniutil.h source=iniutil.h
+      file jsonutil.h source=jsonutil.h
+      file locutil.h source=locutil.h
+      file logutil.h source=logutil.h
+      file memutil.h source=memutil.h
+      file metautil.h source=metautil.h
+      file monutil.h source=monutil.h
+      file osutil.h source=osutil.h
+      file pathutil.h source=pathutil.h
+      file perfutil.h source=perfutil.h
+      file polcutil.h source=polcutil.h
+      file procutil.h source=procutil.h
+      file regutil.h source=regutil.h
+      file resrutil.h source=resrutil.h
+      file reswutil.h source=reswutil.h
+      file rexutil.h source=rexutil.h
+      file rmutil.h source=rmutil.h
+      file rssutil.h source=rssutil.h
+      file sceutil.h source=sceutil.h
+      file sczutil.h source=sczutil.h
+      file shelutil.h source=shelutil.h
+      file sqlutil.h source=sqlutil.h
+      file srputil.h source=srputil.h
+      file strutil.h source=strutil.h
+      file svcutil.h source=svcutil.h
+      file thmutil.h source=thmutil.h
+      file timeutil.h source=timeutil.h
+      file uncutil.h source=uncutil.h
+      file uriutil.h source=uriutil.h
+      file userutil.h source=userutil.h
+      file varutil.h source=varutil.h
+      file wiutil.h source=wiutil.h
+      file wuautil.h source=wuautil.h
+      file xmlutil.h source=xmlutil.h

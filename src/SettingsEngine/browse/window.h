@@ -1,17 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="window.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Main window functionality
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -285,8 +274,8 @@ public:
 
     HRESULT EnumerateProducts(DWORD dwIndex);
     HRESULT EnumerateDatabases(DWORD dwIndex);
-    HRESULT EnumerateValues(DWORD dwIndex);
-    HRESULT EnumerateValueHistory(DWORD dwIndex);
+    HRESULT EnumerateValues(DWORD dwIndex, BOOL fDifferentProduct);
+    HRESULT EnumerateValueHistory(DWORD dwIndex, BOOL fDifferentValue);
 
     DWORD GetSelectedValueIndex();
     DWORD GetSelectedValueHistoryIndex();

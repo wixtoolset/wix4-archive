@@ -1,17 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="netfxchainer.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: NetFxChainer
-//
-//    Communication pipe for NetFx setup.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -351,9 +338,7 @@ extern "C" HRESULT NetFxRunChainer(
 {
     HRESULT hr = S_OK;
     DWORD er = 0;
-    UUID guid = { };
-    WCHAR wzGuid[39];
-    RPC_STATUS rs = RPC_S_OK;
+    WCHAR wzGuid[GUID_STRING_LENGTH];
     LPWSTR sczEventName = NULL;
     LPWSTR sczSectionName = NULL;
     LPWSTR sczCommand = NULL;
@@ -363,15 +348,8 @@ extern "C" HRESULT NetFxRunChainer(
     HRESULT hrInternalError = 0;
 
     // Create the unique name suffix.
-    rs = ::UuidCreate(&guid);
-    hr = HRESULT_FROM_RPC(rs);
-    ExitOnFailure(hr, "Failed to create netfx chainer guid.");
-
-    if (!::StringFromGUID2(guid, wzGuid, countof(wzGuid)))
-    {
-        hr = E_OUTOFMEMORY;
-        ExitOnRootFailure(hr, "Failed to convert netfx chainer guid into string.");
-    }
+    hr = GuidFixedCreate(wzGuid);
+    ExitOnRootFailure(hr, "Failed to create netfx chainer guid.");
 
     hr = StrAllocFormatted(&sczSectionName, L"NetFxSection.%ls", wzGuid);
     ExitOnFailure(hr, "Failed to allocate section name.");

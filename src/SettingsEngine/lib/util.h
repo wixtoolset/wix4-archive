@@ -1,22 +1,12 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="util.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// Internal utility functions for Cfg API
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern PFN_GETSYSTEMTIME SystemTimeGetter;
 
 struct LEGACY_DIRECTORY_MAP
 {
@@ -44,8 +34,14 @@ int UtilCompareSystemTimes(
     __in const SYSTEMTIME *pst1,
     __in const SYSTEMTIME *pst2
     );
+// Outputs *pst1 - *pst2 in seconds
+HRESULT UtilSubtractSystemTimes(
+    __in const SYSTEMTIME *pst1,
+    __in const SYSTEMTIME *pst2,
+    __out LONGLONG *pSeconds
+    );
 HRESULT UtilAddToSystemTime(
-    __in DWORD dwMilliseconds,
+    __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
     );
 HRESULT UtilTestWriteAccess(
@@ -55,6 +51,9 @@ HRESULT UtilTestWriteAccess(
 HRESULT UtilConvertToVirtualStorePath(
     __in_z LPCWSTR wzOriginalPath,
     __out LPWSTR *psczOutput
+    );
+void UtilGetSystemTime(
+    __inout SYSTEMTIME *pst
     );
 BOOL UtilIs64BitSystem();
 

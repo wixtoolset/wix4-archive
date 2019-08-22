@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProgressViewModel.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -38,7 +31,7 @@ namespace WixToolset.UX
             this.root.PropertyChanged += this.RootPropertyChanged;
 
             WixBA.Model.Bootstrapper.ExecutePackageBegin += this.ExecutePackageBegin;
-            WixBA.Model.Bootstrapper.ExecuteMsiMessage += this.ExecuteMsiMessage;
+            WixBA.Model.Bootstrapper.ExecutePackageComplete += this.ExecutePackageComplete;
             WixBA.Model.Bootstrapper.ExecuteProgress += this.ApplyExecuteProgress;
             WixBA.Model.Bootstrapper.PlanBegin += this.PlanBegin;
             WixBA.Model.Bootstrapper.PlanPackageComplete += this.PlanPackageComplete;
@@ -50,7 +43,7 @@ namespace WixToolset.UX
 
         public bool ProgressEnabled
         {
-            get { return this.root.State == InstallationState.Applying; }
+            get { return this.root.InstallState == InstallationState.Applying; }
         }
 
         public int Progress
@@ -106,7 +99,7 @@ namespace WixToolset.UX
 
         void RootPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if ("State" == e.PropertyName)
+            if ("InstallState" == e.PropertyName)
             {
                 base.OnPropertyChanged("ProgressEnabled");
             }
@@ -134,22 +127,19 @@ namespace WixToolset.UX
 
         private void ExecutePackageBegin(object sender, ExecutePackageBeginEventArgs e)
         {
-            this.Package = WixBA.Model.GetPackageName(e.PackageId);
-
-            e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
-        }
-
-        private void ExecuteMsiMessage(object sender, ExecuteMsiMessageEventArgs e)
-        {
             lock (this)
             {
-                if (e.MessageType == InstallMessage.ActionStart)
-                {
-                    string message = TrimActionTimeFromMessage.Replace(e.Message, String.Empty);
-                    this.Message = message;
-                }
+                this.Package = WixBA.Model.GetPackageName(e.PackageId);
+                this.Message = String.Format("Processing: {0}", this.Package);
+                e.Cancel = this.root.Canceled;
+            }
+        }
 
-                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+        private void ExecutePackageComplete(object sender, ExecutePackageCompleteEventArgs e)
+        {
+            lock (this)
+            {   // avoid a stale display
+                this.Message = String.Empty;
             }
         }
 
@@ -162,7 +152,7 @@ namespace WixToolset.UX
         {
             lock (this)
             {
-                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+                e.Cancel = this.root.Canceled;
             }
         }
 
@@ -172,7 +162,7 @@ namespace WixToolset.UX
             {
                 this.cacheProgress = e.OverallPercentage;
                 this.Progress = (this.cacheProgress + this.executeProgress) / this.progressPhases;
-                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+                e.Cancel = this.root.Canceled;
             }
         }
 
@@ -197,7 +187,7 @@ namespace WixToolset.UX
                     WixBA.Model.Engine.SendEmbeddedProgress(e.ProgressPercentage, this.Progress);
                 }
 
-                e.Result = this.root.Canceled ? Result.Cancel : Result.Ok;
+                e.Cancel = this.root.Canceled;
             }
         }
     }

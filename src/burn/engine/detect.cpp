@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="detect.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -38,15 +27,14 @@ static HRESULT DownloadUpdateFeed(
     __in_z LPCWSTR wzBundleId,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_UPDATE* pUpdate,
-    __out_opt LPWSTR* psczTempFile
+    __deref_inout_z LPWSTR* psczTempFile
     );
 
 // function definitions
 
 extern "C" void DetectReset(
     __in BURN_REGISTRATION* pRegistration,
-    __in BURN_PACKAGES* pPackages,
-    __in BURN_UPDATE* /*pUpdate*/
+    __in BURN_PACKAGES* pPackages
     )
 {
     RelatedBundlesUninitialize(&pRegistration->relatedBundles);
@@ -75,6 +63,8 @@ extern "C" void DetectReset(
 
                 pFeature->currentState = BOOTSTRAPPER_FEATURE_STATE_UNKNOWN;
             }
+
+            pPackage->Msi.fCompatibleInstalled = FALSE;
         }
         else if (BURN_PACKAGE_TYPE_MSP == pPackage->type)
         {
@@ -98,19 +88,20 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
     )
 {
     HRESULT hr = S_OK;
-    int nRecommendation = IDNOACTION;
+    BOOL fRecommendIgnore = TRUE;
+    BOOL fIgnoreBundle = FALSE;
 
     if (pRegistration->sczDetectedProviderKeyBundleId &&
         CSTR_EQUAL != ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pRegistration->sczDetectedProviderKeyBundleId, -1, pRegistration->sczId, -1))
     {
-        // Only change the recommendation if an parent was provided.
+        // Only change the recommendation if an active parent was provided.
         if (pRegistration->sczActiveParent && *pRegistration->sczActiveParent)
         {
             // On install, recommend running the forward compatible bundle because there is an active parent. This
             // will essentially register the parent with the forward compatible bundle.
             if (BOOTSTRAPPER_ACTION_INSTALL == pCommand->action)
             {
-                nRecommendation = IDOK;
+                fRecommendIgnore = FALSE;
             }
             else if (BOOTSTRAPPER_ACTION_UNINSTALL == pCommand->action ||
                      BOOTSTRAPPER_ACTION_MODIFY == pCommand->action ||
@@ -120,7 +111,7 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
                 // is already registered as a dependent of the provider key.
                 if (DependencyDependentExists(pRegistration, pRegistration->sczActiveParent))
                 {
-                    nRecommendation = IDOK;
+                    fRecommendIgnore = FALSE;
                 }
             }
         }
@@ -128,16 +119,16 @@ extern "C" HRESULT DetectForwardCompatibleBundle(
         for (DWORD iRelatedBundle = 0; iRelatedBundle < pRegistration->relatedBundles.cRelatedBundles; ++iRelatedBundle)
         {
             BURN_RELATED_BUNDLE* pRelatedBundle = pRegistration->relatedBundles.rgRelatedBundles + iRelatedBundle;
+            fIgnoreBundle = fRecommendIgnore;
 
             if (BOOTSTRAPPER_RELATION_UPGRADE == pRelatedBundle->relationType &&
                 pRegistration->qwVersion <= pRelatedBundle->qwVersion &&
                 CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, NORM_IGNORECASE, pRegistration->sczDetectedProviderKeyBundleId, -1, pRelatedBundle->package.sczId, -1))
             {
-                int nResult = pUX->pUserExperience->OnDetectForwardCompatibleBundle(pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, nRecommendation);
-                hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
+                hr = UserExperienceOnDetectForwardCompatibleBundle(pUX, pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, &fIgnoreBundle);
                 ExitOnRootFailure(hr, "BA aborted detect forward compatible bundle.");
 
-                if (IDOK == nResult)
+                if (!fIgnoreBundle)
                 {
                     hr = PseudoBundleInitializePassthrough(&pRegistration->forwardCompatibleBundle, pCommand, NULL, pRegistration->sczActiveParent, pRegistration->sczAncestors, &pRelatedBundle->package);
                     ExitOnFailure(hr, "Failed to initialize update bundle.");
@@ -213,8 +204,7 @@ extern "C" HRESULT DetectReportRelatedBundles(
 
         LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_BUNDLE, pRelatedBundle->package.sczId, LoggingRelationTypeToString(pRelatedBundle->relationType), LoggingPerMachineToString(pRelatedBundle->package.fPerMachine), LoggingVersionToString(pRelatedBundle->qwVersion), LoggingRelatedOperationToString(operation));
 
-        int nResult = pUX->pUserExperience->OnDetectRelatedBundle(pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, operation);
-        hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
+        hr = UserExperienceOnDetectRelatedBundle(pUX, pRelatedBundle->package.sczId, pRelatedBundle->relationType, pRelatedBundle->sczTag, pRelatedBundle->package.fPerMachine, pRelatedBundle->qwVersion, operation);
         ExitOnRootFailure(hr, "BA aborted detect related bundle.");
     }
 
@@ -229,8 +219,9 @@ extern "C" HRESULT DetectUpdate(
     )
 {
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     BOOL fBeginCalled = FALSE;
+    BOOL fSkip = TRUE;
+    BOOL fIgnoreError = FALSE;
 
     // If no update source was specified, skip update detection.
     if (!pUpdate->sczUpdateSource || !*pUpdate->sczUpdateSource)
@@ -239,16 +230,10 @@ extern "C" HRESULT DetectUpdate(
     }
 
     fBeginCalled = TRUE;
+    hr = UserExperienceOnDetectUpdateBegin(pUX, pUpdate->sczUpdateSource, &fSkip);
+    ExitOnRootFailure(hr, "BA aborted detect update begin.");
 
-    nResult = pUX->pUserExperience->OnDetectUpdateBegin(pUpdate->sczUpdateSource, IDNOACTION);
-    hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted detect update begin.");
-
-    if (IDNOACTION == nResult)
-    {
-        //pUpdate->fUpdateAvailable = FALSE;
-    }
-    else if (IDOK == nResult)
+    if (!fSkip)
     {
         hr = DetectAtomFeedUpdate(wzBundleId, pUX, pUpdate);
         ExitOnFailure(hr, "Failed to detect atom feed update.");
@@ -257,7 +242,11 @@ extern "C" HRESULT DetectUpdate(
 LExit:
     if (fBeginCalled)
     {
-        pUX->pUserExperience->OnDetectUpdateComplete(hr, pUpdate->fUpdateAvailable ? pUpdate->sczUpdateSource : NULL);
+        UserExperienceOnDetectUpdateComplete(pUX, hr, &fIgnoreError);
+        if (fIgnoreError)
+        {
+            hr = S_OK;
+        }
     }
 
     return hr;
@@ -278,6 +267,7 @@ static HRESULT AuthenticationRequired(
     BOOTSTRAPPER_ERROR_TYPE errorType = (401 == lHttpCode) ? BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_SERVER : BOOTSTRAPPER_ERROR_TYPE_HTTP_AUTH_PROXY;
     LPWSTR sczError = NULL;
     DETECT_AUTHENTICATION_REQUIRED_DATA* pAuthenticationData = reinterpret_cast<DETECT_AUTHENTICATION_REQUIRED_DATA*>(pData);
+    int nResult = IDNOACTION;
 
     *pfRetrySend = FALSE;
     *pfRetry = FALSE;
@@ -285,7 +275,7 @@ static HRESULT AuthenticationRequired(
     hr = StrAllocFromError(&sczError, HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED), NULL);
     ExitOnFailure(hr, "Failed to allocation error string.");
 
-    int nResult = pAuthenticationData->pUX->pUserExperience->OnError(errorType, pAuthenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, IDNOACTION);
+    UserExperienceOnError(pAuthenticationData->pUX, errorType, pAuthenticationData->wzPackageOrContainerId, ERROR_ACCESS_DENIED, sczError, MB_RETRYTRYAGAIN, 0, NULL, &nResult); // ignore return value.
     nResult = UserExperienceCheckExecuteResult(pAuthenticationData->pUX, FALSE, MB_RETRYTRYAGAIN, nResult);
     if (IDTRYAGAIN == nResult && pAuthenticationData->pUX->hwndDetect)
     {
@@ -324,7 +314,7 @@ static HRESULT DownloadUpdateFeed(
     __in_z LPCWSTR wzBundleId,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_UPDATE* pUpdate,
-    __out_opt LPWSTR* psczTempFile
+    __deref_inout_z LPWSTR* psczTempFile
     )
 {
     HRESULT hr = S_OK;
@@ -333,15 +323,14 @@ static HRESULT DownloadUpdateFeed(
     DOWNLOAD_AUTHENTICATION_CALLBACK authenticationCallback = { };
     DETECT_AUTHENTICATION_REQUIRED_DATA authenticationData = { };
     LPWSTR sczUpdateId = NULL;
-    LPWSTR sczDestinationPath = NULL;
     LPWSTR sczError = NULL;
     DWORD64 qwDownloadSize = 0;
 
     // Always do our work in the working folder, even if cached.
-    hr = PathCreateTimeBasedTempFile(NULL, L"UpdateFeed", NULL, L"xml", &sczDestinationPath, NULL);
+    hr = PathCreateTimeBasedTempFile(NULL, L"UpdateFeed", NULL, L"xml", psczTempFile, NULL);
     ExitOnFailure(hr, "Failed to create UpdateFeed based on current system time.");
 
-    // Do we need a means of the BA to pass in a username and password? If so, we should copy it to downloadSource here
+    // Do we need a means of the BA to pass in a user name and password? If so, we should copy it to downloadSource here
     hr = StrAllocString(&downloadSource.sczUrl, pUpdate->sczUpdateSource, 0);
     ExitOnFailure(hr, "Failed to copy update url.");
 
@@ -355,21 +344,24 @@ static HRESULT DownloadUpdateFeed(
     authenticationCallback.pv =  static_cast<LPVOID>(&authenticationData);
     authenticationCallback.pfnAuthenticate = &AuthenticationRequired;
 
-    hr = DownloadUrl(&downloadSource, qwDownloadSize, sczDestinationPath, &cacheCallback, &authenticationCallback);
-    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, sczDestinationPath);
-
-    if (psczTempFile)
-    {
-        hr = StrAllocString(psczTempFile, sczDestinationPath, 0);
-        ExitOnFailure(hr, "Failed to copy temp file string.");
-    }
+    hr = DownloadUrl(&downloadSource, qwDownloadSize, *psczTempFile, &cacheCallback, &authenticationCallback);
+    ExitOnFailure(hr, "Failed attempt to download update feed from URL: '%ls' to: '%ls'", downloadSource.sczUrl, *psczTempFile);
 
 LExit:
+    if (FAILED(hr))
+    {
+        if (*psczTempFile)
+        {
+            FileEnsureDelete(*psczTempFile);
+        }
+
+        ReleaseNullStr(*psczTempFile);
+    }
+
     ReleaseStr(downloadSource.sczUrl);
     ReleaseStr(downloadSource.sczUser);
     ReleaseStr(downloadSource.sczPassword);
     ReleaseStr(sczUpdateId);
-    ReleaseStr(sczDestinationPath);
     ReleaseStr(sczError);
     return hr;
 }
@@ -383,16 +375,15 @@ static HRESULT DetectAtomFeedUpdate(
 {
     Assert(pUpdate && pUpdate->sczUpdateSource && *pUpdate->sczUpdateSource);
 #ifdef DEBUG
-    LogLine(REPORT_STANDARD, "DetectAtomFeedUpdate() - update location: %ls", pUpdate->sczUpdateSource);
+    LogStringLine(REPORT_STANDARD, "DetectAtomFeedUpdate() - update location: %ls", pUpdate->sczUpdateSource);
 #endif
 
 
     HRESULT hr = S_OK;
-    int nResult = IDNOACTION;
     LPWSTR sczUpdateFeedTempFile = NULL;
-
     ATOM_FEED* pAtomFeed = NULL;
     APPLICATION_UPDATE_CHAIN* pApupChain = NULL;
+    BOOL fStopProcessingUpdates = FALSE;
 
     hr = AtomInitialize();
     ExitOnFailure(hr, "Failed to initialize Atom.");
@@ -412,27 +403,16 @@ static HRESULT DetectAtomFeedUpdate(
         {
             APPLICATION_UPDATE_ENTRY* pAppUpdateEntry = &pApupChain->rgEntries[i];
 
-            nResult = pUX->pUserExperience->OnDetectUpdate(pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->wzUrl : NULL, 
+            hr = UserExperienceOnDetectUpdate(pUX, pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->wzUrl : NULL, 
                 pAppUpdateEntry->rgEnclosures ? pAppUpdateEntry->rgEnclosures->dw64Size : 0, 
                 pAppUpdateEntry->dw64Version, pAppUpdateEntry->wzTitle,
-                pAppUpdateEntry->wzSummary, pAppUpdateEntry->wzContentType, pAppUpdateEntry->wzContent, IDNOACTION);
+                pAppUpdateEntry->wzSummary, pAppUpdateEntry->wzContentType, pAppUpdateEntry->wzContent, &fStopProcessingUpdates);
+            ExitOnRootFailure(hr, "BA aborted detect update.");
 
-            switch (nResult)
+            if (fStopProcessingUpdates)
             {
-                case IDNOACTION:
-                    hr = S_OK;
-                    continue;
-                case IDOK:   
-                    pUpdate->fUpdateAvailable = TRUE;
-                    hr = S_OK;
-                    break;
-                case IDCANCEL:
-                    hr = S_FALSE;
-                    break;
-                default:
-                    ExitOnRootFailure(hr = E_INVALIDDATA, "UX aborted detect update begin.");
+                break;
             }
-            break;
         }
     }
 

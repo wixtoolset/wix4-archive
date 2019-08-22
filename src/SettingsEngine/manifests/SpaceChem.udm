@@ -14,6 +14,8 @@
             <Ignore Name="Data:\Config.ini"/>
             <Ignore Postfix=".zicrash"/>
             <Normal Name="Data:\.locals" ShareWrite="yes"/>
+            <Ignore Name="Data:\.locals-journal" ShareWrite="yes"/>
+            <Normal Name="Data:\save\000.user" ShareWrite="yes"/>
         </Filter>
 
         <DisplayName LCID="1033">SpaceChem</DisplayName>

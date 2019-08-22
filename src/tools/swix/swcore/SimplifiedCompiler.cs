@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="SimplifiedCompiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Simplified
 {
@@ -25,6 +18,7 @@ namespace WixToolset.Simplified
     {
         private List<Swix> roots;
         private List<string> sourceFiles;
+        private List<CompilerExtension> extensions;
         private List<Assembly> referenceAssemblies;
 
         /// <summary>
@@ -34,6 +28,7 @@ namespace WixToolset.Simplified
         {
             this.roots = new List<Swix>();
             this.sourceFiles = new List<string>();
+            this.extensions = new List<CompilerExtension>();
 
             // Add the reference assemblies, ensure this model is always first.
             this.referenceAssemblies = new List<Assembly>();
@@ -57,6 +52,14 @@ namespace WixToolset.Simplified
         /// Gets the set of paths to search for files.
         /// </summary>
         public IList<string> SearchPaths { get; private set; }
+
+        /// <summary>
+        /// Gets the compiler extensions being used for the compile
+        /// </summary>
+        public IEnumerable<CompilerExtension> Extensions
+        {
+            get { return this.extensions; }
+        }
 
         public CompilerFileManager FileManager { get; set; }
 
@@ -87,6 +90,15 @@ namespace WixToolset.Simplified
         }
 
         /// <summary>
+        /// Adds an extension that will be used during the compile
+        /// </summary>
+        /// <param name="extension">The extension to be added</param>
+        public void AddExtension(CompilerExtension extension)
+        {
+            this.extensions.Add(extension);
+        }
+
+        /// <summary>
         /// Compiles the added files into a target output appropriate for the output path extension.
         /// </summary>
         /// <param name="type">Package type to generate.</param>
@@ -94,6 +106,23 @@ namespace WixToolset.Simplified
         /// <param name="languages">Package languages to generate.</param>
         /// <param name="outputPath">Path to generate output. Output path file extension determines the output type.</param>
         public void Compile(PackageType type, PackageArchitecture architecture, CultureInfo[] languages, string outputPath)
+        {
+            CoreCompile(architecture, languages, outputPath, () => BackendCompiler.Create(type, outputPath) );
+        }
+
+        /// <summary>
+        /// Compiles the added files using the given CompilerExtension to generate the output
+        /// </summary>
+        /// <param name="outputExtension">Extension used to generated the output.</param>
+        /// <param name="architecture">Package architecture to generate.</param>
+        /// <param name="languages">Package languages to generate.</param>
+        /// <param name="outputPath">Path to generate output.</param>
+        public void Compile(CompilerExtension outputExtension, PackageArchitecture architecture, CultureInfo[] languages, string outputPath)
+        {
+            CoreCompile(architecture, languages, outputPath, () => outputExtension.CreateBackendCompiler());
+        }
+
+        private void CoreCompile(PackageArchitecture architecture, CultureInfo[] languages, string outputPath, Func<BackendCompiler> createBackendCompiler)
         {
             FrontendCompiler frontend = new FrontendCompiler(architecture, this.referenceAssemblies);
             frontend.Messages += this.Messages;
@@ -107,6 +136,8 @@ namespace WixToolset.Simplified
             {
                 frontend.AddRoot(root);
             }
+
+            frontend.AddExtensions(this.extensions);
 
             foreach (string path in this.sourceFiles)
             {
@@ -141,7 +172,7 @@ namespace WixToolset.Simplified
                 fileManager.SearchPaths.Add(searchPath);
             }
 
-            using (BackendCompiler backend = BackendCompiler.Create(type, outputPath))
+            using (BackendCompiler backend = createBackendCompiler())
             {
                 backend.Messages += this.Messages;
                 backend.Architecture = architecture;

@@ -1,23 +1,15 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="handle.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions related to interacting with settings engine handles
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
 const DWORD STALE_WRITETIME_RETRY = 100;
 
 
-static HRESULT GenerateGuidString(
-    __out_z LPWSTR *psczGuid
+// Dropbox and similar solutions can have their own conflicts on the database file, in which they rename the database.
+// this cleans them up. We always sync again in cases like that, so just delete those conflicts without requiring user intervention.
+static HRESULT CleanConflictedDatabases(
+    __in LPCWSTR wzDbDir,
+    __in LPCWSTR wzDbPath
     );
 // Deletes a stream and attempts to delete any empty parent directories
 // Modifies the string in the process for perf (instead of copying the string)
@@ -63,6 +55,14 @@ HRESULT HandleLock(
     // Connect to database, if it's a remote database
     if (pcdb->fRemote)
     {
+        // If database path is present right now, clean up conflicted databases
+        if (FileExistsEx(pcdb->sczDbPath, NULL))
+        {
+            hr = CleanConflictedDatabases(pcdb->sczDbDir, pcdb->sczDbPath);
+            TraceError(hr, "Failed to clean conflicted databases, continuing");
+            hr = S_OK;
+        }
+
         hr = FileCreateTempW(L"Remote", L".sdf", &pcdb->sczDbCopiedPath, NULL);
         ExitOnFailure(hr, "Failed to create temp file to copy database file to");
     
@@ -80,6 +80,12 @@ HRESULT HandleLock(
         {
             hr = HandleEnsureSummaryDataTable(pcdb);
             ExitOnFailure(hr, "Failed to ensure remote database summary data");
+
+            hr = GuidListEnsure(pcdb->pcdbLocal, pcdb->sczGuid, &pcdb->sczGuidRemoteInLocalKey);
+            ExitOnFailure(hr, "Failed to ensure remote database is in local database's guid table");
+
+            hr = GuidListEnsure(pcdb, pcdb->pcdbLocal->sczGuid, &pcdb->sczGuidLocalInRemoteKey);
+            ExitOnFailure(hr, "Failed to ensure local database is in remote database's guid table");
 
             hr = ProductSet(pcdb, wzCfgProductId, wzCfgVersion, wzCfgPublicKey, TRUE, NULL);
             ExitOnFailure(hr, "Failed to set product to cfg product id");
@@ -220,8 +226,8 @@ HRESULT HandleEnsureSummaryDataTable(
 
     if (fEmpty)
     {
-        hr = GenerateGuidString(&pcdb->sczGuid);
-        ExitOnFailure(hr, "Failed to generate guid string");
+        hr = GuidCreate(&pcdb->sczGuid);
+        ExitOnRootFailure(hr, "Failed to generate guid string");
 
         hr = SceBeginTransaction(pcdb->psceDb);
         ExitOnFailure(hr, "Failed to begin transaction");
@@ -258,32 +264,6 @@ LExit:
         ReleaseNullStr(pcdb->sczGuid);
     }
 
-    return hr;
-}
-
-HRESULT GenerateGuidString(
-    __out_z LPWSTR *psczGuid
-    )
-{
-    HRESULT hr = S_OK;
-    RPC_STATUS rs = RPC_S_OK;
-    UUID guid = { };
-    const DWORD_PTR cchGuid = 39;
-
-    hr = StrAlloc(psczGuid, cchGuid);
-    ExitOnFailure(hr, "Failed to allocate space for guid");
-
-    rs = ::UuidCreate(&guid);
-    hr = HRESULT_FROM_RPC(rs);
-    ExitOnFailure(hr, "Failed to create new guid.");
-
-    if (!::StringFromGUID2(guid, *psczGuid, cchGuid))
-    {
-        hr = E_OUTOFMEMORY;
-        ExitOnRootFailure(hr, "Failed to convert endpoint guid into string.");
-    }
-
-LExit:
     return hr;
 }
 
@@ -331,5 +311,79 @@ HRESULT DeleteStream(
     }
 
 LExit:
+    return hr;
+}
+
+
+static HRESULT CleanConflictedDatabases(
+    __in LPCWSTR wzDbDir,
+    __in LPCWSTR wzDbPath
+    )
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPCWSTR wzDbFile = NULL;
+    LPWSTR sczQuery = NULL;
+    LPWSTR sczPath = NULL;
+    WIN32_FIND_DATAW wfd = { };
+    HANDLE hFind = NULL;
+
+    wzDbFile = PathFile(wzDbPath);
+
+    hr = PathConcat(wzDbDir, L"*", &sczQuery);
+    ExitOnFailure(hr, "Failed to generate query path to delete conflicted databases");
+
+    hFind = ::FindFirstFileW(sczQuery, &wfd);
+    if (INVALID_HANDLE_VALUE == hFind)
+    {
+        er = ::GetLastError();
+        hr = HRESULT_FROM_WIN32(er);
+        if (E_PATHNOTFOUND == hr)
+        {
+            ExitFunction();
+        }
+        ExitWithLastError(hr, "Failed to find first file with query: %ls", sczQuery);
+    }
+
+    do
+    {
+        // Safety / silence code analysis tools
+        wfd.cFileName[MAX_PATH - 1] = L'\0';
+
+        // Don't use "." or ".."
+        if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, wfd.cFileName, -1, L".", -1))
+        {
+            continue;
+        }
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, wfd.cFileName, -1, L"..", -1))
+        {
+            continue;
+        }
+        // Don't delete the actual database file
+        else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT | NORM_IGNORECASE, 0, wfd.cFileName, -1, wzDbFile, -1))
+        {
+            continue;
+        }
+
+        if (!(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            hr = PathConcat(wzDbDir, wfd.cFileName, &sczPath);
+            ExitOnFailure(hr, "Failed to concat filename '%ls' to directory: %ls", wfd.cFileName, wzDbDir);
+
+            hr = FileEnsureDelete(sczPath);
+            TraceError(hr, "Failed to delete remote database file %ls, continuing", sczPath);
+            hr = S_OK;
+        }
+    }
+    while (::FindNextFileW(hFind, &wfd));
+
+LExit:
+    if (NULL != hFind)
+    {
+        FindClose(hFind);
+    }
+    ReleaseStr(sczQuery);
+    ReleaseStr(sczPath);
+
     return hr;
 }

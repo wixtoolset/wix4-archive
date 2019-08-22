@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  <copyright file="Headers.wxs" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
--->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <ComponentGroup Id="HeaderComponents">
@@ -19,7 +14,27 @@
     <Fragment>
         <ComponentGroup Id="BurnHeaderComponents" Directory="SdkIncFolder">
             <Component>
+                <File Source="libs\balutil\inc\BAFunctions.h" />
+            </Component>
+
+            <Component>
+                <File Source="libs\balutil\inc\BalBaseBAFunctions.h" />
+            </Component>
+
+            <Component>
+                <File Source="libs\balutil\inc\BalBaseBAFunctionsProc.h" />
+            </Component>
+
+            <Component>
                 <File Source="libs\balutil\inc\BalBaseBootstrapperApplication.h" />
+            </Component>
+
+            <Component>
+                <File Source="libs\balutil\inc\BalBaseBootstrapperApplicationProc.h" />
+            </Component>
+
+            <Component>
+                <File Source="libs\balutil\inc\BalBootstrapperEngine.h" />
             </Component>
 
             <Component>
@@ -39,15 +54,23 @@
             </Component>
 
             <Component>
-                <File Source="libs\balutil\inc\IBootstrapperBAFunction.h" />
+                <File Source="libs\balutil\inc\IBAFunctions.h" />
             </Component>
 
             <Component>
-                <File Source="IBootstrapperApplication.h" />
+                <File Source="libs\balutil\inc\IBootstrapperApplication.h" />
             </Component>
 
             <Component>
-                <File Source="IBootstrapperEngine.h" />
+                <File Source="libs\balutil\inc\IBootstrapperEngine.h" />
+            </Component>
+
+            <Component>
+                <File Source="BootstrapperApplication.h" />
+            </Component>
+
+            <Component>
+                <File Source="BootstrapperEngine.h" />
             </Component>
 
             <Component>
@@ -60,6 +83,9 @@
         <ComponentGroup Id="DutilHeaderComponents" Directory="SdkIncFolder">
             <Component>
                 <File Source="aclutil.h" />
+            </Component>
+            <Component>
+                <File Source="apputil.h" />
             </Component>
             <Component>
                 <File Source="apuputil.h" />
@@ -168,6 +194,9 @@
             </Component>
             <Component>
                 <File Source="sceutil.h" />
+            </Component>
+            <Component>
+                <File Source="sczutil.h" />
             </Component>
             <Component>
                 <File Source="shelutil.h" />

@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  <copyright file="tables.xml" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
-  <summary>
-    Windows Installer standard table definitions.
-  </summary>
--->
+
 <tableDefinitions xmlns="http://wixtoolset.org/schemas/v4/wi/tables">
     <tableDefinition name="ActionText">
         <columnDefinition name="Action" type="string" length="72" primaryKey="yes" modularize="column"
@@ -1524,8 +1515,8 @@
         <columnDefinition name="Directory_" type="string" nullable="yes" length="72"/>
         <columnDefinition name="SourceFile" type="object" length="0"/>
         <columnDefinition name="DiskId" type="number" length="2"/>
-        <columnDefinition name="FileCompression" type="number" length="2"/>
-        <columnDefinition name="ConfigurationData" type="string" length="255"/>
+        <columnDefinition name="FileCompression" type="number" length="2" nullable="yes"/>
+        <columnDefinition name="ConfigurationData" type="string" length="255" nullable="yes"/>
         <columnDefinition name="Feature_" type="string" length="72"/>
     </tableDefinition>
     <tableDefinition name="WixOrdering" createSymbols="yes" unreal="yes">
@@ -1702,7 +1693,8 @@
     <tableDefinition name="WixBundleRollbackBoundary" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixChainItem_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixChainItem" keyColumn="1" description="Reference to a WixChainItem entry in the WixChainItem table."/>
-        <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
+      <columnDefinition name="Vital" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
+      <columnDefinition name="Transaction" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
     </tableDefinition>
     <tableDefinition name="WixBundlePackageGroup" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackageGroup" type="string" length="0" category="identifier" primaryKey="yes"/>
@@ -1731,7 +1723,8 @@
                 keyTable="WixBundleRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixBundleRollbackBoundary table."/>
         <columnDefinition name="RollbackBoundaryBackward_" type="string" length="0" nullable="yes"
                 keyTable="WixBundleRollbackBoundary" keyColumn="1" description="Reference to a rollback boundary entry in the WixBundleRollbackBoundary table."/>
-      </tableDefinition>
+      <columnDefinition name="x64" type="number" length="2" nullable="yes" minValue="0" maxValue="1"/>
+    </tableDefinition>
     <tableDefinition name="WixBundleExePackage" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
@@ -1781,7 +1774,7 @@
         <columnDefinition name="Parent" type="string" length="0" />
         <columnDefinition name="Title" type="string" length="0" />
         <columnDefinition name="Description" type="string" length="0" />
-        <columnDefinition name="Display" type="string" length="0" />
+        <columnDefinition name="Display" type="number" length="2" />
         <columnDefinition name="Level" type="number" length="2" />
         <columnDefinition name="Directory" type="string" length="0" />
         <columnDefinition name="Attributes" type="number" length="2" />
@@ -1791,12 +1784,21 @@
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table."/>
         <columnDefinition name="Name" type="string" length="0" category="identifier" primaryKey="yes" />
         <columnDefinition name="Value" type="string" length="0" />
+        <columnDefinition name="Condition" type="string" length="0" nullable="yes" />
     </tableDefinition>
     <tableDefinition name="WixBundleSlipstreamMsp" createSymbols="yes" unreal="yes">
         <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the parent Msi."/>
         <columnDefinition name="WixBundlePackage_Msp" type="string" length="0" category="identifier" primaryKey="yes"
                 keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table for the referenced Msp." />
+    </tableDefinition>
+    <tableDefinition name="WixBundlePackageCommandLine" createSymbols="yes" unreal="yes">
+        <columnDefinition name="WixBundlePackage_" type="string" length="0" category="identifier" primaryKey="yes"
+                keyTable="WixBundlePackage" keyColumn="1" description="Reference to a chain package entry in the WixBundlePackage table." />
+        <columnDefinition name="InstallArgument" type="string" length="0" nullable="yes" />
+        <columnDefinition name="UninstallArgument" type="string" length="0" nullable="yes" />
+        <columnDefinition name="RepairArgument" type="string" length="0" nullable="yes" />
+        <columnDefinition name="Condition" type="string" length="0" nullable="yes" />
     </tableDefinition>
     <tableDefinition name="WixRelatedBundle" unreal="yes">
         <columnDefinition name="Id" type="string" length="38" category="guid" primaryKey="yes" />

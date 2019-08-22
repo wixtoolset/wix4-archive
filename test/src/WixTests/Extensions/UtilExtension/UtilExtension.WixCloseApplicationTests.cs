@@ -1,12 +1,4 @@
-//-----------------------------------------------------------------------
-// <copyright file="UtilExtension.WixCloseApplicationTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>Util Extension WixCloseApplication tests</summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Extensions.UtilExtension
 {
@@ -35,8 +27,8 @@ namespace WixTest.Tests.Extensions.UtilExtension
             string msiFile = Builder.BuildPackage(sourceFile, "test.msi", "WixUtilExtension");
 
             Verifier.VerifyCustomActionTableData(msiFile,
-                new CustomActionTableData("WixCloseApplications", 65, "WixCA", "WixCloseApplications"),
-                new CustomActionTableData("WixCloseApplicationsDeferred", 3137, "WixCA", "WixCloseApplicationsDeferred"),
+                new CustomActionTableData("WixCloseApplications", 1, "WixCA", "WixCloseApplications"),
+                new CustomActionTableData("WixCloseApplicationsDeferred", 3073, "WixCA", "WixCloseApplicationsDeferred"),
                 new CustomActionTableData("WixCheckRebootRequired", 65, "WixCA", "WixCheckRebootRequired"));
 
             // Verify WixCloseApplication table contains the right data

@@ -1,15 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="NativeMethods.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// Container class for the IBootstrapperEngine interface passed to the IBootstrapperApplication.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bootstrapper
 {
@@ -28,6 +17,7 @@ namespace WixToolset.Bootstrapper
         internal const int E_CANCELLED = unchecked((int)0x800704c7);
         internal const int E_ALREADYINITIALIZED = unchecked((int)0x800704df);
         internal const int E_NOTFOUND = unchecked((int)0x80070490);
+        internal const int E_NOTIMPL = unchecked((int)0x80004001);
         internal const int E_UNEXPECTED = unchecked((int)0x8000ffff);
         #endregion
 

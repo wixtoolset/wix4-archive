@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="SimplifiedWixCompiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Simplified
 {
@@ -14,6 +7,7 @@ namespace WixToolset.Simplified
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Microsoft.Build.Framework;
     using Microsoft.Build.Utilities;
@@ -156,19 +150,9 @@ namespace WixToolset.Simplified
                 }
             }
 
-            PackageType type = PackageType.Unknown;
             if (String.IsNullOrEmpty(this.Type))
             {
                 messaging.OnError(this, "A package type must specified. Use the PackageType in your MSBuild project or -type from the swc.exe command-line. Valid options are: appx, msi, nuget, vsix or wixlib");
-            }
-            else if (!SimplifiedWixCompiler.TryConvertPackageType(this.Type, out type))
-            {
-                messaging.OnError(this, "Unknown package type specified: {0}. Valid options are: appx, msi, nuget, vsix or wixlib", this.Type);
-            }
-
-            if (type == PackageType.Appx && locales.Count == 0)
-            {
-                messaging.OnError(this, "AppX packages do not support language neutral packages. At least one language to be specified. Use the PackageLanguages property in your MSBuild project or -lang from the swc.exe command-line.");
             }
 
             if (!messaging.Errored)
@@ -199,11 +183,34 @@ namespace WixToolset.Simplified
                     SimplifiedWixCompiler.LoadExtensions(compiler, messaging, this.Extensions);
                 }
 
-                // Finally, load the sources and compile!
-                if (!messaging.Errored)
+                CompilerExtension outputExtension = compiler.Extensions.FirstOrDefault(e => e.HasBackendCompiler(this.Type));
+                if (outputExtension != null)
                 {
-                    SimplifiedWixCompiler.LoadPackageSources(compiler, this.SourcePaths);
-                    compiler.Compile(type, architecture, locales.ToArray(), this.OutputPath.ItemSpec);
+                    if (!messaging.Errored)
+                    {
+                        SimplifiedWixCompiler.LoadPackageSources(compiler, this.SourcePaths);
+                        compiler.Compile(outputExtension, architecture, locales.ToArray(), this.OutputPath.ItemSpec);
+                    }
+                }
+                else
+                {
+                    PackageType type = PackageType.Unknown;
+                    if (!SimplifiedWixCompiler.TryConvertPackageType(this.Type, out type))
+                    {
+                        messaging.OnError(this, "Unknown package type specified: {0}. Valid options are: appx, msi, nuget, vsix or wixlib", this.Type);
+                    }
+
+                    if (type == PackageType.Appx && locales.Count == 0)
+                    {
+                        messaging.OnError(this, "AppX packages do not support language neutral packages. At least one language to be specified. Use the PackageLanguages property in your MSBuild project or -lang from the swc.exe command-line.");
+                    }
+
+                    // Finally, load the sources and compile!
+                    if (!messaging.Errored)
+                    {
+                        SimplifiedWixCompiler.LoadPackageSources(compiler, this.SourcePaths);
+                        compiler.Compile(type, architecture, locales.ToArray(), this.OutputPath.ItemSpec);
+                    }
                 }
             }
 
@@ -216,7 +223,7 @@ namespace WixToolset.Simplified
             FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(executingAssembly.Location);
 
             Console.WriteLine("Simplified WiX Compiler version {0}", fileVersion.FileVersion);
-            Console.WriteLine("Copyright (C) Outercurve Foundation. All rights reserved.");
+            Console.WriteLine("Copyright (C) .NET Foundation and contributors. All rights reserved.");
             Console.WriteLine();
         }
 
@@ -348,6 +355,8 @@ namespace WixToolset.Simplified
                     {
                         compiler.FileManager = compilerExtension.FileManager;
                     }
+
+                    compiler.AddExtension(compilerExtension);
                 }
                 catch (CompilerException e)
                 {

@@ -1,12 +1,4 @@
-//-----------------------------------------------------------------------
-// <copyright file="NetFXExtension.NativeImageTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>NetFX Extension NativeImage tests</summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Extensions.NetFXExtension
 {
@@ -31,6 +23,7 @@ namespace WixTest.Tests.Extensions.NetFXExtension
         [NamedFact]
         [Description("Verify that the (NetFxNativeImage,CustomAction) Tables are created in the MSI and have expected data.")]
         [Priority(1)]
+        [RuntimeTest] // not really a runtime test but TestUninitialize tries to write to HKLM
         public void NativeImage_VerifyMSITableData()
         {
             string sourceFile = Path.Combine(NativeImageTests.TestDataDirectory, @"product.wxs");
@@ -179,7 +172,7 @@ namespace WixTest.Tests.Extensions.NetFXExtension
         }
 
         [NamedFact]
-        [Description("Verify using the log that the NGEN command line contains the following”/Debug /Profile /NoDependencies.")]
+        [Description("Verify using the log that the NGEN command line contains the followingï¿½/Debug /Profile /NoDependencies.")]
         [Priority(3)]
         [RuntimeTest]
         public void NativeImage_VerifyCommandLineParameters()
@@ -196,9 +189,9 @@ namespace WixTest.Tests.Extensions.NetFXExtension
 
         protected override void TestUninitialize()
         {
-            base.TestUninitialize();
-
             NativeImageTests.EnableWindowsInstallerRollBack();
+
+            base.TestUninitialize();
         }
 
         #region Helper Methods

@@ -1,17 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="elevation.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Module: Elevation
-//
-//    Burn elevated process handler.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -47,6 +34,11 @@ typedef enum _BURN_ELEVATION_MESSAGE_TYPE
     BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_MSI_MESSAGE,
     BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_FILES_IN_USE,
     BURN_ELEVATION_MESSAGE_TYPE_LAUNCH_APPROVED_EXE_PROCESSID,
+
+    BURN_ELEVATION_TRANSACTION_BEGIN,
+    BURN_ELEVATION_TRANSACTION_COMMIT,
+    BURN_ELEVATION_TRANSACTION_ROLLBACK
+
 } BURN_ELEVATION_MESSAGE_TYPE;
 
 
@@ -82,10 +74,23 @@ typedef struct _BURN_ELEVATION_CHILD_MESSAGE_CONTEXT
     BURN_VARIABLES* pVariables;
     BURN_REGISTRATION* pRegistration;
     BURN_USER_EXPERIENCE* pUserExperience;
+
+	MSIHANDLE hMsiTrns;
+	HANDLE hMsiTrnsEvent;
 } BURN_ELEVATION_CHILD_MESSAGE_CONTEXT;
 
 
 // internal function declarations
+
+static HRESULT OnMsiBeginTransaction(
+    __in BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext
+);
+static HRESULT OnMsiCommitTransaction(
+    __in BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext
+);
+static HRESULT OnMsiRollbackTransaction(
+    __in BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext
+);
 
 static DWORD WINAPI ElevatedChildCacheThreadProc(
     __in LPVOID lpThreadParameter
@@ -148,6 +153,7 @@ static HRESULT OnSessionBegin(
     );
 static HRESULT OnSessionResume(
     __in BURN_REGISTRATION* pRegistration,
+    __in BURN_VARIABLES* pVariables,
     __in BYTE* pbData,
     __in DWORD cbData
     );
@@ -263,15 +269,16 @@ extern "C" HRESULT ElevationElevate(
     int nResult = IDOK;
     HANDLE hPipesCreatedEvent = INVALID_HANDLE_VALUE;
 
-    nResult = pEngineState->userExperience.pUserExperience->OnElevate();
-    hr = UserExperienceInterpretResult(&pEngineState->userExperience, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted elevation requirement.");
+    hr = UserExperienceOnElevateBegin(&pEngineState->userExperience);
+    ExitOnRootFailure(hr, "BA aborted elevation requirement.");
 
     hr = PipeCreateNameAndSecret(&pEngineState->companionConnection.sczName, &pEngineState->companionConnection.sczSecret);
     ExitOnFailure(hr, "Failed to create pipe name and client token.");
 
     hr = PipeCreatePipes(&pEngineState->companionConnection, TRUE, &hPipesCreatedEvent);
     ExitOnFailure(hr, "Failed to create pipe and cache pipe.");
+
+    LogId(REPORT_STANDARD, MSG_LAUNCH_ELEVATED_ENGINE_STARTING);
 
     do
     {
@@ -281,14 +288,18 @@ extern "C" HRESULT ElevationElevate(
         hr = PipeLaunchChildProcess(pEngineState->sczBundleEngineWorkingPath, &pEngineState->companionConnection, TRUE, hwndParent);
         if (SUCCEEDED(hr))
         {
+            LogId(REPORT_STANDARD, MSG_LAUNCH_ELEVATED_ENGINE_SUCCESS);
+
             hr = PipeWaitForChildConnect(&pEngineState->companionConnection);
             ExitOnFailure(hr, "Failed to connect to elevated child process.");
+
+            LogId(REPORT_STANDARD, MSG_CONNECT_TO_ELEVATED_ENGINE_SUCCESS);
         }
         else if (HRESULT_FROM_WIN32(ERROR_CANCELLED) == hr)
         {
             // The user clicked "Cancel" on the elevation prompt or the elevation prompt timed out, provide the notification with the option to retry.
             hr = HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-            nResult = UserExperienceSendError(pEngineState->userExperience.pUserExperience, BOOTSTRAPPER_ERROR_TYPE_ELEVATE, NULL, hr, NULL, MB_ICONERROR | MB_RETRYCANCEL, IDNOACTION);
+            nResult = UserExperienceSendError(&pEngineState->userExperience, BOOTSTRAPPER_ERROR_TYPE_ELEVATE, NULL, hr, NULL, MB_ICONERROR | MB_RETRYCANCEL, IDNOACTION);
         }
     } while (IDRETRY == nResult);
     ExitOnFailure(hr, "Failed to elevate.");
@@ -300,6 +311,8 @@ LExit:
     {
         PipeConnectionUninitialize(&pEngineState->companionConnection);
     }
+
+    UserExperienceOnElevateComplete(&pEngineState->userExperience, hr);
 
     return hr;
 }
@@ -424,7 +437,8 @@ LExit:
 extern "C" HRESULT ElevationSessionResume(
     __in HANDLE hPipe,
     __in_z LPCWSTR wzResumeCommandLine,
-    __in BOOL fDisableResume
+    __in BOOL fDisableResume,
+    __in BURN_VARIABLES* pVariables
     )
 {
     HRESULT hr = S_OK;
@@ -438,6 +452,9 @@ extern "C" HRESULT ElevationSessionResume(
 
     hr = BuffWriteNumber(&pbData, &cbData, fDisableResume);
     ExitOnFailure(hr, "Failed to write resume flag.");
+
+    hr = VariableSerialize(pVariables, FALSE, &pbData, &cbData);
+    ExitOnFailure(hr, "Failed to write variables.");
 
     // send message
     hr = PipeSendMessage(hPipe, BURN_ELEVATION_MESSAGE_TYPE_SESSION_RESUME, pbData, cbData, NULL, NULL, &dwResult);
@@ -702,6 +719,71 @@ LExit:
 
     return hr;
 }
+
+extern "C" HRESULT ElevationMsiBeginTransaction(
+    __in HANDLE hPipe,
+    __in_opt HWND hwndParent,
+    __in LPVOID pvContext
+)
+{
+    UNREFERENCED_PARAMETER(hwndParent);
+    HRESULT hr = S_OK;
+    BURN_ELEVATION_MSI_MESSAGE_CONTEXT context = {};
+    DWORD dwResult = ERROR_SUCCESS;
+
+    context.pvContext = pvContext;
+
+    hr = PipeSendMessage(hPipe, BURN_ELEVATION_TRANSACTION_BEGIN, NULL, 0, NULL, &context, &dwResult);
+    ExitOnFailure(hr, "Failed to send BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_MSI_PACKAGE message to per-machine process.");
+    ExitOnWin32Error(dwResult, hr, "Failed beginning an elevated MSI transaction");
+
+LExit:
+    return hr;
+}
+
+extern "C" HRESULT ElevationMsiCommitTransaction(
+    __in HANDLE hPipe,
+    __in_opt HWND hwndParent,
+    __in LPVOID pvContext
+)
+{
+    UNREFERENCED_PARAMETER(hwndParent);
+    HRESULT hr = S_OK;
+    BURN_ELEVATION_MSI_MESSAGE_CONTEXT context = {};
+    DWORD dwResult = ERROR_SUCCESS;
+
+    context.pvContext = pvContext;
+
+    hr = PipeSendMessage(hPipe, BURN_ELEVATION_TRANSACTION_COMMIT, NULL, 0, NULL, &context, &dwResult);
+    ExitOnFailure(hr, "Failed to send BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_MSI_PACKAGE message to per-machine process.");
+    ExitOnWin32Error(dwResult, hr, "Failed committing an elevated MSI transaction");
+
+LExit:
+    return hr;
+}
+
+extern "C" HRESULT ElevationMsiRollbackTransaction(
+    __in HANDLE hPipe,
+    __in_opt HWND hwndParent,
+    __in LPVOID pvContext
+)
+{
+    UNREFERENCED_PARAMETER(hwndParent);
+    HRESULT hr = S_OK;
+    BURN_ELEVATION_MSI_MESSAGE_CONTEXT context = {};
+    DWORD dwResult = ERROR_SUCCESS;
+
+    context.pvContext = pvContext;
+
+    hr = PipeSendMessage(hPipe, BURN_ELEVATION_TRANSACTION_ROLLBACK, NULL, 0, NULL, &context, &dwResult);
+    ExitOnFailure(hr, "Failed to send BURN_ELEVATION_MESSAGE_TYPE_EXECUTE_MSI_PACKAGE message to per-machine process.");
+    ExitOnWin32Error(dwResult, hr, "Failed rolling back an elevated MSI transaction");
+
+LExit:
+    return hr;
+}
+
+
 
 /*******************************************************************
  ElevationExecuteMsiPackage - 
@@ -1141,8 +1223,12 @@ extern "C" HRESULT ElevationChildResumeAutomaticUpdates()
 {
     HRESULT hr = S_OK;
 
+    LogId(REPORT_STANDARD, MSG_RESUME_AU_STARTING);
+
     hr = WuaResumeAutomaticUpdates();
     ExitOnFailure(hr, "Failed to resume automatic updates after pausing them, continuing...");
+
+    LogId(REPORT_STANDARD, MSG_RESUME_AU_SUCCEEDED);
 
 LExit:
     return hr;
@@ -1432,7 +1518,7 @@ static HRESULT ProcessElevatedChildMessage(
     __in BURN_PIPE_MESSAGE* pMsg,
     __in_opt LPVOID pvContext,
     __out DWORD* pdwResult
-    )
+)
 {
     HRESULT hr = S_OK;
     BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext = static_cast<BURN_ELEVATION_CHILD_MESSAGE_CONTEXT*>(pvContext);
@@ -1441,6 +1527,18 @@ static HRESULT ProcessElevatedChildMessage(
 
     switch (pMsg->dwMessage)
     {
+    case BURN_ELEVATION_TRANSACTION_BEGIN:
+        hrResult = OnMsiBeginTransaction(pContext);
+        break;
+
+    case BURN_ELEVATION_TRANSACTION_COMMIT:
+        hrResult = OnMsiCommitTransaction(pContext);
+        break;
+
+    case BURN_ELEVATION_TRANSACTION_ROLLBACK:
+        hrResult = OnMsiRollbackTransaction(pContext);
+        break;
+
     case BURN_ELEVATION_MESSAGE_TYPE_APPLY_INITIALIZE:
         hrResult = OnApplyInitialize(pContext->pVariables, pContext->pRegistration, pContext->phLock, pContext->pfDisabledAutomaticUpdates, (BYTE*)pMsg->pvData, pMsg->cbData);
         break;
@@ -1454,7 +1552,7 @@ static HRESULT ProcessElevatedChildMessage(
         break;
 
     case BURN_ELEVATION_MESSAGE_TYPE_SESSION_RESUME:
-        hrResult = OnSessionResume(pContext->pRegistration, (BYTE*)pMsg->pvData, pMsg->cbData);
+        hrResult = OnSessionResume(pContext->pRegistration, pContext->pVariables, (BYTE*)pMsg->pvData, pMsg->cbData);
         break;
 
     case BURN_ELEVATION_MESSAGE_TYPE_SESSION_END:
@@ -1576,6 +1674,53 @@ static HRESULT ProcessResult(
     return hr;
 }
 
+static HRESULT OnMsiBeginTransaction(
+    __in BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext
+)
+{
+    UINT uResult = ERROR_SUCCESS;
+    HRESULT hr = S_OK;
+
+    pContext->hMsiTrns = NULL;
+    pContext->hMsiTrnsEvent = NULL;
+    uResult = MsiBeginTransaction(L"WiX", 0, &pContext->hMsiTrns, &pContext->hMsiTrnsEvent);
+    ExitOnWin32Error(uResult, hr, "Failed beginning an MSI transaction");
+
+LExit:
+    return hr;
+}
+
+static HRESULT OnMsiCommitTransaction(
+    __in BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext
+)
+{
+    UINT uResult = ERROR_SUCCESS;
+    HRESULT hr = S_OK;
+
+    uResult = MsiEndTransaction(MSITRANSACTIONSTATE_COMMIT);
+    ExitOnWin32Error(uResult, hr, "Failed committing an MSI transaction");
+
+LExit:
+    pContext->hMsiTrns = NULL;
+    pContext->hMsiTrnsEvent = NULL;
+    return hr;
+}
+
+static HRESULT OnMsiRollbackTransaction(
+    __in BURN_ELEVATION_CHILD_MESSAGE_CONTEXT* pContext
+) {
+    UINT uResult = ERROR_SUCCESS;
+    HRESULT hr = S_OK;
+
+    uResult = MsiEndTransaction(MSITRANSACTIONSTATE_ROLLBACK);
+    ExitOnWin32Error(uResult, hr, "Failed rolling back an MSI transaction");
+
+LExit:
+    pContext->hMsiTrns = NULL;
+    pContext->hMsiTrnsEvent = NULL;
+    return hr;
+}
+
 static HRESULT OnApplyInitialize(
     __in BURN_VARIABLES* pVariables,
     __in BURN_REGISTRATION* pRegistration,
@@ -1592,7 +1737,7 @@ static HRESULT OnApplyInitialize(
     DWORD dwTakeSystemRestorePoint = 0;
     LPWSTR sczBundleName = NULL;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadNumber(pbData, cbData, &iData, &dwAction);
     ExitOnFailure(hr, "Failed to read action.");
 
@@ -1600,12 +1745,12 @@ static HRESULT OnApplyInitialize(
     ExitOnFailure(hr, "Failed to read update action.");
 
     hr = BuffReadNumber(pbData, cbData, &iData, &dwTakeSystemRestorePoint);
-    ExitOnFailure(hr, "Failed to read sysem restore point action.");
+    ExitOnFailure(hr, "Failed to read system restore point action.");
 
-    hr = VariableDeserialize(pVariables, pbData, cbData, &iData);
+    hr = VariableDeserialize(pVariables, FALSE, pbData, cbData, &iData);
     ExitOnFailure(hr, "Failed to read variables.");
 
-    // initialize.
+    // Initialize.
     hr = ApplyLock(TRUE, phLock);
     ExitOnFailure(hr, "Failed to acquire lock due to setup in other session.");
 
@@ -1618,15 +1763,21 @@ static HRESULT OnApplyInitialize(
     // Attempt to pause AU with best effort.
     if (BURN_AU_PAUSE_ACTION_IFELEVATED == dwAUAction || BURN_AU_PAUSE_ACTION_IFELEVATED_NORESUME == dwAUAction)
     {
+        LogId(REPORT_STANDARD, MSG_PAUSE_AU_STARTING);
+
         hr = WuaPauseAutomaticUpdates();
         if (FAILED(hr))
         {
             LogId(REPORT_STANDARD, MSG_FAILED_PAUSE_AU, hr);
             hr = S_OK;
         }
-        else if (BURN_AU_PAUSE_ACTION_IFELEVATED == dwAUAction)
+        else
         {
-            *pfDisabledWindowsUpdate = TRUE;
+            LogId(REPORT_STANDARD, MSG_PAUSE_AU_SUCCEEDED);
+            if (BURN_AU_PAUSE_ACTION_IFELEVATED == dwAUAction)
+            {
+                *pfDisabledWindowsUpdate = TRUE;
+            }
         }
     }
 
@@ -1698,7 +1849,7 @@ static HRESULT OnSessionBegin(
     DWORD dwDependencyRegistrationAction = 0;
     DWORD64 qwEstimatedSize = 0;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczEngineWorkingPath);
     ExitOnFailure(hr, "Failed to read engine working path.");
 
@@ -1717,10 +1868,10 @@ static HRESULT OnSessionBegin(
     hr = BuffReadNumber64(pbData, cbData, &iData, &qwEstimatedSize);
     ExitOnFailure(hr, "Failed to read estimated size.");
 
-    hr = VariableDeserialize(pVariables, pbData, cbData, &iData);
+    hr = VariableDeserialize(pVariables, FALSE, pbData, cbData, &iData);
     ExitOnFailure(hr, "Failed to read variables.");
 
-    // begin session in per-machine process
+    // Begin session in per-machine process.
     hr = RegistrationSessionBegin(sczEngineWorkingPath, pRegistration, pVariables, pUserExperience, dwRegistrationOperations, (BURN_DEPENDENCY_REGISTRATION_ACTION)dwDependencyRegistrationAction, qwEstimatedSize);
     ExitOnFailure(hr, "Failed to begin registration session.");
 
@@ -1732,6 +1883,7 @@ LExit:
 
 static HRESULT OnSessionResume(
     __in BURN_REGISTRATION* pRegistration,
+    __in BURN_VARIABLES* pVariables,
     __in BYTE* pbData,
     __in DWORD cbData
     )
@@ -1739,16 +1891,19 @@ static HRESULT OnSessionResume(
     HRESULT hr = S_OK;
     SIZE_T iData = 0;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &pRegistration->sczResumeCommandLine);
     ExitOnFailure(hr, "Failed to read resume command line.");
 
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&pRegistration->fDisableResume);
     ExitOnFailure(hr, "Failed to read resume flag.");
 
-    // suspend session in per-machine process
-    hr = RegistrationSessionResume(pRegistration);
-    ExitOnFailure(hr, "Failed to suspend registration session.");
+    hr = VariableDeserialize(pVariables, FALSE, pbData, cbData, &iData);
+    ExitOnFailure(hr, "Failed to read variables.");
+
+    // resume session in per-machine process
+    hr = RegistrationSessionResume(pRegistration, pVariables);
+    ExitOnFailure(hr, "Failed to resume registration session.");
 
 LExit:
     return hr;
@@ -1766,7 +1921,7 @@ static HRESULT OnSessionEnd(
     DWORD dwRestart = 0;
     DWORD dwDependencyRegistrationAction = 0;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadNumber(pbData, cbData, &iData, &dwResumeMode);
     ExitOnFailure(hr, "Failed to read resume mode enum.");
 
@@ -1811,7 +1966,7 @@ static HRESULT OnLayoutBundle(
     LPWSTR sczLayoutDirectory = NULL;
     LPWSTR sczUnverifiedPath = NULL;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczLayoutDirectory);
     ExitOnFailure(hr, "Failed to read layout directory.");
 
@@ -1847,7 +2002,7 @@ static HRESULT OnCacheOrLayoutContainerOrPayload(
     LPWSTR sczUnverifiedPath = NULL;
     BOOL fMove = FALSE;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &scz);
     ExitOnFailure(hr, "Failed to read package id.");
 
@@ -1939,7 +2094,7 @@ static HRESULT OnProcessDependentRegistration(
     SIZE_T iData = 0;
     BURN_DEPENDENT_REGISTRATION_ACTION action = { };
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&action.type);
     ExitOnFailure(hr, "Failed to read action type.");
 
@@ -1982,9 +2137,9 @@ static HRESULT OnExecuteExePackage(
 
     executeAction.type = BURN_EXECUTE_ACTION_TYPE_EXE_PACKAGE;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczPackage);
-    ExitOnFailure(hr, "Failed to read exe package.");
+    ExitOnFailure(hr, "Failed to read EXE package id.");
 
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&executeAction.exePackage.action);
     ExitOnFailure(hr, "Failed to read action.");
@@ -1998,7 +2153,7 @@ static HRESULT OnExecuteExePackage(
     hr = BuffReadString(pbData, cbData, &iData, &sczAncestors);
     ExitOnFailure(hr, "Failed to read the list of ancestors.");
 
-    hr = VariableDeserialize(pVariables, pbData, cbData, &iData);
+    hr = VariableDeserialize(pVariables, FALSE, pbData, cbData, &iData);
     ExitOnFailure(hr, "Failed to read variables.");
 
     hr = PackageFindById(pPackages, sczPackage, &executeAction.exePackage.pPackage);
@@ -2022,7 +2177,7 @@ static HRESULT OnExecuteExePackage(
         ExitOnFailure(hr, "Failed to allocate the list of ancestors.");
     }
 
-    // execute EXE package
+    // Execute EXE package.
     hr = ExeEngineExecutePackage(&executeAction, pVariables, static_cast<BOOL>(dwRollback), GenericExecuteMessageHandler, hPipe, &exeRestart);
     ExitOnFailure(hr, "Failed to execute EXE package.");
 
@@ -2065,9 +2220,9 @@ static HRESULT OnExecuteMsiPackage(
 
     executeAction.type = BURN_EXECUTE_ACTION_TYPE_MSI_PACKAGE;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczPackage);
-    ExitOnFailure(hr, "Failed to read action.");
+    ExitOnFailure(hr, "Failed to read MSI package id.");
 
     hr = PackageFindById(pPackages, sczPackage, &executeAction.msiPackage.pPackage);
     ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
@@ -2110,13 +2265,13 @@ static HRESULT OnExecuteMsiPackage(
         }
     }
 
-    hr = VariableDeserialize(pVariables, pbData, cbData, &iData);
+    hr = VariableDeserialize(pVariables, FALSE, pbData, cbData, &iData);
     ExitOnFailure(hr, "Failed to read variables.");
 
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&fRollback);
     ExitOnFailure(hr, "Failed to read rollback flag.");
 
-    // execute MSI package
+    // Execute MSI package.
     hr = MsiEngineExecutePackage(hwndParent, &executeAction, pVariables, fRollback, MsiExecuteMessageHandler, hPipe, &msiRestart);
     ExitOnFailure(hr, "Failed to execute MSI package.");
 
@@ -2157,9 +2312,9 @@ static HRESULT OnExecuteMspPackage(
 
     executeAction.type = BURN_EXECUTE_ACTION_TYPE_MSP_TARGET;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczPackage);
-    ExitOnFailure(hr, "Failed to read action.");
+    ExitOnFailure(hr, "Failed to read MSP package id.");
 
     hr = PackageFindById(pPackages, sczPackage, &executeAction.mspTarget.pPackage);
     ExitOnFailure(hr, "Failed to find package: %ls", sczPackage);
@@ -2170,7 +2325,7 @@ static HRESULT OnExecuteMspPackage(
     executeAction.mspTarget.fPerMachineTarget = TRUE; // we're in the elevated process, clearly we're targeting a per-machine product.
 
     hr = BuffReadString(pbData, cbData, &iData, &executeAction.mspTarget.sczTargetProductCode);
-    ExitOnFailure(hr, "Failed to read package log.");
+    ExitOnFailure(hr, "Failed to read target product code.");
 
     hr = BuffReadString(pbData, cbData, &iData, &executeAction.mspTarget.sczLogPath);
     ExitOnFailure(hr, "Failed to read package log.");
@@ -2202,13 +2357,13 @@ static HRESULT OnExecuteMspPackage(
         }
     }
 
-    hr = VariableDeserialize(pVariables, pbData, cbData, &iData);
+    hr = VariableDeserialize(pVariables, FALSE, pbData, cbData, &iData);
     ExitOnFailure(hr, "Failed to read variables.");
 
     hr = BuffReadNumber(pbData, cbData, &iData, (DWORD*)&fRollback);
     ExitOnFailure(hr, "Failed to read rollback flag.");
 
-    // execute MSP package
+    // Execute MSP package.
     hr = MspEngineExecutePackage(hwndParent, &executeAction, pVariables, fRollback, MsiExecuteMessageHandler, hPipe, &restart);
     ExitOnFailure(hr, "Failed to execute MSP package.");
 
@@ -2249,9 +2404,9 @@ static HRESULT OnExecuteMsuPackage(
 
     executeAction.type = BURN_EXECUTE_ACTION_TYPE_MSU_PACKAGE;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczPackage);
-    ExitOnFailure(hr, "Failed to read package id.");
+    ExitOnFailure(hr, "Failed to read MSU package id.");
 
     hr = BuffReadString(pbData, cbData, &iData, &executeAction.msuPackage.sczLogPath);
     ExitOnFailure(hr, "Failed to read package log.");
@@ -2571,7 +2726,7 @@ static HRESULT OnCleanPackage(
     LPWSTR sczPackage = NULL;
     BURN_PACKAGE* pPackage = NULL;
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &sczPackage);
     ExitOnFailure(hr, "Failed to read package id.");
 
@@ -2608,7 +2763,7 @@ static HRESULT OnLaunchApprovedExe(
 
     pLaunchApprovedExe = (BURN_LAUNCH_APPROVED_EXE*)MemAlloc(sizeof(BURN_LAUNCH_APPROVED_EXE), TRUE);
 
-    // deserialize message data
+    // Deserialize message data.
     hr = BuffReadString(pbData, cbData, &iData, &pLaunchApprovedExe->sczId);
     ExitOnFailure(hr, "Failed to read approved exe id.");
 

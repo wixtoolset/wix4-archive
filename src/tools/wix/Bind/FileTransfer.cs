@@ -1,20 +1,10 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="FileTransfer.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// Common binder core of the WiX toolset.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind
 {
     using System;
     using System.IO;
+    using WixToolset;
     using WixToolset.Data;
 
     /// <summary>
@@ -72,34 +62,9 @@ namespace WixToolset.Bind
         /// <returns>true if the source and destination are the different, false if no file transfer is created.</returns>
         public static bool TryCreate(string source, string destination, bool move, string type, SourceLineNumber sourceLineNumbers, out FileTransfer transfer)
         {
-            string sourceFullPath = null;
-            string fileLayoutFullPath = null;
+            string sourceFullPath = GetValidatedFullPath(sourceLineNumbers, source);
 
-            try
-            {
-                sourceFullPath = Path.GetFullPath(source);
-            }
-            catch (System.ArgumentException)
-            {
-                throw new WixException(WixErrors.InvalidFileName(sourceLineNumbers, source));
-            }
-            catch (System.IO.PathTooLongException)
-            {
-                throw new WixException(WixErrors.PathTooLong(sourceLineNumbers, source));
-            }
-
-            try
-            {
-                fileLayoutFullPath = Path.GetFullPath(destination);
-            }
-            catch (System.ArgumentException)
-            {
-                throw new WixException(WixErrors.InvalidFileName(sourceLineNumbers, destination));
-            }
-            catch (System.IO.PathTooLongException)
-            {
-                throw new WixException(WixErrors.PathTooLong(sourceLineNumbers, destination));
-            }
+            string fileLayoutFullPath = GetValidatedFullPath(sourceLineNumbers, destination);
 
             // if the current source path (where we know that the file already exists) and the resolved
             // path as dictated by the Directory table are not the same, then propagate the file.  The
@@ -113,6 +78,36 @@ namespace WixToolset.Bind
 
             transfer = new FileTransfer(source, destination, move, type, sourceLineNumbers);
             return true;
+        }
+
+        private static string GetValidatedFullPath(SourceLineNumber sourceLineNumbers, string path)
+        {
+            string result;
+
+            try
+            {
+                result = Path.GetFullPath(path);
+
+                string filename = Path.GetFileName(result);
+
+                foreach (string reservedName in Common.ReservedFileNames)
+                {
+                    if (reservedName.Equals(filename, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new WixException(WixErrors.InvalidFileName(sourceLineNumbers, path));
+                    }
+                }
+            }
+            catch (System.ArgumentException)
+            {
+                throw new WixException(WixErrors.InvalidFileName(sourceLineNumbers, path));
+            }
+            catch (System.IO.PathTooLongException)
+            {
+                throw new WixException(WixErrors.PathTooLong(sourceLineNumbers, path));
+            }
+
+            return result;
         }
     }
 }

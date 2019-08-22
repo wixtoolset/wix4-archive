@@ -4,6 +4,7 @@
         <Detect>
             <!-- TODO: "1.000" text souldn't be here - requires a feature to remove this -->
             <Arp DisplayName="Drox Operative 1.000"/>
+            <Arp DisplayName="Drox Operative"/>
         </Detect>
 
         <Data>

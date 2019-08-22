@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="rgdfault.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions for Cfg Legacy API (for purposes of default registry value handling)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -221,7 +210,7 @@ static HRESULT RegDefaultReadValueBinary(
     hr = ValueSetBlob(pbBuffer, cbBuffer, FALSE, NULL, pcdb->sczGuid, &cvNewValue);
     ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
@@ -248,7 +237,7 @@ static HRESULT RegDefaultReadValueString(
     hr = ValueSetString(sczStringValue, FALSE, NULL, pcdb->sczGuid, &cvNewValue);
     ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
@@ -275,7 +264,7 @@ static HRESULT RegDefaultReadValueDword(
     hr = ValueSetDword(dwValue, NULL, pcdb->sczGuid, &cvNewValue);
     ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:
@@ -301,7 +290,7 @@ static HRESULT RegDefaultReadValueQword(
     hr = ValueSetQword(qwValue, NULL, pcdb->sczGuid, &cvNewValue);
     ExitOnFailure(hr, "Failed to set string value %ls in memory", wzCfgValueName);
 
-    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, wzCfgValueName, &cvNewValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to set value in db: %ls", wzCfgValueName);
 
 LExit:

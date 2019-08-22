@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?include WixVer.wxi ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:swid="http://wixtoolset.org/schemas/v4/wxs/tag">
+    <Bundle Name='!(loc.ShortProduct) v$(var.WixVersion)' Manufacturer='!(loc.Company)'
+            Version='$(var.WixVersion)' UpgradeCode='166BFE1C-EA17-4ADF-A94C-97D50CC0088A'
+            IconSourceFile='ProjectFile.ico' SplashScreenSourceFile='SplashScreen.bmp'
+            AboutUrl='!(loc.SupportUrl)' UpdateUrl='!(loc.UpdateUrl)'
+            Compressed='$(var.WixBundleCompressed)'>
+
+        <swid:Tag Regid="regid.2008-09.org.wixtoolset" />
+        <Update Location='!(loc.UpdateUrl)' />
+
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+            <bal:WixStandardBootstrapperApplication LicenseUrl="http://wixtoolset.org/about/license/" />
+        </BootstrapperApplicationRef>
+
+        <Chain>
+            <PackageGroupRef Id='WixPackages' />
+        </Chain>
+    </Bundle>
+</Wix>

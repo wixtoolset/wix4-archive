@@ -1,17 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="handle.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Handle to a database
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,6 +49,14 @@ struct CFGDB_STRUCT
 
     // The GUID for this endpoint
     LPWSTR sczGuid;
+
+    // Only used for remote databases
+    // Respectively, the key (in string form) of the local database in the remote database's table, and vice-versa.
+    // This is used to track references to a last known history value from the other database, to guarantee the common sync point
+    // isn't wiped out when old settings are expired. If we didn't do this, expiring old settings would have a high likelihood
+    // of creating sync conflicts that the user must resolve.
+    LPWSTR sczGuidLocalInRemoteKey;
+    LPWSTR sczGuidRemoteInLocalKey;
 
     // This defines our database schema (to instruct SceUtil how to create it)
     SCE_DATABASE_SCHEMA dsSceDb;

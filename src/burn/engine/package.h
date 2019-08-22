@@ -1,17 +1,5 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="package.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 
 #if defined(__cplusplus)
@@ -88,6 +76,14 @@ typedef struct _BURN_EXE_EXIT_CODE
     BOOL fWildcard;
 } BURN_EXE_EXIT_CODE;
 
+typedef struct _BURN_EXE_COMMAND_LINE_ARGUMENT
+{
+    LPWSTR sczInstallArgument;
+    LPWSTR sczUninstallArgument;
+    LPWSTR sczRepairArgument;
+    LPWSTR sczCondition;
+} BURN_EXE_COMMAND_LINE_ARGUMENT;
+
 typedef struct _BURN_MSPTARGETPRODUCT
 {
     MSIINSTALLCONTEXT context;
@@ -106,6 +102,7 @@ typedef struct _BURN_MSIPROPERTY
     LPWSTR sczId;
     LPWSTR sczValue; // used during forward execution
     LPWSTR sczRollbackValue;  // used during rollback
+    LPWSTR sczCondition;
 } BURN_MSIPROPERTY;
 
 typedef struct _BURN_MSIFEATURE
@@ -157,6 +154,7 @@ typedef struct _BURN_ROLLBACK_BOUNDARY
 {
     LPWSTR sczId;
     BOOL fVital;
+    BOOL fTransaction;
 } BURN_ROLLBACK_BOUNDARY;
 
 typedef struct _BURN_PATCH_TARGETCODE
@@ -226,8 +224,13 @@ typedef struct _BURN_PACKAGE
             BOOL fRepairable;
             BURN_EXE_PROTOCOL_TYPE protocol;
 
+            BOOL fSupportsAncestors;
+
             BURN_EXE_EXIT_CODE* rgExitCodes;
             DWORD cExitCodes;
+
+            BURN_EXE_COMMAND_LINE_ARGUMENT* rgCommandLineArguments;
+            DWORD cCommandLineArguments;
         } Exe;
         struct
         {

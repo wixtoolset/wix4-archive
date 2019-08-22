@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="LegacyDetectDirectoryTest.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Test detecting a directory and syncing data to/from it via legacy manifest.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -176,21 +165,27 @@ namespace CfgTests
             hr = FileWrite(sczFileA1, 0, rgbFileA1, sizeof(rgbFileA1), NULL);
             ExitOnFailure(hr, "Failed to write file A1");
 
+            WaitForSqlCeTimestampChange();
             hr = FileFromString(sczFileAIni, 0, wzAIni, FILE_ENCODING_UTF16_WITH_BOM);
             ExitOnFailure(hr, "Failed to write file data.ini to A directory");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczFileB1, 0, rgbFileB1, sizeof(rgbFileB1), NULL);
             ExitOnFailure(hr, "Failed to write file B1");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczFileB2, 0, rgbFileB2, sizeof(rgbFileB2), NULL);
             ExitOnFailure(hr, "Failed to write file B2");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczIndividualFile, 0, rgbFileA1, sizeof(rgbFileA1), NULL);
             ExitOnFailure(hr, "Failed to write file Individual File");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczIndividualFileFake, 0, rgbFileB1, sizeof(rgbFileB1), NULL);
             ExitOnFailure(hr, "Failed to write file Individual File Fake");
 
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczIndividualFileIgnored, 0, rgbFileB1, sizeof(rgbFileB1), NULL);
             ExitOnFailure(hr, "Failed to write file Individual File Ignored");
 
@@ -333,7 +328,7 @@ namespace CfgTests
             SetARP(L"RandomKeyName", L"Cfg Test Displayname A", sczPathA, NULL);
             SetARP(L"OtherIncorrectKeyName", L"Cfg Test Displayname B", sczPathB, NULL);
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = FileWrite(sczFileB1, 0, rgbFileB1v2, sizeof(rgbFileB1v2), NULL);
             ExitOnFailure(hr, "Failed to write file B1v2");
 

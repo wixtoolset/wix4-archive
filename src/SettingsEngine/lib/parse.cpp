@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="parse.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Legacy settings engine API parsing code (for legacy XML manifests)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -272,7 +261,24 @@ HRESULT ParseDetectArp(
     ExitOnFailure(hr, "Failed to get DisplayIconDir attribute from Detect/Arp element");
 
     hr = XmlGetAttributeEx(pixnElement, L"DisplayName", &pDetect->arp.sczDisplayName);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
     ExitOnFailure(hr, "Failed to get DisplayName attribute from Detect/Arp element");
+
+    hr = XmlGetAttributeEx(pixnElement, L"RegKeyName", &pDetect->arp.sczRegKeyName);
+    if (E_NOTFOUND == hr)
+    {
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed to get RegKeyName attribute from Detect/Arp element");
+
+    if (NULL != pDetect->arp.sczDisplayName && NULL != pDetect->arp.sczRegKeyName)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_BAD_FORMAT);
+        ExitOnFailure(hr, "Can't specify both a DisplayName and a RegKeyName to a Detect/Arp element!");
+    }
 
     hr = XmlSelectNodes(pixnElement, L"*", &pixnlChildElements);
     ExitOnFailure(hr, "Failed to select detection elements");
@@ -1160,7 +1166,7 @@ HRESULT ParseDisplayName(
     ExitOnFailure(hr, "Failed to get text from DisplayName element");
 
     ++pProduct->cDisplayNames;
-    hr = MemEnsureArraySize(reinterpret_cast<void **>(&pProduct->rgDisplayNames), pProduct->cDisplayNames, sizeof(LEGACY_DISPLAYNAME), 5);
+    hr = MemEnsureArraySize(reinterpret_cast<void **>(&pProduct->rgDisplayNames), pProduct->cDisplayNames, sizeof(DISPLAY_NAME), 5);
     ExitOnFailure(hr, "Failed to resize displayname array");
 
     pProduct->rgDisplayNames[pProduct->cDisplayNames-1].dwLCID = dwLCID;

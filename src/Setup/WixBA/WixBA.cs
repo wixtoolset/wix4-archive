@@ -1,15 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="WixBA.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// The WiX toolset user experience.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.UX
 {
@@ -52,14 +41,41 @@ namespace WixToolset.UX
         /// <param name="uri">URI to open the web browser.</param>
         public static void LaunchUrl(string uri)
         {
-            // Switch the wait cursor since shellexec can take a second or so.
-            Cursor cursor = WixBA.View.Cursor;
-            WixBA.View.Cursor = Cursors.Wait;
+            WixBA.UseShellExecute(uri);
+        }
 
+        /// <summary>
+        /// Open a log file.
+        /// </summary>
+        /// <param name="uri">URI to a log file.</param>
+        internal static void OpenLog(Uri uri)
+        {
+            WixBA.UseShellExecute(uri.ToString());
+        }
+
+        /// <summary>
+        /// Open a log folder.
+        /// </summary>
+        /// <param name="string">path to a log folder.</param>
+        internal static void OpenLogFolder(string logFolder)
+        {
+            WixBA.UseShellExecute(logFolder);
+        }
+
+        /// <summary>
+        /// Open a log folder.
+        /// </summary>
+        /// <param name="uri">path to a log folder.</param>
+        private static void UseShellExecute(string path)
+        {
+            // Switch the wait cursor since shellexec can take a second or so.
+            System.Windows.Input.Cursor cursor = WixBA.View.Cursor;
+            WixBA.View.Cursor = System.Windows.Input.Cursors.Wait;
+            Process process = null;
             try
             {
-                Process process = new Process();
-                process.StartInfo.FileName = uri;
+                process = new Process();
+                process.StartInfo.FileName = path;
                 process.StartInfo.UseShellExecute = true;
                 process.StartInfo.Verb = "open";
 
@@ -67,7 +83,12 @@ namespace WixToolset.UX
             }
             finally
             {
-                WixBA.View.Cursor = cursor; // back to the original cursor.
+                if (null != process)
+                {
+                    process.Dispose();
+                }
+                // back to the original cursor.
+                WixBA.View.Cursor = cursor;
             }
         }
 

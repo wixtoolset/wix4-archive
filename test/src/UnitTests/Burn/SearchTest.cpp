@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="SearchTest.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Search unit tests for Burn.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -222,7 +211,7 @@ namespace Bootstrapper
                     L"    <RegistrySearch Id='Search20' Type='value' Root='HKCU' Key='[MyKey]' Value='[MyValue]' Variable='Variable20' VariableType='string' />"
                     L"    <RegistrySearch Id='Search21' Type='value' Root='HKCU' Key='SOFTWARE\\Classes\\CLSID\\WiX_Burn_UnitTest\\Bitness' Value='TestStringSpecificToBitness' Variable='Variable21' VariableType='string' Win64='no' />"
                     L"    <RegistrySearch Id='Search22' Type='value' Root='HKCU' Key='SOFTWARE\\Classes\\CLSID\\WiX_Burn_UnitTest\\Bitness' Value='TestStringSpecificToBitness' Variable='Variable22' VariableType='string' Win64='yes' />"
-                    L"    <RegistrySearch Id='Search23' Type='exists' Root='HKU' Key='.DEFAULT\\System\\CurrentControlSet' Variable='Variable23' />"
+                    L"    <RegistrySearch Id='Search23' Type='exists' Root='HKU' Key='.DEFAULT\\Environment' Variable='Variable23' />"
                     L"    <RegistrySearch Id='Search23' Type='exists' Root='HKU' Key='.DEFAULT\\System\\NetworkServiceSidSubkeyDoesNotExist' Variable='Variable24' />"
                     L"    <RegistrySearch Id='Search24' Type='value' Root='HKCR' Key='.msi' Variable='Variable25' VariableType='string' />"
                     L"</Bundle>";

@@ -1,12 +1,4 @@
-//-----------------------------------------------------------------------
-// <copyright file="MsiUtilities.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>Helper function get windows installer data for msi and msp</summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 using System;
 using System.Collections.Generic;
@@ -243,7 +235,7 @@ namespace WixTest.Utilities
         public static bool IsProductInstalled(string prodCode)
         {
             //look in all user's products (both per-machine and per-user)
-            foreach (ProductInstallation product in ProductInstallation.GetProducts(null, "s-1-1-0", UserContexts.All))
+            foreach (ProductInstallation product in ProductInstallation.GetProducts(null, UacUtilities.IsProcessElevated ? "s-1-1-0" : null, UserContexts.All))
             {
                 if (product.ProductCode == prodCode)
                     return true;
@@ -263,7 +255,7 @@ namespace WixTest.Utilities
             List<ProductInstallation> products = new List<ProductInstallation>();
 
             //look in all user's products (both per-machine and per-user)
-            foreach (ProductInstallation product in ProductInstallation.GetProducts(null, "s-1-1-0", UserContexts.All))
+            foreach (ProductInstallation product in ProductInstallation.GetProducts(null, UacUtilities.IsProcessElevated ? "s-1-1-0" : null, UserContexts.All))
             {
                 if (product.ProductCode == prodCode)
                 {
@@ -277,7 +269,7 @@ namespace WixTest.Utilities
         {
             string productInfo = string.Empty;
 
-            ProductInstallation product = new ProductInstallation(productode, "s-1-1-0", UserContexts.All);
+            ProductInstallation product = new ProductInstallation(productode, UacUtilities.IsProcessElevated ? "s-1-1-0" : null, UserContexts.All);
 
             switch(type)
             {

@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="legsync.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Settings engine functions related to syncing the legacy database
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -151,7 +140,7 @@ HRESULT LegacySyncSetProduct(
     hr = DictCreateWithEmbeddedKey(&pSyncProductSession->product.detect.shCachedDetectionPropertyValues, offsetof(LEGACY_CACHED_DETECTION_RESULT, sczPropertyName), reinterpret_cast<void **>(&pSyncProductSession->product.detect.rgCachedDetectionProperties), 0, DICT_FLAG_CASEINSENSITIVE);
     ExitOnFailure(hr, "Failed to create cached detection property values dictionary");
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
+    hr = ValueFindRow(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
     ExitOnFailure(hr, "Failed to find config value for legacy manifest (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
 
     hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
@@ -165,12 +154,12 @@ HRESULT LegacySyncSetProduct(
         hr = ValueSetBlob(reinterpret_cast<BYTE *>(cvManifestContents.string.sczValue), lstrlenW(cvManifestContents.string.sczValue) * sizeof(WCHAR), FALSE, NULL, pcdb->sczGuid, &cvManifestConvertedToBlob);
         ExitOnFailure(hr, "Failed to set converted manifest value in memory");
 
-        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvManifestConvertedToBlob, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvManifestConvertedToBlob, TRUE, NULL);
         ExitOnFailure(hr, "Failed to set converted manifest blob: %ls", sczManifestValueName);
 
         ReleaseNullSceRow(sceManifestValueRow);
         ReleaseNullCfgValue(cvManifestContents);
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
+        hr = ValueFindRow(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &sceManifestValueRow);
         ExitOnFailure(hr, "Failed to find config value for legacy manifest after conversion (AppID: %u, Config Value named: %ls)", pcdb->dwCfgAppID, sczManifestValueName);
 
         hr = ValueRead(pcdb, sceManifestValueRow, &cvManifestContents);
@@ -530,7 +519,7 @@ HRESULT LegacySyncPullDeletedValues(
                 hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvNewValue);
                 ExitOnFailure(hr, "Failed to set deleted value in memory");
 
-                hr = ValueWrite(pcdb, pcdb->dwAppID, sczName, &cvNewValue, TRUE);
+                hr = ValueWrite(pcdb, pcdb->dwAppID, sczName, &cvNewValue, TRUE, NULL);
                 ExitOnFailure(hr, "Failed to write deleted value to db: %ls", sczName);
             }
         }
@@ -1036,6 +1025,8 @@ static HRESULT UpdateProductRegistrationState(
     __in_z_opt LPCWSTR wzPublicKey
     )
 {
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     BOOL fRegistered = FALSE;
 
     UNREFERENCED_PARAMETER(wzPublicKey);
@@ -1061,10 +1052,37 @@ static HRESULT UpdateProductRegistrationState(
         }
     }
 
+    hr = DisplayNameEnumerate(pcdb, pcdb->dwAppID, &rgDisplayNames, &cDisplayNames);
+    ExitOnFailure(hr, "Failed to enumerate display names");
+
+    // For performance, if they both have just one displayname and the LCIDs match, don't bother deleting and rewriting them all
+    if (1 == pSyncProductSession->product.cDisplayNames && 1 == cDisplayNames && rgDisplayNames[0].dwLCID == pSyncProductSession->product.rgDisplayNames[0].dwLCID)
+    {
+        if (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, rgDisplayNames[0].sczName, -1, pSyncProductSession->product.rgDisplayNames[0].sczName, -1))
+        {
+            hr = DisplayNamePersist(pcdb, pcdb->dwAppID, pSyncProductSession->product.rgDisplayNames[0].dwLCID, pSyncProductSession->product.rgDisplayNames[0].sczName);
+            ExitOnFailure(hr, "Failed to persist display name %ls", pSyncProductSession->product.rgDisplayNames[0].sczName);
+        }
+    }
+    else
+    {
+        // Otherwise delete them all, then write them all individually
+        hr = DisplayNameRemoveAllForAppID(pcdb, pcdb->dwAppID);
+        ExitOnFailure(hr, "Failed to remove all display names from AppID");
+
+        for (DWORD i = 0; i < pSyncProductSession->product.cDisplayNames; ++i)
+        {
+            hr = DisplayNamePersist(pcdb, pcdb->dwAppID, pSyncProductSession->product.rgDisplayNames[i].dwLCID, pSyncProductSession->product.rgDisplayNames[i].sczName);
+            ExitOnFailure(hr, "Failed to persist display name %ls at index %u", pSyncProductSession->product.rgDisplayNames[i].sczName, i);
+        }
+    }
+
     hr = ProductRegister(pcdb, wzName, wzVersion, wzLegacyPublicKey, fRegistered);
     ExitOnFailure(hr, "Failed to update product registration state for product: '%ls', '%ls', '%ls'", wzName, wzVersion, wzLegacyPublicKey);
 
 LExit:
+    ReleaseDisplayNameArray(rgDisplayNames, cDisplayNames);
+
     return hr;
 }
 

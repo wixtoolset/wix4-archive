@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="database.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    All the details of where each database is stored, and what its format is
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -20,7 +9,7 @@ LPCWSTR wzUserDatabasePath = NULL;
 LPCWSTR wzAdminDatabasePath = NULL;
 LPCWSTR wzArpPath = DEFAULT_ARP_PATH;
 LPCWSTR wzApplicationsPath = DEFAULT_APPLICATIONS_PATH;
-LPCWSTR wzSqlCeDllPath = L".\\sqlceoledb40.dll";
+LPCWSTR wzSqlCeDllPath = L"sqlceoledb40.dll";
 
 #define ASSIGN_INDEX_STRUCT(a, b, c) {a.wzName = c; a.rgColumns = b; a.cColumns = countof(b);};
 
@@ -70,15 +59,23 @@ LExit:
     return hr;
 }
 
-HRESULT DatabaseSetupUserSchema(
-    __in USERTABLES tableCount,
+HRESULT DatabaseSetupSchema(
+    __in DATABASE_TYPE dbType,
     __out SCE_DATABASE_SCHEMA *pdsSchema
     )
 {
     HRESULT hr = S_OK;
     DWORD i;
     size_t cbAllocSize = 0;
-    pdsSchema->cTables = tableCount;
+
+    if (DATABASE_TYPE_LOCAL == dbType)
+    {
+        pdsSchema->cTables = USER_TABLES_NUMBER;
+    }
+    else if (DATABASE_TYPE_REMOTE == dbType)
+    {
+        pdsSchema->cTables = REMOTE_TABLES_NUMBER;
+    }
 
     // Initialize table list struct
     hr = ::SizeTMult(pdsSchema->cTables, sizeof(SCE_TABLE_SCHEMA), &(cbAllocSize));
@@ -95,6 +92,10 @@ HRESULT DatabaseSetupUserSchema(
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].cColumns = PRODUCT_INDEX_COLUMNS;
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].cIndexes = 2;
 
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].wzName = L"ProductDisplayName";
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].cColumns = PRODUCT_DISPLAY_NAME_COLUMNS;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].cIndexes = 2;
+
     pdsSchema->rgTables[VALUE_INDEX_TABLE].wzName = L"ValueIndex";
     pdsSchema->rgTables[VALUE_INDEX_TABLE].cColumns = VALUE_INDEX_COLUMNS;
     pdsSchema->rgTables[VALUE_INDEX_TABLE].cIndexes = 1;
@@ -107,7 +108,11 @@ HRESULT DatabaseSetupUserSchema(
     pdsSchema->rgTables[BINARY_CONTENT_TABLE].cColumns = BINARY_CONTENT_COLUMNS;
     pdsSchema->rgTables[BINARY_CONTENT_TABLE].cIndexes = 2;
 
-    if (SHARED_TABLES_NUMBER < tableCount)
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].wzName = L"DatabaseGuidList";
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].cColumns = DATABASE_GUID_LIST_COLUMNS;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].cIndexes = 2;
+
+    if (DATABASE_TYPE_LOCAL == dbType)
     {
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].wzName = L"DatabaseList";
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].cColumns = DATABASE_INDEX_COLUMNS;
@@ -153,14 +158,30 @@ HRESULT DatabaseSetupUserSchema(
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_REGISTERED].dbtColumnType = DBTYPE_BOOL;
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].wzName = L"IsLegacy";
     pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].dbtColumnType = DBTYPE_BOOL;
-    pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_LEGACY_SEQUENCE].wzName = L"Sequence";
-    pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_LEGACY_SEQUENCE].dbtColumnType = DBTYPE_I4;
-    pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_LEGACY_SEQUENCE].fNullable = TRUE;
 
     static DWORD rgdwUserProductIndex1[] = { PRODUCT_ID };
     static DWORD rgdwUserProductIndex2[] = { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_PUBLICKEY };
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgIndexes[0], rgdwUserProductIndex1, L"PrimaryKey");
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[PRODUCT_INDEX_TABLE].rgIndexes[1], rgdwUserProductIndex2, L"Name_Version_PublicKey");
+
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].wzName = L"ID";
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].fAutoIncrement = TRUE;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].fPrimaryKey = TRUE;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].wzName = L"AppID";
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].wzRelationName = L"AppID";
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].dwForeignKeyTable = PRODUCT_INDEX_TABLE;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].dwForeignKeyColumn = PRODUCT_ID;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_LCID].wzName = L"LCID";
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_LCID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_NAME].wzName = L"Name";
+    pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_NAME].dbtColumnType = DBTYPE_WSTR;
+
+    static DWORD rgdwUserProductDisplayNameIndex1[] = { PRODUCT_DISPLAY_NAME_ID };
+    static DWORD rgdwUserProductDisplayNameIndex2[] = { PRODUCT_DISPLAY_NAME_APPID, PRODUCT_DISPLAY_NAME_LCID };
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgIndexes[0], rgdwUserProductDisplayNameIndex1, L"PrimaryKey");
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[PRODUCT_DISPLAY_NAME_TABLE].rgIndexes[1], rgdwUserProductDisplayNameIndex2, L"AppId_LCID");
 
     pdsSchema->rgTables[VALUE_INDEX_TABLE].rgColumns[VALUE_COMMON_ID].wzName = L"ID";
     pdsSchema->rgTables[VALUE_INDEX_TABLE].rgColumns[VALUE_COMMON_ID].dbtColumnType = DBTYPE_I4;
@@ -249,11 +270,14 @@ HRESULT DatabaseSetupUserSchema(
     pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_COMMON_WHEN].dbtColumnType = DBTYPE_DBTIMESTAMP;
     pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_COMMON_BY].wzName = L"By";
     pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_COMMON_BY].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_HISTORY_DB_REFERENCES].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_HISTORY_DB_REFERENCES].wzName = L"References";
+    pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgColumns[VALUE_HISTORY_DB_REFERENCES].fNullable = TRUE;
 
     static DWORD rgdwUserValueHistoryIndex1[] = { VALUE_COMMON_ID };
-    static DWORD rgdwUserValueHistoryIndex2[] = { VALUE_COMMON_APPID, VALUE_COMMON_NAME, VALUE_COMMON_WHEN };
+    static DWORD rgdwUserValueHistoryIndex2[] = { VALUE_COMMON_APPID, VALUE_COMMON_NAME, VALUE_COMMON_WHEN, VALUE_COMMON_BY };
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgIndexes[0], rgdwUserValueHistoryIndex1, L"PrimaryKey");
-    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgIndexes[1], rgdwUserValueHistoryIndex2, L"AppID_Name_When");
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[VALUE_INDEX_HISTORY_TABLE].rgIndexes[1], rgdwUserValueHistoryIndex2, L"AppID_Name_When_By");
 
     pdsSchema->rgTables[BINARY_CONTENT_TABLE].rgColumns[BINARY_ID].wzName = L"ID";
     pdsSchema->rgTables[BINARY_CONTENT_TABLE].rgColumns[BINARY_ID].dbtColumnType = DBTYPE_I4;
@@ -279,7 +303,19 @@ HRESULT DatabaseSetupUserSchema(
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[BINARY_CONTENT_TABLE].rgIndexes[0], rgdwUserBinaryContentIndex1, L"PrimaryKey");
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[BINARY_CONTENT_TABLE].rgIndexes[1], rgdwUserBinaryContentIndex2, L"Hash");
 
-    if (SHARED_TABLES_NUMBER < tableCount)
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].wzName = L"ID";
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].fPrimaryKey = TRUE;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_ID].fAutoIncrement = TRUE;
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_STRING].wzName = L"Guid";
+    pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgColumns[DATABASE_GUID_LIST_STRING].dbtColumnType = DBTYPE_WSTR;
+
+    static DWORD rgdwDatabaseGuidIndex1[] = { DATABASE_GUID_LIST_ID };
+    static DWORD rgdwDatabaseGuidIndex2[] = { DATABASE_GUID_LIST_STRING };
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgIndexes[0], rgdwDatabaseGuidIndex1, L"PrimaryKey");
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[DATABASE_GUID_LIST_TABLE].rgIndexes[1], rgdwDatabaseGuidIndex2, L"Guid");
+
+    if (DATABASE_TYPE_LOCAL == dbType)
     {
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].rgColumns[DATABASE_INDEX_ID].wzName = L"ID";
         pdsSchema->rgTables[DATABASE_INDEX_TABLE].rgColumns[DATABASE_INDEX_ID].dbtColumnType = DBTYPE_I4;
@@ -365,8 +401,12 @@ HRESULT DatabaseSetupAdminSchema(
 
     // Set actual table info - this is the 1st interesting bit
     pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].wzName = L"AdminProduct";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].cColumns = ADMIN_PRODUCT_INDEX_COLUMNS;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].cColumns = PRODUCT_INDEX_COLUMNS;
     pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].cIndexes = 2;
+
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].wzName = L"AdminProductDisplayName";
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].cColumns = PRODUCT_DISPLAY_NAME_COLUMNS;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].cIndexes = 2;
 
     // Allocate 
     for (i = 0; i < pdsSchema->cTables; ++i)
@@ -387,24 +427,46 @@ HRESULT DatabaseSetupAdminSchema(
         }
     }
 
-    // Set actual column info - this is the other interesting bit
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].wzName = L"ID";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].dbtColumnType = DBTYPE_I4;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].fAutoIncrement = TRUE;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_ID].fPrimaryKey = TRUE;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_NAME].wzName = L"Name";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_NAME].dbtColumnType = DBTYPE_WSTR;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_VERSION].wzName = L"Version";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_VERSION].dbtColumnType = DBTYPE_WSTR;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_VERSION].dwLength = 24;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_PUBLICKEY].wzName = L"PublicKey";
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_PUBLICKEY].dbtColumnType = DBTYPE_WSTR;
-    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[ADMIN_PRODUCT_PUBLICKEY].dwLength = 20;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].wzName = L"ID";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].fAutoIncrement = TRUE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_ID].fPrimaryKey = TRUE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_NAME].wzName = L"Name";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_NAME].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_VERSION].wzName = L"Version";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_VERSION].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_VERSION].dwLength = 24;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_PUBLICKEY].wzName = L"PublicKey";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_PUBLICKEY].dbtColumnType = DBTYPE_WSTR;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_PUBLICKEY].dwLength = 20;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_REGISTERED].wzName = L"Installed";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_REGISTERED].dbtColumnType = DBTYPE_BOOL;
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].wzName = L"IsLegacy";
+    pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgColumns[PRODUCT_IS_LEGACY].dbtColumnType = DBTYPE_BOOL;
 
-    static DWORD rgdwAdminProductIndex1[] = { ADMIN_PRODUCT_ID };
-    static DWORD rgdwAdminProductIndex2[] = { ADMIN_PRODUCT_NAME, ADMIN_PRODUCT_VERSION, ADMIN_PRODUCT_PUBLICKEY };
+    static DWORD rgdwAdminProductIndex1[] = { PRODUCT_ID };
+    static DWORD rgdwAdminProductIndex2[] = { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_PUBLICKEY };
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgIndexes[0], rgdwAdminProductIndex1, L"PrimaryKey");
     ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[ADMIN_PRODUCT_INDEX_TABLE].rgIndexes[1], rgdwAdminProductIndex2, L"Name_Version_PublicKey");
+
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].wzName = L"ID";
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].fAutoIncrement = TRUE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_ID].fPrimaryKey = TRUE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].wzName = L"AppID";
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].wzRelationName = L"AppID";
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].dwForeignKeyTable = PRODUCT_INDEX_TABLE;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_APPID].dwForeignKeyColumn = PRODUCT_ID;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_LCID].wzName = L"LCID";
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_LCID].dbtColumnType = DBTYPE_I4;
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_NAME].wzName = L"Name";
+    pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgColumns[PRODUCT_DISPLAY_NAME_NAME].dbtColumnType = DBTYPE_WSTR;
+
+    static DWORD rgdwUserProductDisplayNameIndex1[] = { PRODUCT_DISPLAY_NAME_ID };
+    static DWORD rgdwUserProductDisplayNameIndex2[] = { PRODUCT_DISPLAY_NAME_APPID, PRODUCT_DISPLAY_NAME_LCID };
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgIndexes[0], rgdwUserProductDisplayNameIndex1, L"PrimaryKey");
+    ASSIGN_INDEX_STRUCT(pdsSchema->rgTables[ADMIN_PRODUCT_DISPLAY_NAME_TABLE].rgIndexes[1], rgdwUserProductDisplayNameIndex2, L"AppId_LCID");
 
 LExit:
     return hr;

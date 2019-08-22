@@ -1,0 +1,78 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "thmgen", "thmgen.csproj", "{351FF633-899B-4411-9866-4C7838AD109F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixToolset.Extensibility", "..\..\libs\WixToolset.Extensibility\WixToolset.Extensibility.csproj", "{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|arm = Debug|arm
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|arm = Release|arm
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|arm.ActiveCfg = Debug|arm
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|arm.Build.0 = Debug|arm
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|Win32.Build.0 = Debug|Win32
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|x64.ActiveCfg = Debug|x64
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|x64.Build.0 = Debug|x64
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|x86.ActiveCfg = Debug|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Debug|x86.Build.0 = Debug|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|arm.ActiveCfg = Release|arm
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|arm.Build.0 = Release|arm
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|Win32.ActiveCfg = Release|Win32
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|Win32.Build.0 = Release|Win32
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|x64.ActiveCfg = Release|x64
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|x64.Build.0 = Release|x64
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|x86.ActiveCfg = Release|x86
+		{351FF633-899B-4411-9866-4C7838AD109F}.Release|x86.Build.0 = Release|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|arm.ActiveCfg = Debug|arm
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|arm.Build.0 = Debug|arm
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|Win32.Build.0 = Debug|Win32
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|x64.ActiveCfg = Debug|x64
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|x64.Build.0 = Debug|x64
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|x86.ActiveCfg = Debug|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Debug|x86.Build.0 = Debug|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|arm.ActiveCfg = Release|arm
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|arm.Build.0 = Release|arm
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|Mixed Platforms.Build.0 = Release|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|Win32.ActiveCfg = Release|Win32
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|Win32.Build.0 = Release|Win32
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|x64.ActiveCfg = Release|x64
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|x64.Build.0 = Release|x64
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|x86.ActiveCfg = Release|x86
+		{EEE88C2A-45A0-4E48-A40A-431A4BA458D8}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

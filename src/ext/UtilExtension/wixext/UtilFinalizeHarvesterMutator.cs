@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="UtilFinalizeHarvesterMutator.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// The finalize harvester mutator for the WiX Toolset Utility Extension.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Extensions
 {
@@ -1008,6 +997,9 @@ namespace WixToolset.Extensions
                     string shortPath = NativeMethods.GetShortPathName(fileSource);
                     this.filePaths[shortPath.ToLower(CultureInfo.InvariantCulture)] = String.Concat("[!", file.Id, "]");
 
+                    // escape literal $ characters
+                    file.Source = file.Source.Replace("$", "$$");
+                    
                     if (null != sourceDirSubstitution && file.Source.StartsWith("SourceDir\\", StringComparison.Ordinal))
                     {
                         file.Source = file.Source.Substring(9).Insert(0, sourceDirSubstitution);

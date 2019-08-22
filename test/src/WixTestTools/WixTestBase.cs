@@ -1,21 +1,13 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="WixTestBase.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest
 {
+    using Microsoft.Win32;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Reflection;
     using System.Threading;
-    using Microsoft.Win32;
     using WixTest.Utilities;
     using WixTest.Verifiers;
     using Xunit;
@@ -24,99 +16,33 @@ namespace WixTest
     /// <summary>
     /// Base class for WiX tests.
     /// </summary>
-    public abstract class WixTestBase : IDisposable, ITestClass, IUseFixture<WixTestContext>
+    //Xunit v2 version
+    //public abstract class WixTestBase : ITestClass, IClassFixture<WixTestFixture>
+    public abstract class WixTestBase : ITestClass, IUseFixture<WixTestFixture>
     {
-        private static string originalWixRootValue;
-        private static readonly string projectDirectory;
-        private static int references = 0;
-        private static readonly string seed;
-
-        // The name of the environment variable that stores the MSBuild directory
-        private static readonly string envWixTestMSBuildDirectory = "WixTestMSBuildDirectory";
-
-        // The name of the environment variable that stores the WiX build output directory.
-        private static readonly string envWixBuildPathDirectory = "WixBuildPathDirectory";
-
-        // The name of the environment variable that stores the WiX bin directory
-        private static readonly string envWixToolsPath = "WixToolsPath";
-
-        // The name of the environment variable that stores the wix.targets path
-        private static readonly string envWixTargetsPath = "WixTargetsPath";
-
-        // The name of the environment variable that stores the WixTasks.dll path
-        private static readonly string envWixTasksPath = "WixTasksPath";
-
         /// <summary>
         /// Common extensions for building packages and bundles.
         /// </summary>
-        protected static readonly string[] Extensions = new string[] { "WixBalExtension", "WixDependencyExtension", "WixTagExtension", "WixUtilExtension" };
-
-        /// <summary>
-        /// The name of the environment variable that stores the MSBuild directory
-        /// </summary>
-        private const string msBuildDirectoryEnvironmentVariable = "WixTestMSBuildDirectory";
-
-        /// <summary>
-        /// The name of the environment variable that states that the runtime tests are enabled on this machine
-        /// </summary>
-        private const string runtimeTestsEnabledEnvironmentVariable = "RuntimeTestsEnabled";
-
-        /// <summary>
-        /// The name of the environment variable that stores the WiX build output directory.
-        /// </summary>
-        private const string wixBuildPathDirectory = "WixBuildPathDirectory";
-
-        /// <summary>
-        /// The name of the environment variable that stores the WiX bin directory
-        /// </summary>
-        private const string wixToolsPathEnvironmentVariable = "WixToolsPath";
-
-        /// <summary>
-        /// The name of the environment variable that stores the wix.targets path
-        /// </summary>
-        private const string wixTargetsPathEnvironmentVariable = "WixTargetsPath";
-
-        /// <summary>
-        /// The name of the environment variable that stores the WixTasks.dll path
-        /// </summary>
-        private const string wixTasksPathEnvironmentVariable = "WixTasksPath";
-
-        private static string TestCodeBasePath = null;
+        protected static readonly string[] Extensions = new string[]
+        {
+            "WixBalExtension",
+            "WixDependencyExtension",
+            "WixIIsExtension",
+            "WixTagExtension",
+            "WixUtilExtension",
+        };
 
         private bool cleanArtifacts;
+        private WixTestFixture testFixture;
         private Stack<string> currentDirectories = new Stack<string>();
-
-        /// <summary>
-        /// Initialize static variables and settings.
-        /// </summary>
-        static WixTestBase()
-        {
-            WixTestBase.seed = DateTime.Now.ToString("yyyy-MM-ddTHH.mm.ss");
-            WixTestBase.projectDirectory = FileUtilities.GetDirectoryNameOfFileAbove("wix.proj");
-
-            Settings.Seed = seed;
-
-            WixTestBase.InitializeSettings();
-        }
 
         /// <summary>
         /// Initializes the test base class.
         /// </summary>
+        //Xunit v2 version. This means that all subclasses will also need to have a WixTestFixture parameter and pass it along.
+        //public WixTestBase(WixTestFixture testFixture)
         public WixTestBase()
         {
-            if (1 == Interlocked.Increment(ref references))
-            {
-                WixTestBase.originalWixRootValue = Environment.GetEnvironmentVariable("WIX_ROOT");
-                Environment.SetEnvironmentVariable("WIX_ROOT", WixTestBase.projectDirectory);
-            }
-        }
-
-        ~WixTestBase()
-        {
-            if (0 == Interlocked.Decrement(ref WixTestBase.references))
-            {
-                Environment.SetEnvironmentVariable("WIX_ROOT", WixTestBase.originalWixRootValue);
-            }
         }
 
         /// <summary>
@@ -135,112 +61,6 @@ namespace WixTest
         protected void Complete()
         {
             this.cleanArtifacts = true;
-        }
-
-        /// <summary>
-        /// Initializes the test class.
-        /// </summary>
-        protected virtual void ClassInitialize()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a single test case.
-        /// </summary>
-        protected virtual void TestInitialize()
-        {
-        }
-
-        /// <summary>
-        /// Uninitializes a single test case.
-        /// </summary>
-        protected virtual void TestUninitialize()
-        {
-            //if (String.IsNullOrEmpty(testName) && String.IsNullOrEmpty(this.TestName))
-            //{
-            //    StackTrace st = new StackTrace();
-            //    StackFrame sf = st.GetFrame(1);
-            //    sf.GetMethod();
-
-            //    testName = sf.GetMethod().Name;
-            //}
-
-            //if (!String.IsNullOrEmpty(testName))
-            //{
-            //    this.TestName = testName;
-            //}
-
-            //this.TestFolder = Path.Combine(Path.GetTempPath(), "wix_tests", WixTestBase.Seed, this.TestName);
-
-            //if (String.IsNullOrEmpty(dataFolder))
-            //{
-            //    dataFolder = this.TestName;
-            //}
-
-            //string running = GetTestCodeBasePath();
-            //this.TestDataFolder = Path.Combine(running, dataFolder);
-
-            //this.TestArtifacts = new List<FileSystemInfo>();
-            //this.TestArtifacts.Add(new DirectoryInfo(this.TestFolder));
-
-            //Directory.CreateDirectory(this.TestFolder);
-
-            //this.originalCurrentDirectory = Directory.GetCurrentDirectory();
-            //Directory.SetCurrentDirectory(this.TestFolder);
-
-            //return this.TestContext = new WixTestContext() { Seed = WixTestBase.Seed, TestArtifacts = this.TestArtifacts, TestDataDirectory = this.TestDataFolder, TestDirectory = this.TestFolder, TestName = this.TestName };
-        }
-
-        /// <summary>
-        /// Uninitializes the test class.
-        /// </summary>
-        protected virtual void ClassUninitialize()
-        {
-        }
-
-        void IUseFixture<WixTestContext>.SetFixture(WixTestContext data)
-        {
-            this.ClassInitialize();
-        }
-
-        void ITestClass.TestInitialize(string testNamespace, string testClass, string testMethod)
-        {
-            this.InitializeContext(testNamespace, testClass, testMethod);
-            this.TestInitialize();
-        }
-
-        void ITestClass.TestUninitialize(MethodResult result)
-        {
-            WixTestContext context = this.TestContext;
-            if (null != context)
-            {
-                context.TestResult = result;
-            }
-
-            this.TestUninitialize();
-            this.CleanUp();
-        }
-
-        void IDisposable.Dispose()
-        {
-            this.ClassUninitialize();
-            this.CleanUp();
-        }
-
-        protected static string GetTestCodeBasePath()
-        {
-            if (String.IsNullOrEmpty(WixTestBase.TestCodeBasePath))
-            {
-                WixTestBase.TestCodeBasePath = Assembly.GetExecutingAssembly().CodeBase;
-                if (WixTestBase.TestCodeBasePath.StartsWith("file:///"))
-                {
-                    WixTestBase.TestCodeBasePath = WixTestBase.TestCodeBasePath.Substring(8);
-                }
-
-                WixTestBase.TestCodeBasePath = Path.GetDirectoryName(WixTestBase.TestCodeBasePath);
-            }
-
-            return WixTestBase.TestCodeBasePath;
         }
 
         /// <summary>
@@ -270,109 +90,51 @@ namespace WixTest
             return Registry.LocalMachine.OpenSubKey(key, true);
         }
 
-        private static void InitializeSettings()
+        void IUseFixture<WixTestFixture>.SetFixture(WixTestFixture testFixture)
         {
-            // Best effort to locate MSBuild.
-            IEnumerable<string> msbuildDirectories = new string[]
-            {
-                Environment.GetEnvironmentVariable(WixTestBase.envWixTestMSBuildDirectory),
-                Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"Microsoft.NET\Framework\v4.0.30319"),
-                Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"Microsoft.NET\Framework\v3.5"),
-            };
-
-            foreach (string msbuildDirectory in msbuildDirectories)
-            {
-                if (!String.IsNullOrEmpty(msbuildDirectory) && Directory.Exists(msbuildDirectory))
-                {
-                    Settings.MSBuildDirectory = msbuildDirectory;
-                    break;
-                }
-            }
-
-            // Set the directory for the build output.
-            Settings.WixBuildDirectory = Environment.GetEnvironmentVariable(WixTestBase.envWixBuildPathDirectory) ?? Environment.CurrentDirectory;
-            Settings.WixToolsDirectory = Environment.GetEnvironmentVariable(WixTestBase.envWixToolsPath) ?? Environment.CurrentDirectory;
-
-            // Set the locations of wix.targets and wixtasks.dll using the build output as default.
-            string path = Environment.GetEnvironmentVariable(WixTestBase.envWixTargetsPath);
-            if (String.IsNullOrEmpty(path))
-            {
-                path = Path.Combine(Settings.WixToolsDirectory, "wix.targets");
-            }
-
-            if (File.Exists(path))
-            {
-                Settings.WixTargetsPath = path;
-            }
-            else
-            {
-                Console.WriteLine("The environment variable '{0}' was not set. The location for wix.targets will not be explicitly specified to MSBuild.", WixTestBase.envWixTargetsPath);
-            }
-
-            path = Environment.GetEnvironmentVariable(WixTestBase.envWixTasksPath);
-            if (String.IsNullOrEmpty(path))
-            {
-                path = Path.Combine(Settings.WixToolsDirectory, "WixTasks.dll");
-            }
-
-            if (File.Exists(path))
-            {
-                Settings.WixTasksPath = path;
-            }
-            else
-            {
-                Console.WriteLine("The environment variable '{0}' was not set. The location for WixTasks.dll will not be explicitly specified to MSBuild.", WixTestBase.envWixTasksPath);
-            }
+            // IUseFixture<T> is removed in Xunit v2.
+            // It has been replaced with IClassFixture<T>.
+            // The T object will be injected into the constructor, which means this method needs to move into the constructor.
+            // Because Xunit creates a new instance of the test class for every test method, class level initialization should be done in the constructor of the Fixture class.
+            // Class level uninitialization should be done in the Dispose method of the Fixture class.
+            this.testFixture = testFixture;
         }
 
-        private void InitializeContext(string testNamespace, string testClass, string testName)
+        /// <summary>
+        /// Initializes a single test case.
+        /// </summary>
+        protected virtual void TestInitialize()
         {
-            // Clear the existing test context so its not used incorrectly.
-            this.TestContext = null;
+        }
 
-            // Set up the new test context for the current test.
-            WixTestContext context = new WixTestContext()
-            {
-                Seed = WixTestBase.seed,
-            };
+        /// <summary>
+        /// Uninitializes a single test case.
+        /// </summary>
+        protected virtual void TestUninitialize()
+        {
+        }
 
-            if (String.IsNullOrEmpty(testName))
-            {
-                StackTrace st = new StackTrace();
-                StackFrame sf = st.GetFrame(1);
-                sf.GetMethod();
+        /// <summary>
+        /// Initializes a single test case.
+        /// </summary>
+        public virtual void TestInitialize(string testNamespace, string testClass, string testMethodName)
+        {
+            WixTestContext context = new WixTestContext();
+            context.Seed = WixTestFixture.Seed;
+            context.TestName = testMethodName;
+            context.TestDirectory = Path.Combine(Path.GetTempPath(), "wix_tests", context.Seed, context.TestName);
 
-                context.TestName = sf.GetMethod().Name;
-            }
-            else
-            {
-                //// Default to MSBuild v4.0.
-                //msBuildDirectory = Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), @"Microsoft.NET\Framework\v4.0.30319");
-
-                context.TestName = testName;
-            }
-
-            context.TestDirectory = Path.Combine(Path.GetTempPath(), "wix_tests", WixTestBase.seed, context.TestName);
             Directory.CreateDirectory(context.TestDirectory);
 
             // Make sure we can resolve to our test data directory.
-            string path = Environment.GetEnvironmentVariable("WIX_ROOT") ?? WixTestBase.projectDirectory;
+            string path = Environment.GetEnvironmentVariable(WixTestFixture.EnvWixRootPath) ?? WixTestFixture.ProjectDirectory;
             if (!String.IsNullOrEmpty(path))
             {
                 path = Path.Combine(path, @"test\data\");
             }
             else
             {
-                //wixTargetsPath = Path.Combine(GetTestCodeBasePath(), "wix.targets");
-                //if (File.Exists(wixTargetsPath))
-                //{
-                //    Settings.WixTargetsPath = wixTargetsPath;
-                //}
-                //else
-                //{
-                //    Console.WriteLine("The environment variable '{0}' was not set. The location for wix.targets will not be explicitly specified to MSBuild.", WixTestBase.wixTargetsPathEnvironmentVariable);
-                //}
-                throw new InvalidOperationException("The WIX_ROOT environment variable is not defined. The current test case cannot continue.");
+                throw new InvalidOperationException(String.Format("The {0} environment variable is not defined. The current test case cannot continue.", WixTestFixture.EnvWixRootPath));
             }
 
             // Always store the root test data directory for those tests that need it.
@@ -394,10 +156,17 @@ namespace WixTest
             Directory.SetCurrentDirectory(context.TestDirectory);
 
             this.TestContext = context;
+
+            this.TestInitialize();
         }
 
-        private void CleanUp()
+        /// <summary>
+        /// Uninitializes a single test case.
+        /// </summary>
+        public virtual void TestUninitialize(MethodResult result)
         {
+            this.TestUninitialize();
+
             BundleBuilder.CleanupByUninstalling();
             PackageBuilder.CleanupByUninstalling();
             MSIExec.UninstallAllInstalledProducts();
@@ -409,12 +178,6 @@ namespace WixTest
 
             if (this.cleanArtifacts)
             {
-                //wixTasksPath = Path.Combine(GetTestCodeBasePath(), "WixTask.dll");
-                //if (File.Exists(wixTasksPath))
-                //{
-                //    Settings.WixTasksPath = wixTasksPath;
-                //}
-                //else
                 foreach (FileSystemInfo artifact in this.TestArtifacts)
                 {
                     if (artifact.Exists)
@@ -444,8 +207,6 @@ namespace WixTest
         {
             if (0 < this.currentDirectories.Count)
             {
-                //wixBuildPathDirectory = GetTestCodeBasePath();
-
                 string path = this.currentDirectories.Pop();
                 if (!String.IsNullOrEmpty(path))
                 {
@@ -458,8 +219,6 @@ namespace WixTest
         {
             if (null != this.TestContext)
             {
-                //wixToolsPathDirectory = GetTestCodeBasePath();
-
                 string key = String.Format(@"Software\WiX\Tests\{0}", this.TestContext.TestName);
                 Registry.LocalMachine.DeleteSubKeyTree(key, false);
             }

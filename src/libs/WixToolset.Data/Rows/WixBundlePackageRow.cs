@@ -1,11 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="WixBundlePackageRow.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Data.Rows
 {
@@ -203,6 +196,15 @@ namespace WixToolset.Data.Rows
         {
             get { return (string)this.Fields[18].Data; }
             set { this.Fields[18].Data = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the package is x64.
+        /// </summary>
+        public YesNoType x64
+        {
+            get { return (null == this.Fields[19].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[19].Data; }
+            set { this.Fields[19].Data = (int)value; }
         }
 
         /// <summary>

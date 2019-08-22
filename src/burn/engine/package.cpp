@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="package.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -79,6 +68,10 @@ extern "C" HRESULT PackagesParseFromXml(
             // @Vital
             hr = XmlGetYesNoAttribute(pixnNode, L"Vital", &pRollbackBoundary->fVital);
             ExitOnFailure(hr, "Failed to get @Vital.");
+
+            // @Transaction
+            hr = XmlGetYesNoAttribute(pixnNode, L"Transaction", &pRollbackBoundary->fTransaction);
+            ExitOnFailure(hr, "Failed to get @Transaction.");
 
             // prepare next iteration
             ReleaseNullObject(pixnNode);
@@ -264,7 +257,7 @@ extern "C" HRESULT PackagesParseFromXml(
         ExitOnNull(pPackages->rgPatchInfo, hr, E_OUTOFMEMORY, "Failed to allocate memory for MSP patch sequence information.");
 
         pPackages->rgPatchInfoToPackage = static_cast<BURN_PACKAGE**>(MemAlloc(sizeof(BURN_PACKAGE*) * cMspPackages, TRUE));
-        ExitOnNull(pPackages->rgPatchInfo, hr, E_OUTOFMEMORY, "Failed to allocate memory for patch sequence information to package lookup.");
+        ExitOnNull(pPackages->rgPatchInfoToPackage, hr, E_OUTOFMEMORY, "Failed to allocate memory for patch sequence information to package lookup.");
 
         for (DWORD i = 0; i < pPackages->cPackages; ++i)
         {

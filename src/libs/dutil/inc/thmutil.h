@@ -1,22 +1,50 @@
 #pragma once
-//-------------------------------------------------------------------------------------------------
-// <copyright file="thmutil.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//  Theme helper functions.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define ReleaseTheme(p) if (p) { ThemeFree(p); p = NULL; }
+
+typedef HRESULT(CALLBACK *PFNTHM_EVALUATE_VARIABLE_CONDITION)(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf,
+    __in_opt LPVOID pvContext
+    );
+typedef HRESULT(CALLBACK *PFNTHM_FORMAT_VARIABLE_STRING)(
+    __in_z LPCWSTR wzFormat,
+    __inout LPWSTR* psczOut,
+    __in_opt LPVOID pvContext
+    );
+typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_NUMERIC)(
+    __in_z LPCWSTR wzVariable,
+    __out LONGLONG* pllValue,
+    __in_opt LPVOID pvContext
+    );
+typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_NUMERIC)(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue,
+    __in_opt LPVOID pvContext
+    );
+typedef HRESULT(CALLBACK *PFNTHM_GET_VARIABLE_STRING)(
+    __in_z LPCWSTR wzVariable,
+    __inout LPWSTR* psczValue,
+    __in_opt LPVOID pvContext
+    );
+typedef HRESULT(CALLBACK *PFNTHM_SET_VARIABLE_STRING)(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue,
+    __in_opt LPVOID pvContext
+    );
+
+typedef enum THEME_ACTION_TYPE
+{
+    THEME_ACTION_TYPE_BROWSE_DIRECTORY,
+    THEME_ACTION_TYPE_CHANGE_PAGE,
+    THEME_ACTION_TYPE_CLOSE_WINDOW,
+} THEME_ACTION_TYPE;
 
 typedef enum THEME_CONTROL_DATA
 {
@@ -29,25 +57,29 @@ typedef enum THEME_CONTROL_TYPE
     THEME_CONTROL_TYPE_BILLBOARD,
     THEME_CONTROL_TYPE_BUTTON,
     THEME_CONTROL_TYPE_CHECKBOX,
+    THEME_CONTROL_TYPE_COMBOBOX,
+    THEME_CONTROL_TYPE_COMMANDLINK,
     THEME_CONTROL_TYPE_EDITBOX,
     THEME_CONTROL_TYPE_HYPERLINK,
     THEME_CONTROL_TYPE_HYPERTEXT,
     THEME_CONTROL_TYPE_IMAGE,
+    THEME_CONTROL_TYPE_LABEL,
+    THEME_CONTROL_TYPE_PANEL,
     THEME_CONTROL_TYPE_PROGRESSBAR,
+    THEME_CONTROL_TYPE_RADIOBUTTON,
     THEME_CONTROL_TYPE_RICHEDIT,
     THEME_CONTROL_TYPE_STATIC,
-    THEME_CONTROL_TYPE_TEXT,
     THEME_CONTROL_TYPE_LISTVIEW,
     THEME_CONTROL_TYPE_TREEVIEW,
     THEME_CONTROL_TYPE_TAB,
 } THEME_CONTROL_TYPE;
 
-
-struct THEME_BILLBOARD
+typedef enum THEME_SHOW_PAGE_REASON
 {
-    HBITMAP hImage;
-    LPWSTR sczUrl;
-};
+    THEME_SHOW_PAGE_REASON_DEFAULT,
+    THEME_SHOW_PAGE_REASON_CANCEL,
+    THEME_SHOW_PAGE_REASON_REFRESH,
+} THEME_SHOW_PAGE_REASON;
 
 
 struct THEME_COLUMN
@@ -64,6 +96,30 @@ struct THEME_TAB
 {
     LPWSTR pszName;
     UINT uStringId;
+};
+
+struct THEME_ACTION
+{
+    LPWSTR sczCondition;
+    THEME_ACTION_TYPE type;
+    union
+    {
+        struct
+        {
+            LPWSTR sczVariableName;
+        } BrowseDirectory;
+        struct
+        {
+            LPWSTR sczPageName;
+            BOOL fCancel;
+        } ChangePage;
+    };
+};
+
+struct THEME_CONDITIONAL_TEXT
+{
+    LPWSTR sczCondition;
+    LPWSTR sczText;
 };
 
 // THEME_ASSIGN_CONTROL_ID - Used to apply a specific id to a named control (usually
@@ -83,8 +139,10 @@ struct THEME_CONTROL
     WORD wId;
     WORD wPageId;
 
-    LPWSTR sczName; // optional name for control, only used to apply control id.
+    LPWSTR sczName; // optional name for control, used to apply control id and link the control to a variable.
     LPWSTR sczText;
+    LPWSTR sczTooltip;
+    LPWSTR sczNote; // optional text for command link
     int nX;
     int nY;
     int nHeight;
@@ -93,7 +151,12 @@ struct THEME_CONTROL
     int nSourceY;
     UINT uStringId;
 
+    LPWSTR sczEnableCondition;
+    LPWSTR sczVisibleCondition;
+    BOOL fDisableVariableFunctionality;
+
     HBITMAP hImage;
+    HICON hIcon;
 
     // Don't free these; it's just a handle to the central image lists stored in THEME. The handle is freed once, there.
     HIMAGELIST rghImageList[4];
@@ -103,23 +166,44 @@ struct THEME_CONTROL
     DWORD dwInternalStyle;
 
     DWORD dwFontId;
-    DWORD dwFontHoverId;
-    DWORD dwFontSelectedId;
+
+    // child controls
+    DWORD cControls;
+    THEME_CONTROL* rgControls;
 
     // Used by billboard controls
-    THEME_BILLBOARD* ptbBillboards;
-    DWORD cBillboards;
     WORD wBillboardInterval;
-    WORD wBillboardUrls;
     BOOL fBillboardLoops;
+
+    // Used by button and command link controls
+    THEME_ACTION* rgActions;
+    DWORD cActions;
+    THEME_ACTION* pDefaultAction;
+
+    // Used by hyperlink and owner-drawn button controls
+    DWORD dwFontHoverId;
+    DWORD dwFontSelectedId;
 
     // Used by listview controls
     THEME_COLUMN *ptcColumns;
     DWORD cColumns;
 
+    // Used by radio button controls
+    BOOL fLastRadioButton;
+    LPWSTR sczValue;
+    LPWSTR sczVariable;
+
     // Used by tab controls
     THEME_TAB *pttTabs;
     DWORD cTabs;
+
+    // Used by controls that have text
+    DWORD cConditionalText;
+    THEME_CONDITIONAL_TEXT* rgConditionalText;
+
+    // Used by command link controls
+    DWORD cConditionalNotes;
+    THEME_CONDITIONAL_TEXT* rgConditionalNotes;
 
     // state variables that should be ignored
     HWND hWnd;
@@ -134,13 +218,21 @@ struct THEME_IMAGELIST
     HIMAGELIST hImageList;
 };
 
+struct THEME_SAVEDVARIABLE
+{
+    LPWSTR wzName;
+    LPWSTR sczValue;
+};
+
 struct THEME_PAGE
 {
     WORD wId;
     LPWSTR sczName;
 
     DWORD cControlIndices;
-    DWORD* rgdwControlIndices;
+
+    DWORD cSavedVariables;
+    THEME_SAVEDVARIABLE* rgSavedVariables;
 };
 
 struct THEME_FONT
@@ -185,9 +277,21 @@ struct THEME
     DWORD cControls;
     THEME_CONTROL* rgControls;
 
-    // state variables that should be ignored
+    // internal state variables -- do not use outside ThmUtil.cpp
     HWND hwndParent; // parent for loaded controls
     HWND hwndHover; // current hwnd hovered over
+    DWORD dwCurrentPageId;
+    HWND hwndTooltip;
+
+    // callback functions
+    PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition;
+    PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString;
+    PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable;
+    PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable;
+    PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable;
+    PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable;
+
+    LPVOID pvVariableContext;
 };
 
 
@@ -200,7 +304,7 @@ DAPI_(HRESULT) ThemeInitialize(
     );
 
 /********************************************************************
- ThemeUninitialize - unitialize theme management.
+ ThemeUninitialize - uninitialize theme management.
 
 *******************************************************************/
 DAPI_(void) ThemeUninitialize();
@@ -231,6 +335,22 @@ DAPI_(HRESULT) ThemeLoadFromResource(
 *******************************************************************/
 DAPI_(void) ThemeFree(
     __in THEME* pTheme
+    );
+
+/********************************************************************
+ThemeRegisterVariableCallbacks - registers a context and callbacks
+                                 for working with variables.
+
+*******************************************************************/
+DAPI_(HRESULT) ThemeRegisterVariableCallbacks(
+    __in THEME* pTheme,
+    __in_opt PFNTHM_EVALUATE_VARIABLE_CONDITION pfnEvaluateCondition,
+    __in_opt PFNTHM_FORMAT_VARIABLE_STRING pfnFormatString,
+    __in_opt PFNTHM_GET_VARIABLE_NUMERIC pfnGetNumericVariable,
+    __in_opt PFNTHM_SET_VARIABLE_NUMERIC pfnSetNumericVariable,
+    __in_opt PFNTHM_GET_VARIABLE_STRING pfnGetStringVariable,
+    __in_opt PFNTHM_SET_VARIABLE_STRING pfnSetStringVariable,
+    __in_opt LPVOID pvContext
     );
 
 /********************************************************************
@@ -330,7 +450,7 @@ LRESULT CALLBACK ThemeDefWindowProc(
 DAPI_(void) ThemeGetPageIds(
     __in const THEME* pTheme,
     __in_ecount(cGetPages) LPCWSTR* rgwzFindNames,
-    __in_ecount(cGetPages) DWORD* rgdwPageIds,
+    __inout_ecount(cGetPages) DWORD* rgdwPageIds,
     __in DWORD cGetPages
     );
 
@@ -347,10 +467,36 @@ DAPI_(THEME_PAGE*) ThemeGetPage(
  ThemeShowPage - shows or hides all of the controls in the page at one time.
 
  *******************************************************************/
-DAPI_(void) ThemeShowPage(
+DAPI_(HRESULT) ThemeShowPage(
     __in THEME* pTheme,
     __in DWORD dwPage,
     __in int nCmdShow
+    );
+
+/********************************************************************
+ThemeShowPageEx - shows or hides all of the controls in the page at one time.
+                  When using variables, TSPR_CANCEL reverts any changes made.
+                  TSPR_REFRESH forces reevaluation of conditions.
+                  It is expected that the current page is hidden before 
+                  showing a new page.
+
+*******************************************************************/
+DAPI_(HRESULT) ThemeShowPageEx(
+    __in THEME* pTheme,
+    __in DWORD dwPage,
+    __in int nCmdShow,
+    __in THEME_SHOW_PAGE_REASON reason
+    );
+
+
+/********************************************************************
+ThemeShowChild - shows a control's specified child control, hiding the rest.
+
+*******************************************************************/
+DAPI_(void) ThemeShowChild(
+    __in THEME* pTheme,
+    __in THEME_CONTROL* pParentControl,
+    __in DWORD dwIndex
     );
 
 /********************************************************************
@@ -358,7 +504,7 @@ DAPI_(void) ThemeShowPage(
 
  *******************************************************************/
 DAPI_(BOOL) ThemeControlExists(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl
     );
 
@@ -402,6 +548,17 @@ DAPI_(void) ThemeShowControl(
     );
 
 /********************************************************************
+ThemeShowControlEx - shows/hides a control with support for 
+conditional text and notes.
+
+*******************************************************************/
+DAPI_(void) ThemeShowControlEx(
+    __in THEME* pTheme,
+    __in DWORD dwControl,
+    __in int nCmdShow
+    );
+
+/********************************************************************
  ThemeControlVisible - returns whether a control is visible.
 
  *******************************************************************/
@@ -419,7 +576,7 @@ DAPI_(BOOL) ThemePostControlMessage(
     );
 
 DAPI_(LRESULT) ThemeSendControlMessage(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
     __in UINT Msg,
     __in WPARAM wParam,
@@ -476,29 +633,6 @@ DAPI_(BOOL) ThemeSetControlColor(
     );
 
 /********************************************************************
- ThemeStartBillboard - starts a billboard control changing images according
-                       to their interval.
-
- NOTE: iImage specifies the image to start on. If iImage is
-       greater than the number of images, the last image shown
-       will be the start image.
-*******************************************************************/
-DAPI_(HRESULT) ThemeStartBillboard(
-    __in const THEME* pTheme,
-    __in DWORD dwControl,
-    __in WORD iImage
-    );
-
-/********************************************************************
- ThemeStopBillboard - stops a billboard control from changing images.
-
-*******************************************************************/
-DAPI_(HRESULT) ThemeStopBillboard(
-    __in const THEME* pTheme,
-    __in DWORD dwControl
-    );
-
-/********************************************************************
  ThemeSetProgressControl - sets the current percentage complete in a
                            progress bar control.
 
@@ -525,9 +659,21 @@ DAPI_(HRESULT) ThemeSetProgressControlColor(
 
 *******************************************************************/
 DAPI_(HRESULT) ThemeSetTextControl(
-    __in THEME* pTheme,
+    __in const THEME* pTheme,
     __in DWORD dwControl,
-    __in_z LPCWSTR wzText
+    __in_z_opt LPCWSTR wzText
+    );
+
+/********************************************************************
+ThemeSetTextControl - sets the text of a control and optionally
+                      invalidates the control.
+
+*******************************************************************/
+DAPI_(HRESULT) ThemeSetTextControlEx(
+    __in const THEME* pTheme,
+    __in DWORD dwControl,
+    __in BOOL fUpdate,
+    __in_z_opt LPCWSTR wzText
     );
 
 /********************************************************************
@@ -537,7 +683,7 @@ DAPI_(HRESULT) ThemeSetTextControl(
 DAPI_(HRESULT) ThemeGetTextControl(
     __in const THEME* pTheme,
     __in DWORD dwControl,
-    __out LPWSTR* psczText
+    __out_z LPWSTR* psczText
     );
 
 /********************************************************************

@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="XmlSchemaCompiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// Compile an xsd schema into several documentation files.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixBuild.Tools.DocFromXsd
 {
@@ -1109,6 +1098,14 @@ namespace WixBuild.Tools.DocFromXsd
                     {
                         children.Add(String.Concat("Z", childParticle.LineNumber.ToString(CultureInfo.InvariantCulture)), childParticle);
                     }
+                }
+
+                string description = GetDescription(choice);
+                if (!String.IsNullOrEmpty(description))
+                {
+                    writer.WriteStartElement("p");
+                    writer.WriteRaw(description);
+                    writer.WriteEndElement();
                 }
 
                 writer.WriteString(String.Format("Choice of elements (min: {0}, max: {1})", (choice.MinOccurs == Decimal.MaxValue ? "unbounded" : choice.MinOccurs.ToString(CultureInfo.InvariantCulture)), (choice.MaxOccurs == Decimal.MaxValue ? "unbounded" : choice.MaxOccurs.ToString(CultureInfo.InvariantCulture))));

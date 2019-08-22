@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Gemcraft_Chasing_Shadows">
+        <Detect>
+            <Arp DisplayName="Gemcraft - Chasing Shadows"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="LocalStore" Location="AppDataFolder:\GCCS\Local Store\" />
+        </Data>
+
+        <Filter>
+            <!-- TODO: does this contain useful things to sync? -->
+            <Ignore Name="LocalStore:\prefs.dat"/>
+        </Filter>
+
+        <DisplayName LCID="1033">Gemcraft - Chasing Shadows</DisplayName>
+    </Product>
+</LegacySettings>

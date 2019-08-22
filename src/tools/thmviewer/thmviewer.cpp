@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="thmviewer.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Theme viewer.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -32,7 +21,8 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
 
 static HRESULT ProcessCommandLine(
     __in_z_opt LPCWSTR wzCommandLine,
-    __out_z LPWSTR* psczThemeFile
+    __out_z LPWSTR* psczThemeFile,
+    __out_z LPWSTR* psczWxlFile
     );
 static HRESULT CreateTheme(
     __in HINSTANCE hInstance,
@@ -49,6 +39,10 @@ static LRESULT CALLBACK MainWndProc(
     __in WPARAM wParam,
     __in LPARAM lParam
     );
+static void OnThemeLoadError(
+    __in THEME* pTheme,
+    __in HRESULT hrFailure
+    );
 static void OnNewTheme(
     __in THEME* pTheme,
     __in HWND hWnd,
@@ -59,7 +53,7 @@ static void OnNewTheme(
 int WINAPI wWinMain(
     __in HINSTANCE hInstance,
     __in_opt HINSTANCE /* hPrevInstance */,
-    __in_z_opt LPWSTR lpCmdLine,
+    __in_z LPWSTR lpCmdLine,
     __in int /*nCmdShow*/
     )
 {
@@ -68,6 +62,7 @@ int WINAPI wWinMain(
     HRESULT hr = S_OK;
     BOOL fComInitialized = FALSE;
     LPWSTR sczThemeFile = NULL;
+    LPWSTR sczWxlFile = NULL;
     ATOM atom = 0;
     HWND hWnd = NULL;
 
@@ -81,7 +76,7 @@ int WINAPI wWinMain(
     ExitOnFailure(hr, "Failed to initialize COM.");
     fComInitialized = TRUE;
 
-    hr = ProcessCommandLine(lpCmdLine, &sczThemeFile);
+    hr = ProcessCommandLine(lpCmdLine, &sczThemeFile, &sczWxlFile);
     ExitOnFailure(hr, "Failed to process command line.");
 
     hr = CreateTheme(hInstance, &vpTheme);
@@ -123,7 +118,7 @@ int WINAPI wWinMain(
     hr = DisplayStart(hInstance, hWnd, &hDisplayThread, &vdwDisplayThreadId);
     ExitOnFailure(hr, "Failed to start display.");
 
-    hr = LoadStart(sczThemeFile, hWnd, &hLoadThread);
+    hr = LoadStart(sczThemeFile, sczWxlFile, hWnd, &hLoadThread);
     ExitOnFailure(hr, "Failed to start load.");
 
     // message pump
@@ -174,6 +169,7 @@ LExit:
     }
 
     ReleaseStr(sczThemeFile);
+    ReleaseStr(sczWxlFile);
     return hr;
 }
 
@@ -183,7 +179,8 @@ LExit:
 //
 static HRESULT ProcessCommandLine(
     __in_z_opt LPCWSTR wzCommandLine,
-    __out_z LPWSTR* psczThemeFile
+    __out_z LPWSTR* psczThemeFile,
+    __out_z LPWSTR* psczWxlFile
     )
 {
     HRESULT hr = S_OK;
@@ -192,8 +189,8 @@ static HRESULT ProcessCommandLine(
 
     if (wzCommandLine && *wzCommandLine)
     {
-        argv = ::CommandLineToArgvW(wzCommandLine, &argc);
-        ExitOnNullWithLastError(argv, hr, "Failed to get command line.");
+        hr = AppParseCommandLine(wzCommandLine, &argc, &argv);
+        ExitOnFailure(hr, "Failed to parse command line.");
 
         for (int i = 0; i < argc; ++i)
         {
@@ -211,8 +208,16 @@ static HRESULT ProcessCommandLine(
             }
             else
             {
-                hr = StrAllocString(psczThemeFile, argv[i], 0);
-                ExitOnFailure(hr, "Failed to copy path to theme file.");
+                LPCWSTR wzExtension = PathExtension(argv[i]);
+                if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, wzExtension, -1, L".wxl", -1))
+                {
+                    hr = StrAllocString(psczWxlFile, argv[i], 0);
+                }
+                else
+                {
+                    hr = StrAllocString(psczThemeFile, argv[i], 0);
+                }
+                ExitOnFailure(hr, "Failed to copy path to file.");
             }
         }
     }
@@ -220,7 +225,7 @@ static HRESULT ProcessCommandLine(
 LExit:
     if (argv)
     {
-        ::LocalFree(argv);
+        AppFreeCommandLineArgs(argv);
     }
 
     return hr;
@@ -306,6 +311,10 @@ static LRESULT CALLBACK MainWndProc(
         }
         break;
 
+    case WM_THMVWR_THEME_LOAD_ERROR:
+        OnThemeLoadError(vpTheme, lParam);
+        return 0;
+
     case WM_THMVWR_NEW_THEME:
         OnNewTheme(vpTheme, hWnd, reinterpret_cast<HANDLE_THEME*>(lParam));
         return 0;
@@ -319,7 +328,7 @@ static LRESULT CALLBACK MainWndProc(
         NMHDR* pnmhdr = reinterpret_cast<NMHDR*>(lParam);
         switch (pnmhdr->code)
         {
-        case TVN_SELCHANGED:
+        case TVN_SELCHANGEDW:
             {
             NMTREEVIEWW* ptv = reinterpret_cast<NMTREEVIEWW*>(lParam);
             ::PostThreadMessageW(vdwDisplayThreadId, WM_THMVWR_SHOWPAGE, SW_HIDE, ptv->itemOld.lParam);
@@ -341,6 +350,42 @@ static LRESULT CALLBACK MainWndProc(
 
     return ThemeDefWindowProc(vpTheme, hWnd, uMsg, wParam, lParam);
 }
+
+static void OnThemeLoadError(
+    __in THEME* pTheme,
+    __in HRESULT hrFailure
+    )
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczMessage = NULL;
+    TVINSERTSTRUCTW tvi = { };
+
+    // Add the application node.
+    tvi.hParent = NULL;
+    tvi.hInsertAfter = TVI_ROOT;
+    tvi.item.mask = TVIF_TEXT | TVIF_PARAM;
+    tvi.item.lParam = 0;
+    tvi.item.pszText = L"Failed to load theme.";
+    tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
+
+    hr = StrAllocFormatted(&sczMessage, L"Error 0x%08x.", hrFailure);
+    ExitOnFailure(hr, "Failed to format error message.");
+
+    tvi.item.pszText = sczMessage;
+    ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi));
+
+    hr = StrAllocFromError(&sczMessage, hrFailure, NULL);
+    ExitOnFailure(hr, "Failed to format error message text.");
+
+    tvi.item.pszText = sczMessage;
+    ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi));
+
+    ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_EXPAND, TVE_EXPAND, reinterpret_cast<LPARAM>(tvi.hParent));
+
+LExit:
+    ReleaseStr(sczMessage);
+}
+
 
 static void OnNewTheme(
     __in THEME* pTheme,
@@ -386,10 +431,10 @@ static void OnNewTheme(
     tvi.hInsertAfter = TVI_ROOT;
     tvi.item.mask = TVIF_TEXT | TVIF_PARAM;
     tvi.item.lParam = 0;
-    tvi.item.pszText = L"Application";
+    tvi.item.pszText = pHandle && pHandle->pTheme && pHandle->pTheme->sczCaption ? pHandle->pTheme->sczCaption : L"Window";
 
     // Add the pages.
-    tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&tvi)));
+    tvi.hParent = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
     tvi.hInsertAfter = TVI_SORT;
     for (DWORD i = 0; i < pNewTheme->cPages; ++i)
     {
@@ -399,7 +444,7 @@ static void OnNewTheme(
             tvi.item.pszText = pPage->sczName;
             tvi.item.lParam = i + 1; //prgdwPageIds[i]; - TODO: do the right thing here by calling ThemeGetPageIds(), should not assume we know how the page ids will be calculated.
 
-            HTREEITEM hti = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEM, 0, reinterpret_cast<LPARAM>(&tvi)));
+            HTREEITEM hti = reinterpret_cast<HTREEITEM>(ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&tvi)));
             if (*wzSelectedPage && CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, pPage->sczName, -1, wzSelectedPage, -1))
             {
                 htiSelected = hti;
@@ -417,6 +462,4 @@ static void OnNewTheme(
     {
         ThemeSendControlMessage(pTheme, THMVWR_CONTROL_TREE, TVM_SELECTITEM, TVGN_CARET, reinterpret_cast<LPARAM>(htiSelected));
     }
-
-    return;
 }

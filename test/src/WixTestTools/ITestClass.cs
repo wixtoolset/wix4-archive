@@ -1,11 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="WixTestBase.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest
 {
@@ -21,8 +14,8 @@ namespace WixTest
         /// </summary>
         /// <param name="testNamespace">Containing namespace of the test case.</param>
         /// <param name="testClass">Containing class name of the test case.</param>
-        /// <param name="testMethod">Method name of the test case.</param>
-        void TestInitialize(string testNamespace, string testClass, string testMethod);
+        /// <param name="testMethodName">Method name of the test case.</param>
+        void TestInitialize(string testNamespace, string testClass, string testMethodName);
 
         /// <summary>
         /// Uninitializes the test case.

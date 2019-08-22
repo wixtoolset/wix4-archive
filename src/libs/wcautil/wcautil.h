@@ -1,16 +1,6 @@
 #pragma once
-//-------------------------------------------------------------------------------------------------
-// <copyright file="wcautil.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    WiX CustomAction utility library.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,9 +11,9 @@ extern "C" {
 
 #include "dutil.h"
 
-#define MessageExitOnLastError(x, e, s, ...)      { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, 0, __VA_ARGS__);  goto LExit; } }
-#define MessageExitOnFailure(x, e, s, ...)           if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, 0, __VA_ARGS__);  goto LExit; }
-#define MessageExitOnNullWithLastError(p, x, e, s, ...) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, 0, __VA_ARGS__);  goto LExit; }
+#define MessageExitOnLastError(x, e, s, ...)      { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, -1, __VA_ARGS__);  goto LExit; } }
+#define MessageExitOnFailure(x, e, s, ...)           if (FAILED(x)) { ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, INSTALLMESSAGE_ERROR | MB_OK, -1, __VA_ARGS__);  goto LExit; }
+#define MessageExitOnNullWithLastError(p, x, e, s, ...) if (NULL == p) { x = ::GetLastError(); x = HRESULT_FROM_WIN32(x); if (!FAILED(x)) { x = E_FAIL; } ExitTrace(x, "%s", s, __VA_ARGS__); WcaErrorMessage(e, x, MB_OK, -1, __VA_ARGS__);  goto LExit; }
 
 // Generic action enum.
 typedef enum WCA_ACTION
@@ -58,6 +48,14 @@ typedef struct WCA_CASCRIPT_STRUCT
     LPWSTR pwzScriptPath;
     HANDLE hScriptFile;
 } *WCA_CASCRIPT_HANDLE;
+
+typedef enum WCA_ENCODING
+{
+    WCA_ENCODING_UNKNOWN,
+    WCA_ENCODING_UTF_16,
+    WCA_ENCODING_UTF_8,
+    WCA_ENCODING_ANSI,
+} WCA_ENCODING;
 
 void WIXAPI WcaGlobalInitialize(
     __in HINSTANCE hInst
@@ -112,7 +110,7 @@ UINT __cdecl WcaErrorMessage(
     __in int iError,
     __in HRESULT hrError,
     __in UINT uiType,
-    __in DWORD cArgs,
+    __in INT cArgs,
     ...
     );
 HRESULT WIXAPI WcaProgressMessage(
@@ -349,11 +347,36 @@ void WIXAPI WcaCaScriptCleanup(
 
 HRESULT WIXAPI QuietExec(
     __inout_z LPWSTR wzCommand,
-    __in DWORD dwTimeout
+    __in DWORD dwTimeout,
+    __in BOOL fLogCommand,
+    __in BOOL fLogOutput
+    );
+
+HRESULT WIXAPI QuietExecCapture(
+    __inout_z LPWSTR wzCommand,
+    __in DWORD dwTimeout,
+    __in BOOL fLogCommand,
+    __in BOOL fLogOutput,
+    __out_z_opt LPWSTR* psczOutput
     );
 
 WCA_TODO WIXAPI WcaGetComponentToDo(
     __in_z LPCWSTR wzComponentId
+    );
+
+HRESULT WIXAPI WcaExtractBinaryToBuffer(
+    __in LPCWSTR wzBinaryId,
+    __out BYTE** pbData,
+    __out DWORD* pcbData
+    );
+HRESULT WIXAPI WcaExtractBinaryToFile(
+    __in LPCWSTR wzBinaryId,
+    __in LPCWSTR wzPath
+    );
+HRESULT WIXAPI WcaExtractBinaryToString(
+    __in LPCWSTR wzBinaryId,
+    __deref_out_z LPWSTR* psczOutput,
+    __out WCA_ENCODING* encoding
     );
 
 #ifdef __cplusplus

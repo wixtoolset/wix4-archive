@@ -1,17 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="enum.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Utility functions related to enumerations
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,12 +33,15 @@ struct CFG_ENUMERATION
             LPWSTR *rgsczName;
             LPWSTR *rgsczVersion;
             LPWSTR *rgsczPublicKey;
+            DISPLAY_NAME **rgrgDisplayNames;
+            DWORD *rgcDisplayNames;
             BOOL *rgfRegistered;
         } products;
         struct
         {
             LPWSTR sczName;
             CONFIG_VALUE *rgcValues;
+            LPWSTR *rgsczDbReferences;
         } valueHistory;
         struct
         {
@@ -102,7 +94,8 @@ HRESULT EnumWriteValue(
     __in CFGDB_STRUCT *pcdb,
     __in_z LPCWSTR wzName,
     __in const CFG_ENUMERATION *pceEnum,
-    __in DWORD dwEnumIndex
+    __in DWORD dwEnumIndex,
+    __in_opt CFGDB_STRUCT *pcdbReferencedBy
     );
 
 #ifdef __cplusplus

@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="product.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions related to products for Cfg API
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -46,7 +35,7 @@ HRESULT ProductValidateVersion(
     DWORD dwResult = 0;
     WCHAR wcExtra;
 
-    dwResult = swscanf_s(wzVersion, L"%u.%u.%u.%u%lc", &dw1, &dw2, &dw3, &dw4, &wcExtra);
+    dwResult = swscanf_s(wzVersion, L"%u.%u.%u.%u%lc", &dw1, &dw2, &dw3, &dw4, &wcExtra, 1);
 
     // Must have 4 components to the version
     if (4 != dwResult)
@@ -232,11 +221,8 @@ HRESULT ProductSyncValues(
         {
             if (fFirstIsLocal || fAllowLocalToReceiveData)
             {
-                for (DWORD i = 0; i < dwCfgCount1; ++i)
-                {
-                    hr = EnumWriteValue(pcdb2, sczName, valueHistory1, i);
-                    ExitOnFailure(hr, "Failed to write value %ls index %u", sczName, i);
-                }
+                hr = ValueTransferFromHistory(pcdb2, valueHistory1, 0, pcdb1);
+                ExitOnFailure(hr, "Failed to transfer history (due to value not present) from db 2 to db 1 for value %ls", sczName);
             }
 
             goto Skip;
@@ -257,11 +243,8 @@ HRESULT ProductSyncValues(
                 if (S_OK == hr)
                 {
                     // Database 2 is subsumed - pipe over all the newest history entries
-                    for (DWORD i = dwFoundIndex + 1; i < dwCfgCount1; ++i)
-                    {
-                        hr = EnumWriteValue(pcdb2, sczName, valueHistory1, i);
-                        ExitOnFailure(hr, "Failed to set value from history enum while piping over database 1 history values");
-                    }
+                    hr = ValueTransferFromHistory(pcdb2, valueHistory1, dwFoundIndex + 1, pcdb1);
+                    ExitOnFailure(hr, "Failed to transfer history (due to history subsumed) from db 1 to db 2 for value %ls", sczName);
 
                     goto Skip;
                 }
@@ -274,8 +257,11 @@ HRESULT ProductSyncValues(
                     ExitOnFailure(hr, "Failed to check if db2's value history is subsumed by db1's value history");
                 }
 
-                hr = ValueCompare(valueHistory2->valueHistory.rgcValues + dwSubsumeIndex, valueHistory2->valueHistory.rgcValues + dwSubsumeIndex - 1, &fSame);
-                ExitOnFailure(hr, "Failed to check if value and previous value in database 2 are equivalent");
+                if (0 < dwSubsumeIndex)
+                {
+                    hr = ValueCompare(valueHistory2->valueHistory.rgcValues + dwSubsumeIndex, valueHistory2->valueHistory.rgcValues + dwSubsumeIndex - 1, FALSE, &fSame);
+                    ExitOnFailure(hr, "Failed to check if value and previous value in database 2 are equivalent");
+                }
             }
             while (0 < dwSubsumeIndex && fSame);
         }
@@ -294,11 +280,8 @@ HRESULT ProductSyncValues(
                 if (S_OK == hr)
                 {
                     // Database 1 is subsumed - pipe over all the newest history entries
-                    for (DWORD i = dwFoundIndex + 1; i < dwCfgCount2; ++i)
-                    {
-                        hr = EnumWriteValue(pcdb1, sczName, valueHistory2, i);
-                        ExitOnFailure(hr, "Failed to set value from history enum while piping over database 2 history values");
-                    }
+                    hr = ValueTransferFromHistory(pcdb1, valueHistory2, dwFoundIndex + 1, pcdb2);
+                    ExitOnFailure(hr, "Failed to transfer history (due to history subsumed) from db 2 to db 1 for value %ls", sczName);
 
                     goto Skip;
                 }
@@ -311,8 +294,11 @@ HRESULT ProductSyncValues(
                     ExitOnFailure(hr, "Failed to check if db1's value history is subsumed by db2's value history");
                 }
 
-                hr = ValueCompare(valueHistory1->valueHistory.rgcValues + dwSubsumeIndex, valueHistory1->valueHistory.rgcValues + dwSubsumeIndex - 1, &fSame);
-                ExitOnFailure(hr, "Failed to check if value and previous value in database 1 are equivalent");
+                if (0 < dwSubsumeIndex)
+                {
+                    hr = ValueCompare(valueHistory1->valueHistory.rgcValues + dwSubsumeIndex, valueHistory1->valueHistory.rgcValues + dwSubsumeIndex - 1, FALSE, &fSame);
+                    ExitOnFailure(hr, "Failed to check if value and previous value in database 1 are equivalent");
+                }
             }
             while (0 < dwSubsumeIndex && fSame);
         }
@@ -419,9 +405,6 @@ HRESULT ProductEnsureCreated(
 
         hr = SceSetColumnBool(sceRow, PRODUCT_IS_LEGACY, fLegacyProduct);
         ExitOnFailure(hr, "Failed to set IsLegacy column");
-
-        hr = SceSetColumnNull(sceRow, PRODUCT_LEGACY_SEQUENCE);
-        ExitOnFailure(hr, "Failed to set ProductLegacySequence column");
 
         hr = SceFinishUpdate(sceRow);
         ExitOnFailure(hr, "Failed to finish insert");
@@ -601,7 +584,7 @@ HRESULT ProductForget(
         hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvValue);
         ExitOnFailure(hr, "Failed to set delete value in memory");
 
-        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczLegacyManifestValueName, &cvValue, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczLegacyManifestValueName, &cvValue, TRUE, NULL);
         ExitOnFailure(hr, "Failed to tombstone legacy manifest for product %ls", wzProductName);
     }
 

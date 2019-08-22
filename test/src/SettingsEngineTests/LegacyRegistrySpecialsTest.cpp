@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="LegacyRegistrySpecialsTest.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Test syncing data to/from the registry (with special behavior) via legacy manifest.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -155,6 +144,7 @@ namespace CfgTests
             // OK now register the product, sync again, and confirm the data is pushed back out to disk due to fresh re-registration
             SetARP(L"SomeKeyName", L"Cfg Test Specials", NULL, NULL);
             WaitForAutoSync(cdhLocal);
+            ExpectNoValue(cdhLocal, L"Main:\\IgnoreMe");
             ExpectDword(cdhLocal, L"Main:\\BoolValue", 0);
             ExpectBool(cdhLocal, L"Main:Flag00", TRUE);
             ExpectBool(cdhLocal, L"Main:Flag01", FALSE);
@@ -180,12 +170,13 @@ namespace CfgTests
             ExitOnFailure(hr, "Failed to ensure registry key exists");
 
             hr = RegWriteString(hk, L"IgnoreMe", L"Blah");
-            ExitOnFailure(hr, "Failed to write ignoreme value");
+            ExitOnFailure(hr, "Failed to write ignoreme value 2nd time");
 
+            WaitForSqlCeTimestampChange();
             hr = CfgSetString(cdhLocal, L"Main:\\IgnoreMe", L"FromCfg");
-            ExitOnFailure(hr, "Failed to set ignoreme string in cfg db");
+            ExitOnFailure(hr, "Failed to set ignoreme string in cfg db 2nd time");
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhLocal, L"Main:\\IgnoreMe");
             ExitOnFailure(hr, "Failed to delete value in cfg db");
 

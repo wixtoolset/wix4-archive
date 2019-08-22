@@ -1,11 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="WixBundleRollbackBoundaryRow.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Data.Rows
 {
@@ -51,6 +44,16 @@ namespace WixToolset.Data.Rows
         {
             get { return (null == this.Fields[1].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[1].Data; }
             set { this.Fields[1].Data = (int)value; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the rollback-boundary should be installed as an MSI transaction.
+        /// </summary>
+        /// <value>Vitality of the package.</value>
+        public YesNoType Transaction
+        {
+            get { return (null == this.Fields[2].Data) ? YesNoType.NotSet : (YesNoType)this.Fields[2].Data; }
+            set { this.Fields[2].Data = (int)value; }
         }
     }
 }

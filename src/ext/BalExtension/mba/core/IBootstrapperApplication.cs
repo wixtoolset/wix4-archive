@@ -1,15 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="IBootstrapperApplication.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// COM interop interface for IBootstrapperApplication.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bootstrapper
 {
@@ -26,47 +15,52 @@ namespace WixToolset.Bootstrapper
     [GeneratedCodeAttribute("WixToolset.Bootstrapper.InteropCodeGenerator", "1.0.0.0")]
     public interface IBootstrapperApplication
     {
-        void OnStartup();
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnStartup();
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnShutdown();
+        int OnShutdown(ref BOOTSTRAPPER_SHUTDOWN_ACTION action);
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnSystemShutdown(
+        int OnSystemShutdown(
             [MarshalAs(UnmanagedType.U4)] EndSessionReasons dwEndSession,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectBegin(
+        int OnDetectBegin(
             [MarshalAs(UnmanagedType.Bool)] bool fInstalled,
-            [MarshalAs(UnmanagedType.U4)] int cPackages
+            [MarshalAs(UnmanagedType.U4)] int cPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectForwardCompatibleBundle(
+        int OnDetectForwardCompatibleBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
             [MarshalAs(UnmanagedType.U4)] RelationType relationType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleTag,
             [MarshalAs(UnmanagedType.Bool)] bool fPerMachine,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fIgnoreBundle
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectUpdateBegin(
+        int OnDetectUpdateBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation,
-             [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fSkip
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectUpdate(
+        int OnDetectUpdate(
             [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation,
             [MarshalAs(UnmanagedType.U8)] long dw64Size,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
@@ -74,117 +68,160 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.LPWStr)] string wzSummary,
             [MarshalAs(UnmanagedType.LPWStr)] string wzContentType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzContent,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
-            );
-
-        void OnDetectUpdateComplete(
-            int hrStatus,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzUpdateLocation
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fStopProcessingUpdates
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectRelatedBundle(
+        int OnDetectUpdateComplete(
+            int hrStatus,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fIgnoreError
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectRelatedBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
             [MarshalAs(UnmanagedType.U4)] RelationType relationType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleTag,
             [MarshalAs(UnmanagedType.Bool)] bool fPerMachine,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
-            [MarshalAs(UnmanagedType.U4)] RelatedOperation operation
+            [MarshalAs(UnmanagedType.U4)] RelatedOperation operation,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectPackageBegin(
-            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId
-            );
-
-        [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectCompatiblePackage(
+        int OnDetectPackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectRelatedMsiPackage(
+        int OnDetectCompatibleMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            [MarshalAs(UnmanagedType.U8)] long dw64CompatiblePackageVersion,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectRelatedMsiPackage(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzUpgradeCode,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
             [MarshalAs(UnmanagedType.Bool)] bool fPerMachine,
             [MarshalAs(UnmanagedType.U8)] long dw64Version,
-            [MarshalAs(UnmanagedType.U4)] RelatedOperation operation
+            [MarshalAs(UnmanagedType.U4)] RelatedOperation operation,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectTargetMsiPackage(
+        int OnDetectTargetMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
-            [MarshalAs(UnmanagedType.U4)] PackageState patchState
+            [MarshalAs(UnmanagedType.U4)] PackageState patchState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnDetectMsiFeature(
+        int OnDetectMsiFeature(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzFeatureId,
-            [MarshalAs(UnmanagedType.U4)] FeatureState state
+            [MarshalAs(UnmanagedType.U4)] FeatureState state,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnDetectPackageComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectPackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] PackageState state
             );
 
-        void OnDetectComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnDetectComplete(
             int hrStatus
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanBegin(
-            [MarshalAs(UnmanagedType.U4)] int cPackages
+        int OnPlanBegin(
+            [MarshalAs(UnmanagedType.U4)] int cPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanRelatedBundle(
+        int OnPlanRelatedBundle(
             [MarshalAs(UnmanagedType.LPWStr)] string wzBundleId,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanPackageBegin(
+        int OnPlanPackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanCompatiblePackage(
+        int OnPlanCompatibleMsiPackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            [MarshalAs(UnmanagedType.U8)] long dw64CompatiblePackageVersion,
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanTargetMsiPackage(
+        int OnPlanCompatibleMsiPackageComplete(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.LPWStr)] string wzCompatiblePackageId,
+            int hrStatus,
+            [MarshalAs(UnmanagedType.U4)] PackageState state,
+            [MarshalAs(UnmanagedType.U4)] RequestState requested,
+            [MarshalAs(UnmanagedType.U4)] ActionState execute,
+            [MarshalAs(UnmanagedType.U4)] ActionState rollback
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanTargetMsiPackage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzProductCode,
-            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] RequestState recommendedState,
+            [MarshalAs(UnmanagedType.U4)] ref RequestState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnPlanMsiFeature(
+        int OnPlanMsiFeature(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzFeatureId,
-            [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState
+            [MarshalAs(UnmanagedType.U4)] FeatureState recommendedState,
+            [MarshalAs(UnmanagedType.U4)] ref FeatureState pRequestedState,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
-        void OnPlanPackageComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanPackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
             [MarshalAs(UnmanagedType.U4)] PackageState state,
@@ -193,206 +230,276 @@ namespace WixToolset.Bootstrapper
             [MarshalAs(UnmanagedType.U4)] ActionState rollback
             );
 
-        void OnPlanComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnPlanComplete(
             int hrStatus
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnApplyBegin(
-            [MarshalAs(UnmanagedType.U4)] int dwPhaseCount
+        int OnApplyBegin(
+            [MarshalAs(UnmanagedType.U4)] int dwPhaseCount,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnElevate();
+        int OnElevateBegin(
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnProgress(
+        int OnElevateComplete(
+            int hrStatus
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnProgress(
             [MarshalAs(UnmanagedType.U4)] int dwProgressPercentage,
-            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage
+            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnError(
+        int OnError(
             [MarshalAs(UnmanagedType.U4)] ErrorType errorType,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int dwCode,
             [MarshalAs(UnmanagedType.LPWStr)] string wzError,
-            [MarshalAs(UnmanagedType.U4)] int uiFlags,
+            [MarshalAs(UnmanagedType.I4)] int dwUIHint,
             [MarshalAs(UnmanagedType.U4)] int cData,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzData,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnRegisterBegin();
+        int OnRegisterBegin(
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
 
-        void OnRegisterComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnRegisterComplete(
             int hrStatus
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheBegin();
-
-        [PreserveSig]
-        [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCachePackageBegin(
-            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] int cCachePayloads,
-            [MarshalAs(UnmanagedType.U8)] long dw64PackageCacheSize
+        int OnCacheBegin(
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheAcquireBegin(
+        int OnCachePackageBegin(
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
+            [MarshalAs(UnmanagedType.U4)] int cCachePayloads,
+            [MarshalAs(UnmanagedType.U8)] long dw64PackageCacheSize,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnCacheAcquireBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.U4)] CacheOperation operation,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzSource
+            [MarshalAs(UnmanagedType.LPWStr)] string wzSource,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheAcquireProgress(
+        int OnCacheAcquireProgress(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.U8)] long dw64Progress,
             [MarshalAs(UnmanagedType.U8)] long dw64Total,
-            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage
+            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnResolveSource(
+        int OnResolveSource(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzLocalSource,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzDownloadSource
+            [MarshalAs(UnmanagedType.LPWStr)] string wzDownloadSource,
+            BOOTSTRAPPER_RESOLVESOURCE_ACTION recommendation,
+            ref BOOTSTRAPPER_RESOLVESOURCE_ACTION action,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheAcquireComplete(
+        int OnCacheAcquireComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageOrContainerId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             int hrStatus,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+            ref BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION pAction
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheVerifyBegin(
+        int OnCacheVerifyBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId
+            [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCacheVerifyComplete(
+        int OnCacheVerifyComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.LPWStr)] string wzPayloadId,
             int hrStatus,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation,
+            ref BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION action
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnCachePackageComplete(
+        int OnCachePackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             int hrStatus,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION recommendation,
+            ref BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION action
             );
 
-        void OnCacheComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnCacheComplete(
             int hrStatus
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteBegin(
-            [MarshalAs(UnmanagedType.U4)] int cExecutingPackages
+        int OnExecuteBegin(
+            [MarshalAs(UnmanagedType.U4)] int cExecutingPackages,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecutePackageBegin(
+        int OnExecutePackageBegin(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.Bool)] bool fExecute
+            [MarshalAs(UnmanagedType.Bool)] bool fExecute,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecutePatchTarget(
+        int OnExecutePatchTarget(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.LPWStr)] string wzTargetProductCode
+            [MarshalAs(UnmanagedType.LPWStr)] string wzTargetProductCode,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteProgress(
+        int OnExecuteProgress(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int dwProgressPercentage,
-            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage
+            [MarshalAs(UnmanagedType.U4)] int dwOverallPercentage,
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteMsiMessage(
+        int OnExecuteMsiMessage(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            [MarshalAs(UnmanagedType.U4)] InstallMessage mt,
-            [MarshalAs(UnmanagedType.U4)] int uiFlags,
+            [MarshalAs(UnmanagedType.U4)] InstallMessage messageType,
+            [MarshalAs(UnmanagedType.I4)] int dwUIHint,
             [MarshalAs(UnmanagedType.LPWStr)] string wzMessage,
             [MarshalAs(UnmanagedType.U4)] int cData,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzData,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
+            [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecuteFilesInUse(
+        int OnExecuteFilesInUse(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
             [MarshalAs(UnmanagedType.U4)] int cFiles,
-            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzFiles
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1, ArraySubType = UnmanagedType.LPWStr), In] string[] rgwzFiles,
+            [MarshalAs(UnmanagedType.I4)] Result nRecommendation,
+            [MarshalAs(UnmanagedType.I4)] ref Result pResult
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnExecutePackageComplete(
+        int OnExecutePackageComplete(
             [MarshalAs(UnmanagedType.LPWStr)] string wzPackageId,
-            int hrExitCode,
-            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
-            [MarshalAs(UnmanagedType.I4)] int nRecommendation
-            );
-
-        void OnExecuteComplete(
-            int hrStatus
-            );
-
-        void OnUnregisterBegin();
-
-        void OnUnregisterComplete(
-            int hrStatus
-            );
-
-        [PreserveSig]
-        [return: MarshalAs(UnmanagedType.I4)]
-        Result OnApplyComplete(
             int hrStatus,
-            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart
+            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
+            [MarshalAs(UnmanagedType.I4)] BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation,
+            [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION pAction
             );
 
         [PreserveSig]
         [return: MarshalAs(UnmanagedType.I4)]
-        Result OnLaunchApprovedExeBegin();
+        int OnExecuteComplete(
+            int hrStatus
+            );
 
-        void OnLaunchApprovedExeComplete(
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnUnregisterBegin(
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnUnregisterComplete(
+            int hrStatus
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnApplyComplete(
+            int hrStatus,
+            [MarshalAs(UnmanagedType.U4)] ApplyRestart restart,
+            [MarshalAs(UnmanagedType.I4)] BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+            [MarshalAs(UnmanagedType.I4)] ref BOOTSTRAPPER_APPLYCOMPLETE_ACTION pAction
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnLaunchApprovedExeBegin(
+            [MarshalAs(UnmanagedType.Bool)] ref bool fCancel
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int OnLaunchApprovedExeComplete(
             int hrStatus,
             int processId
+            );
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.I4)]
+        int BAProc(
+            BOOTSTRAPPER_APPLICATION_MESSAGE message,
+            IntPtr pvArgs,
+            IntPtr pvResults,
+            IntPtr pvContext
+            );
+
+        void BAProcFallback(
+            BOOTSTRAPPER_APPLICATION_MESSAGE message,
+            IntPtr pvArgs,
+            IntPtr pvResults,
+            ref int phr,
+            IntPtr pvContext
             );
     }
 
@@ -461,10 +568,6 @@ namespace WixToolset.Bootstrapper
         Help,
         TryAgain,
         Continue,
-        Download = 101,
-        Restart,
-        Suspend,
-        Timeout = 32000,
     }
 
     /// <summary>
@@ -534,6 +637,11 @@ namespace WixToolset.Bootstrapper
         /// The error came while trying to authenticate with an HTTP proxy.
         /// </summary>
         HttpProxyAuthentication,
+
+        /// <summary>
+        /// The error occurred during apply.
+        /// </summary>
+        Apply,
     };
 
     public enum RelatedOperation
@@ -652,5 +760,137 @@ namespace WixToolset.Bootstrapper
         /// The user is logging off.
         /// </summary>
         Logoff = unchecked((int)0x80000000)
+    }
+
+    /// <summary>
+    /// The message code.
+    /// </summary>
+    public enum BOOTSTRAPPER_APPLICATION_MESSAGE
+    {
+        OnDetectBegin,
+        OnDetectComplete,
+        OnPlanBegin,
+        OnPlanComplete,
+        OnStartup,
+        OnShutdown,
+        OnSystemShutdown,
+        OnDetectForwardCompatibleBundle,
+        OnDetectUpdateBegin,
+        OnDetectUpdate,
+        OnDetectUpdateComplete,
+        OnDetectRelatedBundle,
+        OnDetectPackageBegin,
+        OnDetectCompatibleMsiPackage,
+        OnDetectRelatedMsiPackage,
+        OnDetectTargetMsiPackage,
+        OnDetectMsiFeature,
+        OnDetectPackageComplete,
+        OnPlanRelatedBundle,
+        OnPlanPackageBegin,
+        OnPlanCompatibleMsiPackageBegin,
+        OnPlanCompatibleMsiPackageComplete,
+        OnPlanTargetMsiPackage,
+        OnPlanMsiFeature,
+        OnPlanPackageComplete,
+        OnApplyBegin,
+        OnElevateBegin,
+        OnElevateComplete,
+        OnProgress,
+        OnError,
+        OnRegisterBegin,
+        OnRegisterComplete,
+        OnCacheBegin,
+        OnCachePackageBegin,
+        OnCacheAcquireBegin,
+        OnCacheAcquireProgress,
+        OnResolveSource,
+        OnCacheAcquireComplete,
+        OnCacheVerifyBegin,
+        OnCacheVerifyComplete,
+        OnCachePackageComplete,
+        OnCacheComplete,
+        OnExecuteBegin,
+        OnExecutePackageBegin,
+        OnExecutePatchTarget,
+        OnExecuteProgress,
+        OnExecuteMsiMessage,
+        OnExecuteFilesInUse,
+        OnExecutePackageComplete,
+        OnExecuteComplete,
+        OnUnregisterBegin,
+        OnUnregisterComplete,
+        OnApplyComplete,
+        OnLaunchApprovedExeBegin,
+        OnLaunchApprovedExeComplete,
+    }
+
+    /// <summary>
+    /// The available actions for OnApplyComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_APPLYCOMPLETE_ACTION
+    {
+        None,
+        Restart,
+    }
+
+    /// <summary>
+    /// The available actions for OnCacheAcquireComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION
+    {
+        None,
+        Retry,
+    }
+
+    /// <summary>
+    /// The available actions for OnCachePackageComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_CACHEPACKAGECOMPLETE_ACTION
+    {
+        None,
+        Ignore,
+        Retry,
+    }
+
+    /// <summary>
+    /// The available actions for OnCacheVerifyComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION
+    {
+        None,
+        RetryVerification,
+        RetryAcquisition,
+    }
+
+    /// <summary>
+    /// The available actions for OnExecutePackageComplete.
+    /// </summary>
+    public enum BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION
+    {
+        None,
+        Ignore,
+        Retry,
+        Restart,
+        Suspend,
+    }
+
+    /// <summary>
+    /// The available actions for OnResolveSource.
+    /// </summary>
+    public enum BOOTSTRAPPER_RESOLVESOURCE_ACTION
+    {
+        None,
+        Retry,
+        Download,
+    }
+
+    /// <summary>
+    /// The available actions for OnShutdown.
+    /// </summary>
+    public enum BOOTSTRAPPER_SHUTDOWN_ACTION
+    {
+        None,
+        Restart,
+        ReloadBootstrapper,
     }
 }

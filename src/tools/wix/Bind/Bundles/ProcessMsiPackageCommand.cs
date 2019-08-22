@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProcessMsiPackageCommand.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind.Bundles
 {
@@ -54,6 +47,7 @@ namespace WixToolset.Bind.Bundles
             string sourcePath = packagePayload.FullFileName;
             bool longNamesInImage = false;
             bool compressed = false;
+            bool x64 = false;
             try
             {
                 // Read data out of the msi database...
@@ -68,10 +62,13 @@ namespace WixToolset.Bind.Bundles
                     // files are compressed in the MSI by default when the bit is set.
                     compressed = 2 == (sumInfo.WordCount & 2);
 
+                    x64 = (sumInfo.Template.Contains("x64") || sumInfo.Template.Contains("Intel64"));
+
                     // 8 is the Word Count summary information stream bit that means
                     // "Elevated privileges are not required to install this package."
                     // in MSI 4.5 and below, if this bit is 0, elevation is required.
                     this.Facade.Package.PerMachine = (0 == (sumInfo.WordCount & 8)) ? YesNoDefaultType.Yes : YesNoDefaultType.No;
+                    this.Facade.Package.x64 = x64 ? YesNoType.Yes : YesNoType.No;
                 }
 
                 using (Dtf.Database db = new Dtf.Database(sourcePath))
@@ -84,7 +81,28 @@ namespace WixToolset.Bind.Bundles
 
                     if (!Common.IsValidModuleOrBundleVersion(this.Facade.MsiPackage.ProductVersion))
                     {
-                        Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath));
+                        // not a proper .NET version (e.g., five fields); can we get a valid four-part version number?
+                        string version = null;
+                        string[] versionParts = this.Facade.MsiPackage.ProductVersion.Split('.');
+                        int count = versionParts.Length;
+                        if (0 < count)
+                        {
+                            version = versionParts[0];
+                            for (int i = 1; i < 4 && i < count; ++i)
+                            {
+                                version = String.Concat(version, ".", versionParts[i]);
+                            }
+                        }
+                        
+                        if (!String.IsNullOrEmpty(version) && Common.IsValidModuleOrBundleVersion(version))
+                        {
+                            Messaging.Instance.OnMessage(WixWarnings.VersionTruncated(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath, version));
+                            this.Facade.MsiPackage.ProductVersion = version;
+                        }
+                        else
+                        {
+                            Messaging.Instance.OnMessage(WixErrors.InvalidProductVersion(this.Facade.Package.SourceLineNumbers, this.Facade.MsiPackage.ProductVersion, sourcePath));
+                        }
                     }
 
                     if (String.IsNullOrEmpty(this.Facade.Package.CacheId))
@@ -105,8 +123,6 @@ namespace WixToolset.Bind.Bundles
                     ISet<string> payloadNames = this.GetPayloadTargetNames();
 
                     ISet<string> msiPropertyNames = this.GetMsiPropertyNames();
-
-                    this.VerifyMsiProperties(msiPropertyNames);
 
                     this.SetPerMachineAppropriately(db, sourcePath);
 
@@ -160,20 +176,6 @@ namespace WixToolset.Bind.Bundles
                 .Select(r => r.Name);
 
             return new HashSet<string>(properties, StringComparer.Ordinal);
-        }
-
-        /// <summary>
-        /// Verifies that only allowed properties are passed to the MSI.
-        /// </summary>
-        private void VerifyMsiProperties(ISet<string> existingMsiProperties)
-        {
-            foreach (string disallowed in new string[] { "ACTION", "ALLUSERS", "REBOOT", "REINSTALL", "REINSTALLMODE" })
-            {
-                if (existingMsiProperties.Contains(disallowed))
-                {
-                    Messaging.Instance.OnMessage(WixErrors.DisallowedMsiProperty(this.Facade.Package.SourceLineNumbers, disallowed));
-                }
-            }
         }
 
         private void SetPerMachineAppropriately(Dtf.Database db, string sourcePath)
@@ -329,6 +331,7 @@ namespace WixToolset.Bind.Bundles
                                     }
 
                                     WixBundleMsiFeatureRow feature = (WixBundleMsiFeatureRow)this.MsiFeatureTable.CreateRow(this.Facade.Package.SourceLineNumbers);
+                                    feature.ChainPackageId = this.Facade.Package.WixChainItemId;
                                     feature.Name = featureName;
                                     feature.Parent = allFeaturesResultRecord.GetString(2);
                                     feature.Title = allFeaturesResultRecord.GetString(3);

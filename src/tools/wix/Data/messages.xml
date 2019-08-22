@@ -1,16 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<!--
-  <copyright file="messages.xml" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
-  <summary>
-    Wix error/verbose/warning messages.
-  </summary>
--->
+
 <Messages Namespace="WixToolset" Resources="Data.Messages" xmlns="http://schemas.microsoft.com/genmsgs/2004/07/messages">
     <Class Name="WixErrors" ContainerName="WixErrorEventArgs" BaseContainerName="MessageEventArgs" Level="Error">
         <Message Id="UnexpectedException" Number="1" SourceLineNumbers="no">
@@ -807,7 +798,7 @@
         </Message>
         <Message Id="IllegalAttributeWhenNested" Number="62">
             <Instance>
-                The {0}/@{1} attribute cannot be specified when the {0} element is nested underneath a {2} element.
+                The {0}/@{1} attribute cannot be specified when the {0} element is nested underneath a {2} element. If this {0} is a member of a ComponentGroup where ComponentGroup/@{1} is set, then the {0}/@{1} attribute should be removed.
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="parentElement" />
@@ -2817,8 +2808,9 @@
       </Message>
       <Message Id="DisallowedMsiProperty" Number="365">
         <Instance>
-          The '{0}' MsiProperty is controlled by the bootstrapper and cannot be authored. Remove the MsiProperty element.
+          The '{0}' MsiProperty is controlled by the bootstrapper and cannot be authored. (Illegal properties are: {1}.) Remove the MsiProperty element.
           <Parameter Type="System.String" Name="property" />
+          <Parameter Type="System.String" Name="illegalValueList" />
         </Instance>
       </Message>
       <Message Id="MissingOrInvalidModuleInstallerVersion" Number="366">
@@ -2967,6 +2959,25 @@
           <Parameter Type="System.String" Name="attributeName" />
           <Parameter Type="System.String" Name="value" />
           <Parameter Type="System.String" Name="identifier" />
+        </Instance>
+      </Message>
+      <Message Id="InsecureBundleFilename" Number="388" SourceLineNumbers="no">
+        <Instance>
+          The file name '{0}' creates an insecure bundle. Windows will load unnecessary compatibility shims into a bundle with that file name. These compatibility shims can be DLL hijacked allowing attackers to compromise your customers' computer. Choose a different bundle file name.
+          <Parameter Type="System.String" Name="filename" />
+        </Instance>
+      </Message>
+      <Message Id="PayloadMustBeRelativeToCache" Number="389">
+        <Instance>
+          The {0}/@{1} attribute's value, '{2}', is not a legal path name: Payload names must be relative to their cache directory and cannot contain '..'.
+          <Parameter Type="System.String" Name="elementName" />
+          <Parameter Type="System.String" Name="attributeName" />
+          <Parameter Type="System.String" Name="attributeValue" />
+        </Instance>
+      </Message>
+      <Message Id="MsiTransactionX86BeforeX64" Number="390">
+        <Instance>
+          MSI transactions must install all x64 packages before any x86 package.
         </Instance>
       </Message>
     </Class>
@@ -3619,7 +3630,7 @@
         </Message>
         <Message Id="FailedToDeleteTempDir" Number="1123" SourceLineNumbers="no">
             <Instance>
-                Failed to delete temporary directory: {0}
+                Failed to delete temporary directory: {0} 
                 <Parameter Type="System.String" Name="directory" />
             </Instance>
         </Message>
@@ -3781,6 +3792,20 @@
                 <Parameter Type="System.String" Name="elementName" />
                 <Parameter Type="System.String" Name="attributeName" />
                 <Parameter Type="System.String" Name="value" />
+            </Instance>
+        </Message>
+        <Message Id="VersionTruncated" Number="1148">
+            <Instance>
+                Product version {0} in package '{1}' is not valid per the MSI SDK and cannot be represented in a bundle. It has been truncated to {2}.
+                <Parameter Type="System.String" Name="originalVersion" />
+                <Parameter Type="System.String" Name="package" />
+                <Parameter Type="System.String" Name="truncatedVersion" />
+            </Instance>
+        </Message>
+        <Message Id="ServiceConfigFamilyNotSupported" Number="1149">
+            <Instance>
+                {0} functionality is documented in the Windows Installer SDK to "not [work] as expected." Consider replacing {0} with the WixUtilExtension ServiceConfig element.
+                <Parameter Type="System.String" Name="elementName" />
             </Instance>
         </Message>
     </Class>

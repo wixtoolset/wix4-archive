@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="display.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Theme viewer display.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -213,6 +202,7 @@ static DWORD WINAPI DisplayThreadProc(
                         // If a page id was provided also, show/hide those controls
                         if (dwPageId)
                         {
+                            // Ignore error since we aren't using variables and it can only fail when using variables.
                             ThemeShowPage(pCurrentHandle->pTheme, dwPageId, nCmdShow);
                         }
                     }

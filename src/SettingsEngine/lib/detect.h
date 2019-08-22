@@ -1,17 +1,5 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="detect.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Legacy settings engine API detect code (for detecting legacy products)
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 
 #ifdef __cplusplus
@@ -41,6 +29,7 @@ struct LEGACY_DETECT
         struct
         {
             LPWSTR sczDisplayName;
+            LPWSTR sczRegKeyName;
 
             LPWSTR sczInstallLocationProperty;
             LPWSTR wzInstallLocationValue; // This is the value of the directory portion of InstallLocation
@@ -68,6 +57,7 @@ struct LEGACY_DETECT
 struct ARP_PRODUCT
 {
     LPWSTR sczDisplayName;
+    LPWSTR sczRegKeyName;
     LPWSTR sczInstallLocation;
     LPWSTR sczUninstallStringDir;
     LPWSTR sczDisplayIconDir;
@@ -76,7 +66,8 @@ struct ARP_PRODUCT
 struct ARP_PRODUCTS
 {
     BOOL fEnumerationRun;
-    STRINGDICT_HANDLE shProductsFound; // Dictionary associating display names with key names
+    STRINGDICT_HANDLE shProductsFoundByDisplayName; // Dictionary associating display names with key names
+    STRINGDICT_HANDLE shProductsFoundByRegKeyName; // Dictionary associating reg key names with key names
 
     ARP_PRODUCT *rgProducts;
     DWORD cProducts;

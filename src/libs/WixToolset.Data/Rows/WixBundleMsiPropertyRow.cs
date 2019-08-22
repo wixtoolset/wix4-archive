@@ -1,24 +1,17 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="WixBundleMsiPropertyRow.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Data.Rows
 {
     /// <summary>
-    /// Specialization of a row for the upgrade table.
+    /// Specialization of a row for the WixBundleMsiProperty table.
     /// </summary>
     public sealed class WixBundleMsiPropertyRow : Row
     {
         /// <summary>
-        /// Creates an Upgrade row that belongs to a table.
+        /// Creates an WixBundleMsiProperty row that belongs to a table.
         /// </summary>
         /// <param name="sourceLineNumbers">Original source lines for this row.</param>
-        /// <param name="table">Table this Upgrade row belongs to and should get its column definitions from.</param>
+        /// <param name="table">Table this WixBundleMsiProperty row belongs to and should get its column definitions from.</param>
         public WixBundleMsiPropertyRow(SourceLineNumber sourceLineNumbers, Table table) :
             base(sourceLineNumbers, table)
         {
@@ -50,6 +43,16 @@ namespace WixToolset.Data.Rows
         {
             get { return (string)this.Fields[2].Data; }
             set { this.Fields[2].Data = value; }
+        }
+
+        /// <summary>
+        /// Gets and sets the condition for the row.
+        /// </summary>
+        /// <value>MsiProperty condition for the row.</value>
+        public string Condition
+        {
+            get { return (string)this.Fields[3].Data; }
+            set { this.Fields[3].Data = value; }
         }
     }
 }

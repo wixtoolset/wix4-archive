@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  <copyright file="WixBuild.Version.targets" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
--->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <MajorBuildNumber>4</MajorBuildNumber>
@@ -32,8 +27,9 @@
         <BuildNumber>$(UpperBuildNumber)$(BuildDay)</BuildNumber>
         <BuildRevision>0</BuildRevision>
 
-        <FullBuildVersionString>$(MajorBuildNumber).$(MinorBuildNumber).$(BuildNumber).$(BuildRevision)</FullBuildVersionString>
-        <FullBuildVersionStringDashed>$(MajorBuildNumber)-$(MinorBuildNumber)-$(BuildNumber)-$(BuildRevision)</FullBuildVersionStringDashed>
+        <FullBuildVersionString>$(MajorBuildNumber).$(MinorBuildNumber).$(BuildRevision).$(BuildNumber)</FullBuildVersionString>
+        <FullBuildVersionStringDashed>$(MajorBuildNumber)-$(MinorBuildNumber)-$(BuildRevision)-$(BuildNumber)</FullBuildVersionStringDashed>
+        <MsiProductVersionString>$(MajorBuildNumber).$(MinorBuildNumber).$(BuildNumber)</MsiProductVersionString>
     </PropertyGroup>
 
   <!--
@@ -174,7 +170,7 @@ using System.Reflection%3B
   &lt;?ifdef WixMajorMinor?&gt;
     &lt;?error WixMajorMinor variable is already defined?&gt;
   &lt;?endif?&gt;
-  &lt;?define WixMajorMinor = '$(MajorBuildNumber).$(MinorBuildNumber)' ?&gt;
+  &lt;?define WixMajorMinor = '$(MajorMinorVersionDottedString)' ?&gt;
   &lt;?ifdef WixBuildNum?&gt;
     &lt;?error WixBuildNum variable is already defined?&gt;
   &lt;?endif?&gt;
@@ -182,7 +178,11 @@ using System.Reflection%3B
   &lt;?ifdef WixVersion?&gt;
     &lt;?error WixVersion variable is already defined?&gt;
   &lt;?endif?&gt;
-  &lt;?define WixVersion = '%24(var.WixMajorMinor).%24(var.WixBuildNum).0' ?&gt;
+  &lt;?define WixVersion = '$(FullBuildVersionString)' ?&gt;
+  &lt;?ifdef WixMsiProductVersion?&gt;
+    &lt;?error WixMsiProductVersion variable is already defined?&gt;
+  &lt;?endif?&gt;
+  &lt;?define WixMsiProductVersion = '$(MsiProductVersionString)' ?&gt;
 &lt;/Include&gt;
 "/>
     </ItemGroup>

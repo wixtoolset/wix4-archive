@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Bundle Name="~$(var.TestName) - Bundle B" Version="$(var.Version)" UpgradeCode="{0A5C4330-ED22-45DF-A8E4-9B9AE4BB7358}">
+    <Log Prefix="~$(var.TestName)_BundleB"/>
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense" />
+
+    <Chain>
+      <MsiPackage Id="PackageA" Name="~$(var.TestName)_PackageA.msi" Compressed="yes" SourceFile="!(bindpath.packageA)\A.msi" />
+      <RollbackBoundary Transaction='yes' />
+      <MsiPackage Id="PackageB" Name="~$(var.TestName)_PackageB.msi" Compressed="yes" SourceFile="!(bindpath.packageB)\B.msi" />
+      <MsiPackage Id="PackageD" Name="~$(var.TestName)_PackageD.msi" Compressed="yes" SourceFile="!(bindpath.packageD)\D.msi" />
+    </Chain>
+  </Bundle>
+</Wix>

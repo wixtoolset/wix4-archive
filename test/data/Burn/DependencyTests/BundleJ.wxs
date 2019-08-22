@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  <copyright file="BundleJ.wxs" company="Microsoft Corporation">
-    Copyright (c) 1999, Microsoft Corporation.  All rights reserved.
-  </copyright>
--->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
 
 <?ifndef Version?>
 <?define Version = 1.0.0.0?>
@@ -13,7 +11,7 @@
 <?define TestName = Test?>
 <?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
   <Bundle Name="~$(var.TestName) - Bundle J" Version="$(var.Version)" UpgradeCode="4B83C1F7-6023-4F6E-944E-8B3D3F07CF66" ParentName="$(var.TestName) - Bundle A">
     <RelatedBundle Id="583B5ECB-04E6-4837-A30C-A1ADCBE24235" Action="Patch" />
     <Log Prefix="$(var.TestName)_BundleJ" />

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
+    <Product Id="Neverwinter_Nights_2">
+        <Detect>
+            <Arp DisplayName="Neverwinter Nights 2: Platinum"/>
+            <Arp DisplayName="Neverwinter Nights 2"/>
+        </Detect>
+
+        <Data>
+            <Directory Namespace="Data" Location="MyDocumentsFolder:\Neverwinter Nights 2\" />
+        </Data>
+
+        <DisplayName LCID="1033">Neverwinter Nights 2</DisplayName>
+
+        <Filter>
+            <Ignore Prefix="Data:\"/>
+            <Normal Prefix="Data:\saves\"/>
+        </Filter>
+    </Product>
+</LegacySettings>

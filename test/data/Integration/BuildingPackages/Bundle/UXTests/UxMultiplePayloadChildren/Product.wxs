@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--
-  <copyright file="Product.wxs" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
--->
-<Wix xmlns="http://wixtoolset.org/schemas/wxs">
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?define TestDataDirectory="$(env.WIX_ROOT)\test\data\Integration\BuildingPackages\Bundle\Files"?>
 
   <Bundle Name="Wix Test Bundle" Version="1.0.0.0" Manufacturer="Microsoft Corporation" UpgradeCode="{D4CD70BC-7ABD-4fcd-8E10-C8DB53C73415}">
 
-    <UX Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
+    <BootstrapperApplication Name="Setup.exe" SourceFile="$(var.TestDataDirectory)\Bootstrapper.exe">
       	<Payload Name="PayloadFile1" SourceFile="$(var.MyVariable1)" />
       	<Payload Name="PayloadFile2" SourceFile="$(var.MyVariable2)" />      
 	<Payload Name="PayloadFile3" SourceFile="$(var.MyVariable3)" />
@@ -64,7 +59,7 @@
       	<Payload Name="PayloadFile48" SourceFile="$(var.MyVariable48)" />      
 	<Payload Name="PayloadFile49" SourceFile="$(var.MyVariable49)" />
       	<Payload Name="PayloadFile50" SourceFile="$(var.MyVariable50)" /> 
-    </UX>
+    </BootstrapperApplication>
 
     <Chain>
       <MsiPackage SourceFile="$(var.TestDataDirectory)\Packages\MsiPackage.msi"/>

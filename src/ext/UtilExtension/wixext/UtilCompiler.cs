@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="UtilCompiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// The compiler for the WiX Toolset Utility Extension.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Extensions
 {
@@ -251,6 +240,9 @@ namespace WixToolset.Extensions
                             break;
                         case "EventManifest":
                             this.ParseEventManifestElement(element, fileComponentId, fileId);
+                            break;
+                        case "FormatFile":
+                            this.ParseFormatFileElement(element, fileId, fileWin64);
                             break;
                         default:
                             this.Core.UnexpectedElement(parentElement, element);
@@ -1412,6 +1404,8 @@ namespace WixToolset.Extensions
             string target = null;
             string directoryId = null;
             string type = null;
+            string iconFile = null;
+            int iconIndex = 0;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -1433,6 +1427,12 @@ namespace WixToolset.Extensions
                             break;
                         case "Type":
                             type = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "IconFile":
+                            iconFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "IconIndex":
+                            iconIndex = this.Core.GetAttributeIntegerValue(sourceLineNumbers, attrib, 0, int.MaxValue);
                             break;
                         default:
                             this.Core.UnexpectedAttribute(node, attrib);
@@ -1486,7 +1486,7 @@ namespace WixToolset.Extensions
 
             if (!this.Core.EncounteredError)
             {
-                CreateWixInternetShortcut(this.Core, sourceLineNumbers, componentId, directoryId, id, name, target, shortcutType);
+                CreateWixInternetShortcut(this.Core, sourceLineNumbers, componentId, directoryId, id, name, target, shortcutType, iconFile, iconIndex);
             }
         }
 
@@ -1500,7 +1500,7 @@ namespace WixToolset.Extensions
         /// <param name="id">Identifier of shortcut.</param>
         /// <param name="name">Name of shortcut without extension.</param>
         /// <param name="target">Target URL of shortcut.</param>
-        public static void CreateWixInternetShortcut(ICompilerCore core, SourceLineNumber sourceLineNumbers, string componentId, string directoryId, string shortcutId, string name, string target, InternetShortcutType type)
+        public static void CreateWixInternetShortcut(ICompilerCore core, SourceLineNumber sourceLineNumbers, string componentId, string directoryId, string shortcutId, string name, string target, InternetShortcutType type, string iconFile, int iconIndex)
         {
             // add the appropriate extension based on type of shortcut
             name = String.Concat(name, InternetShortcutType.Url == type ? ".url" : ".lnk");
@@ -1512,6 +1512,8 @@ namespace WixToolset.Extensions
             row[3] = name;
             row[4] = target;
             row[5] = (int)type;
+            row[6] = iconFile;
+            row[7] = iconIndex;
 
             // Reference custom action because nothing will happen without it
             if (core.CurrentPlatform == Platform.ARM)
@@ -2262,6 +2264,68 @@ namespace WixToolset.Extensions
                 // All other supported platforms use x86
                 this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "ConfigurePerfmonManifestRegister");
                 this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "ConfigurePerfmonManifestUnregister");
+            }
+        }
+
+        /// <summary>
+        /// Parses a format files element.
+        /// </summary>
+        /// <param name="node">Element to parse.</param>
+        /// <param name="fileId">Identifier of referenced file.</param>
+        /// <param name="win64">Flag to determine whether the component is 64-bit.</param>
+        private void ParseFormatFileElement(XElement node, string fileId, bool win64)
+        {
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string binaryId = null;
+
+            foreach (XAttribute attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || this.Namespace == attrib.Name.Namespace)
+                {
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "BinaryKey":
+                            binaryId = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            this.Core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.Core.ParseExtensionAttribute(node, attrib);
+                }
+            }
+
+            this.Core.ParseForExtensionElements(node);
+
+            if (null == binaryId)
+            {
+                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "BinaryKey"));
+            }
+
+            if (!this.Core.EncounteredError)
+            {
+                switch (this.Core.CurrentPlatform)
+                {
+                    case Platform.X86:
+                        this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFormatFiles");
+                        break;
+                    case Platform.X64:
+                        this.Core.CreateSimpleReference(sourceLineNumbers, "CustomAction", "WixSchedFormatFiles_x64");
+                        break;
+                    case Platform.IA64:
+                    case Platform.ARM:
+                        this.Core.OnMessage(WixErrors.UnsupportedPlatformForElement(sourceLineNumbers, this.Core.CurrentPlatform.ToString(), node.Name.LocalName));
+                        break;
+                }
+
+                Row row = this.Core.CreateRow(sourceLineNumbers, "WixFormatFiles");
+                row[0] = binaryId;
+                row[1] = fileId;
+
+                this.Core.CreateSimpleReference(sourceLineNumbers, "Binary", binaryId);
             }
         }
 
@@ -3695,14 +3759,14 @@ namespace WixToolset.Extensions
             if (null != value)
             {
                 // cannot specify both the value attribute and inner text
-                if (0 != innerText.Length)
+                if (!String.IsNullOrEmpty(innerText))
                 {
                     this.Core.OnMessage(WixErrors.IllegalAttributeWithInnerText(sourceLineNumbers, node.Name.LocalName, "Value"));
                 }
             }
             else // value attribute not specified
             {
-                if (0 < innerText.Length)
+                if (!String.IsNullOrEmpty(innerText))
                 {
                     value = innerText;
                 }

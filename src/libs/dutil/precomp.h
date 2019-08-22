@@ -1,16 +1,6 @@
 #pragma once
-//-------------------------------------------------------------------------------------------------
-// <copyright file="precomp.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    dutil precompiled header.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0500
@@ -63,6 +53,7 @@
 #include "dirutil.h"
 #include "dlutil.h"
 #include "fileutil.h"
+#include "guidutil.h"
 #include "gdiputil.h"
 #include "dictutil.h"
 #include "inetutil.h"
@@ -84,8 +75,8 @@
 #include "rmutil.h"
 #include "rssutil.h"
 #include "apuputil.h" // NOTE: this must come after atomutil.h and rssutil.h since it uses them.
-//#include "sqlutil.h" - see sqlutil.cpp why this *must* be commented out
 #include "shelutil.h"
+//#include "sqlutil.h" - see sqlutil.cpp why this *must* be commented out
 #include "srputil.h"
 #include "strutil.h"
 #include "timeutil.h"
@@ -94,9 +85,11 @@
 #include "uncutil.h"
 #include "uriutil.h"
 #include "userutil.h"
-#include <comutil.h>  // This header is needed for msxml2.h to compile correctly
-#include <msxml2.h>   // This file is needed to include xmlutil.h
+#include "varutil.h"
+#include "condutil.h" // NOTE: This must come after varutil.h since it uses it.
 #include "wiutil.h"
 #include "wuautil.h"
+#include <comutil.h>  // This header is needed for msxml2.h to compile correctly
+#include <msxml2.h>   // This file is needed to include xmlutil.h
 #include "xmlutil.h"
 

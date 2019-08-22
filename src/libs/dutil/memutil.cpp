@@ -1,16 +1,6 @@
 #pragma once
-//-------------------------------------------------------------------------------------------------
-// <copyright file="memutil.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Memory helper functions.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #include "precomp.h"
 
@@ -112,6 +102,58 @@ extern "C" HRESULT DAPI MemReAllocSecure(
 LExit:
     ReleaseMem(pvNew);
 
+    return hr;
+}
+
+
+extern "C" HRESULT DAPI MemAllocArray(
+    __inout LPVOID* ppvArray,
+    __in SIZE_T cbArrayType,
+    __in DWORD dwItemCount
+    )
+{
+    return MemReAllocArray(ppvArray, 0, cbArrayType, dwItemCount);
+}
+
+
+extern "C" HRESULT DAPI MemReAllocArray(
+    __inout LPVOID* ppvArray,
+    __in DWORD cArray,
+    __in SIZE_T cbArrayType,
+    __in DWORD dwNewItemCount
+    )
+{
+    HRESULT hr = S_OK;
+    DWORD cNew = 0;
+    LPVOID pvNew = NULL;
+    SIZE_T cbNew = 0;
+
+    hr = ::DWordAdd(cArray, dwNewItemCount, &cNew);
+    ExitOnFailure(hr, "Integer overflow when calculating new element count.");
+
+    hr = ::SIZETMult(cNew, cbArrayType, &cbNew);
+    ExitOnFailure(hr, "Integer overflow when calculating new block size.");
+
+    if (*ppvArray)
+    {
+        SIZE_T cbCurrent = MemSize(*ppvArray);
+        if (cbCurrent < cbNew)
+        {
+            pvNew = MemReAlloc(*ppvArray, cbNew, TRUE);
+            ExitOnNull(pvNew, hr, E_OUTOFMEMORY, "Failed to allocate larger array.");
+
+            *ppvArray = pvNew;
+        }
+    }
+    else
+    {
+        pvNew = MemAlloc(cbNew, TRUE);
+        ExitOnNull(pvNew, hr, E_OUTOFMEMORY, "Failed to allocate new array.");
+
+        *ppvArray = pvNew;
+    }
+
+LExit:
     return hr;
 }
 

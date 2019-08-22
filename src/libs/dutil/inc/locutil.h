@@ -1,16 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="locutil.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Header for localization helper functions.
-// </summary>
-//-------------------------------------------------------------------------------------------------
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,12 +97,22 @@ HRESULT DAPI LocGetControl(
     );
 
 /********************************************************************
- LocGetString - returns a string's localization information
+LocGetString - returns a string's localization information
 *******************************************************************/
 extern "C" HRESULT DAPI LocGetString(
     __in const WIX_LOCALIZATION* pWixLoc,
     __in_z LPCWSTR wzId,
     __out LOC_STRING** ppLocString
+    );
+
+/********************************************************************
+LocAddString - adds a localization string
+*******************************************************************/
+extern "C" HRESULT DAPI LocAddString(
+    __in WIX_LOCALIZATION* pWixLoc,
+    __in_z LPCWSTR wzId,
+    __in_z LPCWSTR wzLocString,
+    __in BOOL bOverridable
     );
 
 #ifdef __cplusplus

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Copyright (c) Microsoft Corporation.  All rights reserved.
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
 
-    The table definitions for the Windows Installer XML Toolset Gaming Extension.
--->
+
 <tableDefinitions xmlns="http://schemas.microsoft.com/wix/2006/tables">
     <tableDefinition name="WixCfgProducts">
         <columnDefinition name="Name" type="string" length="72" primaryKey="yes" modularize="column"

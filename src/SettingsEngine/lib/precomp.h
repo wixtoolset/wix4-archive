@@ -1,21 +1,7 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="precomp.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Precompiled header for Cfg Lib.
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-#define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
-#define ExitTrace LogErrorString
+
 #define ExitTrace LogErrorString
 
 #include <windows.h>
@@ -36,6 +22,7 @@
 #include "dirutil.h"
 #include "pathutil.h"
 #include "fileutil.h"
+#include "guidutil.h"
 #include "iniutil.h"
 #include "logutil.h"
 #include "memutil.h"
@@ -57,6 +44,7 @@
 #include "testhook.h"
 #include "handle.h"
 #include "dblist.h"
+#include "dispname.h"
 #include "manifest.h"
 #include "parse.h"
 #include "mapdata.h"
@@ -76,3 +64,4 @@
 #include "rgdfault.h"
 #include "rgspcial.h"
 #include "backgrnd.h"
+#include "guidlist.h"

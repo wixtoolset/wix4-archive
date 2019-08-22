@@ -1,14 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Bundle.ChainTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>
-//     Tests for Bundle Chain element
-// </summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 {
@@ -36,10 +26,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             string bootstrapper = Builder.BuildBundlePackage(outputDirectory, sourceFile);
 
             // verify the ParameterInfo and burnManifest has the correct information 
-            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, false, false, string.Format("{0}v0.1.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
-            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, false, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
-            PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
-            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, false, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
+            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, true, false, string.Format("{0}v1.0.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
+            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, true, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
+            //TODO: Find/fake an MSU package.
+            //PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
+            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, true, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
         }
 
         [NamedFact]
@@ -54,10 +45,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             string bootstrapper = Builder.BuildBundlePackage(outputDirectory, sourceFile);
 
             // verify the ParameterInfo and burnManifest has the correct information 
-            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, false, false, string.Format("{0}v0.1.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
-            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, false, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
-            PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
-            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, false, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
+            PackageTests.VerifyMsiPackageInformation(outputDirectory, "MsiPackage.msi", "MsiPackage", null, BundleTests.MsiPackageProductCode, true, false, string.Format("{0}v1.0.0.0", BundleTests.MsiPackageProductCode), null, BundleTests.MsiPackageFile);
+            PackageTests.VerifyMspPackageInformation(outputDirectory, "MspPackage.msp", "MspPackage", null, BundleTests.MspPackagePatchCode, true, false, BundleTests.MspPackagePatchCode, null, BundleTests.MspPackageFile);
+            //TODO: Find/fake an MSU package.
+            //PackageTests.VerifyMsuPackageInformation(outputDirectory, "MsuPackage.msu", "MsuPackage", null, false, false, null, BundleTests.MsuPackageFile);
+            PackageTests.VerifyExePackageInformation(outputDirectory, "ExePackage.exe", "ExePackage", null, true, false, string.Empty, string.Empty, string.Empty, null, BundleTests.ExePackageFile);
         }
 
         [NamedFact(Skip = "Ignore")]
@@ -77,7 +69,11 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             Light light = new Light();
             light.ObjectFiles.Add(candleOutput);
             light.OutputFile = "setup.exe";
-            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'ChainPackage:Package1' found.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'WixBundlePackage:Package1' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(92, "Location of symbol related to previous error.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'WixBundlePayload:Package1' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(92, "Location of symbol related to previous error.", Message.MessageTypeEnum.Error));
+            light.ExpectedWixMessages.Add(new WixMessage(91, "Duplicate symbol 'WixChainItem:Package1' found. This typically means that an Id is duplicated. Access modifiers (internal, protected, private) cannot prevent these conflicts. Ensure all your identifiers of a given type (File, Component, Feature) are unique.", Message.MessageTypeEnum.Error));
             light.ExpectedWixMessages.Add(new WixMessage(92, "Location of symbol related to previous error.", Message.MessageTypeEnum.Error));
             light.ExpectedExitCode = 92;
             light.Run();

@@ -2,6 +2,9 @@
 <LegacySettings xmlns="http://wixtoolset.org/schemas/v4/userdatamanifest">
     <Product Id="Imperialism">
         <Detect>
+            <!-- GOG Galaxy version -->
+            <Arp RegKeyName="1207659139_is1" InstallLocation="InstallDir"/>
+
             <Arp DisplayName="Imperialism" InstallLocation="InstallDir"/>
         </Detect>
 

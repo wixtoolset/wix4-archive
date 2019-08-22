@@ -1,21 +1,9 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="RootView.xaml.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// View for WiX UX.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.UX
 {
-    using System;
+    using System.ComponentModel;
     using System.Windows;
-    using System.Windows.Input;
     using System.Windows.Interop;
 
     /// <summary>
@@ -36,17 +24,28 @@ namespace WixToolset.UX
 
             this.InitializeComponent();
 
+            viewModel.Dispatcher = this.Dispatcher;
             viewModel.ViewWindowHandle = new WindowInteropHelper(this).EnsureHandle();
         }
 
         /// <summary>
-        /// Allows the user to drag the window around by grabbing the background rectangle.
+        /// Event is fired when the window is closing.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Background_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
-            this.DragMove();
+            RootViewModel rvm = this.DataContext as RootViewModel;
+            if ((null != rvm) && (InstallationState.Applying == rvm.InstallState))
+            {
+                rvm.CancelButton_Click();
+                if (rvm.Canceled)
+                {
+                    // Defer closing until the engine has canceled processing.
+                    e.Cancel = true;
+                    rvm.AutoClose = true;
+                }
+            }
         }
     }
 }

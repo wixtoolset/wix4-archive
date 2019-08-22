@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="plan.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -36,7 +25,7 @@ static void ResetPlannedPackageState(
     );
 static HRESULT ProcessPackage(
     __in BOOL fBundlePerMachine,
-    __in BOOL fPlanCompatible,
+    __in BURN_PACKAGE* pCompatiblePackageParent,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_PLAN* pPlan,
     __in BURN_PACKAGE* pPackage,
@@ -67,6 +56,11 @@ static HRESULT AddRegistrationAction(
     __in_z LPCWSTR wzOwnerBundleId
     );
 static HRESULT AddCachePackage(
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage,
+    __out HANDLE* phSyncpointEvent
+    );
+static HRESULT AddCachePackageHelper(
     __in BURN_PLAN* pPlan,
     __in BURN_PACKAGE* pPackage,
     __out HANDLE* phSyncpointEvent
@@ -148,6 +142,31 @@ static HRESULT FinalizeSlipstreamPatchActions(
     __in BURN_EXECUTE_ACTION* rgActions,
     __in DWORD cActions
     );
+static HRESULT PlanDependencyActions(
+    __in BOOL fBundlePerMachine,
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage
+    );
+static HRESULT CalculateExecuteActions(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BURN_PACKAGE* pPackage,
+    __in BURN_VARIABLES* pVariables,
+    __out_opt BOOL* pfBARequestedCache
+    );
+static BOOL NeedsCache(
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage
+    );
+static HRESULT CreateContainerProgress(
+    __in BURN_PLAN* pPlan,
+    __in BURN_CONTAINER* pContainer,
+    __out BURN_CACHE_CONTAINER_PROGRESS** ppContainerProgress
+    );
+static HRESULT CreatePayloadProgress(
+    __in BURN_PLAN* pPlan,
+    __in BURN_PAYLOAD* pPayload,
+    __out BURN_CACHE_PAYLOAD_PROGRESS** ppPayloadProgress
+    );
 
 // function definitions
 
@@ -210,6 +229,26 @@ extern "C" void PlanReset(
     if (pPlan->rgPlannedProviders)
     {
         ReleaseDependencyArray(pPlan->rgPlannedProviders, pPlan->cPlannedProviders);
+    }
+
+    if (pPlan->rgContainerProgress)
+    {
+        MemFree(pPlan->rgContainerProgress);
+    }
+
+    if (pPlan->shContainerProgress)
+    {
+        ReleaseDict(pPlan->shContainerProgress);
+    }
+
+    if (pPlan->rgPayloadProgress)
+    {
+        MemFree(pPlan->rgPayloadProgress);
+    }
+
+    if (pPlan->shPayloadProgress)
+    {
+        ReleaseDict(pPlan->shPayloadProgress);
     }
 
     memset(pPlan, 0, sizeof(BURN_PLAN));
@@ -367,11 +406,15 @@ extern "C" HRESULT PlanLayoutBundle(
     hr = VariableGetString(pVariables, BURN_BUNDLE_LAYOUT_DIRECTORY, &sczLayoutDirectory);
     if (E_NOTFOUND == hr) // if not set, use the current directory as the layout directory.
     {
-        hr = PathForCurrentProcess(&sczExecutablePath, NULL);
-        ExitOnFailure(hr, "Failed to get path for current executing process as layout directory.");
+        hr = VariableGetString(pVariables, BURN_BUNDLE_SOURCE_PROCESS_FOLDER, &sczLayoutDirectory);
+        if (E_NOTFOUND == hr) // if not set, use the current directory as the layout directory.
+        {
+            hr = PathForCurrentProcess(&sczExecutablePath, NULL);
+            ExitOnFailure(hr, "Failed to get path for current executing process as layout directory.");
 
-        hr = PathGetDirectory(sczExecutablePath, &sczLayoutDirectory);
-        ExitOnFailure(hr, "Failed to get executing process as layout directory.");
+            hr = PathGetDirectory(sczExecutablePath, &sczLayoutDirectory);
+            ExitOnFailure(hr, "Failed to get executing process as layout directory.");
+        }
     }
     ExitOnFailure(hr, "Failed to get bundle layout directory property.");
 
@@ -468,7 +511,7 @@ extern "C" HRESULT PlanPackages(
             }
         }
 
-        hr = ProcessPackage(fBundlePerMachine, FALSE, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
+        hr = ProcessPackage(fBundlePerMachine, NULL, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
         ExitOnFailure(hr, "Failed to process package.");
 
         // Attempt to remove orphaned packages during uninstall. Currently only MSI packages are supported and should not require source.
@@ -493,7 +536,7 @@ extern "C" HRESULT PlanPackages(
             ExitOnFailure(hr, "Failed to copy installed ProductCode");
 
             // Process the compatible MSI package like any other.
-            hr = ProcessPackage(fBundlePerMachine, TRUE, pUX, pPlan, pCompatiblePackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
+            hr = ProcessPackage(fBundlePerMachine, pPackage, pUX, pPlan, pCompatiblePackage, pLog, pVariables, display, relationType, wzLayoutDirectory, phSyncpointEvent, &pRollbackBoundary, &nonpermanentPackageIndices);
             ExitOnFailure(hr, "Failed to process compatible package.");
 
             if (BOOTSTRAPPER_ACTION_STATE_UNINSTALL == pCompatiblePackage->execute)
@@ -575,7 +618,10 @@ extern "C" HRESULT PlanRegistration(
     UINT cDependencies = 0;
 
     pPlan->fRegister = TRUE; // register the bundle since we're modifying machine state.
-    pPlan->fKeepRegistrationDefault = (pRegistration->fInstalled || BOOTSTRAPPER_RESUME_TYPE_REBOOT == resumeType); // keep the registration if the bundle was already installed or we are planning after a restart.
+
+    // Keep the registration if the bundle was already installed or we are planning after a restart.
+    pPlan->fKeepRegistrationDefault = (pRegistration->fInstalled || BOOTSTRAPPER_RESUME_TYPE_REBOOT == resumeType);
+
     pPlan->fDisallowRemoval = FALSE; // by default the bundle can be planned to be removed
 
     // If no parent was specified at all, use the bundle id as the self dependent.
@@ -751,7 +797,7 @@ extern "C" HRESULT PlanPassThroughBundle(
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundary = NULL;
 
     // Plan passthrough package.
-    hr = ProcessPackage(fBundlePerMachine, FALSE, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
+    hr = ProcessPackage(fBundlePerMachine, NULL, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
     ExitOnFailure(hr, "Failed to process passthrough package.");
 
     // If we still have an open rollback boundary, complete it.
@@ -785,7 +831,7 @@ extern "C" HRESULT PlanUpdateBundle(
     BURN_ROLLBACK_BOUNDARY* pRollbackBoundary = NULL;
 
     // Plan update package.
-    hr = ProcessPackage(fBundlePerMachine, FALSE, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
+    hr = ProcessPackage(fBundlePerMachine, NULL, pUX, pPlan, pPackage, pLog, pVariables, display, relationType, NULL, phSyncpointEvent, &pRollbackBoundary, NULL);
     ExitOnFailure(hr, "Failed to process update package.");
 
     // If we still have an open rollback boundary, complete it.
@@ -805,7 +851,7 @@ LExit:
 
 static HRESULT ProcessPackage(
     __in BOOL fBundlePerMachine,
-    __in BOOL fPlanCompatible,
+    __in BURN_PACKAGE* pCompatiblePackageParent,
     __in BURN_USER_EXPERIENCE* pUX,
     __in BURN_PLAN* pPlan,
     __in BURN_PACKAGE* pPackage,
@@ -821,25 +867,27 @@ static HRESULT ProcessPackage(
 {
     HRESULT hr = S_OK;
     BURN_ROLLBACK_BOUNDARY* pEffectiveRollbackBoundary = NULL;
+    BOOL fPlanPackageBegan = FALSE;
 
-    // Remember the default requested state so the engine doesn't get blamed for planning the wrong thing if the UX changes it.
+    // Remember the default requested state so the engine doesn't get blamed for planning the wrong thing if the BA changes it.
     hr = PlanDefaultPackageRequestState(pPackage->type, pPackage->currentState, !pPackage->fUninstallable, pPlan->action, pVariables, pPackage->sczInstallCondition, relationType, &pPackage->defaultRequested);
     ExitOnFailure(hr, "Failed to set default package state.");
 
     pPackage->requested = pPackage->defaultRequested;
+    fPlanPackageBegan = TRUE;
 
-    int nResult = IDNOACTION;
-    if (fPlanCompatible)
+    if (pCompatiblePackageParent)
     {
-        nResult = pUX->pUserExperience->OnPlanCompatiblePackage(pPackage->sczId, &pPackage->requested);
+        AssertSz(BURN_PACKAGE_TYPE_MSI == pPackage->type, "Currently only MSI packages have compatible packages.");
+
+        hr = UserExperienceOnPlanCompatibleMsiPackageBegin(pUX, pCompatiblePackageParent->sczId, pPackage->sczId, pPackage->Msi.qwVersion, &pPackage->requested);
+        ExitOnRootFailure(hr, "BA aborted plan compatible MSI package begin.");
     }
     else
     {
-        nResult = pUX->pUserExperience->OnPlanPackageBegin(pPackage->sczId, &pPackage->requested);
+        hr = UserExperienceOnPlanPackageBegin(pUX, pPackage->sczId, &pPackage->requested);
+        ExitOnRootFailure(hr, "BA aborted plan package begin.");
     }
-
-    hr = UserExperienceInterpretResult(pUX, MB_OKCANCEL, nResult);
-    ExitOnRootFailure(hr, "UX aborted plan package begin.");
 
     pEffectiveRollbackBoundary = (BOOTSTRAPPER_ACTION_UNINSTALL == pPlan->action) ? pPackage->pRollbackBoundaryBackward : pPackage->pRollbackBoundaryForward;
     hr = ProcessPackageRollbackBoundary(pPlan, pEffectiveRollbackBoundary, ppRollbackBoundary);
@@ -880,31 +928,18 @@ static HRESULT ProcessPackage(
     }
     else if (BOOTSTRAPPER_ACTION_LAYOUT != pPlan->action)
     {
-        // Make sure the package is properly ref-counted even if no plan is requested.
-        hr = DependencyPlanPackageBegin(fBundlePerMachine, pPackage, pPlan);
-        ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
-
         // All packages that have cacheType set to always should be cached if the bundle is going to be present.
         if (BURN_CACHE_TYPE_ALWAYS == pPackage->cacheType && BOOTSTRAPPER_ACTION_INSTALL <= pPlan->action)
         {
-            // If this is an MSI package with slipstream MSPs, ensure the MSPs are cached first.
-            if (BURN_PACKAGE_TYPE_MSI == pPackage->type && 0 < pPackage->Msi.cSlipstreamMspPackages)
-            {
-                hr = AddCacheSlipstreamMsps(pPlan, pPackage);
-                ExitOnFailure(hr, "Failed to plan slipstream patches for package.");
-            }
-
-            hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
+            hr = PlanCachePackage(fBundlePerMachine, pUX, pPlan, pPackage, pVariables, phSyncpointEvent);
             ExitOnFailure(hr, "Failed to plan cache package.");
-
-            pPlan->qwEstimatedSize += pPackage->qwSize;
         }
-
-        hr = DependencyPlanPackage(NULL, pPackage, pPlan);
-        ExitOnFailure(hr, "Failed to plan package dependency actions.");
-
-        hr = DependencyPlanPackageComplete(pPackage, pPlan);
-        ExitOnFailure(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
+        else
+        {
+            // Make sure the package is properly ref-counted even if no plan is requested.
+            hr = PlanDependencyActions(fBundlePerMachine, pPlan, pPackage);
+            ExitOnFailure(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
+        }
     }
 
     // Add the checkpoint after each package and dependency registration action.
@@ -915,7 +950,18 @@ static HRESULT ProcessPackage(
     }
 
 LExit:
-    pUX->pUserExperience->OnPlanPackageComplete(pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+    if (fPlanPackageBegan)
+    {
+        if (pCompatiblePackageParent)
+        {
+            UserExperienceOnPlanCompatibleMsiPackageComplete(pUX, pCompatiblePackageParent->sczId, pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+        }
+        else
+        {
+            UserExperienceOnPlanPackageComplete(pUX, pPackage->sczId, hr, pPackage->currentState, pPackage->requested, pPackage->execute, pPackage->rollback);
+        }
+    }
+
     return hr;
 }
 
@@ -1008,6 +1054,41 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT PlanCachePackage(
+    __in BOOL fPerMachine,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage,
+    __in BURN_VARIABLES* pVariables,
+    __out HANDLE* phSyncpointEvent
+    )
+{
+    HRESULT hr = S_OK;
+    BOOL fBARequestedCache = FALSE;
+
+    // Calculate the execute actions because we need them to decide whether the package should be cached.
+    hr = CalculateExecuteActions(pUserExperience, pPackage, pVariables, &fBARequestedCache);
+    ExitOnFailure(hr, "Failed to calculate execute actions for package: %ls", pPackage->sczId);
+
+    if (fBARequestedCache || NeedsCache(pPlan, pPackage))
+    {
+        hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
+        ExitOnFailure(hr, "Failed to plan cache package.");
+
+        if (pPackage->fPerMachine)
+        {
+            pPlan->fPerMachine = TRUE;
+        }
+    }
+
+    // Make sure the package is properly ref-counted.
+    hr = PlanDependencyActions(fPerMachine, pPlan, pPackage);
+    ExitOnFailure(hr, "Failed to plan dependency actions for package: %ls", pPackage->sczId);
+
+LExit:
+    return hr;
+}
+
 extern "C" HRESULT PlanExecutePackage(
     __in BOOL fPerMachine,
     __in BOOTSTRAPPER_DISPLAY display,
@@ -1020,61 +1101,17 @@ extern "C" HRESULT PlanExecutePackage(
     )
 {
     HRESULT hr = S_OK;
-    BOOL fNeedsCache = FALSE;
+    BOOL fBARequestedCache = FALSE;
 
-    // Calculate execute actions.
-    switch (pPackage->type)
-    {
-    case BURN_PACKAGE_TYPE_EXE:
-        hr = ExeEnginePlanCalculatePackage(pPackage);
-        break;
-
-    case BURN_PACKAGE_TYPE_MSI:
-        hr = MsiEnginePlanCalculatePackage(pPackage, pVariables, pUserExperience);
-        break;
-
-    case BURN_PACKAGE_TYPE_MSP:
-        hr = MspEnginePlanCalculatePackage(pPackage, pUserExperience);
-        break;
-
-    case BURN_PACKAGE_TYPE_MSU:
-        hr = MsuEnginePlanCalculatePackage(pPackage);
-        break;
-
-    default:
-        hr = E_UNEXPECTED;
-        ExitOnFailure(hr, "Invalid package type.");
-    }
+    hr = CalculateExecuteActions(pUserExperience, pPackage, pVariables, &fBARequestedCache);
     ExitOnFailure(hr, "Failed to calculate plan actions for package: %ls", pPackage->sczId);
 
     // Calculate package states based on reference count and plan certain dependency actions prior to planning the package execute action.
     hr = DependencyPlanPackageBegin(fPerMachine, pPackage, pPlan);
     ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
 
-    // All packages that have cacheType set to always should be cached if the bundle is going to be present.
-    if (BURN_CACHE_TYPE_ALWAYS == pPackage->cacheType && BOOTSTRAPPER_ACTION_INSTALL <= pPlan->action)
+    if (fBARequestedCache || NeedsCache(pPlan, pPackage))
     {
-        fNeedsCache = TRUE;
-    }
-    // Exe packages require the package for all operations (even uninstall).
-    else if (BURN_PACKAGE_TYPE_EXE == pPackage->type)
-    {
-        fNeedsCache = (BOOTSTRAPPER_ACTION_STATE_NONE != pPackage->execute);
-    }
-    else // the other package types can uninstall without the original package.
-    {
-        fNeedsCache = (BOOTSTRAPPER_ACTION_STATE_UNINSTALL < pPackage->execute);
-    }
-
-    if (fNeedsCache)
-    {
-        // If this is an MSI package with slipstream MSPs, ensure the MSPs are cached first.
-        if (BURN_PACKAGE_TYPE_MSI == pPackage->type && 0 < pPackage->Msi.cSlipstreamMspPackages)
-        {
-            hr = AddCacheSlipstreamMsps(pPlan, pPackage);
-            ExitOnFailure(hr, "Failed to plan slipstream patches for package.");
-        }
-
         hr = AddCachePackage(pPlan, pPackage, phSyncpointEvent);
         ExitOnFailure(hr, "Failed to plan cache package.");
     }
@@ -1086,10 +1123,9 @@ extern "C" HRESULT PlanExecutePackage(
         pPackage->rollback = BOOTSTRAPPER_ACTION_STATE_NONE;
     }
 
-
     // Add the cache and install size to estimated size if it will be on the machine at the end of the install
-    if (BOOTSTRAPPER_REQUEST_STATE_PRESENT == pPackage->requested || 
-        (BOOTSTRAPPER_PACKAGE_STATE_PRESENT == pPackage->currentState && BOOTSTRAPPER_REQUEST_STATE_ABSENT < pPackage->requested) || 
+    if (BOOTSTRAPPER_REQUEST_STATE_PRESENT == pPackage->requested ||
+        (BOOTSTRAPPER_PACKAGE_STATE_PRESENT == pPackage->currentState && BOOTSTRAPPER_REQUEST_STATE_ABSENT < pPackage->requested) ||
         BURN_CACHE_TYPE_ALWAYS == pPackage->cacheType
        )
     {
@@ -1164,8 +1200,7 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BURN_REGISTRATION* pRegistration,
     __in BOOTSTRAPPER_RELATION_TYPE relationType,
-    __in BURN_PLAN* pPlan,
-    __in BURN_MODE mode
+    __in BURN_PLAN* pPlan
     )
 {
     HRESULT hr = S_OK;
@@ -1202,24 +1237,11 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
                 ExitOnFailure(hr, "Failed to lookup the bundle ID in the ancestors dictionary.");
             }
         }
-        else if (BURN_MODE_EMBEDDED == mode)
+        else if (BOOTSTRAPPER_RELATION_DEPENDENT == pRelatedBundle->relationType && BOOTSTRAPPER_RELATION_NONE != relationType)
         {
-            BOOL fSkipBundle = TRUE;
-            for (DWORD j = 0; j < pRelatedBundle->package.cDependencyProviders; ++j)
-            {
-                const BURN_DEPENDENCY_PROVIDER* pProvider = pRelatedBundle->package.rgDependencyProviders + j;
-                if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, pProvider->sczKey, -1, pRegistration->sczProviderKey, -1))
-                {
-                    fSkipBundle = FALSE;
-                }
-            }
-
-            if (fSkipBundle)
-            {
-                // Protect loops for older bundles that do not handle ancestors.
-                LogId(REPORT_STANDARD, MSG_PLAN_SKIPPED_RELATED_BUNDLE_EMBEDDED, pRelatedBundle->package.sczId, LoggingRelationTypeToString(pRelatedBundle->relationType));
-                continue;
-            }
+            // Avoid repair loops for older bundles that do not handle ancestors.
+            LogId(REPORT_STANDARD, MSG_PLAN_SKIPPED_RELATED_BUNDLE_DEPENDENT, pRelatedBundle->package.sczId, LoggingRelationTypeToString(pRelatedBundle->relationType), LoggingRelationTypeToString(relationType));
+            continue;
         }
 
         // Pass along any ancestors and ourself to prevent infinite loops.
@@ -1276,11 +1298,10 @@ extern "C" HRESULT PlanRelatedBundlesBegin(
 
         pRelatedBundle->package.defaultRequested = pRelatedBundle->package.requested;
 
-        int nResult = pUserExperience->pUserExperience->OnPlanRelatedBundle(pRelatedBundle->package.sczId, &pRelatedBundle->package.requested);
-        hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-        ExitOnRootFailure(hr, "UX aborted plan related bundle.");
+        hr = UserExperienceOnPlanRelatedBundle(pUserExperience, pRelatedBundle->package.sczId, &pRelatedBundle->package.requested);
+        ExitOnRootFailure(hr, "BA aborted plan related bundle.");
 
-        // Log when the UX changed the bundle state so the engine doesn't get blamed for planning the wrong thing.
+        // Log when the BA changed the bundle state so the engine doesn't get blamed for planning the wrong thing.
         if (pRelatedBundle->package.requested != pRelatedBundle->package.defaultRequested)
         {
             LogId(REPORT_STANDARD, MSG_PLANNED_BUNDLE_UX_CHANGED_REQUEST, pRelatedBundle->package.sczId, LoggingRequestStateToString(pRelatedBundle->package.requested), LoggingRequestStateToString(pRelatedBundle->package.defaultRequested));
@@ -1411,7 +1432,7 @@ extern "C" HRESULT PlanRelatedBundlesComplete(
 
         if (BOOTSTRAPPER_REQUEST_STATE_NONE != pRelatedBundle->package.requested)
         {
-            hr = ExeEnginePlanCalculatePackage(&pRelatedBundle->package);
+            hr = ExeEnginePlanCalculatePackage(&pRelatedBundle->package, NULL);
             ExitOnFailure(hr, "Failed to calcuate plan for related bundle: %ls", pRelatedBundle->package.sczId);
 
             // Calculate package states based on reference count for addon and patch related bundles.
@@ -1507,7 +1528,7 @@ extern "C" HRESULT PlanCleanPackage(
     // The following is a complex set of logic that determines when a package should be cleaned
     // from the cache. Start by noting that we only clean if the package is being acquired or
     // already cached and the package is not supposed to always be cached.
-    if ((pPackage->fAcquire || BURN_CACHE_STATE_PARTIAL == pPackage->cache || BURN_CACHE_STATE_COMPLETE == pPackage->cache) && 
+    if ((pPackage->fAcquire || BURN_CACHE_STATE_PARTIAL == pPackage->cache || BURN_CACHE_STATE_COMPLETE == pPackage->cache) &&
         (BURN_CACHE_TYPE_ALWAYS > pPackage->cacheType || BOOTSTRAPPER_ACTION_INSTALL > pPlan->action))
     {
         // The following are all different reasons why the package should be cleaned from the cache.
@@ -1920,6 +1941,23 @@ static HRESULT GetActionDefaultRequestState(
 
     switch (action)
     {
+    case BOOTSTRAPPER_ACTION_CACHE:
+        switch (currentState)
+        {
+        case BOOTSTRAPPER_PACKAGE_STATE_PRESENT:
+            *pRequestState = BOOTSTRAPPER_REQUEST_STATE_PRESENT;
+            break;
+
+        case BOOTSTRAPPER_PACKAGE_STATE_CACHED:
+            *pRequestState = BOOTSTRAPPER_REQUEST_STATE_NONE;
+            break;
+
+        default:
+            *pRequestState = BOOTSTRAPPER_REQUEST_STATE_CACHE;
+            break;
+        }
+        break;
+
     case BOOTSTRAPPER_ACTION_INSTALL: __fallthrough;
     case BOOTSTRAPPER_ACTION_UPDATE_REPLACE: __fallthrough;
     case BOOTSTRAPPER_ACTION_UPDATE_REPLACE_EMBEDDED:
@@ -2015,7 +2053,29 @@ static HRESULT AddCachePackage(
     __out HANDLE* phSyncpointEvent
     )
 {
-    AssertSz(pPackage->sczCacheId && *pPackage->sczCacheId, "PlanCachePackage() expects the package to have a cache id.");
+    HRESULT hr = S_OK;
+
+    // If this is an MSI package with slipstream MSPs, ensure the MSPs are cached first.
+    if (BURN_PACKAGE_TYPE_MSI == pPackage->type && 0 < pPackage->Msi.cSlipstreamMspPackages)
+    {
+        hr = AddCacheSlipstreamMsps(pPlan, pPackage);
+        ExitOnFailure(hr, "Failed to plan slipstream patches for package.");
+    }
+
+    hr = AddCachePackageHelper(pPlan, pPackage, phSyncpointEvent);
+    ExitOnFailure(hr, "Failed to plan cache package.");
+
+LExit:
+    return hr;
+}
+
+static HRESULT AddCachePackageHelper(
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage,
+    __out HANDLE* phSyncpointEvent
+    )
+{
+    AssertSz(pPackage->sczCacheId && *pPackage->sczCacheId, "AddCachePackageHelper() expects the package to have a cache id.");
 
     HRESULT hr = S_OK;
     BURN_CACHE_ACTION* pCacheAction = NULL;
@@ -2039,11 +2099,18 @@ static HRESULT AddCachePackage(
     pCacheAction->type = BURN_CACHE_ACTION_TYPE_CHECKPOINT;
     pCacheAction->checkpoint.dwId = dwCheckpoint;
 
-    hr = AppendRollbackCacheAction(pPlan, &pCacheAction);
-    ExitOnFailure(hr, "Failed to append rollback cache action.");
+    // Only plan the cache rollback if the package is also going to be uninstalled;
+    // otherwise, future operations like repair will not be able to locate the cached package.
+    BOOL fPlanCacheRollback = (BOOTSTRAPPER_ACTION_STATE_UNINSTALL == pPackage->rollback);
 
-    pCacheAction->type = BURN_CACHE_ACTION_TYPE_CHECKPOINT;
-    pCacheAction->checkpoint.dwId = dwCheckpoint;
+    if (fPlanCacheRollback)
+    {
+        hr = AppendRollbackCacheAction(pPlan, &pCacheAction);
+        ExitOnFailure(hr, "Failed to append rollback cache action.");
+
+        pCacheAction->type = BURN_CACHE_ACTION_TYPE_CHECKPOINT;
+        pCacheAction->checkpoint.dwId = dwCheckpoint;
+    }
 
     // Plan the package start.
     hr = AppendCacheAction(pPlan, &pCacheAction);
@@ -2057,12 +2124,15 @@ static HRESULT AddCachePackage(
     // and the array may be resized later which would move a pointer around in memory.
     iPackageStartAction = pPlan->cCacheActions - 1;
 
-    // Create a package cache rollback action.
-    hr = AppendRollbackCacheAction(pPlan, &pCacheAction);
-    ExitOnFailure(hr, "Failed to append rollback cache action.");
+    if (fPlanCacheRollback)
+    {
+        // Create a package cache rollback action.
+        hr = AppendRollbackCacheAction(pPlan, &pCacheAction);
+        ExitOnFailure(hr, "Failed to append rollback cache action.");
 
-    pCacheAction->type = BURN_CACHE_ACTION_TYPE_ROLLBACK_PACKAGE;
-    pCacheAction->rollbackPackage.pPackage = pPackage;
+        pCacheAction->type = BURN_CACHE_ACTION_TYPE_ROLLBACK_PACKAGE;
+        pCacheAction->rollbackPackage.pPackage = pPackage;
+    }
 
     // Add all the payload cache operations to the plan for this package.
     for (DWORD i = 0; i < pPackage->cPayloads; ++i)
@@ -2122,7 +2192,7 @@ static HRESULT AddCacheSlipstreamMsps(
         BURN_PACKAGE* pMspPackage = pPackage->Msi.rgpSlipstreamMspPackages[i];
         AssertSz(BURN_PACKAGE_TYPE_MSP == pMspPackage->type, "Only MSP packages can be slipstream patches.");
 
-        hr = AddCachePackage(pPlan, pMspPackage, &hIgnored);
+        hr = AddCachePackageHelper(pPlan, pMspPackage, &hIgnored);
         ExitOnFailure(hr, "Failed to plan slipstream MSP: %ls", pMspPackage->sczId);
     }
 
@@ -2214,6 +2284,7 @@ static HRESULT AppendLayoutContainerAction(
     DWORD iAcquireAction = BURN_PLAN_INVALID_ACTION_INDEX;
     LPWSTR sczContainerWorkingPath = NULL;
     BURN_CACHE_ACTION* pCacheAction = NULL;
+    BURN_CACHE_CONTAINER_PROGRESS* pContainerProgress = NULL;
 
     // No need to do anything if the container is already cached or is attached to the bundle (since the
     // bundle itself will already have a layout action).
@@ -2222,7 +2293,7 @@ static HRESULT AppendLayoutContainerAction(
         ExitFunction();
     }
 
-    // Ensure the container is being acquired.  If it is, then some earlier package already planned the layout of this container so 
+    // Ensure the container is being acquired.  If it is, then some earlier package already planned the layout of this container so
     // don't do it again. Otherwise, plan away!
     if (!FindContainerCacheAction(BURN_CACHE_ACTION_TYPE_ACQUIRE_CONTAINER, pPlan, pContainer, 0, iPackageStartAction, NULL, NULL))
     {
@@ -2238,18 +2309,20 @@ static HRESULT AppendLayoutContainerAction(
         hr = AppendCacheAction(pPlan, &pCacheAction);
         ExitOnFailure(hr, "Failed to append cache action to cache payload.");
 
+        hr = CreateContainerProgress(pPlan, pContainer, &pContainerProgress);
+        ExitOnFailure(hr, "Failed to create container progress.");
+
         hr = StrAllocString(&pCacheAction->layoutContainer.sczLayoutDirectory, wzLayoutDirectory, 0);
         ExitOnFailure(hr, "Failed to copy layout directory into plan.");
 
         pCacheAction->type = BURN_CACHE_ACTION_TYPE_LAYOUT_CONTAINER;
         pCacheAction->layoutContainer.pPackage = pPackage;
         pCacheAction->layoutContainer.pContainer = pContainer;
+        pCacheAction->layoutContainer.iProgress = pContainerProgress->iIndex;
         pCacheAction->layoutContainer.fMove = TRUE;
         pCacheAction->layoutContainer.iTryAgainAction = iAcquireAction;
         pCacheAction->layoutContainer.sczUnverifiedPath = sczContainerWorkingPath;
         sczContainerWorkingPath = NULL;
-
-        pPlan->qwCacheSizeTotal += pContainer->qwFileSize;
     }
 
 LExit:
@@ -2271,6 +2344,7 @@ static HRESULT AppendCacheOrLayoutPayloadAction(
     LPWSTR sczPayloadWorkingPath = NULL;
     BURN_CACHE_ACTION* pCacheAction = NULL;
     DWORD iTryAgainAction = BURN_PLAN_INVALID_ACTION_INDEX;
+    BURN_CACHE_PAYLOAD_PROGRESS* pPayloadProgress = NULL;
 
     hr = CacheCalculatePayloadWorkingPath(pPlan->wzBundleId, pPayload, &sczPayloadWorkingPath);
     ExitOnFailure(hr, "Failed to calculate unverified path for payload.");
@@ -2357,11 +2431,15 @@ static HRESULT AppendCacheOrLayoutPayloadAction(
     hr = AppendCacheAction(pPlan, &pCacheAction);
     ExitOnFailure(hr, "Failed to append cache action to cache payload.");
 
-    if (NULL == wzLayoutDirectory)
+    hr = CreatePayloadProgress(pPlan, pPayload, &pPayloadProgress);
+    ExitOnFailure(hr, "Failed to create payload progress.");
+
+    if (!wzLayoutDirectory)
     {
         pCacheAction->type = BURN_CACHE_ACTION_TYPE_CACHE_PAYLOAD;
         pCacheAction->cachePayload.pPackage = pPackage;
         pCacheAction->cachePayload.pPayload = pPayload;
+        pCacheAction->cachePayload.iProgress = pPayloadProgress->iIndex;
         pCacheAction->cachePayload.fMove = TRUE;
         pCacheAction->cachePayload.iTryAgainAction = iTryAgainAction;
         pCacheAction->cachePayload.sczUnverifiedPath = sczPayloadWorkingPath;
@@ -2375,6 +2453,7 @@ static HRESULT AppendCacheOrLayoutPayloadAction(
         pCacheAction->type = BURN_CACHE_ACTION_TYPE_LAYOUT_PAYLOAD;
         pCacheAction->layoutPayload.pPackage = pPackage;
         pCacheAction->layoutPayload.pPayload = pPayload;
+        pCacheAction->layoutPayload.iProgress = pPayloadProgress->iIndex;
         pCacheAction->layoutPayload.fMove = TRUE;
         pCacheAction->layoutPayload.iTryAgainAction = iTryAgainAction;
         pCacheAction->layoutPayload.sczUnverifiedPath = sczPayloadWorkingPath;
@@ -2382,8 +2461,6 @@ static HRESULT AppendCacheOrLayoutPayloadAction(
     }
 
     pCacheAction = NULL;
-
-    pPlan->qwCacheSizeTotal += pPayload->qwFileSize;
 
 LExit:
     ReleaseStr(sczPayloadWorkingPath);
@@ -2508,23 +2585,17 @@ static HRESULT CreateContainerAcquireAndExtractAction(
     Assert(BURN_CACHE_ACTION_TYPE_EXTRACT_CONTAINER == pContainerExtractAction->type);
     Assert(BURN_PLAN_INVALID_ACTION_INDEX != iExtractAction);
 
-    // If there is an acquire action, that is our try again action otherwise, we'll use the extract action.
+    // If there is an acquire action, that is our try again action. Otherwise, we'll use the extract action.
     iTryAgainAction = (BURN_PLAN_INVALID_ACTION_INDEX != iAcquireAction) ? iAcquireAction : iExtractAction;
 
-    // If the try again action thinks it can be skipped but the payload is not cached ensure
-    // the action will not be skipped. That also means we need to add this container to the
-    // cache size if it is not already attached.
+    // If the try again action thinks it can be skipped but the payload is not cached,
+    // ensure the action will not be skipped.
     BURN_CACHE_ACTION* pTryAgainAction = pPlan->rgCacheActions + iTryAgainAction;
     Assert((BURN_CACHE_ACTION_TYPE_ACQUIRE_CONTAINER == pTryAgainAction->type && pContainer == pTryAgainAction->resolveContainer.pContainer) ||
            (BURN_CACHE_ACTION_TYPE_EXTRACT_CONTAINER == pTryAgainAction->type && pContainer == pTryAgainAction->extractContainer.pContainer));
     if (pTryAgainAction->fSkipUntilRetried && !fPayloadCached)
     {
         pTryAgainAction->fSkipUntilRetried = FALSE;
-
-        if (!pContainer->fActuallyAttached)
-        {
-            pPlan->qwCacheSizeTotal += pContainer->qwFileSize;
-        }
     }
 
     *ppContainerExtractAction = pContainerExtractAction;
@@ -2546,6 +2617,7 @@ static HRESULT AddAcquireContainer(
     HRESULT hr = S_OK;
     LPWSTR sczContainerWorkingPath = NULL;
     BURN_CACHE_ACTION* pAcquireContainerAction = NULL;
+    BURN_CACHE_CONTAINER_PROGRESS* pContainerProgress = NULL;
 
     hr = CacheCalculateContainerWorkingPath(pPlan->wzBundleId, pContainer, &sczContainerWorkingPath);
     ExitOnFailure(hr, "Failed to calculate unverified path for container.");
@@ -2553,8 +2625,12 @@ static HRESULT AddAcquireContainer(
     hr = AppendCacheAction(pPlan, &pAcquireContainerAction);
     ExitOnFailure(hr, "Failed to append acquire container action to plan.");
 
+    hr = CreateContainerProgress(pPlan, pContainer, &pContainerProgress);
+    ExitOnFailure(hr, "Failed to create container progress.");
+
     pAcquireContainerAction->type = BURN_CACHE_ACTION_TYPE_ACQUIRE_CONTAINER;
     pAcquireContainerAction->resolveContainer.pContainer = pContainer;
+    pAcquireContainerAction->resolveContainer.iProgress = pContainerProgress->iIndex;
     pAcquireContainerAction->resolveContainer.sczUnverifiedPath = sczContainerWorkingPath;
     sczContainerWorkingPath = NULL;
 
@@ -2594,8 +2670,6 @@ static HRESULT AddExtractPayload(
     hr = StrAllocString(&pExtractPayload->sczUnverifiedPath, wzPayloadWorkingPath, 0);
     ExitOnFailure(hr, "Failed to copy unverified path for payload to extract.");
     ++pCacheAction->extractContainer.cPayloads;
-
-    pCacheAction->extractContainer.qwTotalExtractSize += pPayload->qwFileSize;
 
 LExit:
     return hr;
@@ -2742,6 +2816,164 @@ LExit:
     return hr;
 }
 
+static HRESULT PlanDependencyActions(
+    __in BOOL fBundlePerMachine,
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage
+    )
+{
+    HRESULT hr = S_OK;
+
+    hr = DependencyPlanPackageBegin(fBundlePerMachine, pPackage, pPlan);
+    ExitOnFailure(hr, "Failed to begin plan dependency actions for package: %ls", pPackage->sczId);
+
+    hr = DependencyPlanPackage(NULL, pPackage, pPlan);
+    ExitOnFailure(hr, "Failed to plan package dependency actions.");
+
+    hr = DependencyPlanPackageComplete(pPackage, pPlan);
+    ExitOnFailure(hr, "Failed to complete plan dependency actions for package: %ls", pPackage->sczId);
+
+LExit:
+    return hr;
+}
+
+static HRESULT CalculateExecuteActions(
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BURN_PACKAGE* pPackage,
+    __in BURN_VARIABLES* pVariables,
+    __out_opt BOOL* pfBARequestedCache
+    )
+{
+    HRESULT hr = S_OK;
+
+    // Calculate execute actions.
+    switch (pPackage->type)
+    {
+    case BURN_PACKAGE_TYPE_EXE:
+        hr = ExeEnginePlanCalculatePackage(pPackage, pfBARequestedCache);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSI:
+        hr = MsiEnginePlanCalculatePackage(pPackage, pVariables, pUserExperience, pfBARequestedCache);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSP:
+        hr = MspEnginePlanCalculatePackage(pPackage, pUserExperience, pfBARequestedCache);
+        break;
+
+    case BURN_PACKAGE_TYPE_MSU:
+        hr = MsuEnginePlanCalculatePackage(pPackage, pfBARequestedCache);
+        break;
+
+    default:
+        hr = E_UNEXPECTED;
+        ExitOnFailure(hr, "Invalid package type.");
+    }
+
+LExit:
+    return hr;
+}
+
+static BOOL NeedsCache(
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage
+    )
+{
+    // All packages that have cacheType set to always should be cached if the bundle is going to be present.
+    if (BURN_CACHE_TYPE_ALWAYS == pPackage->cacheType && BOOTSTRAPPER_ACTION_INSTALL <= pPlan->action)
+    {
+        return TRUE;
+    }
+    else if (BURN_PACKAGE_TYPE_EXE == pPackage->type) // Exe packages require the package for all operations (even uninstall).
+    {
+        return BOOTSTRAPPER_ACTION_STATE_NONE != pPackage->execute;
+    }
+    else // The other package types can uninstall without the original package.
+    {
+        return BOOTSTRAPPER_ACTION_STATE_UNINSTALL < pPackage->execute;
+    }
+}
+
+static HRESULT CreateContainerProgress(
+    __in BURN_PLAN* pPlan,
+    __in BURN_CONTAINER* pContainer,
+    __out BURN_CACHE_CONTAINER_PROGRESS** ppContainerProgress
+    )
+{
+    HRESULT hr = S_OK;
+    BURN_CACHE_CONTAINER_PROGRESS* pContainerProgress = NULL;
+
+    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPlan->rgContainerProgress), pPlan->cContainerProgress + 1, sizeof(BURN_CACHE_CONTAINER_PROGRESS), 5);
+    ExitOnFailure(hr, "Failed to grow container progress list.");
+
+    if (!pPlan->shContainerProgress)
+    {
+        hr = DictCreateWithEmbeddedKey(&pPlan->shContainerProgress, 5, reinterpret_cast<void **>(&pPlan->rgContainerProgress), offsetof(BURN_CACHE_CONTAINER_PROGRESS, wzId), DICT_FLAG_NONE);
+        ExitOnFailure(hr, "Failed to create container progress dictionary.");
+    }
+
+    hr = DictGetValue(pPlan->shContainerProgress, pContainer->sczId, reinterpret_cast<void **>(&pContainerProgress));
+    if (E_NOTFOUND == hr)
+    {
+        pContainerProgress = &pPlan->rgContainerProgress[pPlan->cContainerProgress];
+        pContainerProgress->iIndex = pPlan->cContainerProgress;
+        pContainerProgress->pContainer = pContainer;
+        pContainerProgress->wzId = pContainer->sczId;
+
+        hr = DictAddValue(pPlan->shContainerProgress, pContainerProgress);
+        ExitOnFailure(hr, "Failed to add \"%ls\" to the container progress dictionary.", pContainerProgress->wzId);
+
+        ++pPlan->cContainerProgress;
+        pPlan->qwCacheSizeTotal += pContainer->qwFileSize;
+    }
+    ExitOnFailure(hr, "Failed to retrieve \"%ls\" from the container progress dictionary.", pContainer->sczId);
+
+    *ppContainerProgress = pContainerProgress;
+
+LExit:
+    return hr;
+}
+
+static HRESULT CreatePayloadProgress(
+    __in BURN_PLAN* pPlan,
+    __in BURN_PAYLOAD* pPayload,
+    __out BURN_CACHE_PAYLOAD_PROGRESS** ppPayloadProgress
+    )
+{
+    HRESULT hr = S_OK;
+    BURN_CACHE_PAYLOAD_PROGRESS* pPayloadProgress = NULL;
+
+    hr = MemEnsureArraySize(reinterpret_cast<LPVOID*>(&pPlan->rgPayloadProgress), pPlan->cPayloadProgress + 1, sizeof(BURN_CACHE_PAYLOAD_PROGRESS), 5);
+    ExitOnFailure(hr, "Failed to grow payload progress list.");
+
+    if (!pPlan->shPayloadProgress)
+    {
+        hr = DictCreateWithEmbeddedKey(&pPlan->shPayloadProgress, 5, reinterpret_cast<void **>(&pPlan->rgPayloadProgress), offsetof(BURN_CACHE_PAYLOAD_PROGRESS, wzId), DICT_FLAG_NONE);
+        ExitOnFailure(hr, "Failed to create payload progress dictionary.");
+    }
+
+    hr = DictGetValue(pPlan->shPayloadProgress, pPayload->sczKey, reinterpret_cast<void **>(&pPayloadProgress));
+    if (E_NOTFOUND == hr)
+    {
+        pPayloadProgress = &pPlan->rgPayloadProgress[pPlan->cPayloadProgress];
+        pPayloadProgress->iIndex = pPlan->cPayloadProgress;
+        pPayloadProgress->pPayload = pPayload;
+        pPayloadProgress->wzId = pPayload->sczKey;
+
+        hr = DictAddValue(pPlan->shPayloadProgress, pPayloadProgress);
+        ExitOnFailure(hr, "Failed to add \"%ls\" to the payload progress dictionary.", pPayloadProgress->wzId);
+
+        ++pPlan->cPayloadProgress;
+        pPlan->qwCacheSizeTotal += pPayload->qwFileSize;
+    }
+    ExitOnFailure(hr, "Failed to retrieve \"%ls\" from the payload progress dictionary.", pPayload->sczKey);
+
+    *ppPayloadProgress = pPayloadProgress;
+
+LExit:
+    return hr;
+}
+
 
 #ifdef DEBUG
 
@@ -2807,7 +3039,7 @@ static void CacheActionLog(
         break;
 
     case BURN_CACHE_ACTION_TYPE_TRANSACTION_BOUNDARY:
-        LogStringLine(REPORT_STANDARD, "%ls action[%u]: TRANSACTION_BOUNDARY id: %ls, event handle: 0x%x, vital: %ls", wzBase, iAction, pAction->rollbackBoundary.pRollbackBoundary->sczId, pAction->rollbackBoundary.hEvent, pAction->rollbackBoundary.pRollbackBoundary->fVital ? L"yes" : L"no");
+        LogStringLine(REPORT_STANDARD, "%ls action[%u]: TRANSACTION_BOUNDARY id: %ls, event handle: 0x%x, vital: %ls, transaction: %ls", wzBase, iAction, pAction->rollbackBoundary.pRollbackBoundary->sczId, pAction->rollbackBoundary.hEvent, pAction->rollbackBoundary.pRollbackBoundary->fVital ? L"yes" : L"no", pAction->rollbackBoundary.pRollbackBoundary->fTransaction ? L"yes" : L"no");
         break;
 
     default:

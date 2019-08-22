@@ -21,5 +21,6 @@ This section will give you an overview of the WiX bundle language and how to use
 *  [Burn Built-In Variables](bundle_built_in_variables.html)
 *  [Define Searches Using Variables](bundle_define_searches.html)
 *  [Chain Packages into a Bundle](bundle_author_chain.html)
+*  [Built-In PackageGroups](bundle_built_in_packagegroups.html)
 *  [Working with WiX Standard Bootstrapper Application](wixstdba/index.html)
 *  [Building a Bootstrapper Application](ba/index.html)

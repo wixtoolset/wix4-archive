@@ -1,17 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="precomp.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Precompiled header for Burn unit tests.
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #include <windows.h>
 #include <Bits.h>
@@ -24,6 +13,7 @@
 #include "wininet.h"
 
 #include <dutil.h>
+#include <cryputil.h>
 #include <dlutil.h>
 #include <buffutil.h>
 #include <dirutil.h>
@@ -42,8 +32,8 @@
 
 #include <wixver.h>
 
-#include "IBootstrapperEngine.h"
-#include "IBootstrapperApplication.h"
+#include "BootstrapperEngine.h"
+#include "BootstrapperApplication.h"
 
 #include "platform.h"
 #include "variant.h"
@@ -82,6 +72,7 @@
 #include <vcclr.h>
 
 #include "BurnTestException.h"
+#include "BurnTestFixture.h"
 #include "BurnUnitTest.h"
 #include "VariableHelpers.h"
 #include "ManifestHelpers.h"

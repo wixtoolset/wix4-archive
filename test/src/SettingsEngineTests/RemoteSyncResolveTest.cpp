@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="RemoteSyncResolveTest.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Test syncing to a remote store (and resolving conflicts)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -160,7 +149,7 @@ namespace CfgTests
                 ExitOnFailure(hr, "Bool1's value should have been TRUE!");
             }
 
-            ::Sleep(5);
+            WaitForSqlCeTimestampChange();
             hr = CfgDeleteValue(cdhRemote1, L"String2");
             ExitOnFailure(hr, "Failed to delete value string2 from remote 1");
             WaitForSyncNoResolve(cdhRemote1);
@@ -508,14 +497,14 @@ namespace CfgTests
 
             TestSyncMissingProducts(cdhLocal, cdhRemote1);
 
+            hr = CfgForgetDatabase(cdhLocal, cdhRemote2, L"Remote2");
+            ExitOnFailure(hr, "Failed to forget remote database 2 from database list");
+
             hr = CfgRemoteDisconnect(cdhRemote1);
             ExitOnFailure(hr, "Failed to disconnect remote database 1");
 
             hr = CfgRemoteDisconnect(cdhRemote2);
             ExitOnFailure(hr, "Failed to disconnect remote database 2");
-
-            hr = CfgForgetDatabase(cdhLocal, cdhRemote2, L"Remote2");
-            ExitOnFailure(hr, "Failed to forget remote database 2 from database list");
 
             hr = CfgOpenKnownRemoteDatabase(cdhLocal, L"Remote2", &cdhRemote2);
             if (E_NOTFOUND != hr)

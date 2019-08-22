@@ -1,11 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="Table.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Data
 {
@@ -94,7 +87,7 @@ namespace WixToolset.Data
                     row = new WixBundleMsiPackageRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleMspPackage":
-                    row = new BundleMspPackageRow(sourceLineNumbers, this);
+                    row = new WixBundleMspPackageRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleMsuPackage":
                     row = new WixBundleMsuPackageRow(sourceLineNumbers, this);
@@ -150,8 +143,14 @@ namespace WixToolset.Data
                 case "WixBundle":
                     row = new WixBundleRow(sourceLineNumbers, this);
                     break;
+                case "WixBundlePackageExitCode":
+                    row = new WixBundlePackageExitCodeRow(sourceLineNumbers, this);
+                    break;
                 case "WixBundlePatchTargetCode":
                     row = new WixBundlePatchTargetCodeRow(sourceLineNumbers, this);
+                    break;
+                case "WixBundleSlipstreamMsp":
+                    row = new WixBundleSlipstreamMspRow(sourceLineNumbers, this);
                     break;
                 case "WixBundleUpdate":
                     row = new WixBundleUpdateRow(sourceLineNumbers, this);
@@ -164,6 +163,9 @@ namespace WixToolset.Data
                     break;
                 case "WixChainItem":
                     row = new WixChainItemRow(sourceLineNumbers, this);
+                    break;
+                case "WixBundlePackageCommandLine":
+                    row = new WixBundlePackageCommandLineRow(sourceLineNumbers, this);
                     break;
                 case "WixComplexReference":
                     row = new WixComplexReferenceRow(sourceLineNumbers, this);
@@ -188,6 +190,9 @@ namespace WixToolset.Data
                     break;
                 case "WixMerge":
                     row = new WixMergeRow(sourceLineNumbers, this);
+                    break;
+                case "WixPayloadProperties":
+                    row = new WixPayloadPropertiesRow(sourceLineNumbers, this);
                     break;
                 case "WixProperty":
                     row = new WixPropertyRow(sourceLineNumbers, this);

@@ -1,11 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="Compiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset
 {
@@ -35,8 +28,8 @@ namespace WixToolset
         public const string UpgradePreventedCondition = "NOT WIX_UPGRADE_DETECTED";
         public const string DowngradeDetectedProperty = "WIX_DOWNGRADE_DETECTED";
         public const string DowngradePreventedCondition = "NOT WIX_DOWNGRADE_DETECTED";
-        public const string DefaultComponentIdPlaceholder = "OfficialWixComponentIdPlaceholder";
-        public const string DefaultComponentIdPlaceholderWixVariable = "!(wix.OfficialWixComponentIdPlaceholder)";
+        public const string DefaultComponentIdPlaceholderFormat = "WixComponentIdPlaceholder{0}";
+        public const string DefaultComponentIdPlaceholderWixVariableFormat = "!(wix.{0})";
         public const string BurnUXContainerId = "WixUXContainer";
         public const string BurnDefaultAttachedContainerId = "WixAttachedContainer";
 
@@ -61,6 +54,8 @@ namespace WixToolset
         private bool useShortFileNames;
         private string activeName;
         private string activeLanguage;
+
+        private WixVariableResolver componentIdPlaceholdersResolver;
 
         /// <summary>
         /// Creates a new compiler object with a default set of table definitions.
@@ -179,6 +174,7 @@ namespace WixToolset
                 this.core = new CompilerCore(target, this.tableDefinitions, this.extensions);
                 this.core.ShowPedanticMessages = this.showPedanticMessages;
                 this.core.CurrentPlatform = this.CurrentPlatform;
+                this.componentIdPlaceholdersResolver = new WixVariableResolver();
 
                 foreach (CompilerExtension extension in this.extensions.Values)
                 {
@@ -209,6 +205,29 @@ namespace WixToolset
                 else
                 {
                     this.core.OnMessage(WixErrors.InvalidDocumentElement(sourceLineNumbers, source.Root.Name.LocalName, "source", "Wix"));
+                }
+
+                // Resolve any Component Id placeholders compiled into the intermediate.
+                if (0 < this.componentIdPlaceholdersResolver.VariableCount)
+                {
+                    foreach (var section in target.Sections)
+                    {
+                        foreach (Table table in section.Tables)
+                        {
+                            foreach (Row row in table.Rows)
+                            {
+                                foreach (Field field in row.Fields)
+                                {
+                                    if (field.Data is string)
+                                    {
+                                        bool isDefault = false;
+                                        bool delayedResolve = false;
+                                        field.Data = this.componentIdPlaceholdersResolver.ResolveVariables(row.SourceLineNumbers, (string)field.Data, false, false, ref isDefault, ref delayedResolve);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // inspect the document
@@ -2098,8 +2117,9 @@ namespace WixToolset
             bool explicitWin64 = false;
             int files = 0;
             string guid = "*";
-            string autoId = Compiler.DefaultComponentIdPlaceholder; // placeholder id for defaulting Component/@Id to keypath id.
-            Identifier id = new Identifier(Compiler.DefaultComponentIdPlaceholderWixVariable, AccessModifier.Private);
+            string componentIdPlaceholder = String.Format(Compiler.DefaultComponentIdPlaceholderFormat, this.componentIdPlaceholdersResolver.VariableCount); // placeholder id for defaulting Component/@Id to keypath id.
+            string componentIdPlaceholderWixVariable = String.Format(Compiler.DefaultComponentIdPlaceholderWixVariableFormat, componentIdPlaceholder);
+            Identifier id = new Identifier(componentIdPlaceholderWixVariable, AccessModifier.Private);
             int keyBits = 0;
             bool keyFound = false;
             string keyPath = null;
@@ -2472,29 +2492,13 @@ namespace WixToolset
             // if there isn't an @Id attribute value, replace the placeholder with the id of the keypath.
             // either an explicit KeyPath="yes" attribute must be specified or requirements for 
             // generatable guid must be met.
-            if (Compiler.DefaultComponentIdPlaceholderWixVariable == id.Id)
+            if (componentIdPlaceholderWixVariable == id.Id)
             {
                 if (isGeneratableGuidOk || keyFound && !String.IsNullOrEmpty(keyPath))
                 {
-                    id = new Identifier(keyPath, AccessModifier.Private);
+                    this.componentIdPlaceholdersResolver.AddVariable(componentIdPlaceholder, keyPath);
 
-                    WixVariableResolver resolver = new WixVariableResolver();
-                    resolver.AddVariable(autoId, keyPath);
-                    foreach (Table table in this.core.ActiveSection.Tables)
-                    {
-                        foreach (Row row in table.Rows)
-                        {
-                            foreach (Field field in row.Fields)
-                            {
-                                if (field.Data is string)
-                                {
-                                    bool isDefault = false;
-                                    bool delayedResolve = false;
-                                    field.Data = resolver.ResolveVariables(row.SourceLineNumbers, (string)field.Data, false, false, ref isDefault, ref delayedResolve);
-                                }
-                            }
-                        }
-                    }
+                    id = new Identifier(keyPath, AccessModifier.Private);
                 }
                 else
                 {
@@ -2915,7 +2919,8 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "DirectoryId", directoryId }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
 
@@ -5785,7 +5790,7 @@ namespace WixToolset
                 }
                 else
                 {
-                    Dictionary<string, string> context = new Dictionary<string, string>() { { "FileId", id.Id }, { "ComponentId", componentId } };
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "FileId", id.Id }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
                     this.core.ParseExtensionElement(node, child, context);
                 }
             }
@@ -7044,6 +7049,8 @@ namespace WixToolset
                 this.core.OnMessage(WixErrors.ParentElementAttributeRequired(sourceLineNumbers, "Product", "Version", node.Name.LocalName));
             }
 
+            string productLanguage = contextValues["ProductLanguage"];
+
             foreach (XAttribute attrib in node.Attributes())
             {
                 if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
@@ -7069,6 +7076,12 @@ namespace WixToolset
                             if (YesNoType.No == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
                             {
                                 options &= ~MsiInterop.MsidbUpgradeAttributesMigrateFeatures;
+                            }
+                            break;
+                        case "IgnoreLanguage":
+                            if (YesNoType.Yes == this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib))
+                            {
+                                productLanguage = null;
                             }
                             break;
                         case "IgnoreRemoveFailure":
@@ -7130,14 +7143,14 @@ namespace WixToolset
                 {
                     row[1] = "0"; // let any version satisfy
                     // row[2] = maximum version; omit so we don't have to fake a version like "255.255.65535";
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = options | MsiInterop.MsidbUpgradeAttributesVersionMinInclusive;
                 }
                 else
                 {
                     // row[1] = minimum version; skip it so we detect all prior versions.
                     row[2] = productVersion;
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = allowSameVersionUpgrades ? (options | MsiInterop.MsidbUpgradeAttributesVersionMaxInclusive) : options;
                 }
 
@@ -7162,7 +7175,7 @@ namespace WixToolset
                     row[0] = upgradeCode;
                     row[1] = productVersion;
                     // row[2] = maximum version; skip it so we detect all future versions.
-                    // row[3] = language
+                    row[3] = productLanguage;
                     row[4] = MsiInterop.MsidbUpgradeAttributesOnlyDetect;
                     // row[5] = removeFeatures;
                     row[6] = Compiler.DowngradeDetectedProperty;
@@ -10781,6 +10794,8 @@ namespace WixToolset
             YesNoDefaultType security = YesNoDefaultType.Default;
             int sourceBits = (this.compilingModule ? 2 : 0);
             Row row;
+            bool installPrivilegeSeen = false;
+            bool installScopeSeen = false;
 
             switch (this.CurrentPlatform)
             {
@@ -10840,6 +10855,7 @@ namespace WixToolset
                             string installPrivileges = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < installPrivileges.Length)
                             {
+                                installPrivilegeSeen = true;
                                 Wix.Package.InstallPrivilegesType installPrivilegesType = Wix.Package.ParseInstallPrivilegesType(installPrivileges);
                                 switch (installPrivilegesType)
                                 {
@@ -10859,6 +10875,7 @@ namespace WixToolset
                             string installScope = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             if (0 < installScope.Length)
                             {
+                                installScopeSeen = true;
                                 Wix.Package.InstallScopeType installScopeType = Wix.Package.ParseInstallScopeType(installScope);
                                 switch (installScopeType)
                                 {
@@ -10957,6 +10974,11 @@ namespace WixToolset
                 {
                     this.core.ParseExtensionAttribute(node, attrib);
                 }
+            }
+
+            if (installPrivilegeSeen && installScopeSeen)
+            {
+                this.core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, node.Name.LocalName, "InstallPrivileges", "InstallScope"));
             }
 
             if ((0 != String.Compare(platform, "Intel", StringComparison.OrdinalIgnoreCase)) && 200 > msiVersion)
@@ -11895,6 +11917,7 @@ namespace WixToolset
                 }
 
                 Dictionary<string, string> contextValues = new Dictionary<string, string>();
+                contextValues["ProductLanguage"] = this.activeLanguage;
                 contextValues["ProductVersion"] = version;
                 contextValues["UpgradeCode"] = upgradeCode;
 
@@ -12579,7 +12602,8 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "RegistryId", id.Id }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
 
@@ -12757,7 +12781,8 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    Dictionary<string, string> context = new Dictionary<string, string>() { { "RegistryId", id.Id }, { "ComponentId", componentId }, { "Win64", win64Component.ToString() } };
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
 
@@ -13527,6 +13552,8 @@ namespace WixToolset
             string requiredPrivileges = null;
             string sid = null;
 
+            this.core.OnMessage(WixWarnings.ServiceConfigFamilyNotSupported(sourceLineNumbers, node.Name.LocalName));
+
             foreach (XAttribute attrib in node.Attributes())
             {
                 if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
@@ -13868,6 +13895,8 @@ namespace WixToolset
             string command = null;
             string actions = null;
             string actionsDelays = null;
+
+            this.core.OnMessage(WixWarnings.ServiceConfigFamilyNotSupported(sourceLineNumbers, node.Name.LocalName));
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18678,6 +18707,8 @@ namespace WixToolset
             Debug.Assert(ComplexReferenceChildType.Unknown == previousType || ComplexReferenceChildType.PayloadGroup == previousType || ComplexReferenceChildType.Payload == previousType);
 
             string id = ParsePayloadElementContent(node, parentType, parentId, previousType, previousId, true);
+            Dictionary<string, string> context = new Dictionary<string, string>();
+            context["Id"] = id;
 
             foreach (XElement child in node.Elements())
             {
@@ -18692,10 +18723,9 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionElement(node, child);
+                    this.core.ParseExtensionElement(node, child, context);
                 }
             }
-
 
             return id;
         }
@@ -18718,6 +18748,10 @@ namespace WixToolset
             string sourceFile = null;
             string downloadUrl = null;
             Wix.RemotePayload remotePayload = null;
+
+            // This list lets us evaluate extension attributes *after* all core attributes
+            // have been parsed and dealt with, regardless of authoring order.
+            List<XAttribute> extensionAttributes = new List<XAttribute>();
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -18750,7 +18784,7 @@ namespace WixToolset
                 }
                 else
                 {
-                    this.core.ParseExtensionAttribute(node, attrib);
+                    extensionAttributes.Add(attrib);
                 }
             }
 
@@ -18758,6 +18792,20 @@ namespace WixToolset
             {
                 // Nothing left to do!
                 return null;
+            }
+
+            if (null == id)
+            {
+                id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
+            }
+
+            // Now that the PayloadId is known, we can parse the extension attributes.
+            Dictionary<string, string> context = new Dictionary<string, string>();
+            context["Id"] = id.Id;
+
+            foreach (XAttribute extensionAttribute in extensionAttributes)
+            {
+                this.core.ParseExtensionAttribute(node, extensionAttribute, context);
             }
 
             // We only handle the elements we care about.  Let caller handle other children.
@@ -18805,11 +18853,6 @@ namespace WixToolset
                 }
 
                 compressed = YesNoDefaultType.Yes;
-            }
-
-            if (null == id)
-            {
-                id = this.core.CreateIdentifier("pay", (null != sourceFile) ? sourceFile.ToUpperInvariant() : String.Empty);
             }
 
             this.CreatePayloadRow(sourceLineNumbers, id, name, sourceFile, downloadUrl, parentType, parentId, previousType, previousId, compressed, enableSignatureVerification, null, null, remotePayload);
@@ -19176,7 +19219,7 @@ namespace WixToolset
             }
 
             // Ensure there is always a rollback boundary at the beginning of the chain.
-            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
+            this.CreateRollbackBoundary(sourceLineNumbers, new Identifier("WixDefaultBoundary", AccessModifier.Public), YesNoType.Yes, YesNoType.No, ComplexReferenceParentType.PackageGroup, "WixChain", ComplexReferenceChildType.Unknown, null);
 
             string previousId = "WixDefaultBoundary";
             ComplexReferenceChildType previousType = ComplexReferenceChildType.Package;
@@ -19308,6 +19351,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             Identifier id = null;
             YesNoType vital = YesNoType.Yes;
+            YesNoType transaction = YesNoType.No;
 
             // This list lets us evaluate extension attributes *after* all core attributes
             // have been parsed and dealt with, regardless of authoring order.
@@ -19325,6 +19369,9 @@ namespace WixToolset
                             break;
                         case "Vital":
                             vital = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Transaction":
+                            transaction = this.core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             allowed = false;
@@ -19373,7 +19420,7 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, parentType, parentId, previousType, previousId);
+                this.CreateRollbackBoundary(sourceLineNumbers, id, vital, transaction, parentType, parentId, previousType, previousId);
             }
 
             return id.Id;
@@ -19735,6 +19782,13 @@ namespace WixToolset
                                 this.ParseExitCodeElement(child, id.Id);
                             }
                             break;
+                        case "CommandLine":
+                            allowed = (packageType == WixBundlePackageType.Exe);
+                            if (allowed)
+                            {
+                                this.ParseCommandLineElement(child, id.Id);
+                            }
+                            break;
                         case "RemotePayload":
                             // Handled previously
                             break;
@@ -19830,7 +19884,7 @@ namespace WixToolset
                         mspAttributes |= (YesNoType.Yes == displayInternalUI) ? WixBundleMspPackageAttributes.DisplayInternalUI : 0;
                         mspAttributes |= (YesNoType.Yes == slipstream) ? WixBundleMspPackageAttributes.Slipstream : 0;
 
-                        BundleMspPackageRow mspRow = (BundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
+                        WixBundleMspPackageRow mspRow = (WixBundleMspPackageRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMspPackage", id);
                         mspRow.Attributes = mspAttributes;
                         break;
 
@@ -19845,6 +19899,65 @@ namespace WixToolset
             }
 
             return id.Id;
+        }
+
+        /// <summary>
+        /// Parse CommandLine element.
+        /// </summary>
+        /// <param name="node">Element to parse</param>
+        private void ParseCommandLineElement(XElement node, string packageId)
+        {
+            SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
+            string installArgument = null;
+            string uninstallArgument = null;
+            string repairArgument = null;
+            string condition = null;
+
+            foreach (XAttribute attrib in node.Attributes())
+            {
+                if (String.IsNullOrEmpty(attrib.Name.NamespaceName) || CompilerCore.WixNamespace == attrib.Name.Namespace)
+                {
+                    switch (attrib.Name.LocalName)
+                    {
+                        case "InstallArgument":
+                            installArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "UninstallArgument":
+                            uninstallArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "RepairArgument":
+                            repairArgument = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Condition":
+                            condition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        default:
+                            this.core.UnexpectedAttribute(node, attrib);
+                            break;
+                    }
+                }
+                else
+                {
+                    this.core.ParseExtensionAttribute(node, attrib);
+                }
+            }
+
+            if (String.IsNullOrEmpty(condition))
+            {
+                this.core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "Condition"));
+            }
+
+            this.core.ParseForExtensionElements(node);
+
+            if (!this.core.EncounteredError)
+            {
+                WixBundlePackageCommandLineRow row = (WixBundlePackageCommandLineRow)this.core.CreateRow(sourceLineNumbers, "WixBundlePackageCommandLine");
+                row.ChainPackageId = packageId;
+                row.InstallArgument = installArgument;
+                row.UninstallArgument = uninstallArgument;
+                row.RepairArgument = repairArgument;
+                row.Condition = condition;
+            }
         }
 
         /// <summary>
@@ -20021,7 +20134,7 @@ namespace WixToolset
         /// <param name="parentId">Identifier of parent group.</param>
         /// <param name="previousType">Type of previous item, if any.</param>
         /// <param name="previousId">Identifier of previous item, if any.</param>
-        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
+        private void CreateRollbackBoundary(SourceLineNumber sourceLineNumbers, Identifier id, YesNoType vital, YesNoType transaction, ComplexReferenceParentType parentType, string parentId, ComplexReferenceChildType previousType, string previousId)
         {
             WixChainItemRow row = (WixChainItemRow)this.core.CreateRow(sourceLineNumbers, "WixChainItem", id);
 
@@ -20030,6 +20143,10 @@ namespace WixToolset
             if (YesNoType.NotSet != vital)
             {
                 rollbackBoundary.Vital = vital;
+            }
+            if (YesNoType.NotSet != transaction)
+            {
+                rollbackBoundary.Transaction = transaction;
             }
 
             this.CreateChainPackageMetaRows(sourceLineNumbers, parentType, parentId, ComplexReferenceChildType.Package, id.Id, previousType, previousId, null);
@@ -20088,6 +20205,7 @@ namespace WixToolset
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
             string name = null;
             string value = null;
+            string condition = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -20096,10 +20214,13 @@ namespace WixToolset
                     switch (attrib.Name.LocalName)
                     {
                         case "Name":
-                            name = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            name = this.core.GetAttributeMsiPropertyNameValue(sourceLineNumbers, attrib);
                             break;
                         case "Value":
                             value = this.core.GetAttributeValue(sourceLineNumbers, attrib);
+                            break;
+                        case "Condition":
+                            condition = this.core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.core.UnexpectedAttribute(node, attrib);
@@ -20126,10 +20247,15 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
-                row[0] = packageId;
-                row[1] = name;
-                row[2] = value;
+                WixBundleMsiPropertyRow row = (WixBundleMsiPropertyRow)this.core.CreateRow(sourceLineNumbers, "WixBundleMsiProperty");
+                row.ChainPackageId = packageId;
+                row.Name = name;
+                row.Value = value;
+
+                if (!String.IsNullOrEmpty(condition))
+                {
+                    row.Condition = condition;
+                }
             }
         }
 
@@ -20173,9 +20299,9 @@ namespace WixToolset
 
             if (!this.core.EncounteredError)
             {
-                Row row = this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
-                row[0] = packageId;
-                row[1] = id;
+                WixBundleSlipstreamMspRow row = (WixBundleSlipstreamMspRow)this.core.CreateRow(sourceLineNumbers, "WixBundleSlipstreamMsp");
+                row.ChainPackageId = packageId;
+                row.MspPackageId = id;
             }
         }
 

@@ -1,14 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Bundle.BundleElementTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>
-//     Tests for Bundle Element
-// </summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 {
@@ -37,22 +27,8 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 
             Candle candle = new Candle();
             candle.SourceFiles.Add(sourceFile);
-            candle.ExpectedWixMessages.Add(new WixMessage(41, @"The Bundle element contains multiple UX child elements.  There can only be one UX child element per Bundle element.", WixMessage.MessageTypeEnum.Error));
+            candle.ExpectedWixMessages.Add(new WixMessage(41, @"The Bundle element contains multiple BootstrapperApplication child elements.  There can only be one BootstrapperApplication child element per Bundle element.", WixMessage.MessageTypeEnum.Error));
             candle.ExpectedExitCode = 41;
-            candle.Run();
-        }
-
-        [NamedFact]
-        [Description("Verify that build fails if UX element is not defined under Bundle.")]
-        [Priority(3)]
-        public void BundleMissingUX()
-        {
-            string sourceFile = Path.Combine(BundleElementTests.TestDataDirectory, @"BundleMissingUX\BundleMissingUX.wxs");
-            
-            Candle candle = new Candle();
-            candle.SourceFiles.Add(sourceFile);
-            candle.ExpectedWixMessages.Add(new WixMessage(63, @"A Bundle element must have at least one child element of type UX.", WixMessage.MessageTypeEnum.Error));
-            candle.ExpectedExitCode = 63;
             candle.Run();
         }
 
@@ -118,6 +94,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
         [NamedFact]
         [Description("Verify that Bundle element properties are transalated into correct registration information for the engin.")]
         [Priority(2)]
+        [RuntimeTest]
         public void ValidBundleElement()
         {
             string sourceFile = Path.Combine(BundleElementTests.TestDataDirectory, @"ValidBundleElement\Product.wxs");

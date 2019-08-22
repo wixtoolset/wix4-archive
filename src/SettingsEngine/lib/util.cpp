@@ -1,17 +1,8 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="util.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions for Cfg API
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
+
+PFN_GETSYSTEMTIME SystemTimeGetter = GetSystemTime;
 
 const LEGACY_DIRECTORY_MAP LEGACY_DIRECTORIES[] = {
     { CSIDL_MYDOCUMENTS, L"MyDocumentsFolder:\\", NULL },
@@ -43,9 +34,6 @@ static HRESULT UtilSyncAllProductsHelp(
     __in_opt STRINGDICT_HANDLE shDictProductsSeen,
     __out CONFLICT_PRODUCT **prgConflictProducts,
     __out DWORD *pcConflictProducts
-    );
-static WORD RoundMilliseconds(
-    __in WORD wMilliseconds
     );
 
 HRESULT UtilSyncDb(
@@ -105,7 +93,10 @@ HRESULT UtilSyncAllProducts(
 
         hr = StrAllocString(&pConflictProductTemp->sczPublicKey, wzCfgPublicKey, 0);
         ExitOnFailure(hr, "Failed to copy product public key");
-        
+
+        hr = DisplayNameEnumerate(pcdbRemote->pcdbLocal, pcdbRemote->pcdbLocal->dwAppID, &pConflictProductTemp->rgDisplayNames, &pConflictProductTemp->cDisplayNames);
+        ExitOnFailure(hr, "Failed to enumerate display names for product conflict array");
+
         ++(*pcConflictProducts);
         hr = MemEnsureArraySize(reinterpret_cast<void **>(prgConflictProducts), *pcConflictProducts, sizeof(CONFLICT_PRODUCT), 0);
         ExitOnFailure(hr, "Failed to grow product conflict list array");
@@ -120,7 +111,7 @@ HRESULT UtilSyncAllProducts(
     hr = LegacySyncInitializeSession(TRUE, TRUE, &syncSession);
     ExitOnFailure(hr, "Failed to initialize legacy sync session");
 
-    hr = UtilSyncAllProductsHelp(pcdbRemote, &syncSession, pcdbRemote->pcdbLocal,  shDictProductsSeen, prgConflictProducts, pcConflictProducts);
+    hr = UtilSyncAllProductsHelp(pcdbRemote, &syncSession, pcdbRemote->pcdbLocal, shDictProductsSeen, prgConflictProducts, pcConflictProducts);
     ExitOnFailure(hr, "Failed to synchronize values in product list found in remote database");
 
     hr = UtilSyncAllProductsHelp(pcdbRemote->pcdbLocal, &syncSession, pcdbRemote, shDictProductsSeen, prgConflictProducts, pcConflictProducts);
@@ -188,26 +179,47 @@ int UtilCompareSystemTimes(
     }
     else
     {
-        WORD wRoundedMilliseconds1 = RoundMilliseconds(pst1->wMilliseconds);
-        WORD wRoundedMilliseconds2 = RoundMilliseconds(pst2->wMilliseconds);
-
-        if (wRoundedMilliseconds1 > wRoundedMilliseconds2)
-        {
-            return 1;
-        }
-        else if (wRoundedMilliseconds1 < wRoundedMilliseconds2)
-        {
-            return -1;
-        }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 }
 
+HRESULT UtilSubtractSystemTimes(
+    __in const SYSTEMTIME *pst1,
+    __in const SYSTEMTIME *pst2,
+    __out LONGLONG *pSeconds
+    )
+{
+    HRESULT hr = S_OK;
+    FILETIME ft1 = { };
+    FILETIME ft2 = { };
+    ULARGE_INTEGER uli1 = { };
+    ULARGE_INTEGER uli2 = { };
+
+    if (pst1->wYear > 0 && !::SystemTimeToFileTime(pst1, &ft1))
+    {
+        ExitOnLastError(hr, "Failed to convert system time 1 to file time");
+    }
+    if (pst2->wYear > 0 && !::SystemTimeToFileTime(pst2, &ft2))
+    {
+        ExitOnLastError(hr, "Failed to convert system time 2 to file time");
+    }
+
+    uli1.LowPart = ft1.dwLowDateTime;
+    uli1.HighPart = ft1.dwHighDateTime;
+    uli2.LowPart = ft2.dwLowDateTime;
+    uli2.HighPart = ft2.dwHighDateTime;
+
+    uli1.QuadPart -= uli2.QuadPart;
+
+    // FILETIME is in 100-nanosecond intervals, and there are 10 Million of those per second
+    *pSeconds = uli1.QuadPart / 10000000;
+
+LExit:
+    return hr;
+}
+
 HRESULT UtilAddToSystemTime(
-    __in DWORD dwMilliseconds,
+    __in DWORD dwSeconds,
     __inout SYSTEMTIME *pst
     )
 {
@@ -222,7 +234,7 @@ HRESULT UtilAddToSystemTime(
     DWORD64 ul;
     C_ASSERT(sizeof(ul) == sizeof(ft));
     memcpy(&ul, &ft, sizeof(ul));
-    ul += dwMilliseconds * 10000;
+    ul += dwSeconds * 10000000;
     memcpy(&ft, &ul, sizeof(ft));
 
     if (!FileTimeToSystemTime(&ft, pst))
@@ -450,17 +462,9 @@ static HRESULT SyncSingleProduct(
     ExitOnFailure(hr, "Failed to create dictionary of values seen");
 
     hr = ProductSyncValues(pcdb1, pcdb2, fRegistered, shDictItemsSeen, ppcpProductTemp);
-    if (E_NOTFOUND == hr)
-    {
-        hr = S_OK;
-    }
     ExitOnFailure(hr, "Failed to sync product values for application (1)");
 
     hr = ProductSyncValues(pcdb2, pcdb1, fRegistered, shDictItemsSeen, ppcpProductTemp);
-    if (E_NOTFOUND == hr)
-    {
-        hr = S_OK;
-    }
     ExitOnFailure(hr, "Failed to sync product values for application (2)");
 
 LExit:
@@ -479,6 +483,8 @@ static HRESULT UtilSyncAllProductsHelp(
     )
 {
     HRESULT hr = S_OK;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     CONFLICT_PRODUCT *pConflictProductTemp = NULL;
     LPWSTR sczName = NULL;
     LPWSTR sczVersion = NULL;
@@ -592,12 +598,19 @@ static HRESULT UtilSyncAllProductsHelp(
 
         if (NULL != pConflictProductTemp)
         {
+            hr = DisplayNameEnumerate(fFirstIsLocal ? pcdb1 : pcdb2, fFirstIsLocal ? pcdb1->dwAppID : pcdb2->dwAppID, &rgDisplayNames, &cDisplayNames);
+            ExitOnFailure(hr, "Failed to enumerate display names for product conflict array");
+
             pConflictProductTemp->sczProductName = sczName;
             sczName = NULL;
             pConflictProductTemp->sczVersion = sczVersion;
             sczVersion = NULL;
             pConflictProductTemp->sczPublicKey = sczPublicKey;
             sczPublicKey = NULL;
+            pConflictProductTemp->rgDisplayNames = rgDisplayNames;
+            rgDisplayNames = NULL;
+            pConflictProductTemp->cDisplayNames = cDisplayNames;
+            cDisplayNames = 0;
 
             hr = MemEnsureArraySize(reinterpret_cast<void **>(prgConflictProducts), *pcConflictProducts + 1, sizeof(CONFLICT_PRODUCT), 0);
             ExitOnFailure(hr, "Failed to grow product conflict list array");
@@ -633,8 +646,16 @@ LExit:
     ReleaseStr(sczVersion);
     ReleaseStr(sczPublicKey);
     ReleaseMem(pConflictProductTemp);
+    ReleaseDisplayNameArray(rgDisplayNames, cDisplayNames);
 
     return hr;
+}
+
+void UtilGetSystemTime(
+    __inout SYSTEMTIME *pst
+    )
+{
+    SystemTimeGetter(pst);
 }
 
 BOOL UtilIs64BitSystem()
@@ -670,26 +691,4 @@ BOOL UtilIs64BitSystem()
     }
 
     return s_f64BitSystem;
-}
-
-static WORD RoundMilliseconds(
-    __in WORD wMilliseconds
-    )
-{
-    WORD wLastDigitShavedOff = ((wMilliseconds) / 10) * 10;
-
-    // SQL CE rounds off to the nearest 3.33 milliseconds, unfortunately
-    // So we must factor that into our comparison, in case one of these timestamps was round by SQL CE
-    if (wMilliseconds % 10 >= 7)
-    {
-        return wLastDigitShavedOff + 7;
-    }
-    else if (wMilliseconds % 10 >= 3)
-    {
-        return wLastDigitShavedOff + 3;
-    }
-    else
-    {
-        return wLastDigitShavedOff;
-    }
 }

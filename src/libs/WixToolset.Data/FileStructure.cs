@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="FileStructure.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Data
 {
@@ -89,13 +82,16 @@ namespace WixToolset.Data
             {
                 fs.FileFormat = FileStructure.ReadFileFormat(reader);
 
-                fs.embeddedFileSizes = FileStructure.ReadEmbeddedFileSizes(reader);
-
-                // Remember the data stream offset, which is right after the embedded files have been written.
-                fs.dataStreamOffset = stream.Position;
-                foreach (long size in fs.embeddedFileSizes)
+                if (FileFormat.Unknown != fs.FileFormat)
                 {
-                    fs.dataStreamOffset += size;
+                    fs.embeddedFileSizes = FileStructure.ReadEmbeddedFileSizes(reader);
+
+                    // Remember the data stream offset, which is right after the embedded files have been written.
+                    fs.dataStreamOffset = stream.Position;
+                    foreach (long size in fs.embeddedFileSizes)
+                    {
+                        fs.dataStreamOffset += size;
+                    }
                 }
             }
 

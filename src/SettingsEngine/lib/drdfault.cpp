@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="drdfault.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions for Cfg Legacy API (for purposes of default directory handling)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -75,7 +64,7 @@ HRESULT DirDefaultReadFile(
     hr = DictAddKey(pSyncProductSession->shDictValuesSeen, sczValueName);
     ExitOnFailure(hr, "Failed to add file to list of files seen: %ls", sczValueName);
 
-    hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczValueName, &sceValueRow);
+    hr = ValueFindRow(pcdb, pcdb->dwAppID, sczValueName, &sceValueRow);
     if (S_OK == hr)
     {
         hr = ValueRead(pcdb, sceValueRow, &cvExistingValue);
@@ -111,7 +100,7 @@ HRESULT DirDefaultReadFile(
 
     if (fRefreshTimestamp)
     {
-        ::GetSystemTime(&st);
+        UtilGetSystemTime(&st);
         fRet = ::SystemTimeToFileTime(&st, &ft);
         if (!fRet)
         {
@@ -127,7 +116,7 @@ HRESULT DirDefaultReadFile(
 
     // Important: we must write the value even if the actual data didn't change, to update the timestamp in the database
     // This keeps perf high for future syncs, so we can rely on timestamp check
-    hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvNewValue, FALSE);
+    hr = ValueWrite(pcdb, pcdb->dwAppID, sczValueName, &cvNewValue, FALSE, NULL);
     ExitOnFailure(hr, "Failed to set blob in cfg database, blob is named: %ls", sczValueName);
 
 LExit:

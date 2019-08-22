@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="ProcessPayloadsCommand.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind.Bundles
 {
@@ -37,6 +30,12 @@ namespace WixToolset.Bind.Bundles
 
             foreach (WixBundlePayloadRow payload in this.Payloads)
             {
+                string normalizedPath = payload.Name.Replace('\\', '/');
+                if (normalizedPath.StartsWith("../", StringComparison.Ordinal) || normalizedPath.Contains("/../"))
+                {
+                    Messaging.Instance.OnMessage(WixErrors.PayloadMustBeRelativeToCache(payload.SourceLineNumbers, "Payload", "Name", payload.Name));
+                }
+
                 // Embedded files (aka: files from binary .wixlibs) are not content files (because they are hidden
                 // in the .wixlib).
                 ObjectField field = (ObjectField)payload.Fields[2];

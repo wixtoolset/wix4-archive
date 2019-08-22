@@ -1,11 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="BundleBuilder.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest
 {
@@ -62,6 +55,7 @@ namespace WixTest
             candle.SourceFiles.Add(this.SourceFile);
             candle.SourceFiles.AddRange(this.AdditionalSourceFiles);
             candle.WorkingDirectory = this.TestDataDirectory;
+            candle.ExpectedExitCode = ExpectedCandleExitCode;
             candle.Run();
 
             // Make sure the output directory is cleaned up.
@@ -77,6 +71,7 @@ namespace WixTest
             light.SuppressPatchSequenceData = this.SuppressPatchSequenceData;
             light.SuppressMSIAndMSMValidation = true;
             light.WorkingDirectory = this.TestDataDirectory;
+            light.ExpectedExitCode = ExpectedLightExitCode;
             light.Run();
 
             // Make sure the output directory is cleaned up.
@@ -104,5 +99,8 @@ namespace WixTest
             bundle.Arguments = sb.ToString();
             bundle.Run(false);
         }
+
+        public int? ExpectedCandleExitCode { get; set; }
+        public int? ExpectedLightExitCode { get; set; }
     }
 }

@@ -1,33 +1,13 @@
-//-----------------------------------------------------------------------
-// <copyright file="WixTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>
-//     - Contains methods that are shared across this assembly
-//     - Performs some initialization before the tests are run
-// </summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Runtime.InteropServices;
     using System.Threading;
-    using System.Reflection;
     using WixTest;
-    using WixTest.Verifiers;
-    using Microsoft.Win32;
-    using Xunit;
-    using Xunit.Sdk;
 
     /// <summary>
-    /// Contains variables and methods used by this test assembly
+    /// Contains variables and methods used by this test assembly.
     /// </summary>
     public abstract class WixTests : WixTestBase
     {
@@ -68,7 +48,7 @@ namespace WixTest.Tests
 
         static WixTests()
         {
-            WixTests.SetTestFalvor();
+            WixTests.SetTestFlavor();
         }
 
         /// <summary>
@@ -82,7 +62,7 @@ namespace WixTest.Tests
                 WixTests.originalWixValue = Environment.GetEnvironmentVariable("WIX");
 
                 string wixRoot = Environment.GetEnvironmentVariable("WIX_ROOT");
-                if (String.IsNullOrEmpty(wixRoot))
+                if (!String.IsNullOrEmpty(wixRoot))
                 {
                     Environment.SetEnvironmentVariable("WIX", wixRoot);
                 }
@@ -97,7 +77,7 @@ namespace WixTest.Tests
             }
         }
 
-        private static void SetTestFalvor()
+        private static void SetTestFlavor()
         {
             string flavor = Environment.GetEnvironmentVariable(WixTests.envFlavor);
             if (String.IsNullOrEmpty(flavor))

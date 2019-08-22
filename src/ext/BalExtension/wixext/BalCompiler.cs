@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="BalCompiler.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-// The compiler for the WiX Toolset Bal Extension.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Extensions
 {
@@ -26,6 +15,7 @@ namespace WixToolset.Extensions
     public sealed class BalCompiler : CompilerExtension
     {
         private SourceLineNumber addedConditionLineNumber;
+        private Dictionary<string, Row> prereqInfoRows;
 
         /// <summary>
         /// Instantiate a new BalCompiler.
@@ -33,6 +23,7 @@ namespace WixToolset.Extensions
         public BalCompiler()
         {
             this.addedConditionLineNumber = null;
+            prereqInfoRows = new Dictionary<string, Row>();
             this.Namespace = "http://wixtoolset.org/schemas/v4/wxs/bal";
         }
 
@@ -88,6 +79,7 @@ namespace WixToolset.Extensions
         public override void ParseAttribute(XElement parentElement, XAttribute attribute, IDictionary<string, string> context)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(parentElement);
+            Row row;
 
             switch (parentElement.Name.LocalName)
             {
@@ -104,11 +96,101 @@ namespace WixToolset.Extensions
                     {
                         switch (attribute.Name.LocalName)
                         {
-                            case "PrereqSupportPackage":
+                            case "PrereqLicenseFile":
+
+                                if (!prereqInfoRows.TryGetValue(packageId, out row))
+                                {
+                                    // at the time the extension attribute is parsed, the compiler might not yet have
+                                    // parsed the PrereqPackage attribute, so we need to get it directly from the parent element.
+                                    XAttribute prereqPackage = parentElement.Attribute(this.Namespace + "PrereqPackage");
+
+                                    if (null != prereqPackage && YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, prereqPackage))
+                                    {
+                                        row = this.Core.CreateRow(sourceLineNumbers, "WixMbaPrereqInformation");
+                                        row[0] = packageId;
+
+                                        prereqInfoRows.Add(packageId, row);
+                                    }
+                                    else
+                                    {
+                                        this.Core.OnMessage(BalErrors.AttributeRequiresPrereqPackage(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseFile"));
+                                        break;
+                                    }
+                                }
+
+                                if (null != row[2])
+                                {
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseFile", "PrereqLicenseUrl"));
+                                }
+                                else
+                                {
+                                    row[1] = this.Core.GetAttributeValue(sourceLineNumbers, attribute);
+                                }
+                                break;
+                            case "PrereqLicenseUrl":
+
+                                if (!prereqInfoRows.TryGetValue(packageId, out row))
+                                {
+                                    // at the time the extension attribute is parsed, the compiler might not yet have
+                                    // parsed the PrereqPackage attribute, so we need to get it directly from the parent element.
+                                    XAttribute prereqPackage = parentElement.Attribute(this.Namespace + "PrereqPackage");
+
+                                    if (null != prereqPackage && YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, prereqPackage))
+                                    {
+                                        row = this.Core.CreateRow(sourceLineNumbers, "WixMbaPrereqInformation");
+                                        row[0] = packageId;
+
+                                        prereqInfoRows.Add(packageId, row);
+                                    }
+                                    else
+                                    {
+                                        this.Core.OnMessage(BalErrors.AttributeRequiresPrereqPackage(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseUrl"));
+                                        break;
+                                    }
+                                }
+
+                                if (null != row[1])
+                                {
+                                    this.Core.OnMessage(WixErrors.IllegalAttributeWithOtherAttribute(sourceLineNumbers, parentElement.Name.LocalName, "PrereqLicenseUrl", "PrereqLicenseFile"));
+                                }
+                                else
+                                {
+                                    row[2] = this.Core.GetAttributeValue(sourceLineNumbers, attribute);
+                                }
+                                break;
+                            case "PrereqPackage":
                                 if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
                                 {
-                                    Row row = this.Core.CreateRow(sourceLineNumbers, "MbaPrerequisiteSupportPackage");
-                                    row[0] = packageId;
+                                    if (!prereqInfoRows.TryGetValue(packageId, out row))
+                                    {
+                                        row = this.Core.CreateRow(sourceLineNumbers, "WixMbaPrereqInformation");
+                                        row[0] = packageId;
+
+                                        prereqInfoRows.Add(packageId, row);
+                                    }
+                                }
+                                break;
+                            default:
+                                this.Core.UnexpectedAttribute(parentElement, attribute);
+                                break;
+                        }
+                    }
+                    break;
+                case "Payload":
+                    string payloadId;
+                    if (!context.TryGetValue("Id", out payloadId) || String.IsNullOrEmpty(payloadId))
+                    {
+                        this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, parentElement.Name.LocalName, "Id", attribute.Name.LocalName));
+                    }
+                    else
+                    {
+                        switch (attribute.Name.LocalName)
+                        {
+                            case "BAFunctions":
+                                if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
+                                {
+                                    row = this.Core.CreateRow(sourceLineNumbers, "WixBalBAFunctions");
+                                    row[0] = payloadId;
                                 }
                                 break;
                             default:
@@ -132,7 +214,7 @@ namespace WixToolset.Extensions
                             case "Overridable":
                                 if (YesNoType.Yes == this.Core.GetAttributeYesNoValue(sourceLineNumbers, attribute))
                                 {
-                                    Row row = this.Core.CreateRow(sourceLineNumbers, "WixStdbaOverridableVariable");
+                                    row = this.Core.CreateRow(sourceLineNumbers, "WixStdbaOverridableVariable");
                                     row[0] = variableName;
                                 }
                                 break;
@@ -212,6 +294,7 @@ namespace WixToolset.Extensions
             string launchTargetElevatedId = null;
             string launchArguments = null;
             YesNoType launchHidden = YesNoType.NotSet;
+            string launchWorkingDir = null;
             string licenseFile = null;
             string licenseUrl = null;
             string logoFile = null;
@@ -222,6 +305,7 @@ namespace WixToolset.Extensions
             YesNoType suppressDowngradeFailure = YesNoType.NotSet;
             YesNoType suppressRepair = YesNoType.NotSet;
             YesNoType showVersion = YesNoType.NotSet;
+            YesNoType supportCacheOnly = YesNoType.NotSet;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -240,6 +324,9 @@ namespace WixToolset.Extensions
                             break;
                         case "LaunchHidden":
                             launchHidden = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "LaunchWorkingFolder":
+                            launchWorkingDir = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         case "LicenseFile":
                             licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
@@ -270,6 +357,9 @@ namespace WixToolset.Extensions
                             break;
                         case "ShowVersion":
                             showVersion = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
+                            break;
+                        case "SupportCacheOnly":
+                            supportCacheOnly = this.Core.GetAttributeYesNoValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.Core.UnexpectedAttribute(node, attrib);
@@ -323,6 +413,15 @@ namespace WixToolset.Extensions
                     row.Type = "string";
                 }
 
+
+                if (!String.IsNullOrEmpty(launchWorkingDir))
+                {
+                    WixBundleVariableRow row = (WixBundleVariableRow)this.Core.CreateRow(sourceLineNumbers, "Variable");
+                    row.Id = "LaunchWorkingFolder";
+                    row.Value = launchWorkingDir;
+                    row.Type = "string";
+                }
+
                 if (!String.IsNullOrEmpty(licenseFile))
                 {
                     WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
@@ -365,7 +464,7 @@ namespace WixToolset.Extensions
                     wixVariableRow.Value = localizationFile;
                 }
 
-                if (YesNoType.Yes == suppressOptionsUI || YesNoType.Yes == suppressDowngradeFailure || YesNoType.Yes == suppressRepair || YesNoType.Yes == showVersion)
+                if (YesNoType.Yes == suppressOptionsUI || YesNoType.Yes == suppressDowngradeFailure || YesNoType.Yes == suppressRepair || YesNoType.Yes == showVersion || YesNoType.Yes == supportCacheOnly)
                 {
                     Row row = this.Core.CreateRow(sourceLineNumbers, "WixStdbaOptions");
                     if (YesNoType.Yes == suppressOptionsUI)
@@ -387,6 +486,11 @@ namespace WixToolset.Extensions
                     {
                         row[3] = 1;
                     }
+
+                    if (YesNoType.Yes == supportCacheOnly)
+                    {
+                        row[4] = 1;
+                    }
                 }
             }
         }
@@ -398,12 +502,9 @@ namespace WixToolset.Extensions
         private void ParseWixManagedBootstrapperApplicationHostElement(XElement node)
         {
             SourceLineNumber sourceLineNumbers = Preprocessor.GetSourceLineNumbers(node);
-            string licenseFile = null;
-            string licenseUrl = null;
             string logoFile = null;
             string themeFile = null;
             string localizationFile = null;
-            string netFxPackageId = null;
 
             foreach (XAttribute attrib in node.Attributes())
             {
@@ -411,12 +512,6 @@ namespace WixToolset.Extensions
                 {
                     switch (attrib.Name.LocalName)
                     {
-                        case "LicenseFile":
-                            licenseFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            break;
-                        case "LicenseUrl":
-                            licenseUrl = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            break;
                         case "LogoFile":
                             logoFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
@@ -425,9 +520,6 @@ namespace WixToolset.Extensions
                             break;
                         case "LocalizationFile":
                             localizationFile = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
-                            break;
-                        case "NetFxPackageId":
-                            netFxPackageId = this.Core.GetAttributeValue(sourceLineNumbers, attrib);
                             break;
                         default:
                             this.Core.UnexpectedAttribute(node, attrib);
@@ -442,27 +534,8 @@ namespace WixToolset.Extensions
 
             this.Core.ParseForExtensionElements(node);
 
-            if (String.IsNullOrEmpty(licenseFile) == String.IsNullOrEmpty(licenseUrl))
-            {
-                this.Core.OnMessage(WixErrors.ExpectedAttribute(sourceLineNumbers, node.Name.LocalName, "LicenseFile", "LicenseUrl", true));
-            }
-
             if (!this.Core.EncounteredError)
             {
-                if (!String.IsNullOrEmpty(licenseFile))
-                {
-                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
-                    wixVariableRow.Id = "WixMbaPrereqLicenseRtf";
-                    wixVariableRow.Value = licenseFile;
-                }
-
-                if (!String.IsNullOrEmpty(licenseUrl))
-                {
-                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
-                    wixVariableRow.Id = "WixMbaPrereqLicenseUrl";
-                    wixVariableRow.Value = licenseUrl;
-                }
-
                 if (!String.IsNullOrEmpty(logoFile))
                 {
                     WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
@@ -482,13 +555,6 @@ namespace WixToolset.Extensions
                     WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
                     wixVariableRow.Id = "PreqbaThemeWxl";
                     wixVariableRow.Value = localizationFile;
-                }
-
-                if (!String.IsNullOrEmpty(netFxPackageId))
-                {
-                    WixVariableRow wixVariableRow = (WixVariableRow)this.Core.CreateRow(sourceLineNumbers, "WixVariable");
-                    wixVariableRow.Id = "WixMbaPrereqPackageId";
-                    wixVariableRow.Value = netFxPackageId;
                 }
             }
         }

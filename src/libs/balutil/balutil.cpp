@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="balutil.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Bootstrapper Application Layer utility library.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -26,6 +15,31 @@ DAPI_(void) BalInitialize(
 
     ReleaseObject(vpEngine);
     vpEngine = pEngine;
+}
+
+DAPI_(HRESULT) BalInitializeFromCreateArgs(
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __out_opt IBootstrapperEngine** ppEngine
+    )
+{
+    HRESULT hr = S_OK;
+    IBootstrapperEngine* pEngine = NULL;
+
+    hr = BalBootstrapperEngineCreate(pArgs->pfnBootstrapperEngineProc, pArgs->pvBootstrapperEngineProcContext, &pEngine);
+    ExitOnFailure(hr, "Failed to create BalBootstrapperEngine.");
+
+    BalInitialize(pEngine);
+
+    if (ppEngine)
+    {
+        *ppEngine = pEngine;
+    }
+    pEngine = NULL;
+
+LExit:
+    ReleaseObject(pEngine);
+
+    return hr;
 }
 
 
@@ -51,6 +65,26 @@ DAPI_(HRESULT) BalManifestLoad(
 
 LExit:
     ReleaseStr(sczPath);
+    return hr;
+}
+
+
+DAPI_(HRESULT) BalEvaluateCondition(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->EvaluateCondition(wzCondition, pf);
+
+LExit:
     return hr;
 }
 
@@ -113,6 +147,26 @@ LExit:
 }
 
 
+DAPI_(HRESULT) BalSetNumericVariable(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->SetVariableNumeric(wzVariable, llValue);
+
+LExit:
+    return hr;
+}
+
+
 DAPI_(BOOL) BalStringVariableExists(
     __in_z LPCWSTR wzVariable
     )
@@ -164,6 +218,25 @@ DAPI_(HRESULT) BalGetStringVariable(
 
         hr = vpEngine->GetVariableString(wzVariable, *psczValue, &cch);
     }
+
+LExit:
+    return hr;
+}
+
+DAPI_(HRESULT) BalSetStringVariable(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue
+    )
+{
+    HRESULT hr = S_OK;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    hr = vpEngine->SetVariableString(wzVariable, wzValue);
 
 LExit:
     return hr;
@@ -234,5 +307,76 @@ DAPIV_(HRESULT) BalLogError(
 LExit:
     ReleaseStr(sczMessage);
     ReleaseStr(sczFormattedAnsi);
+    return hr;
+}
+
+DAPIV_(HRESULT) BalLogId(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    ...
+    )
+{
+    HRESULT hr = S_OK;
+    va_list args;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    va_start(args, hModule);
+    hr = BalLogIdArgs(level, dwLogId, hModule, args);
+    va_end(args);
+
+LExit:
+    return hr;
+}
+
+DAPI_(HRESULT) BalLogIdArgs(
+    __in BOOTSTRAPPER_LOG_LEVEL level,
+    __in DWORD dwLogId,
+    __in HMODULE hModule,
+    __in va_list args
+    )
+{
+
+    HRESULT hr = S_OK;
+    LPWSTR pwz = NULL;
+    DWORD cch = 0;
+
+    if (!vpEngine)
+    {
+        hr = E_POINTER;
+        ExitOnRootFailure(hr, "BalInitialize() must be called first.");
+    }
+
+    // Get the string for the id.
+#pragma prefast(push)
+#pragma prefast(disable:25028)
+#pragma prefast(disable:25068)
+    cch = ::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE,
+        static_cast<LPCVOID>(hModule), dwLogId, 0, reinterpret_cast<LPWSTR>(&pwz), 0, &args);
+#pragma prefast(pop)
+
+    if (0 == cch)
+    {
+        ExitOnLastError(hr, "Failed to log id: %d", dwLogId);
+    }
+
+    if (2 <= cch && L'\r' == pwz[cch - 2] && L'\n' == pwz[cch - 1])
+    {
+        pwz[cch - 2] = L'\0'; // remove newline from message table.
+    }
+
+    hr = vpEngine->Log(level, pwz);
+
+LExit:
+    if (pwz)
+    {
+        ::LocalFree(pwz);
+    }
+
     return hr;
 }

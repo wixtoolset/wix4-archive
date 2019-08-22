@@ -1,17 +1,5 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="plan.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: Core
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 
 #if defined(__cplusplus)
@@ -106,6 +94,22 @@ typedef struct _BURN_DEPENDENT_REGISTRATION_ACTION
     LPWSTR sczDependentProviderKey;
 } BURN_DEPENDENT_REGISTRATION_ACTION;
 
+typedef struct _BURN_CACHE_CONTAINER_PROGRESS
+{
+    LPWSTR wzId;
+    DWORD iIndex;
+    BOOL fCachedDuringApply;
+    BURN_CONTAINER* pContainer;
+} BURN_CACHE_CONTAINER_PROGRESS;
+
+typedef struct _BURN_CACHE_PAYLOAD_PROGRESS
+{
+    LPWSTR wzId;
+    DWORD iIndex;
+    BOOL fCachedDuringApply;
+    BURN_PAYLOAD* pPayload;
+} BURN_CACHE_PAYLOAD_PROGRESS;
+
 typedef struct _BURN_CACHE_ACTION
 {
     BURN_CACHE_ACTION_TYPE type;
@@ -145,12 +149,12 @@ typedef struct _BURN_CACHE_ACTION
         struct
         {
             BURN_CONTAINER* pContainer;
+            DWORD iProgress;
             LPWSTR sczUnverifiedPath;
         } resolveContainer;
         struct
         {
             BURN_CONTAINER* pContainer;
-            DWORD64 qwTotalExtractSize;
             DWORD iSkipUntilAcquiredByAction;
             LPWSTR sczContainerUnverifiedPath;
 
@@ -161,6 +165,7 @@ typedef struct _BURN_CACHE_ACTION
         {
             BURN_PACKAGE* pPackage;
             BURN_CONTAINER* pContainer;
+            DWORD iProgress;
             DWORD iTryAgainAction;
             DWORD cTryAgainAttempts;
             LPWSTR sczLayoutDirectory;
@@ -171,12 +176,14 @@ typedef struct _BURN_CACHE_ACTION
         {
             BURN_PACKAGE* pPackage;
             BURN_PAYLOAD* pPayload;
+            DWORD iProgress;
             LPWSTR sczUnverifiedPath;
         } resolvePayload;
         struct
         {
             BURN_PACKAGE* pPackage;
             BURN_PAYLOAD* pPayload;
+            DWORD iProgress;
             DWORD iTryAgainAction;
             DWORD cTryAgainAttempts;
             LPWSTR sczUnverifiedPath;
@@ -186,6 +193,7 @@ typedef struct _BURN_CACHE_ACTION
         {
             BURN_PACKAGE* pPackage;
             BURN_PAYLOAD* pPayload;
+            DWORD iProgress;
             DWORD iTryAgainAction;
             DWORD cTryAgainAttempts;
             LPWSTR sczLayoutDirectory;
@@ -346,6 +354,14 @@ typedef struct _BURN_PLAN
 
     DEPENDENCY* rgPlannedProviders;
     UINT cPlannedProviders;
+
+    BURN_CACHE_CONTAINER_PROGRESS* rgContainerProgress;
+    DWORD cContainerProgress;
+    STRINGDICT_HANDLE shContainerProgress;
+
+    BURN_CACHE_PAYLOAD_PROGRESS* rgPayloadProgress;
+    DWORD cPayloadProgress;
+    STRINGDICT_HANDLE shPayloadProgress;
 } BURN_PLAN;
 
 
@@ -426,6 +442,14 @@ HRESULT PlanLayoutPackage(
     __in BURN_PACKAGE* pPackage,
     __in_z_opt LPCWSTR wzLayoutDirectory
     );
+HRESULT PlanCachePackage(
+    __in BOOL fPerMachine,
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __in BURN_PLAN* pPlan,
+    __in BURN_PACKAGE* pPackage,
+    __in BURN_VARIABLES* pVariables,
+    __out HANDLE* phSyncpointEvent
+    );
 HRESULT PlanExecutePackage(
     __in BOOL fPerMachine,
     __in BOOTSTRAPPER_DISPLAY display,
@@ -440,8 +464,7 @@ HRESULT PlanRelatedBundlesBegin(
     __in BURN_USER_EXPERIENCE* pUserExperience,
     __in BURN_REGISTRATION* pRegistration,
     __in BOOTSTRAPPER_RELATION_TYPE relationType,
-    __in BURN_PLAN* pPlan,
-    __in BURN_MODE mode
+    __in BURN_PLAN* pPlan
     );
 HRESULT PlanRelatedBundlesComplete(
     __in BURN_REGISTRATION* pRegistration,

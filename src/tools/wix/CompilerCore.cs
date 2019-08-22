@@ -1,11 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="CompilerCore.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset
 {
@@ -117,6 +110,7 @@ namespace WixToolset
                 "TemplateFolder",
                 "TerminalServer",
                 "UserLanguageID",
+                "UserUILanguageID",
                 "VersionMsi",
                 "VersionNT",
                 "VersionNT64",
@@ -131,10 +125,27 @@ namespace WixToolset
                 "WixBundleVersion",
             });
 
+        private static readonly List<string> DisallowedMsiProperties = new List<string>(
+            new string[] {
+                "ACTION",
+                "ADDLOCAL",
+                "ADDSOURCE",
+                "ADDDEFAULT",
+                "ADVERTISE",
+                "ALLUSERS",
+                "REBOOT",
+                "REINSTALL",
+                "REINSTALLMODE",
+                "REMOVE"
+            });
+
         private TableDefinitionCollection tableDefinitions;
         private Dictionary<XNamespace, ICompilerExtension> extensions;
         private Intermediate intermediate;
         private bool showPedanticMessages;
+
+        private HashSet<string> activeSectionInlinedDirectoryIds;
+        private HashSet<string> activeSectionSimpleReferences;
 
         /// <summary>
         /// Constructor for all compiler core.
@@ -638,9 +649,16 @@ namespace WixToolset
         {
             if (!this.EncounteredError)
             {
-                WixSimpleReferenceRow wixSimpleReferenceRow = (WixSimpleReferenceRow)this.CreateRow(sourceLineNumbers, "WixSimpleReference");
-                wixSimpleReferenceRow.TableName = tableName;
-                wixSimpleReferenceRow.PrimaryKeys = String.Join("/", primaryKeys);
+                string joinedKeys = String.Join("/", primaryKeys);
+                string id = String.Concat(tableName, ":", joinedKeys);
+
+                // If this simple reference hasn't been added to the active section already, add it.
+                if (this.activeSectionSimpleReferences.Add(id))
+                {
+                    WixSimpleReferenceRow wixSimpleReferenceRow = (WixSimpleReferenceRow)this.CreateRow(sourceLineNumbers, "WixSimpleReference");
+                    wixSimpleReferenceRow.TableName = tableName;
+                    wixSimpleReferenceRow.PrimaryKeys = joinedKeys;
+                }
             }
         }
 
@@ -1037,7 +1055,14 @@ namespace WixToolset
                 access = (AccessModifier)Enum.Parse(typeof(AccessModifier), match.Groups["access"].Value, true);
             }
 
-            return new Identifier(match.Groups["id"].Value, access);
+            value = match.Groups["id"].Value;
+
+            if (Common.IsIdentifier(value) && 72 < value.Length)
+            {
+                this.OnMessage(WixWarnings.IdentifierTooLong(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
+            }
+
+            return new Identifier(value, access);
         }
 
         /// <summary>
@@ -1204,6 +1229,14 @@ namespace WixToolset
                     else
                     {
                         this.OnMessage(WixErrors.IllegalLongFilename(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
+                    }
+                }
+                else if (allowRelative)
+                {
+                    string normalizedPath = value.Replace('\\', '/');
+                    if (normalizedPath.StartsWith("../", StringComparison.Ordinal) || normalizedPath.Contains("/../"))
+                    {
+                        this.OnMessage(WixErrors.PayloadMustBeRelativeToCache(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value));
                     }
                 }
                 else if (CompilerCore.IsAmbiguousFilename(value))
@@ -1393,6 +1426,29 @@ namespace WixToolset
                 {
                     string illegalValues = CompilerCore.CreateValueList(ValueListKind.Or, CompilerCore.BuiltinBundleVariables);
                     this.OnMessage(WixErrors.IllegalAttributeValueWithIllegalList(sourceLineNumbers, attribute.Parent.Name.LocalName, attribute.Name.LocalName, value, illegalValues));
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Gets an MsiProperty name value and displays an error for an illegal value.
+        /// </summary>
+        /// <param name="sourceLineNumbers">Source line information about the owner element.</param>
+        /// <param name="attribute">The attribute containing the value to get.</param>
+        /// <returns>The attribute's value.</returns>
+        [SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes")]
+        public string GetAttributeMsiPropertyNameValue(SourceLineNumber sourceLineNumbers, XAttribute attribute)
+        {
+            string value = this.GetAttributeValue(sourceLineNumbers, attribute);
+
+            if (0 < value.Length)
+            {
+                if (CompilerCore.DisallowedMsiProperties.Contains(value))
+                {
+                    string illegalValues = CompilerCore.CreateValueList(ValueListKind.Or, CompilerCore.DisallowedMsiProperties);
+                    this.OnMessage(WixErrors.DisallowedMsiProperty(sourceLineNumbers, value, illegalValues));
                 }
             }
 
@@ -1597,6 +1653,10 @@ namespace WixToolset
         internal Section CreateActiveSection(string id, SectionType type, int codepage)
         {
             this.ActiveSection = this.CreateSection(id, type, codepage);
+
+            this.activeSectionInlinedDirectoryIds = new HashSet<string>();
+            this.activeSectionSimpleReferences = new HashSet<string>();
+
             return this.ActiveSection;
         }
 
@@ -1701,9 +1761,17 @@ namespace WixToolset
                 }
             }
 
+            // For anonymous directories, create the identifier. If this identifier already exists in the
+            // active section, bail so we don't add duplicate anonymous directory rows (which are legal
+            // but bloat the intermediate and ultimately make the linker do "busy work").
             if (null == id)
             {
                 id = this.CreateIdentifier("dir", parentId, name, shortName, sourceName, shortSourceName);
+
+                if (!this.activeSectionInlinedDirectoryIds.Add(id.Id))
+                {
+                    return id;
+                }
             }
 
             Row row = this.CreateRow(sourceLineNumbers, "Directory", id);

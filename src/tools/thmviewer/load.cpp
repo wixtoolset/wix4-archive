@@ -1,22 +1,12 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="load.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Theme viewer load.
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
 struct LOAD_THREAD_CONTEXT
 {
     HWND hWnd;
-    LPWSTR sczThemePath;
+    LPCWSTR wzThemePath;
+    LPCWSTR wzWxlPath;
 
     HANDLE hInit;
 };
@@ -28,23 +18,21 @@ static DWORD WINAPI LoadThreadProc(
 
 extern "C" HRESULT LoadStart(
     __in_z LPCWSTR wzThemePath,
+    __in_z_opt LPCWSTR wzWxlPath,
     __in HWND hWnd,
     __out HANDLE* phThread
     )
 {
     HRESULT hr = S_OK;
     HANDLE rgHandles[2] = { };
-    LPWSTR sczThemePath = NULL;
     LOAD_THREAD_CONTEXT context = { };
 
     rgHandles[0] = ::CreateEventW(NULL, TRUE, FALSE, NULL);
     ExitOnNullWithLastError(rgHandles[0], hr, "Failed to create load init event.");
 
-    hr = StrAllocString(&sczThemePath, wzThemePath, 0);
-    ExitOnFailure(hr, "Failed to copy path to initial theme file.");
-
     context.hWnd = hWnd;
-    context.sczThemePath = sczThemePath;
+    context.wzThemePath = wzThemePath;
+    context.wzWxlPath = wzWxlPath;
     context.hInit = rgHandles[0];
 
     rgHandles[1] = ::CreateThread(NULL, 0, LoadThreadProc, &context, 0, NULL);
@@ -54,12 +42,10 @@ extern "C" HRESULT LoadStart(
 
     *phThread = rgHandles[1];
     rgHandles[1] = NULL;
-    sczThemePath = NULL;
 
 LExit:
     ReleaseHandle(rgHandles[1]);
     ReleaseHandle(rgHandles[0]);
-    ReleaseStr(sczThemePath);
     return hr;
 }
 
@@ -69,15 +55,9 @@ static DWORD WINAPI LoadThreadProc(
     )
 {
     HRESULT hr = S_OK;
-
-    LOAD_THREAD_CONTEXT* pContext = static_cast<LOAD_THREAD_CONTEXT*>(pvContext);
-    LPWSTR sczThemePath = pContext->sczThemePath;
-    HWND hWnd = pContext->hWnd;
-
-    // We can signal the initialization event as soon as we have copied the context
-    // values into local variables.
-    ::SetEvent(pContext->hInit);
-
+    WIX_LOCALIZATION* pWixLoc = NULL;
+    LPWSTR sczThemePath = NULL;
+    LPWSTR sczWxlPath = NULL;
     BOOL fComInitialized = FALSE;
     HANDLE hDirectory = INVALID_HANDLE_VALUE;
     LPWSTR sczDirectory = NULL;
@@ -85,6 +65,22 @@ static DWORD WINAPI LoadThreadProc(
 
     THEME* pTheme = NULL;
     HANDLE_THEME* pHandle = NULL;
+
+    LOAD_THREAD_CONTEXT* pContext = static_cast<LOAD_THREAD_CONTEXT*>(pvContext);
+    HWND hWnd = pContext->hWnd;
+
+    hr = StrAllocString(&sczThemePath, pContext->wzThemePath, 0);
+    ExitOnFailure(hr, "Failed to copy path to initial theme file.");
+
+    if (pContext->wzWxlPath)
+    {
+        hr = StrAllocString(&sczWxlPath, pContext->wzWxlPath, 0);
+        ExitOnFailure(hr, "Failed to copy .wxl path to initial file.");
+    }
+
+    // We can signal the initialization event as soon as we have copied the context
+    // values into local variables.
+    ::SetEvent(pContext->hInit);
 
     hr = ::CoInitialize(NULL);
     ExitOnFailure(hr, "Failed to initialize COM on load thread.");
@@ -94,7 +90,7 @@ static DWORD WINAPI LoadThreadProc(
     hr = PathGetDirectory(sczThemePath, &sczDirectory);
     ExitOnFailure(hr, "Failed to get path directory.");
 
-     wzFileName = PathFile(sczThemePath);
+    wzFileName = PathFile(sczThemePath);
 
     hDirectory = ::CreateFileW(sczDirectory, FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
     if (INVALID_HANDLE_VALUE == hDirectory)
@@ -118,6 +114,15 @@ static DWORD WINAPI LoadThreadProc(
         }
         else
         {
+            if (sczWxlPath)
+            {
+                hr = LocLoadFromFile(sczWxlPath, &pWixLoc);
+                ExitOnFailure(hr, "Failed to load loc file from path: %ls", sczWxlPath);
+
+                hr = ThemeLocalize(pTheme, pWixLoc);
+                ExitOnFailure(hr, "Failed to localize theme: %ls", sczWxlPath);
+            }
+
             hr = AllocHandleTheme(pTheme, &pHandle);
             ExitOnFailure(hr, "Failed to allocate handle to theme");
 
@@ -165,9 +170,11 @@ LExit:
         ::CoUninitialize();
     }
 
+    LocFree(pWixLoc);
     ReleaseFileHandle(hDirectory);
     ReleaseStr(sczDirectory);
     ReleaseStr(sczThemePath);
+    ReleaseStr(sczWxlPath);
     return hr;
 }
 

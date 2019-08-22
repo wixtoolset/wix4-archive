@@ -1,17 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="database.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    All the details of where each database is stored, and what its format is
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,22 +17,29 @@ extern LPCWSTR wzArpPath;
 extern LPCWSTR wzApplicationsPath;
 extern LPCWSTR wzSqlCeDllPath;
 
+enum DATABASE_TYPE
+{
+    DATABASE_TYPE_LOCAL,
+    DATABASE_TYPE_REMOTE
+};
+
 enum USERTABLES
 {
     SUMMARY_DATA_TABLE = 0, // Only has 1 row - stores information global to this user's database
     PRODUCT_INDEX_TABLE = 1, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one user's DB, but isn't necessarily the same in another user's DB.
-    VALUE_INDEX_TABLE = 2, // Stores user data
-    VALUE_INDEX_HISTORY_TABLE = 3, // Stores user data history
-    BINARY_CONTENT_TABLE = 4, // Stores user blobs
+    PRODUCT_DISPLAY_NAME_TABLE = 2, // Associates a particular AppID and LCID combination with a displayable string.
+    VALUE_INDEX_TABLE = 3, // Stores user data
+    VALUE_INDEX_HISTORY_TABLE = 4, // Stores user data history
+    BINARY_CONTENT_TABLE = 5, // Stores user blobs
+    DATABASE_GUID_LIST_TABLE = 6, // Associates each database GUID with a unique ID
 
-    SHARED_TABLES_NUMBER = 5, // not an actual table, just represents the number of tables
+    // User-specific tables
+    DATABASE_INDEX_TABLE = 7, // Remembers databases you may want to connect to
+    USER_TABLES_NUMBER = 8, // not an actual table, just represents the number of tables
 
-    DATABASE_INDEX_TABLE = 5, // Remembers databases you may want to connect to
-
-    USER_TABLES_NUMBER = 6 // not an actual table, just represents the number of tables
+    // Remote-specific tables
+    REMOTE_TABLES_NUMBER = 7 // not an actual table, just represents the number of tables
 };
-
-// User column enums
 
 // User column enums
 enum PRODUCT_INDEX_COLUMN
@@ -54,17 +50,16 @@ enum PRODUCT_INDEX_COLUMN
     PRODUCT_PUBLICKEY = 3,
     PRODUCT_REGISTERED = 4,
     PRODUCT_IS_LEGACY = 5,
-    PRODUCT_LEGACY_SEQUENCE = 6,
-    PRODUCT_INDEX_COLUMNS = 7
+    PRODUCT_INDEX_COLUMNS = 6
 };
 
-enum ADMIN_PRODUCT_INDEX_COLUMN
+enum PRODUCT_DISPLAY_NAME_COLUMN
 {
-    ADMIN_PRODUCT_ID = 0,
-    ADMIN_PRODUCT_NAME = 1,
-    ADMIN_PRODUCT_VERSION = 2,
-    ADMIN_PRODUCT_PUBLICKEY = 3,
-    ADMIN_PRODUCT_INDEX_COLUMNS = 4
+    PRODUCT_DISPLAY_NAME_ID = 0,
+    PRODUCT_DISPLAY_NAME_APPID = 1,
+    PRODUCT_DISPLAY_NAME_LCID = 2,
+    PRODUCT_DISPLAY_NAME_NAME = 3,
+    PRODUCT_DISPLAY_NAME_COLUMNS = 4
 };
 
 // Columns used by both value index and value index history tables
@@ -97,7 +92,9 @@ enum VALUE_INDEX_COLUMN
 // Must start after VALUE_COMMON_COLUMN, these are the value history index specific columns
 enum VALUE_INDEX_HISTORY_COLUMN
 {
-    VALUE_INDEX_HISTORY_COLUMNS = 13
+    VALUE_HISTORY_DB_REFERENCES = 13,
+
+    VALUE_INDEX_HISTORY_COLUMNS = 14
 };
 
 enum COMPRESSION_FORMAT
@@ -132,10 +129,18 @@ enum DATABASE_INDEX_COLUMN
     DATABASE_INDEX_COLUMNS = 4
 };
 
+enum DATABASE_GUID_LIST_COLUMN
+{
+    DATABASE_GUID_LIST_ID = 0,
+    DATABASE_GUID_LIST_STRING = 1,
+    DATABASE_GUID_LIST_COLUMNS = 2,
+};
+
 enum ADMINTABLES
 {
     ADMIN_PRODUCT_INDEX_TABLE = 0, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one DB, but isn't necessarily the same in another DB.
-    ADMIN_TABLES_NUMBER = 1 // not an actual table, just represents the number of tables
+    ADMIN_PRODUCT_DISPLAY_NAME_TABLE = 1, // Associates a particular product name, version and public key with an ID number. This number is guaranteed unique within one DB, but isn't necessarily the same in another DB.
+    ADMIN_TABLES_NUMBER = 2 // not an actual table, just represents the number of tables
 };
 
 HRESULT DatabaseGetUserDir(
@@ -144,8 +149,8 @@ HRESULT DatabaseGetUserDir(
 HRESULT DatabaseGetUserPath(
     __out LPWSTR *psczDbFilePath
     );
-HRESULT DatabaseSetupUserSchema(
-    __in USERTABLES tableCount,
+HRESULT DatabaseSetupSchema(
+    __in DATABASE_TYPE dbType,
     __out SCE_DATABASE_SCHEMA *pdsSceSchema
     );
 HRESULT DatabaseGetAdminDir(

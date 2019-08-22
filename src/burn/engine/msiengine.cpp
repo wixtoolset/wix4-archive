@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="msiengine.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Module: MSI Engine
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -304,6 +293,13 @@ extern "C" HRESULT MsiEngineParsePropertiesFromXml(
                 ExitOnFailure(hr, "Failed to get @RollbackValue.");
             }
 
+            // @Condition
+            hr = XmlGetAttributeEx(pixnNode, L"Condition", &pProperty->sczCondition);
+            if (E_NOTFOUND != hr)
+            {
+                ExitOnFailure(hr, "Failed to get @Condition.");
+            }
+
             // prepare next iteration
             ReleaseNullObject(pixnNode);
         }
@@ -358,6 +354,7 @@ extern "C" void MsiEnginePackageUninitialize(
             ReleaseStr(pProperty->sczId);
             ReleaseStr(pProperty->sczValue);
             ReleaseStr(pProperty->sczRollbackValue);
+            ReleaseStr(pProperty->sczCondition);
         }
         MemFree(pPackage->Msi.rgProperties);
     }
@@ -414,7 +411,6 @@ extern "C" HRESULT MsiEngineDetectPackage(
     DWORD64 qwVersion = 0;
     UINT uLcid = 0;
     BOOL fPerMachine = FALSE;
-    int nResult = 0;
 
     // detect self by product code
     // TODO: what to do about MSIINSTALLCONTEXT_USERMANAGED?
@@ -440,14 +436,13 @@ extern "C" HRESULT MsiEngineDetectPackage(
             pPackage->currentState = BOOTSTRAPPER_PACKAGE_STATE_PRESENT;
         }
 
-        // report related MSI package to UX
+        // Report related MSI package to BA.
         if (BOOTSTRAPPER_RELATED_OPERATION_NONE != operation)
         {
             LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, pPackage->Msi.sczProductCode, LoggingPerMachineToString(pPackage->fPerMachine), LoggingVersionToString(pPackage->Msi.qwInstalledVersion), pPackage->Msi.dwLanguage, LoggingRelatedOperationToString(operation));
 
-            nResult = pUserExperience->pUserExperience->OnDetectRelatedMsiPackage(pPackage->sczId, pPackage->Msi.sczProductCode, pPackage->fPerMachine, pPackage->Msi.qwInstalledVersion, operation);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect related MSI package.");
+            hr = UserExperienceOnDetectRelatedMsiPackage(pUserExperience, pPackage->sczId, pPackage->Msi.sczUpgradeCode, pPackage->Msi.sczProductCode, pPackage->fPerMachine, pPackage->Msi.qwInstalledVersion, operation);
+            ExitOnRootFailure(hr, "BA aborted detect related MSI package.");
         }
     }
     else if (HRESULT_FROM_WIN32(ERROR_UNKNOWN_PRODUCT) == hr || HRESULT_FROM_WIN32(ERROR_UNKNOWN_PROPERTY) == hr) // package not present.
@@ -466,9 +461,8 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 {
                     LogId(REPORT_STANDARD, MSG_DETECTED_COMPATIBLE_PACKAGE_FROM_PROVIDER, pPackage->sczId, sczInstalledProviderKey, sczInstalledProductCode, sczInstalledVersion, pPackage->Msi.sczProductCode);
 
-                    nResult = pUserExperience->pUserExperience->OnDetectCompatiblePackage(pPackage->sczId, sczInstalledProductCode);
-                    hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-                    ExitOnRootFailure(hr, "UX aborted detect compatible MSI package.");
+                    hr = UserExperienceOnDetectCompatibleMsiPackage(pUserExperience, pPackage->sczId, sczInstalledProductCode, qwVersion);
+                    ExitOnRootFailure(hr, "BA aborted detect compatible MSI package.");
 
                     hr = StrAllocString(&pPackage->Msi.sczInstalledProductCode, sczInstalledProductCode, 0);
                     ExitOnFailure(hr, "Failed to copy the installed ProductCode to the package.");
@@ -614,10 +608,9 @@ extern "C" HRESULT MsiEngineDetectPackage(
 
             LogId(REPORT_STANDARD, MSG_DETECTED_RELATED_PACKAGE, wzProductCode, LoggingPerMachineToString(fPerMachine), LoggingVersionToString(qwVersion), uLcid, LoggingRelatedOperationToString(relatedMsiOperation));
 
-            // pass to UX
-            nResult = pUserExperience->pUserExperience->OnDetectRelatedMsiPackage(pPackage->sczId, wzProductCode, fPerMachine, qwVersion, relatedMsiOperation);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect related MSI package.");
+            // Pass to BA.
+            hr = UserExperienceOnDetectRelatedMsiPackage(pUserExperience, pPackage->sczId, pRelatedMsi->sczUpgradeCode, wzProductCode, fPerMachine, qwVersion, relatedMsiOperation);
+            ExitOnRootFailure(hr, "BA aborted detect related MSI package.");
         }
     }
 
@@ -664,10 +657,9 @@ extern "C" HRESULT MsiEngineDetectPackage(
                 ExitOnRootFailure(hr, "Invalid state value.");
             }
 
-            // pass to UX
-            nResult = pUserExperience->pUserExperience->OnDetectMsiFeature(pPackage->sczId, pFeature->sczId, pFeature->currentState);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted detect.");
+            // Pass to BA.
+            hr = UserExperienceOnDetectMsiFeature(pUserExperience, pPackage->sczId, pFeature->sczId, pFeature->currentState);
+            ExitOnRootFailure(hr, "BA aborted detect MSI feature.");
         }
     }
 
@@ -686,7 +678,8 @@ LExit:
 extern "C" HRESULT MsiEnginePlanCalculatePackage(
     __in BURN_PACKAGE* pPackage,
     __in BURN_VARIABLES* pVariables,
-    __in BURN_USER_EXPERIENCE* pUserExperience
+    __in BURN_USER_EXPERIENCE* pUserExperience,
+    __out BOOL* pfBARequestedCache
     )
 {
     Trace(REPORT_STANDARD, "Planning MSI package 0x%p", pPackage);
@@ -698,7 +691,7 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
     BOOTSTRAPPER_ACTION_STATE rollback = BOOTSTRAPPER_ACTION_STATE_NONE;
     BOOL fFeatureActionDelta = FALSE;
     BOOL fRollbackFeatureActionDelta = FALSE;
-    int nResult = 0;
+    BOOL fBARequestedCache = FALSE;
 
     if (pPackage->Msi.cFeatures)
     {
@@ -715,22 +708,21 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
             BOOTSTRAPPER_FEATURE_STATE featureRequestedState = BOOTSTRAPPER_FEATURE_STATE_UNKNOWN;
             BOOTSTRAPPER_FEATURE_STATE featureExpectedState = BOOTSTRAPPER_FEATURE_STATE_UNKNOWN;
 
-            // evaluate feature conditions
+            // Evaluate feature conditions.
             hr = EvaluateActionStateConditions(pVariables, pFeature->sczAddLocalCondition, pFeature->sczAddSourceCondition, pFeature->sczAdvertiseCondition, &defaultFeatureRequestedState);
             ExitOnFailure(hr, "Failed to evaluate requested state conditions.");
 
             hr = EvaluateActionStateConditions(pVariables, pFeature->sczRollbackAddLocalCondition, pFeature->sczRollbackAddSourceCondition, pFeature->sczRollbackAdvertiseCondition, &featureExpectedState);
             ExitOnFailure(hr, "Failed to evaluate expected state conditions.");
 
-            // Remember the default feature requested state so the engine doesn't get blamed for planning the wrong thing if the UX changes it.
+            // Remember the default feature requested state so the engine doesn't get blamed for planning the wrong thing if the BA changes it.
             featureRequestedState = defaultFeatureRequestedState;
 
-            // send MSI feature plan message to UX
-            nResult = pUserExperience->pUserExperience->OnPlanMsiFeature(pPackage->sczId, pFeature->sczId, &featureRequestedState);
-            hr = UserExperienceInterpretResult(pUserExperience, MB_OKCANCEL, nResult);
-            ExitOnRootFailure(hr, "UX aborted plan MSI feature.");
+            // Send plan MSI feature message to BA.
+            hr = UserExperienceOnPlanMsiFeature(pUserExperience, pPackage->sczId, pFeature->sczId, &featureRequestedState);
+            ExitOnRootFailure(hr, "BA aborted plan MSI feature.");
 
-            // calculate feature actions
+            // Calculate feature actions.
             hr = CalculateFeatureAction(pFeature->currentState, featureRequestedState, fRepairingPackage, &pFeature->execute, &fFeatureActionDelta);
             ExitOnFailure(hr, "Failed to calculate execute feature state.");
 
@@ -779,16 +771,37 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
         }
         break;
 
-    case BOOTSTRAPPER_PACKAGE_STATE_OBSOLETE: __fallthrough;
-    case BOOTSTRAPPER_PACKAGE_STATE_ABSENT: __fallthrough;
     case BOOTSTRAPPER_PACKAGE_STATE_CACHED:
-        if (BOOTSTRAPPER_REQUEST_STATE_PRESENT == pPackage->requested || BOOTSTRAPPER_REQUEST_STATE_REPAIR == pPackage->requested)
+        switch (pPackage->requested)
         {
+        case BOOTSTRAPPER_REQUEST_STATE_PRESENT: __fallthrough;
+        case BOOTSTRAPPER_REQUEST_STATE_REPAIR:
             execute = BOOTSTRAPPER_ACTION_STATE_INSTALL;
-        }
-        else
-        {
+            break;
+
+        default:
             execute = BOOTSTRAPPER_ACTION_STATE_NONE;
+            break;
+        }
+        break;
+
+    case BOOTSTRAPPER_PACKAGE_STATE_OBSOLETE: __fallthrough;
+    case BOOTSTRAPPER_PACKAGE_STATE_ABSENT:
+        switch (pPackage->requested)
+        {
+        case BOOTSTRAPPER_REQUEST_STATE_PRESENT: __fallthrough;
+        case BOOTSTRAPPER_REQUEST_STATE_REPAIR:
+            execute = BOOTSTRAPPER_ACTION_STATE_INSTALL;
+            break;
+
+        case BOOTSTRAPPER_REQUEST_STATE_CACHE:
+            execute = BOOTSTRAPPER_ACTION_STATE_NONE;
+            fBARequestedCache = TRUE;
+            break;
+
+        default:
+            execute = BOOTSTRAPPER_ACTION_STATE_NONE;
+            break;
         }
         break;
 
@@ -847,6 +860,11 @@ extern "C" HRESULT MsiEnginePlanCalculatePackage(
     // return values
     pPackage->execute = execute;
     pPackage->rollback = rollback;
+
+    if (pfBARequestedCache)
+    {
+        *pfBARequestedCache = fBARequestedCache;
+    }
 
 LExit:
     return hr;
@@ -1139,6 +1157,9 @@ extern "C" HRESULT MsiEngineExecutePackage(
         ExitOnFailure(hr, "Failed to build MSI path.");
     }
 
+    // Best effort to set the execute package action variable.
+    VariableSetNumeric(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_ACTION, pExecuteAction->msiPackage.action, TRUE);
+    
     // Wire up the external UI handler and logging.
     hr = WiuInitializeExternalUI(pfnMessageHandler, pExecuteAction->msiPackage.uiLevel, hwndParent, pvContext, fRollback, &context);
     ExitOnFailure(hr, "Failed to initialize external UI handler.");
@@ -1227,7 +1248,7 @@ extern "C" HRESULT MsiEngineExecutePackage(
         ExitOnFailure(hr, "Failed to add the list of dependencies to ignore to the properties.");
 
         hr = WiuInstallProduct(sczMsiPath, sczProperties, &restart);
-        ExitOnFailure(hr, "Failed to run maintanance mode for MSI package.");
+        ExitOnFailure(hr, "Failed to run maintenance mode for MSI package.");
         break;
 
     case BOOTSTRAPPER_ACTION_STATE_UNINSTALL:
@@ -1272,8 +1293,9 @@ LExit:
             break;
     }
 
-    // Best effort to clear the execute package cache folder variable.
+    // Best effort to clear the execute package cache folder and action variables.
     VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_CACHE_FOLDER, NULL, TRUE);
+    VariableSetString(pVariables, BURN_BUNDLE_EXECUTE_PACKAGE_ACTION, NULL, TRUE);
 
     return hr;
 }
@@ -1296,6 +1318,18 @@ extern "C" HRESULT MsiEngineConcatProperties(
     for (DWORD i = 0; i < cProperties; ++i)
     {
         BURN_MSIPROPERTY* pProperty = &rgProperties[i];
+
+        if (pProperty->sczCondition && *pProperty->sczCondition)
+        {
+            BOOL fCondition = FALSE;
+
+            hr = ConditionEvaluate(pVariables, pProperty->sczCondition, &fCondition);
+            if (FAILED(hr) || !fCondition)
+            {
+                LogId(REPORT_VERBOSE, MSG_MSI_PROPERTY_CONDITION_FAILED, pProperty->sczId, pProperty->sczCondition, LoggingTrueFalseToString(fCondition));
+                continue;
+            }
+        }
 
         // format property value
         if (fObfuscateHiddenVariables)

@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  <copyright file="bal.xsd" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
--->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
           xmlns:xse=" http://wixtoolset.org/schemas/XmlSchemaExtension"
          xmlns:html="http://www.w3.org/1999/xhtml"
@@ -94,6 +89,16 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="LaunchWorkingFolder" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        WixStdBA will use this working folder when launching the specified application.
+                        The string value can be formatted using Burn variables enclosed in brackets,
+                        to refer to installation directories and so forth.
+                        This attribute is ignored when the LaunchTargetElevatedId attribute is specified.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
             <xs:attribute name="LicenseFile" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>Source file of the RTF license file. Cannot be used simultaneously with LicenseUrl.</xs:documentation>
@@ -145,35 +150,13 @@
                     <xs:documentation>If set to "yes", the application version will be displayed on the UI.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="SupportCacheOnly" type="YesNoType">
+                <xs:annotation>
+                    <xs:documentation>If set to "yes", the bundle can be pre-cached using the /cache command line argument.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
-    
-    <xs:attribute name="PrereqSupportPackage" type="YesNoType">
-        <xs:annotation>
-            <xs:documentation>
-                When set to "yes", the Prereq BA will plan the package to be installed if its InstallCondition is "true" or empty.
-            </xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="ExePackage" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MsiPackage" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MspPackage" />
-                <xse:parent namespace="http://schemas.microsoft.com/wix/2006/wi" ref="MsuPackage" />
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:attribute>
-
-    <xs:attribute name="Overridable" type="YesNoType">
-        <xs:annotation>
-            <xs:documentation>
-                When set to "yes", lets the user override the variable's default value by specifying another value on the command line,
-                in the form Variable=Value. Otherwise, WixStdBA won't overwrite the default value and will log 
-                "Ignoring attempt to set non-overridable variable: 'BAR'."
-            </xs:documentation>
-            <xs:appinfo>
-                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Variable" />
-            </xs:appinfo>
-        </xs:annotation>
-    </xs:attribute>
 
     <xs:element name="WixManagedBootstrapperApplicationHost">
         <xs:annotation>
@@ -185,16 +168,6 @@
             </xs:appinfo>
         </xs:annotation>
         <xs:complexType>
-            <xs:attribute name="LicenseFile" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>Source file of the RTF license file. Cannot be used simultaneously with LicenseUrl.</xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="LicenseUrl" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>URL target of the license link. Cannot be used simultaneously with LicenseFile.</xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
             <xs:attribute name="LogoFile" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>Source file of the logo graphic.</xs:documentation>
@@ -210,17 +183,76 @@
                     <xs:documentation>Source file of the theme localization .wxl file.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="NetFxPackageId" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        Identifier of the bundle package that contains the .NET Framework. ManagedBootstrapperApplicationHost uses
-                        this identifier to determine whether .NET needs to be installed before the managed bootstrapper application
-                        can be launched.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
+
+    <xs:attribute name="BAFunctions" type="YesNoType">
+        <xs:annotation>
+            <xs:documentation>
+                When set to "yes", WixStdBA will load the DLL and work with it to handle BA messages.
+            </xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Payload" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="Overridable" type="YesNoType">
+        <xs:annotation>
+            <xs:documentation>
+                When set to "yes", lets the user override the variable's default value by specifying another value on the command line,
+                in the form Variable=Value. Otherwise, WixStdBA won't overwrite the default value and will log
+                "Ignoring attempt to set non-overridable variable: 'BAR'."
+            </xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="Variable" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="PrereqLicenseFile" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>
+                Source file of the RTF license file.
+                There may only be one package in the bundle that has either the PrereqLicenseFile attribute or the PrereqLicenseUrl attribute.
+            </xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="ExePackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsiPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MspPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsuPackage" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="PrereqLicenseUrl" type="xs:string">
+        <xs:annotation>
+            <xs:documentation>
+                URL target of the license link.
+                There may only be one package in the bundle that has either the PrereqLicenseFile attribute or the PrereqLicenseUrl attribute.
+            </xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="ExePackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsiPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MspPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsuPackage" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="PrereqPackage" type="YesNoType">
+        <xs:annotation>
+            <xs:documentation>
+                When set to "yes", the Prereq BA will plan the package to be installed if its InstallCondition is "true" or empty.
+            </xs:documentation>
+            <xs:appinfo>
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="ExePackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsiPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MspPackage" />
+                <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="MsuPackage" />
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:attribute>
 
     <xs:simpleType name="YesNoType">
         <xs:annotation>

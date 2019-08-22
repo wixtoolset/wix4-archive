@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  <copyright file="util.xsd" company="Outercurve Foundation">
-    Copyright (c) 2004, Outercurve Foundation.
-    This software is released under Microsoft Reciprocal License (MS-RL).
-    The license and further copyright text can be found in the file
-    LICENSE.TXT at the root directory of the distribution.
-  </copyright>
--->
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
 <xs:schema xmlns:html="http://www.w3.org/1999/xhtml"
            xmlns:wix="http://wixtoolset.org/schemas/v4/wxs"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -461,6 +456,27 @@
       </xs:attribute>
     </xs:complexType>
   </xs:element>
+  <xs:element name="FormatFile">
+    <xs:annotation>
+      <xs:appinfo>
+        <xse:parent namespace="http://wixtoolset.org/schemas/v4/wxs" ref="File" />
+      </xs:appinfo>
+      <xs:documentation>
+        Formats a file's contents at install time. The contents are formatted according to the rules of the
+        <html:a href="http://msdn.microsoft.com/library/aa368609.aspx" target="_blank">Formatted</html:a> data type.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="BinaryKey" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The id of a Binary row that contains a copy of the file. The file in the Binary table overwrites whatever
+          file is installed by the parent component.
+        </xs:documentation>
+      </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
   <xs:element name="Group">
     <xs:annotation>
       <xs:appinfo>
@@ -556,6 +572,22 @@
             </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="IconFile" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation>
+            Icon file that should be displayed. Note that this is a formatted field, so you can use
+            [#fileId] syntax to refer to a file being installed (using the file:
+            protocol).
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="IconIndex" type="xs:integer" use="optional">
+        <xs:annotation>
+          <xs:documentation>
+            Index of the icon being referenced
+          </xs:documentation>
+        </xs:annotation>
       </xs:attribute>
     </xs:complexType>
   </xs:element>

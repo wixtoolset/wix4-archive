@@ -1,16 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="ui.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    UI-related helper functions
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -221,6 +209,9 @@ HRESULT UISetListViewToProductEnum(
     DWORD dwCount = 0;
     DWORD dwListViewRowCount;
     DWORD dwInsertImage = 0;
+    DWORD dwDisplayNameToDisplay = DWORD_MAX;
+    DISPLAY_NAME *rgDisplayNames = NULL;
+    DWORD cDisplayNames = 0;
     LPCWSTR wzText = NULL;
 
     dwListViewRowCount = ListView_GetItemCount(hwnd);
@@ -242,8 +233,22 @@ HRESULT UISetListViewToProductEnum(
     dwInsertIndex = 0;
     for (DWORD i = 0; i < dwCount; ++i)
     {
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
-        ExitOnFailure(hr, "Failed to read product name from enum");
+        hr = CfgEnumReadDisplayNameArray(cehProducts, i, &rgDisplayNames, &cDisplayNames);
+        ExitOnFailure(hr, "Failed to read display names from enumeration");
+
+        hr = UISelectBestLCIDToDisplay(rgDisplayNames, cDisplayNames, &dwDisplayNameToDisplay);
+        if (FAILED(hr))
+        {
+            hr = S_OK;
+
+            // Fallback to regular product id
+            hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PRODUCTNAME, &wzText);
+            ExitOnFailure(hr, "Failed to read product name from enum");
+        }
+        else
+        {
+            wzText = rgDisplayNames[dwDisplayNameToDisplay].sczName;
+        }
 
 #pragma prefast(push)
 #pragma prefast(disable:26007)
@@ -274,18 +279,6 @@ HRESULT UISetListViewToProductEnum(
             hr = UIListViewSetItem(hwnd, dwInsertIndex, wzText, i, dwInsertImage);
             ExitOnFailure(hr, "Failed to set product in listview control");
         }
-
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_VERSION, &wzText);
-        ExitOnFailure(hr, "Failed to read product version from enum");
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, wzText);
-        ExitOnFailure(hr, "Failed to set version as listview subitem");
-
-        hr = CfgEnumReadString(cehProducts, i, ENUM_DATA_PUBLICKEY, &wzText);
-        ExitOnFailure(hr, "Failed to read product public key from enum");
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
-        ExitOnFailure(hr, "Failed to set public key as listview subitem");
 
         ++dwInsertIndex;
     }
@@ -387,7 +380,7 @@ HRESULT UISetListViewToValueEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    if (!GetTimeZoneInformation(&tzi))
+    if (!::GetTimeZoneInformation(&tzi))
     {
         ExitWithLastError(hr, "Failed to get time zone information");
     }
@@ -511,6 +504,7 @@ HRESULT UISetListViewToValueHistoryEnum(
     DWORD dwValue = 0;
     DWORD64 qwValue = 0;
     BOOL fValue = FALSE;
+    DWORD dwEnumReadIndex;
     DWORD dwInsertIndex;
     LPCWSTR wzText = NULL;
     LPWSTR sczText = NULL;
@@ -535,7 +529,7 @@ HRESULT UISetListViewToValueHistoryEnum(
         ExitFunction1(hr = S_OK);
     }
 
-    if (!GetTimeZoneInformation(&tzi))
+    if (!::GetTimeZoneInformation(&tzi))
     {
         ExitWithLastError(hr, "Failed to get time zone information");
     }
@@ -543,9 +537,10 @@ HRESULT UISetListViewToValueHistoryEnum(
     UIListViewTrimSize(hwnd, dwCount);
     for (DWORD i = 0; i < dwCount; ++i)
     {
+        dwEnumReadIndex = dwCount - i - 1;
         dwInsertIndex = i;
 
-        hr = CfgEnumReadDataType(cehValueHistory, i, ENUM_DATA_VALUETYPE, &cvType);
+        hr = CfgEnumReadDataType(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUETYPE, &cvType);
         ExitOnFailure(hr, "Failed to read type of value from value history enumeration");
 
         switch (cvType)
@@ -554,7 +549,7 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = L"";
             break;
         case VALUE_BLOB:
-            hr = CfgEnumReadDword(cehValueHistory, i, ENUM_DATA_BLOBSIZE, &dwValue);
+            hr = CfgEnumReadDword(cehValueHistory, dwEnumReadIndex, ENUM_DATA_BLOBSIZE, &dwValue);
             ExitOnFailure(hr, "Failed to read blob size from enumeration");
 
             hr = StrAllocFormatted(&sczText, L"(Size %u)", dwValue);
@@ -563,11 +558,11 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = sczText;
             break;
         case VALUE_STRING:
-            hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_VALUESTRING, &wzText);
+            hr = CfgEnumReadString(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUESTRING, &wzText);
             ExitOnFailure(hr, "Failed to read string value from value history enumeration");
             break;
         case VALUE_DWORD:
-            hr = CfgEnumReadDword(cehValueHistory, i, ENUM_DATA_VALUEDWORD, &dwValue);
+            hr = CfgEnumReadDword(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUEDWORD, &dwValue);
             ExitOnFailure(hr, "Failed to read dword value from value history enumeration");
 
             hr = StrAllocFormatted(&sczText, L"%u", dwValue);
@@ -576,7 +571,7 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = sczText;
             break;
         case VALUE_QWORD:
-            hr = CfgEnumReadQword(cehValueHistory, i, ENUM_DATA_VALUEQWORD, &qwValue);
+            hr = CfgEnumReadQword(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUEQWORD, &qwValue);
             ExitOnFailure(hr, "Failed to read qword value from value history enumeration");
 
             hr = StrAllocFormatted(&sczText, L"%I64u", qwValue);
@@ -585,7 +580,7 @@ HRESULT UISetListViewToValueHistoryEnum(
             wzText = sczText;
             break;
         case VALUE_BOOL:
-            hr = CfgEnumReadBool(cehValueHistory, i, ENUM_DATA_VALUEBOOL, &fValue);
+            hr = CfgEnumReadBool(cehValueHistory, dwEnumReadIndex, ENUM_DATA_VALUEBOOL, &fValue);
             ExitOnFailure(hr, "Failed to read bool value from value history enumeration");
 
             wzText = fValue ? L"True" : L"False";
@@ -606,13 +601,21 @@ HRESULT UISetListViewToValueHistoryEnum(
         hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, wzText);
         ExitOnFailure(hr, "Failed to insert value name into listview control");
 
-        hr = CfgEnumReadString(cehValueHistory, i, ENUM_DATA_BY, &wzText);
+        hr = CfgEnumReadString(cehValueHistory, dwEnumReadIndex, ENUM_DATA_DATABASE_REFERENCES, &wzText);
+        ExitOnFailure(hr, "Failed to read database references from value history enumeration");
+
+        // Raw string is not very useful, just list whether it is referenced by someone or not
+        fValue = (wzText && *wzText != L'\0');
+        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, fValue ? L"Yes" : L"No");
+        ExitOnFailure(hr, "Failed to insert value name into listview control");
+
+        hr = CfgEnumReadString(cehValueHistory, dwEnumReadIndex, ENUM_DATA_BY, &wzText);
         ExitOnFailure(hr, "Failed to read by string from value history enumeration");
 
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, wzText);
+        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 3, wzText);
         ExitOnFailure(hr, "Failed to set value as listview subitem");
 
-        hr = CfgEnumReadSystemTime(cehValueHistory, i, ENUM_DATA_WHEN, &st);
+        hr = CfgEnumReadSystemTime(cehValueHistory, dwEnumReadIndex, ENUM_DATA_WHEN, &st);
         ExitOnFailure(hr, "Failed to read when string from value history enumeration");
 
         if (!SystemTimeToTzSpecificLocalTime(&tzi, &st, &stLocal))
@@ -623,7 +626,7 @@ HRESULT UISetListViewToValueHistoryEnum(
         hr = TimeSystemToDateTimeString(&sczText, &stLocal, LOCALE_USER_DEFAULT);
         ExitOnFailure(hr, "Failed to convert value history time to text");
 
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 3, sczText);
+        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 4, sczText);
         ExitOnFailure(hr, "Failed to set value as listview subitem");
     }
 
@@ -838,6 +841,8 @@ HRESULT UISetListViewToProductConflictArray(
 {
     HRESULT hr = S_OK;
     DWORD dwInsertIndex;
+    DWORD dwDisplayNameToDisplay = DWORD_MAX;
+    LPCWSTR wzText = NULL;
     RESOLUTION_CHOICE rcChoice;
     BOOL fConsistentChoice;
 
@@ -891,7 +896,20 @@ HRESULT UISetListViewToProductConflictArray(
             }
         }
 
-        hr = UIListViewInsertItem(hwnd, &dwInsertIndex, pcpProductConflict[i].sczProductName, i, 0);
+        hr = UISelectBestLCIDToDisplay(pcpProductConflict[i].rgDisplayNames, pcpProductConflict[i].cDisplayNames, &dwDisplayNameToDisplay);
+        if (FAILED(hr))
+        {
+            hr = S_OK;
+
+            // Fallback to regular product id
+            wzText = pcpProductConflict[i].sczProductName;
+        }
+        else
+        {
+            wzText = pcpProductConflict[i].rgDisplayNames[dwDisplayNameToDisplay].sczName;
+        }
+
+        hr = UIListViewInsertItem(hwnd, &dwInsertIndex, wzText, i, 0);
         ExitOnFailure(hr, "Failed to insert value name into listview control");
 
         if (!fConsistentChoice)
@@ -904,9 +922,6 @@ HRESULT UISetListViewToProductConflictArray(
             hr = UIListViewSetItemText(hwnd, dwInsertIndex, 1, UIGetResolutionText(rcChoice, wzDatabaseName));
             ExitOnFailure(hr, "Failed to set text in column 1 of listview control");
         }
-
-        hr = UIListViewSetItemText(hwnd, dwInsertIndex, 2, pcpProductConflict[i].sczVersion);
-        ExitOnFailure(hr, "Failed to insert value into listview control");
     }
 
 LExit:
@@ -1062,6 +1077,31 @@ HRESULT UIMessageBoxDisplayError(
     ReleaseStr(sczDisplayMessage);
 
     return hr;
+}
+
+HRESULT UISelectBestLCIDToDisplay(
+    __in DISPLAY_NAME *rgDisplayNames,
+    __in DWORD cDisplayNames,
+    __out DWORD *pdwIndex
+    )
+{
+    // Try to select English for now. TODO: figure out what language the user would like to display, and prefer that, with appropriate fallbacks if unavailable.
+    for (DWORD i = 0; i < cDisplayNames; ++i)
+    {
+        if (1033 == rgDisplayNames[i].dwLCID)
+        {
+            *pdwIndex = i;
+            return S_OK;
+        }
+    }
+
+    if (0 < cDisplayNames)
+    {
+        *pdwIndex = 0;
+        return S_OK;
+    }
+
+    return E_NOTFOUND;
 }
 
 static HRESULT ListViewSort(

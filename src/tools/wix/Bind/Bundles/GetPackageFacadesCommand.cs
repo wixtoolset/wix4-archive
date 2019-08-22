@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="GetPackageFacadesCommand.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind.Bundles
 {
@@ -31,7 +24,7 @@ namespace WixToolset.Bind.Bundles
         {
             RowDictionary<WixBundleExePackageRow> exePackages = new RowDictionary<WixBundleExePackageRow>(this.ExePackageTable);
             RowDictionary<WixBundleMsiPackageRow> msiPackages = new RowDictionary<WixBundleMsiPackageRow>(this.MsiPackageTable);
-            RowDictionary<BundleMspPackageRow> mspPackages = new RowDictionary<BundleMspPackageRow>(this.MspPackageTable);
+            RowDictionary<WixBundleMspPackageRow> mspPackages = new RowDictionary<WixBundleMspPackageRow>(this.MspPackageTable);
             RowDictionary<WixBundleMsuPackageRow> msuPackages = new RowDictionary<WixBundleMsuPackageRow>(this.MsuPackageTable);
 
             Dictionary<string, PackageFacade> facades = new Dictionary<string, PackageFacade>(this.PackageTable.Rows.Count);

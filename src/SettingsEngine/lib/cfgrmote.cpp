@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="cfgrmote.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Settings engine API (functions for connecting to non-local databases)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -256,6 +245,8 @@ extern "C" HRESULT CFGAPI CfgRemoteDisconnect(
     pcdb->dwAppID = DWORD_MAX;
     pcdb->fProductSet = FALSE;
     ReleaseStr(pcdb->sczGuid);
+    ReleaseStr(pcdb->sczGuidLocalInRemoteKey);
+    ReleaseStr(pcdb->sczGuidRemoteInLocalKey);
     ReleaseStr(pcdb->sczOriginalDbPath);
     ReleaseStr(pcdb->sczOriginalDbDir);
     ReleaseStr(pcdb->sczDbPath);
@@ -367,7 +358,7 @@ static HRESULT RemoteDatabaseInitialize(
     }
 
     // Setup expected schema in memory
-    hr = DatabaseSetupUserSchema(SHARED_TABLES_NUMBER, &pcdb->dsSceDb);
+    hr = DatabaseSetupSchema(DATABASE_TYPE_REMOTE, &pcdb->dsSceDb);
     ExitOnFailure(hr, "Failed to setup user database schema structure in memory");
 
     // Open the database (or create if it doesn't exist)
@@ -378,6 +369,12 @@ static HRESULT RemoteDatabaseInitialize(
 
         hr = HandleEnsureSummaryDataTable(pcdb);
         ExitOnFailure(hr, "Failed to ensure remote database summary data");
+
+        hr = GuidListEnsure(pcdbLocal, pcdb->sczGuid, &pcdb->sczGuidRemoteInLocalKey);
+        ExitOnFailure(hr, "Failed to ensure remote database is in local database's guid table");
+
+        hr = GuidListEnsure(pcdb, pcdbLocal->sczGuid, &pcdb->sczGuidLocalInRemoteKey);
+        ExitOnFailure(hr, "Failed to ensure local database is in remote database's guid table");
 
         hr = ProductSet(pcdb, wzCfgProductId, wzCfgVersion, wzCfgPublicKey, FALSE, NULL);
         ExitOnFailure(hr, "Failed to set product to cfg product id");

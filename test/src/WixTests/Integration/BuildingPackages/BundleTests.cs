@@ -1,14 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="BundleTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>
-//     Base class for Bundle Tests
-// </summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Integration.BuildingPackages.Bundle
 {
@@ -29,9 +19,9 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
     {
         protected static readonly string BundleSharedFilesDirectory = Environment.ExpandEnvironmentVariables(@"%WIX_ROOT%\test\data\Integration\BuildingPackages\Bundle\Files");
         protected static readonly string MsiPackageFile = Path.Combine(BundleTests.BundleSharedFilesDirectory, @"Packages\MsiPackage.msi");
-        protected static readonly string MsiPackageProductCode = "{738D02BF-E231-4370-8209-E9FD4E1BE2A3}";
+        protected static readonly string MsiPackageProductCode = "{633DDFC0-47F5-4ACF-8438-4CEAAE477FC1}";
         protected static readonly string MspPackageFile = Path.Combine(BundleTests.BundleSharedFilesDirectory, @"Packages\MspPackage.msp");
-        protected static readonly string MspPackagePatchCode = "{2DFFC5F8-9B0F-4510-92AE-FA3D38B8A47D}";
+        protected static readonly string MspPackagePatchCode = "{CE9141E2-E628-4327-ACF7-72EF69860FA7}";
         protected static readonly string MsuPackageFile = Path.Combine(BundleTests.BundleSharedFilesDirectory, @"Packages\MsuPackage.msu");
         protected static readonly string ExePackageFile = Path.Combine(BundleTests.BundleSharedFilesDirectory, @"Packages\ExePackage.exe");
 
@@ -94,7 +84,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.Bundle
             }
             else
             {
-                Assert.True(node.Attributes[attributeName] == null, string.Format("{0} @{1} was defined it was not expected.", node.Name, attributeName));
+                Assert.True(node.Attributes[attributeName] == null, string.Format("{0} @{1} was defined; it was not expected.", node.Name, attributeName));
             }
         }
 

@@ -1,17 +1,5 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="BurnUnitTest.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Base class for Burn Unit tests.
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 
 namespace Microsoft
@@ -28,43 +16,36 @@ namespace Bootstrapper
     using namespace WixTest;
     using namespace Xunit;
 
-    public ref class BurnUnitTest :
-        public WixTestBase,
-        public IDisposable
+    public ref class BurnUnitTest : WixTestBase, IUseFixture<BurnTestFixture^>
     {
-    public: 
-        // Run code before running the first test in the class
+    public:
         BurnUnitTest()
         {
-            HRESULT hr = XmlInitialize();
-            TestThrowOnFailure(hr, L"Failed to initialize XML support.");
-
-            hr = RegInitialize();
-            TestThrowOnFailure(hr, L"Failed to initialize Regutil.");
         }
 
-        // Run code after all tests in a class have run
-        ~BurnUnitTest()
+        virtual void TestInitialize() override
         {
-            XmlUninitialize();
-            RegUninitialize();
-        }
+            WixTestBase::TestInitialize();
 
-        void TestInitialize() override
-        {
             HRESULT hr = S_OK;
 
             LogInitialize(::GetModuleHandleW(NULL));
 
             hr = LogOpen(NULL, L"BurnUnitTest", NULL, L"txt", FALSE, FALSE, NULL);
             TestThrowOnFailure(hr, L"Failed to open log.");
-
-            PlatformInitialize();
         }
 
-        void TestUninitialize() override
+        virtual void TestUninitialize() override
         {
             LogUninitialize(FALSE);
+
+            WixTestBase::TestUninitialize();
+        }
+
+        virtual void SetFixture(BurnTestFixture^ fixture)
+        {
+            // Don't care about the fixture, just need it to be created and disposed.
+            UNREFERENCED_PARAMETER(fixture);
         }
     }; 
 }

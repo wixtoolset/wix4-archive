@@ -1,16 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="cfgleg.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-//    Legacy settings engine API (these functions are NOT for legacy Apps -
-//           they are for apps that want to help manage user data for legacy apps)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -88,7 +76,7 @@ HRESULT CfgLegacyImportProductFromXMLFile(
     hr = ValueSetBlob(reinterpret_cast<BYTE *>(sczContent), lstrlenW(sczContent) * sizeof(WCHAR), FALSE, NULL, pcdb->sczGuid, &cvValue);
     ExitOnFailure(hr, "Failed to set manifest contents as string value in memory");
 
-    hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvValue, TRUE);
+    hr = ValueWrite(pcdb, pcdb->dwCfgAppID, sczManifestValueName, &cvValue, TRUE, NULL);
     ExitOnFailure(hr, "Failed to write manifest contents to database");
 
     hr = ProductSet(pcdb, product.sczProductId, wzLegacyVersion, wzLegacyPublicKey, FALSE, NULL);

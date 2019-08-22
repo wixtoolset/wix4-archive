@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="BindBundleCommand.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind
 {
@@ -198,6 +191,8 @@ namespace WixToolset.Bind
                             command.AuthoredPayloads = payloads;
                             command.Facade = facade;
                             command.Execute();
+
+                           // ? variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.ExePackage.Manufacturer);
                         }
                         break;
 
@@ -212,6 +207,17 @@ namespace WixToolset.Bind
                             command.PayloadTable = this.Output.Tables["WixBundlePayload"];
                             command.RelatedPackageTable = this.Output.EnsureTable(this.TableDefinitions["WixBundleRelatedPackage"]);
                             command.Execute();
+
+                            if (null != variableCache)
+                            {
+                                variableCache.Add(String.Concat("packageLanguage.", facade.Package.WixChainItemId), facade.MsiPackage.ProductLanguage.ToString());
+
+                                if (null != facade.MsiPackage.Manufacturer)
+                                {
+                                    variableCache.Add(String.Concat("packageManufacturer.", facade.Package.WixChainItemId), facade.MsiPackage.Manufacturer);
+                                }
+                            }
+
                         }
                         break;
 
@@ -516,6 +522,12 @@ namespace WixToolset.Bind
             string bundleTempPath = Path.Combine(this.TempFilesLocation, Path.GetFileName(this.OutputPath));
 
             Messaging.Instance.OnMessage(WixVerboses.GeneratingBundle(bundleTempPath, stubFile));
+
+            string bundleFilename = Path.GetFileName(this.OutputPath);
+            if ("setup.exe".Equals(bundleFilename, StringComparison.OrdinalIgnoreCase))
+            {
+                Messaging.Instance.OnMessage(WixErrors.InsecureBundleFilename(bundleFilename));
+            }
 
             FileTransfer bundleTransfer;
             if (FileTransfer.TryCreate(bundleTempPath, this.OutputPath, true, "Bundle", bundleRow.SourceLineNumbers, out bundleTransfer))

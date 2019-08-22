@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+
+<?ifndef Version?>
+<?define Version = 1.0.0.0?>
+<?endif?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <!-- Manufacturer="!(bind.packageManufacturer.PackageB)"  -->
+  <Bundle Name="~$(var.TestName) - Bundle B" Version="$(var.Version)" UpgradeCode="8CB79B2F-5EC5-4E2F-A474-F268D8F6FE6A" Manufacturer="!(bind.packageManufacturer.PackageB)">
+    <Log Prefix="~$(var.TestName)_BundleB"/>
+
+    <Variable Name="TestName" Value="$(var.TestName)" />
+    <Update Location="http://localhost:9999/wix4/BundleB/feed"/>
+    <BootstrapperApplicationRef Id='ManagedBootstrapperApplicationHost'>
+      <Payload Name='BootstrapperCore.config' SourceFile='!(bindpath.build)\TestBA.BootstrapperCore.config' />
+
+      <Payload SourceFile='!(bindpath.build)\TestBA.dll' />
+    </BootstrapperApplicationRef>
+    <WixVariable Id='WixMbaPrereqPackageId' Value='ignored' />
+    <WixVariable Id='WixMbaPrereqLicenseUrl' Value='ignored' />
+
+    <Chain>
+      <MsiPackage Id="PackageB" Name="~$(var.TestName)_PackageB.msi" Compressed="yes" SourceFile="!(bindpath.packageB)B.msi" Vital="yes"/>
+    </Chain>
+  </Bundle>
+</Wix>

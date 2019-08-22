@@ -1,15 +1,4 @@
-//-----------------------------------------------------------------------
-// <copyright file="InstallPackages.PackageTests.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// <summary>
-//     Tests for the Package element as it applies to the Product element.
-//     Summary Information and Compression are the main areas to test.
-// </summary>
-//-----------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixTest.Tests.Integration.BuildingPackages.InstallPackages
 {
@@ -165,7 +154,7 @@ namespace WixTest.Tests.Integration.BuildingPackages.InstallPackages
             Light light = new Light(candle);
             light.IgnoreExtraWixMessages = true;
             light.Run();
-            string wordcount = Verifier.GetMsiSummaryInformationProperty(light .OutputFile , Verifier.MsiSummaryInformationProperty.WordCount);
+            string wordcount = Verifier.GetMsiSummaryInformationProperty(light.OutputFile , Verifier.MsiSummaryInformationProperty.WordCount);
             byte adminImage;
             if (byte.TryParse(wordcount, out adminImage))
             {
@@ -180,7 +169,8 @@ namespace WixTest.Tests.Integration.BuildingPackages.InstallPackages
             }
         }
 
-        [NamedFact(Timeout = 3600000)]
+        [NamedFact]
+        //[NamedFact(Timeout = 3600000)]
         [Description("Verify that installer version can be set to any valid version")]
         [Priority(2)]
         [Trait("Bug Link", "https://sourceforge.net/tracker/?func=detail&aid=2990011&group_id=105970&atid=642714")]

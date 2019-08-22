@@ -1,17 +1,6 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="cfgapi.h" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-// 
-// <summary>
-//    Core settings engine API (functions for apps)
-// </summary>
-//-------------------------------------------------------------------------------------------------
-
 #pragma once
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,6 +56,7 @@ enum CFG_ENUM_DATA
     ENUM_DATA_BY,
     ENUM_DATA_FRIENDLY_NAME,
     ENUM_DATA_SYNC_BY_DEFAULT,
+    ENUM_DATA_DATABASE_REFERENCES,
     ENUM_DATA_PATH
 };
 
@@ -77,11 +67,20 @@ enum RESOLUTION_CHOICE
     RESOLUTION_REMOTE
 };
 
+struct DISPLAY_NAME
+{
+    LPWSTR sczName;
+    DWORD dwLCID;
+};
+
 struct CONFLICT_PRODUCT
 {
     LPWSTR sczProductName;
     LPWSTR sczVersion;
     LPWSTR sczPublicKey;
+
+    DISPLAY_NAME *rgDisplayNames;
+    DWORD cDisplayNames;
 
     // An enumeration just like what is returned from CfgEnumPastValues, but only contains conflicting values in local store
     CFG_ENUMERATION_HANDLE *rgcesValueEnumLocal;
@@ -326,6 +325,12 @@ HRESULT CFGAPI CfgEnumReadBinary(
     __in CFG_ENUM_DATA cedData,
     __deref_out_bcount(*piBuffer) BYTE** ppbBuffer,
     __inout SIZE_T* piBuffer
+    );
+HRESULT CFGAPI CfgEnumReadDisplayNameArray(
+    __in_bcount(CFG_ENUMERATION_HANDLE_BYTES) C_CFG_ENUMERATION_HANDLE cehHandle,
+    __in DWORD dwIndex,
+    __out DISPLAY_NAME **prgDisplayNames,
+    __out DWORD *pcDisplayNames
     );
 
 void CFGAPI CfgReleaseEnumeration(

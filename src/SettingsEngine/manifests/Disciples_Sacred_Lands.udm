@@ -3,6 +3,8 @@
     <Product Id="Disciples_Sacred_Lands">
         <Detect>
             <Arp DisplayName="Disciples Gold" InstallLocation="InstallDir"/>
+            <Arp DisplayName="Disciples: Sacred Lands Gold Edition" InstallLocation="InstallDir"/>
+            <Arp RegKeyName="Disciples: Sacred Lands Gold Edition" InstallLocation="InstallDir"/>
         </Detect>
 
         <Data>

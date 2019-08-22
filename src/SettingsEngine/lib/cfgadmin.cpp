@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="cfgadmin.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Core settings engine API (functions for apps related to global state)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -101,6 +90,8 @@ extern "C" HRESULT CfgAdminUninitialize(
         pcdb->dwAppID = DWORD_MAX;
         pcdb->fProductSet = FALSE;
         ReleaseStr(pcdb->sczGuid);
+        ReleaseStr(pcdb->sczGuidLocalInRemoteKey);
+        ReleaseStr(pcdb->sczGuidRemoteInLocalKey);
 
         if (!pcdb->fMissing)
         {
@@ -181,6 +172,12 @@ extern "C" HRESULT CfgAdminRegisterProduct(
 
         hr = SceSetColumnString(sceRow, PRODUCT_PUBLICKEY, sczLowPublicKey);
         ExitOnFailure(hr, "Failed to set publickey column");
+
+        hr = SceSetColumnBool(sceRow, PRODUCT_REGISTERED, TRUE);
+        ExitOnFailure(hr, "Failed to set registered column");
+
+        hr = SceSetColumnBool(sceRow, PRODUCT_IS_LEGACY, FALSE);
+        ExitOnFailure(hr, "Failed to set IsLegacy column");
 
         hr = SceFinishUpdate(sceRow);
         ExitOnFailure(hr, "Failed to finish update");

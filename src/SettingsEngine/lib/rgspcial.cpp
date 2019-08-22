@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="rgspcial.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions for Cfg Legacy API (for purposes of special registry value handling)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -233,7 +222,7 @@ static HRESULT RegSpecialValueReadFlags(
                 hr = ValueSetDelete(NULL, pcdb->sczGuid, &cvNewValue);
                 ExitOnFailure(hr, "Failed to initialize deleted value in memory");
 
-                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
+                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE, NULL);
                 ExitOnFailure(hr, "Failed to delete boolean value");
             }
             else
@@ -243,7 +232,7 @@ static HRESULT RegSpecialValueReadFlags(
                 hr = ValueSetBool(fNewValue, NULL, pcdb->sczGuid, &cvNewValue);
                 ExitOnFailure(hr, "Failed to initialize deleted value in memory");
 
-                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
+                hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE, NULL);
                 ExitOnFailure(hr, "Failed to set boolean value");
             }
         }
@@ -290,7 +279,7 @@ static HRESULT RegSpecialValueReadNonTypecasted(
         hr = ValueSetDword(dwValue, NULL, pcdb->sczGuid, &cvNewValue);
         ExitOnFailure(hr, "Failed to set dword value %ls in memory", sczCfgValueName);
 
-        hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, sczCfgValueName, &cvNewValue, TRUE, NULL);
         ExitOnFailure(hr, "Failed to set dword value: %ls", sczCfgValueName);
         break;
     case REG_NONE:
@@ -339,7 +328,7 @@ static HRESULT RegSpecialProductWriteBinary(
 
         ReleaseNullSceRow(sceRow);
 
-        hr = ValueFindRow(pcdb, VALUE_INDEX_TABLE, pcdb->dwAppID, sczCfgValueName, &sceRow);
+        hr = ValueFindRow(pcdb, pcdb->dwAppID, sczCfgValueName, &sceRow);
         if (E_NOTFOUND == hr)
         {
             hr = S_OK;

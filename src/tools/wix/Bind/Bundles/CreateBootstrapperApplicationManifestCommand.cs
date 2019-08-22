@@ -1,11 +1,4 @@
-﻿//-------------------------------------------------------------------------------------------------
-// <copyright file="CreateBootstrapperApplicationManifestCommand.cs" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 namespace WixToolset.Bind.Bundles
 {
@@ -167,14 +160,14 @@ namespace WixToolset.Bind.Bundles
 
             foreach (WixBundlePayloadRow payload in this.Payloads.Values)
             {
-                Row row = wixPayloadPropertiesTable.CreateRow(payload.SourceLineNumbers);
-                row[0] = payload.Id;
-                row[1] = payload.Package;
-                row[2] = payload.Container;
-                row[3] = payload.Name;
-                row[4] = payload.FileSize.ToString();
-                row[5] = payload.DownloadUrl;
-                row[6] = payload.LayoutOnly ? "yes" : "no";
+                WixPayloadPropertiesRow row = (WixPayloadPropertiesRow)wixPayloadPropertiesTable.CreateRow(payload.SourceLineNumbers);
+                row.Id = payload.Id;
+                row.Package = payload.Package;
+                row.Container = payload.Container;
+                row.Name = payload.Name;
+                row.Size = payload.FileSize.ToString();
+                row.DownloadUrl = payload.DownloadUrl;
+                row.LayoutOnly = payload.LayoutOnly ? "yes" : "no";
             }
         }
 

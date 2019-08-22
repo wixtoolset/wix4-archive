@@ -1,29 +1,30 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="WixStandardBootstrapperApplication.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//-------------------------------------------------------------------------------------------------
-
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
+#include "BalBaseBootstrapperApplicationProc.h"
+#include "BalBaseBootstrapperApplication.h"
 
 static const LPCWSTR WIXBUNDLE_VARIABLE_ELEVATED = L"WixBundleElevated";
 
 static const LPCWSTR WIXSTDBA_WINDOW_CLASS = L"WixStdBA";
+
 static const LPCWSTR WIXSTDBA_VARIABLE_INSTALL_FOLDER = L"InstallFolder";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH = L"LaunchTarget";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_TARGET_ELEVATED_ID = L"LaunchTargetElevatedId";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_ARGUMENTS = L"LaunchArguments";
 static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_HIDDEN = L"LaunchHidden";
+static const LPCWSTR WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER = L"LaunchWorkingFolder";
+
 static const DWORD WIXSTDBA_ACQUIRE_PERCENTAGE = 30;
+
 static const LPCWSTR WIXSTDBA_VARIABLE_BUNDLE_FILE_VERSION = L"WixBundleFileVersion";
+static const LPCWSTR WIXSTDBA_VARIABLE_LANGUAGE_ID = L"WixStdBALanguageId";
+static const LPCWSTR WIXSTDBA_VARIABLE_RESTART_REQUIRED = L"WixStdBARestartRequired";
+static const LPCWSTR WIXSTDBA_VARIABLE_SHOW_VERSION = L"WixStdBAShowVersion";
+static const LPCWSTR WIXSTDBA_VARIABLE_SUPPRESS_OPTIONS_UI = L"WixStdBASuppressOptionsUI";
 
 enum WIXSTDBA_STATE
 {
-    WIXSTDBA_STATE_OPTIONS,
     WIXSTDBA_STATE_INITIALIZING,
     WIXSTDBA_STATE_INITIALIZED,
     WIXSTDBA_STATE_HELP,
@@ -56,7 +57,6 @@ enum WIXSTDBA_PAGE
     WIXSTDBA_PAGE_LOADING,
     WIXSTDBA_PAGE_HELP,
     WIXSTDBA_PAGE_INSTALL,
-    WIXSTDBA_PAGE_OPTIONS,
     WIXSTDBA_PAGE_MODIFY,
     WIXSTDBA_PAGE_PROGRESS,
     WIXSTDBA_PAGE_PROGRESS_PASSIVE,
@@ -70,7 +70,6 @@ static LPCWSTR vrgwzPageNames[] = {
     L"Loading",
     L"Help",
     L"Install",
-    L"Options",
     L"Modify",
     L"Progress",
     L"ProgressPassive",
@@ -80,32 +79,15 @@ static LPCWSTR vrgwzPageNames[] = {
 
 enum WIXSTDBA_CONTROL
 {
-    // Non-paged controls
-    WIXSTDBA_CONTROL_CLOSE_BUTTON = THEME_FIRST_ASSIGN_CONTROL_ID,
-    WIXSTDBA_CONTROL_MINIMIZE_BUTTON,
-
-    // Help page
-    WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON,
-
     // Welcome page
-    WIXSTDBA_CONTROL_INSTALL_BUTTON,
-    WIXSTDBA_CONTROL_OPTIONS_BUTTON,
+    WIXSTDBA_CONTROL_INSTALL_BUTTON = THEME_FIRST_ASSIGN_CONTROL_ID,
     WIXSTDBA_CONTROL_EULA_RICHEDIT,
     WIXSTDBA_CONTROL_EULA_LINK,
     WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX,
-    WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON,
-    WIXSTDBA_CONTROL_VERSION_LABEL,
-
-    // Options page
-    WIXSTDBA_CONTROL_FOLDER_EDITBOX,
-    WIXSTDBA_CONTROL_BROWSE_BUTTON,
-    WIXSTDBA_CONTROL_OK_BUTTON,
-    WIXSTDBA_CONTROL_CANCEL_BUTTON,
 
     // Modify page
     WIXSTDBA_CONTROL_REPAIR_BUTTON,
     WIXSTDBA_CONTROL_UNINSTALL_BUTTON,
-    WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON,
 
     // Progress page
     WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT,
@@ -126,40 +108,22 @@ enum WIXSTDBA_CONTROL
 
     // Success page
     WIXSTDBA_CONTROL_LAUNCH_BUTTON,
-    WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT,
     WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON,
-    WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON,
 
     // Failure page
     WIXSTDBA_CONTROL_FAILURE_LOGFILE_LINK,
     WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT,
-    WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT,
     WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON,
-    WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON,
 };
 
 static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
-    { WIXSTDBA_CONTROL_CLOSE_BUTTON, L"CloseButton" },
-    { WIXSTDBA_CONTROL_MINIMIZE_BUTTON, L"MinimizeButton" },
-
-    { WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON, L"HelpCancelButton" },
-
     { WIXSTDBA_CONTROL_INSTALL_BUTTON, L"InstallButton" },
-    { WIXSTDBA_CONTROL_OPTIONS_BUTTON, L"OptionsButton" },
     { WIXSTDBA_CONTROL_EULA_RICHEDIT, L"EulaRichedit" },
     { WIXSTDBA_CONTROL_EULA_LINK, L"EulaHyperlink" },
     { WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX, L"EulaAcceptCheckbox" },
-    { WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON, L"WelcomeCancelButton" },
-    { WIXSTDBA_CONTROL_VERSION_LABEL, L"InstallVersion" },
-
-    { WIXSTDBA_CONTROL_FOLDER_EDITBOX, L"FolderEditbox" },
-    { WIXSTDBA_CONTROL_BROWSE_BUTTON, L"BrowseButton" },
-    { WIXSTDBA_CONTROL_OK_BUTTON, L"OptionsOkButton" },
-    { WIXSTDBA_CONTROL_CANCEL_BUTTON, L"OptionsCancelButton" },
 
     { WIXSTDBA_CONTROL_REPAIR_BUTTON, L"RepairButton" },
     { WIXSTDBA_CONTROL_UNINSTALL_BUTTON, L"UninstallButton" },
-    { WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON, L"ModifyCancelButton" },
 
     { WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT, L"CacheProgressPackageText" },
     { WIXSTDBA_CONTROL_CACHE_PROGRESS_BAR, L"CacheProgressbar" },
@@ -175,25 +139,59 @@ static THEME_ASSIGN_CONTROL_ID vrgInitControls[] = {
     { WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON, L"ProgressCancelButton" },
 
     { WIXSTDBA_CONTROL_LAUNCH_BUTTON, L"LaunchButton" },
-    { WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT, L"SuccessRestartText" },
     { WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON, L"SuccessRestartButton" },
-    { WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON, L"SuccessCancelButton" },
 
     { WIXSTDBA_CONTROL_FAILURE_LOGFILE_LINK, L"FailureLogFileLink" },
     { WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT, L"FailureMessageText" },
-    { WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT, L"FailureRestartText" },
     { WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, L"FailureRestartButton" },
-    { WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON, L"FailureCloseButton" },
 };
 
 typedef struct _WIXSTDBA_PREREQ_PACKAGE
 {
     LPWSTR sczPackageId;
-    BOOL fAlwaysInstall;
     BOOL fWasAlreadyInstalled;
     BOOL fPlannedToBeInstalled;
     BOOL fSuccessfullyInstalled;
 } WIXSTDBA_PREREQ_PACKAGE;
+
+
+static HRESULT DAPI EvaluateVariableConditionCallback(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI FormatVariableStringCallback(
+    __in_z LPCWSTR wzFormat,
+    __inout LPWSTR* psczOut,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI GetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __out LONGLONG* pllValue,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI SetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI GetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __inout LPWSTR* psczValue,
+    __in_opt LPVOID pvContext
+    );
+static HRESULT DAPI SetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue,
+    __in_opt LPVOID pvContext
+    );
+static LPCSTR LoggingRequestStateToString(
+    __in BOOTSTRAPPER_REQUEST_STATE requestState
+    );
+static LPCSTR LoggingMsiFeatureStateToString(
+    __in BOOTSTRAPPER_FEATURE_STATE featureState
+    );
+
 
 class CWixStandardBootstrapperApplication : public CBalBaseBootstrapperApplication
 {
@@ -215,9 +213,11 @@ public: // IBootstrapperApplication
     }
 
 
-    virtual STDMETHODIMP_(int) OnShutdown()
+    virtual STDMETHODIMP OnShutdown(
+        __inout BOOTSTRAPPER_SHUTDOWN_ACTION* pAction
+        )
     {
-        int nResult = IDNOACTION;
+        HRESULT hr = S_OK;
 
         // wait for UI thread to terminate
         if (m_hUiThread)
@@ -231,7 +231,7 @@ public: // IBootstrapperApplication
         {
             if (m_fAllowRestart)
             {
-                nResult = IDRESTART;
+                *pAction = BOOTSTRAPPER_SHUTDOWN_ACTION_RESTART;
             }
 
             if (m_fPrereq)
@@ -243,7 +243,7 @@ public: // IBootstrapperApplication
         else if (m_fPrereqInstalled)
         {
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "The prerequisites were successfully installed. The bootstrapper application will be reloaded.");
-            nResult = IDRELOAD_BOOTSTRAPPER;
+            *pAction = BOOTSTRAPPER_SHUTDOWN_ACTION_RELOAD_BOOTSTRAPPER;
         }
         else if (m_fPrereqAlreadyInstalled)
         {
@@ -254,17 +254,18 @@ public: // IBootstrapperApplication
             BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "The prerequisites were not successfully installed, error: 0x%x. The bootstrapper application will be not reloaded.", m_hrFinal);
         }
 
-        return nResult;
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnDetectRelatedBundle(
+    virtual STDMETHODIMP OnDetectRelatedBundle(
         __in LPCWSTR wzBundleId,
         __in BOOTSTRAPPER_RELATION_TYPE relationType,
-        __in LPCWSTR /*wzBundleTag*/,
+        __in LPCWSTR wzBundleTag,
         __in BOOL fPerMachine,
-        __in DWORD64 /*dw64Version*/,
-        __in BOOTSTRAPPER_RELATED_OPERATION operation
+        __in DWORD64 dw64Version,
+        __in BOOTSTRAPPER_RELATED_OPERATION operation,
+        __inout BOOL* pfCancel
         )
     {
         BalInfoAddRelatedBundleAsPackage(&m_Bundle.packages, wzBundleId, relationType, fPerMachine);
@@ -275,11 +276,11 @@ public: // IBootstrapperApplication
             m_fDowngrading = TRUE;
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnDetectRelatedBundle(wzBundleId, relationType, wzBundleTag, fPerMachine, dw64Version, operation, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(void) OnDetectPackageComplete(
+    virtual STDMETHODIMP OnDetectPackageComplete(
         __in LPCWSTR wzPackageId,
         __in HRESULT /*hrStatus*/,
         __in BOOTSTRAPPER_PACKAGE_STATE state
@@ -293,23 +294,21 @@ public: // IBootstrapperApplication
             // If the prerequisite package is already installed, remember that.
             pPrereqPackage->fWasAlreadyInstalled = TRUE;
         }
+
+        return S_OK;
     }
 
 
-    virtual STDMETHODIMP_(void) OnDetectComplete(
+    virtual STDMETHODIMP OnDetectComplete(
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect complete BA function");
-            m_pBAFunction->OnDetectComplete();
-        }
+        HRESULT hr = S_OK;
 
         if (SUCCEEDED(hrStatus))
         {
             hrStatus = EvaluateConditions();
-            
+
             if (m_fPrereq)
             {
                 m_fPrereqAlreadyInstalled = TRUE;
@@ -328,6 +327,24 @@ public: // IBootstrapperApplication
 
         SetState(WIXSTDBA_STATE_DETECTED, hrStatus);
 
+        if (BOOTSTRAPPER_ACTION_CACHE == m_plannedAction)
+        {
+            if (m_fSupportCacheOnly)
+            {
+                // Doesn't make sense to prompt the user if cache only is requested.
+                if (BOOTSTRAPPER_DISPLAY_PASSIVE < m_command.display)
+                {
+                    m_command.display = BOOTSTRAPPER_DISPLAY_PASSIVE;
+                }
+
+                m_command.action = BOOTSTRAPPER_ACTION_CACHE;
+            }
+            else
+            {
+                BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "Ignoring attempt to only cache a bundle that does not explicitly support it.");
+            }
+        }
+
         // If we're not interacting with the user or we're doing a layout or we're just after a force restart
         // then automatically start planning.
         if (BOOTSTRAPPER_DISPLAY_FULL > m_command.display || BOOTSTRAPPER_ACTION_LAYOUT == m_command.action || BOOTSTRAPPER_RESUME_TYPE_REBOOT == m_command.resumeType)
@@ -337,12 +354,16 @@ public: // IBootstrapperApplication
                 ::PostMessageW(m_hWnd, WM_WIXSTDBA_PLAN_PACKAGES, 0, m_command.action);
             }
         }
+
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnPlanRelatedBundle(
-        __in_z LPCWSTR /*wzBundleId*/,
-        __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState
+    virtual STDMETHODIMP OnPlanRelatedBundle(
+        __in_z LPCWSTR wzBundleId,
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
+        __inout_z BOOTSTRAPPER_REQUEST_STATE* pRequestedState,
+        __inout BOOL* pfCancel
         )
     {
         // If we're only installing prerequisites, do not touch related bundles.
@@ -351,13 +372,15 @@ public: // IBootstrapperApplication
             *pRequestedState = BOOTSTRAPPER_REQUEST_STATE_NONE;
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnPlanRelatedBundle(wzBundleId, recommendedState, pRequestedState, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnPlanPackageBegin(
+    virtual STDMETHODIMP OnPlanPackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState
+        __in BOOTSTRAPPER_REQUEST_STATE recommendedState,
+        __inout BOOTSTRAPPER_REQUEST_STATE *pRequestState,
+        __inout BOOL* pfCancel
         )
     {
         HRESULT hr = S_OK;
@@ -373,13 +396,9 @@ public: // IBootstrapperApplication
             hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
             if (SUCCEEDED(hr) && pPackage)
             {
-                if (pPrereqPackage->fAlwaysInstall)
+                if (pPackage->sczInstallCondition && *pPackage->sczInstallCondition)
                 {
-                    fInstall = TRUE;
-                }
-                else if(pPackage->sczInstallCondition && *pPackage->sczInstallCondition)
-                {
-                    hr = m_pEngine->EvaluateCondition(pPackage->sczInstallCondition, &fInstall);
+                    hr = BalEvaluateCondition(pPackage->sczInstallCondition, &fInstall);
                     if (FAILED(hr))
                     {
                         fInstall = FALSE;
@@ -425,19 +444,15 @@ public: // IBootstrapperApplication
             }
         }
 
-        return CheckCanceled() ? IDCANCEL : IDOK;
+        return CBalBaseBootstrapperApplication::OnPlanPackageBegin(wzPackageId, recommendedState, pRequestState, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(void) OnPlanComplete(
+    virtual STDMETHODIMP OnPlanComplete(
         __in HRESULT hrStatus
         )
     {
-        if (SUCCEEDED(hrStatus) && m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan complete BA function");
-            m_pBAFunction->OnPlanComplete();
-        }
+        HRESULT hr = S_OK;
 
         if (m_fPrereq)
         {
@@ -464,13 +479,16 @@ public: // IBootstrapperApplication
         m_fStartedExecution = FALSE;
         m_dwCalculatedCacheProgress = 0;
         m_dwCalculatedExecuteProgress = 0;
+
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnCachePackageBegin(
+    virtual STDMETHODIMP OnCachePackageBegin(
         __in_z LPCWSTR wzPackageId,
         __in DWORD cCachePayloads,
-        __in DWORD64 dw64PackageCacheSize
+        __in DWORD64 dw64PackageCacheSize,
+        __inout BOOL* pfCancel
         )
     {
         if (wzPackageId && *wzPackageId)
@@ -488,72 +506,67 @@ public: // IBootstrapperApplication
             }
         }
 
-        return __super::OnCachePackageBegin(wzPackageId, cCachePayloads, dw64PackageCacheSize);
+        return __super::OnCachePackageBegin(wzPackageId, cCachePayloads, dw64PackageCacheSize, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheAcquireProgress(
+    virtual STDMETHODIMP OnCacheAcquireProgress(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in DWORD64 dw64Progress,
         __in DWORD64 dw64Total,
-        __in DWORD dwOverallPercentage
+        __in DWORD dwOverallPercentage,
+        __inout BOOL* pfCancel
         )
     {
-        WCHAR wzProgress[5] = { };
-
 #ifdef DEBUG
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: OnCacheAcquireProgress() - container/package: %ls, payload: %ls, progress: %I64u, total: %I64u, overall progress: %u%%", wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
 #endif
 
-        ::StringCchPrintfW(wzProgress, countof(wzProgress), L"%u%%", dwOverallPercentage);
-        ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_TEXT, wzProgress);
+        UpdateCacheProgress(dwOverallPercentage);
 
-        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_BAR, dwOverallPercentage);
-
-        m_dwCalculatedCacheProgress = dwOverallPercentage * WIXSTDBA_ACQUIRE_PERCENTAGE / 100;
-        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_CALCULATED_PROGRESS_BAR, m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
-
-        SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
-
-        return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage);
+        return __super::OnCacheAcquireProgress(wzPackageOrContainerId, wzPayloadId, dw64Progress, dw64Total, dwOverallPercentage, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheAcquireComplete(
+    virtual STDMETHODIMP OnCacheAcquireComplete(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEACQUIRECOMPLETE_ACTION* pAction
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, nRecommendation);
+        return __super::OnCacheAcquireComplete(wzPackageOrContainerId, wzPayloadId, hrStatus, recommendation, pAction);
     }
 
 
-    virtual STDMETHODIMP_(int) OnCacheVerifyComplete(
+    virtual STDMETHODIMP OnCacheVerifyComplete(
         __in_z LPCWSTR wzPackageId,
         __in_z LPCWSTR wzPayloadId,
         __in HRESULT hrStatus,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_CACHEVERIFYCOMPLETE_ACTION* pAction
         )
     {
         SetProgressState(hrStatus);
-        return __super::OnCacheVerifyComplete(wzPackageId, wzPayloadId, hrStatus, nRecommendation);
+        return __super::OnCacheVerifyComplete(wzPackageId, wzPayloadId, hrStatus, recommendation, pAction);
     }
 
 
-    virtual STDMETHODIMP_(void) OnCacheComplete(
-        __in HRESULT /*hrStatus*/
+    virtual STDMETHODIMP OnCacheComplete(
+        __in HRESULT hrStatus
         )
     {
+        UpdateCacheProgress(SUCCEEDED(hrStatus) ? 100 : 0);
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_PACKAGE_TEXT, L"");
         SetState(WIXSTDBA_STATE_CACHED, S_OK); // we always return success here and let OnApplyComplete() deal with the error.
+        return __super::OnCacheComplete(hrStatus);
     }
 
 
-    virtual STDMETHODIMP_(int) OnError(
+    virtual STDMETHODIMP OnError(
         __in BOOTSTRAPPER_ERROR_TYPE errorType,
         __in LPCWSTR wzPackageId,
         __in DWORD dwCode,
@@ -561,19 +574,21 @@ public: // IBootstrapperApplication
         __in DWORD dwUIHint,
         __in DWORD /*cData*/,
         __in_ecount_z_opt(cData) LPCWSTR* /*rgwzData*/,
-        __in int nRecommendation
+        __in int /*nRecommendation*/,
+        __inout int* pResult
         )
     {
-        int nResult = nRecommendation;
+        HRESULT hr = S_OK;
+        int nResult = *pResult;
         LPWSTR sczError = NULL;
 
         if (BOOTSTRAPPER_DISPLAY_EMBEDDED == m_command.display)
         {
-             HRESULT hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
-             if (FAILED(hr))
-             {
-                 nResult = IDERROR;
-             }
+            hr = m_pEngine->SendEmbeddedError(dwCode, wzError, dwUIHint, &nResult);
+            if (FAILED(hr))
+            {
+                nResult = IDERROR;
+            }
         }
         else if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display)
         {
@@ -591,11 +606,29 @@ public: // IBootstrapperApplication
                     // If no error message was provided, use the error code to try and get an error message.
                     if (!wzError || !*wzError || BOOTSTRAPPER_ERROR_TYPE_WINDOWS_INSTALLER != errorType)
                     {
-                        HRESULT hr = StrAllocFromError(&sczError, dwCode, NULL);
+                        hr = StrAllocFromError(&sczError, dwCode, NULL);
                         if (FAILED(hr) || !sczError || !*sczError)
                         {
-                            StrAllocFormatted(&sczError, L"0x%x", dwCode);
+                            // special case for ERROR_FAIL_NOACTION_REBOOT: use loc string for Windows XP
+                            if (ERROR_FAIL_NOACTION_REBOOT == dwCode)
+                            {
+                                LOC_STRING* pLocString = NULL;
+                                hr = LocGetString(m_pWixLoc, L"#(loc.ErrorFailNoActionReboot)", &pLocString);
+                                if (SUCCEEDED(hr))
+                                {
+                                    StrAllocString(&sczError, pLocString->wzText, 0);
+                                }
+                                else
+                                {
+                                    StrAllocFormatted(&sczError, L"0x%x", dwCode);
+                                }
+                            }
+                            else
+                            {
+                                StrAllocFormatted(&sczError, L"0x%x", dwCode);
+                            }
                         }
+                        hr = S_OK;
                     }
 
                     nResult = ::MessageBoxW(m_hWnd, sczError ? sczError : wzError, m_pTheme->sczCaption, dwUIHint);
@@ -610,41 +643,47 @@ public: // IBootstrapperApplication
         }
 
         ReleaseStr(sczError);
-        return nResult;
+        *pResult = nResult;
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecuteMsiMessage(
+    virtual STDMETHODIMP OnExecuteMsiMessage(
         __in_z LPCWSTR wzPackageId,
-        __in INSTALLMESSAGE mt,
-        __in UINT uiFlags,
+        __in INSTALLMESSAGE messageType,
+        __in DWORD dwUIHint,
         __in_z LPCWSTR wzMessage,
         __in DWORD cData,
         __in_ecount_z_opt(cData) LPCWSTR* rgwzData,
-        __in int nRecommendation
+        __in int nRecommendation,
+        __inout int* pResult
         )
     {
 #ifdef DEBUG
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: OnExecuteMsiMessage() - package: %ls, message: %ls", wzPackageId, wzMessage);
 #endif
-        if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == mt || INSTALLMESSAGE_USER == mt))
+        if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display && (INSTALLMESSAGE_WARNING == messageType || INSTALLMESSAGE_USER == messageType))
         {
-            int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, uiFlags);
-            return nResult;
+            if (!m_fShowingInternalUiThisPackage)
+            {
+                int nResult = ::MessageBoxW(m_hWnd, wzMessage, m_pTheme->sczCaption, dwUIHint);
+                return nResult;
+            }
         }
 
-        if (INSTALLMESSAGE_ACTIONSTART == mt)
+        if (INSTALLMESSAGE_ACTIONSTART == messageType)
         {
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_ACTIONDATA_TEXT, wzMessage);
         }
 
-        return __super::OnExecuteMsiMessage(wzPackageId, mt, uiFlags, wzMessage, cData, rgwzData, nRecommendation);
+        return __super::OnExecuteMsiMessage(wzPackageId, messageType, dwUIHint, wzMessage, cData, rgwzData, nRecommendation, pResult);
     }
 
 
-    virtual STDMETHODIMP_(int) OnProgress(
+    virtual STDMETHODIMP OnProgress(
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
         )
     {
         WCHAR wzProgress[5] = { };
@@ -659,13 +698,14 @@ public: // IBootstrapperApplication
         ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_BAR, dwOverallProgressPercentage);
         SetTaskbarButtonProgress(dwOverallProgressPercentage);
 
-        return __super::OnProgress(dwProgressPercentage, dwOverallProgressPercentage);
+        return __super::OnProgress(dwProgressPercentage, dwOverallProgressPercentage, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecutePackageBegin(
+    virtual STDMETHODIMP OnExecutePackageBegin(
         __in_z LPCWSTR wzPackageId,
-        __in BOOL fExecute
+        __in BOOL fExecute,
+        __inout BOOL* pfCancel
         )
     {
         LPWSTR sczFormattedString = NULL;
@@ -707,7 +747,8 @@ public: // IBootstrapperApplication
                 wz = sczFormattedString ? sczFormattedString : pPackage->sczDisplayName ? pPackage->sczDisplayName : wzPackageId;
             }
 
-            m_fShowingInternalUiThisPackage = pPackage && pPackage->fDisplayInternalUI;
+            //Burn engine doesn't show internal UI for msi packages during uninstall or repair actions.
+            m_fShowingInternalUiThisPackage = pPackage && pPackage->fDisplayInternalUI && BOOTSTRAPPER_ACTION_UNINSTALL != m_plannedAction && BOOTSTRAPPER_ACTION_REPAIR != m_plannedAction;
 
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_PACKAGE_TEXT, wz);
             ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_PACKAGE_TEXT, wz);
@@ -718,14 +759,15 @@ public: // IBootstrapperApplication
         }
 
         ReleaseStr(sczFormattedString);
-        return __super::OnExecutePackageBegin(wzPackageId, fExecute);
+        return __super::OnExecutePackageBegin(wzPackageId, fExecute, pfCancel);
     }
 
 
-    virtual int __stdcall OnExecuteProgress(
+    virtual STDMETHODIMP OnExecuteProgress(
         __in_z LPCWSTR wzPackageId,
         __in DWORD dwProgressPercentage,
-        __in DWORD dwOverallProgressPercentage
+        __in DWORD dwOverallProgressPercentage,
+        __inout BOOL* pfCancel
         )
     {
         WCHAR wzProgress[5] = { };
@@ -744,44 +786,48 @@ public: // IBootstrapperApplication
 
         SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
 
-        return __super::OnExecuteProgress(wzPackageId, dwProgressPercentage, dwOverallProgressPercentage);
+        return __super::OnExecuteProgress(wzPackageId, dwProgressPercentage, dwOverallProgressPercentage, pfCancel);
     }
 
 
-    virtual STDMETHODIMP_(int) OnExecutePackageComplete(
+    virtual STDMETHODIMP OnExecutePackageComplete(
         __in_z LPCWSTR wzPackageId,
-        __in HRESULT hrExitCode,
+        __in HRESULT hrStatus,
         __in BOOTSTRAPPER_APPLY_RESTART restart,
-        __in int nRecommendation
+        __in BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION* pAction
         )
     {
-        SetProgressState(hrExitCode);
+        HRESULT hr = S_OK;
+        SetProgressState(hrStatus);
 
-        int nResult = __super::OnExecutePackageComplete(wzPackageId, hrExitCode, restart, nRecommendation);
+        hr = __super::OnExecutePackageComplete(wzPackageId, hrStatus, restart, recommendation, pAction);
 
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
         BAL_INFO_PACKAGE* pPackage;
-        HRESULT hr = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
-        if (SUCCEEDED(hr))
+        HRESULT hrPrereq = GetPrereqPackage(wzPackageId, &pPrereqPackage, &pPackage);
+        if (SUCCEEDED(hrPrereq))
         {
-            pPrereqPackage->fSuccessfullyInstalled = TRUE;
+            pPrereqPackage->fSuccessfullyInstalled = SUCCEEDED(hrStatus);
 
             // If the prerequisite required a restart (any restart) then do an immediate
             // restart to ensure that the bundle will get launched again post reboot.
             if (BOOTSTRAPPER_APPLY_RESTART_NONE != restart)
             {
-                nResult = IDRESTART;
+                *pAction = BOOTSTRAPPER_EXECUTEPACKAGECOMPLETE_ACTION_RESTART;
             }
         }
 
-        return nResult;
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(void) OnExecuteComplete(
+    virtual STDMETHODIMP OnExecuteComplete(
         __in HRESULT hrStatus
         )
     {
+        HRESULT hr = S_OK;
+
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_PACKAGE_TEXT, L"");
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_EXECUTE_PROGRESS_ACTIONDATA_TEXT, L"");
         ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_PROGRESS_PACKAGE_TEXT, L"");
@@ -789,23 +835,28 @@ public: // IBootstrapperApplication
 
         SetState(WIXSTDBA_STATE_EXECUTED, S_OK); // we always return success here and let OnApplyComplete() deal with the error.
         SetProgressState(hrStatus);
+
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnResolveSource(
+    virtual STDMETHODIMP OnResolveSource(
         __in_z LPCWSTR wzPackageOrContainerId,
         __in_z_opt LPCWSTR wzPayloadId,
         __in_z LPCWSTR wzLocalSource,
-        __in_z_opt LPCWSTR wzDownloadSource
+        __in_z_opt LPCWSTR wzDownloadSource,
+        __in BOOTSTRAPPER_RESOLVESOURCE_ACTION /*recommendation*/,
+        __inout BOOTSTRAPPER_RESOLVESOURCE_ACTION* pAction,
+        __inout BOOL* pfCancel
         )
     {
-        int nResult = IDERROR; // assume we won't resolve source and that is unexpected.
+        HRESULT hr = S_OK;
 
         if (BOOTSTRAPPER_DISPLAY_FULL == m_command.display)
         {
             if (wzDownloadSource)
             {
-                nResult = IDDOWNLOAD;
+                *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD;
             }
             else // prompt to change the source location.
             {
@@ -825,35 +876,44 @@ public: // IBootstrapperApplication
 
                 if (::GetOpenFileNameW(&ofn))
                 {
-                    HRESULT hr = m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, ofn.lpstrFile);
-                    nResult = SUCCEEDED(hr) ? IDRETRY : IDERROR;
+                    hr = m_pEngine->SetLocalSource(wzPackageOrContainerId, wzPayloadId, ofn.lpstrFile);
+                    *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_RETRY;
                 }
                 else
                 {
-                    nResult = IDCANCEL;
+                    *pfCancel = TRUE;
                 }
             }
         }
         else if (wzDownloadSource)
         {
             // If doing a non-interactive install and download source is available, let's try downloading the package silently
-            nResult = IDDOWNLOAD;
+            *pAction = BOOTSTRAPPER_RESOLVESOURCE_ACTION_DOWNLOAD;
         }
         // else there's nothing more we can do in non-interactive mode
 
-        return CheckCanceled() ? IDCANCEL : nResult;
+        *pfCancel |= CheckCanceled();
+        return hr;
     }
 
 
-    virtual STDMETHODIMP_(int) OnApplyComplete(
+    virtual STDMETHODIMP OnApplyComplete(
         __in HRESULT hrStatus,
-        __in BOOTSTRAPPER_APPLY_RESTART restart
+        __in BOOTSTRAPPER_APPLY_RESTART restart,
+        __in BOOTSTRAPPER_APPLYCOMPLETE_ACTION recommendation,
+        __inout BOOTSTRAPPER_APPLYCOMPLETE_ACTION* pAction
         )
     {
+        HRESULT hr = S_OK;
+
+        __super::OnApplyComplete(hrStatus, restart, recommendation, pAction);
+
         m_restartResult = restart; // remember the restart result so we return the correct error code no matter what the user chooses to do in the UI.
 
         // If a restart was encountered and we are not suppressing restarts, then restart is required.
         m_fRestartRequired = (BOOTSTRAPPER_APPLY_RESTART_NONE != restart && BOOTSTRAPPER_RESTART_NEVER < m_command.restart);
+        BalSetStringVariable(WIXSTDBA_VARIABLE_RESTART_REQUIRED, m_fRestartRequired ? L"1" : NULL);
+
         // If a restart is required and we're not displaying a UI or we are not supposed to prompt for restart then allow the restart.
         m_fAllowRestart = m_fRestartRequired && (BOOTSTRAPPER_DISPLAY_FULL > m_command.display || BOOTSTRAPPER_RESTART_PROMPT < m_command.restart);
 
@@ -890,14 +950,18 @@ public: // IBootstrapperApplication
         SetState(WIXSTDBA_STATE_APPLIED, hrStatus);
         SetTaskbarButtonProgress(100); // show full progress bar, green, yellow, or red
 
-        return IDNOACTION;
+        *pAction = BOOTSTRAPPER_APPLYCOMPLETE_ACTION_NONE;
+
+        return hr;
     }
 
-    virtual STDMETHODIMP_(void) OnLaunchApprovedExeComplete(
+    virtual STDMETHODIMP OnLaunchApprovedExeComplete(
         __in HRESULT hrStatus,
         __in DWORD /*processId*/
         )
     {
+        HRESULT hr = S_OK;
+
         if (HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hrStatus)
         {
             //try with ShelExec next time
@@ -907,10 +971,643 @@ public: // IBootstrapperApplication
         {
             ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
         }
+
+        return hr;
+    }
+
+    virtual STDMETHODIMP_(void) BAProcFallback(
+        __in BOOTSTRAPPER_APPLICATION_MESSAGE message,
+        __in const LPVOID pvArgs,
+        __inout LPVOID pvResults,
+        __inout HRESULT* phr,
+        __in_opt LPVOID /*pvContext*/
+        )
+    {
+        if (!m_pfnBAFunctionsProc || FAILED(*phr))
+        {
+            return;
+        }
+
+        // Always log before and after so we don't get blamed when BAFunctions changes something.
+        switch (message)
+        {
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTBEGIN:
+            OnDetectBeginFallback(reinterpret_cast<BA_ONDETECTBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPLETE:
+            OnDetectCompleteFallback(reinterpret_cast<BA_ONDETECTCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANBEGIN:
+            OnPlanBeginFallback(reinterpret_cast<BA_ONPLANBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPLETE:
+            OnPlanCompleteFallback(reinterpret_cast<BA_ONPLANCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSTARTUP: // BAFunctions is loaded during this event on a separate thread so it's not possible to forward it.
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSHUTDOWN:
+            OnShutdownFallback(reinterpret_cast<BA_ONSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSHUTDOWN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONSYSTEMSHUTDOWN:
+            OnSystemShutdownFallback(reinterpret_cast<BA_ONSYSTEMSHUTDOWN_ARGS*>(pvArgs), reinterpret_cast<BA_ONSYSTEMSHUTDOWN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE:
+            OnDetectForwardCompatibleBundleFallback(reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATEBEGIN:
+            OnDetectUpdateBeginFallback(reinterpret_cast<BA_ONDETECTUPDATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTUPDATEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATE:
+            OnDetectUpdateFallback(reinterpret_cast<BA_ONDETECTUPDATE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTUPDATE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTUPDATECOMPLETE:
+            OnDetectUpdateCompleteFallback(reinterpret_cast<BA_ONDETECTUPDATECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTUPDATECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTRELATEDBUNDLE:
+            OnDetectRelatedBundleFallback(reinterpret_cast<BA_ONDETECTRELATEDBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTRELATEDBUNDLE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGEBEGIN:
+            OnDetectPackageBeginFallback(reinterpret_cast<BA_ONDETECTPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE:
+            OnDetectCompatibleMsiPackageFallback(reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTRELATEDMSIPACKAGE:
+            OnDetectRelatedMsiPackageFallback(reinterpret_cast<BA_ONDETECTRELATEDMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTRELATEDMSIPACKAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTTARGETMSIPACKAGE:
+            OnDetectTargetMsiPackageFallback(reinterpret_cast<BA_ONDETECTTARGETMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTTARGETMSIPACKAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTMSIFEATURE:
+            OnDetectMsiFeatureFallback(reinterpret_cast<BA_ONDETECTMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTMSIFEATURE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONDETECTPACKAGECOMPLETE:
+            OnDetectPackageCompleteFallback(reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONDETECTPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANRELATEDBUNDLE:
+            OnPlanRelatedBundleFallback(reinterpret_cast<BA_ONPLANRELATEDBUNDLE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANRELATEDBUNDLE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGEBEGIN:
+            OnPlanPackageBeginFallback(reinterpret_cast<BA_ONPLANPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGEBEGIN:
+            OnPlanCompatibleMsiPackageBeginFallback(reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE:
+            OnPlanCompatibleMsiPackageCompleteFallback(reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANTARGETMSIPACKAGE:
+            OnPlanTargetMsiPackageFallback(reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANTARGETMSIPACKAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANMSIFEATURE:
+            OnPlanMsiFeatureFallback(reinterpret_cast<BA_ONPLANMSIFEATURE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANMSIFEATURE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPLANPACKAGECOMPLETE:
+            OnPlanPackageCompleteFallback(reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONPLANPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYBEGIN:
+            OnApplyBeginFallback(reinterpret_cast<BA_ONAPPLYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATEBEGIN:
+            OnElevateBeginFallback(reinterpret_cast<BA_ONELEVATEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONELEVATECOMPLETE:
+            OnElevateCompleteFallback(reinterpret_cast<BA_ONELEVATECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONELEVATECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONPROGRESS:
+            OnProgressFallback(reinterpret_cast<BA_ONPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONERROR:
+            OnErrorFallback(reinterpret_cast<BA_ONERROR_ARGS*>(pvArgs), reinterpret_cast<BA_ONERROR_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERBEGIN:
+            OnRegisterBeginFallback(reinterpret_cast<BA_ONREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONREGISTERCOMPLETE:
+            OnRegisterCompleteFallback(reinterpret_cast<BA_ONREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEBEGIN:
+            OnCacheBeginFallback(reinterpret_cast<BA_ONCACHEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGEBEGIN:
+            OnCachePackageBeginFallback(reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREBEGIN:
+            OnCacheAcquireBeginFallback(reinterpret_cast<BA_ONCACHEACQUIREBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIREPROGRESS:
+            OnCacheAcquireProgressFallback(reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIREPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONRESOLVESOURCE:
+            OnResolveSourceFallback(reinterpret_cast<BA_ONRESOLVESOURCE_ARGS*>(pvArgs), reinterpret_cast<BA_ONRESOLVESOURCE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEACQUIRECOMPLETE:
+            OnCacheAcquireCompleteFallback(reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEACQUIRECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYBEGIN:
+            OnCacheVerifyBeginFallback(reinterpret_cast<BA_ONCACHEVERIFYBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEVERIFYBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEVERIFYCOMPLETE:
+            OnCacheVerifyCompleteFallback(reinterpret_cast<BA_ONCACHEVERIFYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEVERIFYCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHEPACKAGECOMPLETE:
+            OnCachePackageCompleteFallback(reinterpret_cast<BA_ONCACHEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHEPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONCACHECOMPLETE:
+            OnCacheCompleteFallback(reinterpret_cast<BA_ONCACHECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONCACHECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEBEGIN:
+            OnExecuteBeginFallback(reinterpret_cast<BA_ONEXECUTEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGEBEGIN:
+            OnExecutePackageBeginFallback(reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPATCHTARGET:
+            OnExecutePatchTargetFallback(reinterpret_cast<BA_ONEXECUTEPATCHTARGET_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPATCHTARGET_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPROGRESS:
+            OnExecuteProgressFallback(reinterpret_cast<BA_ONEXECUTEPROGRESS_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPROGRESS_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEMSIMESSAGE:
+            OnExecuteMsiMessageFallback(reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEMSIMESSAGE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEFILESINUSE:
+            OnExecuteFilesInUseFallback(reinterpret_cast<BA_ONEXECUTEFILESINUSE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEFILESINUSE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTEPACKAGECOMPLETE:
+            OnExecutePackageCompleteFallback(reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTEPACKAGECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONEXECUTECOMPLETE:
+            OnExecuteCompleteFallback(reinterpret_cast<BA_ONEXECUTECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONEXECUTECOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERBEGIN:
+            OnUnregisterBeginFallback(reinterpret_cast<BA_ONUNREGISTERBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONUNREGISTERCOMPLETE:
+            OnUnregisterCompleteFallback(reinterpret_cast<BA_ONUNREGISTERCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONUNREGISTERCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONAPPLYCOMPLETE:
+            OnApplyCompleteFallback(reinterpret_cast<BA_ONAPPLYCOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONAPPLYCOMPLETE_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN:
+            OnLaunchApprovedExeBeginFallback(reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS*>(pvResults));
+            break;
+        case BOOTSTRAPPER_APPLICATION_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE:
+            OnLaunchApprovedExeCompleteFallback(reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS*>(pvArgs), reinterpret_cast<BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS*>(pvResults));
+            break;
+        default:
+            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: Forwarding unknown BA message: %d", message);
+            m_pfnBAFunctionsProc((BA_FUNCTIONS_MESSAGE)message, pvArgs, pvResults, m_pvBAFunctionsProcContext);
+            break;
+        }
     }
 
 
 private: // privates
+    void OnDetectBeginFallback(
+        __in BA_ONDETECTBEGIN_ARGS* pArgs,
+        __inout BA_ONDETECTBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectCompleteFallback(
+        __in BA_ONDETECTCOMPLETE_ARGS* pArgs,
+        __inout BA_ONDETECTCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanBeginFallback(
+        __in BA_ONPLANBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanCompleteFallback(
+        __in BA_ONPLANCOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnShutdownFallback(
+        __in BA_ONSHUTDOWN_ARGS* pArgs,
+        __inout BA_ONSHUTDOWN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnSystemShutdownFallback(
+        __in BA_ONSYSTEMSHUTDOWN_ARGS* pArgs,
+        __inout BA_ONSYSTEMSHUTDOWN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONSYSTEMSHUTDOWN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectForwardCompatibleBundleFallback(
+        __in BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_ARGS* pArgs,
+        __inout BA_ONDETECTFORWARDCOMPATIBLEBUNDLE_RESULTS* pResults
+        )
+    {
+        BOOL fIgnoreBundle = pResults->fIgnoreBundle;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTFORWARDCOMPATIBLEBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_DETECTED_FORWARD_COMPATIBLE_BUNDLE, m_hModule, pArgs->wzBundleId, fIgnoreBundle ? "ignore" : "enable", pResults->fIgnoreBundle ? "ignore" : "enable");
+    }
+
+    void OnDetectUpdateBeginFallback(
+        __in BA_ONDETECTUPDATEBEGIN_ARGS* pArgs,
+        __inout BA_ONDETECTUPDATEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectUpdateFallback(
+        __in BA_ONDETECTUPDATE_ARGS* pArgs,
+        __inout BA_ONDETECTUPDATE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectUpdateCompleteFallback(
+        __in BA_ONDETECTUPDATECOMPLETE_ARGS* pArgs,
+        __inout BA_ONDETECTUPDATECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTUPDATECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectRelatedBundleFallback(
+        __in BA_ONDETECTRELATEDBUNDLE_ARGS* pArgs,
+        __inout BA_ONDETECTRELATEDBUNDLE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectPackageBeginFallback(
+        __in BA_ONDETECTPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONDETECTPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectCompatibleMsiPackageFallback(
+        __in BA_ONDETECTCOMPATIBLEMSIPACKAGE_ARGS* pArgs,
+        __inout BA_ONDETECTCOMPATIBLEMSIPACKAGE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTCOMPATIBLEMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectRelatedMsiPackageFallback(
+        __in BA_ONDETECTRELATEDMSIPACKAGE_ARGS* pArgs,
+        __inout BA_ONDETECTRELATEDMSIPACKAGE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTRELATEDMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectTargetMsiPackageFallback(
+        __in BA_ONDETECTTARGETMSIPACKAGE_ARGS* pArgs,
+        __inout BA_ONDETECTTARGETMSIPACKAGE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTTARGETMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectMsiFeatureFallback(
+        __in BA_ONDETECTMSIFEATURE_ARGS* pArgs,
+        __inout BA_ONDETECTMSIFEATURE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTMSIFEATURE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnDetectPackageCompleteFallback(
+        __in BA_ONDETECTPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONDETECTPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONDETECTPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanRelatedBundleFallback(
+        __in BA_ONPLANRELATEDBUNDLE_ARGS* pArgs,
+        __inout BA_ONPLANRELATEDBUNDLE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANRELATEDBUNDLE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_RELATED_BUNDLE, m_hModule, pArgs->wzBundleId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanPackageBeginFallback(
+        __in BA_ONPLANPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_PACKAGE, m_hModule, pArgs->wzPackageId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanCompatibleMsiPackageBeginFallback(
+        __in BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONPLANCOMPATIBLEMSIPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_COMPATIBLE_MSI_PACKAGE, m_hModule, pArgs->wzPackageId, pArgs->wzCompatiblePackageId, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanCompatibleMsiPackageCompleteFallback(
+        __in BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANCOMPATIBLEMSIPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnPlanTargetMsiPackageFallback(
+        __in BA_ONPLANTARGETMSIPACKAGE_ARGS* pArgs,
+        __inout BA_ONPLANTARGETMSIPACKAGE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_REQUEST_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANTARGETMSIPACKAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_TARGET_MSI_PACKAGE, m_hModule, pArgs->wzPackageId, pArgs->wzProductCode, LoggingRequestStateToString(requestedState), LoggingRequestStateToString(pResults->requestedState));
+    }
+
+    void OnPlanMsiFeatureFallback(
+        __in BA_ONPLANMSIFEATURE_ARGS* pArgs,
+        __inout BA_ONPLANMSIFEATURE_RESULTS* pResults
+        )
+    {
+        BOOTSTRAPPER_FEATURE_STATE requestedState = pResults->requestedState;
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANMSIFEATURE, pArgs, pResults, m_pvBAFunctionsProcContext);
+        BalLogId(BOOTSTRAPPER_LOG_LEVEL_STANDARD, MSG_WIXSTDBA_PLANNED_MSI_FEATURE, m_hModule, pArgs->wzPackageId, pArgs->wzFeatureId, LoggingMsiFeatureStateToString(requestedState), LoggingMsiFeatureStateToString(pResults->requestedState));
+    }
+
+    void OnPlanPackageCompleteFallback(
+        __in BA_ONPLANPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONPLANPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPLANPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnApplyBeginFallback(
+        __in BA_ONAPPLYBEGIN_ARGS* pArgs,
+        __inout BA_ONAPPLYBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONAPPLYBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnElevateBeginFallback(
+        __in BA_ONELEVATEBEGIN_ARGS* pArgs,
+        __inout BA_ONELEVATEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONELEVATEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnElevateCompleteFallback(
+        __in BA_ONELEVATECOMPLETE_ARGS* pArgs,
+        __inout BA_ONELEVATECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONELEVATECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnProgressFallback(
+        __in BA_ONPROGRESS_ARGS* pArgs,
+        __inout BA_ONPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnErrorFallback(
+        __in BA_ONERROR_ARGS* pArgs,
+        __inout BA_ONERROR_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONERROR, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnRegisterBeginFallback(
+        __in BA_ONREGISTERBEGIN_ARGS* pArgs,
+        __inout BA_ONREGISTERBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONREGISTERBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnRegisterCompleteFallback(
+        __in BA_ONREGISTERCOMPLETE_ARGS* pArgs,
+        __inout BA_ONREGISTERCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONREGISTERCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheBeginFallback(
+        __in BA_ONCACHEBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCachePackageBeginFallback(
+        __in BA_ONCACHEPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireBeginFallback(
+        __in BA_ONCACHEACQUIREBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIREBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireProgressFallback(
+        __in BA_ONCACHEACQUIREPROGRESS_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIREPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIREPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnResolveSourceFallback(
+        __in BA_ONRESOLVESOURCE_ARGS* pArgs,
+        __inout BA_ONRESOLVESOURCE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONRESOLVESOURCE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheAcquireCompleteFallback(
+        __in BA_ONCACHEACQUIRECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEACQUIRECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEACQUIRECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheVerifyBeginFallback(
+        __in BA_ONCACHEVERIFYBEGIN_ARGS* pArgs,
+        __inout BA_ONCACHEVERIFYBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEVERIFYBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheVerifyCompleteFallback(
+        __in BA_ONCACHEVERIFYCOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEVERIFYCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEVERIFYCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCachePackageCompleteFallback(
+        __in BA_ONCACHEPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHEPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHEPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnCacheCompleteFallback(
+        __in BA_ONCACHECOMPLETE_ARGS* pArgs,
+        __inout BA_ONCACHECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONCACHECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteBeginFallback(
+        __in BA_ONEXECUTEBEGIN_ARGS* pArgs,
+        __inout BA_ONEXECUTEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePackageBeginFallback(
+        __in BA_ONEXECUTEPACKAGEBEGIN_ARGS* pArgs,
+        __inout BA_ONEXECUTEPACKAGEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPACKAGEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePatchTargetFallback(
+        __in BA_ONEXECUTEPATCHTARGET_ARGS* pArgs,
+        __inout BA_ONEXECUTEPATCHTARGET_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPATCHTARGET, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteProgressFallback(
+        __in BA_ONEXECUTEPROGRESS_ARGS* pArgs,
+        __inout BA_ONEXECUTEPROGRESS_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPROGRESS, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteMsiMessageFallback(
+        __in BA_ONEXECUTEMSIMESSAGE_ARGS* pArgs,
+        __inout BA_ONEXECUTEMSIMESSAGE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEMSIMESSAGE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteFilesInUseFallback(
+        __in BA_ONEXECUTEFILESINUSE_ARGS* pArgs,
+        __inout BA_ONEXECUTEFILESINUSE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEFILESINUSE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecutePackageCompleteFallback(
+        __in BA_ONEXECUTEPACKAGECOMPLETE_ARGS* pArgs,
+        __inout BA_ONEXECUTEPACKAGECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTEPACKAGECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnExecuteCompleteFallback(
+        __in BA_ONEXECUTECOMPLETE_ARGS* pArgs,
+        __inout BA_ONEXECUTECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONEXECUTECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnUnregisterBeginFallback(
+        __in BA_ONUNREGISTERBEGIN_ARGS* pArgs,
+        __inout BA_ONUNREGISTERBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONUNREGISTERBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnUnregisterCompleteFallback(
+        __in BA_ONUNREGISTERCOMPLETE_ARGS* pArgs,
+        __inout BA_ONUNREGISTERCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONUNREGISTERCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnApplyCompleteFallback(
+        __in BA_ONAPPLYCOMPLETE_ARGS* pArgs,
+        __inout BA_ONAPPLYCOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONAPPLYCOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnLaunchApprovedExeBeginFallback(
+        __in BA_ONLAUNCHAPPROVEDEXEBEGIN_ARGS* pArgs,
+        __inout BA_ONLAUNCHAPPROVEDEXEBEGIN_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONLAUNCHAPPROVEDEXEBEGIN, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
+    void OnLaunchApprovedExeCompleteFallback(
+        __in BA_ONLAUNCHAPPROVEDEXECOMPLETE_ARGS* pArgs,
+        __inout BA_ONLAUNCHAPPROVEDEXECOMPLETE_RESULTS* pResults
+        )
+    {
+        m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONLAUNCHAPPROVEDEXECOMPLETE, pArgs, pResults, m_pvBAFunctionsProcContext);
+    }
+
     //
     // UiThreadProc - entrypoint for UI thread.
     //
@@ -1040,7 +1737,7 @@ private: // privates
         hr = BalConditionsParseFromXml(&m_Conditions, pixdManifest, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load conditions from XML.");
 
-        hr = LoadBootstrapperBAFunctions();
+        hr = LoadBAFunctions(pixdManifest);
         BalExitOnFailure(hr, "Failed to load bootstrapper functions.");
 
         GetBundleFileVersion();
@@ -1053,7 +1750,7 @@ private: // privates
         }
         else
         {
-            hr = ParseBootrapperApplicationDataFromXml(pixdManifest);
+            hr = ParseBootstrapperApplicationDataFromXml(pixdManifest);
             BalExitOnFailure(hr, "Failed to read bootstrapper application data.");
         }
 
@@ -1080,8 +1777,8 @@ private: // privates
 
         if (m_command.wzCommandLine && *m_command.wzCommandLine)
         {
-            argv = ::CommandLineToArgvW(m_command.wzCommandLine, &argc);
-            ExitOnNullWithLastError(argv, hr, "Failed to get command line.");
+            hr = AppParseCommandLine(m_command.wzCommandLine, &argc, &argv);
+            ExitOnFailure(hr, "Failed to parse command line.");
 
             for (int i = 0; i < argc; ++i)
             {
@@ -1100,6 +1797,10 @@ private: // privates
                         hr = StrAllocString(psczLanguage, &argv[i][0], 0);
                         BalExitOnFailure(hr, "Failed to copy language.");
                     }
+                }
+                else if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, NORM_IGNORECASE, &argv[i][1], -1, L"cache", -1))
+                {
+                    m_plannedAction = BOOTSTRAPPER_ACTION_CACHE;
                 }
                 else if (m_sdOverridableVariables)
                 {
@@ -1135,7 +1836,7 @@ private: // privates
     LExit:
         if (argv)
         {
-            ::LocalFree(argv);
+            AppFreeCommandLineArgs(argv);
         }
 
         ReleaseStr(sczVariableName);
@@ -1151,26 +1852,42 @@ private: // privates
     {
         HRESULT hr = S_OK;
         LPWSTR sczLocPath = NULL;
+        LPWSTR sczFormatted = NULL;
         LPCWSTR wzLocFileName = m_fPrereq ? L"mbapreq.wxl" : L"thm.wxl";
 
+        // Find and load .wxl file.
         hr = LocProbeForFile(wzModulePath, wzLocFileName, wzLanguage, &sczLocPath);
         BalExitOnFailure(hr, "Failed to probe for loc file: %ls in path: %ls", wzLocFileName, wzModulePath);
 
         hr = LocLoadFromFile(sczLocPath, &m_pWixLoc);
         BalExitOnFailure(hr, "Failed to load loc file from path: %ls", sczLocPath);
 
+        // Set WixStdBALanguageId to .wxl language id.
         if (WIX_LOCALIZATION_LANGUAGE_NOT_SET != m_pWixLoc->dwLangId)
         {
             ::SetThreadLocale(m_pWixLoc->dwLangId);
+
+            hr = m_pEngine->SetVariableNumeric(WIXSTDBA_VARIABLE_LANGUAGE_ID, m_pWixLoc->dwLangId);
+            BalExitOnFailure(hr, "Failed to set WixStdBALanguageId variable.");
         }
 
+        // Load ConfirmCancelMessage.
         hr = StrAllocString(&m_sczConfirmCloseMessage, L"#(loc.ConfirmCancelMessage)", 0);
         ExitOnFailure(hr, "Failed to initialize confirm message loc identifier.");
 
         hr = LocLocalizeString(m_pWixLoc, &m_sczConfirmCloseMessage);
         BalExitOnFailure(hr, "Failed to localize confirm close message: %ls", m_sczConfirmCloseMessage);
 
+        hr = BalFormatString(m_sczConfirmCloseMessage, &sczFormatted);
+        if (SUCCEEDED(hr))
+        {
+            ReleaseStr(m_sczConfirmCloseMessage);
+            m_sczConfirmCloseMessage = sczFormatted;
+            sczFormatted = NULL;
+        }
+
     LExit:
+        ReleaseStr(sczFormatted);
         ReleaseStr(sczLocPath);
 
         return hr;
@@ -1185,7 +1902,6 @@ private: // privates
         HRESULT hr = S_OK;
         LPWSTR sczThemePath = NULL;
         LPCWSTR wzThemeFileName = m_fPrereq ? L"mbapreq.thm" : L"thm.xml";
-        LPWSTR sczCaption = NULL;
 
         hr = LocProbeForFile(wzModulePath, wzThemeFileName, wzLanguage, &sczThemePath);
         BalExitOnFailure(hr, "Failed to probe for theme file: %ls in path: %ls", wzThemeFileName, wzModulePath);
@@ -1193,20 +1909,13 @@ private: // privates
         hr = ThemeLoadFromFile(sczThemePath, &m_pTheme);
         BalExitOnFailure(hr, "Failed to load theme from path: %ls", sczThemePath);
 
+        hr = ThemeRegisterVariableCallbacks(m_pTheme, EvaluateVariableConditionCallback, FormatVariableStringCallback, GetVariableNumericCallback, SetVariableNumericCallback, GetVariableStringCallback, SetVariableStringCallback, NULL);
+        BalExitOnFailure(hr, "Failed to register variable theme callbacks.");
+
         hr = ThemeLocalize(m_pTheme, m_pWixLoc);
         BalExitOnFailure(hr, "Failed to localize theme: %ls", sczThemePath);
 
-        // Update the caption if there are any formatted strings in it.
-        // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-        // so don't go down the rabbit hole of making sure that this is securely freed.
-        hr = BalFormatString(m_pTheme->sczCaption, &sczCaption);
-        if (SUCCEEDED(hr))
-        {
-            ThemeUpdateCaption(m_pTheme, sczCaption);
-        }
-
     LExit:
-        ReleaseStr(sczCaption);
         ReleaseStr(sczThemePath);
 
         return hr;
@@ -1223,7 +1932,7 @@ private: // privates
         DWORD cNodes = 0;
         LPWSTR scz = NULL;
 
-        // get the list of variables users can override on the command line
+        // Get the list of variables users can override on the command line.
         hr = XmlSelectNodes(pixdManifest, L"/BootstrapperApplicationData/WixStdbaOverridableVariable", &pNodes);
         if (S_FALSE == hr)
         {
@@ -1276,91 +1985,81 @@ private: // privates
         WIXSTDBA_PREREQ_PACKAGE* pPrereqPackage = NULL;
         BAL_INFO_PACKAGE* pPackage = NULL;
 
-        hr = XmlSelectSingleNode(pixdManifest, L"/BootstrapperApplicationData/WixMbaPrereqInformation", &pNode);
+        hr = XmlSelectNodes(pixdManifest, L"/BootstrapperApplicationData/WixMbaPrereqInformation", &pNodes);
         if (S_FALSE == hr)
         {
             hr = E_INVALIDARG;
+            BalExitOnFailure(hr, "BootstrapperApplication.xml manifest is missing prerequisite information.");
         }
-        BalExitOnFailure(hr, "BootstrapperApplication.xml manifest is missing prerequisite information.");
-
-        hr = XmlGetAttributeEx(pNode, L"PackageId", &m_sczPrereqPackage);
-        BalExitOnFailure(hr, "Failed to get prerequisite package identifier.");
-
-        hr = XmlGetAttributeEx(pNode, L"LicenseUrl", &m_sczLicenseUrl);
-        if (E_NOTFOUND == hr)
-        {
-            hr = S_OK;
-        }
-        BalExitOnFailure(hr, "Failed to get prerequisite license URL.");
-
-        hr = XmlGetAttributeEx(pNode, L"LicenseFile", &m_sczLicenseFile);
-        if (E_NOTFOUND == hr)
-        {
-            hr = S_OK;
-        }
-        BalExitOnFailure(hr, "Failed to get prerequisite license file.");
-
-        // get the list of prerequisite support packages
-        hr = XmlSelectNodes(pixdManifest, L"/BootstrapperApplicationData/MbaPrerequisiteSupportPackage", &pNodes);
-        if (S_FALSE == hr)
-        {
-            ExitFunction1(hr = S_OK);
-        }
-        ExitOnFailure(hr, "Failed to select prerequisite support package nodes.");
+        BalExitOnFailure(hr, "Failed to select prerequisite information nodes.");
 
         hr = pNodes->get_length((long*)&cNodes);
-        ExitOnFailure(hr, "Failed to get prerequisite support package node count.");
+        BalExitOnFailure(hr, "Failed to get prerequisite information node count.");
 
-        m_cPrereqPackages = cNodes + 1;
+        m_cPrereqPackages = cNodes;
         m_rgPrereqPackages = static_cast<WIXSTDBA_PREREQ_PACKAGE*>(MemAlloc(sizeof(WIXSTDBA_PREREQ_PACKAGE) * m_cPrereqPackages, TRUE));
 
         hr = DictCreateWithEmbeddedKey(&m_shPrereqSupportPackages, m_cPrereqPackages, reinterpret_cast<void **>(&m_rgPrereqPackages), offsetof(WIXSTDBA_PREREQ_PACKAGE, sczPackageId), DICT_FLAG_NONE);
-        ExitOnFailure(hr, "Failed to create the prerequisite package dictionary.");
-
-        pPrereqPackage = m_rgPrereqPackages;
-        pPrereqPackage->sczPackageId = m_sczPrereqPackage;
-        pPrereqPackage->fAlwaysInstall = TRUE;
-        hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
-        ExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
+        BalExitOnFailure(hr, "Failed to create the prerequisite package dictionary.");
 
         for (DWORD i = 0; i < cNodes; ++i)
         {
             hr = XmlNextElement(pNodes, &pNode, NULL);
-            ExitOnFailure(hr, "Failed to get next node.");
+            BalExitOnFailure(hr, "Failed to get next node.");
 
-            // @PackageId
             hr = XmlGetAttributeEx(pNode, L"PackageId", &scz);
-            ExitOnFailure(hr, "Failed to get @PackageId.");
+            BalExitOnFailure(hr, "Failed to get @PackageId.");
 
             hr = DictGetValue(m_shPrereqSupportPackages, scz, reinterpret_cast<void **>(&pPrereqPackage));
             if (SUCCEEDED(hr))
             {
-                if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, scz, -1, m_sczPrereqPackage, -1))
-                {
-                    pPrereqPackage->fAlwaysInstall = FALSE;
-                }
-                ReleaseNullObject(pNode);
-                continue;
+                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                BalExitOnFailure(hr, "Duplicate prerequisite information: %ls", scz);
             }
             else if (E_NOTFOUND != hr)
             {
-                ExitOnFailure(hr, "Failed to check if \"%ls\" was in the prerequisite package dictionary.", scz);
+                BalExitOnFailure(hr, "Failed to check if \"%ls\" was in the prerequisite package dictionary.", scz);
             }
 
             hr = BalInfoFindPackageById(&m_Bundle.packages, scz, &pPackage);
-            if (SUCCEEDED(hr))
+            BalExitOnFailure(hr, "Failed to get info about \"%ls\" from BootstrapperApplicationData.", scz);
+
+            pPrereqPackage = &m_rgPrereqPackages[i];
+            pPrereqPackage->sczPackageId = pPackage->sczId;
+            hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
+            BalExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
+
+            hr = XmlGetAttributeEx(pNode, L"LicenseFile", &scz);
+            if (E_NOTFOUND != hr)
             {
-                pPrereqPackage = &m_rgPrereqPackages[i + 1];
-                pPrereqPackage->sczPackageId = pPackage->sczId;
-                hr = DictAddValue(m_shPrereqSupportPackages, pPrereqPackage);
-                ExitOnFailure(hr, "Failed to add \"%ls\" to the prerequisite package dictionary.", pPrereqPackage->sczPackageId);
-            }
-            else
-            {
-                BalLogError(hr, "Failed to get info about \"%ls\" from BootstrapperApplicationData.", scz);
+                BalExitOnFailure(hr, "Failed to get @LicenseFile.");
+
+                if (m_sczLicenseFile)
+                {
+                    hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                    BalExitOnFailure(hr, "More than one license file specified in prerequisite info.");
+                }
+
+                m_sczLicenseFile = scz;
+                scz = NULL;
             }
 
-            // prepare next iteration
+            hr = XmlGetAttributeEx(pNode, L"LicenseUrl", &scz);
+            if (E_NOTFOUND != hr)
+            {
+                BalExitOnFailure(hr, "Failed to get @LicenseUrl.");
+
+                if (m_sczLicenseUrl)
+                {
+                    hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+                    BalExitOnFailure(hr, "More than one license URL specified in prerequisite info.");
+                }
+
+                m_sczLicenseUrl = scz;
+                scz = NULL;
+            }
+
+            // Prepare next iteration.
             ReleaseNullObject(pNode);
         }
 
@@ -1372,7 +2071,7 @@ private: // privates
     }
 
 
-    HRESULT ParseBootrapperApplicationDataFromXml(
+    HRESULT ParseBootstrapperApplicationDataFromXml(
         __in IXMLDOMDocument* pixdManifest
         )
     {
@@ -1411,19 +2110,20 @@ private: // privates
         BalExitOnFailure(hr, "Failed to read wixstdba options from BootstrapperApplication.xml manifest.");
 
         hr = XmlGetAttributeNumber(pNode, L"SuppressOptionsUI", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
-        else if (SUCCEEDED(hr))
+        else if (SUCCEEDED(hr) && dwBool)
         {
-            m_fSuppressOptionsUI = 0 < dwBool;
+            hr = BalSetNumericVariable(WIXSTDBA_VARIABLE_SUPPRESS_OPTIONS_UI, 1);
+            BalExitOnFailure(hr, "Failed to set '%ls' variable.", WIXSTDBA_VARIABLE_SUPPRESS_OPTIONS_UI);
         }
         BalExitOnFailure(hr, "Failed to get SuppressOptionsUI value.");
 
         dwBool = 0;
         hr = XmlGetAttributeNumber(pNode, L"SuppressDowngradeFailure", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
@@ -1435,7 +2135,7 @@ private: // privates
 
         dwBool = 0;
         hr = XmlGetAttributeNumber(pNode, L"SuppressRepair", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
@@ -1446,15 +2146,27 @@ private: // privates
         BalExitOnFailure(hr, "Failed to get SuppressRepair value.");
 
         hr = XmlGetAttributeNumber(pNode, L"ShowVersion", &dwBool);
-        if (E_NOTFOUND == hr)
+        if (S_FALSE == hr)
+        {
+            hr = S_OK;
+        }
+        else if (SUCCEEDED(hr) && dwBool)
+        {
+            hr = BalSetNumericVariable(WIXSTDBA_VARIABLE_SHOW_VERSION, 1);
+            BalExitOnFailure(hr, "Failed to set '%ls' variable.", WIXSTDBA_VARIABLE_SHOW_VERSION);
+        }
+        BalExitOnFailure(hr, "Failed to get ShowVersion value.");
+
+        hr = XmlGetAttributeNumber(pNode, L"SupportCacheOnly", &dwBool);
+        if (S_FALSE == hr)
         {
             hr = S_OK;
         }
         else if (SUCCEEDED(hr))
         {
-            m_fShowVersion = 0 < dwBool;
+            m_fSupportCacheOnly = 0 < dwBool;
         }
-        BalExitOnFailure(hr, "Failed to get ShowVersion value.");
+        BalExitOnFailure(hr, "Failed to get SupportCacheOnly value.");
 
     LExit:
         ReleaseObject(pNode);
@@ -1640,6 +2352,48 @@ private: // privates
         }
     }
 
+    static LRESULT CallDefaultWndProc(
+        __in CWixStandardBootstrapperApplication* pBA,
+        __in HWND hWnd,
+        __in UINT uMsg,
+        __in WPARAM wParam,
+        __in LPARAM lParam
+        )
+    {
+        LRESULT lres = NULL;
+        THEME* pTheme = NULL;
+        HRESULT hr = S_OK;
+        BA_FUNCTIONS_WNDPROC_ARGS wndProcArgs = { };
+        BA_FUNCTIONS_WNDPROC_RESULTS wndProcResults = { };
+
+        if (pBA)
+        {
+            pTheme = pBA->m_pTheme;
+
+            if (pBA->m_pfnBAFunctionsProc)
+            {
+                wndProcArgs.cbSize = sizeof(wndProcArgs);
+                wndProcArgs.pTheme = pTheme;
+                wndProcArgs.hWnd = hWnd;
+                wndProcArgs.uMsg = uMsg;
+                wndProcArgs.wParam = wParam;
+                wndProcArgs.lParam = lParam;
+                wndProcResults.cbSize = sizeof(wndProcResults);
+
+                hr = pBA->m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_WNDPROC, &wndProcArgs, &wndProcResults, pBA->m_pvBAFunctionsProcContext);
+                if (E_NOTIMPL != hr)
+                {
+                    lres = wndProcResults.lres;
+                    ExitFunction();
+                }
+            }
+        }
+
+        lres = ThemeDefWindowProc(pTheme, hWnd, uMsg, wParam, lParam);
+
+    LExit:
+        return lres;
+    }
 
     //
     // WndProc - standard windows message handler.
@@ -1653,6 +2407,7 @@ private: // privates
     {
 #pragma warning(suppress:4312)
         CWixStandardBootstrapperApplication* pBA = reinterpret_cast<CWixStandardBootstrapperApplication*>(::GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+        BOOL fCancel = FALSE;
 
         switch (uMsg)
         {
@@ -1667,7 +2422,7 @@ private: // privates
 
         case WM_NCDESTROY:
             {
-            LRESULT lres = ThemeDefWindowProc(pBA ? pBA->m_pTheme : NULL, hWnd, uMsg, wParam, lParam);
+            LRESULT lres = CallDefaultWndProc(pBA, hWnd, uMsg, wParam, lParam);
             ::SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
             ::PostQuitMessage(0);
             return lres;
@@ -1681,7 +2436,9 @@ private: // privates
             break;
 
         case WM_QUERYENDSESSION:
-            return IDCANCEL != pBA->OnSystemShutdown(static_cast<DWORD>(lParam), IDCANCEL);
+            fCancel = true;
+            pBA->OnSystemShutdown(static_cast<DWORD>(lParam), &fCancel);
+            return !fCancel;
 
         case WM_CLOSE:
             // If the user chose not to close, do *not* let the default window proc handle the message.
@@ -1716,58 +2473,41 @@ private: // privates
             return 0;
 
         case WM_COMMAND:
-            switch (LOWORD(wParam))
+            switch (HIWORD(wParam))
             {
-            case WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX:
-                pBA->OnClickAcceptCheckbox();
-                return 0;
+            case BN_CLICKED:
+                switch (LOWORD(wParam))
+                {
+                case WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX:
+                    pBA->OnClickAcceptCheckbox();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_OPTIONS_BUTTON:
-                pBA->OnClickOptionsButton();
-                return 0;
+                case WIXSTDBA_CONTROL_INSTALL_BUTTON:
+                    pBA->OnClickInstallButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_BROWSE_BUTTON:
-                pBA->OnClickOptionsBrowseButton();
-                return 0;
+                case WIXSTDBA_CONTROL_REPAIR_BUTTON:
+                    pBA->OnClickRepairButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_OK_BUTTON:
-                pBA->OnClickOptionsOkButton();
-                return 0;
+                case WIXSTDBA_CONTROL_UNINSTALL_BUTTON:
+                    pBA->OnClickUninstallButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_CANCEL_BUTTON:
-                pBA->OnClickOptionsCancelButton();
-                return 0;
+                case WIXSTDBA_CONTROL_LAUNCH_BUTTON:
+                    pBA->OnClickLaunchButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_INSTALL_BUTTON:
-                pBA->OnClickInstallButton();
-                return 0;
+                case WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON: __fallthrough;
+                case WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON:
+                    pBA->OnClickRestartButton();
+                    return 0;
 
-            case WIXSTDBA_CONTROL_REPAIR_BUTTON:
-                pBA->OnClickRepairButton();
-                return 0;
-
-            case WIXSTDBA_CONTROL_UNINSTALL_BUTTON:
-                pBA->OnClickUninstallButton();
-                return 0;
-
-            case WIXSTDBA_CONTROL_LAUNCH_BUTTON:
-                pBA->OnClickLaunchButton();
-                return 0;
-
-            case WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON:
-                pBA->OnClickRestartButton();
-                return 0;
-
-            case WIXSTDBA_CONTROL_HELP_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_WELCOME_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_MODIFY_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_SUCCESS_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_FAILURE_CANCEL_BUTTON: __fallthrough;
-            case WIXSTDBA_CONTROL_CLOSE_BUTTON:
-                pBA->OnClickCloseButton();
-                return 0;
+                case WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON:
+                    pBA->OnClickCloseButton();
+                    return 0;
+                }
+                break;
             }
             break;
 
@@ -1799,7 +2539,7 @@ private: // privates
             return 0;
         }
 
-        return ThemeDefWindowProc(pBA ? pBA->m_pTheme : NULL, hWnd, uMsg, wParam, lParam);
+        return CallDefaultWndProc(pBA, hWnd, uMsg, wParam, lParam);
     }
 
 
@@ -1811,11 +2551,12 @@ private: // privates
         )
     {
         HRESULT hr = S_OK;
-        LPWSTR sczText = NULL;
         LPWSTR sczLicenseFormatted = NULL;
         LPWSTR sczLicensePath = NULL;
         LPWSTR sczLicenseDirectory = NULL;
         LPWSTR sczLicenseFilename = NULL;
+        BA_FUNCTIONS_ONTHEMELOADED_ARGS themeLoadedArgs = { };
+        BA_FUNCTIONS_ONTHEMELOADED_RESULTS themeLoadedResults = { };
 
         hr = ThemeLoadControls(m_pTheme, hWnd, vrgInitControls, countof(vrgInitControls));
         BalExitOnFailure(hr, "Failed to load theme controls.");
@@ -1824,22 +2565,6 @@ private: // privates
         C_ASSERT(countof(m_rgdwPageIds) == countof(vrgwzPageNames));
 
         ThemeGetPageIds(m_pTheme, vrgwzPageNames, m_rgdwPageIds, countof(m_rgdwPageIds));
-
-        // Initialize the text on all "application" (non-page) controls.
-        for (DWORD i = 0; i < m_pTheme->cControls; ++i)
-        {
-            THEME_CONTROL* pControl = m_pTheme->rgControls + i;
-            if (!pControl->wPageId && pControl->sczText && *pControl->sczText)
-            {
-                // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-                // so don't go down the rabbit hole of making sure that this is securely freed.
-                HRESULT hrFormat = BalFormatString(pControl->sczText, &sczText);
-                if (SUCCEEDED(hrFormat))
-                {
-                    ThemeSetTextControl(m_pTheme, pControl->wId, sczText);
-                }
-            }
-        }
 
         // Load the RTF EULA control with text if the control exists.
         if (ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_EULA_RICHEDIT))
@@ -1887,12 +2612,21 @@ private: // privates
             }
         }
 
+        if (m_pfnBAFunctionsProc)
+        {
+            themeLoadedArgs.cbSize = sizeof(themeLoadedArgs);
+            themeLoadedArgs.pTheme = m_pTheme;
+            themeLoadedArgs.pWixLoc = m_pWixLoc;
+            themeLoadedResults.cbSize = sizeof(themeLoadedResults);
+            hr = m_pfnBAFunctionsProc(BA_FUNCTIONS_MESSAGE_ONTHEMELOADED, &themeLoadedArgs, &themeLoadedResults, m_pvBAFunctionsProcContext);
+            BalExitOnFailure(hr, "BAFunctions OnThemeLoaded failed.");
+        }
+
     LExit:
         ReleaseStr(sczLicenseFilename);
         ReleaseStr(sczLicenseDirectory);
         ReleaseStr(sczLicensePath);
         ReleaseStr(sczLicenseFormatted);
-        ReleaseStr(sczText);
 
         return SUCCEEDED(hr);
     }
@@ -1942,13 +2676,6 @@ private: // privates
     void OnDetect()
     {
         HRESULT hr = S_OK;
-
-        if (m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running detect BA function");
-            hr = m_pBAFunction->OnDetect();
-            BalExitOnFailure(hr, "Failed calling detect BA function.");
-        }
 
         SetState(WIXSTDBA_STATE_DETECTING, hr);
 
@@ -2000,12 +2727,6 @@ private: // privates
         }
 
         SetState(WIXSTDBA_STATE_PLANNING, hr);
-
-        if (m_pBAFunction)
-        {
-            BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Running plan BA function");
-            m_pBAFunction->OnPlan();
-        }
 
         hr = m_pEngine->Plan(action);
         BalExitOnFailure(hr, "Failed to start planning packages.");
@@ -2108,31 +2829,10 @@ private: // privates
 
                     BOOL fAcceptedLicense = !ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX) || !ThemeControlEnabled(m_pTheme, WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX) || ThemeIsControlChecked(m_pTheme, WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_INSTALL_BUTTON, fAcceptedLicense);
-
-                    // If there is an "Options" page, the "Options" button exists, and it hasn't been suppressed, then enable the button.
-                    BOOL fOptionsEnabled = m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] && ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_OPTIONS_BUTTON) && !m_fSuppressOptionsUI;
-                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_OPTIONS_BUTTON, fOptionsEnabled);
-
-                    // Show/Hide the version label if it exists.
-                    if (m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] && ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_VERSION_LABEL) && !m_fShowVersion)
-                    {
-                        ThemeShowControl(m_pTheme, WIXSTDBA_CONTROL_VERSION_LABEL, SW_HIDE);
-                    }
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_MODIFY] == dwNewPageId)
                 {
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_REPAIR_BUTTON, !m_fSuppressRepair);
-                }
-                else if (m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] == dwNewPageId)
-                {
-                    HRESULT hr = BalGetStringVariable(WIXSTDBA_VARIABLE_INSTALL_FOLDER, &sczUnformattedText);
-                    if (SUCCEEDED(hr))
-                    {
-                        // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-                        // so don't go down the rabbit hole of making sure that this is securely freed.
-                        BalFormatString(sczUnformattedText, &sczText);
-                        ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX, sczText);
-                    }
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_SUCCESS] == dwNewPageId) // on the "Success" page, check if the restart or launch button should be enabled.
                 {
@@ -2151,7 +2851,6 @@ private: // privates
                     }
 
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_LAUNCH_BUTTON, fLaunchTargetExists && BOOTSTRAPPER_ACTION_UNINSTALL < m_plannedAction);
-                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_SUCCESS_RESTART_TEXT, fShowRestartButton);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_SUCCESS_RESTART_BUTTON, fShowRestartButton);
                 }
                 else if (m_rgdwPageIds[WIXSTDBA_PAGE_FAILURE] == dwNewPageId) // on the "Failure" page, show error message and check if the restart button should be enabled.
@@ -2226,91 +2925,22 @@ private: // privates
 
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_LOGFILE_LINK, fShowLogLink);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_MESSAGE_TEXT, fShowErrorMessage);
-                    ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_TEXT, fShowRestartButton);
                     ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_FAILURE_RESTART_BUTTON, fShowRestartButton);
                 }
 
-                // Process each control for special handling in the new page.
-                THEME_PAGE* pPage = ThemeGetPage(m_pTheme, dwNewPageId);
-                if (pPage)
+                HRESULT hr = ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
+                if (FAILED(hr))
                 {
-                    for (DWORD i = 0; i < pPage->cControlIndices; ++i)
-                    {
-                        THEME_CONTROL* pControl = m_pTheme->rgControls + pPage->rgdwControlIndices[i];
-
-                        // If we are on the install, options or modify pages and this is a named control, try to set its default state.
-                        if ((m_rgdwPageIds[WIXSTDBA_PAGE_INSTALL] == dwNewPageId ||
-                             m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS] == dwNewPageId ||
-                             m_rgdwPageIds[WIXSTDBA_PAGE_MODIFY] == dwNewPageId) &&
-                             pControl->sczName && *pControl->sczName)
-                        {
-                            // If this is a checkbox control, try to set its default state to the state of a matching named Burn variable.
-                            if (THEME_CONTROL_TYPE_CHECKBOX == pControl->type && WIXSTDBA_CONTROL_EULA_ACCEPT_CHECKBOX != pControl->wId)
-                            {
-                                LONGLONG llValue = 0;
-                                HRESULT hr = BalGetNumericVariable(pControl->sczName, &llValue);
-
-                                ThemeSendControlMessage(m_pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
-                            }
-
-                            // If this is a button control with the BS_AUTORADIOBUTTON style, try to set its default
-                            // state to the state of a matching named Burn variable.
-                            if (THEME_CONTROL_TYPE_BUTTON == pControl->type && (BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)))
-                            {
-                                LONGLONG llValue = 0;
-                                HRESULT hr = BalGetNumericVariable(pControl->sczName, &llValue);
-
-                                // If the control value isn't set then disable it.
-                                if (!SUCCEEDED(hr))
-                                {
-                                    ThemeControlEnable(m_pTheme, pControl->wId, FALSE);
-                                }
-                                else
-                                {
-                                    ThemeSendControlMessage(m_pTheme, pControl->wId, BM_SETCHECK, SUCCEEDED(hr) && llValue ? BST_CHECKED : BST_UNCHECKED, 0);
-                                }
-                            }
-
-                            // Hide or disable controls based on the control name with 'State' appended
-                            HRESULT hr = StrAllocFormatted(&sczControlName, L"%lsState", pControl->sczName);
-                            if (SUCCEEDED(hr))
-                            {
-                                hr = BalGetStringVariable(sczControlName, &sczControlState);
-                                if (SUCCEEDED(hr) && sczControlState && *sczControlState)
-                                {
-                                    if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, sczControlState, -1, L"disable", -1))
-                                    {
-                                        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Disable control %ls", pControl->sczName);
-                                        ThemeControlEnable(m_pTheme, pControl->wId, FALSE);
-                                    }
-                                    else if (CSTR_EQUAL == ::CompareStringW(LOCALE_NEUTRAL, 0, sczControlState, -1, L"hide", -1))
-                                    {
-                                        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "Hide control %ls", pControl->sczName);
-                                        // TODO: This doesn't work
-                                        ThemeShowControl(m_pTheme, pControl->wId, SW_HIDE);
-                                    }
-                                }
-                            }
-                        }
-
-                        // Format the text in each of the new page's controls (if they have any text).
-                        if (pControl->sczText && *pControl->sczText)
-                        {
-                            // If the wix developer is showing a hidden variable in the UI, then obviously they don't care about keeping it safe
-                            // so don't go down the rabbit hole of making sure that this is securely freed.
-                            HRESULT hr = BalFormatString(pControl->sczText, &sczText);
-                            if (SUCCEEDED(hr))
-                            {
-                                ThemeSetTextControl(m_pTheme, pControl->wId, sczText);
-                            }
-                        }
-                    }
+                    BalLogError(hr, "Failed to hide page: %u", dwOldPageId);
                 }
 
-                ThemeShowPage(m_pTheme, dwOldPageId, SW_HIDE);
-                ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
+                hr = ThemeShowPage(m_pTheme, dwNewPageId, SW_SHOW);
+                if (FAILED(hr))
+                {
+                    BalLogError(hr, "Failed to show page: %u", dwOldPageId);
+                }
 
-                // On the install page set the focus to the install button or the next enabled control if install is disabled
+                // On the install page set the focus to the install button or the next enabled control if install is disabled.
                 if (m_rgdwPageIds[WIXSTDBA_PAGE_INSTALL] == dwNewPageId)
                 {
                     ThemeSetFocus(m_pTheme, WIXSTDBA_CONTROL_INSTALL_BUTTON);
@@ -2331,6 +2961,7 @@ private: // privates
     BOOL OnClose()
     {
         BOOL fClose = FALSE;
+        BOOL fCancel = FALSE;
 
         // If we've already succeeded or failed or showing the help page, just close (prompts are annoying if the bootstrapper is done).
         if (WIXSTDBA_STATE_APPLIED <= m_state || WIXSTDBA_STATE_HELP == m_state)
@@ -2340,18 +2971,28 @@ private: // privates
         else // prompt the user or force the cancel if there is no UI.
         {
             fClose = PromptCancel(m_hWnd, BOOTSTRAPPER_DISPLAY_FULL != m_command.display, m_sczConfirmCloseMessage ? m_sczConfirmCloseMessage : L"Are you sure you want to cancel?", m_pTheme->sczCaption);
+            fCancel = fClose;
         }
 
         // If we're doing progress then we never close, we just cancel to let rollback occur.
         if (WIXSTDBA_STATE_APPLYING <= m_state && WIXSTDBA_STATE_APPLIED > m_state)
         {
-            // If we canceled disable cancel button since clicking it again is silly.
+            // If we canceled, disable cancel button since clicking it again is silly.
             if (fClose)
             {
                 ThemeControlEnable(m_pTheme, WIXSTDBA_CONTROL_PROGRESS_CANCEL_BUTTON, FALSE);
             }
 
             fClose = FALSE;
+        }
+
+        if (fClose)
+        {
+            DWORD dwCurrentPageId = 0;
+            DeterminePageId(m_state, &dwCurrentPageId);
+
+            // Hide the current page to let thmutil do its thing with variables.
+            ThemeShowPageEx(m_pTheme, dwCurrentPageId, SW_HIDE, fCancel ? THEME_SHOW_PAGE_REASON_CANCEL : THEME_SHOW_PAGE_REASON_DEFAULT);
         }
 
         return fClose;
@@ -2369,86 +3010,10 @@ private: // privates
 
 
     //
-    // OnClickOptionsButton - show the options page.
-    //
-    void OnClickOptionsButton()
-    {
-        SavePageSettings(WIXSTDBA_PAGE_INSTALL);
-        m_stateBeforeOptions = m_state;
-        SetState(WIXSTDBA_STATE_OPTIONS, S_OK);
-    }
-
-
-    //
-    // OnClickOptionsBrowseButton - browse for install folder on the options page.
-    //
-    void OnClickOptionsBrowseButton()
-    {
-        WCHAR wzPath[MAX_PATH] = { };
-        BROWSEINFOW browseInfo = { };
-        PIDLIST_ABSOLUTE pidl = NULL;
-
-        browseInfo.hwndOwner = m_hWnd;
-        browseInfo.pszDisplayName = wzPath;
-        browseInfo.lpszTitle = m_pTheme->sczCaption;
-        browseInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
-        pidl = ::SHBrowseForFolderW(&browseInfo);
-        if (pidl && ::SHGetPathFromIDListW(pidl, wzPath))
-        {
-            ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX, wzPath);
-        }
-
-        if (pidl)
-        {
-            ::CoTaskMemFree(pidl);
-        }
-
-        return;
-    }
-
-    //
-    // OnClickOptionsOkButton - accept the changes made by the options page.
-    //
-    void OnClickOptionsOkButton()
-    {
-        HRESULT hr = S_OK;
-        LPWSTR sczPath = NULL;
-
-        if (ThemeControlExists(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX))
-        {
-            hr = ThemeGetTextControl(m_pTheme, WIXSTDBA_CONTROL_FOLDER_EDITBOX, &sczPath);
-            ExitOnFailure(hr, "Failed to get text from folder edit box.");
-
-            // TODO: verify the path is valid.
-
-            hr = m_pEngine->SetVariableString(WIXSTDBA_VARIABLE_INSTALL_FOLDER, sczPath);
-            ExitOnFailure(hr, "Failed to set the install folder.");
-        }
-
-        SavePageSettings(WIXSTDBA_PAGE_OPTIONS);
-
-    LExit:
-        SetState(m_stateBeforeOptions, S_OK);
-        return;
-    }
-
-
-    //
-    // OnClickOptionsCancelButton - discard the changes made by the options page.
-    //
-    void OnClickOptionsCancelButton()
-    {
-        SetState(m_stateBeforeOptions, S_OK);
-    }
-
-
-    //
     // OnClickInstallButton - start the install by planning the packages.
     //
     void OnClickInstallButton()
     {
-        SavePageSettings(WIXSTDBA_PAGE_INSTALL);
-
         this->OnPlan(BOOTSTRAPPER_ACTION_INSTALL);
     }
 
@@ -2497,7 +3062,7 @@ private: // privates
 
         hr = LocLocalizeString(m_pWixLoc, &sczLicenseUrl);
         BalExitOnFailure(hr, "Failed to localize license URL: %ls", m_sczLicenseUrl);
-        
+
         // Assume there is no hidden variables to be formatted
         // so don't worry about securely freeing it.
         hr = BalFormatString(sczLicenseUrl, &sczLicenseUrl);
@@ -2518,7 +3083,7 @@ private: // privates
             }
         }
 
-        hr = ShelExec(sczLicensePath ? sczLicensePath : sczLicenseUrl, NULL, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
+        hr = ShelExecUnelevated(sczLicensePath ? sczLicensePath : sczLicenseUrl, NULL, L"open", NULL, SW_SHOWDEFAULT);
         BalExitOnFailure(hr, "Failed to launch URL to EULA.");
 
     LExit:
@@ -2542,6 +3107,8 @@ private: // privates
         LPWSTR sczLaunchTargetElevatedId = NULL;
         LPWSTR sczUnformattedArguments = NULL;
         LPWSTR sczArguments = NULL;
+        LPWSTR sczUnformattedLaunchFolder = NULL;
+        LPWSTR sczLaunchFolder = NULL;
         int nCmdShow = SW_SHOWNORMAL;
 
         hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_TARGET_PATH, &sczUnformattedLaunchTarget);
@@ -2567,6 +3134,12 @@ private: // privates
             nCmdShow = SW_HIDE;
         }
 
+        if (BalStringVariableExists(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER))
+        {
+            hr = BalGetStringVariable(WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER, &sczUnformattedLaunchFolder);
+            BalExitOnFailure(hr, "Failed to get launch working directory variable '%ls'.", WIXSTDBA_VARIABLE_LAUNCH_WORK_FOLDER);
+        }
+
         if (sczLaunchTargetElevatedId && !m_fTriedToLaunchElevated)
         {
             m_fTriedToLaunchElevated = TRUE;
@@ -2587,13 +3160,21 @@ private: // privates
                 BalExitOnFailure(hr, "Failed to format launch arguments variable: %ls", sczUnformattedArguments);
             }
 
-            hr = ShelExec(sczLaunchTarget, sczArguments, L"open", NULL, nCmdShow, m_hWnd, NULL);
+            if (sczUnformattedLaunchFolder)
+            {
+                hr = BalFormatString(sczUnformattedLaunchFolder, &sczLaunchFolder);
+                BalExitOnFailure(hr, "Failed to format launch working directory variable: %ls", sczUnformattedLaunchFolder);
+            }
+
+            hr = ShelExec(sczLaunchTarget, sczArguments, L"open", sczLaunchFolder, nCmdShow, m_hWnd, NULL);
             BalExitOnFailure(hr, "Failed to launch target: %ls", sczLaunchTarget);
 
             ::PostMessageW(m_hWnd, WM_CLOSE, 0, 0);
         }
 
     LExit:
+        StrSecureZeroFreeString(sczLaunchFolder);
+        ReleaseStr(sczUnformattedLaunchFolder);
         StrSecureZeroFreeString(sczArguments);
         ReleaseStr(sczUnformattedArguments);
         ReleaseStr(sczLaunchTargetElevatedId);
@@ -2629,7 +3210,7 @@ private: // privates
         hr = BalGetStringVariable(m_Bundle.sczLogVariable, &sczLogFile);
         BalExitOnFailure(hr, "Failed to get log file variable '%ls'.", m_Bundle.sczLogVariable);
 
-        hr = ShelExec(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT, m_hWnd, NULL);
+        hr = ShelExecUnelevated(L"notepad.exe", sczLogFile, L"open", NULL, SW_SHOWDEFAULT);
         BalExitOnFailure(hr, "Failed to open log file target: %ls", sczLogFile);
 
     LExit:
@@ -2657,7 +3238,7 @@ private: // privates
             state = WIXSTDBA_STATE_FAILED;
         }
 
-        if (WIXSTDBA_STATE_OPTIONS == state || m_state < state)
+        if (m_state < state)
         {
             ::PostMessageW(m_hWnd, WM_WIXSTDBA_CHANGE_STATE, 0, state);
         }
@@ -2736,10 +3317,6 @@ private: // privates
                 }
                 break;
 
-            case WIXSTDBA_STATE_OPTIONS:
-                *pdwPageId = m_rgdwPageIds[WIXSTDBA_PAGE_OPTIONS];
-                break;
-
             case WIXSTDBA_STATE_PLANNING: __fallthrough;
             case WIXSTDBA_STATE_PLANNED: __fallthrough;
             case WIXSTDBA_STATE_APPLYING: __fallthrough;
@@ -2776,12 +3353,8 @@ private: // privates
 
             if (!fResult)
             {
-                // Hope they didn't have hidden variables in their message, because it's going in the log in plaintext.
-                BalLog(BOOTSTRAPPER_LOG_LEVEL_ERROR, "%ls", m_sczFailedMessage);
-
                 hr = E_WIXSTDBA_CONDITION_FAILED;
-                // todo: remove in WiX v4, in case people are relying on v3.x logging behavior
-                BalExitOnFailure(hr, "Bundle condition evaluated to false: %ls", pCondition->sczCondition);
+                BalExitOnFailure(hr, "%ls", m_sczFailedMessage);
             }
         }
 
@@ -2789,6 +3362,23 @@ private: // privates
 
     LExit:
         return hr;
+    }
+
+    void UpdateCacheProgress(
+        __in DWORD dwOverallPercentage
+        )
+    {
+        WCHAR wzProgress[5] = { };
+
+        ::StringCchPrintfW(wzProgress, countof(wzProgress), L"%u%%", dwOverallPercentage);
+        ThemeSetTextControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_TEXT, wzProgress);
+
+        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_CACHE_PROGRESS_BAR, dwOverallPercentage);
+
+        m_dwCalculatedCacheProgress = dwOverallPercentage * WIXSTDBA_ACQUIRE_PERCENTAGE / 100;
+        ThemeSetProgressControl(m_pTheme, WIXSTDBA_CONTROL_OVERALL_CALCULATED_PROGRESS_BAR, m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
+
+        SetTaskbarButtonProgress(m_dwCalculatedCacheProgress + m_dwCalculatedExecuteProgress);
     }
 
 
@@ -2845,76 +3435,81 @@ private: // privates
     }
 
 
-    HRESULT LoadBootstrapperBAFunctions()
+    HRESULT LoadBAFunctions(
+        __in IXMLDOMDocument* pixdManifest
+        )
     {
         HRESULT hr = S_OK;
+        IXMLDOMNode* pBAFunctionsNode = NULL;
+        IXMLDOMNode* pPayloadNode = NULL;
+        LPWSTR sczPayloadId = NULL;
+        LPWSTR sczPayloadXPath = NULL;
+        LPWSTR sczBafName = NULL;
         LPWSTR sczBafPath = NULL;
+        BA_FUNCTIONS_CREATE_ARGS bafCreateArgs = { };
+        BA_FUNCTIONS_CREATE_RESULTS bafCreateResults = { };
 
-        hr = PathRelativeToModule(&sczBafPath, L"bafunctions.dll", m_hModule);
-        BalExitOnFailure(hr, "Failed to get path to BA function DLL.");
+        hr = XmlSelectSingleNode(pixdManifest, L"/BootstrapperApplicationData/WixBalBAFunctions", &pBAFunctionsNode);
+        BalExitOnFailure(hr, "Failed to read WixBalBAFunctions node from BootstrapperApplicationData.xml.");
 
-#ifdef DEBUG
-        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBootstrapperBAFunctions() - BA function DLL %ls", sczBafPath);
-#endif
-
-        m_hBAFModule = ::LoadLibraryW(sczBafPath);
-        if (m_hBAFModule)
+        if (S_FALSE == hr)
         {
-            PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE pfnBAFunctionCreate = reinterpret_cast<PFN_BOOTSTRAPPER_BA_FUNCTION_CREATE>(::GetProcAddress(m_hBAFModule, "CreateBootstrapperBAFunction"));
-            BalExitOnNullWithLastError(pfnBAFunctionCreate, hr, "Failed to get CreateBootstrapperBAFunction entry-point from: %ls", sczBafPath);
+            ExitFunction();
+        }
 
-            hr = pfnBAFunctionCreate(m_pEngine, m_hBAFModule, &m_pBAFunction);
-            BalExitOnFailure(hr, "Failed to create BA function.");
-        }
-#ifdef DEBUG
-        else
+        hr = XmlGetAttributeEx(pBAFunctionsNode, L"PayloadId", &sczPayloadId);
+        BalExitOnFailure(hr, "Failed to get BAFunctions PayloadId.");
+
+        hr = StrAllocFormatted(&sczPayloadXPath, L"/BootstrapperApplicationData/WixPayloadProperties[@Payload='%ls']", sczPayloadId);
+        BalExitOnFailure(hr, "Failed to format BAFunctions payload XPath.");
+
+        hr = XmlSelectSingleNode(pixdManifest, sczPayloadXPath, &pPayloadNode);
+        if (S_FALSE == hr)
         {
-            BalLogError(HRESULT_FROM_WIN32(::GetLastError()), "WIXSTDBA: LoadBootstrapperBAFunctions() - Failed to load DLL %ls", sczBafPath);
+            hr = E_NOTFOUND;
         }
-#endif
+        BalExitOnFailure(hr, "Failed to find WixPayloadProperties node for BAFunctions PayloadId: %ls.", sczPayloadId);
+
+        hr = XmlGetAttributeEx(pPayloadNode, L"Name", &sczBafName);
+        BalExitOnFailure(hr, "Failed to get BAFunctions Name.");
+
+        hr = PathRelativeToModule(&sczBafPath, sczBafName, m_hModule);
+        BalExitOnFailure(hr, "Failed to get path to BAFunctions DLL.");
+
+        BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "WIXSTDBA: LoadBAFunctions() - BAFunctions DLL %ls", sczBafPath);
+
+        m_hBAFModule = ::LoadLibraryExW(sczBafPath, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+        BalExitOnNullWithLastError(m_hBAFModule, hr, "WIXSTDBA: LoadBAFunctions() - Failed to load DLL %ls", sczBafPath);
+
+        PFN_BA_FUNCTIONS_CREATE pfnBAFunctionsCreate = reinterpret_cast<PFN_BA_FUNCTIONS_CREATE>(::GetProcAddress(m_hBAFModule, "BAFunctionsCreate"));
+        BalExitOnNullWithLastError(pfnBAFunctionsCreate, hr, "Failed to get BAFunctionsCreate entry-point from: %ls", sczBafPath);
+
+        bafCreateArgs.cbSize = sizeof(bafCreateArgs);
+        bafCreateArgs.qwBAFunctionsAPIVersion = MAKEQWORDVERSION(0, 0, 0, 2); // TODO: need to decide whether to keep this, and if so when to update it.
+        bafCreateArgs.pBootstrapperCreateArgs = &m_createArgs;
+
+        bafCreateResults.cbSize = sizeof(bafCreateResults);
+
+        hr = pfnBAFunctionsCreate(&bafCreateArgs, &bafCreateResults);
+        BalExitOnFailure(hr, "Failed to create BAFunctions.");
+
+        m_pfnBAFunctionsProc = bafCreateResults.pfnBAFunctionsProc;
+        m_pvBAFunctionsProcContext = bafCreateResults.pvBAFunctionsProcContext;
 
     LExit:
-        if (m_hBAFModule && !m_pBAFunction)
+        if (m_hBAFModule && !m_pfnBAFunctionsProc)
         {
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
         }
         ReleaseStr(sczBafPath);
+        ReleaseStr(sczBafName);
+        ReleaseStr(sczPayloadXPath);
+        ReleaseStr(sczPayloadId);
+        ReleaseObject(pBAFunctionsNode);
+        ReleaseObject(pPayloadNode);
 
         return hr;
-    }
-
-
-    void SavePageSettings(
-        __in WIXSTDBA_PAGE page
-        )
-    {
-        THEME_PAGE* pPage = NULL;
-
-        pPage = ThemeGetPage(m_pTheme, m_rgdwPageIds[page]);
-        if (pPage)
-        {
-            for (DWORD i = 0; i < pPage->cControlIndices; ++i)
-            {
-                // Loop through all the checkbox controls (or buttons with BS_AUTORADIOBUTTON) with names and set a Burn variable with that name to true or false.
-                THEME_CONTROL* pControl = m_pTheme->rgControls + pPage->rgdwControlIndices[i];
-                if ((THEME_CONTROL_TYPE_CHECKBOX == pControl->type) ||
-                    (THEME_CONTROL_TYPE_BUTTON == pControl->type && (BS_AUTORADIOBUTTON == (BS_AUTORADIOBUTTON & pControl->dwStyle)) &&
-                    pControl->sczName && *pControl->sczName))
-                {
-                    BOOL bChecked = ThemeIsControlChecked(m_pTheme, pControl->wId);
-                    m_pEngine->SetVariableNumeric(pControl->sczName, bChecked ? 1 : 0);
-                }
-
-                // Loop through all the editbox controls with names and set a Burn variable with that name to the contents.
-                if (THEME_CONTROL_TYPE_EDITBOX == pControl->type && pControl->sczName && *pControl->sczName && WIXSTDBA_CONTROL_FOLDER_EDITBOX != pControl->wId)
-                {
-                    LPWSTR sczValue = NULL;
-                    ThemeGetTextControl(m_pTheme, pControl->wId, &sczValue);
-                    m_pEngine->SetVariableString(pControl->sczName, sczValue);
-                }
-            }
-        }
     }
 
 
@@ -2927,16 +3522,21 @@ public:
         __in BOOL fPrereq,
         __in HRESULT hrHostInitialization,
         __in IBootstrapperEngine* pEngine,
-        __in const BOOTSTRAPPER_COMMAND* pCommand
-        ) : CBalBaseBootstrapperApplication(pEngine, pCommand, 3, 3000)
+        __in const BOOTSTRAPPER_CREATE_ARGS* pArgs
+        ) : CBalBaseBootstrapperApplication(pEngine, pArgs, 3, 3000)
     {
         m_hModule = hModule;
-        memcpy_s(&m_command, sizeof(m_command), pCommand, sizeof(BOOTSTRAPPER_COMMAND));
+        memcpy_s(&m_command, sizeof(m_command), pArgs->pCommand, sizeof(BOOTSTRAPPER_COMMAND));
+        memcpy_s(&m_createArgs, sizeof(m_createArgs), pArgs, sizeof(BOOTSTRAPPER_CREATE_ARGS));
+        m_createArgs.pCommand = &m_command;
 
-        // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
-        if (fPrereq && BOOTSTRAPPER_ACTION_HELP != m_command.action && BOOTSTRAPPER_ACTION_INSTALL != m_command.action)
+        if (fPrereq)
         {
-            m_command.action = BOOTSTRAPPER_ACTION_INSTALL;
+            // Pre-req BA should only show help or do an install (to launch the Managed BA which can then do the right action).
+            if (BOOTSTRAPPER_ACTION_HELP != m_command.action)
+            {
+                m_command.action = BOOTSTRAPPER_ACTION_INSTALL;
+            }
         }
         else // maybe modify the action state if the bundle is or is not already installed.
         {
@@ -2991,10 +3591,9 @@ public:
 
         m_sczLicenseFile = NULL;
         m_sczLicenseUrl = NULL;
-        m_fSuppressOptionsUI = FALSE;
         m_fSuppressDowngradeFailure = FALSE;
         m_fSuppressRepair = FALSE;
-        m_fShowVersion = FALSE;
+        m_fSupportCacheOnly = FALSE;
 
         m_sdOverridableVariables = NULL;
         m_shPrereqSupportPackages = NULL;
@@ -3007,7 +3606,6 @@ public:
         m_fTriedToLaunchElevated = FALSE;
 
         m_fPrereq = fPrereq;
-        m_sczPrereqPackage = NULL;
         m_fPrereqInstalled = FALSE;
         m_fPrereqAlreadyInstalled = FALSE;
 
@@ -3015,7 +3613,8 @@ public:
         m_pEngine = pEngine;
 
         m_hBAFModule = NULL;
-        m_pBAFunction = NULL;
+        m_pfnBAFunctionsProc = NULL;
+        m_pvBAFunctionsProcContext = NULL;
     }
 
 
@@ -3040,12 +3639,17 @@ public:
         ReleaseStr(m_sczLanguage);
         ReleaseStr(m_sczLicenseFile);
         ReleaseStr(m_sczLicenseUrl);
-        ReleaseStr(m_sczPrereqPackage);
         ReleaseStr(m_sczAfterForcedRestartPackage);
         ReleaseNullObject(m_pEngine);
 
         if (m_hBAFModule)
         {
+            PFN_BA_FUNCTIONS_DESTROY pfnBAFunctionsDestroy = reinterpret_cast<PFN_BA_FUNCTIONS_DESTROY>(::GetProcAddress(m_hBAFModule, "BAFunctionsDestroy"));
+            if (pfnBAFunctionsDestroy)
+            {
+                pfnBAFunctionsDestroy();
+            }
+
             ::FreeLibrary(m_hBAFModule);
             m_hBAFModule = NULL;
         }
@@ -3053,6 +3657,7 @@ public:
 
 private:
     HMODULE m_hModule;
+    BOOTSTRAPPER_CREATE_ARGS m_createArgs;
     BOOTSTRAPPER_COMMAND m_command;
     IBootstrapperEngine* m_pEngine;
     BOOTSTRAPPER_ACTION m_plannedAction;
@@ -3073,7 +3678,6 @@ private:
     HWND m_hWnd;
 
     WIXSTDBA_STATE m_state;
-    WIXSTDBA_STATE m_stateBeforeOptions;
     HRESULT m_hrFinal;
 
     BOOL m_fStartedExecution;
@@ -3087,10 +3691,9 @@ private:
 
     LPWSTR m_sczLicenseFile;
     LPWSTR m_sczLicenseUrl;
-    BOOL m_fSuppressOptionsUI;
     BOOL m_fSuppressDowngradeFailure;
     BOOL m_fSuppressRepair;
-    BOOL m_fShowVersion;
+    BOOL m_fSupportCacheOnly;
 
     STRINGDICT_HANDLE m_sdOverridableVariables;
 
@@ -3099,7 +3702,6 @@ private:
     STRINGDICT_HANDLE m_shPrereqSupportPackages;
 
     BOOL m_fPrereq;
-    LPWSTR m_sczPrereqPackage;
     BOOL m_fPrereqInstalled;
     BOOL m_fPrereqAlreadyInstalled;
 
@@ -3110,7 +3712,8 @@ private:
     BOOL m_fTriedToLaunchElevated;
 
     HMODULE m_hBAFModule;
-    IBootstrapperBAFunction* m_pBAFunction;
+    PFN_BA_FUNCTIONS_PROC m_pfnBAFunctionsProc;
+    LPVOID m_pvBAFunctionsProcContext;
 };
 
 
@@ -3122,20 +3725,125 @@ HRESULT CreateBootstrapperApplication(
     __in BOOL fPrereq,
     __in HRESULT hrHostInitialization,
     __in IBootstrapperEngine* pEngine,
-    __in const BOOTSTRAPPER_COMMAND* pCommand,
-    __out IBootstrapperApplication** ppApplication
+    __in const BOOTSTRAPPER_CREATE_ARGS* pArgs,
+    __inout BOOTSTRAPPER_CREATE_RESULTS* pResults
     )
 {
     HRESULT hr = S_OK;
     CWixStandardBootstrapperApplication* pApplication = NULL;
 
-    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pEngine, pCommand);
+    pApplication = new CWixStandardBootstrapperApplication(hModule, fPrereq, hrHostInitialization, pEngine, pArgs);
     ExitOnNull(pApplication, hr, E_OUTOFMEMORY, "Failed to create new standard bootstrapper application object.");
 
-    *ppApplication = pApplication;
+    pResults->pfnBootstrapperApplicationProc = BalBaseBootstrapperApplicationProc;
+    pResults->pvBootstrapperApplicationProcContext = pApplication;
     pApplication = NULL;
 
 LExit:
     ReleaseObject(pApplication);
     return hr;
+}
+
+
+static HRESULT DAPI EvaluateVariableConditionCallback(
+    __in_z LPCWSTR wzCondition,
+    __out BOOL* pf,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalEvaluateCondition(wzCondition, pf);
+}
+
+
+static HRESULT DAPI FormatVariableStringCallback(
+    __in_z LPCWSTR wzFormat,
+    __inout LPWSTR* psczOut,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalFormatString(wzFormat, psczOut);
+}
+
+
+static HRESULT DAPI GetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __out LONGLONG* pllValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalGetNumericVariable(wzVariable, pllValue);
+}
+
+
+static HRESULT DAPI SetVariableNumericCallback(
+    __in_z LPCWSTR wzVariable,
+    __in LONGLONG llValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalSetNumericVariable(wzVariable, llValue);
+}
+
+
+static HRESULT DAPI GetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __inout LPWSTR* psczValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalGetStringVariable(wzVariable, psczValue);
+}
+
+
+static HRESULT DAPI SetVariableStringCallback(
+    __in_z LPCWSTR wzVariable,
+    __in_z_opt LPCWSTR wzValue,
+    __in_opt LPVOID /*pvContext*/
+    )
+{
+    return BalSetStringVariable(wzVariable, wzValue);
+}
+
+static LPCSTR LoggingRequestStateToString(
+    __in BOOTSTRAPPER_REQUEST_STATE requestState
+    )
+{
+    switch (requestState)
+    {
+    case BOOTSTRAPPER_REQUEST_STATE_NONE:
+        return "None";
+    case BOOTSTRAPPER_REQUEST_STATE_FORCE_ABSENT:
+        return "ForceAbsent";
+    case BOOTSTRAPPER_REQUEST_STATE_ABSENT:
+        return "Absent";
+    case BOOTSTRAPPER_REQUEST_STATE_CACHE:
+        return "Cache";
+    case BOOTSTRAPPER_REQUEST_STATE_PRESENT:
+        return "Present";
+    case BOOTSTRAPPER_REQUEST_STATE_REPAIR:
+        return "Repair";
+    default:
+        return "Invalid";
+    }
+}
+
+static LPCSTR LoggingMsiFeatureStateToString(
+    __in BOOTSTRAPPER_FEATURE_STATE featureState
+    )
+{
+    switch (featureState)
+    {
+    case BOOTSTRAPPER_FEATURE_STATE_UNKNOWN:
+        return "Unknown";
+    case BOOTSTRAPPER_FEATURE_STATE_ABSENT:
+        return "Absent";
+    case BOOTSTRAPPER_FEATURE_STATE_ADVERTISED:
+        return "Advertised";
+    case BOOTSTRAPPER_FEATURE_STATE_LOCAL:
+        return "Local";
+    case BOOTSTRAPPER_FEATURE_STATE_SOURCE:
+        return "Source";
+    default:
+        return "Invalid";
+    }
 }

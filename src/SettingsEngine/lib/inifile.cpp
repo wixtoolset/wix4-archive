@@ -1,15 +1,4 @@
-//-------------------------------------------------------------------------------------------------
-// <copyright file="inifile.cpp" company="Outercurve Foundation">
-//   Copyright (c) 2004, Outercurve Foundation.
-//   This software is released under Microsoft Reciprocal License (MS-RL).
-//   The license and further copyright text can be found in the file
-//   LICENSE.TXT at the root directory of the distribution.
-// </copyright>
-//
-// <summary>
-// Internal utility functions for Cfg Legacy API (for purposes of dealing with legacy ini/cfg files)
-// </summary>
-//-------------------------------------------------------------------------------------------------
+// Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
 #include "precomp.h"
 
@@ -82,7 +71,7 @@ HRESULT IniFileRead(
         hr = ValueSetString(rgIniValues[i].wzValue, FALSE, &st, pcdb->sczGuid, &cvValue);
         ExitOnFailure(hr, "Failed to set string in memory for value named %ls", sczFullValueName);
 
-        hr = ValueWrite(pcdb, pcdb->dwAppID, sczFullValueName, &cvValue, TRUE);
+        hr = ValueWrite(pcdb, pcdb->dwAppID, sczFullValueName, &cvValue, TRUE, NULL);
         ExitOnFailure(hr, "Failed to set value from INI: %ls", sczFullValueName);
     }
 
