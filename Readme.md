@@ -1,8 +1,7 @@
-# WiX Toolset on GitHub
-The WiX Toolset builds Windows installation packages from XML source code. The toolset supports a command-line environment that developers may integrate into their build processes to build Windows Installer (MSI) packages and executable bundles. The WiX GitHub project hosts the WiX source code Git repositories. The following links will take you to more details:
+# In the immortal words of Obi Wan Kenobi, "This isn't the repository you're looking for."
 
-## [Home page](http://wixtoolset.org/ "WiX Toolset home page")
-## [Releases](http://wixtoolset.org/releases/ "WiX Toolset stable and weekly releases")
-## [Bugs and feature requests](http://wixtoolset.org/issues/ "Files bugs and feature requests for WiX Toolset ")
-## [Manual](http://wixtoolset.org/documentation/manual/ "WiX Toolset manuals and documentation links")
-## [Hacking on WiX](http://wixtoolset.org/development/ "About development on the WiX Toolset")
+WiX v4 has moved to a micro-repo model that you can read more about in the [Repository Reorganization WIP](https://wixtoolset.org/development/wips/5489-repository-reorganization/).
+
+This repository remains solely for historical reference and will be deleted when we are confident everything of value has been ported to the appropriate micro-repo.
+
+If you want to get involved in WiX v4 development, start with the [Home repository](https://github.com/wixtoolset/home).
